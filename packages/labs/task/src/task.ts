@@ -48,7 +48,26 @@ export type StatusRenderer<R> = {
 export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
   task: TaskFunction<T, R>;
   args?: ArgsFunction<T>;
-  autoRun?: boolean;
+
+  /**
+   * Determines if the task is run automatically when arguments change after a
+   * host update.
+   *
+   * If `true`, the task checks arguments during the host update (after
+   * `willUpdate()` and before `update()` in Lit) and runs if they change. For
+   * a task to see argument changes they must be done in `willUpdate()` or
+   * earlier. The host element can see task status changes caused by its own
+   * current update.
+   *
+   * If `'afterUpdate'`, the task checks arguments and runs _after_ the host
+   * update. This means that the task can see host changes done in update, such
+   * as rendered DOM. The host element can not see task status changes caused
+   * by its own update, so the task must trigger a second host update to make
+   * those changes renderable.
+   *
+   * Note: `'afterUpdate'` is unlikely to be SSR compatible in the future.
+   */
+  autoRun?: boolean | 'afterUpdate';
 
   /**
    * If initialValue is provided, the task is initialized to the COMPLETE
@@ -154,7 +173,7 @@ export class Task<
   /**
    * Controls if they task will run when its arguments change. Defaults to true.
    */
-  autoRun = true;
+  autoRun: boolean | 'afterUpdate';
 
   /**
    * A Promise that resolve when the current task run is complete.
@@ -204,17 +223,14 @@ export class Task<
     task: TaskFunction<T, R> | TaskConfig<T, R>,
     args?: ArgsFunction<T>
   ) {
-    this._host = host;
-    this._host.addController(this);
+    (this._host = host).addController(this);
     const taskConfig =
       typeof task === 'object' ? task : ({task, args} as TaskConfig<T, R>);
     this._task = taskConfig.task;
     this._getArgs = taskConfig.args;
     this._onComplete = taskConfig.onComplete;
     this._onError = taskConfig.onError;
-    if (taskConfig.autoRun !== undefined) {
-      this.autoRun = taskConfig.autoRun;
-    }
+    this.autoRun = taskConfig.autoRun ?? true;
     // Providing initialValue puts the task in COMPLETE state and stores the
     // args immediately so it only runs when they change again.
     if ('initialValue' in taskConfig) {
@@ -225,7 +241,15 @@ export class Task<
   }
 
   hostUpdate() {
-    this.performTask();
+    if (this.autoRun === true) {
+      this.performTask();
+    }
+  }
+
+  hostUpdated() {
+    if (this.autoRun === 'afterUpdate') {
+      this.performTask();
+    }
   }
 
   protected async performTask() {
@@ -236,23 +260,27 @@ export class Task<
   }
 
   /**
-   * Determines if the task should run when it's triggered as part of the
-   * host's reactive lifecycle. Note, this is not checked when `run` is
-   * explicitly called. A task runs automatically when `autoRun` is `true` and
-   * either its arguments change.
+   * Determines if the task should run when it's triggered because of a
+   * host update. A task should run when its arguments change from the
+   * previous run.
+   *
+   * Note: this is not checked when `run` is explicitly called.
+   *
    * @param args The task's arguments
-   * @returns
    */
   protected shouldRun(args?: T) {
-    return this.autoRun && this._argsDirty(args);
+    return this._argsDirty(args);
   }
 
   /**
-   * A task runs when its arguments change, as long as the `autoRun` option
-   * has not been set to false. To explicitly run a task outside of these
-   * conditions, call `run`. A custom set of arguments can optionally be passed
-   * and if not given, the configured arguments are used.
-   * @param args optional set of arguments to use for this task run
+   * Runs a task manually.
+   *
+   * This can be useful for running tasks in response to events as opposed to
+   * automatically running when host element state changes.
+   *
+   * @param args an optional set of arguments to use for this task run. If args
+   *     is not given, the args function is called to get the arguments for
+   *     this run.
    */
   async run(args?: T) {
     args ??= this._getArgs?.();
@@ -273,7 +301,12 @@ export class Task<
     let error: unknown;
 
     // Request an update to report pending state.
-    this._host.requestUpdate();
+    if (this.autoRun === 'afterUpdate') {
+      // Avoids a change-in-update warning
+      queueMicrotask(() => this._host.requestUpdate());
+    } else {
+      this._host.requestUpdate();
+    }
 
     const key = ++this._callId;
     this._abortController = new AbortController();
