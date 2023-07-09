@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import ts, {type ParseConfigFileHost} from 'typescript';
 import {AbsolutePath} from './paths.js';
 import * as path from 'path';
 import {DiagnosticsError} from './errors.js';
@@ -44,13 +44,20 @@ export const createPackageAnalyzer = (
     if (options.exclude !== undefined) {
       (configFile.config.exclude ??= []).push(...options.exclude);
     }
-    commandLine = ts.parseJsonConfigFileContent(
-      configFile.config /* json */,
-      ts.sys /* host */,
-      packagePath /* basePath */,
-      undefined /* existingOptions */,
-      path.relative(packagePath, configFileName) /* configFileName */
+    const maybeCommandLine = ts.getParsedCommandLineOfConfigFile(
+      configFileName /* json */,
+      {} /* optionsToExtend */,
+      // typescript themselves bypass this check 🤷
+      // SEE: https://github.com/microsoft/TypeScript/blob/9701f55f7217d7bd56d28e73b250444efcefa8dd/src/compiler/watch.ts#L217
+      ts.sys as unknown as ParseConfigFileHost /* host */
     );
+    if (maybeCommandLine) {
+      commandLine = maybeCommandLine;
+    } else {
+      throw new Error(
+        `Could not parse tsconfig at specified path '${packagePath}'.`
+      );
+    }
   } else if (isDirectory) {
     console.info(`No tsconfig.json found; assuming package is JavaScript.`);
     commandLine = ts.parseJsonConfigFileContent(
