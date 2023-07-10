@@ -47,7 +47,7 @@ export const createPackageAnalyzer = (
     commandLine = ts.parseJsonConfigFileContent(
       configFile.config /* json */,
       ts.sys /* host */,
-      packagePath /* basePath */,
+      isDirectory ? packagePath : path.dirname(packagePath) /* basePath */,
       {} /* existingOptions */,
       configFileName /* configFileName */
     );
@@ -99,7 +99,9 @@ export const createPackageAnalyzer = (
   const program = ts.createProgram(
     commandLine.fileNames,
     commandLine.options,
-    compilerHost
+    compilerHost,
+    undefined,
+    commandLine.errors
   );
 
   const analyzer = new Analyzer({getProgram: () => program, fs: ts.sys, path});
