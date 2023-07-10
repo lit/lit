@@ -942,4 +942,19 @@ suite('Task', () => {
     assert.equal(el.task.value, secondValue);
     assert.notEqual(firstValue, secondValue);
   });
+
+  test('type-only render return type test', () => {
+    class TestElement extends ReactiveElement {
+      task = new Task(this, () => 'abc');
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+
+    const acceptNumberOrUndefined = (x?: number) => x;
+
+    acceptNumberOrUndefined(el.task.render({initial: () => 123}));
+    acceptNumberOrUndefined(el.task.render({complete: () => 123}));
+    acceptNumberOrUndefined(el.task.render({pending: () => 123}));
+    acceptNumberOrUndefined(el.task.render({error: () => 123}));
+  });
 });

@@ -327,19 +327,20 @@ export class Task<
     return this._error;
   }
 
-  render(renderer: StatusRenderer<R>) {
+  render<T extends StatusRenderer<R>>(renderer: T) {
     switch (this.status) {
       case TaskStatus.INITIAL:
-        return renderer.initial?.();
+        return renderer.initial?.() as MaybeReturnType<T['initial']>;
       case TaskStatus.PENDING:
-        return renderer.pending?.();
+        return renderer.pending?.() as MaybeReturnType<T['pending']>;
       case TaskStatus.COMPLETE:
-        return renderer.complete?.(this.value!);
+        return renderer.complete?.(this.value!) as MaybeReturnType<
+          T['complete']
+        >;
       case TaskStatus.ERROR:
-        return renderer.error?.(this.error);
+        return renderer.error?.(this.error) as MaybeReturnType<T['error']>;
       default:
-        // exhaustiveness check
-        this.status as void;
+        throw new Error(`Unexpected status: ${this.status}`);
     }
   }
 
@@ -351,3 +352,8 @@ export class Task<
       : args !== prev;
   }
 }
+
+/* eslint-disable @typescript-eslint/no-explicit-any */
+type MaybeReturnType<T extends undefined | ((...args: any) => any)> =
+  T extends (...args: any) => any ? ReturnType<T> : undefined;
+/* eslint-enable @typescript-eslint/no-explicit-any */
