@@ -950,11 +950,23 @@ suite('Task', () => {
     customElements.define(generateElementName(), TestElement);
     const el = new TestElement();
 
-    const acceptNumberOrUndefined = (x?: number) => x;
+    const accept = <T>(x: T) => x;
 
-    acceptNumberOrUndefined(el.task.render({initial: () => 123}));
-    acceptNumberOrUndefined(el.task.render({complete: () => 123}));
-    acceptNumberOrUndefined(el.task.render({pending: () => 123}));
-    acceptNumberOrUndefined(el.task.render({error: () => 123}));
+    accept<number | undefined>(el.task.render({initial: () => 123}));
+    accept<number | undefined>(el.task.render({complete: () => 123}));
+    accept<number | undefined>(el.task.render({pending: () => 123}));
+    accept<number | undefined>(el.task.render({error: () => 123}));
+    accept<number | undefined>(
+      el.task.render({initial: () => 123, complete: () => 123})
+    );
+
+    accept<number>(
+      el.task.render({
+        initial: () => 123,
+        complete: () => 123,
+        pending: () => 123,
+        error: () => 123,
+      })
+    );
   });
 });

@@ -353,7 +353,6 @@ export class Task<
   }
 }
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
-type MaybeReturnType<T extends undefined | ((...args: any) => any)> =
-  T extends (...args: any) => any ? ReturnType<T> : undefined;
-/* eslint-enable @typescript-eslint/no-explicit-any */
+type MaybeReturnType<F> = F extends (...args: unknown[]) => infer R
+  ? R
+  : undefined;
