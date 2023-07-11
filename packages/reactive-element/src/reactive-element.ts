@@ -1185,13 +1185,26 @@ export abstract class ReactiveElement
   requestUpdate(
     name?: PropertyKey,
     oldValue?: unknown,
+    options?: PropertyDeclaration
+  ): void;
+  requestUpdate(
+    name: PropertyKey,
+    oldValue: unknown,
+    options: PropertyDeclaration,
+    initial: true,
+    newValue: unknown
+  ): void;
+  requestUpdate(
+    name?: PropertyKey,
+    oldValue?: unknown,
     options?: PropertyDeclaration,
     // This is needed because standard decorators can't call requestUpdate()
     // after the field is defined and acceessing the field before it's
     // defined is an error.
     // TODO: Copy the reflection logic to the decorator, or hide this parameter
     // from the public API.
-    requestUpdateOptions: {reflect?: boolean; newValue?: unknown} = {}
+    initial?: boolean,
+    newValue?: unknown
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -1200,11 +1213,7 @@ export abstract class ReactiveElement
       ).getPropertyOptions(name);
       const hasChanged = options.hasChanged ?? notEqual;
 
-      const newValue =
-        'newValue' in requestUpdateOptions
-          ? requestUpdateOptions.newValue
-          : this[name as keyof this];
-      if (hasChanged(newValue, oldValue)) {
+      if (hasChanged(initial ? newValue : this[name as keyof this], oldValue)) {
         // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
         // vs just Map.set()
         if (!this._$changedProperties.has(name)) {
@@ -1215,7 +1224,7 @@ export abstract class ReactiveElement
         // property to `_reflectingProperties`. This ensures setting
         // attribute + property reflects correctly.
         if (
-          (requestUpdateOptions.reflect ?? true) &&
+          !initial &&
           options.reflect === true &&
           this.__reflectingProperty !== name
         ) {

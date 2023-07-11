@@ -92,10 +92,7 @@ export const property = (
             // @ts-expect-error: argh
             this[name as keyof this] = v;
           }
-          this.requestUpdate(name, undefined, options, {
-            newValue: v,
-            reflect: false,
-          });
+          this.requestUpdate(name, undefined, options, true, v);
           return v;
         },
       };
