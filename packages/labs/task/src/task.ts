@@ -176,22 +176,7 @@ export class Task<
    * Determines if the task is run automatically when arguments change after a
    * host update. Default to `true`.
    *
-   * If `true`, the task checks arguments during the host update (after
-   * `willUpdate()` and before `update()` in Lit) and runs if they change. For
-   * a task to see argument changes they must be done in `willUpdate()` or
-   * earlier. The host element can see task status changes caused by its own
-   * current update.
-   *
-   * If `'afterUpdate'`, the task checks arguments and runs _after_ the host
-   * update. This means that the task can see host changes done in update, such
-   * as rendered DOM. The host element can not see task status changes caused
-   * by its own update, so the task must trigger a second host update to make
-   * those changes renderable.
-   *
-   * Note: `'afterUpdate'` is unlikely to be SSR compatible in the future.
-   *
-   * If `false`, the task is not run automatically, and must be run with the
-   * {@linkcode run} method.
+   * @see {@link TaskConfig.autoRun} for more information.
    */
   autoRun: boolean | 'afterUpdate';
 
