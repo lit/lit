@@ -29,7 +29,7 @@ export const sayHello = (name) => html\`<h1>Hello \${name}\${'!'}</h1>\`;
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<h1>Hello <?><?></h1>", parts: [{ type: 2, index: 1 }, { type: 2, index: 2 }] };
+const lit_template_1 = { h: (i => i) \`<h1>Hello <?><?></h1>\`, parts: [{ type: 2, index: 1 }, { type: 2, index: 2 }] };
 export const sayHello = (name) => ({ _$litType$: lit_template_1, values: [name, '!'] });
 `.trim()
   );
@@ -52,7 +52,7 @@ export const sayHello = (name) => html\`<h1>Hello \${name}\${'!'}</h1>\`;
     result.outputText.trim(),
     `
 import { html } from 'lit';
-const lit_template_1 = { h: "<h1>Hello <?><?></h1>", parts: [{ type: 2, index: 1 }, { type: 2, index: 2 }] };
+const lit_template_1 = { h: (i => i) \`<h1>Hello <?><?></h1>\`, parts: [{ type: 2, index: 1 }, { type: 2, index: 2 }] };
 export const sayHello = (name) => ({ _$litType$: lit_template_1, values: [name, '!'] });
 `.trim()
   );
@@ -76,9 +76,9 @@ export const two = html\`<h1>Two</h1>\`;
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<h1>One</h1>", parts: [] };
+const lit_template_1 = { h: (i => i) \`<h1>One</h1>\`, parts: [] };
 export const one = { _$litType$: lit_template_1, values: [] };
-const lit_template_2 = { h: "<h1>Two</h1>", parts: [] };
+const lit_template_2 = { h: (i => i) \`<h1>Two</h1>\`, parts: [] };
 export const two = { _$litType$: lit_template_2, values: [] };
 `.trim()
   );
@@ -101,7 +101,7 @@ export const one = html\`\${'potato'}\`;
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<?><?>", parts: [{ type: 2, index: 0 }] };
+const lit_template_1 = { h: (i => i) \`<?><?>\`, parts: [{ type: 2, index: 0 }] };
 export const one = { _$litType$: lit_template_1, values: ['potato'] };
 `.trim()
   );
@@ -128,7 +128,7 @@ export const one = html\`\${text} <!-- Comment binding \${text} --> \${node}\`;
 import { html } from 'lit-html';
 const text = 'text';
 const node = document.createElement('span');
-const lit_template_1 = { h: "<?> <!-- Comment binding  --> <?><?>", parts: [{ type: 2, index: 0 }, { type: 7, index: 1 }, { type: 2, index: 2 }] };
+const lit_template_1 = { h: (i => i) \`<?> <!-- Comment binding  --> <?><?>\`, parts: [{ type: 2, index: 0 }, { type: 7, index: 1 }, { type: 2, index: 2 }] };
 export const one = { _$litType$: lit_template_1, values: [text, text, node] };
 `.trim()
   );
@@ -156,8 +156,8 @@ function () {
 import { _$LH as litHtmlPrivate_1 } from "lit-html/private-ssr-support.js";
 const { AttributePart: _$LH_AttributePart, PropertyPart: _$LH_PropertyPart, BooleanAttributePart: _$LH_BooleanAttributePart, EventPart: _$LH_EventPart } = litHtmlPrivate_1;
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<h1>One</h1>", parts: [{ type: 1, index: 0, name: "class", strings: ["", ""], ctor: _$LH_AttributePart }] };
-const lit_template_2 = { h: "<h1>Two</h1>", parts: [{ type: 1, index: 0, name: "class", strings: ["", ""], ctor: _$LH_AttributePart }] };
+const lit_template_1 = { h: (i => i) \`<h1>One</h1>\`, parts: [{ type: 1, index: 0, name: "class", strings: ["", ""], ctor: _$LH_AttributePart }] };
+const lit_template_2 = { h: (i => i) \`<h1>Two</h1>\`, parts: [{ type: 1, index: 0, name: "class", strings: ["", ""], ctor: _$LH_AttributePart }] };
 function () {
     const one = { _$litType$: lit_template_1, values: ['class-binding'] };
     const two = { _$litType$: lit_template_2, values: ['second-class-binding'] };
@@ -183,7 +183,7 @@ const value = html\`<p>\${'a'}:\${1}</p>\`
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<p><?>:<?></p>", parts: [{ type: 2, index: 1 }, { type: 2, index: 2 }] };
+const lit_template_1 = { h: (i => i) \`<p><?>:<?></p>\`, parts: [{ type: 2, index: 1 }, { type: 2, index: 2 }] };
 const value = { _$litType$: lit_template_1, values: ['a', 1] };
 `.trim()
   );
@@ -208,7 +208,7 @@ const one = html\`<input \${'element-part'}>\`;
 import { _$LH as litHtmlPrivate_1 } from "lit-html/private-ssr-support.js";
 const { AttributePart: _$LH_AttributePart, PropertyPart: _$LH_PropertyPart, BooleanAttributePart: _$LH_BooleanAttributePart, EventPart: _$LH_EventPart } = litHtmlPrivate_1;
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<input>", parts: [{ type: 6, index: 0 }] };
+const lit_template_1 = { h: (i => i) \`<input>\`, parts: [{ type: 6, index: 0 }] };
 const one = { _$litType$: lit_template_1, values: ['element-part'] };
 `.trim()
   );
@@ -238,7 +238,7 @@ import { html, nothing } from 'lit-html';
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<p>Hi</p>", parts: [] };
+const lit_template_1 = { h: (i => i) \`<p>Hi</p>\`, parts: [] };
 {
     function outside() {
         function inner() {
@@ -269,9 +269,9 @@ const outer = () => html\`<div>\${inner()}</div>\`
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<p>Inner</p>", parts: [] };
+const lit_template_1 = { h: (i => i) \`<p>Inner</p>\`, parts: [] };
 const inner = () => ({ _$litType$: lit_template_1, values: [] });
-const lit_template_2 = { h: "<div><?></div>", parts: [{ type: 2, index: 1 }] };
+const lit_template_2 = { h: (i => i) \`<div><?></div>\`, parts: [{ type: 2, index: 1 }] };
 const outer = () => ({ _$litType$: lit_template_2, values: [inner()] });
 `.trim()
   );
@@ -296,7 +296,7 @@ const booleanAttributePart = html\`<div ?data-attr="\${true}"></div>\`;
 import { _$LH as litHtmlPrivate_1 } from "lit-html/private-ssr-support.js";
 const { AttributePart: _$LH_AttributePart, PropertyPart: _$LH_PropertyPart, BooleanAttributePart: _$LH_BooleanAttributePart, EventPart: _$LH_EventPart } = litHtmlPrivate_1;
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<div></div>", parts: [{ type: 1, index: 0, name: "data-attr", strings: ["", ""], ctor: _$LH_BooleanAttributePart }] };
+const lit_template_1 = { h: (i => i) \`<div></div>\`, parts: [{ type: 1, index: 0, name: "data-attr", strings: ["", ""], ctor: _$LH_BooleanAttributePart }] };
 const booleanAttributePart = { _$litType$: lit_template_1, values: [true] };
 `.trim()
   );
@@ -338,8 +338,8 @@ const template = html\`<div>\${html\`'potato'\`}</div>\`;
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<div><?></div>", parts: [{ type: 2, index: 1 }] };
-const lit_template_2 = { h: "'potato'", parts: [] };
+const lit_template_1 = { h: (i => i) \`<div><?></div>\`, parts: [{ type: 2, index: 1 }] };
+const lit_template_2 = { h: (i => i) \`'potato'\`, parts: [] };
 const template = { _$litType$: lit_template_1, values: [{ _$litType$: lit_template_2, values: [] }] };
 `.trim()
   );
@@ -369,7 +369,7 @@ import { _$LH as litHtmlPrivate_1 } from "lit-html/private-ssr-support.js";
 const { AttributePart: _$LH_AttributePart, PropertyPart: _$LH_PropertyPart, BooleanAttributePart: _$LH_BooleanAttributePart, EventPart: _$LH_EventPart } = litHtmlPrivate_1;
 import { html } from 'lit-html';
 const BooleanAttributePart = false;
-const lit_template_1 = { h: "<div></div>", parts: [{ type: 1, index: 0, name: "data-attr", strings: ["", ""], ctor: _$LH_BooleanAttributePart }] };
+const lit_template_1 = { h: (i => i) \`<div></div>\`, parts: [{ type: 1, index: 0, name: "data-attr", strings: ["", ""], ctor: _$LH_BooleanAttributePart }] };
 const booleanAttributePart = { _$litType$: lit_template_1, values: [true] };
 `.trim()
   );
@@ -409,13 +409,13 @@ const titleTemplateShouldNotBeCompiled = html\`<title> \${''} </title>\`;
     result.outputText.trim(),
     `
 import { html } from 'lit-html';
-const lit_template_1 = { h: "<script>potato</script>", parts: [] };
+const lit_template_1 = { h: (i => i) \`<script>potato</script>\`, parts: [] };
 const scriptTemplateNoBinding = { _$litType$: lit_template_1, values: [] };
-const lit_template_2 = { h: "<style>carrot</style>", parts: [] };
+const lit_template_2 = { h: (i => i) \`<style>carrot</style>\`, parts: [] };
 const styleTemplateNoBinding = { _$litType$: lit_template_2, values: [] };
-const lit_template_3 = { h: "<textarea>tomato</textarea>", parts: [] };
+const lit_template_3 = { h: (i => i) \`<textarea>tomato</textarea>\`, parts: [] };
 const textareaTemplateNoBinding = { _$litType$: lit_template_3, values: [] };
-const lit_template_4 = { h: "<title>avocado</title>", parts: [] };
+const lit_template_4 = { h: (i => i) \`<title>avocado</title>\`, parts: [] };
 const titleTemplateNoBinding = { _$litType$: lit_template_4, values: [] };
 const scriptTemplateOneBinding = html \`<script>\${'potato'}</script>\`;
 const styleTemplateOneBinding = html \`<style>\${'carrot'}</style>\`;
@@ -479,7 +479,7 @@ class A extends LitElement {
     result.outputText.trim(),
     `
 import { html, LitElement } from 'lit';
-const lit_template_1 = { h: "<p>Hello, <?>!</p>", parts: [{ type: 2, index: 1 }] };
+const lit_template_1 = { h: (i => i) \`<p>Hello, <?>!</p>\`, parts: [{ type: 2, index: 1 }] };
 class A extends LitElement {
     static properties = {
         name: { type: String },

@@ -42,6 +42,7 @@ import {until} from 'lit-html/directives/until.js';
 import {
   isTemplateResult,
   TemplateResultType,
+  isCompiledTemplateResult,
 } from 'lit-html/directive-helpers.js';
 const {AttributePart} = _$LH;
 
@@ -468,7 +469,14 @@ suite('lit-html', () => {
 
     test('comment', () => {
       render(html`<!--${'A'}-->`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<!---->');
+      if (!isCompiledTemplateResult(html``)) {
+        assert.equal(stripExpressionMarkers(container.innerHTML), '<!---->');
+      } else {
+        // When compiled, `stripExpressionMarkers` is too eager to delete
+        // comments. Uncompiled `<!--lit$1234$-->` is compiled to `<!--?-->`
+        // which is stripped.
+        assert.equal(container.innerHTML, '<!----><!--?-->');
+      }
     });
 
     test('comment with attribute-like content', () => {

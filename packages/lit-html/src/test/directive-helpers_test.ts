@@ -38,6 +38,8 @@ const _$lit_template_1: CompiledTemplate = {
   parts: [],
 };
 
+const isTestCompiled = isCompiledTemplateResult(html``);
+
 suite('directive-helpers', () => {
   let container: HTMLDivElement;
 
@@ -67,22 +69,11 @@ suite('directive-helpers', () => {
   test('isTemplateResult', () => {
     assert.isTrue(isTemplateResult(html``));
     assert.isTrue(isTemplateResult(svg``));
-    const maybeCompiledTemplateResult = html``;
-    if (
-      !(
-        maybeCompiledTemplateResult._$litType$ &&
-        (maybeCompiledTemplateResult._$litType$ as unknown as CompiledTemplate)
-          .h
-      )
-    ) {
-      assert.isTrue(
-        isTemplateResult(maybeCompiledTemplateResult, TemplateResultType.HTML)
-      );
+    if (!isTestCompiled) {
+      assert.isTrue(isTemplateResult(html``, TemplateResultType.HTML));
     } else {
-      // If the TemplateResult has been compiled this returns false.
-      assert.isFalse(
-        isTemplateResult(maybeCompiledTemplateResult, TemplateResultType.HTML)
-      );
+      // If the test has been compiled this returns false.
+      assert.isFalse(isTemplateResult(html``, TemplateResultType.HTML));
     }
     assert.isTrue(isTemplateResult(svg``, TemplateResultType.SVG));
 
@@ -164,7 +155,9 @@ suite('directive-helpers', () => {
       })
     );
 
-    assert.isFalse(isCompiledTemplateResult(html``));
+    if (!isTestCompiled) {
+      assert.isFalse(isCompiledTemplateResult(html``));
+    }
     assert.isFalse(isCompiledTemplateResult(svg``));
     assert.isFalse(isCompiledTemplateResult(null));
     assert.isFalse(isCompiledTemplateResult(undefined));

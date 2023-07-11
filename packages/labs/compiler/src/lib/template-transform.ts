@@ -360,6 +360,10 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
             })
           );
           if (shouldCompileTemplate) {
+            const preparedHtml = serialize(ast).replace(
+              /(<!---->)|(<!--\?-->)/g,
+              '<?>'
+            );
             // Compiled template expression
             topLevelTemplates.push(
               f.createVariableStatement(
@@ -373,11 +377,31 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                       f.createObjectLiteralExpression([
                         f.createPropertyAssignment(
                           'h',
-                          f.createStringLiteral(
-                            serialize(ast).replace(
-                              /(<!---->)|(<!--\?-->)/g,
-                              '<?>'
-                            )
+                          f.createTaggedTemplateExpression(
+                            // Create `(i=>i)`, an anonymous tag function.
+                            f.createParenthesizedExpression(
+                              f.createArrowFunction(
+                                undefined,
+                                undefined,
+                                [
+                                  f.createParameterDeclaration(
+                                    undefined,
+                                    undefined,
+                                    f.createIdentifier('i'),
+                                    undefined,
+                                    undefined,
+                                    undefined
+                                  ),
+                                ],
+                                undefined,
+                                f.createToken(
+                                  ts.SyntaxKind.EqualsGreaterThanToken
+                                ),
+                                f.createIdentifier('i')
+                              )
+                            ),
+                            undefined,
+                            f.createNoSubstitutionTemplateLiteral(preparedHtml)
                           )
                         ),
                         f.createPropertyAssignment(
@@ -403,7 +427,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
         ];
       }
 
-      // Here we rewrite the template expression to use the pre-compiled template
+      // Rewrite the template expression to use the pre-compiled template
       if (isLitTemplate(node) && !templatesThatCannotBeCompiled.has(node)) {
         const templateInfo = expressionToTemplate.get(node);
         if (templateInfo === undefined) {
