@@ -47,7 +47,29 @@ export type StatusRenderer<R> = {
 export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
   task: TaskFunction<T, R>;
   args?: ArgsFunction<T>;
-  autoRun?: boolean;
+
+  /**
+   * Determines if the task is run automatically when arguments change after a
+   * host update. Default to `true`.
+   *
+   * If `true`, the task checks arguments during the host update (after
+   * `willUpdate()` and before `update()` in Lit) and runs if they change. For
+   * a task to see argument changes they must be done in `willUpdate()` or
+   * earlier. The host element can see task status changes caused by its own
+   * current update.
+   *
+   * If `'afterUpdate'`, the task checks arguments and runs _after_ the host
+   * update. This means that the task can see host changes done in update, such
+   * as rendered DOM. The host element can not see task status changes caused
+   * by its own update, so the task must trigger a second host update to make
+   * those changes renderable.
+   *
+   * Note: `'afterUpdate'` is unlikely to be SSR compatible in the future.
+   *
+   * If `false`, the task is not run automatically, and must be run with the
+   * {@linkcode run} method.
+   */
+  autoRun?: boolean | 'afterUpdate';
 
   /**
    * If initialValue is provided, the task is initialized to the COMPLETE
@@ -62,57 +84,77 @@ export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
   onError?: (error: unknown) => unknown;
 }
 
-// TODO(sorvell): Some issues:
-// 1. When task is triggered in `updated`, this generates a ReactiveElement
-// warning that the update was triggered in response to an update.
-// 2. And as a result of triggering in `updated`, if the user waits for the
-// `updateComplete` promise they will not see a `pending` state since this
-// will be triggered in another update; they would need to
-// `while (!(await el.updateComplete));`.
-// 3. If this is instead or additionally triggered in `willUpdate`, the
-// warning goes away in the common case that the update itself does not change
-// the deps; however, the `requestUpdate` to render pending state  will not
+// TODO(sorvell / justinfagnani): Some issues:
+// 1. With the task triggered in `update`, there is no ReactiveElement
+// change-in-update warning in the common case that the update itself does not change
+// the deps; however, Task's `requestUpdate` call to render pending state  will not
 // trigger another update since the element is updating. This `requestUpdate`
-// could be triggered in updated, but that results in the same issue as #2.
-// 4. There is no good signal for when the task has resolved and rendered other
+// could be triggered in updated, but that results a change-in-update warning.
+// 2. There is no good signal for when the task has resolved and rendered other
 // than requestAnimationFrame. The user would need to store a promise for the
-// task and then wait for that and the element to update.
+// task and then wait for that and the element to update. (Update just justinfagnani:
+// Why isn't waiting taskComplete and updateComplete sufficient? This comment is
+// from before taskComplete existed!)
 
 /**
- * A controller that performs an asynchronous task like a fetch when its host
- * element updates. The controller performs an update on the host element
- * when the task becomes pending and when it completes. The task function must
- * be supplied and can take a list of dependencies specified as a function that
- * returns a list of values. The `value` property reports the completed value,
- * and the `error` property an error state if one occurs. The `status` property
- * can be checked for status and is of type `TaskStatus` which has states for
- * initial, pending, complete, and error. The `render` method accepts an
- * object with optional corresponding state method to easily render values
- * corresponding to the task state.
+ * A controller that performs an asynchronous task (like a fetch) when its
+ * host element updates.
+ *
+ * Task requests an update on the host element when the task starts and
+ * completes so that the host can render the task status, value, and error as
+ * the task runs.
+ *
+ * The task function must be supplied and can take a list of arguments. The
+ * arguments are given to the Task as a function that returns a list of values,
+ * which is run and checked for changes on every host update.
+ *
+ * The `value` property reports the completed value, and the `error` property
+ * an error state if one occurs. The `status` property can be checked for
+ * status and is of type `TaskStatus` which has states for initial, pending,
+ * complete, and error.
+ *
+ * The `render` method accepts an object with optional methods corresponding
+ * to the task statuses to easily render different templates for each task
+ * status.
  *
  * The task is run automatically when its arguments change; however, this can
  * be customized by setting `autoRun` to false and calling `run` explicitly
  * to run the task.
  *
- * class MyElement extends ReactiveElement {
+ * For a task to see state changes in the current update pass of the host
+ * element, those changes must be made in `willUpdate()`. State changes in
+ * `update()` or `updated()` will not be visible to the task until the next
+ * update pass.
+ *
+ * @example
+ *
+ * ```ts
+ * class MyElement extends LitElement {
  *   url = 'example.com/api';
  *   id = 0;
+ *
  *   task = new Task(
- *     this, {
- *       task: ([url, id]) =>
- *         fetch(`${this.url}?id=${this.id}`).then(response => response.json()),
- *       args: () => [this.id, this.url]
+ *     this,
+ *     {
+ *       task: async ([url, id]) => {
+ *         const response = await fetch(`${this.url}?id=${this.id}`);
+ *         if (!response.ok) {
+ *           throw new Error(response.statusText);
+ *         }
+ *         return response.json();
+ *       },
+ *       args: () => [this.id, this.url],
  *     }
  *   );
  *
- *   update(changedProperties) {
- *     super.update(changedProperties);
- *     this.task.render({
- *       pending: () => console.log('task pending'),
- *       complete: (value) => console.log('task value', value);
+ *   render() {
+ *     return this.task.render({
+ *       pending: () => html`<p>Loading...</p>`,
+ *       complete: (value) => html`<p>Result: ${value}</p>`
  *     });
  *   }
  * }
+ * ```
  */
 export class Task<
   T extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
@@ -131,9 +173,12 @@ export class Task<
   status: TaskStatus = TaskStatus.INITIAL;
 
   /**
-   * Controls if they task will run when its arguments change. Defaults to true.
+   * Determines if the task is run automatically when arguments change after a
+   * host update. Default to `true`.
+   *
+   * @see {@link TaskConfig.autoRun} for more information.
    */
-  autoRun = true;
+  autoRun: boolean | 'afterUpdate';
 
   /**
    * A Promise that resolve when the current task run is complete.
@@ -183,17 +228,14 @@ export class Task<
     task: TaskFunction<T, R> | TaskConfig<T, R>,
     args?: ArgsFunction<T>
   ) {
-    this._host = host;
-    this._host.addController(this);
+    (this._host = host).addController(this);
     const taskConfig =
       typeof task === 'object' ? task : ({task, args} as TaskConfig<T, R>);
     this._task = taskConfig.task;
     this._getArgs = taskConfig.args;
     this._onComplete = taskConfig.onComplete;
     this._onError = taskConfig.onError;
-    if (taskConfig.autoRun !== undefined) {
-      this.autoRun = taskConfig.autoRun;
-    }
+    this.autoRun = taskConfig.autoRun ?? true;
     // Providing initialValue puts the task in COMPLETE state and stores the
     // args immediately so it only runs when they change again.
     if ('initialValue' in taskConfig) {
@@ -203,8 +245,16 @@ export class Task<
     }
   }
 
+  hostUpdate() {
+    if (this.autoRun === true) {
+      this.performTask();
+    }
+  }
+
   hostUpdated() {
-    this.performTask();
+    if (this.autoRun === 'afterUpdate') {
+      this.performTask();
+    }
   }
 
   protected async performTask() {
@@ -215,23 +265,27 @@ export class Task<
   }
 
   /**
-   * Determines if the task should run when it's triggered as part of the
-   * host's reactive lifecycle. Note, this is not checked when `run` is
-   * explicitly called. A task runs automatically when `autoRun` is `true` and
-   * either its arguments change.
+   * Determines if the task should run when it's triggered because of a
+   * host update. A task should run when its arguments change from the
+   * previous run.
+   *
+   * Note: this is not checked when `run` is explicitly called.
+   *
    * @param args The task's arguments
-   * @returns
    */
   protected shouldRun(args?: T) {
-    return this.autoRun && this._argsDirty(args);
+    return this._argsDirty(args);
   }
 
   /**
-   * A task runs when its arguments change, as long as the `autoRun` option
-   * has not been set to false. To explicitly run a task outside of these
-   * conditions, call `run`. A custom set of arguments can optionally be passed
-   * and if not given, the configured arguments are used.
-   * @param args optional set of arguments to use for this task run
+   * Runs a task manually.
+   *
+   * This can be useful for running tasks in response to events as opposed to
+   * automatically running when host element state changes.
+   *
+   * @param args an optional set of arguments to use for this task run. If args
+   *     is not given, the args function is called to get the arguments for
+   *     this run.
    */
   async run(args?: T) {
     args ??= this._getArgs?.();
@@ -251,9 +305,13 @@ export class Task<
     let result!: R | typeof initialState;
     let error: unknown;
 
-    // Request an update to report pending state. Do this in a
-    // microtask to avoid the change-in-update warning
-    queueMicrotask(() => this._host.requestUpdate());
+    // Request an update to report pending state.
+    if (this.autoRun === 'afterUpdate') {
+      // Avoids a change-in-update warning
+      queueMicrotask(() => this._host.requestUpdate());
+    } else {
+      this._host.requestUpdate();
+    }
 
     const key = ++this._callId;
     this._abortController = new AbortController();

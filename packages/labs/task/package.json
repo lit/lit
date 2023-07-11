@@ -50,12 +50,14 @@
         "build:ts",
         "build:ts:types",
         "build:rollup",
+        "../../lit:build",
         "../../reactive-element:build"
       ]
     },
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
+        "../../lit:build:ts:types",
         "../../reactive-element:build:ts:types"
       ],
       "clean": "if-file-deleted",
@@ -144,7 +146,8 @@
   "author": "Google LLC",
   "devDependencies": {
     "@types/trusted-types": "^2.0.2",
-    "@lit-internal/scripts": "^1.0.0"
+    "@lit-internal/scripts": "^1.0.0",
+    "lit": "^2.0.0"
   },
   "dependencies": {
     "@lit/reactive-element": "^1.1.0"

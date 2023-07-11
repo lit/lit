@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
-import {property} from '@lit/reactive-element/decorators/property.js';
+import {ReactiveElement, LitElement, html, PropertyValues} from 'lit';
+import {property, query} from 'lit/decorators.js';
 import {
   initialState,
   Task,
@@ -686,7 +686,7 @@ suite('Task', () => {
     assert.equal(warnMessages.length, 0);
   });
 
-  test('Tasks can see effects of update()', async () => {
+  test('Tasks can see effects of willUpdate()', async () => {
     class TestElement extends ReactiveElement {
       task = new Task(this, {
         args: () => [],
@@ -697,8 +697,7 @@ suite('Task', () => {
       value = 'foo';
       taskObservedValue: string | undefined = undefined;
 
-      override update(changedProps: PropertyValues) {
-        super.update(changedProps);
+      override willUpdate() {
         this.value = 'bar';
       }
     }
@@ -709,6 +708,73 @@ suite('Task', () => {
     await el.task.taskComplete;
 
     assert.equal(el.taskObservedValue, 'bar');
+  });
+
+  test('Elements only render once for pending tasks', async () => {
+    let resolveTask: (v: unknown) => void;
+    let renderCount = 0;
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        args: () => [],
+        task: () => new Promise((res) => (resolveTask = res)),
+      });
+
+      override update(changedProperties: PropertyValues) {
+        super.update(changedProperties);
+        renderCount++;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    // The first update will trigger the task
+    await el.task.taskComplete;
+    assert.equal(renderCount, 1);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+
+    // The task starting should not trigger another update
+    await el.updateComplete;
+    assert.equal(renderCount, 1);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+
+    // But the task completing should
+    resolveTask!(undefined);
+    // TODO (justinfagnani): Awaiting taskComplete and updateComplete is
+    // similar in function to await tasksUpdateComplete(), but more accurate
+    // due to not relying on a rAF. We should update all the tests.
+    await el.task.taskComplete;
+    await el.updateComplete;
+    assert.equal(renderCount, 2);
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+  });
+
+  test('Tasks can depend on host rendered DOM', async () => {
+    LitElement.enableWarning?.('change-in-update');
+    class TestElement extends LitElement {
+      task = new Task(this, {
+        args: () => [this.foo],
+        task: async ([foo]) => foo,
+        autoRun: 'afterUpdate',
+      });
+
+      @query('#foo')
+      foo?: HTMLElement;
+
+      override render() {
+        console.log('render');
+        return html`<div id="foo"></div>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    await el.updateComplete;
+    await el.task.taskComplete;
+
+    assert.ok(el.task.value);
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    // Make sure we avoid change-in-update warnings
+    assert.equal(warnMessages.length, 0);
   });
 
   test('performTask waits on the task', async () => {
