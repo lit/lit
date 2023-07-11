@@ -12,6 +12,7 @@ import {
   isPrimitive,
   isSingleExpression,
   isTemplateResult,
+  isCompiledTemplateResult,
 } from './directive-helpers.js';
 
 // In the Node build, this import will be injected by Rollup:
@@ -275,6 +276,9 @@ const openChildPart = (
     //   throw new Error('Hydration value mismatch: Primitive found where TemplateResult expected');
     // }
   } else if (isTemplateResult(value)) {
+    if (isCompiledTemplateResult(value)) {
+      throw new Error('compiled templates are not supported');
+    }
     // Check for a template result digest
     const markerWithDigest = `lit-part ${digestForTemplateResult(value)}`;
     if (marker.data === markerWithDigest) {

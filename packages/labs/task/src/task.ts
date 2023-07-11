@@ -10,8 +10,7 @@ export interface TaskFunctionOptions {
   signal?: AbortSignal;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TaskFunction<D extends ReadonlyArray<unknown>, R = any> = (
+export type TaskFunction<D extends ReadonlyArray<unknown>, R = unknown> = (
   args: D,
   options?: TaskFunctionOptions
 ) => R | typeof initialState | Promise<R | typeof initialState>;
@@ -400,19 +399,20 @@ export class Task<
     return this._error;
   }
 
-  render(renderer: StatusRenderer<R>) {
+  render<T extends StatusRenderer<R>>(renderer: T) {
     switch (this.status) {
       case TaskStatus.INITIAL:
-        return renderer.initial?.();
+        return renderer.initial?.() as MaybeReturnType<T['initial']>;
       case TaskStatus.PENDING:
-        return renderer.pending?.();
+        return renderer.pending?.() as MaybeReturnType<T['pending']>;
       case TaskStatus.COMPLETE:
-        return renderer.complete?.(this.value!);
+        return renderer.complete?.(this.value!) as MaybeReturnType<
+          T['complete']
+        >;
       case TaskStatus.ERROR:
-        return renderer.error?.(this.error);
+        return renderer.error?.(this.error) as MaybeReturnType<T['error']>;
       default:
-        // exhaustiveness check
-        this.status as void;
+        throw new Error(`Unexpected status: ${this.status}`);
     }
   }
 
@@ -424,3 +424,7 @@ export class Task<
       : args !== prev;
   }
 }
+
+type MaybeReturnType<F> = F extends (...args: unknown[]) => infer R
+  ? R
+  : undefined;
