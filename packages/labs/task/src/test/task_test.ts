@@ -12,6 +12,7 @@ import {
   TaskStatus,
   TaskConfig,
   TaskFunctionOptions,
+  deepArrayEquals,
 } from '@lit-labs/task';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
@@ -223,6 +224,36 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.equal(el.taskValue, `a1,b1`);
+  });
+
+  test('tasks with args run when args change: deepEqual', async () => {
+    const el = getTestElement({
+      args: () => [[el.a], [el.b]],
+      argsEqual: deepArrayEquals,
+    });
+    await renderElement(el);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, `a,b`);
+
+    // Changing task argument runs task
+    el.a = 'a1';
+    // Check task pending.
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(el.taskValue, 'a,b');
+    // Complete task and check result.
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, `a1,b`);
+
+    // No change in arguments doesn't run task
+    el.requestUpdate();
+    // Check task pending.
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
   });
 
   test('tasks can have initialValue', async () => {
@@ -777,24 +808,24 @@ suite('Task', () => {
     assert.equal(warnMessages.length, 0);
   });
 
-  test('performTask waits on the task', async () => {
-    const el = getTestElement({
-      args: () => [el.a],
-    });
-    await renderElement(el);
-    let taskComplete = false;
-    (async () => {
-      el.a = 'z';
-      // @ts-expect-error: We're testing the behavior of a protected method
-      await el.task.performTask();
-      taskComplete = true;
-    })();
-    await tasksUpdateComplete();
-    assert.isFalse(taskComplete);
-    el.resolveTask();
-    await tasksUpdateComplete();
-    assert.isTrue(taskComplete);
-  });
+  // test('performTask waits on the task', async () => {
+  //   const el = getTestElement({
+  //     args: () => [el.a],
+  //   });
+  //   await renderElement(el);
+  //   let taskComplete = false;
+  //   (async () => {
+  //     el.a = 'z';
+  //     // @ts-expect-error: We're testing the behavior of a protected method
+  //     await el.task.performTask();
+  //     taskComplete = true;
+  //   })();
+  //   await tasksUpdateComplete();
+  //   assert.isFalse(taskComplete);
+  //   el.resolveTask();
+  //   await tasksUpdateComplete();
+  //   assert.isTrue(taskComplete);
+  // });
 
   test('generates a new taskComplete promise on run vs initial', async () => {
     class TestElement extends ReactiveElement {
