@@ -10,8 +10,7 @@ export interface TaskFunctionOptions {
   signal?: AbortSignal;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export type TaskFunction<D extends ReadonlyArray<unknown>, R = any> = (
+export type TaskFunction<D extends ReadonlyArray<unknown>, R = unknown> = (
   args: D,
   options?: TaskFunctionOptions
 ) => R | typeof initialState | Promise<R | typeof initialState>;
