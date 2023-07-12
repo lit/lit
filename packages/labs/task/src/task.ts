@@ -72,6 +72,11 @@ export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
   autoRun?: boolean | 'afterUpdate';
 
   /**
+   * A function that determines if the current arg and previous args arrays are
+   * equal. If the argsEqual function returns true, the task will not auto-run.
+   *
+   * The default is {@linkcode shallowArrayEquals}. {@linkcode deepArrayEquals}
+   * is also available.
    */
   argsEqual?: (oldArgs: T, newArgs: T) => boolean;
 
@@ -281,7 +286,7 @@ export class Task<
    * A task should run when its arguments change from the previous run, based on
    * the args equality function.
    *
-   * This method is side-effectful: it stored the new args as the previous args.
+   * This method is side-effectful: it stores the new args as the previous args.
    */
   private async _performTask() {
     const args = this._getArgs();
@@ -527,7 +532,6 @@ export const deepEquals = (a: unknown, b: unknown): boolean => {
       return true;
     }
 
-    // RegExp logic copied from fast-deep-equals
     if (a instanceof RegExp) {
       return (
         a.source === (b as RegExp).source && a.flags === (b as RegExp).flags

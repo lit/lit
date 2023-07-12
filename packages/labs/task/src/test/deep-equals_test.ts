@@ -1,5 +1,14 @@
+/**
+ * @license
+ * Portions copyright 2017 Evgeny Poberezkin
+ * SPDX-License-Identifier: MIT
+ */
 import {assert} from '@esm-bundle/chai';
 import {deepEquals} from '../task.js';
+
+// Test cases copied from fast-deep-equals
+// https://github.com/epoberezkin/fast-deep-equal/blob/master/spec/tests.js
+// https://github.com/epoberezkin/fast-deep-equal/blob/master/spec/es6tests.js
 
 interface TestCase {
   description: string;
@@ -14,7 +23,6 @@ interface TestCaseGroup {
   tests: Array<TestCase>;
 }
 
-// Test cases copied from fast-deep-equals
 function func1() {}
 function func2() {}
 

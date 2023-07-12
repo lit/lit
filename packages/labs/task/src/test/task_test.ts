@@ -107,6 +107,9 @@ suite('Task', () => {
     return new A();
   };
 
+  // TODO: the name of this function is confusing. It doesn't wait for the task
+  // to complete. It just waits a rAF. That's why it can be used to check that
+  // a task is pending.
   const tasksUpdateComplete = nextFrame;
 
   let warnMessages: Array<string>;
@@ -228,6 +231,8 @@ suite('Task', () => {
 
   test('tasks with args run when args change: deepEqual', async () => {
     const el = getTestElement({
+      // Wrapping the args in array causes there to be a fresh value every
+      // update, which deepArrayEquals will compare and return true for.
       args: () => [[el.a], [el.b]],
       argsEqual: deepArrayEquals,
     });
@@ -807,25 +812,6 @@ suite('Task', () => {
     // Make sure we avoid change-in-update warnings
     assert.equal(warnMessages.length, 0);
   });
-
-  // test('performTask waits on the task', async () => {
-  //   const el = getTestElement({
-  //     args: () => [el.a],
-  //   });
-  //   await renderElement(el);
-  //   let taskComplete = false;
-  //   (async () => {
-  //     el.a = 'z';
-  //     // @ts-expect-error: We're testing the behavior of a protected method
-  //     await el.task.performTask();
-  //     taskComplete = true;
-  //   })();
-  //   await tasksUpdateComplete();
-  //   assert.isFalse(taskComplete);
-  //   el.resolveTask();
-  //   await tasksUpdateComplete();
-  //   assert.isTrue(taskComplete);
-  // });
 
   test('generates a new taskComplete promise on run vs initial', async () => {
     class TestElement extends ReactiveElement {
