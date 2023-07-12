@@ -11,6 +11,16 @@ import {ContextCallback} from './context-request-event.js';
  */
 type Disposer = () => void;
 
+interface CallbackInfo {
+  disposer: Disposer;
+  consumerHost?: Element;
+}
+
+export interface MovedSubscription<T> {
+  callback: ContextCallback<T>;
+  consumerHost: Element;
+}
+
 /**
  * A simple class which stores a value, and triggers registered callbacks when the
  * value is changed via its setter.
@@ -20,7 +30,7 @@ type Disposer = () => void;
  * for a number of use cases.
  */
 export class ValueNotifier<T> {
-  private disposers: Map<ContextCallback<T>, Disposer> = new Map();
+  private callbacks: Map<ContextCallback<T>, CallbackInfo> = new Map();
 
   private _value!: T;
   public get value(): T {
@@ -45,19 +55,26 @@ export class ValueNotifier<T> {
   }
 
   updateObservers = (): void => {
-    for (const [callback, disposer] of this.disposers) {
+    for (const [callback, {disposer}] of this.callbacks) {
       callback(this._value, disposer);
     }
   };
 
-  addCallback(callback: ContextCallback<T>, subscribe?: boolean): void {
+  addCallback(
+    callback: ContextCallback<T>,
+    subscribe?: boolean,
+    consumerHost?: Element
+  ): void {
     if (subscribe) {
-      if (!this.disposers.has(callback)) {
-        this.disposers.set(callback, () => {
-          this.disposers.delete(callback);
+      if (!this.callbacks.has(callback)) {
+        this.callbacks.set(callback, {
+          disposer: () => {
+            this.callbacks.delete(callback);
+          },
+          consumerHost,
         });
       }
-      const disposer = this.disposers.get(callback)!;
+      const {disposer} = this.callbacks.get(callback)!;
       callback(this.value, disposer);
     } else {
       callback(this.value);
@@ -65,6 +82,38 @@ export class ValueNotifier<T> {
   }
 
   clearCallbacks(): void {
-    this.disposers.clear();
+    this.callbacks.clear();
+  }
+
+  /**
+   * Handle a late registration of an provider in between us and any consumers
+   * that we have ongoing subscriptions with.
+   *
+   * childProviderHost must be a provider host of T which is a descendent of
+   * our host. So we look through our active subscriptions, and if any of them
+   * are contained inside of childProviderHost, we stop handling them ourselves
+   * and we return them in an array so that the childProviderHost can handle
+   * them from now on.
+   */
+  moveSubscriptionsFor(
+    childProviderHost: Element
+  ): undefined | MovedSubscription<T>[] {
+    let result: undefined | MovedSubscription<T>[] = undefined;
+    for (const [callback, {consumerHost}] of this.callbacks) {
+      if (consumerHost === undefined) {
+        continue;
+      }
+      if (
+        childProviderHost !== consumerHost &&
+        childProviderHost.contains(consumerHost)
+      ) {
+        this.callbacks.delete(callback);
+        if (result === undefined) {
+          result = [];
+        }
+        result.push({callback, consumerHost});
+      }
+    }
+    return result;
   }
 }
