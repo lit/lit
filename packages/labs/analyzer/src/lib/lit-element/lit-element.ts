@@ -33,7 +33,7 @@ export const getLitElementDeclaration = (
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
     name: declaration.name?.text ?? '',
     node: declaration,
-    reactiveProperties: getProperties(declaration, analyzer),
+    reactiveProperties: getProperties(declaration),
     ...getJSDocData(declaration, analyzer),
     getHeritage: () => getHeritage(declaration, analyzer),
     ...getClassMembers(declaration, analyzer),

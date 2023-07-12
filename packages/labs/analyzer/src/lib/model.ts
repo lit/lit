@@ -616,7 +616,9 @@ export interface Parameter extends PropertyLike {
   rest?: boolean | undefined;
 }
 
-export interface ReactiveProperty extends PropertyLike {
+export interface ReactiveProperty {
+  name: string;
+
   reflect: boolean;
 
   // TODO(justinfagnani): should we convert into attribute name?
