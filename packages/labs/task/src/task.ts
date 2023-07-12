@@ -450,6 +450,19 @@ const objectToString = Object.prototype.toString;
 const {keys: objectKeys} = Object;
 const {isArray} = Array;
 
+/**
+ * Recursively checks two objects for equality.
+ *
+ * This function handles the following cases:
+ *  - Primitives - compares with Object.is()
+ *  - Objects - must have the same constructor, same set of own properties,
+ *    and each own property is deeply equal
+ *  - Arrays, Maps, Sets, and RegExps
+ *  - Objects with custom valueOf() (ex: Date)
+ *  - Objects with custom toString() (ex: URL)
+ *
+ * Objects must be free of cycles, otherwise this function will infinite loop.
+ */
 export const deepEquals = (a: unknown, b: unknown): boolean => {
   if (Object.is(a, b)) {
     return true;
@@ -485,6 +498,33 @@ export const deepEquals = (a: unknown, b: unknown): boolean => {
     // fast-deep-equals does it.
     if (a.toString !== objectToString) {
       return a.toString() === b.toString();
+    }
+
+    if (a instanceof Map && b instanceof Map) {
+      if (a.size !== b.size) {
+        return false;
+      }
+      for (const [k, v] of a.entries()) {
+        if (
+          deepEquals(v, b.get(k)) === false ||
+          (v === undefined && b.has(k) === false)
+        ) {
+          return false;
+        }
+      }
+      return true;
+    }
+
+    if (a instanceof Set && b instanceof Set) {
+      if (a.size !== b.size) {
+        return false;
+      }
+      for (const k of a.keys()) {
+        if (b.has(k) === false) {
+          return false;
+        }
+      }
+      return true;
     }
 
     // RegExp logic copied from fast-deep-equals
