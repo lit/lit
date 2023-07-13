@@ -1,0 +1,18 @@
+{
+  "name": "@lit-labs/compiler",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Lit compiler to prepare Lit templates at build time",
+  "author": "Google LLC",
+  "homepage": "https://github.com/Lit/Lit/tree/main/packages/labs/compiler",
+  "license": "BSD-3-Clause",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lit/Lit.git",
+    "directory": "packages/compiler"
+  },
+  "bugs": {
+    "url": "https://github.com/Polymer/lit-html/issues"
+  }
+}
