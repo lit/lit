@@ -13,6 +13,6 @@
     "directory": "packages/compiler"
   },
   "bugs": {
-    "url": "https://github.com/Polymer/lit-html/issues"
+    "url": "https://github.com/lit/lit/issues"
   }
 }
