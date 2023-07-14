@@ -28,11 +28,10 @@
     "directory": "packages/rollup-plugin-minify-html-literals"
   },
   "scripts": {
-    "clean": "rimraf {lib/,test/,} && rimraf tsconfig.tsbuildinfo && rimraf index.{js*,d.ts,d.ts.map,} && rimraf {.nyc_output/,coverage/}",
+    "clean": "rimraf {lib/,test/,} && rimraf tsconfig.tsbuildinfo && rimraf index.{js*,d.ts,d.ts.map,} && rimraf {.nyc_output/,}",
     "prebuild": "npm run clean",
     "build": "tsc && mkdir lib/types/ && cp -r src/lib/types/ lib/types/",
     "test": "nyc mocha -r ts-node/register -r source-map-support/register test/*.js",
-    "coveralls": "cat coverage/lcov.info | coveralls",
     "lint": "prettier --write \"*.{js,ts,json,md}\" \"src/**/*\"",
     "precommit": "lint-staged",
     "release": "standard-version",
@@ -49,14 +48,12 @@
       ".ts"
     ],
     "include": [
-      "src/index.ts"
+      "src/**/*.ts"
     ],
     "exclude": [
-      "index.d.ts"
+      "src/**/*.d.ts"
     ],
     "reporter": [
-      "html",
-      "lcovonly",
       "text-summary"
     ],
     "all": true
@@ -79,7 +76,6 @@
     "@types/node": "^14.14.32",
     "@types/sinon": "^5.0.1",
     "chai": "^4.1.2",
-    "coveralls": "^3.0.2",
     "husky": "^0.14.3",
     "lint-staged": "^7.2.0",
     "mocha": "^7.2.0",
