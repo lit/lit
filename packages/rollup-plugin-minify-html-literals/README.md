@@ -1,16 +1,10 @@
-# rollup-plugin-minify-html-literals
-
-[![npm](https://img.shields.io/npm/v/rollup-plugin-minify-html-literals.svg)](https://www.npmjs.com/package/rollup-plugin-minify-html-literals)
-[![Build Status](https://travis-ci.com/asyncLiz/rollup-plugin-minify-html-literals.svg?branch=master)](https://travis-ci.com/asyncLiz/rollup-plugin-minify-html-literals)
-[![Coverage Status](https://coveralls.io/repos/github/asyncLiz/rollup-plugin-minify-html-literals/badge.svg?branch=master)](https://coveralls.io/github/asyncLiz/rollup-plugin-minify-html-literals?branch=master)
-
-Uses [minify-html-literals](https://www.npmjs.com/package/minify-html-literals) to minify HTML and CSS markup inside JavaScript template literal strings.
+# @lit/rollup-plugin-minify-html-literals
 
 ## Usage
 
 ```js
 import babel from 'rollup-plugin-babel';
-import minifyHTML from 'rollup-plugin-minify-html-literals';
+import minifyHTML from '@lit/rollup-plugin-minify-html-literals';
 import { uglify } from 'rollup-plugin-uglify';
 
 export default {
@@ -60,7 +54,7 @@ export default {
 ### Minify Polymer Templates
 
 ```js
-import minifyHTML from 'rollup-plugin-minify-html-literals';
+import minifyHTML from '@lit/rollup-plugin-minify-html-literals';
 import { defaultShouldMinify } from 'minify-html-literals';
 
 export default {
