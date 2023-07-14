@@ -182,7 +182,7 @@ export function defaultGenerateSourceMap(
   return ms.generateMap({
     file: `${fileName}.map`,
     source: fileName,
-    hires: true,
+    hires: true
   });
 }
 
@@ -226,7 +226,7 @@ export const defaultValidation: Validation = {
         'splitHTMLByPlaceholder() must return same number of strings as template parts'
       );
     }
-  },
+  }
 };
 
 /**
@@ -257,7 +257,7 @@ export function minifyHTMLLiterals(
 ): Result | null {
   options.minifyOptions = {
     ...defaultMinifyOptions,
-    ...(options.minifyOptions || {}),
+    ...(options.minifyOptions || {})
   };
 
   if (!options.MagicString) {
@@ -278,7 +278,7 @@ export function minifyHTMLLiterals(
 
   options.parseLiteralsOptions = {
     ...{ fileName: options.fileName },
-    ...(options.parseLiteralsOptions || {}),
+    ...(options.parseLiteralsOptions || {})
   } as any;
 
   const templates = options.parseLiterals(source, options.parseLiteralsOptions);
@@ -291,7 +291,7 @@ export function minifyHTMLLiterals(
   }
 
   const ms = new options.MagicString(source);
-  templates.forEach((template) => {
+  templates.forEach(template => {
     const minifyHTML = shouldMinify(template);
     const minifyCSS = !!strategy.minifyCSS && shouldMinifyCSS(template);
     if (minifyHTML || minifyCSS) {
@@ -325,13 +325,9 @@ export function minifyHTMLLiterals(
       }
 
       template.parts.forEach((part, index) => {
-        if (part.start < part.end && part.text[0] !== ';') {
+        if (part.start < part.end) {
           // Only overwrite if the literal part has text content
           ms.overwrite(part.start, part.end, minParts[index]);
-        }
-        if (part.text[0] === ';') {
-          // shift part.start one forward to fix removal of semicolons
-          ms.overwrite(part.start + 1, part.end, minParts[index]);
         }
       });
     }
@@ -350,7 +346,7 @@ export function minifyHTMLLiterals(
 
     return {
       map,
-      code: sourceMin,
+      code: sourceMin
     };
   }
 }

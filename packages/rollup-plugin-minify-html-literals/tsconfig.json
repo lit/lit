@@ -1,10 +1,10 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2020",
+    "target": "ESNext",
     "lib": ["es2020"],
-    "module": "ES2020",
     "rootDir": "./src",
+    "module": "commonjs",
     "moduleResolution": "node",
     "declaration": true,
     "declarationMap": true,

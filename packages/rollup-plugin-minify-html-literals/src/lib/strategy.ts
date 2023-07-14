@@ -3,7 +3,7 @@
 import CleanCSS, { OptionsOutput } from 'clean-css';
 import {
   OptimizationLevel,
-  optimizationLevelFrom,
+  optimizationLevelFrom
 } from 'clean-css/lib/options/optimization-level.js';
 import { Options as HTMLOptions, minify } from 'html-minifier';
 import { TemplatePart } from './models.js';
@@ -87,7 +87,7 @@ export const defaultMinifyOptions: HTMLOptions = {
   removeEmptyAttributes: true,
   removeScriptTypeAttributes: true,
   removeStyleLinkTypeAttributes: true,
-  useShortDoctype: true,
+  useShortDoctype: true
 };
 
 /**
@@ -102,14 +102,14 @@ export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
     // accounts for the missing semicolon.
     const suffix = '();';
     let placeholder = '@TEMPLATE_EXPRESSION';
-    while (parts.some((part) => part.text.includes(placeholder + suffix))) {
+    while (parts.some(part => part.text.includes(placeholder + suffix))) {
       placeholder += '_';
     }
 
     return placeholder + suffix;
   },
   combineHTMLStrings(parts, placeholder) {
-    return parts.map((part) => part.text).join(placeholder);
+    return parts.map(part => part.text).join(placeholder);
   },
   minifyHTML(html, options = {}) {
     let minifyCSSOptions: HTMLOptions['minifyCSS'];
@@ -135,7 +135,7 @@ export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
 
     let result = minify(html, {
       ...options,
-      minifyCSS: adjustedMinifyCSSOptions,
+      minifyCSS: adjustedMinifyCSSOptions
     });
 
     if (options.collapseWhitespace) {
@@ -193,7 +193,7 @@ export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
     }
 
     return parts;
-  },
+  }
 };
 
 export function adjustMinifyCSSOptions(options: CleanCSS.Options = {}) {
@@ -208,13 +208,12 @@ export function adjustMinifyCSSOptions(options: CleanCSS.Options = {}) {
       // and we need to add it back.
       return (value = `${value};`);
     }
-
     return originalTransform ? originalTransform(property, value) : value;
   };
 
   return {
     ...options,
-    level,
+    level
   };
 }
 
