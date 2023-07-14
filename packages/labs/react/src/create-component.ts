@@ -4,72 +4,86 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-const NODE_MODE = false;
-
 import type React from 'react';
 
-// Match a prop name to a typed event callback by
-// adding an Event type as an expected property on a string.
-export type EventName<T extends Event = Event> = string & {
-  __event_type: T;
-};
+const NODE_MODE = false;
+const DEV_MODE = true;
 
-// A key value map matching React prop names to event names
-type EventNames = Record<string, EventName | string>;
+/**
+ * Creates a type to be used for the props of a web component used directly in
+ * React JSX.
+ *
+ * Example:
+ *
+ * ```ts
+ * declare module "react" {
+ *   namespace JSX {
+ *     interface IntrinsicElements {
+ *       'x-foo': WebComponentProps<XFoo>;
+ *     }
+ *   }
+ * }
+ * ```
+ */
+export type WebComponentProps<I extends HTMLElement> = React.HTMLAttributes<I> &
+  // TODO(augustjk) Consider omitting keyof LitElement to remove "internal"
+  // lifecycle methods or allow user to explicitly set the prop type instead
+  // of grabbing from class
+  Partial<Omit<I, keyof HTMLElement>>;
 
-// A map of expected event listener types based on EventNames
-type EventListeners<R extends EventNames> = {
-  [K in keyof R]: R[K] extends EventName
-    ? (e: R[K]['__event_type']) => void
-    : (e: Event) => void;
-};
-
-type ReactProps<I, E> = Omit<React.HTMLAttributes<I>, keyof E>;
-type ElementWithoutPropsOrEventListeners<I, E> = Omit<
-  I,
-  keyof E | keyof ReactProps<I, E>
->;
-
-// Props the user is allowed to use, includes standard attributes, children,
-// ref, as well as special event and element properties.
-export type WebComponentProps<
-  I extends HTMLElement,
-  E extends EventNames = {}
-> = Partial<
-  ReactProps<I, E> &
-    ElementWithoutPropsOrEventListeners<I, E> &
-    EventListeners<E>
->;
-
-// Props used by this component wrapper. This is the WebComponentProps and the
-// special `__forwardedRef` property. Note, this ref is special because
-// it's both needed in this component to get access to the rendered element
-// and must fulfill any ref passed by the user.
-type ReactComponentProps<
-  I extends HTMLElement,
-  E extends EventNames = {}
-> = WebComponentProps<I, E> & {
-  __forwardedRef: React.Ref<I>;
-};
-
+/**
+ * Type of the React component wrapping the web component. This is the return
+ * type of `createComponent`.
+ */
 export type ReactWebComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 > = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<WebComponentProps<I, E>> & React.RefAttributes<I>
+  React.PropsWithoutRef<WebComponentProps<I> & EventListeners<E>> &
+    React.RefAttributes<I>
 >;
 
+/**
+ * Type used to cast an event name with an event type when providing the
+ * `events` option to `createComponent` for better typing of the event handler
+ * prop.
+ *
+ * Example:
+ *
+ * ```ts
+ * const FooComponent = createCompoennt({
+ *   ...
+ *   events: {
+ *     onfoo: 'foo' as EventName<FooEvent>,
+ *   }
+ * });
+ * ```
+ *
+ * `onfoo` prop will have the type `(e: FooEvent) => void`.
+ */
+export type EventName<T extends Event = Event> = string & {
+  __event_type: T;
+};
+
+// A key value map matching React prop names to event names.
+type EventNames = Record<string, EventName | string>;
+
+// A map of expected event listener types based on EventNames.
+type EventListeners<R extends EventNames> = {
+  [K in keyof R]?: R[K] extends EventName
+    ? (e: R[K]['__event_type']) => void
+    : (e: Event) => void;
+};
+
 interface Options<I extends HTMLElement, E extends EventNames = {}> {
+  react: typeof React;
   tagName: string;
   elementClass: Constructor<I>;
-  react: typeof React;
   events?: E;
   displayName?: string;
 }
 
 type Constructor<T> = {new (): T};
-
-const DEV_MODE = true;
 
 const reservedReactProperties = new Set([
   'children',
@@ -128,15 +142,18 @@ const setProperty = <E extends Element>(
   events?: EventNames
 ) => {
   const event = events?.[name];
+  // Dirty check event value.
   if (event !== undefined && value !== old) {
-    // Dirty check event value.
     addOrUpdateEventListener(node, event, value as (e?: Event) => void);
     return;
   }
 
+  // But don't dirty check properties; elements are assumed to do this.
+  node[name as keyof E] = value as E[keyof E];
+
   // Note, the attribute removal here for `undefined` and `null` values is done
   // to match React's behavior on non-custom elements. It needs special handling
-  // because it does not match platform behavior.  For example, setting the `id`
+  // because it does not match platform behavior. For example, setting the `id`
   // property to `undefined` sets the attribute to the string "undefined." React
   // "fixes" that odd behavior and the code here matches React's convention.
   if (
@@ -145,19 +162,6 @@ const setProperty = <E extends Element>(
   ) {
     node.removeAttribute(name);
     return;
-  }
-
-  // But don't dirty check properties; elements are assumed to do this.
-  node[name as keyof E] = value as E[keyof E];
-};
-
-// Set a React ref. Note, there are 2 kinds of refs and there's no built in
-// React API to set a ref.
-const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
-  if (typeof ref === 'function') {
-    ref(value);
-  } else {
-    (ref as {current: Element | null}).current = value;
   }
 };
 
@@ -185,215 +189,121 @@ const setRef = (ref: React.Ref<unknown>, value: Element | null) => {
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
  */
-export function createComponent<
+export const createComponent = <
   I extends HTMLElement,
   E extends EventNames = {}
->(options: Options<I, E>): ReactWebComponent<I, E>;
-/**
- * @deprecated Use `createComponent(options)` instead of individual arguments.
- *
- * Creates a React component for a custom element. Properties are distinguished
- * from attributes automatically, and events can be configured so they are added
- * to the custom element as event listeners.
- *
- * @param ReactModule The React module, typically imported from the `react` npm
- * package.
- * @param tagName The custom element tag name registered via
- * `customElements.define`.
- * @param elementClass The custom element class registered via
- * `customElements.define`.
- * @param events An object listing events to which the component can listen. The
- * object keys are the event property names passed in via React props and the
- * object values are the names of the corresponding events generated by the
- * custom element. For example, given `{onactivate: 'activate'}` an event
- * function may be passed via the component's `onactivate` prop and will be
- * called when the custom element fires its `activate` event.
- * @param displayName A React component display name, used in debugging
- * messages. Default value is inferred from the name of custom element class
- * registered via `customElements.define`.
- */
-export function createComponent<
-  I extends HTMLElement,
-  E extends EventNames = {}
->(
-  ReactOrOptions: typeof React,
-  tagName: string,
-  elementClass: Constructor<I>,
-  events?: E,
-  displayName?: string
-): ReactWebComponent<I, E>;
-export function createComponent<
-  I extends HTMLElement,
-  E extends EventNames = {}
->(
-  ReactOrOptions: typeof React | Options<I, E> = window.React,
-  tagName?: string,
-  elementClass?: Constructor<I>,
-  events?: E,
-  displayName?: string
-): ReactWebComponent<I, E> {
-  // digest overloaded parameters
-  let ReactModule: typeof React;
-  let tag: string;
-  let element: Constructor<I>;
-  if (tagName === undefined) {
-    const options = ReactOrOptions as Options<I, E>;
-    ({tagName: tag, elementClass: element, events, displayName} = options);
-    ReactModule = options.react;
-  } else {
-    ReactModule = ReactOrOptions as typeof React;
-    element = elementClass as Constructor<I>;
-    tag = tagName;
-  }
+>({
+  react: React,
+  tagName,
+  elementClass,
+  events,
+  displayName,
+}: Options<I, E>): ReactWebComponent<I, E> => {
+  const eventProps = new Set(Object.keys(events ?? {}));
 
-  // Warn users when web components use reserved React properties
   if (DEV_MODE) {
     for (const p of reservedReactProperties) {
-      if (p in element.prototype && !(p in HTMLElement.prototype)) {
+      if (p in elementClass.prototype && !(p in HTMLElement.prototype)) {
         // Note, this effectively warns only for `ref` since the other
         // reserved props are on HTMLElement.prototype. To address this
         // would require crawling down the prototype, which doesn't feel worth
         // it since implementing these properties on an element is extremely
         // rare.
-        console.warn(`${tagName} contains property ${p} which is a React
-reserved property. It will be used by React and not set on
-the element.`);
+        console.warn(
+          `${tagName} contains property ${p} which is a React reserved ` +
+            `property. It will be used by React and not set on the element.`
+        );
       }
     }
   }
 
-  const Component = ReactModule.Component;
-  const createElement = ReactModule.createElement;
-  const eventProps = new Set(Object.keys(events ?? {}));
+  type ComponentProps = WebComponentProps<I> & EventListeners<E>;
 
-  type Props = ReactComponentProps<I, E>;
+  const ReactComponent = React.forwardRef<I, ComponentProps>((props, ref) => {
+    const prevPropsRef = React.useRef<ComponentProps | null>(null);
+    const elementRef = React.useRef<I | null>(null);
 
-  class ReactComponent extends Component<Props> {
-    private _element: I | null = null;
-    private _elementProps!: Record<string, unknown>;
-    private _forwardedRef?: React.Ref<I>;
-    private _ref?: React.RefCallback<I>;
+    // Props to be passed to React.createElement
+    const reactProps: Record<string, unknown> = {};
+    // Props to be set on element with setProperty
+    const elementProps: Record<string, unknown> = {};
 
-    static displayName = displayName ?? element.name;
-
-    private _updateElement(oldProps?: Props) {
-      if (this._element === null) {
-        return;
+    for (const [k, v] of Object.entries(props)) {
+      if (reservedReactProperties.has(k)) {
+        // React does *not* handle `className` for custom elements so
+        // coerce it to `class` so it's handled correctly.
+        reactProps[k === 'className' ? 'class' : k] = v;
+        continue;
       }
-      // Set element properties to the values in `this.props`
-      for (const prop in this._elementProps) {
-        setProperty(
-          this._element,
-          prop,
-          this.props[prop],
-          oldProps ? oldProps[prop] : undefined,
-          events
-        );
+
+      if (eventProps.has(k) || k in elementClass.prototype) {
+        elementProps[k] = v;
+        continue;
       }
-      // Note, the spirit of React might be to "unset" any old values that
-      // are no longer included; however, there's no reasonable value to set
-      // them to so we just leave the previous state as is.
+
+      reactProps[k] = v;
     }
 
-    /**
-     * Updates element properties correctly setting properties
-     * on mount.
-     */
-    override componentDidMount() {
-      this._updateElement();
-      this._element?.removeAttribute('defer-hydration');
-    }
-
-    /**
-     * Updates element properties correctly setting properties
-     * on every update. Note, this does not include mount.
-     */
-    override componentDidUpdate(old: Props) {
-      this._updateElement(old);
-    }
-
-    /**
-     * Renders the custom element with a `ref` prop which allows this
-     * component to reference the custom element.
-     *
-     * Standard attributes are passed to React and element properties and events
-     * are updated in componentDidMount/componentDidUpdate.
-     *
-     */
-    override render() {
-      // Extract and remove __forwardedRef from userProps in a rename-safe way
-      const {__forwardedRef, ...userProps} = this.props;
-      // Since refs only get fulfilled once, pass a new one if the user's ref
-      // changed. This allows refs to be fulfilled as expected, going from
-      // having a value to null.
-      if (this._forwardedRef !== __forwardedRef) {
-        this._ref = (value: I | null) => {
-          if (__forwardedRef !== null) {
-            setRef(__forwardedRef, value);
-          }
-
-          this._element = value;
-          this._forwardedRef = __forwardedRef;
-        };
-      }
-      // Save element props while iterating to avoid the need to iterate again
-      // when setting properties.
-      this._elementProps = {};
-      const props: Record<string, unknown> = {ref: this._ref};
-      // Filters class properties and event properties out and passes the
-      // remaining attributes to React. This allows attributes to use framework
-      // rules for setting attributes and render correctly under SSR.
-      for (const [k, v] of Object.entries(userProps)) {
-        if (reservedReactProperties.has(k)) {
-          // React does *not* handle `className` for custom elements so
-          // coerce it to `class` so it's handled correctly.
-          props[k === 'className' ? 'class' : k] = v;
-          continue;
+    // useLayoutEffect produces warnings during server rendering.
+    if (!NODE_MODE) {
+      // This one has no dependency array so it'll run on every re-render.
+      React.useLayoutEffect(() => {
+        if (elementRef.current === null) {
+          return;
         }
-
-        if (eventProps.has(k) || k in element.prototype) {
-          this._elementProps[k] = v;
-          continue;
+        for (const prop in elementProps) {
+          setProperty(
+            elementRef.current,
+            prop,
+            props[prop],
+            prevPropsRef.current ? prevPropsRef.current[prop] : undefined,
+            events
+          );
         }
+        // Note, the spirit of React might be to "unset" any old values that
+        // are no longer included; however, there's no reasonable value to set
+        // them to so we just leave the previous state as is.
 
-        props[k] = v;
-      }
+        prevPropsRef.current = props;
+      });
 
-      // If component is to be server rendered with `@lit-labs/ssr-react` pass
+      // Empty dependency array so this will only run once after first render.
+      React.useLayoutEffect(() => {
+        elementRef.current?.removeAttribute('defer-hydration');
+      }, []);
+    }
+
+    if (NODE_MODE) {
+      // If component is to be server rendered with `@lit-labs/ssr-react`, pass
       // element properties in a special bag to be set by the server-side
       // element renderer.
       if (
-        NODE_MODE &&
-        createElement.name === 'litPatchedCreateElement' &&
-        Object.keys(this._elementProps).length
+        React.createElement.name === 'litPatchedCreateElement' &&
+        Object.keys(elementProps).length
       ) {
         // This property needs to remain unminified.
-        props['_$litProps$'] = this._elementProps;
-        return createElement<React.HTMLAttributes<I>, I>(tag, props);
+        reactProps['_$litProps$'] = elementProps;
       }
-
-      if (!NODE_MODE) {
-        // Suppress hydration warning for server-rendered attributes, including
-        // "defer-hydration"
-        props['suppressHydrationWarning'] = true;
-      }
-
-      return createElement<React.HTMLAttributes<I>, I>(tag, props);
+    } else {
+      // Suppress hydration warning for server-rendered attributes.
+      // This property needs to remain unminified.
+      reactProps['suppressHydrationWarning'] = true;
     }
-  }
 
-  const ForwardedComponent: ReactWebComponent<I, E> = ReactModule.forwardRef<
-    I,
-    WebComponentProps<I, E>
-  >((props, __forwardedRef) =>
-    createElement<Props, ReactComponent, typeof ReactComponent>(
-      ReactComponent,
-      {...props, __forwardedRef}
-    )
-  );
+    return React.createElement(tagName, {
+      ...reactProps,
+      ref: (node: I) => {
+        elementRef.current = node;
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref !== null) {
+          ref.current = node;
+        }
+      },
+    });
+  });
 
-  // To ease debugging in the React Developer Tools
-  ForwardedComponent.displayName = ReactComponent.displayName;
+  ReactComponent.displayName = displayName ?? elementClass.name;
 
-  return ForwardedComponent;
-}
+  return ReactComponent;
+};
