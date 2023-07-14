@@ -31,7 +31,9 @@ declare global {
     [tagName]: BasicElement;
     'x-foo': XFoo;
   }
+}
 
+declare module 'react' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
@@ -71,7 +73,7 @@ class BasicElement extends ReactiveElement {
 
   // override a react reserved property
   @property({type: String})
-  locaName = 'basic-element-x-foo';
+  override localName = 'basic-element';
 
   @property({type: Boolean, reflect: true})
   rbool = false;
