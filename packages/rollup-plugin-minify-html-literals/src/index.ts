@@ -39,9 +39,9 @@ export interface Options {
   filter?: (id: string) => boolean;
 }
 
-export default (
+export default function(
   options: Options = {}
-): Plugin & { transform: TransformHook } => {
+): Plugin & { transform: TransformHook } {
   if (!options.minifyHTMLLiterals) {
     options.minifyHTMLLiterals = minify.minifyHTMLLiterals;
   }
@@ -76,4 +76,4 @@ export default (
       return;
     }
   };
-};
+}

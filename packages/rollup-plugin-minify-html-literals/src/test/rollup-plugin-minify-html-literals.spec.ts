@@ -1,17 +1,17 @@
 import { expect } from 'chai';
 import * as path from 'path';
 import { TransformPluginContext } from 'rollup';
-import { match, SinonSpy, spy } from 'sinon';
+import sinon from 'sinon';
 import * as minify from '../lib/minify-html-literals.js';
 import minifyHTML, { Options } from '../index.js';
 
 describe('rollup-plugin-minify-html-literals', () => {
   const fileName = path.resolve('test.js');
-  let context: { warn: SinonSpy; error: SinonSpy };
+  let context: { warn: sinon.SinonSpy; error: sinon.SinonSpy };
   beforeEach(() => {
     context = {
-      warn: spy(),
-      error: spy()
+      warn: sinon.spy(),
+      error: sinon.spy()
     };
   });
 
@@ -26,7 +26,7 @@ describe('rollup-plugin-minify-html-literals', () => {
     const options: Options = {};
     const plugin = minifyHTML(options);
     expect(options.minifyHTMLLiterals).to.be.a('function');
-    const minifySpy = spy(options, 'minifyHTMLLiterals');
+    const minifySpy = sinon.spy(options, 'minifyHTMLLiterals');
     plugin.transform.apply((context as unknown) as TransformPluginContext, [
       'return',
       fileName
@@ -44,15 +44,15 @@ describe('rollup-plugin-minify-html-literals', () => {
     };
 
     const plugin = minifyHTML(options);
-    const minifySpy = spy(options, 'minifyHTMLLiterals');
+    const minifySpy = sinon.spy(options, 'minifyHTMLLiterals');
     plugin.transform.apply((context as unknown) as TransformPluginContext, [
       'return',
       fileName
     ]);
     expect(
       minifySpy.calledWithMatch(
-        match.string,
-        match({
+        sinon.match.string,
+        sinon.match({
           fileName,
           minifyOptions: {
             minifyCSS: false
@@ -63,9 +63,11 @@ describe('rollup-plugin-minify-html-literals', () => {
   });
 
   it('should allow custom minifyHTMLLiterals', () => {
-    const customMinify = spy((source: string, options: minify.Options) => {
-      return minify.minifyHTMLLiterals(source, options);
-    });
+    const customMinify = sinon.spy(
+      (source: string, options: minify.Options) => {
+        return minify.minifyHTMLLiterals(source, options);
+      }
+    );
 
     const plugin = minifyHTML({
       minifyHTMLLiterals: customMinify as any
@@ -126,7 +128,7 @@ describe('rollup-plugin-minify-html-literals', () => {
 
   it('should allow custom filter', () => {
     const options = {
-      filter: spy(() => false)
+      filter: sinon.spy(() => false)
     };
 
     const plugin = minifyHTML(options);

@@ -2,7 +2,8 @@ import { expect } from 'chai';
 import MagicString, { SourceMapOptions } from 'magic-string';
 import { ParseLiteralsOptions, parseLiterals } from '../lib/parse-literals.js';
 import { Template, TemplatePart } from '../lib/models.js';
-import { SinonSpy, spy } from 'sinon';
+import Sinon from 'sinon';
+
 import {
   SourceMap,
   defaultGenerateSourceMap,
@@ -297,10 +298,10 @@ describe('minify-html-literals', () => {
   });
 
   describe('options', () => {
-    let minifyHTMLSpy: SinonSpy;
+    let minifyHTMLSpy: Sinon.SinonSpy;
 
     beforeEach(() => {
-      minifyHTMLSpy = spy(defaultStrategy, 'minifyHTML');
+      minifyHTMLSpy = Sinon.spy(defaultStrategy, 'minifyHTML');
     });
 
     afterEach(() => {
@@ -363,7 +364,7 @@ describe('minify-html-literals', () => {
     });
 
     it('should allow custom parseLiterals()', () => {
-      const customParseLiterals = spy(
+      const customParseLiterals = Sinon.spy(
         (source: string, options?: ParseLiteralsOptions) => {
           return parseLiterals(source, options);
         }
@@ -377,7 +378,7 @@ describe('minify-html-literals', () => {
     });
 
     it('should allow custom shouldMinify()', () => {
-      const customShouldMinify = spy((template: Template) => {
+      const customShouldMinify = Sinon.spy((template: Template) => {
         return defaultShouldMinify(template);
       });
 
@@ -390,20 +391,22 @@ describe('minify-html-literals', () => {
 
     it('should allow custom strategy', () => {
       const customStrategy = {
-        getPlaceholder: spy((parts: TemplatePart[]) => {
+        getPlaceholder: Sinon.spy((parts: TemplatePart[]) => {
           return defaultStrategy.getPlaceholder(parts);
         }),
-        combineHTMLStrings: spy(
+        combineHTMLStrings: Sinon.spy(
           (parts: TemplatePart[], placeholder: string) => {
             return defaultStrategy.combineHTMLStrings(parts, placeholder);
           }
         ),
-        minifyHTML: spy((html: string, options?: any) => {
+        minifyHTML: Sinon.spy((html: string, options?: any) => {
           return defaultStrategy.minifyHTML(html, options);
         }),
-        splitHTMLByPlaceholder: spy((html: string, placeholder: string) => {
-          return defaultStrategy.splitHTMLByPlaceholder(html, placeholder);
-        })
+        splitHTMLByPlaceholder: Sinon.spy(
+          (html: string, placeholder: string) => {
+            return defaultStrategy.splitHTMLByPlaceholder(html, placeholder);
+          }
+        )
       };
 
       minifyHTMLLiterals(SOURCE, {
@@ -465,10 +468,10 @@ describe('minify-html-literals', () => {
 
     it('should allow custom validation', () => {
       const customValidation = {
-        ensurePlaceholderValid: spy((placeholder: any) => {
+        ensurePlaceholderValid: Sinon.spy((placeholder: any) => {
           return defaultValidation.ensurePlaceholderValid(placeholder);
         }),
-        ensureHTMLPartsValid: spy(
+        ensureHTMLPartsValid: Sinon.spy(
           (parts: TemplatePart[], htmlParts: string[]) => {
             return defaultValidation.ensureHTMLPartsValid(parts, htmlParts);
           }
@@ -493,7 +496,7 @@ describe('minify-html-literals', () => {
     });
 
     it('should allow custom generateSourceMap()', () => {
-      const customGenerateSourceMap = spy(
+      const customGenerateSourceMap = Sinon.spy(
         (ms: MagicStringLike, fileName: string) => {
           return defaultGenerateSourceMap(ms, fileName);
         }
@@ -510,7 +513,7 @@ describe('minify-html-literals', () => {
   describe('defaultGenerateSourceMap()', () => {
     it('should call generateMap() on MagicStringLike with .map file, source name, and hires', () => {
       const ms = new MagicStringLike();
-      const generateMapSpy = spy(ms, 'generateMap');
+      const generateMapSpy = Sinon.spy(ms, 'generateMap');
       defaultGenerateSourceMap(ms, 'test.js');
       expect(
         generateMapSpy.calledWith({

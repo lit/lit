@@ -4,7 +4,7 @@
     "target": "ESNext",
     "lib": ["es2020"],
     "rootDir": "./src",
-    "module": "commonjs",
+    "module": "ES2020",
     "moduleResolution": "node",
     "declaration": true,
     "declarationMap": true,
