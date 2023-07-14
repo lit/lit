@@ -13,7 +13,7 @@ describe('parse-literals', () => {
       getTagText: sinon.fake(),
       getTaggedTemplateTemplate: sinon.fake(),
       isTemplate: sinon.fake.returns(false),
-      getTemplateParts: sinon.fake(),
+      getTemplateParts: sinon.fake()
     };
 
     parseLiterals('true', { strategy });
