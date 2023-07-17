@@ -165,6 +165,7 @@ packages/labs/cli/test-gen/
 packages/labs/cli-localize/lib/
 packages/labs/cli-localize/node_modules/
 
+packages/labs/compiler/**/test_files
 packages/labs/compiler/development/
 packages/labs/compiler/node_modules/
 packages/labs/compiler/test/
