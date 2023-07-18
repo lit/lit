@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "3.1.4",
+  "version": "3.1.5",
   "publishConfig": {
     "access": "public"
   },

@@ -107,29 +107,66 @@ export function isInViewport(element: Element, viewport?: Element) {
 }
 
 /**
- * A promise which will resolve to the first truthy result of condition
- * function or the last result of calling it within the given timeout.
- * The intended usage of this function in a test would look something
- * like:
- *
- *     const thing = await eventually(() => doc.query('thing'));
- *
+ * Not exporting this function because the name is too generic and
+ * there are two more semantically meaningful use cases expressed by
+ * its dependent functions `pass` and `until`.
  */
-export async function eventually<T>(cond: () => T, timeout = 1000): Promise<T> {
+async function eventually<T>(cond: () => T, timeout = 1000): Promise<T> {
   const start = new Date().getTime();
-  return new Promise((resolve, _reject) => {
+  return new Promise((resolve, reject) => {
     check();
     function check() {
-      const result = cond();
-      if (result || new Date().getTime() - start > timeout) {
+      const [result, err] = testCond();
+      if (result) {
         return resolve(result);
       }
+      if (new Date().getTime() - start > timeout) {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result!);
+      }
       setTimeout(check, 0);
+    }
+    function testCond(): [T?, Error?] {
+      try {
+        return [cond(), undefined];
+      } catch (e: unknown) {
+        return [undefined, e as Error];
+      }
     }
   });
 }
 
 /**
+ * Returns a promise for the result of the code block given.  Errors are swallowed
+ * by the function until the timeout is reached, after which the error will be
+ * thrown.  This means you can use `pass` to wait for expectations like so:
+ *
+ *     await pass(() => expect(thing).to.be.true);
+ *
+ * @param block Callback function to be executed again and again until no errors
+ * are thrown.  Pass will always immediately return any successful result of the
+ * block, even if it is undefined or falsy.
+ * @param timeout
+ * @returns
+ */
+export async function pass<T>(block: () => T, timeout = 1000): Promise<T> {
+  let result: T;
+  await eventually(() => {
+    result = block();
+    return result || true;
+  }, timeout);
+  return result! as T;
+}
+
+/**
+ * Returns a promise which will resolve to the first truthy result of condition
+ * function.  The intended usage of this function in a test would look something
+ * like:
+ *
+ *     const thing = await until(() => doc.query('thing'));
+ *
  * Use this to await a condition (given as an anonymous function that returns
  * a boolean value) to be met.  We will stop waiting after the timeout is
  * exceeded, after which time we will reject the promise.

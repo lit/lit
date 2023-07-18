@@ -10,6 +10,7 @@ import {
   last,
   ignoreBenignErrors,
   isInViewport,
+  pass,
   until,
 } from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
@@ -54,8 +55,8 @@ describe('flow layout', () => {
     const virtualizer = (await until(() =>
       container.querySelector('lit-virtualizer')
     )) as LitVirtualizer;
-    expect(virtualizer).to.be.instanceof(LitVirtualizer);
-    await until(() => getVisibleItems(virtualizer).length === 4);
+    expect(virtualizer).to.be.instanceOf(LitVirtualizer);
+    await pass(() => expect(getVisibleItems(virtualizer).length).to.equal(4));
     return virtualizer;
   }
 
@@ -72,7 +73,7 @@ describe('flow layout', () => {
       });
       const visibilityChangedEvents: VisibilityChangedEvent[] = [];
 
-      await until(() => getVisibleItems(virtualizer).length == 4);
+      await pass(() => expect(getVisibleItems(virtualizer).length).to.equal(4));
 
       virtualizer.addEventListener('visibilityChanged', (e) => {
         visibilityChangedEvents.push(e as VisibilityChangedEvent);
@@ -82,8 +83,8 @@ describe('flow layout', () => {
       // cause the subsequent items to push down 50px.
       first(getVisibleItems(virtualizer)).style.height = '100px';
 
-      await until(() => getVisibleItems(virtualizer).length == 3);
-      await until(() => visibilityChangedEvents.length === 1);
+      await pass(() => expect(getVisibleItems(virtualizer).length).to.equal(3));
+      await pass(() => expect(visibilityChangedEvents.length).to.equal(1));
 
       expect(last(visibilityChangedEvents).first).to.equal(0);
       expect(last(visibilityChangedEvents).last).to.equal(2);
@@ -94,8 +95,8 @@ describe('flow layout', () => {
       // is 40px less than they started.
       first(getVisibleItems(virtualizer)).style.height = '10px';
 
-      await until(() => getVisibleItems(virtualizer).length == 5);
-      await until(() => visibilityChangedEvents.length === 2);
+      await pass(() => expect(getVisibleItems(virtualizer).length).to.equal(5));
+      await pass(() => expect(visibilityChangedEvents.length).to.equal(2));
 
       expect(last(visibilityChangedEvents).first).to.equal(0);
       expect(last(visibilityChangedEvents).last).to.equal(4);

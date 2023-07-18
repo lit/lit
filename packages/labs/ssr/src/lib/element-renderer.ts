@@ -145,6 +145,8 @@ export abstract class ElementRenderer {
    * @param value Value of the attribute
    */
   setAttribute(name: string, value: string) {
+    // Browser turns all HTML attributes to lowercase.
+    name = name.toLowerCase();
     if (this.element !== undefined) {
       const old = this.element.getAttribute(name);
       this.element.setAttribute(name, value);
@@ -209,7 +211,8 @@ export class FallbackRenderer extends ElementRenderer {
   private readonly _attributes: {[name: string]: string} = {};
 
   override setAttribute(name: string, value: string) {
-    this._attributes[name] = value;
+    // Browser turns all HTML attributes to lowercase.
+    this._attributes[name.toLowerCase()] = value;
   }
 
   override *renderAttributes(): RenderResult {

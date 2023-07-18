@@ -1,5 +1,11 @@
 # @lit-labs/virtualizer
 
+## 2.0.4
+
+### Patch Changes
+
+- [#3976](https://github.com/lit/lit/pull/3976) [`3cf98cd8`](https://github.com/lit/lit/commit/3cf98cd896e4d6a1aca9714916416d035a722140) Thanks [@Westbrook](https://github.com/Westbrook)! - Fixes #3904 "Clipping parents include ancestors of `position: fixed` element"
+
 ## 2.0.3
 
 ### Patch Changes
