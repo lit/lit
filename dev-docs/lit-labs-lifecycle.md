@@ -6,15 +6,15 @@ This document outlines guidelines for advancing "labs" packages through a lifecy
 
 ## Background / Motivation
 
-During development of Lit 2.0, we consciously chose to add a "labs" designation for packages in the monorepo to designate packages that are not at a production-level of quality or support. Source for labs packages are under the packages/labs folder in the monorepo, and are published to npm under a @lit-labs npm organization.
+During development of Lit 2.0, we consciously chose to add a "labs" designation for packages in the monorepo to designate packages that are not at a production-level of quality or support. Source for labs packages are under the `packages/labs` folder in the monorepo, and are published to npm under a `@lit-labs` npm organization.
 
 The impetus for a formal "labs" designation stemmed from a desire to balance a tension between (a) the need to publish exploratory code to npm in order to get real-world feedback on new product ideas, and (b) setting expectations around quality/support for those packages, given that user feedback may drive significant changes or cause reconsideration for the product conception altogether.
 
-However, the aim is that once a labs package has reached a certain level of maturity, it will shed its "labs" status and graduate to a fully supported product (moving out of the labs folder in the monorepo and being published to the @lit npm org). This proposal suggests guidelines for advancing a labs package through a series of phases from exploration to production.
+However, the aim is that once a labs package has reached a certain level of maturity, it will shed its "labs" status and graduate to a fully supported product (moving out of the labs folder in the monorepo and being published to the `@lit` npm org). This document is a guideline for advancing a labs package through a series of phases from exploration to production.
 
-## Proposal
+## Overview
 
-This proposal primarily seeks to ensure we have reasonably positive answers to the following questions before graduating a package from labs to "production".
+This process seeks to ensure we have reasonably positive answers to the following questions before graduating a package from labs to "production".
 
 1. Have enough users tried the package and given positive feedback?
 2. Are all major known bugs resolved?
@@ -23,11 +23,13 @@ This proposal primarily seeks to ensure we have reasonably positive answers to t
 
 To this end, a labs package will go through three phases:
 
+- **Proposal**: Labs packages are cheaper to maintain than full production packages, but they are not free. Since introducing the [Lit RFC process](https://github.com/lit/rfcs/blob/main/rfcs/0001-rfc-process.md) we encourage all new labs packages to be proposed via an RFC.
+
 - **Development**: Code is starting to be checked in, but is not yet ready for consumption/feedback. We may publish pre-releases to npm where useful for development, but code won't otherwise be promoted or obviously discoverable.
 
-- **Evaluation**: Releases are published to npm under @lit-labs for evaluation purposes. README has sufficient documentation to explain usage suitable for evaluation. The labs page on lit.dev describes the package and solicits for feedback from a specific discussion thread. Feedback via discussions & issues may drive frequent breaking changes.
+- **Evaluation**: Releases are published to npm under `@lit-labs` for evaluation purposes. README has sufficient documentation to explain usage suitable for evaluation. The [labs page on lit.dev](https://lit.dev/docs/libraries/labs/) describes the package and solicits for feedback from a specific discussion thread. Feedback via discussions & issues may drive frequent breaking changes.
 
-- **Production**: Release considered stable, published to npm under @lit org, and has dedicated docs page(s) and API documentation on lit.dev. Bugs and feature requests will be triaged and prioritized at the same level as other core packages. Breaking changes may happen, should be minimized to the extent possible.
+- **Production**: Release considered stable, published to npm under `@lit` org, and has dedicated docs page(s) and API documentation on lit.dev. Bugs and feature requests will be triaged and prioritized at the same level as other core packages. Breaking changes may happen, should be minimized to the extent possible.
 
 ### Phase summary
 
@@ -57,20 +59,28 @@ To this end, a labs package will go through three phases:
       Source location
     </th>
     <td colspan="2">
-      `packages/labs/{name}`
-    </td>
-    <td>
-      `packages/{name}`
-    </td>
+
+`packages/labs/{name}`
+
+  </td>    
+  <td>
+
+`packages/{name}`
+
+  </td>
   </tr>
   <tr>
     <th>npm package</th>
     <td colspan="2">
-      `@lit-labs/{name}`
-    </td>
-    <td>
-      `@lit/{name}`
-    </td>
+
+`@lit-labs/{name}`
+
+  </td>
+  <td>
+
+`@lit/{name}`
+
+  </td>
   </tr>
   <tr>
     <th>Version</th>
@@ -87,9 +97,11 @@ To this end, a labs package will go through three phases:
       README
     </td>
     <td>
-      Referenced on lit.dev/docs/libraries/labs/
-    </td>
-    <td>Full docs on lit.dev</td>
+
+Referenced on [lit.dev/docs/libraries/labs/](https://lit.dev/docs/libraries/labs/)
+
+  </td>
+  <td>Full docs on lit.dev</td>
   </tr>
   <tr>
     <th>
@@ -109,13 +121,13 @@ To this end, a labs package will go through three phases:
     <th>
       Requirements for next phase
     </th>
-    <td>
+    <td style="vertical-align: top">
 
 - Docs: README suitable for evaluation usage. Addition to lit.dev labs page drafted.
 - Feedback channel: Discussion thread opened for feedback.
 
   </td>
-  <td>
+  <td style="vertical-align: top">
 
 - Feedback review: confirmed usage and positive feedback
 - Bug review: major known issues resolved.
@@ -137,7 +149,7 @@ To try to ensure that we have good feedback on a package before graduating it, w
 
 ### Graduation review
 
-Given that most labs packages going forward will be associated with an RFC, and packages that are candidates for graduation will have exposure within team, we want the graduation process to be lightweight.
+Given that most labs packages going forward will be associated with an RFC, and packages that are candidates for graduation will have exposure within the team, we want the graduation process to be lightweight.
 
 To graduate to evaluation or production, add an agenda item to the Lit Eng meeting, or open an issue, with the following information:
 
@@ -163,7 +175,7 @@ Once approved, a non-labs version can be published, along with merging the docs 
 1. Make a new package in the monorepo at `packages/{name}`
 
    1. Copy the source from `packages/labs/{name}` and update all the places that reference labs
-   2. Remove any deprecated APIs. You should not have to remove or change non-deprecated APIs. If there's an specific reason to do so, make sure you point this out in the review. If there are any breaking changes made at this point they must be reflected in the final version of the labs package published.
+   2. Remove any deprecated APIs. You should not have to remove or change non-deprecated APIs. If there's a specific reason to do so, make sure you point this out in the review. If there are any breaking changes made at this point they must be reflected in the final version of the labs package published.
    3. Update the version to `1.0.0`, regardless of what the version of the labs package is.
 
 2. Update the labs package to re-export the production package
@@ -178,7 +190,7 @@ Once approved, a non-labs version can be published, along with merging the docs 
 3. Update lit.dev
 
    1. Remove labs labels, icons and warnings from lit.dev docs
-   2. Update the labs page to marks the package as graduated
+   2. Update the labs page to mark the package as graduated
 
 4. Cleanup GitHub
 
