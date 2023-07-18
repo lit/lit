@@ -29,7 +29,7 @@ To this end, a labs package will go through three phases:
 
 - **Evaluation**: Releases are published to npm under `@lit-labs` for evaluation purposes. README has sufficient documentation to explain usage suitable for evaluation. The [labs page on lit.dev](https://lit.dev/docs/libraries/labs/) describes the package and solicits for feedback from a specific discussion thread. Feedback via discussions & issues may drive frequent breaking changes.
 
-- **Production**: Release considered stable, published to npm under `@lit` org, and has dedicated docs page(s) and API documentation on lit.dev. Bugs and feature requests will be triaged and prioritized at the same level as other core packages. Breaking changes may happen, should be minimized to the extent possible.
+- **Production**: Release considered stable, published to npm under `@lit` org, and has dedicated docs page(s) and API documentation on lit.dev. Bugs and feature requests will be triaged and prioritized at the same level as other core packages. Breaking changes may happen, but should be minimized to the extent possible.
 
 ### Phase summary
 
