@@ -4,8 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
-import {AnalyzerInterface, LocalNameOrReference, Reference} from './model.js';
+import type ts from 'typescript';
+import {
+  AnalyzerInterface,
+  LocalNameOrReference,
+  Reference,
+  TypeScript,
+} from './model.js';
 import {
   getResolvedExportFromSourcePath,
   getPathForModuleSpecifier,
@@ -31,7 +36,7 @@ export const getSymbolForName = (
     .getTypeChecker()
     .getSymbolsInScope(
       location,
-      (ts.SymbolFlags as unknown as {All: number}).All
+      (analyzer.typescript.SymbolFlags as unknown as {All: number}).All
     )
     .filter((s) => s.name === name)[0];
 };
@@ -47,6 +52,7 @@ interface ModuleSpecifierInfo {
  * or `undefined` if the declaration was not imported.
  */
 const getImportSpecifierInfo = (
+  ts: TypeScript,
   declaration: ts.Node
 ): ModuleSpecifierInfo | undefined => {
   // TODO(kschaaf) support the various import syntaxes, e.g. `import {foo as bar} from 'baz'`
@@ -85,6 +91,7 @@ export const getReferenceForIdentifier = (
   if (symbol === undefined) {
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript: analyzer.typescript,
         node: identifier,
         message: `Could not find symbol for identifier.`,
       })
@@ -116,6 +123,7 @@ export function getReferenceForSymbol(
   if (declaration === undefined) {
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript: analyzer.typescript,
         node: location,
         message: `Could not find declaration for symbol '${symbolName}'`,
       })
@@ -138,7 +146,7 @@ export function getReferenceForSymbol(
   } else {
     // For all other cases, the symbol's declaration node will be in this file,
     // either as an ImportDeclaration or a normal declaration.
-    const importInfo = getImportSpecifierInfo(declaration);
+    const importInfo = getImportSpecifierInfo(analyzer.typescript, declaration);
     if (importInfo !== undefined) {
       // Declaration was imported
       return getImportReference(
@@ -230,6 +238,7 @@ export const getImportReference = (
       } else {
         analyzer.addDiagnostic(
           createDiagnostic({
+            typescript: analyzer.typescript,
             node: location,
             message: `External npm package could not be parsed from module specifier '${specifier}'.`,
           })
@@ -330,9 +339,10 @@ export const getExportReferences = (
   moduleSpecifier: ts.Expression | undefined,
   analyzer: AnalyzerInterface
 ): Array<{exportName: string; decNameOrRef: LocalNameOrReference}> => {
+  const {typescript} = analyzer;
   const refs: Array<{exportName: string; decNameOrRef: string | Reference}> =
     [];
-  if (ts.isNamedExports(exportClause)) {
+  if (typescript.isNamedExports(exportClause)) {
     for (const el of exportClause.elements) {
       const exportName = el.name.getText();
       const localNameNode = el.propertyName ?? el.name;
@@ -361,13 +371,14 @@ export const getExportReferences = (
         if (symbol === undefined || decl === undefined) {
           analyzer.addDiagnostic(
             createDiagnostic({
+              typescript,
               node: el,
               message: `Could not find declaration for symbol`,
             })
           );
           continue;
         }
-        if (ts.isImportSpecifier(decl)) {
+        if (typescript.isImportSpecifier(decl)) {
           // If the declaration was an import specifier, this means it's being
           // re-exported, so add a Reference
           const ref = getReferenceForSymbol(symbol, decl, analyzer);
@@ -386,7 +397,7 @@ export const getExportReferences = (
     }
   } else if (
     // e.g. `export * as ns from 'foo'`;
-    ts.isNamespaceExport(exportClause) &&
+    typescript.isNamespaceExport(exportClause) &&
     moduleSpecifier !== undefined
   ) {
     const specifier = getSpecifierString(moduleSpecifier);
@@ -402,9 +413,10 @@ export const getExportReferences = (
   } else {
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript,
         node: exportClause,
         message: `Unhandled form of ExportDeclaration`,
-        category: ts.DiagnosticCategory.Warning,
+        category: typescript.DiagnosticCategory.Warning,
         code: DiagnosticCode.UNSUPPORTED,
       })
     );

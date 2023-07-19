@@ -178,6 +178,7 @@ export class InMemoryAnalyzer extends Analyzer {
     const service = ts.createLanguageService(host, ts.createDocumentRegistry());
     let program: ts.Program;
     super({
+      typescript: ts,
       getProgram: () => {
         if (program === undefined || this._dirty) {
           this._dirty = false;

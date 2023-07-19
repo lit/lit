@@ -10,15 +10,20 @@
  * Utilities for analyzing LitElement (and ReactiveElement) declarations.
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {getClassMembers, getHeritage} from '../javascript/classes.js';
 import {LitElementDeclaration, AnalyzerInterface} from '../model.js';
-import {isCustomElementDecorator} from './decorators.js';
+import {
+  CustomElementDecorator,
+  isCustomElementDecorator,
+} from './decorators.js';
 import {getProperties} from './properties.js';
 import {
   getJSDocData,
   getTagName as getCustomElementTagName,
 } from '../custom-elements/custom-elements.js';
+
+export type TypeScript = typeof ts;
 
 /**
  * Gets an analyzer LitElementDeclaration object from a ts.ClassDeclaration
@@ -29,7 +34,7 @@ export const getLitElementDeclaration = (
   analyzer: AnalyzerInterface
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
-    tagname: getTagName(declaration),
+    tagname: getTagName(analyzer.typescript, declaration),
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
     name: declaration.name?.text ?? '',
     node: declaration,
@@ -53,7 +58,10 @@ const _isLitElementClassDeclaration = (
     return false;
   }
   const node = declarations[0];
-  return _isLitElement(node) || isLitElementSubclass(node, analyzer);
+  return (
+    _isLitElement(analyzer.typescript, node) ||
+    isLitElementSubclass(node, analyzer)
+  );
 };
 
 /**
@@ -62,7 +70,7 @@ const _isLitElementClassDeclaration = (
  * TODO(kschaaf): consider a less brittle method of detecting canonical
  * LitElement
  */
-const _isLitElement = (node: ts.Declaration) => {
+const _isLitElement = (ts: TypeScript, node: ts.Declaration) => {
   return (
     _isLitElementModule(node.getSourceFile()) &&
     ts.isClassDeclaration(node) &&
@@ -99,7 +107,7 @@ export const isLitElementSubclass = (
   node: ts.Node,
   analyzer: AnalyzerInterface
 ): node is LitClassDeclaration => {
-  if (!ts.isClassLike(node)) {
+  if (!analyzer.typescript.isClassLike(node)) {
     return false;
   }
   const checker = analyzer.program.getTypeChecker();
@@ -118,9 +126,12 @@ export const isLitElementSubclass = (
  * @param declaration
  * @returns
  */
-export const getTagName = (declaration: LitClassDeclaration) => {
+export const getTagName = (
+  ts: TypeScript,
+  declaration: LitClassDeclaration
+) => {
   const customElementDecorator = declaration.decorators?.find(
-    isCustomElementDecorator
+    (d): d is CustomElementDecorator => isCustomElementDecorator(ts, d)
   );
   if (
     customElementDecorator !== undefined &&

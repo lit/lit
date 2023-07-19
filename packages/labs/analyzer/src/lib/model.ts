@@ -4,11 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {AbsolutePath, PackagePath} from './paths.js';
 
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
+
+export type TypeScript = typeof ts;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Constructor<T> = new (...args: any[]) => T;
@@ -751,6 +753,7 @@ export const getImportsStringForReferences = (references: Reference[]) => {
 
 export interface AnalyzerInterface {
   moduleCache: Map<AbsolutePath, Module>;
+  typescript: TypeScript;
   program: ts.Program;
   commandLine: ts.ParsedCommandLine;
   fs: Pick<

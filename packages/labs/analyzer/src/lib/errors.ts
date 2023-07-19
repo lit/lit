@@ -4,10 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {DiagnosticCode} from './diagnostic-code.js';
 
+export type TypeScript = typeof ts;
+
 export interface DiagnosticOptions {
+  typescript: TypeScript;
   node: ts.Node;
   message: string;
   category?: ts.DiagnosticCategory;
@@ -15,6 +18,7 @@ export interface DiagnosticOptions {
 }
 
 export const createDiagnostic = ({
+  typescript,
   node,
   message,
   category,
@@ -24,7 +28,7 @@ export const createDiagnostic = ({
     file: node.getSourceFile(),
     start: node.getStart(),
     length: node.getWidth(),
-    category: category ?? ts.DiagnosticCategory.Error,
+    category: category ?? typescript.DiagnosticCategory.Error,
     code: code ?? DiagnosticCode.UNKNOWN,
     messageText: message ?? '',
   };

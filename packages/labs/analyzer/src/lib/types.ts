@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {getPackageInfo} from './javascript/packages.js';
 import {Type, Reference, AnalyzerInterface} from './model.js';
 import {
@@ -20,6 +20,8 @@ import {
 } from './references.js';
 import {createDiagnostic} from './errors.js';
 
+export type TypeScript = typeof ts;
+
 /**
  * Returns an analyzer `Type` object for the given type string,
  * evaluated at the given location.
@@ -31,21 +33,21 @@ export const getTypeForTypeString = (
   location: ts.Node,
   analyzer: AnalyzerInterface
 ): Type | undefined => {
+  const {typescript, program} = analyzer;
   if (typeString !== undefined) {
-    const typeNode = parseType(typeString);
+    const typeNode = parseType(typescript, typeString);
     if (typeNode == undefined) {
       analyzer.addDiagnostic(
         createDiagnostic({
+          typescript,
           node: location,
           message: `Failed to parse type from JSDoc comment.`,
-          category: ts.DiagnosticCategory.Warning,
+          category: typescript.DiagnosticCategory.Warning,
         })
       );
       return undefined;
     }
-    const type = analyzer.program
-      .getTypeChecker()
-      .getTypeFromTypeNode(typeNode);
+    const type = program.getTypeChecker().getTypeFromTypeNode(typeNode);
     return new Type({
       type,
       text: typeString,
@@ -80,6 +82,7 @@ export const getTypeForType = (
   location: ts.Node,
   analyzer: AnalyzerInterface
 ): Type => {
+  const {typescript} = analyzer;
   const checker = analyzer.program.getTypeChecker();
   // Ensure we treat inferred `foo = 'hi'` as 'string' not '"hi"'
   type = checker.getBaseTypeOfLiteralType(type);
@@ -87,15 +90,16 @@ export const getTypeForType = (
   const typeNode = checker.typeToTypeNode(
     type,
     location,
-    ts.NodeBuilderFlags.IgnoreErrors
+    typescript.NodeBuilderFlags.IgnoreErrors
   );
   let getReferences;
   if (typeNode === undefined) {
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript,
         node: location,
         message: `Could not convert type to type node`,
-        category: ts.DiagnosticCategory.Warning,
+        category: typescript.DiagnosticCategory.Warning,
       })
     );
     getReferences = () => [];
@@ -119,10 +123,11 @@ const getReferencesForTypeNode = (
   location: ts.Node,
   analyzer: AnalyzerInterface
 ): Reference[] => {
+  const {typescript} = analyzer;
   const references: Reference[] = [];
   const visit = (node: ts.Node) => {
-    if (ts.isTypeReferenceNode(node)) {
-      const name = getRootName(node.typeName);
+    if (typescript.isTypeReferenceNode(node)) {
+      const name = getRootName(typescript, node.typeName);
       // TODO(kschaaf): we'd like to just do
       // `checker.getSymbolAtLocation(node)` to get the symbol, but it appears
       // that nodes created with `checker.typeToTypeNode()` do not have
@@ -132,6 +137,7 @@ const getReferencesForTypeNode = (
       if (symbol === undefined) {
         analyzer.addDiagnostic(
           createDiagnostic({
+            typescript,
             node: location,
             message: `Could not get symbol for '${name}'.`,
           })
@@ -142,20 +148,22 @@ const getReferencesForTypeNode = (
       if (ref !== undefined) {
         references.push(ref);
       }
-    } else if (ts.isImportTypeNode(node)) {
-      if (!ts.isLiteralTypeNode(node.argument)) {
+    } else if (typescript.isImportTypeNode(node)) {
+      if (!typescript.isLiteralTypeNode(node.argument)) {
         analyzer.addDiagnostic(
           createDiagnostic({
+            typescript,
             node: node.argument,
             message: 'Expected a string literal.',
           })
         );
         return;
       }
-      const name = getRootName(node.qualifier);
-      if (!ts.isStringLiteral(node.argument.literal)) {
+      const name = getRootName(typescript, node.qualifier);
+      if (!typescript.isStringLiteral(node.argument.literal)) {
         analyzer.addDiagnostic(
           createDiagnostic({
+            typescript,
             node: node.argument.literal,
             message: `Expected import specifier to be a string literal`,
           })
@@ -173,7 +181,7 @@ const getReferencesForTypeNode = (
         getImportReference(specifier, node.argument.literal, name, analyzer)
       );
     }
-    ts.forEachChild(node, visit);
+    typescript.forEachChild(node, visit);
   };
   visit(typeNode);
   return references;
@@ -215,13 +223,14 @@ const getSpecifierFromTypeImport = (
  * symbol that would need to be imported into a given scope.
  */
 const getRootName = (
+  typescript: TypeScript,
   name: ts.Identifier | ts.QualifiedName | undefined
 ): string => {
   if (name === undefined) {
     return '';
   }
-  if (ts.isQualifiedName(name)) {
-    return getRootName(name.left);
+  if (typescript.isQualifiedName(name)) {
+    return getRootName(typescript, name.left);
   } else {
     return name.text;
   }
@@ -250,34 +259,48 @@ const getRootName = (
 let contents = '';
 let contentsId = 0;
 
-const service = ts.createLanguageService(
-  {
-    getScriptFileNames: () => ['contents.ts'],
-    getScriptVersion: () => contentsId.toString(),
-    getScriptSnapshot: () => ts.ScriptSnapshot.fromString(contents),
-    getCurrentDirectory: () => '',
-    getCompilationSettings: () => ({include: ['contents.ts']}),
-    getDefaultLibFileName: (options) => ts.getDefaultLibFilePath(options),
-    fileExists: () => true,
-    readFile: () => undefined,
-    readDirectory: () => [],
-    directoryExists: () => true,
-    getDirectories: () => [],
-  },
-  ts.createDocumentRegistry()
-);
+const services = new WeakMap<TypeScript, ts.LanguageService>();
+const getService = (typescript: TypeScript) => {
+  let service = services.get(typescript);
+  if (service === undefined) {
+    service = typescript.createLanguageService(
+      {
+        getScriptFileNames: () => ['contents.ts'],
+        getScriptVersion: () => contentsId.toString(),
+        getScriptSnapshot: () => typescript.ScriptSnapshot.fromString(contents),
+        getCurrentDirectory: () => '',
+        getCompilationSettings: () => ({include: ['contents.ts']}),
+        getDefaultLibFileName: (options) =>
+          typescript.getDefaultLibFilePath(options),
+        fileExists: () => true,
+        readFile: () => undefined,
+        readDirectory: () => [],
+        directoryExists: () => true,
+        getDirectories: () => [],
+      },
+      typescript.createDocumentRegistry()
+    );
+    services.set(typescript, service);
+  }
+  return service;
+};
 
 /**
  * Uses the stub LSH above to parse a type string and return a syntax-only
  * TypeNode (there will be no valid symbol information retrievable directly from
  * these nodes).
  */
-const parseType = (typeString: string): ts.TypeNode | undefined => {
+// TODO (justinfagnani): This would probably be a bit cleaner as an instance
+// method on Analyzer now.
+const parseType = (
+  typescript: TypeScript,
+  typeString: string
+): ts.TypeNode | undefined => {
   // Update the file
   contents = `export type typeToParse = ${typeString}`;
   contentsId++;
   // Get a new program & parsed source file
-  const sourceFile = service
+  const sourceFile = getService(typescript)
     .getProgram()
     ?.getSourceFileByPath('contents.ts' as ts.Path);
   if (sourceFile === undefined) {
@@ -285,8 +308,8 @@ const parseType = (typeString: string): ts.TypeNode | undefined => {
   }
   // Find the type alias node and return it
   let typeNode: ts.TypeNode | undefined = undefined;
-  ts.forEachChild(sourceFile, (node) => {
-    if (ts.isTypeAliasDeclaration(node)) {
+  typescript.forEachChild(sourceFile, (node) => {
+    if (typescript.isTypeAliasDeclaration(node)) {
       typeNode = node.type;
     }
   });
