@@ -47,9 +47,9 @@ export const getPropertyDecorator = (
   ts: TypeScript,
   declaration: ts.PropertyDeclaration
 ) =>
-  declaration.decorators?.find((d): d is PropertyDecorator =>
-    isPropertyDecorator(ts, d)
-  );
+  ts
+    .getDecorators(declaration)
+    ?.find((d): d is PropertyDecorator => isPropertyDecorator(ts, d));
 
 const isPropertyDecorator = (
   ts: TypeScript,
