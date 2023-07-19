@@ -16,7 +16,8 @@
     "declaration": true,
     "sourceMap": true,
     "incremental": true,
-    "tsBuildInfoFile": "lib/.tsbuildinfo"
+    "tsBuildInfoFile": "lib/.tsbuildinfo",
+    "types": []
   },
   "include": ["src/**/*.ts"]
 }

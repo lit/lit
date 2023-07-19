@@ -18,7 +18,8 @@
     "incremental": true,
     "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "types": ["node"]
   },
   "include": ["./src/**/*.ts"],
   "exclude": []
