@@ -4,7 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {AbsolutePath, createPackageAnalyzer} from '@lit-labs/analyzer/package-analyzer.js';
+import {
+  AbsolutePath,
+  createPackageAnalyzer,
+} from '@lit-labs/analyzer/package-analyzer.js';
 import {FileTree, writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {LitCli} from '../lit-cli.js';
 import * as path from 'path';
