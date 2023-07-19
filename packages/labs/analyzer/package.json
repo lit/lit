@@ -30,6 +30,7 @@
         "lib",
         "test",
         "index.{js,js.map,d.ts,d.ts.map}",
+        "package-analyzer.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
@@ -49,6 +50,7 @@
   },
   "files": [
     "index.*",
+    "package-analyzer.*",
     "/lib/",
     "!/lib/.tsbuildinfo"
   ],
