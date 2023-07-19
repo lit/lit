@@ -21,7 +21,8 @@
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],
   "exclude": []

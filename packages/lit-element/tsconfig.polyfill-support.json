@@ -18,7 +18,8 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "moduleResolution": "NodeNext",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "types": []
   },
   "include": [
     "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
