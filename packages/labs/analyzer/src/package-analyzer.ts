@@ -5,4 +5,4 @@
  */
 
 export * from './index.js';
-export {createPackageAnalyzer} from './lib/analyze-package.js';
+export * from './lib/package-analyzer.js';
