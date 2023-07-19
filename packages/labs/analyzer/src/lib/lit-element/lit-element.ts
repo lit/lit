@@ -130,9 +130,9 @@ export const getTagName = (
   ts: TypeScript,
   declaration: LitClassDeclaration
 ) => {
-  const customElementDecorator = declaration.decorators?.find(
-    (d): d is CustomElementDecorator => isCustomElementDecorator(ts, d)
-  );
+  const customElementDecorator = ts
+    .getDecorators(declaration)
+    ?.find((d): d is CustomElementDecorator => isCustomElementDecorator(ts, d));
   if (
     customElementDecorator !== undefined &&
     customElementDecorator.expression.arguments.length === 1 &&
