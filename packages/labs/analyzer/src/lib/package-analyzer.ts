@@ -103,7 +103,12 @@ export const createPackageAnalyzer = (
     commandLine.errors
   );
 
-  const analyzer = new Analyzer({getProgram: () => program, fs: ts.sys, path});
+  const analyzer = new Analyzer({
+    getProgram: () => program,
+    typescript: ts,
+    fs: ts.sys,
+    path,
+  });
   for (const diagnostic of program.getSyntacticDiagnostics()) {
     analyzer.addDiagnostic(diagnostic);
   }
