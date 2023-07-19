@@ -15,10 +15,10 @@ _This section is incomplete_
 ### Node
 
 ```ts
-import {createPackageAnalyzer} from '@lit-labs/analyzer/analyze-package.js';
+import {createPackageAnalyzer} from '@lit-labs/analyzer/package-analyzer.js';
 import * as path from 'path';
 
-const packagePath = path.resolve('./my-lackage');
+const packagePath = path.resolve('./my-package');
 const analyzer = createPackageAnalyzer(packagePath);
 const module = analyzer.getModule(
   path.resolve(packagePath, 'src/my-element.ts')
