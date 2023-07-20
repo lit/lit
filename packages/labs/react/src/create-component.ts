@@ -62,7 +62,7 @@ export type ReactWebComponent<
  * `onfoo` prop will have the type `(e: FooEvent) => void`.
  */
 export type EventName<T extends Event = Event> = string & {
-  __event_type: T;
+  __eventType: T;
 };
 
 // A key value map matching React prop names to event names.
@@ -71,7 +71,7 @@ type EventNames = Record<string, EventName | string>;
 // A map of expected event listener types based on EventNames.
 type EventListeners<R extends EventNames> = {
   [K in keyof R]?: R[K] extends EventName
-    ? (e: R[K]['__event_type']) => void
+    ? (e: R[K]['__eventType']) => void
     : (e: Event) => void;
 };
 
