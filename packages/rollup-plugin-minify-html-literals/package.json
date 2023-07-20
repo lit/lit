@@ -33,9 +33,7 @@
     "build": "tsc && mkdir lib/types/ && cp -r src/lib/types/ lib/types/",
     "test": "nyc mocha -r ts-node/register -r source-map-support/register test/*.js",
     "lint": "prettier --write \"*.{js,ts,json,md}\" \"src/**/*\"",
-    "precommit": "lint-staged",
-    "release": "standard-version",
-    "prepublishOnly": "npm run build"
+    "precommit": "lint-staged"
   },
   "lint-staged": {
     "*.{js,ts,json,md}": [

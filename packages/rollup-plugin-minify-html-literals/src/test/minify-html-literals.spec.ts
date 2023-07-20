@@ -292,6 +292,7 @@ describe('minify-html-literals', () => {
     expect(result!.map!.mappings).to.be.a('string');
   });
 
+  // TODO: fix this case
   it('fails to minify static html templates', () => {
     expect(() => minifyHTMLLiterals(STATIC_SOURCE, { fileName: 'test.js' })).to
       .throw;
