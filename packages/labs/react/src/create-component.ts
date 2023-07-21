@@ -147,21 +147,22 @@ const setProperty = <E extends Element>(
     addOrUpdateEventListener(node, event, value as (e?: Event) => void);
     return;
   }
-
   // But don't dirty check properties; elements are assumed to do this.
   node[name as keyof E] = value as E[keyof E];
 
-  // Note, the attribute removal here for `undefined` and `null` values is done
-  // to match React's behavior on non-custom elements. It needs special handling
-  // because it does not match platform behavior. For example, setting the `id`
-  // property to `undefined` sets the attribute to the string "undefined." React
-  // "fixes" that odd behavior and the code here matches React's convention.
+  // This block is to replicate React's behavior for attributes of native
+  // elements where `undefined` or `null` values result in attributes being
+  // removed.
+  // https://github.com/facebook/react/blob/899cb95f52cc83ab5ca1eb1e268c909d3f0961e7/packages/react-dom-bindings/src/client/DOMPropertyOperations.js#L107-L141
+  //
+  // It's only needed here for native HTMLElement properties that reflect
+  // attributes of the same name but don't have that behavior like "id" or
+  // "draggable".
   if (
     (value === undefined || value === null) &&
     name in HTMLElement.prototype
   ) {
     node.removeAttribute(name);
-    return;
   }
 };
 
