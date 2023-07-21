@@ -542,6 +542,27 @@ suite('createComponent', () => {
     );
   });
 
+  test('unsets reflected attributes from property with different specifier on null or undefined prop', async () => {
+    // Our types don't allow `ariaChecked` only `aria-checked` but it's possible
+    // for JS users and wrapper will set the property on the element
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: true} as any);
+
+    // Assertion below fails for Firefox as setting the property doesn't reflect
+    // assert.equal(wrappedEl.hasAttribute('aria-checked'), true);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: undefined} as any);
+    assert.equal(wrappedEl.hasAttribute('aria-checked'), false);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: true} as any);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: null} as any);
+    assert.equal(wrappedEl.hasAttribute('aria-checked'), false);
+  });
+
   test('can listen to events', async () => {
     let fooEvent: Event | undefined,
       fooEvent2: Event | undefined,
