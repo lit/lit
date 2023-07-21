@@ -543,8 +543,8 @@ suite('createComponent', () => {
   });
 
   test('unsets reflected attributes from property with different specifier on null or undefined prop', async () => {
-    // Our types don't allow `ariaChecked` only `aria-checked` but it's possible
-    // for JS users and wrapper will set the property on the element
+    // Our types don't allow `ariaChecked`, only `aria-checked`, but it's
+    // possible for JS users, and the wrapper will set the property on the element
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await renderReactComponent({ariaChecked: true} as any);
 
