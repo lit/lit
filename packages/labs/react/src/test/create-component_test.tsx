@@ -31,7 +31,9 @@ declare global {
     [tagName]: BasicElement;
     'x-foo': XFoo;
   }
+}
 
+declare module 'react' {
   // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
@@ -71,7 +73,7 @@ class BasicElement extends ReactiveElement {
 
   // override a react reserved property
   @property({type: String})
-  locaName = 'basic-element-x-foo';
+  override localName = 'basic-element';
 
   @property({type: Boolean, reflect: true})
   rbool = false;
@@ -538,6 +540,29 @@ suite('createComponent', () => {
       el.getAttribute('aria-checked'),
       wrappedEl.getAttribute('aria-checked')
     );
+  });
+
+  test('unsets reflected attributes from property with different specifier on null or undefined prop', async () => {
+    // Our types don't allow `ariaChecked`, only `aria-checked`, but it's
+    // possible for JS users, and the wrapper will set the property on the element
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: true} as any);
+
+    // Firefox does not implement aria properties that reflect to attribute
+    if ('ariaChecked' in HTMLElement) {
+      assert.equal(wrappedEl.hasAttribute('aria-checked'), true);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: undefined} as any);
+    assert.equal(wrappedEl.hasAttribute('aria-checked'), false);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: true} as any);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: null} as any);
+    assert.equal(wrappedEl.hasAttribute('aria-checked'), false);
   });
 
   test('can listen to events', async () => {
