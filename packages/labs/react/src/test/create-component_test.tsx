@@ -548,8 +548,10 @@ suite('createComponent', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await renderReactComponent({ariaChecked: true} as any);
 
-    // Assertion below fails for Firefox as setting the property doesn't reflect
-    // assert.equal(wrappedEl.hasAttribute('aria-checked'), true);
+    // Firefox does not implement aria properties that reflect to attribute
+    if ('ariaChecked' in HTMLElement) {
+      assert.equal(wrappedEl.hasAttribute('aria-checked'), true);
+    }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await renderReactComponent({ariaChecked: undefined} as any);
