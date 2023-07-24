@@ -22,7 +22,8 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "types": ["mocha"]
   },
   "include": ["src/**/*.ts", "src/test/**/*.js", "custom_typings/*.d.ts"],
   "exclude": []

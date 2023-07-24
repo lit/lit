@@ -18,7 +18,8 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "moduleResolution": "NodeNext",
-    "allowSyntheticDefaultImports": true
+    "allowSyntheticDefaultImports": true,
+    "types": []
   },
   "include": ["src/env.d.ts", "src/polyfill-support.ts"]
 }

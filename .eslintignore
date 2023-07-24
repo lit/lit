@@ -24,6 +24,11 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
+packages/compiler/development/
+packages/compiler/node_modules/
+packages/compiler/test/
+packages/compiler/lib/
+
 packages/internal-scripts/node_modules/
 packages/internal-scripts/lib/
 
@@ -149,6 +154,11 @@ packages/labs/analyzer/**/index.js
 packages/labs/analyzer/**/index.js.map
 packages/labs/analyzer/**/index.d.ts
 packages/labs/analyzer/**/index.d.ts.map
+
+packages/labs/analyzer/**/package-analyzer.js
+packages/labs/analyzer/**/package-analyzer.js.map
+packages/labs/analyzer/**/package-analyzer.d.ts
+packages/labs/analyzer/**/package-analyzer.d.ts.map
 
 packages/labs/cli/lib/
 packages/labs/cli/test/

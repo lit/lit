@@ -1,10 +1,10 @@
 # Change Log
 
-## 1.1.2-pre.0
+## 1.2.1
 
 ### Patch Changes
 
-- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+- [#3978](https://github.com/lit/lit/pull/3978) [`3711e665`](https://github.com/lit/lit/commit/3711e6650a59966e5be8d92dd0abf053d9a50d32) - Only add `suppressHydrationWarning` prop when rendered in the client. This will prevent `suppresshydrationwarning` attribute being added to the host element when using `@lit-labs/ssr-react`.
 
 ## 1.2.0
 
@@ -16,6 +16,12 @@
   - `@lit-labs/react` now has a Node build and export condition to do special prop handling during server rendering. It detects the presence of `React.createElement` monkey patch by `@lit-labs/ssr-react` and provides props to be set as properties to the `createElement()` call.
   - `@lit-labs/ssr-react` will add the `defer-hydration` attribute to custom elements that had properties set so that `@lit-labs/react` wrapped elements have a chance to set properties on the element before Lit element hydration is triggered.
   - `@lit-labs/react` wrapped components will suppress hydration warnings raised by React due to server rendered attributes.
+
+## 1.1.2-pre.0
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
 
 ## 1.1.1
 

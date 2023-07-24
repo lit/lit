@@ -21,7 +21,8 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "tsBuildInfoFile": ".tsbuildinfo"
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["*.d.ts", "**/*.d.ts"]
