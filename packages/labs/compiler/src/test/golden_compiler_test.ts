@@ -22,10 +22,14 @@ const TEST_FILES_DIR = path.resolve(__dirname, '../test_files');
 // Set to true & run tests to update golden files.
 const updateGoldens = false;
 
-for (const filename of readdirSync(TEST_FILES_DIR)) {
-  if (filename.includes('.golden.') || filename.endsWith('.json')) {
+for (const file of readdirSync(TEST_FILES_DIR, {withFileTypes: true})) {
+  if (file.isDirectory()) {
     continue;
   }
+  if (file.name.includes('.golden.') || file.name.endsWith('.json')) {
+    continue;
+  }
+  const filename = file.name;
   const ext = path.extname(filename);
   const base = path.basename(filename, ext);
   const testGoldenFilename = `${base}.golden.js`;

@@ -2,3 +2,4 @@
 /node_modules/
 /test/
 /lib/
+/test_files/source_map_test/*.compiled.js
