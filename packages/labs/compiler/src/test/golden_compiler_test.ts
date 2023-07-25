@@ -35,7 +35,6 @@ for (const filename of readdirSync(TEST_FILES_DIR)) {
     testGoldenFilename
   );
   test(filename, async () => {
-    console.log(resolvedPath);
     const [inputFileContents, expectedContents] = await Promise.all([
       readFile(resolvedPath, {encoding: 'utf-8'}),
       readFile(resolvedGoldenFilename, {encoding: 'utf-8'}),

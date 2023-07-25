@@ -16,7 +16,11 @@ import {
   textContent,
 } from './parse5-utils.js';
 import {serialize} from 'parse5';
-import {addPartConstructorImport} from './ast-fragments.js';
+import {
+  addPartConstructorImport,
+  createCompiledTemplate,
+  createSecurityBrandTagFunction,
+} from './ast-fragments.js';
 const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} =
   litHtmlPrivate;
 
@@ -62,13 +66,12 @@ class CompiledTemplatePass {
     return (
       context: ts.TransformationContext
     ): ts.Transformer<ts.SourceFile> => {
-      const pass = new CompiledTemplatePass(context);
       return (sourceFile: ts.SourceFile): ts.SourceFile => {
+        const pass = new CompiledTemplatePass(context);
         pass.findTemplates(sourceFile);
         if (!pass.shouldCompileFile) {
           return sourceFile;
         }
-        pass.rewriteTemplates(sourceFile);
         const transformedSourceFile = pass.rewriteTemplates(sourceFile);
         if (!ts.isSourceFile(transformedSourceFile)) {
           throw new Error(
@@ -91,15 +94,17 @@ class CompiledTemplatePass {
     ts.TaggedTemplateExpression,
     TemplateInfo
   >();
-
   private templatesThatCannotBeCompiled = new Set<ts.Node>();
   // Only compile `html` tag if it was found in an import declaration,
   // imported from lit or lit-html.
   private shouldCompileFile = false;
-
   private shouldAddPartImports = false;
+  private haveAddedSecurityBrandVariableStatement = false;
 
-  private constructor(private readonly context: ts.TransformationContext) {}
+  private securityBrandIdent: ts.Identifier;
+  private constructor(private readonly context: ts.TransformationContext) {
+    this.securityBrandIdent = context.factory.createUniqueName('b');
+  }
 
   /**
    * Find all Lit templates and decide whether the file should be compiled.
@@ -162,291 +167,310 @@ class CompiledTemplatePass {
   }
 
   private rewriteTemplates<T extends ts.Node>(parentNode: T): ts.Node {
+    // rewriteTemplates transforms a node by either adding a top-level
+    // CompiledTemplate, or replacing a html tagged template with a
+    // CompiledTemplateResult.
     const rewriteTemplates = (node: ts.Node): ts.VisitResult<ts.Node> => {
-      const f = this.context.factory;
-
       // Insert a top-level pre-compiled definition of a template.
       if (this.topLevelStatementToTemplate.has(node as ts.Statement)) {
-        const topLevelTemplates: ts.VariableStatement[] = [];
-        for (const template of this.topLevelStatementToTemplate.get(
-          node as ts.Statement
-        )!) {
-          const templateExpression = template.node.template;
-          let shouldCompileTemplate = true;
-
-          // Generate parts array
-          const parts: Array<
-            | {
-                type: typeof PartType.CHILD | typeof PartType.COMMENT_PART;
-                index: number;
-              }
-            | {
-                type: PartType;
-                index: number;
-                name: string;
-                strings: Array<string>;
-                tagName: string;
-                ctorType: PartType;
-              }
-            | {
-                type: typeof PartType.ELEMENT;
-                index: number;
-              }
-          > = [];
-          const spoofedTemplate = ts.isNoSubstitutionTemplateLiteral(
-            templateExpression
-          )
-            ? ([templateExpression.text] as unknown as TemplateStringsArray)
-            : ([
-                templateExpression.head.text,
-                ...templateExpression.templateSpans.map((s) => s.literal.text),
-              ] as unknown as TemplateStringsArray);
-          // lit-html tries to enforce that `getTemplateHtml` only accepts a
-          // TemplateStringsResult.
-          (spoofedTemplate as unknown as {raw: string}).raw = '';
-          let html: TrustedHTML | string = '';
-          let attrNames: (string | undefined)[] = [];
-          try {
-            [html, attrNames] = getTemplateHtml(spoofedTemplate, 1);
-          } catch {
-            shouldCompileTemplate = false;
-          }
-          const ast = parseFragment(html as unknown as string, {
-            sourceCodeLocationInfo: false,
-          }) as DocumentFragment;
-
-          let nodeIndex = -1;
-
-          /* Current attribute part index, for indexing attrNames */
-          let attrIndex = 0;
-
-          traverse(ast, {
-            pre: (node, _parent) => {
-              if (isElement(node)) {
-                const attributesToRemove = new Set<unknown>();
-                if (node.attrs.length > 0) {
-                  const tagName = node.tagName;
-                  for (const attr of node.attrs) {
-                    if (
-                      attr.name.endsWith(boundAttributeSuffix) ||
-                      attr.name.startsWith(marker)
-                    ) {
-                      attributesToRemove.add(attr);
-                      const strings = attr.value.split(marker);
-                      // We store the case-sensitive name from `attrNames` (generated
-                      // while parsing the template strings); note that this assumes
-                      // parse5 attribute ordering matches string ordering
-                      const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
-                        attrNames[attrIndex++]!
-                      )!;
-                      // TODO: Why is this a string undefined?
-                      if (caseSensitiveName !== 'undefined') {
-                        parts.push({
-                          type: PartType.ATTRIBUTE,
-                          index: nodeIndex,
-                          name: caseSensitiveName,
-                          strings,
-                          tagName,
-                          ctorType:
-                            prefix === '.'
-                              ? PartType.PROPERTY
-                              : prefix === '?'
-                              ? PartType.BOOLEAN_ATTRIBUTE
-                              : prefix === '@'
-                              ? PartType.EVENT
-                              : PartType.ATTRIBUTE,
-                        });
-                      } else {
-                        parts.push({
-                          type: PartType.ELEMENT,
-                          index: nodeIndex,
-                        });
-                      }
-                      this.shouldAddPartImports = true;
-                    }
-                  }
-                  node.attrs = node.attrs.filter(
-                    (attr) => !attributesToRemove.has(attr)
-                  );
-                }
-                if (rawTextElement.test(node.tagName)) {
-                  const hasNoMarkers = !textContent(node).includes(marker);
-                  if (!hasNoMarkers) {
-                    shouldCompileTemplate = false;
-                  }
-                }
-              } else if (isCommentNode(node)) {
-                if (node.data === markerMatch) {
-                  // make a childPart
-                  parts.push({
-                    type: PartType.CHILD,
-                    index: nodeIndex,
-                  });
-                  // We have stored a reference to this comment node - so we can remove the comment text.
-                  node.data = '';
-                } else {
-                  let i = -1;
-                  while ((i = node.data.indexOf(marker, i + 1)) !== -1) {
-                    // Comment node has a binding marker inside, make an inactive part
-                    // The binding won't work, but subsequent bindings will
-                    parts.push({type: PartType.COMMENT_PART, index: nodeIndex});
-                    // Move to the end of the match
-                    i += marker.length - 1;
-                  }
-                  // In the compiled result, remove the markers, so compiled
-                  // files are deterministic.
-                  node.data = node.data.split(marker).join('');
-                }
-              } else if (isTextNode(node)) {
-                // We do not want to count text nodes.
-                nodeIndex--;
-              }
-              nodeIndex++;
-            },
-          });
-          const partsArrayExpression = f.createArrayLiteralExpression(
-            parts.map((part) => {
-              const partProperties = [
-                f.createPropertyAssignment(
-                  'type',
-                  f.createNumericLiteral(part.type)
-                ),
-                f.createPropertyAssignment(
-                  'index',
-                  f.createNumericLiteral(part.index)
-                ),
-              ];
-              if (
-                part.type === PartType.ATTRIBUTE &&
-                (part.ctorType === PartType.ATTRIBUTE ||
-                  part.ctorType === PartType.BOOLEAN_ATTRIBUTE ||
-                  part.ctorType === PartType.PROPERTY ||
-                  part.ctorType === PartType.EVENT)
-              ) {
-                partProperties.push(
-                  f.createPropertyAssignment(
-                    'name',
-                    f.createStringLiteral(part.name)
-                  ),
-                  f.createPropertyAssignment(
-                    'strings',
-                    f.createArrayLiteralExpression(
-                      part.strings.map((s) => f.createStringLiteral(s))
-                    )
-                  ),
-                  f.createPropertyAssignment(
-                    'ctor',
-                    f.createIdentifier(AttributePartConstructors[part.ctorType])
-                  )
-                );
-              }
-              return f.createObjectLiteralExpression(partProperties);
-            })
-          );
-          if (shouldCompileTemplate) {
-            const preparedHtml = serialize(ast).replace(
-              /(<!---->)|(<!--\?-->)/g,
-              '<?>'
-            );
-            // Compiled template expression
-            topLevelTemplates.push(
-              f.createVariableStatement(
-                undefined,
-                f.createVariableDeclarationList(
-                  [
-                    f.createVariableDeclaration(
-                      template.variableName,
-                      undefined,
-                      undefined,
-                      f.createObjectLiteralExpression([
-                        f.createPropertyAssignment(
-                          'h',
-                          f.createTaggedTemplateExpression(
-                            // Create `(i=>i)`, an anonymous tag function.
-                            f.createParenthesizedExpression(
-                              f.createArrowFunction(
-                                undefined,
-                                undefined,
-                                [
-                                  f.createParameterDeclaration(
-                                    undefined,
-                                    undefined,
-                                    f.createIdentifier('i'),
-                                    undefined,
-                                    undefined,
-                                    undefined
-                                  ),
-                                ],
-                                undefined,
-                                f.createToken(
-                                  ts.SyntaxKind.EqualsGreaterThanToken
-                                ),
-                                f.createIdentifier('i')
-                              )
-                            ),
-                            undefined,
-                            f.createNoSubstitutionTemplateLiteral(preparedHtml)
-                          )
-                        ),
-                        f.createPropertyAssignment(
-                          'parts',
-                          partsArrayExpression
-                        ),
-                      ])
-                    ),
-                  ],
-                  ts.NodeFlags.Const
-                )
-              )
-            );
-          } else {
-            this.templatesThatCannotBeCompiled.add(template.node);
-          }
-        }
-
-        return [
-          ...topLevelTemplates,
-          // Traverse into template-containing top-level statement
-          ts.visitEachChild(node, rewriteTemplates, this.context),
-        ];
+        return this.addTopLevelCompiledTemplate(node);
       }
 
-      // Rewrite the template expression to use the pre-compiled template
-      if (
-        isLitTemplate(node) &&
-        !this.templatesThatCannotBeCompiled.has(node)
-      ) {
-        const templateInfo = this.expressionToTemplate.get(node);
-        if (templateInfo === undefined) {
-          throw new Error(`template info not found for ${node.getText()}`);
-        }
-        // A LitTemplate can contain other templates in the values array that
-        // need to be compiled.
-        const templateExpression = ts.visitEachChild(
-          node.template,
-          rewriteTemplates,
-          this.context
-        );
-
-        return f.createObjectLiteralExpression([
-          f.createPropertyAssignment('_$litType$', templateInfo.variableName!),
-          f.createPropertyAssignment(
-            'values',
-            f.createArrayLiteralExpression(
-              ts.isNoSubstitutionTemplateLiteral(templateExpression)
-                ? []
-                : templateExpression.templateSpans.map((s) => s.expression)
-            )
-          ),
-        ]);
-      }
+      // Maybe rewrite the template expression to use the pre-compiled template
+      node = this.rewriteTemplateResultToCompiledTemplateResult(node);
       return ts.visitEachChild(node, rewriteTemplates, this.context);
     };
+
     const rewrittenNode = ts.visitNode(parentNode, rewriteTemplates);
     if (!rewrittenNode) {
       throw new Error(`Internal Error: Unexpected undefined 'rewrittenNode'.`);
     }
     return rewrittenNode;
+  }
+
+  /**
+   * Add a CompiledTemplate to the top level statement scope. This method
+   * prepares the TemplateResult into a CompiledTemplate, creating prepared HTML
+   * and a template parts array.
+   */
+  private addTopLevelCompiledTemplate(node: ts.Node): ts.Statement[] {
+    if (!this.topLevelStatementToTemplate.has(node as ts.Statement)) {
+      throw new Error(
+        `Invalid usage of 'addTopLevelCompiledTemplate'. 'this.topLevelStatementToTemplate' must contain 'node'.`
+      );
+    }
+
+    const f = this.context.factory;
+    const topLevelTemplates: ts.VariableStatement[] = [];
+    // For each Lit template, prepare a CompiledTemplate.
+    for (const template of this.topLevelStatementToTemplate.get(
+      node as ts.Statement
+    )!) {
+      const templateExpression = template.node.template;
+      let shouldCompileTemplate = true;
+
+      // Generate parts array
+      const parts: Array<
+        | {
+            type: typeof PartType.CHILD | typeof PartType.COMMENT_PART;
+            index: number;
+          }
+        | {
+            type: PartType;
+            index: number;
+            name: string;
+            strings: Array<string>;
+            tagName: string;
+            ctorType: PartType;
+          }
+        | {
+            type: typeof PartType.ELEMENT;
+            index: number;
+          }
+      > = [];
+      const spoofedTemplate = ts.isNoSubstitutionTemplateLiteral(
+        templateExpression
+      )
+        ? ([templateExpression.text] as unknown as TemplateStringsArray)
+        : ([
+            templateExpression.head.text,
+            ...templateExpression.templateSpans.map((s) => s.literal.text),
+          ] as unknown as TemplateStringsArray);
+      // lit-html tries to enforce that `getTemplateHtml` only accepts a
+      // TemplateStringsResult.
+      (spoofedTemplate as unknown as {raw: string}).raw = '';
+      let html: TrustedHTML | string = '';
+      let attrNames: (string | undefined)[] = [];
+      try {
+        [html, attrNames] = getTemplateHtml(spoofedTemplate, 1);
+      } catch {
+        shouldCompileTemplate = false;
+      }
+      const ast = parseFragment(html as unknown as string, {
+        sourceCodeLocationInfo: false,
+      }) as DocumentFragment;
+
+      let nodeIndex = -1;
+
+      /* Current attribute part index, for indexing attrNames */
+      let attrIndex = 0;
+
+      traverse(ast, {
+        pre: (node, _parent) => {
+          if (isElement(node)) {
+            const attributesToRemove = new Set<unknown>();
+            if (node.attrs.length > 0) {
+              const tagName = node.tagName;
+              for (const attr of node.attrs) {
+                if (
+                  attr.name.endsWith(boundAttributeSuffix) ||
+                  attr.name.startsWith(marker)
+                ) {
+                  attributesToRemove.add(attr);
+                  const strings = attr.value.split(marker);
+                  // We store the case-sensitive name from `attrNames` (generated
+                  // while parsing the template strings); note that this assumes
+                  // parse5 attribute ordering matches string ordering
+                  const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
+                    attrNames[attrIndex++]!
+                  )!;
+                  // TODO: Why is this a string undefined?
+                  if (caseSensitiveName !== 'undefined') {
+                    parts.push({
+                      type: PartType.ATTRIBUTE,
+                      index: nodeIndex,
+                      name: caseSensitiveName,
+                      strings,
+                      tagName,
+                      ctorType:
+                        prefix === '.'
+                          ? PartType.PROPERTY
+                          : prefix === '?'
+                          ? PartType.BOOLEAN_ATTRIBUTE
+                          : prefix === '@'
+                          ? PartType.EVENT
+                          : PartType.ATTRIBUTE,
+                    });
+                  } else {
+                    parts.push({
+                      type: PartType.ELEMENT,
+                      index: nodeIndex,
+                    });
+                  }
+                  this.shouldAddPartImports = true;
+                }
+              }
+              node.attrs = node.attrs.filter(
+                (attr) => !attributesToRemove.has(attr)
+              );
+            }
+            if (rawTextElement.test(node.tagName)) {
+              const hasNoMarkers = !textContent(node).includes(marker);
+              if (!hasNoMarkers) {
+                shouldCompileTemplate = false;
+              }
+            }
+          } else if (isCommentNode(node)) {
+            if (node.data === markerMatch) {
+              // make a childPart
+              parts.push({
+                type: PartType.CHILD,
+                index: nodeIndex,
+              });
+              // We have stored a reference to this comment node - so we can remove the comment text.
+              node.data = '';
+            } else {
+              let i = -1;
+              while ((i = node.data.indexOf(marker, i + 1)) !== -1) {
+                // Comment node has a binding marker inside, make an inactive part
+                // The binding won't work, but subsequent bindings will
+                parts.push({type: PartType.COMMENT_PART, index: nodeIndex});
+                // Move to the end of the match
+                i += marker.length - 1;
+              }
+              // In the compiled result, remove the markers, so compiled
+              // files are deterministic.
+              node.data = node.data.split(marker).join('');
+            }
+          } else if (isTextNode(node)) {
+            // We do not want to count text nodes.
+            nodeIndex--;
+          }
+          nodeIndex++;
+        },
+      });
+      const partsArrayExpression = f.createArrayLiteralExpression(
+        parts.map((part) => {
+          const partProperties = [
+            f.createPropertyAssignment(
+              'type',
+              f.createNumericLiteral(part.type)
+            ),
+            f.createPropertyAssignment(
+              'index',
+              f.createNumericLiteral(part.index)
+            ),
+          ];
+          if (
+            part.type === PartType.ATTRIBUTE &&
+            (part.ctorType === PartType.ATTRIBUTE ||
+              part.ctorType === PartType.BOOLEAN_ATTRIBUTE ||
+              part.ctorType === PartType.PROPERTY ||
+              part.ctorType === PartType.EVENT)
+          ) {
+            partProperties.push(
+              f.createPropertyAssignment(
+                'name',
+                f.createStringLiteral(part.name)
+              ),
+              f.createPropertyAssignment(
+                'strings',
+                f.createArrayLiteralExpression(
+                  part.strings.map((s) => f.createStringLiteral(s))
+                )
+              ),
+              f.createPropertyAssignment(
+                'ctor',
+                f.createIdentifier(AttributePartConstructors[part.ctorType])
+              )
+            );
+          }
+          return f.createObjectLiteralExpression(partProperties);
+        })
+      );
+      if (shouldCompileTemplate) {
+        const preparedHtml = serialize(ast).replace(
+          /(<!---->)|(<!--\?-->)/g,
+          '<?>'
+        );
+        // Compiled template expression
+        topLevelTemplates.push(
+          createCompiledTemplate({
+            f,
+            variableName: template.variableName,
+            preparedHtml,
+            parts: partsArrayExpression,
+            secrityBrand: this.securityBrandIdent,
+          })
+        );
+      } else {
+        this.templatesThatCannotBeCompiled.add(template.node);
+      }
+    }
+    const addedTopLevelTemplates: ts.Statement[] = [
+      ...(topLevelTemplates as ts.Statement[]),
+      ts.visitEachChild(
+        node,
+        (node: ts.Node) => this.rewriteTemplates(node),
+        this.context
+      ) as ts.Statement,
+    ];
+    if (!this.haveAddedSecurityBrandVariableStatement) {
+      addedTopLevelTemplates.unshift(
+        createSecurityBrandTagFunction({
+          f,
+          securityBrandIdent: this.securityBrandIdent,
+        })
+      );
+      this.haveAddedSecurityBrandVariableStatement = true;
+    }
+
+    return addedTopLevelTemplates;
+  }
+
+  /**
+   * Given the AST representation of an html tagged template expression, turn it
+   * into a CompiledTemplateResult.
+   *
+   * E.g., the following code:
+   *
+   * ```ts
+   * html`<h1>Hello ${name}${'!'}</h1>`;
+   * ```
+   *
+   * will be replaced with:
+   *
+   * ```ts
+   * { ["_$litType$"]: lit_template_1, values: [name, '!'] }
+   * ```
+   *
+   * In the example code that `lit_template_1` is stored in
+   * `this.expressionToTemplate`, and contains the prepared HTML and template
+   * parts.
+   *
+   * If the node passed in is not a Lit template or cannot be compiled, the
+   * method returns the node unchanged.
+   */
+  private rewriteTemplateResultToCompiledTemplateResult(
+    node: ts.Node
+  ): ts.Node {
+    const f = this.context.factory;
+    if (!isLitTemplate(node) || this.templatesThatCannotBeCompiled.has(node)) {
+      return node;
+    }
+
+    const templateInfo = this.expressionToTemplate.get(node);
+    if (templateInfo === undefined) {
+      throw new Error(`template info not found for ${node.getText()}`);
+    }
+    // A LitTemplate can contain other templates in the values array that
+    // need to be compiled.
+    const templateExpression = node.template;
+
+    return f.createObjectLiteralExpression([
+      f.createPropertyAssignment(
+        f.createComputedPropertyName(f.createStringLiteral('_$litType$')),
+        templateInfo.variableName!
+      ),
+      f.createPropertyAssignment(
+        'values',
+        f.createArrayLiteralExpression(
+          ts.isNoSubstitutionTemplateLiteral(templateExpression)
+            ? []
+            : templateExpression.templateSpans.map((s) => s.expression)
+        )
+      ),
+    ]);
   }
 }
 

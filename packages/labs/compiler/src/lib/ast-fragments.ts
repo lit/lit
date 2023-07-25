@@ -90,3 +90,99 @@ export const addPartConstructorImport = (
     ...node.statements,
   ]);
 };
+
+/**
+ * From a variable name, a preparedHtml string, and a list of parts, return
+ * the AST defining a CompiledTemplate.
+ *
+ * Creates:
+ *
+ * ```ts
+ * const <variableName> = { h: (i => i) `<preparedHtml>`, parts: <parts> };
+ * ```
+ */
+export const createCompiledTemplate = ({
+  f,
+  variableName,
+  preparedHtml,
+  parts,
+  secrityBrand,
+}: {
+  f: ts.NodeFactory;
+  variableName: ts.Identifier;
+  preparedHtml: string;
+  parts: ts.ArrayLiteralExpression;
+  secrityBrand: ts.Identifier;
+}) =>
+  f.createVariableStatement(
+    undefined,
+    f.createVariableDeclarationList(
+      [
+        f.createVariableDeclaration(
+          variableName,
+          undefined,
+          undefined,
+          f.createObjectLiteralExpression([
+            f.createPropertyAssignment(
+              'h',
+              f.createTaggedTemplateExpression(
+                secrityBrand,
+                undefined,
+                f.createNoSubstitutionTemplateLiteral(preparedHtml)
+              )
+            ),
+            f.createPropertyAssignment('parts', parts),
+          ])
+        ),
+      ],
+      ts.NodeFlags.Const
+    )
+  );
+
+/**
+ * Assigns an identity function to the security brand identifier.
+ *
+ * Returns the following:
+ *
+ * ```ts
+ * const <securityBrandIdent> = i => i;
+ * ```
+ */
+export const createSecurityBrandTagFunction = ({
+  f,
+  securityBrandIdent,
+}: {
+  f: ts.NodeFactory;
+  securityBrandIdent: ts.Identifier;
+}) => {
+  return f.createVariableStatement(
+    undefined,
+    f.createVariableDeclarationList(
+      [
+        f.createVariableDeclaration(
+          securityBrandIdent,
+          undefined,
+          undefined,
+          f.createArrowFunction(
+            undefined,
+            undefined,
+            [
+              f.createParameterDeclaration(
+                undefined,
+                undefined,
+                f.createIdentifier('i'),
+                undefined,
+                undefined,
+                undefined
+              ),
+            ],
+            undefined,
+            f.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+            f.createIdentifier('i')
+          )
+        ),
+      ],
+      ts.NodeFlags.Const
+    )
+  );
+};
