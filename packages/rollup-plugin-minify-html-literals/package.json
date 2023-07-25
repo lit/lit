@@ -28,12 +28,40 @@
     "directory": "packages/rollup-plugin-minify-html-literals"
   },
   "scripts": {
-    "clean": "rimraf {lib/,test/,} && rimraf tsconfig.tsbuildinfo && rimraf index.{js*,d.ts,d.ts.map,} && rimraf {.nyc_output/,}",
-    "prebuild": "npm run clean",
-    "build": "tsc && mkdir lib/types/ && cp -r src/lib/types/ lib/types/",
-    "test": "nyc mocha -r ts-node/register -r source-map-support/register test/*.js",
+    "clean": "wireit",
+    "build": "wireit",
+    "test": "wireit",
     "lint": "prettier --write \"*.{js,ts,json,md}\" \"src/**/*\"",
     "precommit": "lint-staged"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc && mkdir lib/types/ && cp -r src/lib/types/ lib/types/",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "clean"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "index.{js,js.map,d.ts,d.ts.map}",
+        "lib/**/*.{js,js.map,d.ts,d.ts.map}",
+        "test/**/*.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ]
+    },
+    "clean": {
+      "command": "rimraf {lib/,test/,} && rimraf tsconfig.tsbuildinfo && rimraf index.{js*,d.ts,d.ts.map,} && rimraf {.nyc_output/,}"
+    },
+    "test": {
+      "command": "nyc mocha -r ts-node/register -r source-map-support/register test/*.js",
+      "dependencies": [
+        "build",
+        "clean"
+      ]
+    }
   },
   "lint-staged": {
     "*.{js,ts,json,md}": [
@@ -84,6 +112,7 @@
     "sinon": "^6.1.4",
     "source-map-support": "^0.5.6",
     "standard-version": "^9.0.0",
-    "ts-node": "^7.0.0"
+    "ts-node": "^7.0.0",
+    "wireit": "^0.10.0"
   }
 }
