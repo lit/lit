@@ -1,5 +1,42 @@
 import ts from 'typescript';
 
+export const PartType = {
+  ATTRIBUTE: 1,
+  CHILD: 2,
+  PROPERTY: 3,
+  BOOLEAN_ATTRIBUTE: 4,
+  EVENT: 5,
+  ELEMENT: 6,
+  COMMENT_PART: 7,
+} as const;
+export type PartType = (typeof PartType)[keyof typeof PartType];
+
+export type TemplatePart =
+  | {
+      type: typeof PartType.CHILD | typeof PartType.COMMENT_PART;
+      index: number;
+    }
+  | {
+      type: PartType;
+      index: number;
+      name: string;
+      strings: Array<string>;
+      tagName: string;
+      ctorType: PartType;
+    }
+  | {
+      type: typeof PartType.ELEMENT;
+      index: number;
+    };
+
+// These constructors have been renamed to reduce the chance of a naming collision.
+const AttributePartConstructors = {
+  [PartType.ATTRIBUTE]: '_$LH_AttributePart',
+  [PartType.PROPERTY]: '_$LH_PropertyPart',
+  [PartType.BOOLEAN_ATTRIBUTE]: '_$LH_BooleanAttributePart',
+  [PartType.EVENT]: '_$LH_EventPart',
+} as const;
+
 /**
  * Creates the statement:
  *
@@ -137,6 +174,87 @@ export const createCompiledTemplate = ({
       ],
       ts.NodeFlags.Const
     )
+  );
+
+/**
+ * Creates a CompiledTemplateResult with the shape:
+ *
+ * ```ts
+ * {['_$litType$']: <variableName>, values: [...<templateExpression>]}
+ * ```
+ *
+ * where `templateExpression` contains the dynamic value expressions in the
+ * original `html` tagged template.
+ */
+export const createCompiledTemplateResult = ({
+  f,
+  variableName,
+  templateExpression,
+}: {
+  f: ts.NodeFactory;
+  variableName: ts.Identifier;
+  templateExpression: ts.TemplateLiteral;
+}) =>
+  f.createObjectLiteralExpression([
+    f.createPropertyAssignment(
+      f.createComputedPropertyName(f.createStringLiteral('_$litType$')),
+      variableName
+    ),
+    f.createPropertyAssignment(
+      'values',
+      f.createArrayLiteralExpression(
+        ts.isNoSubstitutionTemplateLiteral(templateExpression)
+          ? []
+          : templateExpression.templateSpans.map((s) => s.expression)
+      )
+    ),
+  ]);
+
+/**
+ * Create the source code for the TemplateParts for the CompiledTemplate.
+ *
+ * As an example output, a single BooleanAttributePart looks something like:
+ *
+ * ```ts
+ * [{ type: 1, index: 0, name: "data-attr", strings: ["", ""], ctor: _$LH_BooleanAttributePart }]
+ * ```
+ */
+export const createTemplateParts = ({
+  f,
+  parts,
+}: {
+  f: ts.NodeFactory;
+  parts: TemplatePart[];
+}) =>
+  f.createArrayLiteralExpression(
+    parts.map((part) => {
+      const partProperties = [
+        f.createPropertyAssignment('type', f.createNumericLiteral(part.type)),
+        f.createPropertyAssignment('index', f.createNumericLiteral(part.index)),
+      ];
+      if (
+        part.type === PartType.ATTRIBUTE &&
+        (part.ctorType === PartType.ATTRIBUTE ||
+          part.ctorType === PartType.BOOLEAN_ATTRIBUTE ||
+          part.ctorType === PartType.PROPERTY ||
+          part.ctorType === PartType.EVENT)
+      ) {
+        partProperties.push(
+          f.createPropertyAssignment('name', f.createStringLiteral(part.name)),
+          f.createPropertyAssignment(
+            'strings',
+            f.createArrayLiteralExpression(
+              part.strings.map((s) => f.createStringLiteral(s))
+            )
+          ),
+          f.createPropertyAssignment(
+            'ctor',
+            f.createIdentifier(AttributePartConstructors[part.ctorType])
+          )
+        );
+      }
+      return f.createObjectLiteralExpression(partProperties);
+    })
   );
 
 /**
