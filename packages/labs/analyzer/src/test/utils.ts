@@ -9,7 +9,7 @@ import * as fs from 'fs';
 import ts from 'typescript';
 import {AbsolutePath, Analyzer, Module} from '../index.js';
 import {fileURLToPath} from 'url';
-import {createPackageAnalyzer} from '../index.js';
+import {createPackageAnalyzer} from '../package-analyzer.js';
 
 type Language = 'ts' | 'js';
 
@@ -178,6 +178,7 @@ export class InMemoryAnalyzer extends Analyzer {
     const service = ts.createLanguageService(host, ts.createDocumentRegistry());
     let program: ts.Program;
     super({
+      typescript: ts,
       getProgram: () => {
         if (program === undefined || this._dirty) {
           this._dirty = false;

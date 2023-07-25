@@ -30,6 +30,7 @@
         "lib",
         "test",
         "index.{js,js.map,d.ts,d.ts.map}",
+        "package-analyzer.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
       "clean": "if-file-deleted"
@@ -49,14 +50,16 @@
   },
   "files": [
     "index.*",
+    "package-analyzer.*",
     "/lib/",
     "!/lib/.tsbuildinfo"
   ],
   "exports": {
-    ".": "./index.js"
+    ".": "./index.js",
+    "./package-analyzer.js": "./package-analyzer.js"
   },
   "dependencies": {
     "package-json-type": "^1.0.3",
-    "typescript": "~4.7.4"
+    "typescript": "~5.0.0"
   }
 }

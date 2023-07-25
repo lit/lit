@@ -11,7 +11,8 @@ import {createComponent} from '@lit-labs/react';
 import {ReactiveElement} from '@lit/reactive-element';
 import {customElement} from '@lit/reactive-element/decorators.js';
 import React from 'react';
-import {renderToString} from 'react-dom/server.js';
+// eslint-disable-next-line import/extensions
+import {renderToString} from 'react-dom/server';
 
 @customElement('my-element')
 class MyElement extends ReactiveElement {}

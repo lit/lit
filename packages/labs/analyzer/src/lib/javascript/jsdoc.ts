@@ -10,7 +10,7 @@
  * Utilities for analyzing JSDoc comments
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {createDiagnostic} from '../errors.js';
 import {
   Described,
@@ -19,6 +19,8 @@ import {
   AnalyzerInterface,
   NamedDescribed,
 } from '../model.js';
+
+export type TypeScript = typeof ts;
 
 /**
  * @fileoverview
@@ -29,7 +31,7 @@ import {
 /**
  * Returns true if given node has a JSDoc tag
  */
-export const hasJSDocTag = (node: ts.Node, tag: string) => {
+export const hasJSDocTag = (ts: TypeScript, node: ts.Node, tag: string) => {
   return ts.getJSDocTags(node).some((t) => t.tagName.text === tag);
 };
 
@@ -64,6 +66,7 @@ const getJSDocTagComment = (tag: ts.JSDocTag, analyzer: AnalyzerInterface) => {
   if (typeof comment !== 'string') {
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript: analyzer.typescript,
         node: tag,
         message: `JSDoc error: unsupported node type`,
       })
@@ -103,6 +106,7 @@ export const parseNamedTypedJSDocInfo = (
   if (nameTypeDesc === null) {
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript: analyzer.typescript,
         node: tag,
         message: `JSDoc error: unexpected JSDoc format`,
       })
@@ -117,8 +121,13 @@ export const parseNamedTypedJSDocInfo = (
   return info;
 };
 
-function makeDashParseDiagnostic(tag: ts.JSDocTag, requireDash: boolean) {
+function makeDashParseDiagnostic(
+  typescript: TypeScript,
+  tag: ts.JSDocTag,
+  requireDash: boolean
+) {
   return createDiagnostic({
+    typescript,
     node: tag,
     message: `Unexpected JSDoc format.${
       requireDash
@@ -155,7 +164,9 @@ export const parseNamedJSDocInfo = (
   const regex = requireDash ? parseNameDashDescRE : parseNameDescRE;
   const nameDesc = comment.match(regex);
   if (nameDesc === null) {
-    analyzer.addDiagnostic(makeDashParseDiagnostic(tag, requireDash));
+    analyzer.addDiagnostic(
+      makeDashParseDiagnostic(analyzer.typescript, tag, requireDash)
+    );
     return undefined;
   }
   const {name, description, defaultValue} = nameDesc.groups!;
@@ -237,7 +248,7 @@ const moduleJSDocsMap = new WeakMap<ts.SourceFile, ts.JSDoc[]>();
  * needed both to find the module comment and to filter out module comments
  * node comments.
  */
-const getModuleJSDocs = (sourceFile: ts.SourceFile) => {
+const getModuleJSDocs = (typescript: TypeScript, sourceFile: ts.SourceFile) => {
   let moduleJSDocs = moduleJSDocsMap.get(sourceFile);
   if (moduleJSDocs !== undefined) {
     return moduleJSDocs;
@@ -246,13 +257,13 @@ const getModuleJSDocs = (sourceFile: ts.SourceFile) => {
   // from `ts.forEachChild` is more robust than `sourceFile.getChildAt(0)`,
   // since `forEachChild` flattens embedded arrays that the child APIs would
   // otherwise return.
-  const firstChild = ts.forEachChild(sourceFile, (n) => n);
+  const firstChild = typescript.forEachChild(sourceFile, (n) => n);
   if (firstChild === undefined) {
     moduleJSDocs = [];
   } else {
     // Get the JSDoc blocks attached to the first child (they oddly show up
     // in the node's children)
-    const jsDocs = firstChild.getChildren().filter(ts.isJSDoc);
+    const jsDocs = firstChild.getChildren().filter(typescript.isJSDoc);
     // If there is more than one leading JSDoc block, grab all but the last,
     // otherwise grab the one (see heuristic above)
     moduleJSDocs = jsDocs.slice(0, jsDocs.length > 1 ? -1 : 1);
@@ -274,12 +285,15 @@ export const parseNodeJSDocInfo = (
   analyzer: AnalyzerInterface
 ): DeprecatableDescribed => {
   const info: DeprecatableDescribed = {};
-  const moduleJSDocs = getModuleJSDocs(node.getSourceFile());
+  const moduleJSDocs = getModuleJSDocs(
+    analyzer.typescript,
+    node.getSourceFile()
+  );
   // Module-level docs (that are explicitly tagged as such) may be
   // attached to the first declaration if the declaration is undocumented,
   // so we filter those out since they shouldn't apply to a
   // declaration node
-  const jsDocTags = ts
+  const jsDocTags = analyzer.typescript
     .getJSDocTags(node)
     .filter(({parent}) => !moduleJSDocs.includes(parent as ts.JSDoc));
   if (jsDocTags !== undefined) {
@@ -289,7 +303,7 @@ export const parseNodeJSDocInfo = (
     const comment = normalizeLineEndings(
       node
         .getChildren()
-        .filter(ts.isJSDoc)
+        .filter(analyzer.typescript.isJSDoc)
         .filter((c) => !moduleJSDocs.includes(c))
         .map((n) => n.comment)
         .filter((c) => c !== undefined)
@@ -310,7 +324,7 @@ export const parseModuleJSDocInfo = (
   sourceFile: ts.SourceFile,
   analyzer: AnalyzerInterface
 ) => {
-  const moduleJSDocs = getModuleJSDocs(sourceFile);
+  const moduleJSDocs = getModuleJSDocs(analyzer.typescript, sourceFile);
   const info: DeprecatableDescribed = {};
   addJSDocTagInfo(
     info,

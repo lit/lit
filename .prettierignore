@@ -151,6 +151,11 @@ packages/labs/analyzer/**/index.js.map
 packages/labs/analyzer/**/index.d.ts
 packages/labs/analyzer/**/index.d.ts.map
 
+packages/labs/analyzer/**/package-analyzer.js
+packages/labs/analyzer/**/package-analyzer.js.map
+packages/labs/analyzer/**/package-analyzer.d.ts
+packages/labs/analyzer/**/package-analyzer.d.ts.map
+
 packages/labs/cli/lib/
 packages/labs/cli/test/
 packages/labs/cli/index.js
