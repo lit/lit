@@ -11,7 +11,7 @@ import {
   defaultShouldMinify,
   defaultShouldMinifyCSS,
   defaultValidation,
-  minifyHTMLLiterals
+  minifyHTMLLiterals,
 } from '../lib/minify-html-literals.js';
 import { defaultMinifyOptions, defaultStrategy } from '../lib/strategy.js';
 
@@ -29,7 +29,7 @@ class MagicStringLike {
       },
       toUrl() {
         return '';
-      }
+      },
     };
   }
 
@@ -258,7 +258,7 @@ describe('minify-html-literals', () => {
 
   it('should minify html tagged with a member expression ending in html', () => {
     const result = minifyHTMLLiterals(MEMBER_EXPRESSION_LITERAL_SOURCE, {
-      fileName: 'test.js'
+      fileName: 'test.js',
     });
     expect(result).to.be.an('object');
     expect(result!.code).to.equal(MEMBER_EXPRESSION_LITERAL_SOURCE_MIN);
@@ -266,7 +266,7 @@ describe('minify-html-literals', () => {
 
   it('should minify multiline svg elements', () => {
     const result = minifyHTMLLiterals(SVG_MULTILINE_SOURCE, {
-      fileName: 'test.js'
+      fileName: 'test.js',
     });
     expect(result).to.be.an('object');
     expect(result!.code).to.equal(SVG_MULTILINE_SOURCE_MIN);
@@ -274,7 +274,7 @@ describe('minify-html-literals', () => {
 
   it('should not remove spaces in ::part()', () => {
     const result = minifyHTMLLiterals(SHADOW_PARTS_SOURCE, {
-      fileName: 'test.js'
+      fileName: 'test.js',
     });
     expect(result).to.be.an('object');
     expect(result!.code).to.equal(SHADOW_PARTS_SOURCE_MIN);
@@ -333,7 +333,7 @@ describe('minify-html-literals', () => {
       expect(
         minifyHTMLSpy.lastCall.calledWithExactly(html, {
           ...defaultMinifyOptions,
-          ...minifyOptions
+          ...minifyOptions,
         })
       ).to.be.true;
     });
@@ -345,7 +345,7 @@ describe('minify-html-literals', () => {
         generateSourceMap(ms) {
           msUsed = ms;
           return undefined;
-        }
+        },
       });
 
       expect(msUsed).to.be.an.instanceof(MagicString);
@@ -359,7 +359,7 @@ describe('minify-html-literals', () => {
         generateSourceMap(ms) {
           msUsed = ms;
           return undefined;
-        }
+        },
       });
 
       expect(msUsed).to.be.an.instanceof(MagicStringLike);
@@ -374,7 +374,7 @@ describe('minify-html-literals', () => {
 
       minifyHTMLLiterals(SOURCE, {
         fileName: 'test.js',
-        parseLiterals: customParseLiterals
+        parseLiterals: customParseLiterals,
       });
       expect(customParseLiterals.called).to.be.true;
     });
@@ -386,7 +386,7 @@ describe('minify-html-literals', () => {
 
       minifyHTMLLiterals(SOURCE, {
         fileName: 'test.js',
-        shouldMinify: customShouldMinify
+        shouldMinify: customShouldMinify,
       });
       expect(customShouldMinify.called).to.be.true;
     });
@@ -408,12 +408,12 @@ describe('minify-html-literals', () => {
           (html: string, placeholder: string) => {
             return defaultStrategy.splitHTMLByPlaceholder(html, placeholder);
           }
-        )
+        ),
       };
 
       minifyHTMLLiterals(SOURCE, {
         fileName: 'test.js',
-        strategy: customStrategy
+        strategy: customStrategy,
       });
       expect(customStrategy.getPlaceholder.called).to.be.true;
       expect(customStrategy.combineHTMLStrings.called).to.be.true;
@@ -431,8 +431,8 @@ describe('minify-html-literals', () => {
             },
             combineHTMLStrings: defaultStrategy.combineHTMLStrings,
             minifyHTML: defaultStrategy.minifyHTML,
-            splitHTMLByPlaceholder: defaultStrategy.splitHTMLByPlaceholder
-          }
+            splitHTMLByPlaceholder: defaultStrategy.splitHTMLByPlaceholder,
+          },
         });
       }).to.throw;
 
@@ -445,8 +445,8 @@ describe('minify-html-literals', () => {
             minifyHTML: defaultStrategy.minifyHTML,
             splitHTMLByPlaceholder: () => {
               return []; // cause an error
-            }
-          }
+            },
+          },
         });
       }).to.throw;
     });
@@ -461,9 +461,9 @@ describe('minify-html-literals', () => {
             },
             combineHTMLStrings: defaultStrategy.combineHTMLStrings,
             minifyHTML: defaultStrategy.minifyHTML,
-            splitHTMLByPlaceholder: defaultStrategy.splitHTMLByPlaceholder
+            splitHTMLByPlaceholder: defaultStrategy.splitHTMLByPlaceholder,
           },
-          validate: false
+          validate: false,
         });
       }).not.to.throw;
     });
@@ -477,12 +477,12 @@ describe('minify-html-literals', () => {
           (parts: TemplatePart[], htmlParts: string[]) => {
             return defaultValidation.ensureHTMLPartsValid(parts, htmlParts);
           }
-        )
+        ),
       };
 
       minifyHTMLLiterals(SOURCE, {
         fileName: 'test.js',
-        validate: customValidation
+        validate: customValidation,
       });
       expect(customValidation.ensurePlaceholderValid.called).to.be.true;
       expect(customValidation.ensureHTMLPartsValid.called).to.be.true;
@@ -491,7 +491,7 @@ describe('minify-html-literals', () => {
     it('should allow disabling generateSourceMap', () => {
       const result = minifyHTMLLiterals(SOURCE, {
         fileName: 'test.js',
-        generateSourceMap: false
+        generateSourceMap: false,
       });
       expect(result).to.be.an('object');
       expect(result!.map).to.be.undefined;
@@ -506,7 +506,7 @@ describe('minify-html-literals', () => {
 
       minifyHTMLLiterals(SOURCE, {
         fileName: 'test.js',
-        generateSourceMap: customGenerateSourceMap
+        generateSourceMap: customGenerateSourceMap,
       });
       expect(customGenerateSourceMap.called).to.be.true;
     });
@@ -521,7 +521,7 @@ describe('minify-html-literals', () => {
         generateMapSpy.calledWith({
           file: 'test.js.map',
           source: 'test.js',
-          hires: true
+          hires: true,
         })
       ).to.be.true;
     });

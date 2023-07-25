@@ -9,13 +9,13 @@ describe('strategy', () => {
       {
         text: '<h1>',
         start: 0,
-        end: 4
+        end: 4,
       },
       {
         text: '</h1>',
         start: 4,
-        end: 5
-      }
+        end: 5,
+      },
     ];
 
     describe('getPlaceholder()', () => {
@@ -31,8 +31,8 @@ describe('strategy', () => {
           {
             text: regularPlaceholder,
             start: 0,
-            end: regularPlaceholder.length
-          }
+            end: regularPlaceholder.length,
+          },
         ]);
 
         expect(oneUnderscore).not.to.equal(regularPlaceholder);
@@ -42,13 +42,13 @@ describe('strategy', () => {
           {
             text: regularPlaceholder,
             start: 0,
-            end: regularPlaceholder.length
+            end: regularPlaceholder.length,
           },
           {
             text: oneUnderscore,
             start: regularPlaceholder.length,
-            end: regularPlaceholder.length + oneUnderscore.length
-          }
+            end: regularPlaceholder.length + oneUnderscore.length,
+          },
         ]);
 
         expect(twoUnderscores).not.to.equal(regularPlaceholder);

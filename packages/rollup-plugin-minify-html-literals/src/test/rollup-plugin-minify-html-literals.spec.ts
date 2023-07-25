@@ -11,7 +11,7 @@ describe('rollup-plugin-minify-html-literals', () => {
   beforeEach(() => {
     context = {
       warn: sinon.spy(),
-      error: sinon.spy()
+      error: sinon.spy(),
     };
   });
 
@@ -27,9 +27,9 @@ describe('rollup-plugin-minify-html-literals', () => {
     const plugin = minifyHTML(options);
     expect(options.minifyHTMLLiterals).to.be.a('function');
     const minifySpy = sinon.spy(options, 'minifyHTMLLiterals');
-    plugin.transform.apply((context as unknown) as TransformPluginContext, [
+    plugin.transform.apply(context as unknown as TransformPluginContext, [
       'return',
-      fileName
+      fileName,
     ]);
     expect(minifySpy.called).to.be.true;
   });
@@ -38,16 +38,16 @@ describe('rollup-plugin-minify-html-literals', () => {
     const options: Options = {
       options: {
         minifyOptions: {
-          minifyCSS: false
-        }
-      }
+          minifyCSS: false,
+        },
+      },
     };
 
     const plugin = minifyHTML(options);
     const minifySpy = sinon.spy(options, 'minifyHTMLLiterals');
-    plugin.transform.apply((context as unknown) as TransformPluginContext, [
+    plugin.transform.apply(context as unknown as TransformPluginContext, [
       'return',
-      fileName
+      fileName,
     ]);
     expect(
       minifySpy.calledWithMatch(
@@ -55,8 +55,8 @@ describe('rollup-plugin-minify-html-literals', () => {
         sinon.match({
           fileName,
           minifyOptions: {
-            minifyCSS: false
-          }
+            minifyCSS: false,
+          },
         })
       )
     ).to.be.true;
@@ -73,12 +73,12 @@ describe('rollup-plugin-minify-html-literals', () => {
       minifyHTMLLiterals: customMinify as (
         source: string,
         options?: minify.DefaultOptions | undefined
-      ) => minify.Result
+      ) => minify.Result,
     });
 
-    plugin.transform.apply((context as unknown) as TransformPluginContext, [
+    plugin.transform.apply(context as unknown as TransformPluginContext, [
       'return',
-      fileName
+      fileName,
     ]);
     expect(customMinify.called).to.be.true;
   });
@@ -87,12 +87,12 @@ describe('rollup-plugin-minify-html-literals', () => {
     const plugin = minifyHTML({
       minifyHTMLLiterals: () => {
         throw new Error('failed');
-      }
+      },
     });
 
-    plugin.transform.apply((context as unknown) as TransformPluginContext, [
+    plugin.transform.apply(context as unknown as TransformPluginContext, [
       'return',
-      fileName
+      fileName,
     ]);
     expect(context.warn.calledWith('failed')).to.be.true;
     expect(context.error.called).to.be.false;
@@ -103,12 +103,12 @@ describe('rollup-plugin-minify-html-literals', () => {
       minifyHTMLLiterals: () => {
         throw new Error('failed');
       },
-      failOnError: true
+      failOnError: true,
     });
 
-    plugin.transform.apply((context as unknown) as TransformPluginContext, [
+    plugin.transform.apply(context as unknown as TransformPluginContext, [
       'return',
-      fileName
+      fileName,
     ]);
     expect(context.error.calledWith('failed')).to.be.true;
     expect(context.warn.called).to.be.false;
@@ -120,7 +120,7 @@ describe('rollup-plugin-minify-html-literals', () => {
     expect(options.filter).to.be.a('function');
     expect(options.filter!(fileName)).to.be.true;
     options = {
-      include: '*.ts'
+      include: '*.ts',
     };
 
     minifyHTML(options);
@@ -131,13 +131,13 @@ describe('rollup-plugin-minify-html-literals', () => {
 
   it('should allow custom filter', () => {
     const options = {
-      filter: sinon.spy(() => false)
+      filter: sinon.spy(() => false),
     };
 
     const plugin = minifyHTML(options);
-    plugin.transform.apply((context as unknown) as TransformPluginContext, [
+    plugin.transform.apply(context as unknown as TransformPluginContext, [
       'return',
-      fileName
+      fileName,
     ]);
     expect(options.filter.calledWith()).to.be.true;
   });
