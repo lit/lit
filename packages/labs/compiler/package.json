@@ -46,6 +46,11 @@
       "command": "uvu test \".*_test\\.js$\"",
       "dependencies": [
         "build"
+      ],
+      "files": [
+        "test_files/*.ts",
+        "test_files/*.js",
+        "!test_files/*.golden.js"
       ]
     },
     "build": {

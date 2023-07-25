@@ -366,7 +366,10 @@ class CompiledTemplatePass {
         this.context
       ) as ts.Statement,
     ];
-    if (!this.haveAddedSecurityBrandVariableStatement) {
+    if (
+      !this.haveAddedSecurityBrandVariableStatement &&
+      topLevelTemplates.length
+    ) {
       addedTopLevelTemplates.unshift(
         createSecurityBrandTagFunction({
           f,
