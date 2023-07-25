@@ -1315,7 +1315,7 @@ suite('ReactiveElement', () => {
 
       wasUpdatedCount = 0;
       wasFirstUpdated = 0;
-      changedProperties: PropertyValues | undefined;
+      cachedChangedProperties: PropertyValues | undefined;
 
       override update(changedProperties: PropertyValues) {
         this.wasUpdatedCount++;
@@ -1323,7 +1323,7 @@ suite('ReactiveElement', () => {
       }
 
       override firstUpdated(changedProperties: PropertyValues) {
-        this.changedProperties = changedProperties;
+        this.cachedChangedProperties = changedProperties;
         this.wasFirstUpdated++;
       }
     }
@@ -1333,7 +1333,7 @@ suite('ReactiveElement', () => {
     await el.updateComplete;
     const testMap = new Map();
     testMap.set('foo', undefined);
-    assert.deepEqual(el.changedProperties, testMap);
+    assert.deepEqual(el.cachedChangedProperties, testMap);
     assert.equal(el.wasUpdatedCount, 1);
     assert.equal(el.wasFirstUpdated, 1);
     el.requestUpdate();
@@ -1354,7 +1354,7 @@ suite('ReactiveElement', () => {
       triedToUpdatedCount = 0;
       wasUpdatedCount = 0;
       wasFirstUpdated = 0;
-      changedProperties: PropertyValues | undefined;
+      cachedChangedProperties: PropertyValues | undefined;
 
       override shouldUpdate() {
         this.triedToUpdatedCount++;
@@ -1367,7 +1367,7 @@ suite('ReactiveElement', () => {
       }
 
       override firstUpdated(changedProperties: PropertyValues) {
-        this.changedProperties = changedProperties;
+        this.cachedChangedProperties = changedProperties;
         this.wasFirstUpdated++;
       }
     }
@@ -1382,7 +1382,7 @@ suite('ReactiveElement', () => {
     el.requestUpdate();
     await el.updateComplete;
     const testMap = new Map();
-    assert.deepEqual(el.changedProperties, testMap);
+    assert.deepEqual(el.cachedChangedProperties, testMap);
     assert.equal(el.triedToUpdatedCount, 2);
     assert.equal(el.wasUpdatedCount, 1);
     assert.equal(el.wasFirstUpdated, 1);
@@ -1512,12 +1512,12 @@ suite('ReactiveElement', () => {
         return {foo: {}, bar: {}, zot: {reflect: true}};
       }
 
-      changedProperties: PropertyValues | undefined = undefined;
+      cachedChangedProperties: PropertyValues | undefined = undefined;
 
       override update(changedProperties: PropertyValues) {
         (this as any).zot = (this as any).foo + (this as any).bar;
         super.update(changedProperties);
-        this.changedProperties = changedProperties;
+        this.cachedChangedProperties = changedProperties;
       }
     }
     customElements.define(generateElementName(), E);
@@ -1526,7 +1526,7 @@ suite('ReactiveElement', () => {
     await el.updateComplete;
     const testMap = new Map();
     testMap.set('zot', undefined);
-    assert.deepEqual(el.changedProperties, testMap);
+    assert.deepEqual(el.cachedChangedProperties, testMap);
     assert.isNaN(el.zot);
     assert.equal(el.getAttribute('zot'), 'NaN');
     el.bar = 1;
@@ -1539,7 +1539,7 @@ suite('ReactiveElement', () => {
     testMap.set('foo', undefined);
     testMap.set('bar', undefined);
     testMap.set('zot', NaN);
-    assert.deepEqual(el.changedProperties, testMap);
+    assert.deepEqual(el.cachedChangedProperties, testMap);
     assert.equal(el.getAttribute('zot'), '2');
     el.bar = 2;
     await el.updateComplete;
@@ -1548,7 +1548,7 @@ suite('ReactiveElement', () => {
     testMap.clear();
     testMap.set('bar', 1);
     testMap.set('zot', 2);
-    assert.deepEqual(el.changedProperties, testMap);
+    assert.deepEqual(el.cachedChangedProperties, testMap);
     assert.equal(el.getAttribute('zot'), '3');
   });
 
@@ -1570,12 +1570,12 @@ suite('ReactiveElement', () => {
       name: string | undefined;
       foo = '';
 
-      changedProperties: PropertyValues | undefined = undefined;
+      cachedChangedProperties: PropertyValues | undefined = undefined;
 
       override update(changedProperties: PropertyValues) {
         (this as any).zot = (this as any).foo + (this as any).bar;
         super.update(changedProperties);
-        this.changedProperties = changedProperties;
+        this.cachedChangedProperties = changedProperties;
       }
 
       override updated() {
@@ -3294,5 +3294,72 @@ suite('ReactiveElement', () => {
     if (A || B) {
       // Suppress no-unused-vars warnings
     }
+  });
+
+  test('`changedProperties` can be used in event listener', async () => {
+    class A extends ReactiveElement {
+      static override properties = {
+        a: {},
+        b: {},
+      };
+      a: number;
+      b: number;
+
+      aRelevantEdge = false;
+      bRelevantEdge = false;
+      relevant = 2;
+
+      constructor() {
+        super();
+        this.a = 0;
+        this.b = 0;
+        this.addEventListener('foo', this.handleFoo);
+      }
+
+      fireFoo() {
+        this.dispatchEvent(new Event('foo'));
+      }
+
+      incB() {
+        this.b++;
+      }
+
+      handleFoo = () => {
+        this.incB();
+        this.aRelevantEdge =
+          this.a - this.changedProperties.get('a') >= this.relevant;
+        this.bRelevantEdge =
+          this.b - this.changedProperties.get('b') >= this.relevant;
+      };
+    }
+    customElements.define(generateElementName(), A);
+    const el = new A();
+    container.appendChild(el);
+    assert.isFalse(el.aRelevantEdge);
+    assert.isFalse(el.bRelevantEdge);
+    el.fireFoo();
+    await el.updateComplete;
+    assert.isFalse(el.aRelevantEdge);
+    assert.isFalse(el.bRelevantEdge);
+    el.fireFoo();
+    await el.updateComplete;
+    assert.isFalse(el.aRelevantEdge);
+    assert.isFalse(el.bRelevantEdge);
+    el.fireFoo();
+    el.fireFoo();
+    await el.updateComplete;
+    assert.isFalse(el.aRelevantEdge);
+    assert.isTrue(el.bRelevantEdge);
+    el.a = 10;
+    el.fireFoo();
+    await el.updateComplete;
+    assert.isTrue(el.aRelevantEdge);
+    assert.isFalse(el.bRelevantEdge);
+    el.fireFoo();
+    el.fireFoo();
+    el.a++;
+    await el.updateComplete;
+    assert.isFalse(el.aRelevantEdge);
+    assert.isTrue(el.bRelevantEdge);
   });
 });
