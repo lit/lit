@@ -1,4 +1,4 @@
-name: Benchmarks Test
+name: Benchmarks
 
 on: [pull_request]
 
