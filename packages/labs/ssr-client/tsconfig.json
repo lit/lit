@@ -21,7 +21,7 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "noImplicitOverride": true,
-    "types": ["node", "web-ie11"]
+    "types": ["node"]
   },
   "include": ["src/**/*.ts"],
   "exclude": []
