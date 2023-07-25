@@ -29,9 +29,12 @@ const DEV_MODE = !!ReactiveElement.enableWarning;
 declare global {
   interface HTMLElementTagNameMap {
     [tagName]: BasicElement;
-    'x-foo': XFoo,
+    'x-foo': XFoo;
   }
+}
 
+declare module 'react' {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
       'x-foo': WebComponentProps<XFoo>;
@@ -152,7 +155,7 @@ if (DEV_MODE) {
       warnings = [];
     });
 
-    test('warns when react resered properties are used', () => {
+    test('warns when react reserved properties are used', () => {
       createComponent({
         react: React,
         elementClass: BasicElement,
