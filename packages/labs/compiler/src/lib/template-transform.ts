@@ -16,6 +16,7 @@ import {
   textContent,
 } from './parse5-utils.js';
 import {serialize} from 'parse5';
+import {addPartConstructorImport} from './ast-fragments.js';
 const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} =
   litHtmlPrivate;
 
@@ -53,113 +54,69 @@ interface TemplateInfo {
 const rawTextElement = /^(?:script|style|textarea|title)$/i;
 
 /**
- * Add Parts constructors import.
+ * CompiledTemplatePass provides a `ts.TransformerFactory` that transforms
+ * html tagged templates into a CompiledTemplateResult.
  */
-export const addPartConstructorImport = (
-  node: ts.SourceFile,
-  factory: ts.NodeFactory
-): ts.SourceFile => {
-  const uniqueLitHtmlPrivateIdentifier =
-    factory.createUniqueName('litHtmlPrivate');
-  return factory.updateSourceFile(node, [
-    ...[
-      factory.createImportDeclaration(
-        undefined,
-        factory.createImportClause(
-          false,
-          undefined,
-          factory.createNamedImports([
-            factory.createImportSpecifier(
-              false,
-              factory.createIdentifier('_$LH'),
-              uniqueLitHtmlPrivateIdentifier
-            ),
-          ])
-        ),
-        factory.createStringLiteral('lit-html/private-ssr-support.js'),
-        undefined
-      ),
-      factory.createVariableStatement(
-        undefined,
-        factory.createVariableDeclarationList(
-          [
-            factory.createVariableDeclaration(
-              factory.createObjectBindingPattern([
-                factory.createBindingElement(
-                  undefined,
-                  factory.createIdentifier('AttributePart'),
-                  factory.createIdentifier('_$LH_AttributePart'),
-                  undefined
-                ),
-                factory.createBindingElement(
-                  undefined,
-                  factory.createIdentifier('PropertyPart'),
-                  factory.createIdentifier('_$LH_PropertyPart'),
-                  undefined
-                ),
-                factory.createBindingElement(
-                  undefined,
-                  factory.createIdentifier('BooleanAttributePart'),
-                  factory.createIdentifier('_$LH_BooleanAttributePart'),
-                  undefined
-                ),
-                factory.createBindingElement(
-                  undefined,
-                  factory.createIdentifier('EventPart'),
-                  factory.createIdentifier('_$LH_EventPart'),
-                  undefined
-                ),
-              ]),
-              undefined,
-              undefined,
-              uniqueLitHtmlPrivateIdentifier
-            ),
-          ],
-          ts.NodeFlags.Const
-        )
-      ),
-    ],
-    ...node.statements,
-  ]);
-};
+class CompiledTemplatePass {
+  static get_transformer(): ts.TransformerFactory<ts.SourceFile> {
+    return (
+      context: ts.TransformationContext
+    ): ts.Transformer<ts.SourceFile> => {
+      const pass = new CompiledTemplatePass(context);
+      return (sourceFile: ts.SourceFile): ts.SourceFile => {
+        pass.findTemplates(sourceFile);
+        if (!pass.shouldCompileFile) {
+          return sourceFile;
+        }
+        pass.rewriteTemplates(sourceFile);
+        const transformedSourceFile = pass.rewriteTemplates(sourceFile);
+        if (!ts.isSourceFile(transformedSourceFile)) {
+          throw new Error(
+            `Internal Error: Expected source file to be transformed into another source file.`
+          );
+        }
+        if (pass.shouldAddPartImports) {
+          return addPartConstructorImport(
+            transformedSourceFile,
+            context.factory
+          );
+        }
+        return transformedSourceFile;
+      };
+    };
+  }
 
-export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
-  // Transforms a SourceFile to add top-level declarations for each lit-html
-  // template in the module
-  return (context: ts.TransformationContext): ts.Transformer<ts.SourceFile> => {
-    const topLevelStatementToTemplate = new Map<ts.Statement, TemplateInfo[]>();
-    const expressionToTemplate = new Map<
-      ts.TaggedTemplateExpression,
-      TemplateInfo
-    >();
+  private topLevelStatementToTemplate = new Map<ts.Statement, TemplateInfo[]>();
+  private expressionToTemplate = new Map<
+    ts.TaggedTemplateExpression,
+    TemplateInfo
+  >();
 
+  private templatesThatCannotBeCompiled = new Set<ts.Node>();
+  // Only compile `html` tag if it was found in an import declaration,
+  // imported from lit or lit-html.
+  private shouldCompileFile = false;
+
+  private shouldAddPartImports = false;
+
+  private constructor(private readonly context: ts.TransformationContext) {}
+
+  /**
+   * Find all Lit templates and decide whether the file should be compiled.
+   *
+   * Walks all children for the sourceFile and populates state on the class
+   * instance that will be used in the future for acting on the transform.
+   */
+  private findTemplates(sourceFile: ts.SourceFile) {
     // Store the stack of open ancestor nodes from sourceFile to the
     // current node so that we can quickly get the top-level statement
     // that contains a template.
     const nodeStack: Array<ts.Node> = [];
-    let shouldAddPartImports = false;
-    // Only compile `html` tag if it was found in an import declaration,
-    // imported from lit or lit-html.
-    let shouldCompileFile = false;
-    const templatesThatCannotBeCompiled = new Set<ts.Node>();
 
     const findTemplates = <T extends ts.Node>(node: T) => {
       return ts.visitNode(node, (node: ts.Node): ts.Node => {
         nodeStack.push(node);
-        // Only compile files that import html from 'lit' or 'lit-html'.
-        if (
-          ts.isImportDeclaration(node) &&
-          ts.isStringLiteral(node.moduleSpecifier) &&
-          (node.moduleSpecifier.text === 'lit' ||
-            node.moduleSpecifier.text === 'lit-html') &&
-          node.importClause?.namedBindings != null &&
-          ts.isNamedImports(node.importClause.namedBindings)
-        ) {
-          const namedBindings = node.importClause.namedBindings;
-          shouldCompileFile ||= namedBindings.elements.some(
-            (imp) => ts.isIdentifier(imp.name) && imp.name.text === 'html'
-          );
-        }
+        this.shouldCompileFile ||= this.detectIfShouldCompileTemplate(node);
         if (isLitTemplate(node)) {
           const topStatement = nodeStack[1] as ts.Statement;
           const templateInfo = {
@@ -167,24 +124,51 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
             node,
             variableName: ts.factory.createUniqueName('lit_template'),
           };
-          const templates = topLevelStatementToTemplate.get(topStatement) ?? [];
+          const templates =
+            this.topLevelStatementToTemplate.get(topStatement) ?? [];
           templates.push(templateInfo);
-          topLevelStatementToTemplate.set(topStatement, templates);
-          expressionToTemplate.set(node, templateInfo);
+          this.topLevelStatementToTemplate.set(topStatement, templates);
+          this.expressionToTemplate.set(node, templateInfo);
         }
-        const result = ts.visitEachChild(node, findTemplates, context);
+        const result = ts.visitEachChild(node, findTemplates, this.context);
         nodeStack.pop();
         return result;
       });
     };
 
-    const rewriteTemplates = (node: ts.Node): ts.VisitResult<ts.Node> => {
-      const f = context.factory;
+    return findTemplates(sourceFile);
+  }
 
-      // Insert a top-level pre-compiled definiton of a template.
-      if (topLevelStatementToTemplate.has(node as ts.Statement)) {
+  /**
+   * Returns true if passed a node that marks the file for compilation.
+   * Currently files are marked for compilation if an importClause is detected
+   * that contains an `html` import from `lit` or `lit-html`.
+   */
+  private detectIfShouldCompileTemplate<T extends ts.Node>(node: T): boolean {
+    if (
+      ts.isImportDeclaration(node) &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      (node.moduleSpecifier.text === 'lit' ||
+        node.moduleSpecifier.text === 'lit-html') &&
+      node.importClause?.namedBindings != null &&
+      ts.isNamedImports(node.importClause.namedBindings)
+    ) {
+      const namedBindings = node.importClause.namedBindings;
+      return namedBindings.elements.some(
+        (imp) => ts.isIdentifier(imp.name) && imp.name.text === 'html'
+      );
+    }
+    return false;
+  }
+
+  private rewriteTemplates<T extends ts.Node>(parentNode: T): ts.Node {
+    const rewriteTemplates = (node: ts.Node): ts.VisitResult<ts.Node> => {
+      const f = this.context.factory;
+
+      // Insert a top-level pre-compiled definition of a template.
+      if (this.topLevelStatementToTemplate.has(node as ts.Statement)) {
         const topLevelTemplates: ts.VariableStatement[] = [];
-        for (const template of topLevelStatementToTemplate.get(
+        for (const template of this.topLevelStatementToTemplate.get(
           node as ts.Statement
         )!) {
           const templateExpression = template.node.template;
@@ -237,7 +221,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
           let attrIndex = 0;
 
           traverse(ast, {
-            pre(node, _parent) {
+            pre: (node, _parent) => {
               if (isElement(node)) {
                 const attributesToRemove = new Set<unknown>();
                 if (node.attrs.length > 0) {
@@ -278,7 +262,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
                           index: nodeIndex,
                         });
                       }
-                      shouldAddPartImports = true;
+                      this.shouldAddPartImports = true;
                     }
                   }
                   node.attrs = node.attrs.filter(
@@ -416,20 +400,23 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
               )
             );
           } else {
-            templatesThatCannotBeCompiled.add(template.node);
+            this.templatesThatCannotBeCompiled.add(template.node);
           }
         }
 
         return [
           ...topLevelTemplates,
           // Traverse into template-containing top-level statement
-          ts.visitEachChild(node, rewriteTemplates, context),
+          ts.visitEachChild(node, rewriteTemplates, this.context),
         ];
       }
 
       // Rewrite the template expression to use the pre-compiled template
-      if (isLitTemplate(node) && !templatesThatCannotBeCompiled.has(node)) {
-        const templateInfo = expressionToTemplate.get(node);
+      if (
+        isLitTemplate(node) &&
+        !this.templatesThatCannotBeCompiled.has(node)
+      ) {
+        const templateInfo = this.expressionToTemplate.get(node);
         if (templateInfo === undefined) {
           throw new Error(`template info not found for ${node.getText()}`);
         }
@@ -438,7 +425,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
         const templateExpression = ts.visitEachChild(
           node.template,
           rewriteTemplates,
-          context
+          this.context
         );
 
         return f.createObjectLiteralExpression([
@@ -453,29 +440,18 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> => {
           ),
         ]);
       }
-      return ts.visitEachChild(node, rewriteTemplates, context);
+      return ts.visitEachChild(node, rewriteTemplates, this.context);
     };
+    const rewrittenNode = ts.visitNode(parentNode, rewriteTemplates);
+    if (!rewrittenNode) {
+      throw new Error(`Internal Error: Unexpected undefined 'rewrittenNode'.`);
+    }
+    return rewrittenNode;
+  }
+}
 
-    return (sourceFile: ts.SourceFile) => {
-      findTemplates(sourceFile);
-      if (!shouldCompileFile) {
-        return sourceFile;
-      }
-
-      const transformed_source_file = ts.visitNode(
-        sourceFile,
-        rewriteTemplates
-      ) as ts.SourceFile;
-      if (shouldAddPartImports) {
-        return addPartConstructorImport(
-          transformed_source_file,
-          context.factory
-        );
-      }
-      return transformed_source_file;
-    };
-  };
-};
+export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> =>
+  CompiledTemplatePass.get_transformer();
 
 /**
  * E.g. html`foo` or html`foo${bar}`
