@@ -156,6 +156,7 @@ packages/labs/compiler/development/
 packages/labs/compiler/node_modules/
 packages/labs/compiler/test/
 packages/labs/compiler/lib/
+packages/labs/compiler/**/test_files
 packages/labs/context/development/
 packages/labs/context/test/
 packages/labs/context/node_modules/
