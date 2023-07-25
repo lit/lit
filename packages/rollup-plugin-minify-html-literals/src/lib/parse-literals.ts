@@ -16,7 +16,7 @@ export function parseLiterals(
   };
 
   const literals: Template[] = [];
-  const visitedTemplates: any[] = [];
+  const visitedTemplates: unknown[] = [];
   strategy.walkNodes(strategy.getRootNode(source, options.fileName), node => {
     if (strategy.isTaggedTemplate(node)) {
       const template = strategy.getTaggedTemplateTemplate(node);

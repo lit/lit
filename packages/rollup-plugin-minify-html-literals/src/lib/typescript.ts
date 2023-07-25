@@ -50,7 +50,7 @@ export default <TypescriptStrategy>{
     }
   },
   getHeadTemplatePart(node: ts.TemplateLiteral | ts.TemplateHead) {
-    let fullText = node.getFullText(currentRoot);
+    const fullText = node.getFullText(currentRoot);
     // ignore prefix spaces and comments
     const startOffset = fullText.indexOf('`') + 1;
     const endOffset = ts.isTemplateHead(node) ? -2 : -1;

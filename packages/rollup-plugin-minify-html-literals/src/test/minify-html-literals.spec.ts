@@ -1,5 +1,6 @@
 import { expect } from 'chai';
 import MagicString, { SourceMapOptions } from 'magic-string';
+import { Options as HTMLOptions } from 'html-minifier';
 import { ParseLiteralsOptions, parseLiterals } from '../lib/parse-literals.js';
 import { Template, TemplatePart } from '../lib/models.js';
 import Sinon from 'sinon';
@@ -32,7 +33,7 @@ class MagicStringLike {
     };
   }
 
-  overwrite(_start: number, _end: number, _content: string): any {
+  overwrite(_start: number, _end: number, _content: string): void {
     // noop
   }
 
@@ -400,7 +401,7 @@ describe('minify-html-literals', () => {
             return defaultStrategy.combineHTMLStrings(parts, placeholder);
           }
         ),
-        minifyHTML: Sinon.spy((html: string, options?: any) => {
+        minifyHTML: Sinon.spy((html: string, options?: HTMLOptions) => {
           return defaultStrategy.minifyHTML(html, options);
         }),
         splitHTMLByPlaceholder: Sinon.spy(
@@ -469,7 +470,7 @@ describe('minify-html-literals', () => {
 
     it('should allow custom validation', () => {
       const customValidation = {
-        ensurePlaceholderValid: Sinon.spy((placeholder: any) => {
+        ensurePlaceholderValid: Sinon.spy((placeholder: unknown) => {
           return defaultValidation.ensurePlaceholderValid(placeholder);
         }),
         ensureHTMLPartsValid: Sinon.spy(

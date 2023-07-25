@@ -279,11 +279,11 @@ export function minifyHTMLLiterals(
   options.parseLiteralsOptions = {
     ...{ fileName: options.fileName },
     ...(options.parseLiteralsOptions || {})
-  } as any;
+  } as Partial<ParseLiteralsOptions>;
 
   const templates = options.parseLiterals(source, options.parseLiteralsOptions);
   const strategy =
-    <Strategy>(<CustomOptions<any>>options).strategy || defaultStrategy;
+    <Strategy>(<CustomOptions<unknown>>options).strategy || defaultStrategy;
   const { shouldMinify, shouldMinifyCSS } = options;
   let validate: Validation | undefined;
   if (options.validate !== false) {

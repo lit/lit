@@ -5,7 +5,7 @@ import createParseTests from './parse-tests.js';
 
 describe('parse-literals', () => {
   it('should allow overriding strategy', () => {
-    const result: any[] = [];
+    const result: unknown[] = [];
     const strategy = {
       getRootNode: sinon.fake(),
       walkNodes: sinon.fake.returns(result),

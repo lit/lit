@@ -70,7 +70,10 @@ describe('rollup-plugin-minify-html-literals', () => {
     );
 
     const plugin = minifyHTML({
-      minifyHTMLLiterals: customMinify as any
+      minifyHTMLLiterals: customMinify as (
+        source: string,
+        options?: minify.DefaultOptions | undefined
+      ) => minify.Result
     });
 
     plugin.transform.apply((context as unknown) as TransformPluginContext, [
