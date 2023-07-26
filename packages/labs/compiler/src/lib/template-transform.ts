@@ -6,14 +6,7 @@
 
 import ts from 'typescript';
 import {_$LH as litHtmlPrivate} from 'lit-html/private-ssr-support.js';
-import {
-  traverse,
-  parseFragment,
-  isCommentNode,
-  DocumentFragment,
-  isTextNode,
-} from './parse5-utils.js';
-import {serialize} from 'parse5';
+import {parseFragment, serialize} from 'parse5';
 import {
   createCompiledTemplate,
   createCompiledTemplateResult,
@@ -22,6 +15,7 @@ import {
   PartType,
   TemplatePart,
 } from './ast-fragments.js';
+import {isCommentNode, isTextNode, traverse} from '@parse5/tools';
 const {getTemplateHtml, markerMatch} = litHtmlPrivate;
 
 interface TemplateInfo {
@@ -188,27 +182,29 @@ class CompiledTemplatePass {
     }
     const ast = parseFragment(html as unknown as string, {
       sourceCodeLocationInfo: false,
-    }) as DocumentFragment;
+    });
 
     let nodeIndex = -1;
-    traverse(ast, (node) => {
-      if (isCommentNode(node)) {
-        if (node.data === markerMatch) {
-          parts.push({
-            type: PartType.CHILD,
-            index: nodeIndex,
-          });
-          // We have stored a reference to this comment node in the
-          // TemplatePart, so we can remove the comment text. At runtime we
-          // would leave the marker comment, but when compiling it's
-          // advantageous to save on file size.
-          node.data = '';
+    traverse(ast, {
+      'pre:node': (node) => {
+        if (isCommentNode(node)) {
+          if (node.data === markerMatch) {
+            parts.push({
+              type: PartType.CHILD,
+              index: nodeIndex,
+            });
+            // We have stored a reference to this comment node in the
+            // TemplatePart, so we can remove the comment text. At runtime we
+            // would leave the marker comment, but when compiling it's
+            // advantageous to save on file size.
+            node.data = '';
+          }
+        } else if (isTextNode(node)) {
+          // Do not count text nodes.
+          nodeIndex--;
         }
-      } else if (isTextNode(node)) {
-        // Do not count text nodes.
-        nodeIndex--;
-      }
-      nodeIndex++;
+        nodeIndex++;
+      },
     });
 
     const preparedHtml = serialize(ast).replace(
