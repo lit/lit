@@ -141,6 +141,7 @@ packages/rollup-plugin-minify-html-literals/**/*.js
 packages/rollup-plugin-minify-html-literals/**/*.map
 packages/rollup-plugin-minify-html-literals/**/*.d.ts
 !packages/rollup-plugin-minify-html-literals/src/lib/types/**.d.ts
+
 packages/tests/node_modules/
 packages/tests/utils/
 packages/tests/**/run-web-tests.js
