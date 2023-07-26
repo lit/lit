@@ -23,11 +23,6 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
-packages/compiler/development/
-packages/compiler/node_modules/
-packages/compiler/test/
-packages/compiler/lib/
-
 packages/internal-scripts/node_modules/
 packages/internal-scripts/lib/
 
@@ -173,6 +168,11 @@ packages/labs/cli/test-gen/
 
 packages/labs/cli-localize/lib/
 packages/labs/cli-localize/node_modules/
+
+packages/labs/compiler/development/
+packages/labs/compiler/node_modules/
+packages/labs/compiler/test/
+packages/labs/compiler/lib/
 
 packages/labs/context/development/
 packages/labs/context/test/
