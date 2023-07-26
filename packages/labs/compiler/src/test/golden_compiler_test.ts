@@ -71,14 +71,13 @@ for (const file of readdirSync(TEST_FILES_DIR, {withFileTypes: true})) {
     });
 
     // Update golden file contents
-    if (
-      UPDATE_GOLDENS &&
-      result.outputText.trim() !== expectedContents.trim()
-    ) {
+    if (UPDATE_GOLDENS && result.outputText !== expectedContents) {
+      console.log('Updating golden: ', testGoldenFilename);
       await writeFile(resolvedGoldenFilename, result.outputText);
+      return;
     }
 
-    assert.fixture(result.outputText.trim(), expectedContents.trim());
+    assert.fixture(result.outputText, expectedContents);
   });
 }
 

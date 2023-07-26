@@ -45,17 +45,22 @@
       ],
       "files": [
         "test_files/*.ts",
+        "test_files/*.js"
+      ]
+    },
+    "update-goldens": {
+      "command": "uvu test \".*_test\\.js$\"",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "test_files/*.ts",
         "test_files/*.js",
         "!test_files/*.golden.js"
       ],
-      "env": {
-        "UPDATE_LIT_COMPILER_GOLDENS": {
-          "external": true
-        }
-      }
-    },
-    "update-goldens": {
-      "command": "npm run test",
+      "output": [
+        "test_files/*.golden.js"
+      ],
       "env": {
         "UPDATE_LIT_COMPILER_GOLDENS": "true"
       }
