@@ -70,11 +70,24 @@ const importNamespaceDeclaration = (
  */
 export const addPartConstructorImport = (
   node: ts.SourceFile,
+  securityBrand: ts.Statement,
   factory: ts.NodeFactory
 ): ts.SourceFile => {
   const uniqueLitHtmlPrivateIdentifier =
     factory.createUniqueName('litHtmlPrivate');
+  const brandIdx = node.statements.indexOf(securityBrand);
+  if (brandIdx === -1) {
+    throw new Error(
+      `Internal Error: Could not find security brand declaration.`
+    );
+  }
+  // Instead of adding the Part constructor import at the top of the file, add
+  // it immediately before the security brand. This keeps comments on the top of
+  // the file.
+  const beforeSecurityBrand = node.statements.slice(0, brandIdx);
+  const afterSecurtyBrand = node.statements.slice(brandIdx);
   return factory.updateSourceFile(node, [
+    ...beforeSecurityBrand,
     ...([
       importNamespaceDeclaration(
         factory,
@@ -124,7 +137,7 @@ export const addPartConstructorImport = (
         )
       ),
     ] as ts.Statement[]),
-    ...node.statements,
+    ...afterSecurtyBrand,
   ]);
 };
 
@@ -143,13 +156,13 @@ export const createCompiledTemplate = ({
   variableName,
   preparedHtml,
   parts,
-  secrityBrand,
+  securityBrand,
 }: {
   f: ts.NodeFactory;
   variableName: ts.Identifier;
   preparedHtml: string;
   parts: ts.ArrayLiteralExpression;
-  secrityBrand: ts.Identifier;
+  securityBrand: ts.Identifier;
 }) =>
   f.createVariableStatement(
     undefined,
@@ -163,7 +176,7 @@ export const createCompiledTemplate = ({
             f.createPropertyAssignment(
               'h',
               f.createTaggedTemplateExpression(
-                secrityBrand,
+                securityBrand,
                 undefined,
                 f.createNoSubstitutionTemplateLiteral(preparedHtml)
               )

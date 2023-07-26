@@ -64,8 +64,14 @@ class CompiledTemplatePass {
           );
         }
         if (pass.shouldAddPartImports) {
+          if (pass.addedSecurityBrandVariableStatement === null) {
+            throw new Error(
+              `Invariant error: a security brand must exist if templates were compiled`
+            );
+          }
           return addPartConstructorImport(
             transformedSourceFile,
+            pass.addedSecurityBrandVariableStatement,
             context.factory
           );
         }
@@ -84,7 +90,7 @@ class CompiledTemplatePass {
   // imported from lit or lit-html.
   private shouldCompileFile = false;
   private shouldAddPartImports = false;
-  private haveAddedSecurityBrandVariableStatement = false;
+  addedSecurityBrandVariableStatement: ts.Statement | null = null;
 
   private securityBrandIdent: ts.Identifier;
   private constructor(private readonly context: ts.TransformationContext) {
@@ -354,7 +360,7 @@ class CompiledTemplatePass {
           variableName: template.variableName,
           preparedHtml,
           parts,
-          secrityBrand: this.securityBrandIdent,
+          securityBrand: this.securityBrandIdent,
         })
       );
     }
@@ -367,16 +373,16 @@ class CompiledTemplatePass {
       ) as ts.Statement,
     ];
     if (
-      !this.haveAddedSecurityBrandVariableStatement &&
+      this.addedSecurityBrandVariableStatement === null &&
       topLevelTemplates.length
     ) {
-      addedTopLevelTemplates.unshift(
-        createSecurityBrandTagFunction({
+      this.addedSecurityBrandVariableStatement = createSecurityBrandTagFunction(
+        {
           f,
           securityBrandIdent: this.securityBrandIdent,
-        })
+        }
       );
-      this.haveAddedSecurityBrandVariableStatement = true;
+      addedTopLevelTemplates.unshift(this.addedSecurityBrandVariableStatement);
     }
 
     return addedTopLevelTemplates;
