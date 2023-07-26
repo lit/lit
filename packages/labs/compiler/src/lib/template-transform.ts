@@ -19,8 +19,31 @@ import {isCommentNode, isTextNode, traverse} from '@parse5/tools';
 const {getTemplateHtml, markerMatch} = litHtmlPrivate;
 
 interface TemplateInfo {
+  /**
+   * The top level statement in module scope containing the `node`
+   * TaggedTemplateExpression as a child within it. This provides a module
+   * scoped top level statement that we can generate the `CompiledTemplate`
+   * directly before.
+   *
+   * For example given:
+   *
+   * ```ts
+   * function () {
+   *  html`hi`;
+   * }
+   * ```
+   *
+   * The created `TemplateInfo` data will contain the `function` node as the
+   * `topStatement`, the `html` tagged template expression in `node`, and a
+   * unique identifier in `variableName`.
+   */
   topStatement: ts.Statement;
   node: ts.TaggedTemplateExpression;
+  /**
+   * The generated unique identifier to represent this template. The generated
+   * `CompiledTemplate` is assigned to this `variableName`, and the generated
+   * `CompiledTemplateResult` references this `variableName`.
+   */
   variableName: ts.Identifier;
 }
 
@@ -227,7 +250,8 @@ class CompiledTemplatePass {
   private addTopLevelCompiledTemplate(node: ts.Node): ts.Statement[] {
     if (!this.topLevelStatementToTemplate.has(node as ts.Statement)) {
       throw new Error(
-        `Invalid usage of 'addTopLevelCompiledTemplate'. 'this.topLevelStatementToTemplate' must contain 'node'.`
+        `Internal Error: Invalid usage of 'addTopLevelCompiledTemplate'. ` +
+          `'this.topLevelStatementToTemplate' must contain 'node'.`
       );
     }
 
@@ -267,7 +291,7 @@ class CompiledTemplatePass {
     // Add the security brand once.
     if (
       this.addedSecurityBrandVariableStatement === null &&
-      topLevelTemplates.length
+      topLevelTemplates.length > 0
     ) {
       this.addedSecurityBrandVariableStatement = createSecurityBrandTagFunction(
         {

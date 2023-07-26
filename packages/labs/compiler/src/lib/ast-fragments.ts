@@ -30,15 +30,15 @@ export type TemplatePart = {
 export const createCompiledTemplate = ({
   f,
   variableName,
+  securityBrand,
   preparedHtml,
   parts,
-  securityBrand,
 }: {
   f: ts.NodeFactory;
   variableName: ts.Identifier;
+  securityBrand: ts.Identifier;
   preparedHtml: string;
   parts: ts.ArrayLiteralExpression;
-  securityBrand: ts.Identifier;
 }) =>
   f.createVariableStatement(
     undefined,
@@ -69,7 +69,7 @@ export const createCompiledTemplate = ({
  * Creates a CompiledTemplateResult with the shape:
  *
  * ```ts
- * {['_$litType$']: <variableName>, values: [...<templateExpression>]}
+ * {['_$litType$']: <variableName>, values: <templateExpression.expressions>}
  * ```
  *
  * where `templateExpression` contains the dynamic values from the original
