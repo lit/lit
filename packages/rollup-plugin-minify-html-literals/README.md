@@ -5,7 +5,7 @@
 ```js
 import babel from 'rollup-plugin-babel';
 import minifyHTML from '@lit/rollup-plugin-minify-html-literals';
-import { uglify } from 'rollup-plugin-uglify';
+import {uglify} from 'rollup-plugin-uglify';
 
 export default {
   entry: 'index.js',
@@ -55,7 +55,7 @@ export default {
 
 ```js
 import minifyHTML from '@lit/rollup-plugin-minify-html-literals';
-import { defaultShouldMinify } from 'minify-html-literals';
+import {defaultShouldMinify} from 'minify-html-literals';
 
 export default {
   entry: 'index.js',

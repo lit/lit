@@ -1,8 +1,8 @@
-import { expect } from 'chai';
-import MagicString, { SourceMapOptions } from 'magic-string';
-import { Options as HTMLOptions } from 'html-minifier';
-import { ParseLiteralsOptions, parseLiterals } from '../lib/parse-literals.js';
-import { Template, TemplatePart } from '../lib/models.js';
+import {expect} from 'chai';
+import MagicString, {SourceMapOptions} from 'magic-string';
+import {Options as HTMLOptions} from 'html-minifier';
+import {ParseLiteralsOptions, parseLiterals} from '../lib/parse-literals.js';
+import {Template, TemplatePart} from '../lib/models.js';
 import Sinon from 'sinon';
 
 import {
@@ -13,7 +13,7 @@ import {
   defaultValidation,
   minifyHTMLLiterals,
 } from '../lib/minify-html-literals.js';
-import { defaultMinifyOptions, defaultStrategy } from '../lib/strategy.js';
+import {defaultMinifyOptions, defaultStrategy} from '../lib/strategy.js';
 
 class MagicStringLike {
   generateMap(options?: Partial<SourceMapOptions>): SourceMap {
@@ -239,19 +239,19 @@ describe('minify-html-literals', () => {
   `;
 
   it('should minify "html" and "css" tagged templates', () => {
-    const result = minifyHTMLLiterals(SOURCE, { fileName: 'test.js' });
+    const result = minifyHTMLLiterals(SOURCE, {fileName: 'test.js'});
     expect(result).to.be.an('object');
     expect(result!.code).to.equal(SOURCE_MIN);
   });
 
   it('should minify "svg" tagged templates', () => {
-    const result = minifyHTMLLiterals(SVG_SOURCE, { fileName: 'test.js' });
+    const result = minifyHTMLLiterals(SVG_SOURCE, {fileName: 'test.js'});
     expect(result).to.be.an('object');
     expect(result!.code).to.equal(SVG_SOURCE_MIN);
   });
 
   it('should minify html with attribute placeholders that have no quotes and JS comments', () => {
-    const result = minifyHTMLLiterals(COMMENT_SOURCE, { fileName: 'test.js' });
+    const result = minifyHTMLLiterals(COMMENT_SOURCE, {fileName: 'test.js'});
     expect(result).to.be.an('object');
     expect(result!.code).to.equal(COMMENT_SOURCE_MIN);
   });
@@ -281,12 +281,12 @@ describe('minify-html-literals', () => {
   });
 
   it('should return null if source is already minified', () => {
-    const result = minifyHTMLLiterals(SOURCE_MIN, { fileName: 'test.js' });
+    const result = minifyHTMLLiterals(SOURCE_MIN, {fileName: 'test.js'});
     expect(result).to.be.null;
   });
 
   it('should return a v3 source map', () => {
-    const result = minifyHTMLLiterals(SOURCE, { fileName: 'test.js' });
+    const result = minifyHTMLLiterals(SOURCE, {fileName: 'test.js'});
     expect(result).to.be.an('object');
     expect(result!.map).to.be.an('object');
     expect(result!.map!.version).to.equal(3);
@@ -295,7 +295,7 @@ describe('minify-html-literals', () => {
 
   // TODO: fix this case
   it('fails to minify static html templates', () => {
-    expect(() => minifyHTMLLiterals(STATIC_SOURCE, { fileName: 'test.js' })).to
+    expect(() => minifyHTMLLiterals(STATIC_SOURCE, {fileName: 'test.js'})).to
       .throw;
   });
 
@@ -311,7 +311,7 @@ describe('minify-html-literals', () => {
     });
 
     it('should use defaultMinifyOptions', () => {
-      minifyHTMLLiterals(SOURCE, { fileName: 'test.js' });
+      minifyHTMLLiterals(SOURCE, {fileName: 'test.js'});
       const parts = parseLiterals(SOURCE)[1].parts;
       const html = defaultStrategy.combineHTMLStrings(
         parts,
@@ -323,8 +323,8 @@ describe('minify-html-literals', () => {
     });
 
     it('should allow custom partial minifyOptions', () => {
-      const minifyOptions = { caseSensitive: false };
-      minifyHTMLLiterals(SOURCE, { fileName: 'test.js', minifyOptions });
+      const minifyOptions = {caseSensitive: false};
+      minifyHTMLLiterals(SOURCE, {fileName: 'test.js', minifyOptions});
       const parts = parseLiterals(SOURCE)[1].parts;
       const html = defaultStrategy.combineHTMLStrings(
         parts,
@@ -529,42 +529,41 @@ describe('minify-html-literals', () => {
 
   describe('defaultShouldMinify()', () => {
     it('should return true if the template is tagged with any "html" text', () => {
-      expect(defaultShouldMinify({ tag: 'html', parts: [] })).to.be.true;
-      expect(defaultShouldMinify({ tag: 'HTML', parts: [] })).to.be.true;
-      expect(defaultShouldMinify({ tag: 'hTML', parts: [] })).to.be.true;
-      expect(defaultShouldMinify({ tag: 'getHTML()', parts: [] })).to.be.true;
-      expect(defaultShouldMinify({ tag: 'templateHtml()', parts: [] })).to.be
+      expect(defaultShouldMinify({tag: 'html', parts: []})).to.be.true;
+      expect(defaultShouldMinify({tag: 'HTML', parts: []})).to.be.true;
+      expect(defaultShouldMinify({tag: 'hTML', parts: []})).to.be.true;
+      expect(defaultShouldMinify({tag: 'getHTML()', parts: []})).to.be.true;
+      expect(defaultShouldMinify({tag: 'templateHtml()', parts: []})).to.be
         .true;
     });
 
     it('should return false if the template is not tagged or does not contain "html"', () => {
-      expect(defaultShouldMinify({ parts: [] })).to.be.false;
-      expect(defaultShouldMinify({ tag: 'css', parts: [] })).to.be.false;
+      expect(defaultShouldMinify({parts: []})).to.be.false;
+      expect(defaultShouldMinify({tag: 'css', parts: []})).to.be.false;
     });
 
     it('should return true if the template is tagged with any "svg" text', () => {
-      expect(defaultShouldMinify({ tag: 'svg', parts: [] })).to.be.true;
-      expect(defaultShouldMinify({ tag: 'SVG', parts: [] })).to.be.true;
-      expect(defaultShouldMinify({ tag: 'sVg', parts: [] })).to.be.true;
-      expect(defaultShouldMinify({ tag: 'getSVG()', parts: [] })).to.be.true;
-      expect(defaultShouldMinify({ tag: 'templateSvg()', parts: [] })).to.be
-        .true;
+      expect(defaultShouldMinify({tag: 'svg', parts: []})).to.be.true;
+      expect(defaultShouldMinify({tag: 'SVG', parts: []})).to.be.true;
+      expect(defaultShouldMinify({tag: 'sVg', parts: []})).to.be.true;
+      expect(defaultShouldMinify({tag: 'getSVG()', parts: []})).to.be.true;
+      expect(defaultShouldMinify({tag: 'templateSvg()', parts: []})).to.be.true;
     });
   });
 
   describe('defaultShouldMinifyCSS()', () => {
     it('should return true if the template is tagged with any "css" text', () => {
-      expect(defaultShouldMinifyCSS({ tag: 'css', parts: [] })).to.be.true;
-      expect(defaultShouldMinifyCSS({ tag: 'CSS', parts: [] })).to.be.true;
-      expect(defaultShouldMinifyCSS({ tag: 'csS', parts: [] })).to.be.true;
-      expect(defaultShouldMinifyCSS({ tag: 'getCSS()', parts: [] })).to.be.true;
-      expect(defaultShouldMinifyCSS({ tag: 'templateCss()', parts: [] })).to.be
+      expect(defaultShouldMinifyCSS({tag: 'css', parts: []})).to.be.true;
+      expect(defaultShouldMinifyCSS({tag: 'CSS', parts: []})).to.be.true;
+      expect(defaultShouldMinifyCSS({tag: 'csS', parts: []})).to.be.true;
+      expect(defaultShouldMinifyCSS({tag: 'getCSS()', parts: []})).to.be.true;
+      expect(defaultShouldMinifyCSS({tag: 'templateCss()', parts: []})).to.be
         .true;
     });
 
     it('should return false if the template is not tagged or does not contain "css"', () => {
-      expect(defaultShouldMinifyCSS({ parts: [] })).to.be.false;
-      expect(defaultShouldMinifyCSS({ tag: 'html', parts: [] })).to.be.false;
+      expect(defaultShouldMinifyCSS({parts: []})).to.be.false;
+      expect(defaultShouldMinifyCSS({tag: 'html', parts: []})).to.be.false;
     });
   });
 

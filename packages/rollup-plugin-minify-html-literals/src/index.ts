@@ -1,10 +1,5 @@
-import {
-  Plugin,
-  SourceDescription,
-  TransformHook,
-  PluginContext,
-} from 'rollup';
-import { createFilter } from 'rollup-pluginutils';
+import {Plugin, SourceDescription, TransformHook, PluginContext} from 'rollup';
+import {createFilter} from 'rollup-pluginutils';
 import * as minify from './lib/minify-html-literals.js';
 
 /**
@@ -41,7 +36,7 @@ export interface Options {
 
 export default function (
   options: Options = {}
-): Plugin & { transform: TransformHook } {
+): Plugin & {transform: TransformHook} {
   if (!options.minifyHTMLLiterals) {
     options.minifyHTMLLiterals = minify.minifyHTMLLiterals;
   }

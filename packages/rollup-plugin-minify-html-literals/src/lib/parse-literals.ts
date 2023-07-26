@@ -1,4 +1,4 @@
-import { Template, Strategy } from './models.js';
+import {Template, Strategy} from './models.js';
 import typescript from './typescript.js';
 
 export interface ParseLiteralsOptions {

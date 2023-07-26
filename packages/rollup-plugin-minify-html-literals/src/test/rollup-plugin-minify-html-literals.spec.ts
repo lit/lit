@@ -1,13 +1,13 @@
-import { expect } from 'chai';
+import {expect} from 'chai';
 import * as path from 'path';
-import { TransformPluginContext } from 'rollup';
+import {TransformPluginContext} from 'rollup';
 import sinon from 'sinon';
 import * as minify from '../lib/minify-html-literals.js';
-import minifyHTML, { Options } from '../index.js';
+import minifyHTML, {Options} from '../index.js';
 
 describe('rollup-plugin-minify-html-literals', () => {
   const fileName = path.resolve('test.js');
-  let context: { warn: sinon.SinonSpy; error: sinon.SinonSpy };
+  let context: {warn: sinon.SinonSpy; error: sinon.SinonSpy};
   beforeEach(() => {
     context = {
       warn: sinon.spy(),

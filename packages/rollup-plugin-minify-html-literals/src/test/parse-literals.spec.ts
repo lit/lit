@@ -1,6 +1,6 @@
-import { expect } from 'chai';
+import {expect} from 'chai';
 import sinon from 'sinon';
-import { parseLiterals } from '../lib/parse-literals.js';
+import {parseLiterals} from '../lib/parse-literals.js';
 import createParseTests from './parse-tests.js';
 
 describe('parse-literals', () => {
@@ -16,7 +16,7 @@ describe('parse-literals', () => {
       getTemplateParts: sinon.fake(),
     };
 
-    parseLiterals('true', { strategy });
+    parseLiterals('true', {strategy});
     expect(strategy.getRootNode.calledWith('true')).to.be.true;
     expect(strategy.walkNodes.called).to.be.true;
   });

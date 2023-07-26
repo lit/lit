@@ -1,7 +1,7 @@
-import MagicString, { SourceMapOptions } from 'magic-string';
-import { ParseLiteralsOptions, parseLiterals } from './parse-literals.js';
-import { Template, TemplatePart } from './models.js';
-import { Strategy, defaultMinifyOptions, defaultStrategy } from './strategy.js';
+import MagicString, {SourceMapOptions} from 'magic-string';
+import {ParseLiteralsOptions, parseLiterals} from './parse-literals.js';
+import {Template, TemplatePart} from './models.js';
+import {Strategy, defaultMinifyOptions, defaultStrategy} from './strategy.js';
 
 /**
  * Options for <code>minifyHTMLLiterals()</code>.
@@ -65,7 +65,7 @@ export interface BaseOptions {
    * strings are overridden. Use <code>generateSourceMap</code> if you want to
    * change how source maps are created.
    */
-  MagicString?: { new (source: string): MagicStringLike };
+  MagicString?: {new (source: string): MagicStringLike};
   /**
    * Override how template literals are parsed from a source string.
    */
@@ -277,14 +277,14 @@ export function minifyHTMLLiterals(
   }
 
   options.parseLiteralsOptions = {
-    ...{ fileName: options.fileName },
+    ...{fileName: options.fileName},
     ...(options.parseLiteralsOptions || {}),
   } as Partial<ParseLiteralsOptions>;
 
   const templates = options.parseLiterals(source, options.parseLiteralsOptions);
   const strategy =
     <Strategy>(<CustomOptions<unknown>>options).strategy || defaultStrategy;
-  const { shouldMinify, shouldMinifyCSS } = options;
+  const {shouldMinify, shouldMinifyCSS} = options;
   let validate: Validation | undefined;
   if (options.validate !== false) {
     validate = options.validate || defaultValidation;

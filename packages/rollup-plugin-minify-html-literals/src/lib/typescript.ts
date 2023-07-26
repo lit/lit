@@ -1,5 +1,5 @@
 import ts from 'typescript';
-import { Strategy, TemplatePart } from './models.js';
+import {Strategy, TemplatePart} from './models.js';
 
 export interface TypescriptStrategy extends Strategy<ts.Node> {
   walkChildNodes(node: ts.Node, visit: (node: ts.Node) => void): void;

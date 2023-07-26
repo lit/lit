@@ -1,12 +1,12 @@
 /// <reference types="./types/clean-css.d.ts" />
 // Reference needed for d.ts distribution files in rollup-plugin-minify-html-literals
-import CleanCSS, { OptionsOutput } from 'clean-css';
+import CleanCSS, {OptionsOutput} from 'clean-css';
 import {
   OptimizationLevel,
   optimizationLevelFrom,
 } from 'clean-css/lib/options/optimization-level.js';
-import { Options as HTMLOptions, minify } from 'html-minifier';
-import { TemplatePart } from './models.js';
+import {Options as HTMLOptions, minify} from 'html-minifier';
+import {TemplatePart} from './models.js';
 
 /**
  * A strategy on how to minify HTML and optionally CSS.
@@ -118,7 +118,7 @@ export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
         options.minifyCSS !== true &&
         typeof options.minifyCSS !== 'function'
       ) {
-        minifyCSSOptions = { ...options.minifyCSS };
+        minifyCSSOptions = {...options.minifyCSS};
       } else {
         minifyCSSOptions = {};
       }
