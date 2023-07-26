@@ -2,7 +2,7 @@ name: Report Benchmark Results
 
 on:
   workflow_run:
-    workflows: ['Benchmarks Test']
+    workflows: [Benchmarks]
     branches: ['**']
     types:
       - completed
