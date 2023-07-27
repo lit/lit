@@ -67,6 +67,9 @@ class CompiledTemplatePass {
       return (sourceFile: ts.SourceFile): ts.SourceFile => {
         const pass = new CompiledTemplatePass(context);
         pass.findTemplates(sourceFile);
+        if (!pass.shouldCompileFile) {
+          return sourceFile;
+        }
         const transformedSourceFile = pass.rewriteTemplates(sourceFile);
         if (!ts.isSourceFile(transformedSourceFile)) {
           throw new Error(
@@ -89,6 +92,10 @@ class CompiledTemplatePass {
     ts.TaggedTemplateExpression,
     TemplateInfo
   >();
+  /**
+   * Only compile the file if an `html` tag was imported from lit or lit-html.
+   */
+  private shouldCompileFile = false;
   /**
    * Track the added security brand AST node so we only add one.
    */
@@ -117,6 +124,7 @@ class CompiledTemplatePass {
     const findTemplates = <T extends ts.Node>(node: T) => {
       return ts.visitNode(node, (node: ts.Node): ts.Node => {
         nodeStack.push(node);
+        this.shouldCompileFile ||= this.shouldMarkFileForCompilation(node);
         if (isLitTemplate(node)) {
           const topStatement = nodeStack[1] as ts.Statement;
           const templateInfo = {
@@ -137,6 +145,28 @@ class CompiledTemplatePass {
     };
 
     return findTemplates(sourceFile);
+  }
+
+  /**
+   * Returns true if passed a node that marks the file for compilation.
+   * Currently files are marked for compilation if an importClause is detected
+   * that contains an `html` import from `lit` or `lit-html`.
+   */
+  private shouldMarkFileForCompilation<T extends ts.Node>(node: T): boolean {
+    if (
+      ts.isImportDeclaration(node) &&
+      ts.isStringLiteral(node.moduleSpecifier) &&
+      (node.moduleSpecifier.text === 'lit' ||
+        node.moduleSpecifier.text === 'lit-html') &&
+      node.importClause?.namedBindings != null &&
+      ts.isNamedImports(node.importClause.namedBindings)
+    ) {
+      const namedBindings = node.importClause.namedBindings;
+      return namedBindings.elements.some(
+        (imp) => ts.isIdentifier(imp.name) && imp.name.text === 'html'
+      );
+    }
+    return false;
   }
 
   /**
@@ -356,10 +386,6 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> =>
 
 /**
  * E.g. html`foo` or html`foo${bar}`
- *
- * TODO(ajakubowicz): Figure out how to handle detecting templates to compile
- * correctly and robustly. We want to avoid situations where `html` imported
- * from 'lit/static.js' is compiled.
  */
 const isLitTemplate = (node: ts.Node): node is ts.TaggedTemplateExpression =>
   ts.isTaggedTemplateExpression(node) &&
