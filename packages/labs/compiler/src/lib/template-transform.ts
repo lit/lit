@@ -230,6 +230,8 @@ class CompiledTemplatePass {
       },
     });
 
+    // TODO(ajakubowicz): Only replace comments with markers. Otherwise if this
+    // pattern is detected in a raw text node we miscompile.
     const preparedHtml = serialize(ast).replace(
       /(<!---->)|(<!--\?-->)/g,
       '<?>'
@@ -354,6 +356,10 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> =>
 
 /**
  * E.g. html`foo` or html`foo${bar}`
+ *
+ * TODO(ajakubowicz): Figure out how to handle detecting templates to compile
+ * correctly and robustly. We want to avoid situations where `html` imported
+ * from 'lit/static.js' is compiled.
  */
 const isLitTemplate = (node: ts.Node): node is ts.TaggedTemplateExpression =>
   ts.isTaggedTemplateExpression(node) &&

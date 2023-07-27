@@ -29,7 +29,7 @@ if (UPDATE_GOLDENS) {
   const underscore = '\x1b[4m';
   const bold = '\x1b[1m';
   console.log(
-    `${green}${underscore}${bold}Updating @lit/compiler goldens${resetColor}`
+    `${green}${underscore}${bold}Updating @lit-labs/compiler goldens${resetColor}`
   );
 }
 
