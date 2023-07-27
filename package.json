@@ -54,6 +54,7 @@
         "./packages/ts-transformers:build",
         "./packages/labs/analyzer:build",
         "./packages/labs/cli:build",
+        "./packages/labs/compiler:build",
         "./packages/labs/context:build",
         "./packages/labs/eleventy-plugin-lit:build",
         "./packages/labs/gen-utils:build",
@@ -91,6 +92,7 @@
         "./packages/localize-tools:build:ts",
         "./packages/reactive-element:build:ts",
         "./packages/ts-transformers:build:ts",
+        "./packages/labs/compiler:build:ts",
         "./packages/labs/context:build:ts",
         "./packages/labs/eleventy-plugin-lit:build:ts",
         "./packages/labs/motion:build:ts",
@@ -141,6 +143,7 @@
         "./packages/ts-transformers:test",
         "./packages/labs/analyzer:test",
         "./packages/labs/cli:test",
+        "./packages/labs/compiler:test",
         "./packages/labs/eleventy-plugin-lit:test",
         "./packages/labs/gen-utils:test",
         "./packages/labs/gen-wrapper-angular:test",
@@ -150,8 +153,7 @@
         "./packages/labs/ssr:test",
         "./packages/labs/ssr-react:test",
         "./packages/labs/testing:test",
-        "./packages/labs/virtualizer:test",
-        "./packages/labs/compiler:test"
+        "./packages/labs/virtualizer:test"
       ]
     },
     "test:lit-starter-js": {

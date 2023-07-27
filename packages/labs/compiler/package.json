@@ -16,11 +16,17 @@
     "url": "https://github.com/lit/lit/issues"
   },
   "scripts": {
+    "build": "wireit",
     "build:ts": "wireit",
     "test": "wireit",
     "update-goldens": "wireit"
   },
   "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts"
+      ]
+    },
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
