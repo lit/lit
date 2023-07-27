@@ -171,6 +171,7 @@ const wrapperModuleTemplate = (
   const hasEvents = elements.filter(({events}) => events.size).length > 0;
   const typeImports = getTypeImports(elements);
   const typeExports = getElementTypeExportsFromImports(typeImports);
+  moduleJsPath = moduleJsPath.replace(/\\/g, '/');
   return javascript`
  import * as React from 'react';
  import {createComponent${
