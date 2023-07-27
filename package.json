@@ -150,7 +150,8 @@
         "./packages/labs/ssr:test",
         "./packages/labs/ssr-react:test",
         "./packages/labs/testing:test",
-        "./packages/labs/virtualizer:test"
+        "./packages/labs/virtualizer:test",
+        "./packages/labs/compiler:test"
       ]
     },
     "test:lit-starter-js": {
