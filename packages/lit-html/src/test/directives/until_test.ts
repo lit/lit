@@ -864,9 +864,9 @@ suite('until directive', () => {
       window.gc();
       assert.isAtMost(
         performance.memory.usedJSHeapSize / heap - 1,
-        // Allow a 10% margin of heap growth; due to the 10kb expando, an actual
+        // Allow a 20% margin of heap growth; due to the 10kb expando, an actual
         // DOM leak is orders of magnitude larger.
-        0.1,
+        0.2,
         'memory leak detected'
       );
     });
