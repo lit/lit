@@ -137,10 +137,9 @@ packages/reactive-element/reactive-controller.*
 packages/rollup-plugin-minify-html-literals/node_modules
 packages/rollup-plugin-minify-html-literals/coverage
 packages/rollup-plugin-minify-html-literals/.nyc_output
-packages/rollup-plugin-minify-html-literals/**/*.js
-packages/rollup-plugin-minify-html-literals/**/*.map
-packages/rollup-plugin-minify-html-literals/**/*.d.ts
-!packages/rollup-plugin-minify-html-literals/src/lib/types/**.d.ts
+packages/rollup-plugin-minify-html-literals/lib
+packages/rollup-plugin-minify-html-literals/test
+packages/rollup-plugin-minify-html-literals/**/index.*
 
 packages/tests/node_modules/
 packages/tests/utils/

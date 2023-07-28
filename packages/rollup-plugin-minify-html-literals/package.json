@@ -33,7 +33,12 @@
   },
   "wireit": {
     "build": {
-      "command": "tsc && mkdir -p lib/types/ && cp -fr src/lib/types/ lib/types/",
+      "dependencies": [
+        "build:ts:types"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "files": [
         "src/**/*.ts",
@@ -42,15 +47,30 @@
       "output": [
         "index.{js,js.map,d.ts,d.ts.map}",
         "lib/**/*.{js,js.map,d.ts,d.ts.map}",
+        "!lib/types/*.d.ts",
         "test/**/*.{js,js.map,d.ts,d.ts.map}",
-        "tsconfig.tsbuildinfo",
-        ".nyc_output/"
+        "tsconfig.tsbuildinfo"
+      ]
+    },
+    "build:ts:types": {
+      "command": "treemirror src/lib/types lib/types \"*.d.ts\"",
+      "dependencies": [
+        "../internal-scripts:build",
+        "build:ts"
+      ],
+      "files": [],
+      "output": [
+        "lib/types/*.d.ts"
       ]
     },
     "test": {
       "command": "nyc mocha -r ts-node/register -r source-map-support/register test/*.js",
       "dependencies": [
         "build"
+      ],
+      "files": [],
+      "output": [
+        ".nyc_output/"
       ]
     }
   },

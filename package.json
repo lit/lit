@@ -91,6 +91,7 @@
         "./packages/localize:build:ts",
         "./packages/localize-tools:build:ts",
         "./packages/reactive-element:build:ts",
+        "./packages/rollup-plugin-minify-html-literals:build:ts",
         "./packages/ts-transformers:build:ts",
         "./packages/labs/context:build:ts",
         "./packages/labs/eleventy-plugin-lit:build:ts",
