@@ -115,8 +115,7 @@ export class ContextProvider<T extends Context<unknown, unknown>>
 
   hostConnected(): void {
     // emit an event to signal a provider is available for this context
-    const providerEvent = new ContextProviderEvent(this.context);
-    this.host.dispatchEvent(providerEvent);
+    this.host.dispatchEvent(new ContextProviderEvent(this.context));
   }
 
   private reparentSubscriptions(_childProviderHost: Element) {
