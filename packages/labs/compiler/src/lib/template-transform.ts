@@ -91,12 +91,12 @@ class CompiledTemplatePass {
           return sourceFile;
         }
         // Add part constructors import if required.
-        if (Object.keys(pass.partAliasIdentifiers).length > 0) {
+        if (Object.keys(pass.attributePartConstructorNames).length > 0) {
           return addPartConstructorImport({
             factory: context.factory,
             sourceFile: transformedSourceFile,
             securityBrand: pass.addedSecurityBrandVariableStatement,
-            partIdentifiers: pass.partAliasIdentifiers,
+            attributePartConstructorNameMap: pass.attributePartConstructorNames,
           });
         }
         return transformedSourceFile;
@@ -124,9 +124,13 @@ class CompiledTemplatePass {
    */
   addedSecurityBrandVariableStatement: ts.Statement | null = null;
   /**
-   * The unique identifier for each attribute part constructor.
+   * The unique identifier for each attribute part constructor. These are added
+   * while template preparation is done, and signal which parts need to be
+   * imported. If all keys are undefined, then no parts will be added to the
+   * compiled file.
    */
-  private readonly partAliasIdentifiers: AttributePartConstructorAliases = {};
+  private readonly attributePartConstructorNames: AttributePartConstructorAliases =
+    {};
   /**
    * Unique security brand identifier. Used as the tag function for the prepared
    * HTML.
@@ -325,20 +329,23 @@ class CompiledTemplatePass {
         const ctorType = part.ctorType;
         switch (ctorType) {
           case PartType.ATTRIBUTE: {
-            this.partAliasIdentifiers.AttributePart ??= f.createUniqueName('A');
+            this.attributePartConstructorNames.AttributePart ??=
+              f.createUniqueName('A');
             break;
           }
           case PartType.BOOLEAN_ATTRIBUTE: {
-            this.partAliasIdentifiers.BooleanAttributePart ??=
+            this.attributePartConstructorNames.BooleanAttributePart ??=
               f.createUniqueName('B');
             break;
           }
           case PartType.EVENT: {
-            this.partAliasIdentifiers.EventPart ??= f.createUniqueName('E');
+            this.attributePartConstructorNames.EventPart ??=
+              f.createUniqueName('E');
             break;
           }
           case PartType.PROPERTY: {
-            this.partAliasIdentifiers.PropertyPart ??= f.createUniqueName('P');
+            this.attributePartConstructorNames.PropertyPart ??=
+              f.createUniqueName('P');
             break;
           }
           default: {
@@ -389,7 +396,7 @@ class CompiledTemplatePass {
       const parts = createTemplateParts({
         f,
         parts: partData,
-        partIdentifiers: this.partAliasIdentifiers,
+        attributePartConstructorNameMap: this.attributePartConstructorNames,
       });
 
       topLevelTemplates.push(

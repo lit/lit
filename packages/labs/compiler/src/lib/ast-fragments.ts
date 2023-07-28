@@ -42,8 +42,8 @@ const attributePartConstructors = {
 } as const;
 
 /**
- * Mapping of part constructors to unique identifier. If undefined, the ctor
- * will not be imported.
+ * Mapping of part constructors to a unique identifier alias. If undefined, the
+ * constructor will not be imported.
  */
 export interface AttributePartConstructorAliases {
   AttributePart?: ts.Identifier;
@@ -52,6 +52,8 @@ export interface AttributePartConstructorAliases {
   EventPart?: ts.Identifier;
 }
 
+const attributePartConstructorNames = Object.values(attributePartConstructors);
+
 /**
  * Creates the statement:
  *
@@ -59,7 +61,7 @@ export interface AttributePartConstructorAliases {
  * import * as <namespace> from "<moduleSpecifier>"
  * ```
  */
-const importNamespaceDeclaration = (
+const createImportNamespaceDeclaration = (
   factory: ts.NodeFactory,
   namespace: ts.Identifier,
   moduleSpecifier: ts.StringLiteral
@@ -86,17 +88,27 @@ const importNamespaceDeclaration = (
  * import * as litHtmlPrivate_1 from "lit-html/private-ssr-support.js";
  * const { AttributePart: <AttributePart alias>, PropertyPart: <PropertyPart alias>, BooleanAttributePart: <BooleanAttributePart alias>, EventPart: <EventPart alias> } = litHtmlPrivate_1._$LH;
  * ```
+ *
+ * @param options
+ * @param {ts.NodeFactory} options.factory
+ * Factory for updating and creating AST nodes.
+ * @param {ts.SourceFile} options.sourceFile
+ * The sourcefile to add the parts constructor import.
+ * @param {ts.Statement} options.securityBrand
+ * the tag function declaration for the security brand.
+ * @param {AttributePartConstructorAliases} options.attributePartConstructorNameMap
+ * a map to the unique identifier for each attribute part constructor.
  */
 export const addPartConstructorImport = ({
   factory,
   sourceFile,
   securityBrand,
-  partIdentifiers,
+  attributePartConstructorNameMap,
 }: {
   sourceFile: ts.SourceFile;
   securityBrand: ts.Statement;
   factory: ts.NodeFactory;
-  partIdentifiers: AttributePartConstructorAliases;
+  attributePartConstructorNameMap: AttributePartConstructorAliases;
 }): ts.SourceFile => {
   const uniqueLitHtmlPrivateIdentifier =
     factory.createUniqueName('litHtmlPrivate');
@@ -110,15 +122,12 @@ export const addPartConstructorImport = ({
   const beforeSecurityBrand = sourceFile.statements.slice(0, brandIdx);
   const afterSecurtyBrand = sourceFile.statements.slice(brandIdx);
 
-  const partConstructors = [
-    'AttributePart',
-    'PropertyPart',
-    'BooleanAttributePart',
-    'EventPart',
-  ] as const;
-  const partsObjectBinding = partConstructors
+  // If the attributePartConstructorNameMap contains a unique identifier for a
+  // given part constructor, then create an object binding. E.g., create an
+  // array of `AttributePart as _A`, where `_A` is the unique identifier.
+  const partsObjectBinding = attributePartConstructorNames
     .map((part) => {
-      const identifierAlias = partIdentifiers[part];
+      const identifierAlias = attributePartConstructorNameMap[part];
       if (!identifierAlias) {
         return undefined;
       }
@@ -131,10 +140,14 @@ export const addPartConstructorImport = ({
     })
     .filter((i): i is ts.BindingElement => i !== undefined);
 
+  // Insert the part import into the file, immediately prior to the security
+  // brand tag function declaration. This is a semi-arbitrary location to
+  // generate the import, but it has the nice property of always being beneath
+  // top-level license comments.
   return factory.updateSourceFile(sourceFile, [
     ...beforeSecurityBrand,
     ...([
-      importNamespaceDeclaration(
+      createImportNamespaceDeclaration(
         factory,
         uniqueLitHtmlPrivateIdentifier,
         factory.createStringLiteral('lit-html/private-ssr-support.js')
@@ -255,11 +268,11 @@ export const createCompiledTemplateResult = ({
 export const createTemplateParts = ({
   f,
   parts,
-  partIdentifiers,
+  attributePartConstructorNameMap,
 }: {
   f: ts.NodeFactory;
   parts: TemplatePart[];
-  partIdentifiers: AttributePartConstructorAliases;
+  attributePartConstructorNameMap: AttributePartConstructorAliases;
 }) =>
   f.createArrayLiteralExpression(
     parts.map((part) => {
@@ -267,15 +280,13 @@ export const createTemplateParts = ({
         f.createPropertyAssignment('type', f.createNumericLiteral(part.type)),
         f.createPropertyAssignment('index', f.createNumericLiteral(part.index)),
       ];
-      if (
-        part.type === PartType.ATTRIBUTE &&
-        (part.ctorType === PartType.ATTRIBUTE ||
-          part.ctorType === PartType.BOOLEAN_ATTRIBUTE ||
-          part.ctorType === PartType.PROPERTY ||
-          part.ctorType === PartType.EVENT)
-      ) {
+      if (part.type === PartType.ATTRIBUTE) {
         const ctorAlias =
-          partIdentifiers[attributePartConstructors[part.ctorType]];
+          attributePartConstructorNameMap[
+            attributePartConstructors[
+              part.ctorType as keyof typeof attributePartConstructors
+            ]
+          ];
         if (ctorAlias === undefined) {
           throw new Error(
             `Internal Error: Part ctor alias identifier was not passed.`
