@@ -16,6 +16,7 @@ import {
   TemplatePart,
 } from './ast-fragments.js';
 import {isCommentNode, isTextNode, traverse} from '@parse5/tools';
+import {getTypeChecker} from './type-checker.js';
 const {getTemplateHtml, markerMatch, marker} = litHtmlPrivate;
 
 interface TemplateInfo {
@@ -65,7 +66,7 @@ class CompiledTemplatePass {
       context: ts.TransformationContext
     ): ts.Transformer<ts.SourceFile> => {
       return (sourceFile: ts.SourceFile): ts.SourceFile => {
-        const pass = new CompiledTemplatePass(context);
+        const pass = new CompiledTemplatePass(context, sourceFile);
         pass.findTemplates(sourceFile);
         const transformedSourceFile = pass.rewriteTemplates(sourceFile);
         if (!ts.isSourceFile(transformedSourceFile)) {
@@ -83,7 +84,8 @@ class CompiledTemplatePass {
    */
   private topLevelStatementToTemplate = new Map<ts.Statement, TemplateInfo[]>();
   /**
-   * Map an `html` tagged template expression to the template info.
+   * Map an `html` tagged template expression to the template info for each
+   * template to compile.
    */
   private expressionToTemplate = new Map<
     ts.TaggedTemplateExpression,
@@ -98,8 +100,17 @@ class CompiledTemplatePass {
    * HTML.
    */
   private securityBrandIdent: ts.Identifier;
-  private constructor(private readonly context: ts.TransformationContext) {
+  /**
+   * Type checker which can be used to query if a tagged template expression is
+   * a lit template.
+   */
+  private checker: ReturnType<typeof getTypeChecker>;
+  private constructor(
+    private readonly context: ts.TransformationContext,
+    sourceFile: ts.SourceFile
+  ) {
     this.securityBrandIdent = context.factory.createUniqueName('b');
+    this.checker = getTypeChecker(sourceFile.fileName, sourceFile.text);
   }
 
   /**
@@ -117,7 +128,10 @@ class CompiledTemplatePass {
     const findTemplates = <T extends ts.Node>(node: T) => {
       return ts.visitNode(node, (node: ts.Node): ts.Node => {
         nodeStack.push(node);
-        if (isLitTemplate(node)) {
+        if (
+          ts.isTaggedTemplateExpression(node) &&
+          this.checker.isLitTaggedTemplateExpression(node)
+        ) {
           const topStatement = nodeStack[1] as ts.Statement;
           const templateInfo = {
             topStatement,
@@ -328,15 +342,12 @@ class CompiledTemplatePass {
     node: ts.Node
   ): ts.Node {
     const f = this.context.factory;
-    if (!isLitTemplate(node)) {
+    if (!ts.isTaggedTemplateExpression(node)) {
       return node;
     }
-
     const templateInfo = this.expressionToTemplate.get(node);
     if (templateInfo === undefined) {
-      throw new Error(
-        `Internal Error: template info not found for ${node.getText()}`
-      );
+      return node;
     }
     return createCompiledTemplateResult({
       f,
@@ -348,15 +359,3 @@ class CompiledTemplatePass {
 
 export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> =>
   CompiledTemplatePass.getTransformer();
-
-/**
- * E.g. html`foo` or html`foo${bar}`
- *
- * TODO(ajakubowicz): Figure out how to handle detecting templates to compile
- * correctly and robustly. We want to avoid situations where `html` imported
- * from 'lit/static.js' is compiled.
- */
-const isLitTemplate = (node: ts.Node): node is ts.TaggedTemplateExpression =>
-  ts.isTaggedTemplateExpression(node) &&
-  ts.isIdentifier(node.tag) &&
-  node.tag.escapedText === 'html';
