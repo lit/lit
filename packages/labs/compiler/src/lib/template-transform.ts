@@ -254,6 +254,7 @@ class CompiledTemplatePass {
       sourceCodeLocationInfo: false,
     });
 
+    // Start at -1 to account for an extra root document fragment.
     let nodeIndex = -1;
     let attrNameIndex = 0;
     traverse(ast, {
