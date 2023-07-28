@@ -25,7 +25,7 @@ interface CallbackInfo {
  * for a number of use cases.
  */
 export class ValueNotifier<T> {
-  protected readonly callbacks: Map<ContextCallback<T>, CallbackInfo> =
+  protected readonly subscriptions: Map<ContextCallback<T>, CallbackInfo> =
     new Map();
   private _value!: T;
   public get value(): T {
@@ -50,7 +50,7 @@ export class ValueNotifier<T> {
   }
 
   updateObservers = (): void => {
-    for (const [callback, {disposer}] of this.callbacks) {
+    for (const [callback, {disposer}] of this.subscriptions) {
       callback(this._value, disposer);
     }
   };
@@ -61,15 +61,15 @@ export class ValueNotifier<T> {
     consumerHost?: Element
   ): void {
     if (subscribe) {
-      if (!this.callbacks.has(callback)) {
-        this.callbacks.set(callback, {
+      if (!this.subscriptions.has(callback)) {
+        this.subscriptions.set(callback, {
           disposer: () => {
-            this.callbacks.delete(callback);
+            this.subscriptions.delete(callback);
           },
           consumerHost,
         });
       }
-      const {disposer} = this.callbacks.get(callback)!;
+      const {disposer} = this.subscriptions.get(callback)!;
       callback(this.value, disposer);
     } else {
       callback(this.value);
@@ -77,6 +77,6 @@ export class ValueNotifier<T> {
   }
 
   clearCallbacks(): void {
-    this.callbacks.clear();
+    this.subscriptions.clear();
   }
 }

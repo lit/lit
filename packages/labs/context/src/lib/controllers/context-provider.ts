@@ -119,7 +119,7 @@ export class ContextProvider<T extends Context<unknown, unknown>>
   }
 
   private reparentSubscriptions(_childProviderHost: Element) {
-    for (const [callback, {consumerHost}] of this.callbacks) {
+    for (const [callback, {consumerHost}] of this.subscriptions) {
       if (consumerHost === undefined) {
         continue;
       }
