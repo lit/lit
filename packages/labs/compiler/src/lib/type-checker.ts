@@ -95,7 +95,7 @@ class TypeChecker {
 
     if (
       templateImport.propertyName &&
-      templateImport.propertyName?.text !== 'html'
+      templateImport.propertyName.text !== 'html'
     ) {
       return false;
     }
@@ -160,7 +160,11 @@ class TypeChecker {
   }
 
   private isLitTemplateModuleSpecifier(specifier: string): boolean {
-    return specifier === 'lit' || specifier === 'lit-html';
+    return (
+      specifier === 'lit' ||
+      specifier === 'lit-html' ||
+      specifier === 'lit-element'
+    );
   }
 }
 

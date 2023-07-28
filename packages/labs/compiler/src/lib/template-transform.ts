@@ -82,12 +82,15 @@ class CompiledTemplatePass {
   /**
    * Map top level statements to templates marked for compilation.
    */
-  private topLevelStatementToTemplate = new Map<ts.Statement, TemplateInfo[]>();
+  private readonly topLevelStatementToTemplate = new Map<
+    ts.Statement,
+    TemplateInfo[]
+  >();
   /**
    * Map an `html` tagged template expression to the template info for each
    * template to compile.
    */
-  private expressionToTemplate = new Map<
+  private readonly expressionToTemplate = new Map<
     ts.TaggedTemplateExpression,
     TemplateInfo
   >();
@@ -99,12 +102,12 @@ class CompiledTemplatePass {
    * Unique security brand identifier. Used as the tag function for the prepared
    * HTML.
    */
-  private securityBrandIdent: ts.Identifier;
+  private readonly securityBrandIdent: ts.Identifier;
   /**
    * Type checker which can be used to query if a tagged template expression is
    * a lit template.
    */
-  private checker: ReturnType<typeof getTypeChecker>;
+  private readonly checker: ReturnType<typeof getTypeChecker>;
   private constructor(
     private readonly context: ts.TransformationContext,
     sourceFile: ts.SourceFile
