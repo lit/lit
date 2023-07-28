@@ -16,11 +16,6 @@ interface CallbackInfo {
   consumerHost?: Element;
 }
 
-export interface MovedSubscription<T> {
-  callback: ContextCallback<T>;
-  consumerHost: Element;
-}
-
 /**
  * A simple class which stores a value, and triggers registered callbacks when the
  * value is changed via its setter.
@@ -30,8 +25,8 @@ export interface MovedSubscription<T> {
  * for a number of use cases.
  */
 export class ValueNotifier<T> {
-  private callbacks: Map<ContextCallback<T>, CallbackInfo> = new Map();
-
+  protected readonly callbacks: Map<ContextCallback<T>, CallbackInfo> =
+    new Map();
   private _value!: T;
   public get value(): T {
     return this._value;
@@ -83,37 +78,5 @@ export class ValueNotifier<T> {
 
   clearCallbacks(): void {
     this.callbacks.clear();
-  }
-
-  /**
-   * Handle a late registration of an provider in between us and any consumers
-   * that we have ongoing subscriptions with.
-   *
-   * childProviderHost must be a provider host of T which is a descendent of
-   * our host. So we look through our active subscriptions, and if any of them
-   * are contained inside of childProviderHost, we stop handling them ourselves
-   * and we return them in an array so that the childProviderHost can handle
-   * them from now on.
-   */
-  moveSubscriptionsFor(
-    childProviderHost: Element
-  ): undefined | MovedSubscription<T>[] {
-    let result: undefined | MovedSubscription<T>[] = undefined;
-    for (const [callback, {consumerHost}] of this.callbacks) {
-      if (consumerHost === undefined) {
-        continue;
-      }
-      if (
-        childProviderHost !== consumerHost &&
-        childProviderHost.contains(consumerHost)
-      ) {
-        this.callbacks.delete(callback);
-        if (result === undefined) {
-          result = [];
-        }
-        result.push({callback, consumerHost});
-      }
-    }
-    return result;
   }
 }

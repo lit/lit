@@ -6,7 +6,7 @@
 
 import {ContextRequestEvent} from '../context-request-event.js';
 import {Context, ContextType} from '../create-context.js';
-import {MovedSubscription, ValueNotifier} from '../value-notifier.js';
+import {ValueNotifier} from '../value-notifier.js';
 import {ReactiveController, ReactiveElement} from 'lit';
 
 declare global {
@@ -29,28 +29,7 @@ export class ContextProviderEvent<
   public constructor(public readonly context: C) {
     super('context-provider', {bubbles: true, composed: true});
   }
-
-  /**
-   * Whether the element that dispatched this event can take over subscriptions
-   * from an ancestor provider.
-   */
-  declare canTakeOverSubscriptions: boolean;
-
-  /**
-   * Ongoing subscriptions that one of our ancestors was handling that are now
-   * our responsibility.
-   */
-  movedSubscriptions: undefined | MovedSubscription<ContextType<C>>[] =
-    undefined;
 }
-// True for all ContextProviderEvents that we fire, but we need to set this
-// so that ancestor providers can tell whether the provider that dispatched this
-// event will actually take over any subscriptions that they move to
-// `event.movedSubscriptions`.
-// This way we fail gracefully in the case where there's version drift, or
-// another implementor that of the context protocol that also dispatches
-// `context-provider` events but doesn't handle movedSubscriptions.
-ContextProviderEvent.prototype.canTakeOverSubscriptions = true;
 
 export interface Options<C extends Context<unknown, unknown>> {
   context: C;
@@ -69,8 +48,8 @@ export class ContextProvider<T extends Context<unknown, unknown>>
   extends ValueNotifier<ContextType<T>>
   implements ReactiveController
 {
-  protected host: ReactiveElement;
-  private context: T;
+  protected readonly host: ReactiveElement;
+  private readonly context: T;
 
   constructor(host: ReactiveElement, options: Options<T>);
   /** @deprecated Use new ContextProvider(host, options) */
@@ -83,7 +62,8 @@ export class ContextProvider<T extends Context<unknown, unknown>>
     super(
       (contextOrOptions as Options<T>).context !== undefined
         ? (contextOrOptions as Options<T>).initialValue
-        : initialValue
+        : initialValue,
+      host.id
     );
     this.host = host;
     if ((contextOrOptions as Options<T>).context !== undefined) {
@@ -117,24 +97,16 @@ export class ContextProvider<T extends Context<unknown, unknown>>
   ): void => {
     // Ignore events when the context doesn't match.
     // Also, in case an element is a consumer AND a provider
-    // of the same context, we want to avoid the element to self-register.
-    // The check on composedPath (as opposed to ev.target) is to cover cases
+    // of the same context it shouldn't provide to itself.
+    // We use composedPath (as opposed to ev.target) to cover cases
     // where the consumer is in the shadowDom of the provider (in which case,
     // event.target === this.host because of event retargeting).
     const childProviderHost = ev.composedPath()[0] as Element;
-    if (
-      !ev.canTakeOverSubscriptions ||
-      ev.context !== this.context ||
-      childProviderHost === this.host
-    ) {
+    if (ev.context !== this.context || childProviderHost === this.host) {
       return;
     }
-    const ourEv = ev as ContextProviderEvent<T>;
-    const movedSubscriptions = this.moveSubscriptionsFor(childProviderHost);
-    if (movedSubscriptions === undefined) {
-      return;
-    }
-    (ourEv.movedSubscriptions ??= []).push(...movedSubscriptions);
+    this.reparentSubscriptions(childProviderHost);
+    ev.stopPropagation();
   };
 
   private attachListeners() {
@@ -146,10 +118,16 @@ export class ContextProvider<T extends Context<unknown, unknown>>
     // emit an event to signal a provider is available for this context
     const providerEvent = new ContextProviderEvent(this.context);
     this.host.dispatchEvent(providerEvent);
-    if (providerEvent.movedSubscriptions !== undefined) {
-      for (const {callback, consumerHost} of providerEvent.movedSubscriptions) {
-        this.addCallback(callback, true, consumerHost);
+  }
+
+  private reparentSubscriptions(_childProviderHost: Element) {
+    for (const [callback, {consumerHost}] of this.callbacks) {
+      if (consumerHost === undefined) {
+        continue;
       }
+      consumerHost.dispatchEvent(
+        new ContextRequestEvent(this.context, callback, true)
+      );
     }
   }
 }
