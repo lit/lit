@@ -41,7 +41,10 @@ const attributePartConstructors = {
   [PartType.EVENT]: 'EventPart',
 } as const;
 
-// These constructors have been renamed to reduce the chance of a naming collision.
+/**
+ * Mapping of part constructors to unique identifier. If undefined, the ctor
+ * will not be imported.
+ */
 export interface AttributePartConstructorAliases {
   AttributePart?: ts.Identifier;
   PropertyPart?: ts.Identifier;
@@ -246,7 +249,7 @@ export const createCompiledTemplateResult = ({
  * As an example output, a single BooleanAttributePart looks something like:
  *
  * ```ts
- * [{ type: 1, index: 0, name: "data-attr", strings: ["", ""], ctor: _$LH_BooleanAttributePart }]
+ * [{ type: 1, index: 0, name: "data-attr", strings: ["", ""], ctor: _B }]
  * ```
  */
 export const createTemplateParts = ({
