@@ -62,8 +62,7 @@ export class ContextProvider<T extends Context<unknown, unknown>>
     super(
       (contextOrOptions as Options<T>).context !== undefined
         ? (contextOrOptions as Options<T>).initialValue
-        : initialValue,
-      host.id
+        : initialValue
     );
     this.host = host;
     if ((contextOrOptions as Options<T>).context !== undefined) {
