@@ -16,7 +16,7 @@ import {
   TemplatePart,
 } from './ast-fragments.js';
 import {isCommentNode, isTextNode, traverse} from '@parse5/tools';
-const {getTemplateHtml, markerMatch} = litHtmlPrivate;
+const {getTemplateHtml, markerMatch, marker} = litHtmlPrivate;
 
 interface TemplateInfo {
   /**
@@ -216,11 +216,6 @@ class CompiledTemplatePass {
               type: PartType.CHILD,
               index: nodeIndex,
             });
-            // We have stored a reference to this comment node in the
-            // TemplatePart, so we can remove the comment text. At runtime we
-            // would leave the marker comment, but when compiling it's
-            // advantageous to save on file size.
-            node.data = '';
           }
         } else if (isTextNode(node)) {
           // Do not count text nodes.
@@ -230,10 +225,10 @@ class CompiledTemplatePass {
       },
     });
 
-    // TODO(ajakubowicz): Only replace comments with markers. Otherwise if this
-    // pattern is detected in a raw text node we miscompile.
+    // Any comments containing a lit marker can be simplified to reduce file
+    // size. E.g., `<!--?lit$1234$-->` is replaced with `<?>`.
     const preparedHtml = serialize(ast).replace(
-      /(<!---->)|(<!--\?-->)/g,
+      new RegExp(`<!--\\?${marker.replace(/\$/g, '\\$')}-->`, 'g'),
       '<?>'
     );
 
