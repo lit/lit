@@ -364,11 +364,14 @@ suiteSkipIE('late context provider', () => {
         initialValue: 'late provider initial value',
       });
     }
+
+    // The indirect child now gets the late provider's initial value
     await directChildConsumer.updateComplete;
-    // bad!
     assert.equal(directChildConsumer.value, 'grandparent updated');
     assert.equal(indirectChildConsumer.value, 'late provider initial value');
 
+    // Updating the middle provider updates its childd, but not its sibling,
+    // the direct child.
     const middleProvider = container.querySelector(
       'late-context-provider-4'
     ) as LateContextProvider4Element;
@@ -376,6 +379,12 @@ suiteSkipIE('late context provider', () => {
     await directChildConsumer.updateComplete;
     // bad!
     assert.equal(directChildConsumer.value, 'grandparent updated');
+    assert.equal(indirectChildConsumer.value, 'late provider updated');
+
+    // Updating the grandparent only propagates to the direct child
+    grandparentProvider.provide.setValue('grandparent updated again');
+    await directChildConsumer.updateComplete;
+    assert.equal(directChildConsumer.value, 'grandparent updated again');
     assert.equal(indirectChildConsumer.value, 'late provider updated');
   });
 });
