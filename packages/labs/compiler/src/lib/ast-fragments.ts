@@ -52,6 +52,10 @@ export interface AttributePartConstructorAliases {
   EventPart?: ts.Identifier;
 }
 
+/**
+ * An array of names for the attribute constructors that are exported from the
+ * module `"lit-html/private-ssr-support.js"` via the `_$LH` object.
+ */
 const attributePartConstructorNames = Object.values(attributePartConstructors);
 
 /**
