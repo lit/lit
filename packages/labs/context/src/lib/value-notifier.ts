@@ -60,20 +60,21 @@ export class ValueNotifier<T> {
     subscribe?: boolean,
     consumerHost?: Element
   ): void {
-    if (subscribe) {
-      if (!this.subscriptions.has(callback)) {
-        this.subscriptions.set(callback, {
-          disposer: () => {
-            this.subscriptions.delete(callback);
-          },
-          consumerHost,
-        });
-      }
-      const {disposer} = this.subscriptions.get(callback)!;
-      callback(this.value, disposer);
-    } else {
+    if (!subscribe) {
+      // just call the callback once and we're done
       callback(this.value);
+      return;
     }
+    if (!this.subscriptions.has(callback)) {
+      this.subscriptions.set(callback, {
+        disposer: () => {
+          this.subscriptions.delete(callback);
+        },
+        consumerHost,
+      });
+    }
+    const {disposer} = this.subscriptions.get(callback)!;
+    callback(this.value, disposer);
   }
 
   clearCallbacks(): void {
