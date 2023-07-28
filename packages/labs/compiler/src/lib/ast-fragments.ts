@@ -27,11 +27,10 @@ export type TemplatePart =
       index: number;
     }
   | {
-      type: PartType;
+      type: typeof PartType.ATTRIBUTE;
       index: number;
       name: string;
       strings: Array<string>;
-      tagName: string;
       ctorType: PartType;
     };
 

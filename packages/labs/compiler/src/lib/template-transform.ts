@@ -8,6 +8,8 @@ import ts from 'typescript';
 import {_$LH as litHtmlPrivate} from 'lit-html/private-ssr-support.js';
 import {parseFragment, serialize} from 'parse5';
 import {
+  addPartConstructorImport,
+  AttributePartConstructorAliases,
   createCompiledTemplate,
   createCompiledTemplateResult,
   createSecurityBrandTagFunction,
@@ -15,9 +17,15 @@ import {
   PartType,
   TemplatePart,
 } from './ast-fragments.js';
-import {isCommentNode, isTextNode, traverse} from '@parse5/tools';
+import {
+  isCommentNode,
+  isElementNode,
+  isTextNode,
+  traverse,
+} from '@parse5/tools';
 import {getTypeChecker} from './type-checker.js';
-const {getTemplateHtml, markerMatch, marker} = litHtmlPrivate;
+const {getTemplateHtml, markerMatch, marker, boundAttributeSuffix} =
+  litHtmlPrivate;
 
 interface TemplateInfo {
   /**
@@ -68,11 +76,28 @@ class CompiledTemplatePass {
       return (sourceFile: ts.SourceFile): ts.SourceFile => {
         const pass = new CompiledTemplatePass(context, sourceFile);
         pass.findTemplates(sourceFile);
+        if (pass.expressionToTemplate.size === 0) {
+          // No templates to compile.
+          return sourceFile;
+        }
         const transformedSourceFile = pass.rewriteTemplates(sourceFile);
         if (!ts.isSourceFile(transformedSourceFile)) {
           throw new Error(
             `Internal Error: Expected source file to be transformed into another source file.`
           );
+        }
+        if (pass.addedSecurityBrandVariableStatement === null) {
+          // No compilation occurred.
+          return sourceFile;
+        }
+        // Add part constructors import if required.
+        if (Object.keys(pass.partAliasIdentifiers).length > 0) {
+          return addPartConstructorImport({
+            factory: context.factory,
+            sourceFile: transformedSourceFile,
+            securityBrand: pass.addedSecurityBrandVariableStatement,
+            partIdentifiers: pass.partAliasIdentifiers,
+          });
         }
         return transformedSourceFile;
       };
@@ -98,6 +123,10 @@ class CompiledTemplatePass {
    * Track the added security brand AST node so we only add one.
    */
   addedSecurityBrandVariableStatement: ts.Statement | null = null;
+  /**
+   * The unique identifier for each attribute part constructor.
+   */
+  private readonly partAliasIdentifiers: AttributePartConstructorAliases = {};
   /**
    * Unique security brand identifier. Used as the tag function for the prepared
    * HTML.
@@ -215,8 +244,9 @@ class CompiledTemplatePass {
     // TemplateStringsResult.
     (spoofedTemplate as unknown as {raw: string}).raw = '';
     let html: TrustedHTML | string = '';
+    let attrNames: Array<string | undefined> = [];
     try {
-      [html] = getTemplateHtml(spoofedTemplate, 1);
+      [html, attrNames] = getTemplateHtml(spoofedTemplate, 1);
     } catch {
       return {shouldCompile: false};
     }
@@ -225,9 +255,54 @@ class CompiledTemplatePass {
     });
 
     let nodeIndex = -1;
+    let attrNameIndex = 0;
     traverse(ast, {
       'pre:node': (node) => {
-        if (isCommentNode(node)) {
+        if (isElementNode(node)) {
+          const attributesToRemove = new Set<unknown>();
+          if (node.attrs.length > 0) {
+            for (const attr of node.attrs) {
+              if (
+                attr.name.endsWith(boundAttributeSuffix) ||
+                attr.name.startsWith(marker)
+              ) {
+                attributesToRemove.add(attr);
+                const realName = attrNames[attrNameIndex++];
+                if (realName !== undefined) {
+                  const statics = attr.value.split(marker);
+                  // We store the case-sensitive name from `attrNames` (generated
+                  // while parsing the template strings); note that this assumes
+                  // parse5 attribute ordering matches string ordering
+                  const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
+                    realName
+                  )!;
+                  parts.push({
+                    type: PartType.ATTRIBUTE,
+                    index: nodeIndex,
+                    name: caseSensitiveName,
+                    strings: statics,
+                    ctorType:
+                      prefix === '.'
+                        ? PartType.PROPERTY
+                        : prefix === '?'
+                        ? PartType.BOOLEAN_ATTRIBUTE
+                        : prefix === '@'
+                        ? PartType.EVENT
+                        : PartType.ATTRIBUTE,
+                  });
+                } else {
+                  parts.push({
+                    type: PartType.ELEMENT,
+                    index: nodeIndex,
+                  });
+                }
+              }
+            }
+            node.attrs = node.attrs.filter(
+              (attr) => !attributesToRemove.has(attr)
+            );
+          }
+        } else if (isCommentNode(node)) {
           if (node.data === markerMatch) {
             parts.push({
               type: PartType.CHILD,
@@ -241,6 +316,36 @@ class CompiledTemplatePass {
         nodeIndex++;
       },
     });
+
+    // Add required unique ctor identifiers for parts added.
+    const f = this.context.factory;
+    for (const part of parts) {
+      if (part.type === PartType.ATTRIBUTE) {
+        const ctorType = part.ctorType;
+        switch (ctorType) {
+          case PartType.ATTRIBUTE: {
+            this.partAliasIdentifiers.AttributePart ??= f.createUniqueName('A');
+            break;
+          }
+          case PartType.BOOLEAN_ATTRIBUTE: {
+            this.partAliasIdentifiers.BooleanAttributePart ??=
+              f.createUniqueName('B');
+            break;
+          }
+          case PartType.EVENT: {
+            this.partAliasIdentifiers.EventPart ??= f.createUniqueName('E');
+            break;
+          }
+          case PartType.PROPERTY: {
+            this.partAliasIdentifiers.PropertyPart ??= f.createUniqueName('P');
+            break;
+          }
+          default: {
+            throw new Error(`Internal Error: Unexpected attribute type.`);
+          }
+        }
+      }
+    }
 
     // Any comments containing a lit marker can be simplified to reduce file
     // size. E.g., `<!--?lit$1234$-->` is replaced with `<?>`.
@@ -280,7 +385,11 @@ class CompiledTemplatePass {
         throw new Error(`Unhandled TODO: Will be implemented in followup.`);
       }
       const {parts: partData, preparedHtml} = result;
-      const parts = createTemplateParts({f, parts: partData});
+      const parts = createTemplateParts({
+        f,
+        parts: partData,
+        partIdentifiers: this.partAliasIdentifiers,
+      });
 
       topLevelTemplates.push(
         createCompiledTemplate({
