@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: MIT
  */
 import {assert} from '@esm-bundle/chai';
-import {deepEquals} from '../task.js';
+import {deepEquals} from '../deep-equals.js';
 
 // Test cases copied from fast-deep-equals
 // https://github.com/epoberezkin/fast-deep-equal/blob/master/spec/tests.js

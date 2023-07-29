@@ -12,8 +12,8 @@ import {
   TaskStatus,
   TaskConfig,
   TaskFunctionOptions,
-  deepArrayEquals,
 } from '@lit-labs/task';
+import {deepArrayEquals} from '@lit-labs/task/deep-equals.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
