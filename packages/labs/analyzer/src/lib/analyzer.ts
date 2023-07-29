@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {Package, PackageJson, AnalyzerInterface, Module} from './model.js';
 import {AbsolutePath} from './paths.js';
 import {getModule} from './javascript/modules.js';
@@ -14,7 +14,10 @@ import {
   getPackageRootForModulePath,
 } from './javascript/packages.js';
 
+export type TypeScript = typeof ts;
+
 export interface AnalyzerInit {
+  typescript: TypeScript;
   getProgram: () => ts.Program;
   fs: AnalyzerInterface['fs'];
   path: AnalyzerInterface['path'];
@@ -29,15 +32,19 @@ export class Analyzer implements AnalyzerInterface {
   // or any of its dependencies change
   readonly moduleCache = new Map<AbsolutePath, Module>();
   private readonly _getProgram: () => ts.Program;
+  readonly typescript: TypeScript;
   readonly fs: AnalyzerInterface['fs'];
   readonly path: AnalyzerInterface['path'];
   private _commandLine: ts.ParsedCommandLine | undefined = undefined;
   private readonly diagnostics: ts.Diagnostic[] = [];
 
   constructor(init: AnalyzerInit) {
-    this._getProgram = init.getProgram;
-    this.fs = init.fs;
-    this.path = init.path;
+    ({
+      fs: this.fs,
+      path: this.path,
+      typescript: this.typescript,
+      getProgram: this._getProgram,
+    } = init);
   }
 
   get program() {
@@ -80,7 +87,7 @@ export class Analyzer implements AnalyzerInterface {
   }
 
   *getDiagnostics() {
-    yield* ts.sortAndDeduplicateDiagnostics(this.diagnostics);
+    yield* this.typescript.sortAndDeduplicateDiagnostics(this.diagnostics);
   }
 }
 
@@ -96,20 +103,19 @@ export class Analyzer implements AnalyzerInterface {
 export const getCommandLineFromProgram = (
   analyzer: Analyzer
 ): ts.ParsedCommandLine => {
-  const compilerOptions = analyzer.program.getCompilerOptions();
-  const files = analyzer.program.getRootFileNames();
+  const {program, typescript, path} = analyzer;
+  const compilerOptions = program.getCompilerOptions();
+  const files = program.getRootFileNames();
   const json = {
     files,
     compilerOptions,
   };
   if (compilerOptions.configFilePath !== undefined) {
     // For a TS project, derive the package root from the config file path
-    const packageRoot = analyzer.path.basename(
-      compilerOptions.configFilePath as string
-    );
-    return ts.parseJsonConfigFileContent(
+    const packageRoot = path.basename(compilerOptions.configFilePath as string);
+    return typescript.parseJsonConfigFileContent(
       json,
-      ts.sys,
+      typescript.sys,
       packageRoot,
       undefined,
       compilerOptions.configFilePath as string
@@ -125,6 +131,10 @@ export const getCommandLineFromProgram = (
       // means we can't use ts.getOutputFileNames(), which we isn't needed in
       // JS program
     );
-    return ts.parseJsonConfigFileContent(json, ts.sys, packageRoot);
+    return typescript.parseJsonConfigFileContent(
+      json,
+      typescript.sys,
+      packageRoot
+    );
   }
 };

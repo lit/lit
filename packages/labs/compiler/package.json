@@ -1,0 +1,84 @@
+{
+  "name": "@lit-labs/compiler",
+  "description": "Compiler to prepare Lit templates at build time",
+  "version": "0.0.0",
+  "private": true,
+  "author": "Google LLC",
+  "homepage": "https://github.com/Lit/Lit/tree/main/packages/labs/compiler",
+  "license": "BSD-3-Clause",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lit/Lit.git",
+    "directory": "packages/labs/compiler"
+  },
+  "bugs": {
+    "url": "https://github.com/lit/lit/issues"
+  },
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit",
+    "test": "wireit",
+    "update-goldens": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "dependencies": [
+        "../../lit-html:build:ts:types",
+        "../../lit-html:build:rollup"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "command": "uvu test \".*_test\\.js$\"",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "test_files/*.ts",
+        "test_files/*.js"
+      ]
+    },
+    "update-goldens": {
+      "command": "uvu test \".*_test\\.js$\"",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "test_files/*.ts",
+        "test_files/*.js",
+        "!test_files/*.golden.js"
+      ],
+      "output": [
+        "test_files/*.golden.js"
+      ],
+      "env": {
+        "UPDATE_LIT_COMPILER_GOLDENS": "true"
+      }
+    }
+  },
+  "dependencies": {
+    "@parse5/tools": "^0.1.0",
+    "lit-html": "^2.7.5",
+    "parse5": "^7.1.2",
+    "typescript": "^5.1.6"
+  },
+  "devDependencies": {
+    "uvu": "^0.5.6"
+  }
+}

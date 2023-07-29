@@ -139,6 +139,11 @@ packages/labs/analyzer/**/index.js.map
 packages/labs/analyzer/**/index.d.ts
 packages/labs/analyzer/**/index.d.ts.map
 
+packages/labs/analyzer/**/package-analyzer.js
+packages/labs/analyzer/**/package-analyzer.js.map
+packages/labs/analyzer/**/package-analyzer.d.ts
+packages/labs/analyzer/**/package-analyzer.d.ts.map
+
 packages/labs/cli/lib/
 packages/labs/cli/test/
 packages/labs/cli/index.js
@@ -150,6 +155,13 @@ packages/labs/cli/test-gen/
 packages/labs/cli/test-goldens/
 packages/labs/cli-localize/lib/
 packages/labs/cli-localize/node_modules/
+
+packages/labs/compiler/development/
+packages/labs/compiler/node_modules/
+packages/labs/compiler/test/
+packages/labs/compiler/lib/
+
+packages/labs/compiler/**/test_files
 
 packages/labs/context/development/
 packages/labs/context/test/

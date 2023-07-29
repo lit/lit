@@ -193,11 +193,11 @@ const packageNameToReactPackageName = (pkgName: string) => `${pkgName}-react`;
 
 const wrapperTemplate = ({name, tagname, events}: LitElementDeclaration) => {
   return javascript`
- export const ${name} = createComponent(
-   React,
-   '${tagname}',
-   ${name}Element,
-   {
+ export const ${name} = createComponent({
+   react: React,
+   tagName: '${tagname}',
+   elementClass: ${name}Element,
+   events: {
      ${Array.from(events.values()).map((event: EventModel) => {
        const {name, type} = event;
        return javascript`
@@ -206,6 +206,6 @@ const wrapperTemplate = ({name, tagname, events}: LitElementDeclaration) => {
        }>,`;
      })}
    }
- );
+  });
  `;
 };

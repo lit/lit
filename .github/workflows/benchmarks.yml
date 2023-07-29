@@ -4,10 +4,6 @@ on: [pull_request]
 
 jobs:
   benchmarks:
-    # Don't run on forks. Benchmarks can't run on forks because secrets aren't
-    # available, which are needed for posting result comments.
-    if: github.event.pull_request.head.repo.id == github.event.pull_request.base.repo.id
-
     name: benchmarks
 
     runs-on: ubuntu-latest
@@ -34,15 +30,7 @@ jobs:
           cd packages/benchmarks
           npx tachometer \
             --config lit-html/kitchen-sink/tachometer.json \
-            --json-file lit-html/kitchen-sink/results.json
-
-      - name: Report lit-html-kitchen-sink
-        uses: andrewiggins/tachometer-reporter-action@v2
-        with:
-          report-id: lit-html-kitchen-sink
-          path: packages/benchmarks/lit-html/kitchen-sink/results.json
-          pr-bench-name: this-change
-          base-bench-name: tip-of-tree
+            --json-file lit-html-kitchen-sink.json
 
       # lit-html:template-heavy
       - name: Benchmark lit-html/template-heavy
@@ -50,15 +38,7 @@ jobs:
           cd packages/benchmarks
           npx tachometer \
             --config lit-html/template-heavy/tachometer.json \
-            --json-file lit-html/template-heavy/results.json
-
-      - name: Report lit-html-template-heavy
-        uses: andrewiggins/tachometer-reporter-action@v2
-        with:
-          report-id: lit-html-template-heavy
-          path: packages/benchmarks/lit-html/template-heavy/results.json
-          pr-bench-name: this-change
-          base-bench-name: tip-of-tree
+            --json-file lit-html-template-heavy.json
 
       # lit-html:repeat
       - name: Benchmark lit-html/repeat
@@ -66,15 +46,7 @@ jobs:
           cd packages/benchmarks
           npx tachometer \
             --config lit-html/repeat/tachometer.json \
-            --json-file lit-html/repeat/results.json
-
-      - name: Report lit-html-repeat
-        uses: andrewiggins/tachometer-reporter-action@v2
-        with:
-          report-id: lit-html-repeat
-          path: packages/benchmarks/lit-html/repeat/results.json
-          pr-bench-name: this-change
-          base-bench-name: tip-of-tree
+            --json-file lit-html-repeat.json
 
       # lit-element:list
       - name: Benchmark lit-element/list
@@ -82,15 +54,7 @@ jobs:
           cd packages/benchmarks
           npx tachometer \
             --config lit-element/list/tachometer.json \
-            --json-file lit-element/list/results.json
-
-      - name: Report lit-element-list
-        uses: andrewiggins/tachometer-reporter-action@v2
-        with:
-          report-id: lit-element-list
-          path: packages/benchmarks/lit-element/list/results.json
-          pr-bench-name: this-change
-          base-bench-name: tip-of-tree
+            --json-file lit-element-list.json
 
       # reactive-element:list
       - name: Benchmark reactive-element/list
@@ -98,12 +62,15 @@ jobs:
           cd packages/benchmarks
           npx tachometer \
             --config reactive-element/list/tachometer.json \
-            --json-file reactive-element/list/results.json
+            --json-file reactive-element-list.json
 
-      - name: Report reactive-element-list
-        uses: andrewiggins/tachometer-reporter-action@v2
+      - name: Upload results
+        uses: actions/upload-artifact@v3
         with:
-          report-id: reactive-element-list
-          path: packages/benchmarks/reactive-element/list/results.json
-          pr-bench-name: this-change
-          base-bench-name: tip-of-tree
+          name: results
+          path: |
+            packages/benchmarks/lit-html-kitchen-sink.json
+            packages/benchmarks/lit-html-template-heavy.json
+            packages/benchmarks/lit-html-repeat.json
+            packages/benchmarks/lit-element-list.json
+            packages/benchmarks/reactive-element-list.json

@@ -10,7 +10,7 @@
  * Utilities for analyzing ES modules
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {
   Module,
   AnalyzerInterface,
@@ -38,6 +38,8 @@ import {
 } from '../references.js';
 import {parseModuleJSDocInfo} from './jsdoc.js';
 import {getFunctionDeclarationInfo} from './functions.js';
+
+export type TypeScript = typeof ts;
 
 /**
  * Returns the sourcePath, jsPath, and package.json contents of the containing
@@ -82,6 +84,7 @@ export const getModule = (
   analyzer: AnalyzerInterface,
   packageInfo: PackageInfo = getPackageInfo(modulePath, analyzer)
 ) => {
+  const {typescript: ts} = analyzer;
   // Return cached module if we've parsed this sourceFile already and its
   // dependencies haven't changed
   const cachedModule = getAndValidateModuleFromCache(modulePath, analyzer);
@@ -104,6 +107,7 @@ export const getModule = (
     if (declarationMap.has(name)) {
       analyzer.addDiagnostic(
         createDiagnostic({
+          typescript: ts,
           node,
           message: `Duplicate declaration '${name}'`,
           category: ts.DiagnosticCategory.Error,
@@ -146,6 +150,7 @@ export const getModule = (
         if (moduleSpecifier === undefined) {
           analyzer.addDiagnostic(
             createDiagnostic({
+              typescript: ts,
               node: statement,
               message: `Unexpected syntax: expected a wildcard export to always have a module specifier.`,
             })
@@ -299,7 +304,7 @@ const getJSPathFromSourcePath = (
   }
   // Use the TS API to determine where the associated JS will be output based
   // on tsconfig settings.
-  const outputPath = ts
+  const outputPath = analyzer.typescript
     .getOutputFileNames(analyzer.commandLine, sourcePath, false)
     .filter((f) => f.endsWith('.js'))[0];
   // TODO(kschaaf): this could happen if someone imported only a .d.ts file;
@@ -332,7 +337,7 @@ export const getPathForModuleSpecifier = (
   location: ts.Node,
   analyzer: AnalyzerInterface
 ): AbsolutePath | undefined => {
-  const resolvedPath = ts.resolveModuleName(
+  const resolvedPath = analyzer.typescript.resolveModuleName(
     specifier,
     location.getSourceFile().fileName,
     analyzer.commandLine.options,
@@ -341,9 +346,10 @@ export const getPathForModuleSpecifier = (
   if (resolvedPath === undefined) {
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript: analyzer.typescript,
         node: location,
         message: `Could not resolve specifier ${specifier} to filesystem path.`,
-        category: ts.DiagnosticCategory.Error,
+        category: analyzer.typescript.DiagnosticCategory.Error,
       })
     );
     return undefined;
