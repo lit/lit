@@ -72,6 +72,15 @@ export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
   autoRun?: boolean | 'afterUpdate';
 
   /**
+   * A function that determines if the current arg and previous args arrays are
+   * equal. If the argsEqual function returns true, the task will not auto-run.
+   *
+   * The default is {@linkcode shallowArrayEquals}. {@linkcode deepArrayEquals}
+   * is also available.
+   */
+  argsEqual?: (oldArgs: T, newArgs: T) => boolean;
+
+  /**
    * If initialValue is provided, the task is initialized to the COMPLETE
    * status and the value is set to initialData.
    *
@@ -162,7 +171,8 @@ export class Task<
 > {
   private _previousArgs?: T;
   private _task: TaskFunction<T, R>;
-  private _getArgs?: ArgsFunction<T>;
+  private _argsFn?: ArgsFunction<T>;
+  private _argsEqual: (oldArgs: T, newArgs: T) => boolean;
   private _callId = 0;
   private _host: ReactiveControllerHost;
   private _value?: R;
@@ -232,7 +242,8 @@ export class Task<
     const taskConfig =
       typeof task === 'object' ? task : ({task, args} as TaskConfig<T, R>);
     this._task = taskConfig.task;
-    this._getArgs = taskConfig.args;
+    this._argsFn = taskConfig.args;
+    this._argsEqual = taskConfig.argsEqual ?? shallowArrayEquals;
     this._onComplete = taskConfig.onComplete;
     this._onError = taskConfig.onError;
     this.autoRun = taskConfig.autoRun ?? true;
@@ -247,34 +258,47 @@ export class Task<
 
   hostUpdate() {
     if (this.autoRun === true) {
-      this.performTask();
+      this._performTask();
     }
   }
 
   hostUpdated() {
     if (this.autoRun === 'afterUpdate') {
-      this.performTask();
+      this._performTask();
     }
   }
 
-  protected async performTask() {
-    const args = this._getArgs?.();
-    if (this.shouldRun(args)) {
-      await this.run(args);
+  private _getArgs() {
+    if (this._argsFn === undefined) {
+      return undefined;
     }
+    const args = this._argsFn();
+    if (!Array.isArray(args)) {
+      throw new Error('The args function must return an array');
+    }
+    return args;
   }
 
   /**
    * Determines if the task should run when it's triggered because of a
-   * host update. A task should run when its arguments change from the
-   * previous run.
+   * host update, and runs the task if it should.
    *
-   * Note: this is not checked when `run` is explicitly called.
+   * A task should run when its arguments change from the previous run, based on
+   * the args equality function.
    *
-   * @param args The task's arguments
+   * This method is side-effectful: it stores the new args as the previous args.
    */
-  protected shouldRun(args?: T) {
-    return this._argsDirty(args);
+  private async _performTask() {
+    const args = this._getArgs();
+    const prev = this._previousArgs;
+    this._previousArgs = args;
+    if (
+      args !== prev &&
+      args !== undefined &&
+      (prev === undefined || !this._argsEqual(prev, args))
+    ) {
+      await this.run(args);
+    }
   }
 
   /**
@@ -288,7 +312,11 @@ export class Task<
    *     this run.
    */
   async run(args?: T) {
-    args ??= this._getArgs?.();
+    args ??= this._getArgs();
+
+    // Remember the args for potential future automatic runs.
+    // TODO (justinfagnani): add test
+    this._previousArgs = args;
 
     if (this.status === TaskStatus.PENDING) {
       this._abortController?.abort();
@@ -400,16 +428,16 @@ export class Task<
         throw new Error(`Unexpected status: ${this.status}`);
     }
   }
-
-  private _argsDirty(args?: T) {
-    const prev = this._previousArgs;
-    this._previousArgs = args;
-    return Array.isArray(args) && Array.isArray(prev)
-      ? args.length === prev.length && args.some((v, i) => notEqual(v, prev[i]))
-      : args !== prev;
-  }
 }
 
 type MaybeReturnType<F> = F extends (...args: unknown[]) => infer R
   ? R
   : undefined;
+
+export const shallowArrayEquals = <T extends ReadonlyArray<unknown>>(
+  oldArgs: T,
+  newArgs: T
+) =>
+  oldArgs === newArgs ||
+  (oldArgs.length === newArgs.length &&
+    oldArgs.every((v, i) => !notEqual(v, newArgs[i])));
