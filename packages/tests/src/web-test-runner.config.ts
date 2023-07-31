@@ -221,9 +221,9 @@ const config: TestRunnerConfig = {
      *
      * The most common way to get an error here is to have a relative import in
      * a /test/ module (e.g. `import '../lit-element.js'`). A bare module should
-     * instead always be used in test modules (e.g. `import
-     * '../lit-element.js'`). The bare module is necessary, even for imports
-     * from the same package, so that export conditions take effect.
+     * instead always be used in test modules (e.g. `import 'lit-element'`). The
+     * bare module is necessary, even for imports from the same package, so that
+     * export conditions take effect.
      */
     function devVsProdSourcesChecker(context, next) {
       if (mode === 'dev') {
@@ -248,6 +248,19 @@ const config: TestRunnerConfig = {
           !context.url.includes('/development/test/')
         ) {
           console.log('Unexpected dev request in prod mode:', context.url);
+          const refererHeader = context.req.headers['referer'];
+          if (refererHeader) {
+            // Try and extract the <filename>_test.js from the referer.
+            const maybeTestFile = /[\w-]*_test\.js/.exec(refererHeader)?.[0];
+            if (maybeTestFile) {
+              console.log(
+                `There may be a relative import in '${maybeTestFile}' which ` +
+                  `is resolving to '${context.url}'. It must be a bare module import. ` +
+                  'Reproduce this error locally with ' +
+                  '`MODE=prod npm run test:common -w @lit-internal/tests`'
+              );
+            }
+          }
           context.response.status = 403;
           return;
         }
