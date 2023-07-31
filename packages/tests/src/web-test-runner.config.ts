@@ -255,8 +255,8 @@ const config: TestRunnerConfig = {
             if (maybeTestFile) {
               console.log(
                 `There may be a relative import in '${maybeTestFile}' which ` +
-                  `is resolving to '${context.url}'. It must be a bare module import. ` +
-                  'Reproduce this error locally with ' +
+                  `is resolving to '${context.url}'. Ensure the import is a bare module. ` +
+                  'Reproduce locally with: ' +
                   '`MODE=prod npm run test:common -w @lit-internal/tests`'
               );
             }
