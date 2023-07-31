@@ -4825,6 +4825,88 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
+  'LitElement: Attribute binding (mixed case)': () => {
+    return {
+      registerElements() {
+        class LEMixedAttrBinding extends LitElement {
+          @property()
+          camelProp = 'default';
+          override render() {
+            return html` <div>[${this.camelProp}]</div> `;
+          }
+        }
+        customElements.define('le-mixed-attr-binding', LEMixedAttrBinding);
+      },
+      render(prop: unknown) {
+        return html`
+          <le-mixed-attr-binding
+            camelProp=${prop}
+            static
+          ></le-mixed-attr-binding>
+        `;
+      },
+      expectations: [
+        {
+          args: ['boundProp1'],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-mixed-attr-binding'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).camelProp, 'boundProp1');
+          },
+          html: {
+            root: `<le-mixed-attr-binding camelprop="boundProp1" static></le-mixed-attr-binding>`,
+            'le-mixed-attr-binding': `<div>\n  [boundProp1]\n</div>`,
+          },
+        },
+        {
+          args: ['boundProp2'],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-mixed-attr-binding'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).camelProp, 'boundProp2');
+          },
+          html: {
+            root: `<le-mixed-attr-binding camelprop="boundProp2" static></le-mixed-attr-binding>`,
+            'le-mixed-attr-binding': `<div>\n  [boundProp2]\n</div>`,
+          },
+        },
+        {
+          args: [undefined],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-mixed-attr-binding'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).camelProp, '');
+          },
+          html: {
+            root: `<le-mixed-attr-binding camelprop="" static></le-mixed-attr-binding>`,
+            'le-mixed-attr-binding': `<div>\n  []\n</div>`,
+          },
+        },
+        {
+          args: [null],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-mixed-attr-binding'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).camelProp, '');
+          },
+          html: {
+            root: `<le-mixed-attr-binding camelprop="" static></le-mixed-attr-binding>`,
+            'le-mixed-attr-binding': `<div>\n  []\n</div>`,
+          },
+        },
+      ],
+      stableSelectors: ['le-mixed-attr-binding'],
+    };
+  },
+
   'LitElement: Reflected number attribute': () => {
     return {
       registerElements() {

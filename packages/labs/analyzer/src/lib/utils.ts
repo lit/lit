@@ -10,46 +10,52 @@
  * Helper utilities for analyzing declarations
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {hasJSDocTag} from './javascript/jsdoc.js';
 import {Privacy} from './model.js';
 
-export const hasModifier = (node: ts.Node, modifier: ts.SyntaxKind) => {
-  return node.modifiers?.some((s) => s.kind === modifier) ?? false;
+export type TypeScript = typeof ts;
+
+export const hasModifier = (
+  ts: TypeScript,
+  node: ts.HasModifiers,
+  modifier: ts.SyntaxKind
+) => {
+  return ts.getModifiers(node)?.some((s) => s.kind === modifier) ?? false;
 };
 
-export const hasExportModifier = (node: ts.Node) => {
-  return hasModifier(node, ts.SyntaxKind.ExportKeyword);
+export const hasExportModifier = (ts: TypeScript, node: ts.HasModifiers) => {
+  return hasModifier(ts, node, ts.SyntaxKind.ExportKeyword);
 };
 
-export const hasDefaultModifier = (node: ts.Node) => {
-  return hasModifier(node, ts.SyntaxKind.DefaultKeyword);
+export const hasDefaultModifier = (ts: TypeScript, node: ts.HasModifiers) => {
+  return hasModifier(ts, node, ts.SyntaxKind.DefaultKeyword);
 };
 
-export const hasStaticModifier = (node: ts.Node) => {
-  return hasModifier(node, ts.SyntaxKind.StaticKeyword);
+export const hasStaticModifier = (ts: TypeScript, node: ts.HasModifiers) => {
+  return hasModifier(ts, node, ts.SyntaxKind.StaticKeyword);
 };
 
-export const hasPrivateModifier = (node: ts.Node) => {
-  return hasModifier(node, ts.SyntaxKind.PrivateKeyword);
+export const hasPrivateModifier = (ts: TypeScript, node: ts.HasModifiers) => {
+  return hasModifier(ts, node, ts.SyntaxKind.PrivateKeyword);
 };
 
-export const hasProtectedModifier = (node: ts.Node) => {
-  return hasModifier(node, ts.SyntaxKind.ProtectedKeyword);
+export const hasProtectedModifier = (ts: TypeScript, node: ts.HasModifiers) => {
+  return hasModifier(ts, node, ts.SyntaxKind.ProtectedKeyword);
 };
 
-const isPrivate = (node: ts.Node) => {
-  return hasPrivateModifier(node) || hasJSDocTag(node, 'private');
+const isPrivate = (ts: TypeScript, node: ts.HasModifiers) => {
+  return hasPrivateModifier(ts, node) || hasJSDocTag(ts, node, 'private');
 };
 
-const isProtected = (node: ts.Node) => {
-  return hasProtectedModifier(node) || hasJSDocTag(node, 'protected');
+const isProtected = (ts: TypeScript, node: ts.HasModifiers) => {
+  return hasProtectedModifier(ts, node) || hasJSDocTag(ts, node, 'protected');
 };
 
-export const getPrivacy = (node: ts.Node): Privacy => {
-  return isPrivate(node)
+export const getPrivacy = (ts: TypeScript, node: ts.HasModifiers): Privacy => {
+  return isPrivate(ts, node)
     ? 'private'
-    : isProtected(node)
+    : isProtected(ts, node)
     ? 'protected'
     : 'public';
 };

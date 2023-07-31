@@ -17,7 +17,8 @@
     "noImplicitThis": true,
     "allowSyntheticDefaultImports": true,
     "tsBuildInfoFile": "./lib/.tsbuildinfo",
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "types": []
   },
   "include": ["src/**/*.ts"]
 }

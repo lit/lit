@@ -38,14 +38,14 @@ const lastElementForContextAndCallback: WeakMap<
   WeakMap<Function, Element | undefined>
 > = new WeakMap();
 
-export type RefOrCallback = Ref | ((el: Element | undefined) => void);
+export type RefOrCallback<T = Element> = Ref<T> | ((el: T | undefined) => void);
 
 class RefDirective extends AsyncDirective {
   private _element?: Element;
   private _ref?: RefOrCallback;
   private _context?: object;
 
-  render(_ref: RefOrCallback) {
+  render(_ref?: RefOrCallback) {
     return nothing;
   }
 

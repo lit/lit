@@ -10,7 +10,7 @@
  * Utilities for analyzing variable declarations
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {
   VariableDeclaration,
   AnalyzerInterface,
@@ -24,6 +24,8 @@ import {getFunctionDeclaration} from './functions.js';
 import {getClassDeclaration} from './classes.js';
 import {createDiagnostic} from '../errors.js';
 import {DiagnosticCode} from '../diagnostic-code.js';
+
+export type TypeScript = typeof ts;
 
 type VariableName =
   | ts.Identifier
@@ -40,6 +42,7 @@ const getVariableDeclaration = (
   name: ts.Identifier,
   analyzer: AnalyzerInterface
 ): Declaration => {
+  const {typescript: ts} = analyzer;
   // For const variable declarations initialized to functions or classes, we
   // treat these as FunctionDeclaration and ClassDeclaration, respectively since
   // they are (mostly) unobservably different to the module consumer and we can
@@ -85,7 +88,7 @@ export const getVariableDeclarationInfo = (
   statement: ts.VariableStatement,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
-  const isExport = hasExportModifier(statement);
+  const isExport = hasExportModifier(analyzer.typescript, statement);
   const {declarationList} = statement;
   return declarationList.declarations
     .map((d) =>
@@ -106,6 +109,7 @@ const getVariableDeclarationInfoList = (
   isExport: boolean,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
+  const {typescript: ts} = analyzer;
   if (ts.isIdentifier(name)) {
     return [
       {
@@ -138,6 +142,7 @@ const getVariableDeclarationInfoList = (
   } else {
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript: ts,
         node: dec,
         message: `Expected declaration name to either be an identifier or a destructuring`,
         category: ts.DiagnosticCategory.Warning,
@@ -192,7 +197,7 @@ export const getEnumDeclarationInfo = (
     name: dec.name.text,
     node: dec,
     factory: () => getEnumDeclaration(dec, analyzer),
-    isExport: hasExportModifier(dec),
+    isExport: hasExportModifier(analyzer.typescript, dec),
   };
 };
 

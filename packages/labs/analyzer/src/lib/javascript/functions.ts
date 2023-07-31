@@ -10,7 +10,7 @@
  * Utilities for analyzing function declarations
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {createDiagnostic} from '../errors.js';
 import {
   AnalyzerInterface,
@@ -25,6 +25,8 @@ import {getTypeForNode, getTypeForType} from '../types.js';
 import {parseJSDocDescription, parseNodeJSDocInfo} from './jsdoc.js';
 import {hasDefaultModifier, hasExportModifier} from '../utils.js';
 
+export type TypeScript = typeof ts;
+
 /**
  * Returns the name of a function declaration.
  */
@@ -36,10 +38,13 @@ const getFunctionDeclarationName = (
     declaration.name?.text ??
     // The only time a function declaration will not have a name is when it is
     // a default export, aka `export default function() {...}`
-    (hasDefaultModifier(declaration) ? 'default' : undefined);
+    (hasDefaultModifier(analyzer.typescript, declaration)
+      ? 'default'
+      : undefined);
   if (name === undefined) {
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript: analyzer.typescript,
         node: declaration,
         message:
           'Illegal syntax: expected every function declaration to either have a name or be a default export',
@@ -61,7 +66,7 @@ export const getFunctionDeclarationInfo = (
     name,
     node: declaration,
     factory: () => getFunctionDeclaration(declaration, name, analyzer),
-    isExport: hasExportModifier(declaration),
+    isExport: hasExportModifier(analyzer.typescript, declaration),
   };
 };
 
@@ -130,9 +135,9 @@ const getParameter = (
   param: ts.ParameterDeclaration,
   analyzer: AnalyzerInterface
 ): Parameter => {
-  const paramTag = ts.getAllJSDocTagsOfKind(
+  const paramTag = analyzer.typescript.getAllJSDocTagsOfKind(
     param,
-    ts.SyntaxKind.JSDocParameterTag
+    analyzer.typescript.SyntaxKind.JSDocParameterTag
   )[0];
   const p: Parameter = {
     name: param.name.getText(),
@@ -158,9 +163,9 @@ const getReturn = (
   node: ts.FunctionLikeDeclaration,
   analyzer: AnalyzerInterface
 ): Return | undefined => {
-  const returnTag = ts.getAllJSDocTagsOfKind(
+  const returnTag = analyzer.typescript.getAllJSDocTagsOfKind(
     node,
-    ts.SyntaxKind.JSDocReturnTag
+    analyzer.typescript.SyntaxKind.JSDocReturnTag
   )[0];
   const signature = analyzer.program
     .getTypeChecker()
@@ -169,6 +174,7 @@ const getReturn = (
     // TODO: when does this happen? is it actionable for the user? if so, how?
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript: analyzer.typescript,
         node,
         message: `Could not get signature to determine return type`,
       })

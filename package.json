@@ -147,6 +147,7 @@
         "./packages/labs/gen-wrapper-angular:test",
         "./packages/labs/gen-wrapper-react:test",
         "./packages/labs/gen-wrapper-vue:test",
+        "./packages/labs/react:test",
         "./packages/labs/ssr:test",
         "./packages/labs/ssr-react:test",
         "./packages/labs/testing:test",

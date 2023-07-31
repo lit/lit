@@ -937,16 +937,14 @@ export abstract class ReactiveElement
 
   constructor() {
     super();
-    this._initialize();
+    this.__initialize();
   }
 
   /**
    * Internal only override point for customizing work done when elements
    * are constructed.
-   *
-   * @internal
    */
-  _initialize() {
+  private __initialize() {
     this.__updatePromise = new Promise<boolean>(
       (res) => (this.enableUpdating = res)
     );
