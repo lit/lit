@@ -254,7 +254,7 @@ const config: TestRunnerConfig = {
             const maybeTestFile = /[\w-]*_test\.js/.exec(refererHeader)?.[0];
             if (maybeTestFile) {
               console.log(
-                `There may be a relative import in '${maybeTestFile}' which ` +
+                `❌ There may be a relative import in '${maybeTestFile}' which ` +
                   `is resolving to '${context.url}'. Ensure the import is a bare module. ` +
                   'Reproduce locally with: ' +
                   '`MODE=prod npm run test:common -w @lit-internal/tests`'
