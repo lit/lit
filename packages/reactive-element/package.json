@@ -435,6 +435,7 @@
       "output": [
         "css-tag.js{,.map}",
         "decorators.js{,.map}",
+        "legacy-decorators.js{,.map}",
         "polyfill-support.js{,.map}",
         "reactive-controller.js{,.map}",
         "reactive-element.js{,.map}",
