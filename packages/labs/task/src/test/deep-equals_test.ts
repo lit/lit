@@ -1,6 +1,7 @@
 /**
  * @license
- * Portions copyright 2017 Evgeny Poberezkin
+ * Portions Copyright 2023 Google LLC
+ * Portions Copyright 2017 Evgeny Poberezkin
  * SPDX-License-Identifier: MIT
  */
 import {assert} from '@esm-bundle/chai';
