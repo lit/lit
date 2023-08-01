@@ -343,6 +343,20 @@ class CompiledTemplatePass {
               type: PartType.CHILD,
               index: nodeIndex,
             });
+          } else {
+            // Handle a dynamic binding within a comment node, e.g.:
+            // html`<!--<div>${'binding'}</div>--><p>${'hi'}</p>`
+            let i = -1;
+            while ((i = node.data.indexOf(marker, i + 1)) !== -1) {
+              // Comment node has a binding marker inside, make an inactive part
+              // The binding won't work, but subsequent bindings will
+              parts.push({type: PartType.COMMENT_PART, index: nodeIndex});
+              // Move to the end of the match
+              i += marker.length - 1;
+            }
+            // In the compiled result, remove the markers, so compiled files are
+            // deterministic.
+            node.data = node.data.replaceAll(marker, '');
           }
         } else if (isTextNode(node)) {
           // Do not count text nodes.
