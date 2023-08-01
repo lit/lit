@@ -1343,7 +1343,7 @@ export const tests: {[name: string]: SSRTest} = {
               webkitAppearance: 'none',
             },
           ],
-          html: '<div style="--my-prop: green; appearance: none;"></div>',
+          html: '<div style="--my-prop:green; appearance: none;"></div>',
         },
         {
           args: [
@@ -1352,7 +1352,7 @@ export const tests: {[name: string]: SSRTest} = {
               webkitAppearance: 'inherit',
             },
           ],
-          html: '<div style="--my-prop: gray; appearance: inherit;"></div>',
+          html: '<div style="--my-prop:gray; appearance: inherit;"></div>',
         },
       ],
       // styleMap does not dirty check individual properties before setting,
