@@ -22,6 +22,7 @@ import {
   isElementNode,
   isTextNode,
   traverse,
+  getTextContent,
 } from '@parse5/tools';
 import {getTypeChecker} from './type-checker.js';
 const {getTemplateHtml, markerMatch, marker, boundAttributeSuffix} =
@@ -63,6 +64,14 @@ interface TemplateInfo {
    */
   variableName: ts.Identifier;
 }
+
+/**
+ * Matches the raw text elements.
+ *
+ * Comments are not parsed within raw text elements, so we need to search their
+ * text content for marker strings.
+ */
+const rawTextElement = /^(?:script|style|textarea|title)$/i;
 
 /**
  * CompiledTemplatePass provides a `ts.TransformerFactory` that transforms
@@ -120,7 +129,8 @@ class CompiledTemplatePass {
   >();
   /**
    * Map an `html` tagged template expression to the template info for each
-   * template to compile.
+   * template to compile. If a template is not in this map, it will not be
+   * rewritten into a `CompiledTemplateResult`.
    */
   private readonly expressionToTemplate = new Map<
     ts.TaggedTemplateExpression,
@@ -268,8 +278,9 @@ class CompiledTemplatePass {
     // Start at -1 to account for an extra root document fragment.
     let nodeIndex = -1;
     let attrNameIndex = 0;
+    let shouldCompile = true;
     traverse(ast, {
-      'pre:node': (node) => {
+      'pre:node': (node): boolean | void => {
         if (isElementNode(node)) {
           const attributesToRemove = new Set<unknown>();
           if (node.attrs.length > 0) {
@@ -314,6 +325,18 @@ class CompiledTemplatePass {
               (attr) => !attributesToRemove.has(attr)
             );
           }
+          if (rawTextElement.test(node.tagName)) {
+            // Raw text elements treat their contents as raw text. E.g.,
+            // `<textarea><!--Hi--></textarea>` will render a textarea element
+            // with the comment as visible contents. Currently the compiled
+            // template runtime doesn't handle raw text elements with bindings,
+            // so we do not optimize these templates.
+            const hasMarkers = getTextContent(node).includes(marker);
+            if (hasMarkers) {
+              shouldCompile = false;
+              return false;
+            }
+          }
         } else if (isCommentNode(node)) {
           if (node.data === markerMatch) {
             parts.push({
@@ -328,6 +351,10 @@ class CompiledTemplatePass {
         nodeIndex++;
       },
     });
+
+    if (!shouldCompile) {
+      return {shouldCompile: false};
+    }
 
     // Add required unique ctor identifiers for parts added.
     const f = this.context.factory;
@@ -401,7 +428,8 @@ class CompiledTemplatePass {
     )!) {
       const result = this.litHtmlPrepareRenderPhase(template.node.template);
       if (!result.shouldCompile) {
-        throw new Error(`Unhandled TODO: Will be implemented in followup.`);
+        this.expressionToTemplate.delete(template.node);
+        continue;
       }
       const {parts: partData, preparedHtml} = result;
       const parts = createTemplateParts({
