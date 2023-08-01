@@ -354,9 +354,9 @@ class CompiledTemplatePass {
               // Move to the end of the match
               i += marker.length - 1;
             }
-            // In the compiled result, remove the markers, so compiled
-            // files are deterministic.
-            node.data.replaceAll(marker, '');
+            // In the compiled result, remove the markers, so compiled files are
+            // deterministic.
+            node.data = node.data.replaceAll(marker, '');
           }
         } else if (isTextNode(node)) {
           // Do not count text nodes.
