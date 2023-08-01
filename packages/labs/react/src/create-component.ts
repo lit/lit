@@ -25,7 +25,10 @@ const DEV_MODE = true;
  * }
  * ```
  */
-export type WebComponentProps<I extends HTMLElement> = React.HTMLAttributes<I> &
+export type WebComponentProps<I extends HTMLElement> = React.DetailedHTMLProps<
+  React.HTMLAttributes<I>,
+  I
+> &
   // TODO(augustjk) Consider omitting keyof LitElement to remove "internal"
   // lifecycle methods or allow user to explicitly set the prop type instead
   // of grabbing from class
@@ -39,7 +42,7 @@ export type ReactWebComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 > = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<WebComponentProps<I> & EventListeners<E>> &
+  React.PropsWithoutRef<React.HTMLAttributes<I> & EventListeners<E>> &
     React.RefAttributes<I>
 >;
 
@@ -218,7 +221,7 @@ export const createComponent = <
     }
   }
 
-  type ComponentProps = WebComponentProps<I> & EventListeners<E>;
+  type ComponentProps = React.HTMLAttributes<I> & EventListeners<E>;
 
   const ReactComponent = React.forwardRef<I, ComponentProps>((props, ref) => {
     const prevPropsRef = React.useRef<ComponentProps | null>(null);
