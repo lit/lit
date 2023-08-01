@@ -356,7 +356,7 @@ class CompiledTemplatePass {
             }
             // In the compiled result, remove the markers, so compiled
             // files are deterministic.
-            node.data = node.data.split(marker).join('');
+            node.data.replaceAll(marker, '');
           }
         } else if (isTextNode(node)) {
           // Do not count text nodes.
