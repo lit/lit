@@ -90,8 +90,10 @@ const createImportNamespaceDeclaration = (
 
 /**
  * Add Parts constructors import. To avoid identifier collisions, each part
- * constructor is mapped to a unique identifier that must be provided. If no
- * identifier is provided for a part, then the part will not be emitted.
+ * constructor is mapped to a unique identifier. Imports are added as requested
+ * by the parameters in the `attributePartConstructorNameMap`. If no identifier
+ * is provided for a part, then the part will be ignored. This helps keep file
+ * size down and prevents the creation of unusued identifiers.
  *
  * This uses a namespace import for g3 compatibility.
  *
@@ -150,6 +152,12 @@ export const addPartConstructorImport = ({
       );
     })
     .filter((i): i is ts.BindingElement => i !== undefined);
+
+  if (partsObjectBinding.length === 0) {
+    throw new Error(
+      `Internal Error: Expect at least one attribute part constructor. Found none.`
+    );
+  }
 
   // Insert the part import into the file, immediately prior to the security
   // brand tag function declaration. This is a semi-arbitrary location to
