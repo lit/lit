@@ -8,6 +8,8 @@ import ts from 'typescript';
 import {_$LH as litHtmlPrivate} from 'lit-html/private-ssr-support.js';
 import {parseFragment, serialize} from 'parse5';
 import {
+  addPartConstructorImport,
+  AttributePartConstructorAliases,
   createCompiledTemplate,
   createCompiledTemplateResult,
   createSecurityBrandTagFunction,
@@ -15,9 +17,23 @@ import {
   PartType,
   TemplatePart,
 } from './ast-fragments.js';
-import {isCommentNode, isTextNode, traverse} from '@parse5/tools';
+import {
+  isCommentNode,
+  isElementNode,
+  isTextNode,
+  traverse,
+} from '@parse5/tools';
 import {getTypeChecker} from './type-checker.js';
-const {getTemplateHtml, markerMatch, marker} = litHtmlPrivate;
+const {getTemplateHtml, markerMatch, marker, boundAttributeSuffix} =
+  litHtmlPrivate;
+
+/**
+ * Fail type checking if the first argument is not `never` and return the
+ * argument.
+ */
+export function unreachable(x: never) {
+  return x;
+}
 
 interface TemplateInfo {
   /**
@@ -68,11 +84,27 @@ class CompiledTemplatePass {
       return (sourceFile: ts.SourceFile): ts.SourceFile => {
         const pass = new CompiledTemplatePass(context, sourceFile);
         pass.findTemplates(sourceFile);
+        if (pass.expressionToTemplate.size === 0) {
+          // No templates to compile.
+          return sourceFile;
+        }
         const transformedSourceFile = pass.rewriteTemplates(sourceFile);
         if (!ts.isSourceFile(transformedSourceFile)) {
           throw new Error(
             `Internal Error: Expected source file to be transformed into another source file.`
           );
+        }
+        // Add part constructors import if required.
+        if (
+          pass.addedSecurityBrandVariableStatement !== null &&
+          Object.keys(pass.attributePartConstructorNames).length > 0
+        ) {
+          return addPartConstructorImport({
+            factory: context.factory,
+            sourceFile: transformedSourceFile,
+            securityBrand: pass.addedSecurityBrandVariableStatement,
+            attributePartConstructorNameMap: pass.attributePartConstructorNames,
+          });
         }
         return transformedSourceFile;
       };
@@ -98,6 +130,14 @@ class CompiledTemplatePass {
    * Track the added security brand AST node so we only add one.
    */
   addedSecurityBrandVariableStatement: ts.Statement | null = null;
+  /**
+   * The unique identifier for each attribute part constructor. These are added
+   * while template preparation is done, and signal which parts need to be
+   * imported. If all keys are undefined, then no parts will be added to the
+   * compiled file.
+   */
+  private readonly attributePartConstructorNames: AttributePartConstructorAliases =
+    {};
   /**
    * Unique security brand identifier. Used as the tag function for the prepared
    * HTML.
@@ -215,8 +255,9 @@ class CompiledTemplatePass {
     // TemplateStringsResult.
     (spoofedTemplate as unknown as {raw: string}).raw = '';
     let html: TrustedHTML | string = '';
+    let attrNames: Array<string | undefined> = [];
     try {
-      [html] = getTemplateHtml(spoofedTemplate, 1);
+      [html, attrNames] = getTemplateHtml(spoofedTemplate, 1);
     } catch {
       return {shouldCompile: false};
     }
@@ -224,10 +265,56 @@ class CompiledTemplatePass {
       sourceCodeLocationInfo: false,
     });
 
+    // Start at -1 to account for an extra root document fragment.
     let nodeIndex = -1;
+    let attrNameIndex = 0;
     traverse(ast, {
       'pre:node': (node) => {
-        if (isCommentNode(node)) {
+        if (isElementNode(node)) {
+          const attributesToRemove = new Set<unknown>();
+          if (node.attrs.length > 0) {
+            for (const attr of node.attrs) {
+              if (
+                attr.name.endsWith(boundAttributeSuffix) ||
+                attr.name.startsWith(marker)
+              ) {
+                attributesToRemove.add(attr);
+                const realName = attrNames[attrNameIndex++];
+                if (realName !== undefined) {
+                  const statics = attr.value.split(marker);
+                  // We store the case-sensitive name from `attrNames` (generated
+                  // while parsing the template strings); note that this assumes
+                  // parse5 attribute ordering matches string ordering
+                  const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
+                    realName
+                  )!;
+                  parts.push({
+                    type: PartType.ATTRIBUTE,
+                    index: nodeIndex,
+                    name: caseSensitiveName,
+                    strings: statics,
+                    ctorType:
+                      prefix === '.'
+                        ? PartType.PROPERTY
+                        : prefix === '?'
+                        ? PartType.BOOLEAN_ATTRIBUTE
+                        : prefix === '@'
+                        ? PartType.EVENT
+                        : PartType.ATTRIBUTE,
+                  });
+                } else {
+                  parts.push({
+                    type: PartType.ELEMENT,
+                    index: nodeIndex,
+                  });
+                }
+              }
+            }
+            node.attrs = node.attrs.filter(
+              (attr) => !attributesToRemove.has(attr)
+            );
+          }
+        } else if (isCommentNode(node)) {
           if (node.data === markerMatch) {
             parts.push({
               type: PartType.CHILD,
@@ -241,6 +328,43 @@ class CompiledTemplatePass {
         nodeIndex++;
       },
     });
+
+    // Add required unique ctor identifiers for parts added.
+    const f = this.context.factory;
+    for (const part of parts) {
+      if (part.type === PartType.ATTRIBUTE) {
+        const ctorType = part.ctorType;
+        switch (ctorType) {
+          case PartType.ATTRIBUTE: {
+            this.attributePartConstructorNames.AttributePart ??=
+              f.createUniqueName('A');
+            break;
+          }
+          case PartType.BOOLEAN_ATTRIBUTE: {
+            this.attributePartConstructorNames.BooleanAttributePart ??=
+              f.createUniqueName('B');
+            break;
+          }
+          case PartType.EVENT: {
+            this.attributePartConstructorNames.EventPart ??=
+              f.createUniqueName('E');
+            break;
+          }
+          case PartType.PROPERTY: {
+            this.attributePartConstructorNames.PropertyPart ??=
+              f.createUniqueName('P');
+            break;
+          }
+          default: {
+            throw new Error(
+              `Internal Error: Unexpected attribute type: ${unreachable(
+                ctorType
+              )}`
+            );
+          }
+        }
+      }
+    }
 
     // Any comments containing a lit marker can be simplified to reduce file
     // size. E.g., `<!--?lit$1234$-->` is replaced with `<?>`.
@@ -280,7 +404,11 @@ class CompiledTemplatePass {
         throw new Error(`Unhandled TODO: Will be implemented in followup.`);
       }
       const {parts: partData, preparedHtml} = result;
-      const parts = createTemplateParts({f, parts: partData});
+      const parts = createTemplateParts({
+        f,
+        parts: partData,
+        attributePartConstructorNameMap: this.attributePartConstructorNames,
+      });
 
       topLevelTemplates.push(
         createCompiledTemplate({

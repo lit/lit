@@ -73,7 +73,7 @@
     }
   },
   "dependencies": {
-    "@parse5/tools": "^0.1.0",
+    "@parse5/tools": "^0.2.0",
     "lit-html": "^2.7.5",
     "parse5": "^7.1.2",
     "typescript": "^5.1.6"
