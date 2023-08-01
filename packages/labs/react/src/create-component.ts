@@ -42,11 +42,13 @@ export type ReactWebComponent<
   React.PropsWithoutRef<ComponentProps<I, E>> & React.RefAttributes<I>
 >;
 
+// Props derived from custom element class. Currently has limitations of making
+// all properties optional and also surfaces life cycle methods in autocomplete.
 // TODO(augustjk) Consider omitting keyof LitElement to remove "internal"
-// lifecycle methods or allow user to explicitly set the prop type instead
-// of grabbing from class
+// lifecycle methods or allow user to explicitly provide props.
 type ElementProps<I> = Partial<Omit<I, keyof HTMLElement>>;
 
+// Acceptable props to the React component.
 type ComponentProps<I, E extends EventNames = {}> = React.HTMLAttributes<I> &
   ElementProps<I> &
   EventListeners<E>;
