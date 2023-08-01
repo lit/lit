@@ -515,7 +515,10 @@ suite('createComponent', () => {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     await renderReactComponent({'aria-checked': null as any});
     assert.equal(el.getAttribute('aria-checked'), null);
-    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+    assert.equal(
+      el.getAttribute('aria-checked'),
+      wrappedEl.getAttribute('aria-checked')
+    );
 
     await renderReactComponent({'aria-checked': true});
     assert.equal(el.getAttribute('aria-checked'), 'true');

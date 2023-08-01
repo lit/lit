@@ -386,12 +386,20 @@ const resolve = async (
 ): Promise<string> => {
   const resolver = enhancedResolve.create(opts);
   return new Promise((res, rej) => {
-    resolver({}, path, id, {}, (err: unknown, resolved?: string) => {
-      if (err != null) {
-        rej(err);
-      } else {
-        res(resolved!);
+    resolver(
+      {},
+      path,
+      id,
+      {},
+      (err: unknown, resolved?: string | false | undefined) => {
+        if (err != null) {
+          rej(err);
+        } else if (resolved === false || resolved === undefined) {
+          rej(`Unable to resolve ${id}`);
+        } else {
+          res(resolved!);
+        }
       }
-    });
+    );
   });
 };
