@@ -18,6 +18,14 @@ export const PartType = {
 
 export type PartType = (typeof PartType)[keyof typeof PartType];
 
+export const AttributeKind = {
+  ATTRIBUTE: 1,
+  PROPERTY: 3,
+  BOOLEAN_ATTRIBUTE: 4,
+  EVENT: 5,
+} as const;
+
+export type AttributeKind = (typeof AttributeKind)[keyof typeof AttributeKind];
 export type TemplatePart =
   | {
       type:
@@ -31,14 +39,13 @@ export type TemplatePart =
       index: number;
       name: string;
       strings: Array<string>;
-      ctorType: PartType;
+      ctorType: AttributeKind;
     };
-
 const attributePartConstructors = {
-  [PartType.ATTRIBUTE]: 'AttributePart',
-  [PartType.PROPERTY]: 'PropertyPart',
-  [PartType.BOOLEAN_ATTRIBUTE]: 'BooleanAttributePart',
-  [PartType.EVENT]: 'EventPart',
+  [AttributeKind.ATTRIBUTE]: 'AttributePart',
+  [AttributeKind.PROPERTY]: 'PropertyPart',
+  [AttributeKind.BOOLEAN_ATTRIBUTE]: 'BooleanAttributePart',
+  [AttributeKind.EVENT]: 'EventPart',
 } as const;
 
 /**
@@ -287,9 +294,7 @@ export const createTemplateParts = ({
       if (part.type === PartType.ATTRIBUTE) {
         const ctorAlias =
           attributePartConstructorNameMap[
-            attributePartConstructors[
-              part.ctorType as keyof typeof attributePartConstructors
-            ]
+            attributePartConstructors[part.ctorType]
           ];
         if (ctorAlias === undefined) {
           throw new Error(

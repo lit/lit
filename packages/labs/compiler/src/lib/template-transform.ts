@@ -27,6 +27,14 @@ import {getTypeChecker} from './type-checker.js';
 const {getTemplateHtml, markerMatch, marker, boundAttributeSuffix} =
   litHtmlPrivate;
 
+/**
+ * Fail type checking if the first argument is not `never` and return the
+ * argument.
+ */
+export function unreachable(x: never) {
+  return x;
+}
+
 interface TemplateInfo {
   /**
    * The top level statement in module scope containing the `node`
@@ -86,12 +94,11 @@ class CompiledTemplatePass {
             `Internal Error: Expected source file to be transformed into another source file.`
           );
         }
-        if (pass.addedSecurityBrandVariableStatement === null) {
-          // No compilation occurred.
-          return sourceFile;
-        }
         // Add part constructors import if required.
-        if (Object.keys(pass.attributePartConstructorNames).length > 0) {
+        if (
+          pass.addedSecurityBrandVariableStatement !== null &&
+          Object.keys(pass.attributePartConstructorNames).length > 0
+        ) {
           return addPartConstructorImport({
             factory: context.factory,
             sourceFile: transformedSourceFile,
@@ -349,7 +356,11 @@ class CompiledTemplatePass {
             break;
           }
           default: {
-            throw new Error(`Internal Error: Unexpected attribute type.`);
+            throw new Error(
+              `Internal Error: Unexpected attribute type: ${unreachable(
+                ctorType
+              )}`
+            );
           }
         }
       }

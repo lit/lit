@@ -18,7 +18,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
-    "moduleResolution": "Node",
+    "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "noImplicitOverride": true,
     "types": ["node"]
