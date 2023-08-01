@@ -221,6 +221,11 @@ suite('createComponent', () => {
     <TypedBasicElement bool={'string'}></TypedBasicElement>;
   });
 
+  // Type only test to be caught at build time.
+  test.skip('WebComponentProps type allows "ref"', async () => {
+    <x-foo ref={React.createRef()}></x-foo>;
+  });
+
   test('works with text children', async () => {
     const name = 'World';
     act(() => {
