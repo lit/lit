@@ -226,91 +226,91 @@ export const createComponent = <
     }
   }
 
-  const ReactComponent = React.forwardRef<I, ComponentProps<I, E>>(
-    (props, ref) => {
-      const prevPropsRef = React.useRef<ComponentProps<I, E> | null>(null);
-      const elementRef = React.useRef<I | null>(null);
+  type Props = ComponentProps<I, E>;
 
-      // Props to be passed to React.createElement
-      const reactProps: Record<string, unknown> = {};
-      // Props to be set on element with setProperty
-      const elementProps: Record<string, unknown> = {};
+  const ReactComponent = React.forwardRef<I, Props>((props, ref) => {
+    const prevPropsRef = React.useRef<Props | null>(null);
+    const elementRef = React.useRef<I | null>(null);
 
-      for (const [k, v] of Object.entries(props)) {
-        if (reservedReactProperties.has(k)) {
-          // React does *not* handle `className` for custom elements so
-          // coerce it to `class` so it's handled correctly.
-          reactProps[k === 'className' ? 'class' : k] = v;
-          continue;
-        }
+    // Props to be passed to React.createElement
+    const reactProps: Record<string, unknown> = {};
+    // Props to be set on element with setProperty
+    const elementProps: Record<string, unknown> = {};
 
-        if (eventProps.has(k) || k in elementClass.prototype) {
-          elementProps[k] = v;
-          continue;
-        }
-
-        reactProps[k] = v;
+    for (const [k, v] of Object.entries(props)) {
+      if (reservedReactProperties.has(k)) {
+        // React does *not* handle `className` for custom elements so
+        // coerce it to `class` so it's handled correctly.
+        reactProps[k === 'className' ? 'class' : k] = v;
+        continue;
       }
 
-      // useLayoutEffect produces warnings during server rendering.
-      if (!NODE_MODE) {
-        // This one has no dependency array so it'll run on every re-render.
-        React.useLayoutEffect(() => {
-          if (elementRef.current === null) {
-            return;
-          }
-          for (const prop in elementProps) {
-            setProperty(
-              elementRef.current,
-              prop,
-              props[prop],
-              prevPropsRef.current ? prevPropsRef.current[prop] : undefined,
-              events
-            );
-          }
-          // Note, the spirit of React might be to "unset" any old values that
-          // are no longer included; however, there's no reasonable value to set
-          // them to so we just leave the previous state as is.
-
-          prevPropsRef.current = props;
-        });
-
-        // Empty dependency array so this will only run once after first render.
-        React.useLayoutEffect(() => {
-          elementRef.current?.removeAttribute('defer-hydration');
-        }, []);
+      if (eventProps.has(k) || k in elementClass.prototype) {
+        elementProps[k] = v;
+        continue;
       }
 
-      if (NODE_MODE) {
-        // If component is to be server rendered with `@lit-labs/ssr-react`, pass
-        // element properties in a special bag to be set by the server-side
-        // element renderer.
-        if (
-          React.createElement.name === 'litPatchedCreateElement' &&
-          Object.keys(elementProps).length
-        ) {
-          // This property needs to remain unminified.
-          reactProps['_$litProps$'] = elementProps;
-        }
-      } else {
-        // Suppress hydration warning for server-rendered attributes.
-        // This property needs to remain unminified.
-        reactProps['suppressHydrationWarning'] = true;
-      }
-
-      return React.createElement(tagName, {
-        ...reactProps,
-        ref: (node: I) => {
-          elementRef.current = node;
-          if (typeof ref === 'function') {
-            ref(node);
-          } else if (ref !== null) {
-            ref.current = node;
-          }
-        },
-      });
+      reactProps[k] = v;
     }
-  );
+
+    // useLayoutEffect produces warnings during server rendering.
+    if (!NODE_MODE) {
+      // This one has no dependency array so it'll run on every re-render.
+      React.useLayoutEffect(() => {
+        if (elementRef.current === null) {
+          return;
+        }
+        for (const prop in elementProps) {
+          setProperty(
+            elementRef.current,
+            prop,
+            props[prop],
+            prevPropsRef.current ? prevPropsRef.current[prop] : undefined,
+            events
+          );
+        }
+        // Note, the spirit of React might be to "unset" any old values that
+        // are no longer included; however, there's no reasonable value to set
+        // them to so we just leave the previous state as is.
+
+        prevPropsRef.current = props;
+      });
+
+      // Empty dependency array so this will only run once after first render.
+      React.useLayoutEffect(() => {
+        elementRef.current?.removeAttribute('defer-hydration');
+      }, []);
+    }
+
+    if (NODE_MODE) {
+      // If component is to be server rendered with `@lit-labs/ssr-react`, pass
+      // element properties in a special bag to be set by the server-side
+      // element renderer.
+      if (
+        React.createElement.name === 'litPatchedCreateElement' &&
+        Object.keys(elementProps).length
+      ) {
+        // This property needs to remain unminified.
+        reactProps['_$litProps$'] = elementProps;
+      }
+    } else {
+      // Suppress hydration warning for server-rendered attributes.
+      // This property needs to remain unminified.
+      reactProps['suppressHydrationWarning'] = true;
+    }
+
+    return React.createElement(tagName, {
+      ...reactProps,
+      ref: (node: I) => {
+        elementRef.current = node;
+        if (typeof ref === 'function') {
+          ref(node);
+        } else if (ref !== null) {
+          ref.current = node;
+        }
+      },
+    });
+  });
 
   ReactComponent.displayName = displayName ?? elementClass.name;
 
