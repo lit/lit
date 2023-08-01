@@ -212,13 +212,13 @@ suite('createComponent', () => {
   });
 
   // Type only test to be caught at build time.
-  test.skip('renders element with expected type', async () => {
-    type TypedComponent = ReactWebComponent<BasicElement>;
+  test.skip('Wrapped component should accept props with correct types', async () => {
+    const TypedBasicElementComponent = {} as ReactWebComponent<BasicElement>;
 
-    let TypedBasicElement: TypedComponent;
+    <TypedBasicElementComponent str="str" bool={true} num={1} />;
 
     // @ts-expect-error bool prop only accepts boolean
-    <TypedBasicElement bool={'string'}></TypedBasicElement>;
+    <TypedBasicElementComponent bool={'string'} />;
   });
 
   // Type only test to be caught at build time.
