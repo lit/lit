@@ -69,3 +69,24 @@ for (const lang of languages) {
 
   test.run();
 }
+
+const test = suite<AnalyzerTestContext>('Circular dependencies (typescript)');
+test.before((ctx) => {
+  setupAnalyzerForTest(ctx, 'ts', 'circular');
+});
+
+test('Analyzes circular dependencies', ({analyzer}) => {
+    const result = analyzer.getPackage();
+    const classAModule = result.modules.find(
+      (m) => m.sourcePath === getSourceFilename('class-a', 'ts')
+    );
+    const classBModule = result.modules.find(
+      (m) => m.sourcePath === getSourceFilename('class-b', 'ts')
+    );
+    assert.equal(classAModule?.jsPath, getOutputFilename('class-a', 'ts'));
+    assert.equal(classAModule?.declarations.length, 1);
+    assert.equal(classAModule?.declarations[0].name, 'ClassA');
+    assert.equal(classBModule?.jsPath, getOutputFilename('class-b', 'ts'));
+    assert.equal(classBModule?.declarations.length, 1);
+    assert.equal(classBModule?.declarations[0].name, 'ClassB');
+})
