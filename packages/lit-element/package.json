@@ -1,6 +1,6 @@
 {
   "name": "lit-element",
-  "version": "3.3.2",
+  "version": "3.3.3",
   "publishConfig": {
     "access": "public"
   },
@@ -257,7 +257,7 @@
   "dependencies": {
     "@lit-labs/ssr-dom-shim": "^1.1.0",
     "@lit/reactive-element": "^1.3.0",
-    "lit-html": "^2.7.0"
+    "lit-html": "^2.8.0"
   },
   "devDependencies": {
     "@lit-internal/scripts": "^1.0.0",

@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.8.0
+
+### Minor Changes
+
+- [#3993](https://github.com/lit/lit/pull/3993) [`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d) - Fix return type of `isTemplateResult` helper to include the `CompiledTemplateResult` and fix the `cache` directive to work correctly with `CompiledTemplateResult`s. Also add an explicit `isCompiledTemplateResult` helper.
+
 ## 2.7.5
 
 ### Patch Changes

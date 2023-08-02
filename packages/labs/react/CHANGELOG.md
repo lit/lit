@@ -1,5 +1,31 @@
 # Change Log
 
+## 2.0.0
+
+### Major Changes
+
+- [#4027](https://github.com/lit/lit/pull/4027) [`c28cb6ed`](https://github.com/lit/lit/commit/c28cb6ed45445fb8cb5e20af5076f3d5ec9f3bea) - - [BREAKING] Removed deprecated call signature for `createComponent()` taking multiple arguments. A single option object must be passed in instead.
+
+  Example:
+
+  ```diff
+  - createComponent(React, 'my-element', MyElement, {onfoo: 'foo'})
+  + createComponent({
+  +   react: React,
+  +   tagName: 'my-element',
+  +   elementClass: MyElement,
+  +   events: {onfoo: 'foo'},
+  + })
+  ```
+
+  - Refactored to move implementation directly into render function of `forwardRef` rather than creating a class component. This removes an extra React component of the same name showing up in the component tree.
+
+### Patch Changes
+
+- [#4000](https://github.com/lit/lit/pull/4000) [`2118aeb6`](https://github.com/lit/lit/commit/2118aeb6f83d2e0b0afbba5ce486876711658e82) - Add `@types/react@17||18` as peer dependency as the package makes direct use of those types.
+
+- [#4061](https://github.com/lit/lit/pull/4061) [`25d10ee1`](https://github.com/lit/lit/commit/25d10ee1e1299d4ea22e10bf4fae9b370eae05b3) - Update `WebComponentProps` type to allow providing `ref` prop in JSX.
+
 ## 1.2.1
 
 ### Patch Changes
