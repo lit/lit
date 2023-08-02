@@ -1,5 +1,18 @@
 # Change Log
 
+## 2.8.0
+
+### Minor Changes
+
+- [#3993](https://github.com/lit/lit/pull/3993) [`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d) - Fix return type of `isTemplateResult` helper to include the `CompiledTemplateResult` and fix the `cache` directive to work correctly with `CompiledTemplateResult`s. Also add an explicit `isCompiledTemplateResult` helper.
+
+### Patch Changes
+
+- [#4031](https://github.com/lit/lit/pull/4031) [`8057c78d`](https://github.com/lit/lit/commit/8057c78def09e345e68c3fc009b8ab9d6cf1c0f2) - Rename ReactiveElement.\_initialize to \_\_initialize, make it private, and remove the @internal annotation. This will help prevent collisions with subclasses that implement their own \_initialize method, while using development builds.
+
+- Updated dependencies [[`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d)]:
+  - lit-html@2.8.0
+
 ## 2.7.6
 
 ### Patch Changes

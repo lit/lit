@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.7.6",
+  "version": "2.8.0",
   "publishConfig": {
     "access": "public"
   },
@@ -351,7 +351,7 @@
   "dependencies": {
     "@lit/reactive-element": "^1.6.0",
     "lit-element": "^3.3.0",
-    "lit-html": "^2.7.0"
+    "lit-html": "^2.8.0"
   },
   "devDependencies": {
     "@webcomponents/shadycss": "^1.8.0",

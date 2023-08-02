@@ -1,5 +1,14 @@
 # Change Log
 
+## 1.0.4
+
+### Patch Changes
+
+- [#3886](https://github.com/lit/lit/pull/3886) [`0c3ce9bd`](https://github.com/lit/lit/commit/0c3ce9bd45c21f5857fcda9c588912f572a2d723) - Fix transforms when scaling to or from zero
+
+- Updated dependencies [[`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d), [`8057c78d`](https://github.com/lit/lit/commit/8057c78def09e345e68c3fc009b8ab9d6cf1c0f2)]:
+  - lit@2.8.0
+
 ## 1.0.3
 
 ### Patch Changes
