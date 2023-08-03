@@ -12,7 +12,6 @@
  * CustomElementRegistry however.
  */
 
-import fetch from 'node-fetch';
 import {
   HTMLElement,
   Element,
@@ -52,6 +51,7 @@ export const getWindow = ({
 
   class CSSStyleSheet {
     replace() {}
+    replaceSync() {}
   }
 
   const window = {
@@ -80,7 +80,7 @@ export const getWindow = ({
     requestAnimationFrame() {},
 
     // Set below
-    window: undefined as unknown,
+    window: globalThis,
 
     // User-provided globals, like `require`
     ...props,
@@ -123,11 +123,22 @@ export const getWindow = ({
   return window;
 };
 
-export const installWindowOnGlobal = (props: {[key: string]: unknown} = {}) => {
+export const installWindowOnGlobal = (
+  props: {[key: string]: unknown} = {},
+  installWindow = false
+) => {
   // Avoid installing the DOM shim if one already exists
   if (globalThis.window === undefined) {
     const window = getWindow({props});
     // Copy initial window globals to node global
-    Object.assign(globalThis, window);
+    // Object.assign(globalThis, window);
+    for (const [key, value] of Object.entries(window)) {
+      Object.defineProperty(globalThis, key, {value, writable: true});
+    }
+    if (installWindow) {
+      // Object.defineProperty(globalThis, 'window', {value: globalThis});
+      // eslint-disable-next-line
+      // (globalThis as any).window = globalThis;
+    }
   }
 };
