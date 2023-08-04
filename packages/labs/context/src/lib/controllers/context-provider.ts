@@ -91,6 +91,12 @@ export class ContextProvider<T extends Context<unknown, unknown>>
     this.addCallback(ev.callback, ev.subscribe, consumerHost);
   };
 
+  /**
+   * When we get a provider request event, that means a child of this element
+   * has just woken up. If it's a provider of our context, then we may need to
+   * re-parent our subscriptions, because is a more specific provider than us
+   * for its subtree.
+   */
   public onProviderRequest = (
     ev: ContextProviderEvent<Context<unknown, unknown>>
   ): void => {
@@ -104,7 +110,16 @@ export class ContextProvider<T extends Context<unknown, unknown>>
     if (ev.context !== this.context || childProviderHost === this.host) {
       return;
     }
-    this.reparentSubscriptions(childProviderHost);
+    // Re-parent all of our subscriptions in case this new child provider
+    // should take them over.
+    for (const [callback, {consumerHost}] of this.subscriptions) {
+      if (consumerHost === undefined) {
+        continue;
+      }
+      consumerHost.dispatchEvent(
+        new ContextRequestEvent(this.context, callback, true)
+      );
+    }
     ev.stopPropagation();
   };
 
@@ -116,16 +131,5 @@ export class ContextProvider<T extends Context<unknown, unknown>>
   hostConnected(): void {
     // emit an event to signal a provider is available for this context
     this.host.dispatchEvent(new ContextProviderEvent(this.context));
-  }
-
-  private reparentSubscriptions(_childProviderHost: Element) {
-    for (const [callback, {consumerHost}] of this.subscriptions) {
-      if (consumerHost === undefined) {
-        continue;
-      }
-      consumerHost.dispatchEvent(
-        new ContextRequestEvent(this.context, callback, true)
-      );
-    }
   }
 }
