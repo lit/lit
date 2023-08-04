@@ -286,9 +286,9 @@ class CompiledTemplatePass {
           if (node.tagName.includes(marker)) {
             // Do not compile template if a marker was inserted in tag name
             // position.
-            // TODO: Provide a diagnostic here.
+            // TODO(ajakubowicz): Provide a diagnostic here.
             shouldCompile = false;
-            return true;
+            return false;
           }
           if (node.attrs.length > 0) {
             for (const attr of node.attrs) {
