@@ -13,7 +13,7 @@ type Disposer = () => void;
 
 interface CallbackInfo {
   disposer: Disposer;
-  consumerHost?: Element;
+  consumerHost: Element;
 }
 
 /**
@@ -57,8 +57,8 @@ export class ValueNotifier<T> {
 
   addCallback(
     callback: ContextCallback<T>,
-    subscribe?: boolean,
-    consumerHost?: Element
+    consumerHost: Element,
+    subscribe?: boolean
   ): void {
     if (!subscribe) {
       // just call the callback once and we're done

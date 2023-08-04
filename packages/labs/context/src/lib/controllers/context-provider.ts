@@ -88,7 +88,7 @@ export class ContextProvider<T extends Context<unknown, unknown>>
       return;
     }
     ev.stopPropagation();
-    this.addCallback(ev.callback, ev.subscribe, consumerHost);
+    this.addCallback(ev.callback, consumerHost, ev.subscribe);
   };
 
   /**
@@ -113,9 +113,6 @@ export class ContextProvider<T extends Context<unknown, unknown>>
     // Re-parent all of our subscriptions in case this new child provider
     // should take them over.
     for (const [callback, {consumerHost}] of this.subscriptions) {
-      if (consumerHost === undefined) {
-        continue;
-      }
       consumerHost.dispatchEvent(
         new ContextRequestEvent(this.context, callback, true)
       );
