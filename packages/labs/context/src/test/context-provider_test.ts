@@ -165,7 +165,7 @@ memorySuite('memory leak test', () => {
   let container: HTMLElement;
 
   // Make a big array set on an expando to exaggerate any leaked DOM
-  const big = () => new Array(10000).fill(0);
+  const big = () => new Uint8Array(1024 * 10).fill(0);
 
   setup(async () => {
     container = document.createElement('div');
