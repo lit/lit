@@ -1,6 +1,0 @@
-{
-  "name": "@lit-internal/test-circular",
-  "dependencies": {
-    "lit": "^2.0.0"
-  }
-}
