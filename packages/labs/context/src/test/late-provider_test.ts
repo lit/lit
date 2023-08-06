@@ -370,14 +370,13 @@ suiteSkipIE('late context provider', () => {
     assert.equal(directChildConsumer.value, 'grandparent updated');
     assert.equal(indirectChildConsumer.value, 'late provider initial value');
 
-    // Updating the middle provider updates its childd, but not its sibling,
+    // Updating the middle provider updates its child, but not its sibling,
     // the direct child.
     const middleProvider = container.querySelector(
       'late-context-provider-4'
     ) as LateContextProvider4Element;
     middleProvider.provide.setValue('late provider updated');
     await directChildConsumer.updateComplete;
-    // bad!
     assert.equal(directChildConsumer.value, 'grandparent updated');
     assert.equal(indirectChildConsumer.value, 'late provider updated');
 
