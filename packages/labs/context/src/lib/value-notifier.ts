@@ -17,25 +17,25 @@ interface CallbackInfo {
 }
 
 /**
- * A simple class which stores a value, and triggers registered callbacks when the
- * value is changed via its setter.
+ * A simple class which stores a value, and triggers registered callbacks when
+ * the value is changed via its setter.
  *
- * An implementor might use other observable patterns such as MobX or Redux to get
- * behavior like this. But this is a pretty minimal approach that will likely work
- * for a number of use cases.
+ * An implementor might use other observable patterns such as MobX or Redux to
+ * get behavior like this. But this is a pretty minimal approach that will
+ * likely work for a number of use cases.
  */
 export class ValueNotifier<T> {
   protected readonly subscriptions: Map<ContextCallback<T>, CallbackInfo> =
     new Map();
   private _value!: T;
-  public get value(): T {
+  get value(): T {
     return this._value;
   }
-  public set value(v: T) {
+  set value(v: T) {
     this.setValue(v);
   }
 
-  public setValue(v: T, force = false) {
+  setValue(v: T, force = false) {
     const update = force || !Object.is(v, this._value);
     this._value = v;
     if (update) {

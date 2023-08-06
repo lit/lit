@@ -22,12 +22,15 @@ declare global {
 export class ContextProviderEvent<
   C extends Context<unknown, unknown>
 > extends Event {
+  readonly context: C;
+
   /**
    *
    * @param context the context which this provider can provide
    */
-  public constructor(public readonly context: C) {
+  constructor(context: C) {
     super('context-provider', {bubbles: true, composed: true});
+    this.context = context;
   }
 }
 
@@ -74,7 +77,7 @@ export class ContextProvider<T extends Context<unknown, unknown>>
     this.host.addController(this);
   }
 
-  public onContextRequest = (
+  onContextRequest = (
     ev: ContextRequestEvent<Context<unknown, unknown>>
   ): void => {
     // Only call the callback if the context matches.
@@ -97,7 +100,7 @@ export class ContextProvider<T extends Context<unknown, unknown>>
    * re-parent our subscriptions, because is a more specific provider than us
    * for its subtree.
    */
-  public onProviderRequest = (
+  onProviderRequest = (
     ev: ContextProviderEvent<Context<unknown, unknown>>
   ): void => {
     // Ignore events when the context doesn't match.

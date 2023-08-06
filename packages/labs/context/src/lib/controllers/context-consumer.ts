@@ -41,7 +41,7 @@ export class ContextConsumer<
 
   private provided = false;
 
-  public value?: ContextType<C> = undefined;
+  value?: ContextType<C> = undefined;
 
   constructor(host: HostElement, options: Options<C>);
   /** @deprecated Use new ContextConsumer(host, options) */
