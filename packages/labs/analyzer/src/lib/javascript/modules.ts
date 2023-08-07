@@ -237,7 +237,8 @@ const finalizeExports = (
  */
 const getAndValidateModuleFromCache = (
   modulePath: AbsolutePath,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  seen = new Set<AbsolutePath>([modulePath])
 ): Module | undefined => {
   const module = analyzer.moduleCache.get(modulePath);
   // A cached module is only valid if the source file that was used has not
@@ -246,7 +247,7 @@ const getAndValidateModuleFromCache = (
   if (module !== undefined) {
     if (
       module.sourceFile === analyzer.program.getSourceFile(modulePath) &&
-      depsAreValid(module, analyzer)
+      depsAreValid(module, analyzer, seen)
     ) {
       return module;
     }
@@ -258,19 +259,33 @@ const getAndValidateModuleFromCache = (
 /**
  * Returns true if all dependencies of the module are still valid.
  */
-const depsAreValid = (module: Module, analyzer: AnalyzerInterface) => {
-  const queue = [module.jsPath];
-  while (queue.length) {
-    const [current] = queue;
-    if (!analyzer.moduleCache.has(current as unknown as AbsolutePath))
-      return false;
-    else {
-      const deps = Array.from(module.dependencies) as unknown as PackagePath[];
-      queue.push(...deps);
-      queue.shift();
-    }
+const depsAreValid = (
+  module: Module,
+  analyzer: AnalyzerInterface,
+  seen: Set<AbsolutePath>
+): boolean =>
+  Array.from(module.dependencies).every(
+    (path) => seen.has(path) || depIsValid(path, analyzer, seen)
+  );
+
+/**
+ * Returns true if the given dependency is valid, meaning that if it has a
+ * cached model, the model is still valid. Dependencies that don't yet have a
+ * cached model are considered valid.
+ */
+const depIsValid = (
+  modulePath: AbsolutePath,
+  analyzer: AnalyzerInterface,
+  seen: Set<AbsolutePath>
+) => {
+  seen.add(modulePath);
+  if (analyzer.moduleCache.has(modulePath)) {
+    // If a dep has a model, it is valid only if its deps are valid
+    return Boolean(getAndValidateModuleFromCache(modulePath, analyzer, seen));
+  } else {
+    // Deps that don't have a cached model are considered valid
+    return true;
   }
-  return true;
 };
 
 /**
