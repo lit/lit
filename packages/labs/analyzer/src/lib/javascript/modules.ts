@@ -187,10 +187,7 @@ export const getModule = (
     declarationMap,
     dependencies,
     exportMap,
-    finalizeExports: () => {
-      const f = finalizeExports(reexports, exportMap, analyzer);
-      return f;
-    },
+    finalizeExports: () => finalizeExports(reexports, exportMap, analyzer),
     ...parseModuleJSDocInfo(sourceFile, analyzer),
   });
   analyzer.moduleCache.set(
