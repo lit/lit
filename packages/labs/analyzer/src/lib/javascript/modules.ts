@@ -265,9 +265,8 @@ const depsAreValid = (module: Module, analyzer: AnalyzerInterface) => {
     if (!analyzer.moduleCache.has(current as unknown as AbsolutePath))
       return false;
     else {
-      queue.push(
-        ...(Array.from(module.dependencies) as unknown as PackagePath[])
-      );
+      const deps = Array.from(module.dependencies) as unknown as PackagePath[];
+      queue.push(...deps);
       queue.shift();
     }
   }
