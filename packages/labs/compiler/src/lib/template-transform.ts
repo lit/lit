@@ -283,6 +283,13 @@ class CompiledTemplatePass {
       'pre:node': (node): boolean | void => {
         if (isElementNode(node)) {
           const attributesToRemove = new Set<unknown>();
+          if (node.tagName.includes(marker)) {
+            // Do not compile template if a marker was inserted in tag name
+            // position.
+            // TODO(ajakubowicz): Provide a diagnostic here.
+            shouldCompile = false;
+            return false;
+          }
           if (node.attrs.length > 0) {
             for (const attr of node.attrs) {
               if (
