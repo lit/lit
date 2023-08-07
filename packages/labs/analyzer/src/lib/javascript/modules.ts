@@ -262,7 +262,13 @@ const depsAreValid = (
   seen: Set<AbsolutePath>
 ): boolean =>
   Array.from(module.dependencies).every(
-    (path) => seen.has(path) || depIsValid(path, analyzer, seen)
+    (path) =>
+      // `seen` is initialized only once, at the entry point for the initial
+      // call to `getAndValidateModuleFromCache`, and modulePaths are only added
+      // to `seen` at  the deepest part of the recursion, in `depIsValid`
+      // because of that, we can be confident that a module path which was 'seen'
+      // has already been validated by `depIsValid` and can be safely skipped here.
+      seen.has(path) || depIsValid(path, analyzer, seen)
   );
 
 /**
