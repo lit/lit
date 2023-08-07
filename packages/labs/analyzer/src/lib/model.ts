@@ -228,7 +228,6 @@ export class Module {
     while (exp instanceof Reference) {
       exp = exp.dereference();
     }
-    console.log('got resolved exp', name);
     return exp as Declaration;
   }
 

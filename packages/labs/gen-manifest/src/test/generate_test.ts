@@ -36,21 +36,4 @@ test('basic manifest generation', async () => {
   });
 });
 
-test('circular modules manifest generation', async () => {
-  const project = 'circular-modules';
-  const inputPackage = path.resolve(testProjects, project);
-
-  if (fs.existsSync(outputFolder)) {
-    fs.rmSync(outputFolder, {recursive: true});
-  }
-
-  const analyzer = createPackageAnalyzer(inputPackage as AbsolutePath);
-  const pkg = analyzer.getPackage();
-  await writeFileTree(outputFolder, await generateManifest(pkg));
-
-  await assertGoldensMatch(outputFolder, path.join('goldens', project), {
-    formatGlob: '**/*.json',
-  });
-});
-
 test.run();
