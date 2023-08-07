@@ -1,7 +1,7 @@
 {
   "name": "@lit-internal/test-circular",
   "exports": {
-    "./sub-accordion.js": "./sub-accordion.js"
+    "./sub-a.js": "./sub-a.js"
   },
   "dependencies": {
     "lit": "^2.0.0"
