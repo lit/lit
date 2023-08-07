@@ -187,7 +187,10 @@ export const getModule = (
     declarationMap,
     dependencies,
     exportMap,
-    finalizeExports: () => finalizeExports(reexports, exportMap, analyzer),
+    finalizeExports: () => {
+      const f = finalizeExports(reexports, exportMap, analyzer);
+      return f;
+    },
     ...parseModuleJSDocInfo(sourceFile, analyzer),
   });
   analyzer.moduleCache.set(
@@ -255,22 +258,20 @@ const getAndValidateModuleFromCache = (
 /**
  * Returns true if all dependencies of the module are still valid.
  */
-const depsAreValid = (module: Module, analyzer: AnalyzerInterface) =>
-  Array.from(module.dependencies).every((path) => depIsValid(path, analyzer));
-
-/**
- * Returns true if the given dependency is valid, meaning that if it has a
- * cached model, the model is still valid. Dependencies that don't yet have a
- * cached model are considered valid.
- */
-const depIsValid = (modulePath: AbsolutePath, analyzer: AnalyzerInterface) => {
-  if (analyzer.moduleCache.has(modulePath)) {
-    // If a dep has a model, it is valid only if its deps are valid
-    return Boolean(getAndValidateModuleFromCache(modulePath, analyzer));
-  } else {
-    // Deps that don't have a cached model are considered valid
-    return true;
+const depsAreValid = (module: Module, analyzer: AnalyzerInterface) => {
+  const queue = [module.jsPath];
+  while (queue.length) {
+    const [current] = queue;
+    if (!analyzer.moduleCache.has(current as unknown as AbsolutePath))
+      return false;
+    else {
+      queue.push(
+        ...(Array.from(module.dependencies) as unknown as PackagePath[])
+      );
+      queue.shift();
+    }
   }
+  return true;
 };
 
 /**
