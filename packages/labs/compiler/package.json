@@ -18,7 +18,7 @@
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
-    "build:rollup-example": "wireit",
+    "build:rollup-source-map-tests": "wireit",
     "test": "wireit",
     "update-goldens": "wireit"
   },
@@ -45,7 +45,7 @@
       ],
       "clean": "if-file-deleted"
     },
-    "build:rollup-example": {
+    "build:rollup-source-map-tests": {
       "command": "rollup -c rollup.source_map_tests.js",
       "dependencies": [
         "build"
@@ -64,7 +64,7 @@
       "command": "uvu test \".*_test\\.js$\"",
       "dependencies": [
         "build:ts",
-        "build:rollup-example"
+        "build:rollup-source-map-tests"
       ],
       "files": [
         "test_files/*.ts",
