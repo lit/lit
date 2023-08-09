@@ -66,5 +66,8 @@ const wrapperFiles = (
 };
 
 const gitIgnoreTemplate = (litModules: ModuleWithLitElementDeclarations[]) => {
-  return litModules.map(({module}) => module.jsPath).join('\n');
+  return litModules
+    .map(({module}) => module.jsPath)
+    .join('\n')
+    .replace(/\\/g, '/');
 };
