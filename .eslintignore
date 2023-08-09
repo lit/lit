@@ -175,7 +175,6 @@ packages/labs/compiler/node_modules/
 packages/labs/compiler/test/
 packages/labs/compiler/lib/
 
-packages/labs/compiler/test_files/source_map_tests/*.js
 packages/labs/compiler/test_files/source_map_tests/*.js.map
 
 packages/labs/context/development/
