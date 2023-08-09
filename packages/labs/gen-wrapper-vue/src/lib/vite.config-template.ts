@@ -49,7 +49,7 @@ export default {
         entryFileNames: ({ name, facadeModuleId }) => {
           const sourceFileDir = path.dirname(facadeModuleId);
           const relativePath = path.relative(__dirname, sourceFileDir);
-          const targetName = path.join(relativePath, \`\${name}.js\`).replace(/\\/g, '/').replace(/^src\//, '');
+          const targetName = path.join(relativePath, \`\${name}.js\`).replace(/\\\\/g, '/').replace(/^src\\\//, '');
           return targetName;
         },
         dir: './',

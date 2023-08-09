@@ -39,7 +39,10 @@ export const generateVueWrapper = async (pkg: Package): Promise<FileTree> => {
       // Need to get module name include sub path.
       const dirname = path.dirname(f);
       const basename = `${path.basename(f, '.vue')}`;
-      const moduleName = path.join(dirname, basename);
+      const moduleName = path
+        .join(dirname, basename)
+        .replace(/\\/g, '/')
+        .replace(/^src\//, '');
       return moduleName;
     });
     return {
