@@ -35,9 +35,13 @@ export const generateVueWrapper = async (pkg: Package): Promise<FileTree> => {
     // name, not the npm package name, since that might have an npm org in it
     const vuePkgName = packageNameToVuePackageName(path.basename(pkg.rootDir));
     const sfcFiles = wrapperSFCFiles(pkg.packageJson, litModules);
-    const moduleNames = Object.keys(sfcFiles).map(
-      (f) => `${path.basename(f, '.vue')}`
-    );
+    const moduleNames = Object.keys(sfcFiles).map((f) => {
+      // Need to get module name include sub path.
+      const dirname = path.dirname(f);
+      const basename = `${path.basename(f, '.vue')}`;
+      const moduleName = path.join(dirname, basename);
+      return moduleName;
+    });
     return {
       [vuePkgName]: {
         '.gitignore': gitIgnoreTemplate(moduleNames),

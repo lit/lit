@@ -6,6 +6,8 @@
 
 import {javascript} from '@lit-labs/gen-utils/lib/str-utils.js';
 
+// Not only need to rename files in the root directory,
+// but files in subPath also need to be renamed.
 export const renameTemplate = () =>
   javascript`import fs from 'fs';
 import path from 'path';
@@ -19,16 +21,28 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 const root = \`\${__dirname}/..\`;
-const files = fs.readdirSync(root);
-for (const file of files) {
-  if (file.endsWith('.vue.d.ts')) {
-    fs.renameSync(
-      \`\${root}/\${file}\`,
-      \`\${root}/\${file.replace('.vue.d.ts', '.d.ts')}\`,
-      (err) => {
-        console.log(err);
+
+function traverseRename(directoryPath) {
+  const files = fs.readdirSync(directoryPath);
+
+  for (const file of files) {
+    const filePath = path.join(directoryPath, file);
+    const stat = fs.statSync(filePath);
+    if (stat.isFile()) {
+      if (file.endsWith('.vue.d.ts')) {
+        fs.renameSync(
+          filePath,
+          \`\${filePath.replace('.vue.d.ts', '.d.ts')}\`,
+          (err) => {
+            console.log(err);
+          }
+        );
       }
-    )
+    } else if (stat.isDirectory()) {
+      traverseRename(filePath); // 递归遍历子目录
+    }
   }
 }
+
+traverseRename(root);
 `;
