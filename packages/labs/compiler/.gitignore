@@ -3,5 +3,4 @@
 /test/
 /lib/
 
-/test_files/source_map_tests/*.js
 /test_files/source_map_tests/*.js.map

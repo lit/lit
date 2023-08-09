@@ -60,24 +60,32 @@ const setupTest = async (filename: string): Promise<SourceMapConsumer> => {
 test('basic.ts', async () => {
   const smc = await setupTest('basic.js.map');
 
+  // const sayHello = (name) => ({ ["_$litType$"]: lit_template_1, values: [name, '!'] });
+  //                                                                         ^
   assertSourceMapLocationMapping({
     smc,
     generatedPosition: [10, 74],
     authoredPosition: [7, 59],
     msg: "Identifier 'name' in `[name, '!']` maps to `${name}`",
   });
+  // const sayHello = (name) => ({ ["_$litType$"]: lit_template_1, values: [name, '!'] });
+  //         ^
   assertSourceMapLocationMapping({
     smc,
     generatedPosition: [10, 10],
     authoredPosition: [7, 13],
     msg: "'sayHello' identifier declaration maps to authored declaration",
   });
+  // const lit_template_1 = { h: b_1 `<h1>Hello <?><?></h1>`, parts: [{ type: 2, index: 1 }, { type: 2, index: 2 }] };
+  //                                    ^
   assertSourceMapLocationMapping({
     smc,
     generatedPosition: [9, 37],
     authoredPosition: [null, null],
     msg: 'The generated prepared HTML does not map to any authored source',
   });
+
+  smc.destroy();
 });
 
 test.run();

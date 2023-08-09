@@ -5,7 +5,6 @@
  */
 
 import {compileLitTemplates} from './lib/template-transform.js';
-// eslint-disable-next-line import/no-extraneous-dependencies
 import typescript from '@rollup/plugin-typescript';
 
 /**
