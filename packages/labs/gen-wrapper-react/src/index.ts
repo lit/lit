@@ -105,7 +105,9 @@ const packageJsonTemplate = (
       },
       files: [
         ...litModules.map(({module}) =>
-          module.jsPath.replace(/js$/, '{js,js.map,d.ts,d.ts.map}')
+          module.jsPath
+            .replace(/\\/g, '/')
+            .replace(/js$/, '{js,js.map,d.ts,d.ts.map}')
         ),
       ],
     },
@@ -115,7 +117,9 @@ const packageJsonTemplate = (
 };
 
 const gitIgnoreTemplate = (litModules: ModuleWithLitElementDeclarations[]) => {
-  return litModules.map(({module}) => module.jsPath).join('\n');
+  return litModules
+    .map(({module}) => module.jsPath.replace(/\\/g, '/'))
+    .join('\n');
 };
 
 const tsconfigTemplate = () => {
