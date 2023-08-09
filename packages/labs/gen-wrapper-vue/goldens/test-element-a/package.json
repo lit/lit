@@ -25,6 +25,7 @@
     "ElementA.*",
     "ElementEvents.*",
     "ElementProps.*",
-    "ElementSlots.*"
+    "ElementSlots.*",
+    "ElementSub.*"
   ]
 }

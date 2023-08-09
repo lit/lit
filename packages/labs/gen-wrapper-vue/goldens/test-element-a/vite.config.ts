@@ -14,6 +14,7 @@ export default {
         './src/ElementEvents.vue',
         './src/ElementProps.vue',
         './src/ElementSlots.vue',
+        './src/sub/ElementSub.vue',
       ],
       preserveModules: false,
       preserveEntrySignatures: true,

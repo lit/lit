@@ -35,7 +35,7 @@ export default {
       external: (id: string) => !id.match(/^((\\w:)|(\\.?[\\\\/]))/),
       input: [
         ${Object.keys(sfcFiles)
-          .map((path) => `'./${path}'`)
+          .map((path) => `'./${path.replace(/\\/g, '/')}'`)
           .join(', ')}
       ],
       preserveModules: false,
