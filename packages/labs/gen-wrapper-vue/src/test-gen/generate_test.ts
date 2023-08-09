@@ -41,6 +41,17 @@ test('basic wrapper generation', async () => {
   );
   assert.ok(wrapperSourceFile.length > 0);
 
+  // validate sub path in windows
+  const wrapperSubSourceFileCode = fs.readFileSync(
+    path.join(outputPackage, 'src/sub/ElementSub.vue'),
+    'utf-8'
+  );
+  assert.ok(
+    wrapperSubSourceFileCode.includes(
+      '@lit-internal/test-element-a/sub/element-sub.js'
+    )
+  );
+
   await assertGoldensMatch(outputPackage, path.join('goldens', project), {
     formatGlob: '**/*.{vue,ts,js,json}',
   });
