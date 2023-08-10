@@ -248,7 +248,7 @@
     "!/development/test/"
   ],
   "dependencies": {
-    "@lit-labs/ssr-dom-shim": "^1.1.0",
+    "@lit-labs/ssr-dom-shim": "^1.1.2-pre.0",
     "@lit/reactive-element": "^2.0.0-pre.0",
     "lit-html": "^3.0.0-pre.0"
   },
