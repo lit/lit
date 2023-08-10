@@ -331,7 +331,7 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    this._scrollerController = this._scrollerController!.detach(this);
+    this._scrollerController!.detach(this);
     this._scrollerController = null;
     this._mutationObserver!.disconnect();
     this._hostElementRO!.disconnect();

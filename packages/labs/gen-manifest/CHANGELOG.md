@@ -1,5 +1,12 @@
 # @lit-labs/gen-manifest
 
+## 0.2.3
+
+### Patch Changes
+
+- Updated dependencies [[`9001f9c1`](https://github.com/lit/lit/commit/9001f9c12e0ba125b930dcc126476e384ddc23fe), [`55bfed2f`](https://github.com/lit/lit/commit/55bfed2f95cfcf10757e24edf56092b8e9d36405), [`91611d73`](https://github.com/lit/lit/commit/91611d73600e163459da5d2bfb9753c88ad3f45a), [`da6646d8`](https://github.com/lit/lit/commit/da6646d827d8932ba7c241780cbd03a9ade64009)]:
+  - @lit-labs/analyzer@0.9.0
+
 ## 0.2.2
 
 ### Patch Changes

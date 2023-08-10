@@ -73,6 +73,14 @@ class MyElement extends LitElement {
 }
 ```
 
+### Argument equality
+
+Task accepts an `argsEqual` to determine if a task should auto-run by testing a new arguments array for equality against the previous run's arguments array.
+
+The default equality function is `shallowArrayEquals`, which compares each argument in the array against the previous array with `notEqual` from `@lit/reactive-element` (which itself uses `===`). This works well if your arguments are primitive values like strings.
+
+If your arguments are objects, you will want to use a more sophisticated equality function. Task provides `deepArrayEquals` in the `deep-equals.js` module, which compares each argument with a `deepEquals` function that can handle primitives, objects, Arrays, Maps, Sets, RegExps, or objects that implement `toString()` or `toValue()`.
+
 ## Contributing
 
 Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).
