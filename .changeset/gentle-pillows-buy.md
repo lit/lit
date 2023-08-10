@@ -1,5 +1,5 @@
 ---
-'@lit-labs/context': major
+'@lit-labs/context': minor
 ---
 
 Late loaded elements can take over the context subscriptions for their children.
