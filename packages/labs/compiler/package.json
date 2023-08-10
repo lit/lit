@@ -18,13 +18,15 @@
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
+    "build:rollup-source-map-tests": "wireit",
     "test": "wireit",
     "update-goldens": "wireit"
   },
   "wireit": {
     "build": {
       "dependencies": [
-        "build:ts"
+        "build:ts",
+        "build:rollup-source-map-tests"
       ]
     },
     "build:ts": {
@@ -44,10 +46,25 @@
       ],
       "clean": "if-file-deleted"
     },
+    "build:rollup-source-map-tests": {
+      "command": "rollup -c rollup.source_map_tests.js",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "test_files/source_map_tests/*.ts",
+        "test_files/source_map_tests/tsconfig.json",
+        "rollup.source_map_tests.js"
+      ],
+      "output": [
+        "test_files/source_map_tests/*.js",
+        "test_files/source_map_tests/*.js.map"
+      ]
+    },
     "test": {
       "command": "uvu test \".*_test\\.js$\"",
       "dependencies": [
-        "build:ts"
+        "build"
       ],
       "files": [
         "test_files/*.ts",
@@ -79,6 +96,9 @@
     "typescript": "^5.1.6"
   },
   "devDependencies": {
+    "@rollup/plugin-typescript": "^11.1.2",
+    "rollup": "^3.27.2",
+    "source-map": "^0.7.4",
     "uvu": "^0.5.6"
   }
 }
