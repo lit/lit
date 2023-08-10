@@ -81,7 +81,7 @@
   "dependencies": {
     "@lit-labs/analyzer": "^0.9.0",
     "@lit-labs/gen-utils": "^0.2.0",
-    "@lit/localize-tools": "^0.6.1",
+    "@lit/localize-tools": "^0.7.0-pre.0",
     "chalk": "^5.0.1",
     "command-line-args": "^5.2.1",
     "command-line-commands": "^3.0.2",
