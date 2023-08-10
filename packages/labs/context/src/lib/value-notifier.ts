@@ -11,26 +11,31 @@ import {ContextCallback} from './context-request-event.js';
  */
 type Disposer = () => void;
 
+interface CallbackInfo {
+  disposer: Disposer;
+  consumerHost: Element;
+}
+
 /**
- * A simple class which stores a value, and triggers registered callbacks when the
- * value is changed via its setter.
+ * A simple class which stores a value, and triggers registered callbacks when
+ * the value is changed via its setter.
  *
- * An implementor might use other observable patterns such as MobX or Redux to get
- * behavior like this. But this is a pretty minimal approach that will likely work
- * for a number of use cases.
+ * An implementor might use other observable patterns such as MobX or Redux to
+ * get behavior like this. But this is a pretty minimal approach that will
+ * likely work for a number of use cases.
  */
 export class ValueNotifier<T> {
-  private disposers: Map<ContextCallback<T>, Disposer> = new Map();
-
+  protected readonly subscriptions: Map<ContextCallback<T>, CallbackInfo> =
+    new Map();
   private _value!: T;
-  public get value(): T {
+  get value(): T {
     return this._value;
   }
-  public set value(v: T) {
+  set value(v: T) {
     this.setValue(v);
   }
 
-  public setValue(v: T, force = false) {
+  setValue(v: T, force = false) {
     const update = force || !Object.is(v, this._value);
     this._value = v;
     if (update) {
@@ -45,26 +50,34 @@ export class ValueNotifier<T> {
   }
 
   updateObservers = (): void => {
-    for (const [callback, disposer] of this.disposers) {
+    for (const [callback, {disposer}] of this.subscriptions) {
       callback(this._value, disposer);
     }
   };
 
-  addCallback(callback: ContextCallback<T>, subscribe?: boolean): void {
-    if (subscribe) {
-      if (!this.disposers.has(callback)) {
-        this.disposers.set(callback, () => {
-          this.disposers.delete(callback);
-        });
-      }
-      const disposer = this.disposers.get(callback)!;
-      callback(this.value, disposer);
-    } else {
+  addCallback(
+    callback: ContextCallback<T>,
+    consumerHost: Element,
+    subscribe?: boolean
+  ): void {
+    if (!subscribe) {
+      // just call the callback once and we're done
       callback(this.value);
+      return;
     }
+    if (!this.subscriptions.has(callback)) {
+      this.subscriptions.set(callback, {
+        disposer: () => {
+          this.subscriptions.delete(callback);
+        },
+        consumerHost,
+      });
+    }
+    const {disposer} = this.subscriptions.get(callback)!;
+    callback(this.value, disposer);
   }
 
   clearCallbacks(): void {
-    this.disposers.clear();
+    this.subscriptions.clear();
   }
 }

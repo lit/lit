@@ -41,7 +41,7 @@ export class ContextRoot {
    *
    * @param element an element to add event listeners to
    */
-  public attach(element: HTMLElement): void {
+  attach(element: HTMLElement): void {
     element.addEventListener('context-request', this.onContextRequest);
     element.addEventListener('context-provider', this.onContextProvider);
   }
@@ -51,7 +51,7 @@ export class ContextRoot {
    *
    * @param element an element from which to remove event listeners
    */
-  public detach(element: HTMLElement): void {
+  detach(element: HTMLElement): void {
     element.removeEventListener('context-request', this.onContextRequest);
     element.removeEventListener('context-provider', this.onContextProvider);
   }

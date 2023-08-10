@@ -25,11 +25,11 @@ const DEV_MODE = true;
  * }
  * ```
  */
-export type WebComponentProps<I extends HTMLElement> = React.HTMLAttributes<I> &
-  // TODO(augustjk) Consider omitting keyof LitElement to remove "internal"
-  // lifecycle methods or allow user to explicitly set the prop type instead
-  // of grabbing from class
-  Partial<Omit<I, keyof HTMLElement>>;
+export type WebComponentProps<I extends HTMLElement> = React.DetailedHTMLProps<
+  React.HTMLAttributes<I>,
+  I
+> &
+  ElementProps<I>;
 
 /**
  * Type of the React component wrapping the web component. This is the return
@@ -39,9 +39,19 @@ export type ReactWebComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 > = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<WebComponentProps<I> & EventListeners<E>> &
-    React.RefAttributes<I>
+  React.PropsWithoutRef<ComponentProps<I, E>> & React.RefAttributes<I>
 >;
+
+// Props derived from custom element class. Currently has limitations of making
+// all properties optional and also surfaces life cycle methods in autocomplete.
+// TODO(augustjk) Consider omitting keyof LitElement to remove "internal"
+// lifecycle methods or allow user to explicitly provide props.
+type ElementProps<I> = Partial<Omit<I, keyof HTMLElement>>;
+
+// Acceptable props to the React component.
+type ComponentProps<I, E extends EventNames = {}> = React.HTMLAttributes<I> &
+  ElementProps<I> &
+  EventListeners<E>;
 
 /**
  * Type used to cast an event name with an event type when providing the
@@ -218,10 +228,10 @@ export const createComponent = <
     }
   }
 
-  type ComponentProps = WebComponentProps<I> & EventListeners<E>;
+  type Props = ComponentProps<I, E>;
 
-  const ReactComponent = React.forwardRef<I, ComponentProps>((props, ref) => {
-    const prevPropsRef = React.useRef<ComponentProps | null>(null);
+  const ReactComponent = React.forwardRef<I, Props>((props, ref) => {
+    const prevPropsRef = React.useRef<Props | null>(null);
     const elementRef = React.useRef<I | null>(null);
 
     // Props to be passed to React.createElement

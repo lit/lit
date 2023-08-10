@@ -234,7 +234,8 @@ const finalizeExports = (
  */
 const getAndValidateModuleFromCache = (
   modulePath: AbsolutePath,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  seen = new Set<AbsolutePath>([modulePath])
 ): Module | undefined => {
   const module = analyzer.moduleCache.get(modulePath);
   // A cached module is only valid if the source file that was used has not
@@ -243,7 +244,7 @@ const getAndValidateModuleFromCache = (
   if (module !== undefined) {
     if (
       module.sourceFile === analyzer.program.getSourceFile(modulePath) &&
-      depsAreValid(module, analyzer)
+      depsAreValid(module, analyzer, seen)
     ) {
       return module;
     }
@@ -255,18 +256,35 @@ const getAndValidateModuleFromCache = (
 /**
  * Returns true if all dependencies of the module are still valid.
  */
-const depsAreValid = (module: Module, analyzer: AnalyzerInterface) =>
-  Array.from(module.dependencies).every((path) => depIsValid(path, analyzer));
+const depsAreValid = (
+  module: Module,
+  analyzer: AnalyzerInterface,
+  seen: Set<AbsolutePath>
+): boolean =>
+  Array.from(module.dependencies).every(
+    (path) =>
+      // `seen` is initialized only once, at the entry point for the initial
+      // call to `getAndValidateModuleFromCache`, and modulePaths are only added
+      // to `seen` at  the deepest part of the recursion, in `depIsValid`
+      // because of that, we can be confident that a module path which was 'seen'
+      // has already been validated by `depIsValid` and can be safely skipped here.
+      seen.has(path) || depIsValid(path, analyzer, seen)
+  );
 
 /**
  * Returns true if the given dependency is valid, meaning that if it has a
  * cached model, the model is still valid. Dependencies that don't yet have a
  * cached model are considered valid.
  */
-const depIsValid = (modulePath: AbsolutePath, analyzer: AnalyzerInterface) => {
+const depIsValid = (
+  modulePath: AbsolutePath,
+  analyzer: AnalyzerInterface,
+  seen: Set<AbsolutePath>
+) => {
+  seen.add(modulePath);
   if (analyzer.moduleCache.has(modulePath)) {
     // If a dep has a model, it is valid only if its deps are valid
-    return Boolean(getAndValidateModuleFromCache(modulePath, analyzer));
+    return Boolean(getAndValidateModuleFromCache(modulePath, analyzer, seen));
   } else {
     // Deps that don't have a cached model are considered valid
     return true;

@@ -353,13 +353,21 @@ suite('asyncReplace', () => {
         );
         // Clear the `<span>` + directive
         render(template(nothing), container);
+        // Periodically force a GC to prevent the heap size from expanding
+        // too much.
+        // If we're leaking memory this is a noop. But if we aren't, this makes
+        // it easier for the browser's GC to keep the heap size similar to the
+        // actual amount of memory we're using.
+        if (i % 30 === 0) {
+          window.gc();
+        }
       }
       window.gc();
-      // Allow a 50% margin of heap growth; due to the 10kb expando, an actual
-      // DOM leak will be orders of magnitude larger
       assert.isAtMost(
-        performance.memory.usedJSHeapSize,
-        heap * 1.5,
+        performance.memory.usedJSHeapSize / heap - 1,
+        // Allow a 30% margin of heap growth; due to the 10kb expando, an actual
+        // DOM leak is orders of magnitude larger.
+        0.3,
         'memory leak detected'
       );
     });

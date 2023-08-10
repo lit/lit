@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/task",
-  "version": "2.1.2",
+  "version": "3.0.0",
   "description": "A controller for Lit that renders asynchronous tasks.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -22,6 +22,11 @@
       "development": "./development/index.js",
       "default": "./index.js"
     },
+    "./deep-equals.js": {
+      "types": "./development/deep-equals.d.ts",
+      "development": "./development/deep-equals.js",
+      "default": "./deep-equals.js"
+    },
     "./task.js": {
       "types": "./development/task.d.ts",
       "development": "./development/task.js",
@@ -31,6 +36,7 @@
   "files": [
     "/development/",
     "!/development/test/",
+    "/deep-equals.{d.ts,d.ts.map,js,js.map}",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/task.{d.ts,d.ts.map,js,js.map}"
   ],
@@ -92,6 +98,7 @@
         "../../../rollup-common.js"
       ],
       "output": [
+        "deep-equals.js{,.map}",
         "index.js{,.map}",
         "task.js{,.map}",
         "test/**/*.js{,.map}"
