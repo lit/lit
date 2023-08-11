@@ -39,19 +39,12 @@ export default {
           .map((path) => `'./${path.replace(/\\/g, '/')}'`)
           .join(', ')}
       ],
-      preserveModules: false,
+      preserveModules: true,
+			preserveModulesRoot: 'src',
       preserveEntrySignatures: true,
       output: {
         format: 'es',
-        // For subpath component, we should output it in subpath.
-        // Otherwise, if there are files with the same file name in the subPath and rootPath,
-        // output to the same directory will conflict.
-        entryFileNames: ({ name, facadeModuleId }) => {
-          const sourceFileDir = path.dirname(facadeModuleId);
-          const relativePath = path.relative(__dirname, sourceFileDir);
-          const targetName = path.join(relativePath, \`\${name}.js\`).replace(/\\\\/g, '/').replace(/^src\\\//, '');
-          return targetName;
-        },
+        entryFileNames: ({ name }) => \`\${name}.js\`,
         dir: './',
         sourcemap: true
       }
