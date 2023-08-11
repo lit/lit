@@ -6,8 +6,7 @@
 
 import {javascript} from '@lit-labs/gen-utils/lib/str-utils.js';
 
-// Not only need to rename files in the root directory,
-// but files in subPath also need to be renamed.
+// Note: files in sub directories must also be renamed.
 export const renameTemplate = () =>
   javascript`import fs from 'fs';
 import path from 'path';

@@ -36,7 +36,7 @@ export const generateVueWrapper = async (pkg: Package): Promise<FileTree> => {
     const vuePkgName = packageNameToVuePackageName(path.basename(pkg.rootDir));
     const sfcFiles = wrapperSFCFiles(pkg.packageJson, litModules);
     const moduleNames = Object.keys(sfcFiles).map((f) => {
-      // Need to get module name include sub path.
+      // Need to get module name to include sub path.
       const dirname = path.dirname(f);
       const basename = `${path.basename(f, '.vue')}`;
       const moduleName = path
