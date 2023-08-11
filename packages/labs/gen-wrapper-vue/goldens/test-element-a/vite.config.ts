@@ -1,6 +1,5 @@
 import vue from '@vitejs/plugin-vue';
 import typescript from '@rollup/plugin-typescript';
-import path from 'path';
 
 // https://vitejs.dev/config/
 export default {
