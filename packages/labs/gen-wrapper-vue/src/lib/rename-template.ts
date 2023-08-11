@@ -39,7 +39,7 @@ function traverseRename(directoryPath) {
         );
       }
     } else if (stat.isDirectory()) {
-      traverseRename(filePath); // transfer the sub directory and rename file
+      traverseRename(filePath); // traverse the sub directory and rename files
     }
   }
 }
