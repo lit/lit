@@ -28,7 +28,7 @@ function traverseRename(directoryPath) {
         );
       }
     } else if (stat.isDirectory()) {
-      traverseRename(filePath); // 递归遍历子目录
+      traverseRename(filePath); // transfer the sub directory and rename file
     }
   }
 }
