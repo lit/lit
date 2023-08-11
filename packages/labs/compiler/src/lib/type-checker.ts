@@ -95,11 +95,12 @@ class TypeChecker {
 
     // An import specifier has the following structure:
     //
-    // `import {<name> as <propertyName>} from <moduleSpecifier>;`
+    // `import {<propertyName> as <name>} from <moduleSpecifier>;`
     //
-    // This check allows aliasing `html` by checking the propertyName. Thus
-    // `{html as myHtml}` is a valid template that can be compiled. Otherwise a
-    // compilable template must be a direct import of lit's `html` tag function.
+    // This check allows aliasing `html` by ensuring propertyName is `html`.
+    // Thus `{html as myHtml}` is a valid template that can be compiled.
+    // Otherwise a compilable template must be a direct import of lit's `html`
+    // tag function.
     if (
       (templateImport.propertyName &&
         templateImport.propertyName.text !== 'html') ||
