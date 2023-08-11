@@ -26,6 +26,7 @@ export const wrapperModuleTemplateSFC = (
   moduleJsPath: string,
   elements: LitElementDeclaration[]
 ) => {
+  moduleJsPath = moduleJsPath.replace(/\\/g, '/');
   const wcPath = `${packageJson.name}/${moduleJsPath}`;
   return elements.map((element) => [
     element.name!,
