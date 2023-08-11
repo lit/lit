@@ -93,9 +93,10 @@ class TypeChecker {
       return false;
     }
 
-    // An import specifier has the following structure:
+    // An import specifier has the following structures:
     //
     // `import {<propertyName> as <name>} from <moduleSpecifier>;`
+    // `import {<name>} from <moduleSpecifier>;`
     //
     // This check allows aliasing `html` by ensuring propertyName is `html`.
     // Thus `{html as myHtml}` is a valid template that can be compiled.
