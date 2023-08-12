@@ -248,6 +248,10 @@ class CompiledTemplatePass {
         shouldCompile: false;
       }
     | {shouldCompile: true; preparedHtml: string; parts: TemplatePart[]} {
+    if (templateContainsOctalEscapes(templateExpression)) {
+      return {shouldCompile: false};
+    }
+
     const parts: Array<TemplatePart> = [];
 
     // Get the static strings from the source code, turn them into a spoofed
@@ -261,45 +265,6 @@ class CompiledTemplatePass {
           templateExpression.head.text,
           ...templateExpression.templateSpans.map((s) => s.literal.text),
         ] as unknown as TemplateStringsArray);
-
-    // Just for the deprecated octal check, we need to use `rawText`. Otherwise
-    // strings are escaped in strange ways which cause the regex to fail. This
-    // check is needed because an invalid octal sequence in an uncompiled
-    // template is detected by our `html` tag function. But when compiled, the
-    // invalid octal sequence creates something like the following:
-    //
-    //   brand`\2`
-    //
-    // This results in an undefined entry in the template strings array. lit
-    // then simply renders the `undefined` directly on the page as text. A worse
-    // result is if the octal is adjacent to other content, e.g.
-    // html`<p>Hi</p>\2`. If compiled naively, this will only render `undefined`
-    // on the page. Thus we do not compile templates containing invalid octal
-    // sequences.
-    //
-    // Reference:
-    // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Deprecated_octal
-    const rawTextForOctalCheck = ts.isNoSubstitutionTemplateLiteral(
-      templateExpression
-    )
-      ? ([templateExpression.rawText] as unknown as TemplateStringsArray)
-      : ([
-          templateExpression.head.rawText,
-          ...templateExpression.templateSpans.map((s) => s.literal.rawText),
-        ] as unknown as TemplateStringsArray);
-
-    for (const staticString of rawTextForOctalCheck) {
-      // Regex to detect if an invalid octal sequence was used. It also detects
-      // the invalid sequences: `\8` and `\9`.
-      // References:
-      //   - eslint no-octal-escape rule:
-      //     https://github.com/eslint/eslint/blob/main/lib/rules/no-octal-escape.js
-      //   - Chromium octal escape sequence scanner:
-      //     https://source.chromium.org/chromium/chromium/src/+/181fa1f62f501c27ed19fcb69206a0e2e1eff513:v8/src/parsing/scanner.cc;l=452-460
-      if (/^([^\\|\s]|\\.)*?\\(0)*[1-9]/gm.test(staticString)) {
-        return {shouldCompile: false};
-      }
-    }
 
     // lit-html enforces at runtime that `getTemplateHtml` only accepts a
     // TemplateStringsResult.
@@ -579,3 +544,51 @@ class CompiledTemplatePass {
 
 export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> =>
   CompiledTemplatePass.getTransformer();
+
+/**
+ * Regex to detect if an invalid octal sequence was used. It also detects the
+ * invalid sequences: `\8` and `\9`. References:
+ *   - eslint no-octal-escape rule:
+ *     https://github.com/eslint/eslint/blob/main/lib/rules/no-octal-escape.js
+ *   - Chromium octal escape sequence scanner:
+ *     https://source.chromium.org/chromium/chromium/src/+/181fa1f62f501c27ed19fcb69206a0e2e1eff513:v8/src/parsing/scanner.cc;l=452-460
+ */
+const containsOctalEscapeRegex = /^([^\\|\s]|\\.)*?\\(0)*[1-9]/gm;
+
+/**
+ * This check is needed because an invalid octal sequence in an uncompiled
+ * template is detected by the `html` tag function. But when compiled, the
+ * invalid octal sequence creates something like the following:
+ *
+ * `` brand`\2` ``
+ *
+ * This results in an undefined entry in the template strings array. lit then
+ * simply renders the `undefined` directly on the page as text. A worse result
+ * is if the octal is adjacent to other content, e.g. `` html`<p>Hi</p>\2` ``.
+ * If compiled naively, this will only render `undefined` on the page. Thus we
+ * do not compile templates containing invalid octal sequences.
+ *
+ * Reference: ["0"-prefixed octal literals and octal escape seq. are
+ * deprecated.](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Errors/Deprecated_octal)
+ */
+const templateContainsOctalEscapes = (
+  templateExpression: ts.TemplateLiteral
+): boolean => {
+  // Just for the deprecated octal check, we need to use `rawText`. Otherwise
+  // strings are escaped in strange ways which cause the regex to fail.
+  const rawTextForOctalCheck = ts.isNoSubstitutionTemplateLiteral(
+    templateExpression
+  )
+    ? ([templateExpression.rawText] as unknown as TemplateStringsArray)
+    : ([
+        templateExpression.head.rawText,
+        ...templateExpression.templateSpans.map((s) => s.literal.rawText),
+      ] as unknown as TemplateStringsArray);
+
+  for (const staticString of rawTextForOctalCheck) {
+    if (containsOctalEscapeRegex.test(staticString)) {
+      return true;
+    }
+  }
+  return false;
+};
