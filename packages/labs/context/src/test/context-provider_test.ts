@@ -165,7 +165,7 @@ memorySuite('memory leak test', () => {
   let container: HTMLElement;
 
   // Make a big array set on an expando to exaggerate any leaked DOM
-  const big = () => new Array(10000).fill(0);
+  const big = () => new Uint8Array(1024 * 10).fill(0);
 
   setup(async () => {
     container = document.createElement('div');
@@ -206,14 +206,21 @@ memorySuite('memory leak test', () => {
       (consumer as any).heapExpandoProp = big();
       provider.appendChild(consumer);
       await consumer.updateComplete;
+      // Periodically force a GC to prevent the heap size from expanding
+      // too much.
+      // If we're leaking memory this is a noop. But if we aren't, this makes
+      // it easier for the browser's GC to keep the heap size similar to the
+      // actual amount of memory we're using.
+      if (i % 30 === 0) {
+        window.gc();
+      }
     }
-    // Expect the nodes that were removed to be garbage collected.
     window.gc();
-    // Allow a 50% margin of heap growth; due to the 10kb expando, an actual
-    // DOM leak is orders of magnitude larger.
     assert.isAtMost(
-      performance.memory.usedJSHeapSize,
-      heap * 1.5,
+      performance.memory.usedJSHeapSize / heap - 1,
+      // Allow a 10% margin of heap growth; due to the 10kb expando, an actual
+      // DOM leak is orders of magnitude larger.
+      0.1,
       'memory leak detected'
     );
   });

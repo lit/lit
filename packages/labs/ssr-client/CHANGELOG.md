@@ -11,6 +11,16 @@
   - lit-html@3.0.0-pre.0
   - lit@3.0.0-pre.0
 
+## 1.1.3
+
+### Patch Changes
+
+- [#3993](https://github.com/lit/lit/pull/3993) [`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d) - Add better error message during hydration when throwing on `CompiledTemplate`s.
+
+- Updated dependencies [[`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d), [`8057c78d`](https://github.com/lit/lit/commit/8057c78def09e345e68c3fc009b8ab9d6cf1c0f2)]:
+  - lit-html@2.8.0
+  - lit@2.8.0
+
 ## 1.1.2
 
 ### Patch Changes

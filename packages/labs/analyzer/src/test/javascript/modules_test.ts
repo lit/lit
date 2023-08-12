@@ -10,13 +10,16 @@ import * as assert from 'uvu/assert';
 import path from 'path';
 import {
   AnalyzerModuleTestContext,
+  AnalyzerTestContext,
   getSourceFilename,
   InMemoryAnalyzer,
   languages,
+  setupAnalyzerForTest,
   setupAnalyzerForTestWithModule,
 } from '../utils.js';
 
 import {AbsolutePath} from '../../index.js';
+import {fileURLToPath} from 'url';
 
 for (const lang of languages) {
   const test = suite<AnalyzerModuleTestContext>(`Module tests (${lang})`);
@@ -210,6 +213,41 @@ for (const lang of languages) {
   );
 
   cachingTest.run();
+
+  const circularTest = suite<AnalyzerTestContext>(
+    `Circular module cache (${lang})`
+  );
+  circularTest.before((ctx) => {
+    setupAnalyzerForTest(ctx, lang, 'circular-modules');
+  });
+
+  circularTest(
+    'getModule processes circular re-exports',
+    async ({analyzer}) => {
+      const modules = analyzer.getPackage().modules;
+      for (const {sourcePath} of modules) {
+        const agnosticModuleName = path
+          .basename(sourcePath)
+          .replace(/\...$/, '');
+        const sourceFilename = getSourceFilename(
+          path.join(
+            fileURLToPath(
+              new URL(
+                `../../test-files/${lang}/circular-modules/`,
+                import.meta.url
+              )
+            ),
+            agnosticModuleName
+          ),
+          lang
+        ) as AbsolutePath;
+        const module = analyzer.getModule(sourceFilename);
+        assert.not.throws(() => module.exportNames);
+      }
+    }
+  );
+
+  circularTest.run();
 
   // Doing module JSDoc tests in-memory, to test a number of variations
   // without needing to maintain a file for each.

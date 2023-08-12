@@ -1,5 +1,14 @@
 # @lit-labs/gen-wrapper-react
 
+## 0.2.6
+
+### Patch Changes
+
+- [#4021](https://github.com/lit/lit/pull/4021) [`7421e1ba`](https://github.com/lit/lit/commit/7421e1babeee431191134d81c07f7b7dc5da8539) - Emit code that creates wrapper component using the option object syntax for `createComponent` instead of the deprecated multi arg signature.
+
+- Updated dependencies [[`9001f9c1`](https://github.com/lit/lit/commit/9001f9c12e0ba125b930dcc126476e384ddc23fe), [`55bfed2f`](https://github.com/lit/lit/commit/55bfed2f95cfcf10757e24edf56092b8e9d36405), [`91611d73`](https://github.com/lit/lit/commit/91611d73600e163459da5d2bfb9753c88ad3f45a), [`da6646d8`](https://github.com/lit/lit/commit/da6646d827d8932ba7c241780cbd03a9ade64009)]:
+  - @lit-labs/analyzer@0.9.0
+
 ## 0.2.5
 
 ### Patch Changes

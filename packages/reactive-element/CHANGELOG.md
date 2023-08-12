@@ -25,6 +25,12 @@
 - Updated dependencies [[`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa)]:
   - @lit-labs/ssr-dom-shim@1.1.2-pre.0
 
+## 1.6.3
+
+### Patch Changes
+
+- [#4031](https://github.com/lit/lit/pull/4031) [`8057c78d`](https://github.com/lit/lit/commit/8057c78def09e345e68c3fc009b8ab9d6cf1c0f2) - Rename ReactiveElement.\_initialize to \_\_initialize, make it private, and remove the @internal annotation. This will help prevent collisions with subclasses that implement their own \_initialize method, while using development builds.
+
 ## 1.6.2
 
 ### Patch Changes

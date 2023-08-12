@@ -1,5 +1,7 @@
 ---
 '@lit/reactive-element': major
+'lit': major
+'lit-element': major
 ---
 
 Delete deprecated queryAssignedNodes behavior and arguments.
