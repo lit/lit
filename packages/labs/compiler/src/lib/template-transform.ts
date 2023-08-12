@@ -265,7 +265,6 @@ class CompiledTemplatePass {
           templateExpression.head.text,
           ...templateExpression.templateSpans.map((s) => s.literal.text),
         ] as unknown as TemplateStringsArray);
-
     // lit-html enforces at runtime that `getTemplateHtml` only accepts a
     // TemplateStringsResult.
     (spoofedTemplate as unknown as {raw: string}).raw = '';
@@ -553,7 +552,7 @@ export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> =>
  *   - Chromium octal escape sequence scanner:
  *     https://source.chromium.org/chromium/chromium/src/+/181fa1f62f501c27ed19fcb69206a0e2e1eff513:v8/src/parsing/scanner.cc;l=452-460
  */
-const containsOctalEscapeRegex = /^([^\\|\s]|\\.)*?\\(0)*[1-9]/gm;
+const containsOctalEscapeRegex = /^([^\\|\s]|\\.)*?\\(0)*[1-9]/;
 
 /**
  * This check is needed because an invalid octal sequence in an uncompiled
