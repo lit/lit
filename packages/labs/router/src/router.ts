@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Routes} from './routes.js';
+import {NavigateSpec, Routes} from './routes.js';
 
 // We cache the origin since it can't change
 const origin = location.origin || location.protocol + '//' + location.host;
@@ -75,4 +75,12 @@ export class Router extends Routes {
   private _onPopState = (_e: PopStateEvent) => {
     this.goto(window.location.pathname);
   };
+
+  override navigate(spec: NavigateSpec, tail?: string): string {
+    const url = super.navigate(spec, tail);
+    window.history.pushState({}, '', url);
+    // This repeats some work from navigate... maybe we can goto() with params?
+    this.goto(url);
+    return url;
+  }
 }

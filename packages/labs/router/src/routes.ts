@@ -7,6 +7,7 @@
 /// <reference types="urlpattern-polyfill" />
 
 import type {ReactiveController, ReactiveControllerHost} from 'lit';
+import {compile, PathFunction} from 'path-to-regexp';
 
 export interface BaseRouteConfig {
   name?: string | undefined;
@@ -42,11 +43,24 @@ export interface URLPatternRouteConfig extends BaseRouteConfig {
  */
 export type RouteConfig = PathRouteConfig | URLPatternRouteConfig;
 
+/**
+ * Describes a route and specific parameters to use to navigate the router to
+ * a new URL with the goto() method.
+ *
+ * Only named routes can be navigated to.
+ */
+export type NavigateSpec = {
+  routeName: string;
+  params: {[key: string]: string};
+  parent?: NavigateSpec;
+};
+
 // A cache of URLPatterns created for PathRouteConfig.
 // Rather than converting all given RoutConfigs to URLPatternRouteConfig, this
 // lets us make `routes` mutable so users can add new PathRouteConfigs
 // dynamically.
 const patternCache = new WeakMap<PathRouteConfig, URLPattern>();
+const compilerCache = new WeakMap<RouteConfig, PathFunction<object>>();
 
 const isPatternConfig = (route: RouteConfig): route is URLPatternRouteConfig =>
   (route as URLPatternRouteConfig).pattern !== undefined;
@@ -60,6 +74,21 @@ const getPattern = (route: RouteConfig) => {
     patternCache.set(route, (pattern = new URLPattern({pathname: route.path})));
   }
   return pattern;
+};
+
+const reverse = (
+  route: RouteConfig,
+  params: {
+    [key: string]: string | undefined;
+  }
+) => {
+  let toPath = compilerCache.get(route);
+  if (toPath === undefined) {
+    const pattern = getPattern(route);
+    toPath = compile(pattern.pathname);
+    compilerCache.set(route, toPath);
+  }
+  return toPath(params);
 };
 
 /**
@@ -147,6 +176,44 @@ export class Routes implements ReactiveController {
     }
     pathname ??= this._currentPathname;
     return (this._parentRoutes?.link() ?? '') + pathname;
+  }
+
+  /**
+   * Navigates this router and its parent router to the named routes given in
+   * the navigate spec.
+   *
+   * This method works by generating new paths from the given params and'
+   * propagating the paths up the routes tree. When the root routers is reached,
+   * it will update the URL with goto().
+   *
+   * @param spec
+   * @param tail
+   * @returns
+   */
+  navigate(spec: NavigateSpec, tail?: string): string {
+    // 1. get the named route:
+    const route = this.routes.find((r) => r.name === spec.routeName);
+    if (route === undefined) {
+      throw new Error(`No route named ${spec.routeName}`);
+    }
+
+    // 2. update the current route params with the given new params:
+    // TODO: Can we assume all params apply to all routes?
+    const params = {
+      ...this._currentParams,
+      ...spec.params,
+    };
+
+    // 3. generate the new path from the params:
+    const path = reverse(route, params);
+
+    // 4. navigate the parent routes to the new path:
+    if (this._parentRoutes !== undefined && spec.parent !== undefined) {
+      // Add our path to the tail
+      tail = '/' + path + tail ?? '';
+      this._parentRoutes.navigate(spec.parent, tail);
+    }
+    return path;
   }
 
   /**

@@ -164,6 +164,7 @@
     "urlpattern-polyfill": "^5.0.5"
   },
   "dependencies": {
-    "lit": "^2.1.0"
+    "lit": "^2.1.0",
+    "path-to-regexp": "^6.2.1"
   }
 }

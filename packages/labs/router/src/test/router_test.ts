@@ -254,4 +254,6 @@ const canTest =
       '/local_absolute_path'
     );
   });
+
+  suite('navigate', () => {});
 });
