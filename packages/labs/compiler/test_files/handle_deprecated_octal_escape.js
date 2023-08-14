@@ -23,4 +23,4 @@ html`\\\\\\\\\\\\\\\\\\\\\\\\\000000000000000000000000000000000000000004`;
 // Valid: backslash was escaped, this is just text.
 html`valid:\\2022`;
 // Valid NULL character as it isn't followed by a digit.
-html`valid`;
+html`valid\0`;
