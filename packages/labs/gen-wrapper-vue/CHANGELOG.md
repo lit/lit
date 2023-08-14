@@ -1,5 +1,11 @@
 # @lit-labs/gen-wrapper-vue
 
+## 0.2.7
+
+### Patch Changes
+
+- [#4052](https://github.com/lit/lit/pull/4052) [`94665515`](https://github.com/lit/lit/commit/946655151e4ae0cf873c8710436c2544fca9743b) Thanks [@zh-lx](https://github.com/zh-lx)! - Add support for packages containing elements in sub directories and fixes module import paths in generated output to have forward slash separators even when run in Windows.
+
 ## 0.2.6
 
 ### Patch Changes

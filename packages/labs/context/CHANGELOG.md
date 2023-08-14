@@ -1,5 +1,13 @@
 # @lit-labs/context
 
+## 0.4.0
+
+### Minor Changes
+
+- [#4014](https://github.com/lit/lit/pull/4014) [`15a3b5c0`](https://github.com/lit/lit/commit/15a3b5c059a92b3204f6001608de92ea9e0763a2) - Late loaded elements can take over the context subscriptions for their children.
+
+  Breaking change: ValueNotifier.addCallback now takes the consuming element as a mandatory second argument.
+
 ## 0.3.3
 
 ### Patch Changes
