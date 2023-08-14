@@ -9,7 +9,12 @@ import {assert} from '@open-wc/testing';
 import {render} from 'lit';
 import {hydrate} from '@lit-labs/ssr-client';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot/template-shadowroot.js';
-import {SSRExpectedHTML, SSRTestSuite} from '../tests/ssr-test.js';
+import {
+  SSRExpectedHTML,
+  SSRExpectedHTMLGroup,
+  SSRTestSuite,
+  isAnyHtml,
+} from '../tests/ssr-test.js';
 
 const assertTemplate = document.createElement('template');
 
@@ -120,10 +125,24 @@ const assertLightDom = (
  */
 const assertHTML = (
   container: Element | ShadowRoot,
-  html: SSRExpectedHTML
+  html: SSRExpectedHTMLGroup | SSRExpectedHTML
 ): void => {
   if (typeof html !== 'object') {
     assertLightDom(container, html);
+  } else if (isAnyHtml(html)) {
+    let pass = false;
+    let lastError: unknown;
+    for (const expectation of html.expectations) {
+      try {
+        assertHTML(container, expectation);
+        pass = true;
+      } catch (e) {
+        lastError = e;
+      }
+    }
+    if (!pass) {
+      throw lastError;
+    }
   } else {
     for (const query in html) {
       const subHtml = html[query];

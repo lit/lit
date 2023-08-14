@@ -95,7 +95,8 @@
         "packages/labs/ssr/src/demo/**",
         "packages/labs/eleventy-plugin-lit/demo/**",
         "packages/tests/**",
-        "rollup-common.js"
+        "rollup-common.js",
+        "packages/labs/compiler/rollup.source_map_tests.js"
       ],
       "rules": {
         "import/no-extraneous-dependencies": "off"

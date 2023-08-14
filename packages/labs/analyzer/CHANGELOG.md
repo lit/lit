@@ -1,5 +1,11 @@
 # @lit-labs/analyzer
 
+## 0.9.1
+
+### Patch Changes
+
+- [#4065](https://github.com/lit/lit/pull/4065) [`47be5910`](https://github.com/lit/lit/commit/47be5910ebff413e504a6582f476123437982e32) Thanks [@bennypowers](https://github.com/bennypowers)! - Analyzer can now handle module graphs which reexport names from their circular dependencies
+
 ## 0.9.0
 
 ### Minor Changes
