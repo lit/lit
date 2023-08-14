@@ -48,8 +48,13 @@ export type ReactWebComponent<
 // lifecycle methods or allow user to explicitly provide props.
 type ElementProps<I> = Partial<Omit<I, keyof HTMLElement>>;
 
-// Acceptable props to the React component.
-type ComponentProps<I, E extends EventNames = {}> = React.HTMLAttributes<I> &
+// Acceptable props to the React component. Omit keyof E from HTMLAttributes to
+// prefer provided event handler mapping over React's built-in event handler
+// props.
+type ComponentProps<I, E extends EventNames = {}> = Omit<
+  React.HTMLAttributes<I>,
+  keyof E
+> &
   ElementProps<I> &
   EventListeners<E>;
 
