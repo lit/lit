@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.1
+
+### Patch Changes
+
+- [#4070](https://github.com/lit/lit/pull/4070) [`3be62b07`](https://github.com/lit/lit/commit/3be62b07acfb3452aab9c8901f3383237ca69f05) Thanks [@mlcui-google](https://github.com/mlcui-google)! - Fix Task.render()'s return type always being undefined
+
 ## 3.0.0
 
 ### Major Changes

@@ -430,7 +430,7 @@ export class Task<
   }
 }
 
-type MaybeReturnType<F> = F extends (...args: unknown[]) => infer R
+type MaybeReturnType<F> = F extends (...args: never[]) => infer R
   ? R
   : undefined;
 

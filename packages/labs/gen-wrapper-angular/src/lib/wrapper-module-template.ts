@@ -51,6 +51,7 @@ export const wrapperModuleTemplate = (
   }
   const typeImports = getElementTypeImports(elements);
   const typeExports = getElementTypeExportsFromImports(typeImports);
+  moduleJsPath = moduleJsPath.replace(/\\/g, '/');
   return javascript`import {
   ${imports.join(',\n  ')}
 

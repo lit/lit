@@ -1051,5 +1051,13 @@ suite('Task', () => {
         error: () => 123,
       })
     );
+    accept<number>(
+      el.task.render({
+        initial: () => 123,
+        complete: (value) => Number(accept<string>(value)),
+        pending: () => 123,
+        error: (error) => (error instanceof Error ? 123 : 456),
+      })
+    );
   });
 });
