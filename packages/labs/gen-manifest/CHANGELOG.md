@@ -1,5 +1,11 @@
 # @lit-labs/gen-manifest
 
+## 0.2.4
+
+### Patch Changes
+
+- [#4075](https://github.com/lit/lit/pull/4075) [`4cf588b0`](https://github.com/lit/lit/commit/4cf588b0f9af4a71e365b9734206dcb6a280c285) Thanks [@bennypowers](https://github.com/bennypowers)! - Initial pre-release
+
 ## 0.2.3
 
 ### Patch Changes

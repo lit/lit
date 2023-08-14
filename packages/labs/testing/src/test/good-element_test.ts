@@ -28,6 +28,7 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
 
     test('renders with default values', async () => {
       const el = await fixture(html`<good-element></good-element>`, {
+        base: import.meta.url,
         modules: ['./good-element.js'],
       });
       assert.shadowDom.equal(
@@ -44,6 +45,7 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
       const el = await fixture(
         html`<good-element name="Test"></good-element>`,
         {
+          base: import.meta.url,
           modules: ['./good-element.js'],
         }
       );
@@ -61,6 +63,7 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
       const el = await fixture<GoodElement>(
         html`<good-element></good-element>`,
         {
+          base: import.meta.url,
           modules: ['./good-element.js'],
         }
       );
@@ -73,6 +76,7 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
         const el = await fixture<GoodElement>(
           html`<good-element></good-element>`,
           {
+            base: import.meta.url,
             modules: ['./good-element.js'],
           }
         );
@@ -94,6 +98,7 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
   suite(`nested good-element rendered with ${fixture.name}`, () => {
     test('renders with default values', async () => {
       const el = await fixture(html`<div><good-element></good-element></div>`, {
+        base: import.meta.url,
         modules: ['./good-element.js'],
       });
       const goodEl = el.querySelector('good-element');
@@ -112,6 +117,7 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
       const el = await fixture(
         html`<div><good-element name="Test"></good-element></div>`,
         {
+          base: import.meta.url,
           modules: ['./good-element.js'],
         }
       );
@@ -127,6 +133,7 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
 
     test('styling applied', async () => {
       const el = await fixture(html`<div><good-element></good-element></div>`, {
+        base: import.meta.url,
         modules: ['./good-element.js'],
       });
       assert.equal(
@@ -141,6 +148,7 @@ for (const fixture of [csrFixture, ssrNonHydratedFixture, ssrHydratedFixture]) {
         const el = await fixture(
           html`<div><good-element></good-element></div>`,
           {
+            base: import.meta.url,
             modules: ['./good-element.js'],
           }
         );
