@@ -74,6 +74,16 @@ interface TemplateInfo {
 const rawTextElement = /^(?:script|style|textarea|title)$/i;
 
 /**
+ * Certain elements do not support dynamic bindings within their innerHTML.
+ *
+ * Reference: https://lit.dev/docs/templates/expressions/#invalid-locations
+ */
+const elementDoesNotSupportInnerHtmlExpressions = new Set([
+  'template',
+  'textarea',
+]);
+
+/**
  * CompiledTemplatePass provides a `ts.TransformerFactory` that transforms
  * `html` tagged templates into a `CompiledTemplateResult`.
  *
@@ -291,12 +301,10 @@ class CompiledTemplatePass {
             return false;
           }
           if (
-            /^(?:textarea|template)$/i!.test(node.tagName) &&
+            elementDoesNotSupportInnerHtmlExpressions.has(node.tagName) &&
             serialize(node).includes(marker)
           ) {
             // TODO(ajakubowicz): Provide a diagnostic here.
-            // This matches the DEV_MODE check in lit-html for textarea or
-            // template elements containing invalid bindings.
             shouldCompile = false;
             return false;
           }
