@@ -296,7 +296,7 @@ class CompiledTemplatePass {
           ) {
             // TODO(ajakubowicz): Provide a diagnostic here.
             // This matches the DEV_MODE check in lit-html for textarea or
-            // template elements containing invalid expression bindings.
+            // template elements containing invalid bindings.
             shouldCompile = false;
             return false;
           }
