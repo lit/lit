@@ -290,6 +290,16 @@ class CompiledTemplatePass {
             shouldCompile = false;
             return false;
           }
+          if (
+            /^(?:textarea|template)$/i!.test(node.tagName) &&
+            serialize(node).includes(marker)
+          ) {
+            // TODO(ajakubowicz): Provide a diagnostic here.
+            // This matches the DEV_MODE check in lit-html for textarea or
+            // template elements containing invalid expression bindings.
+            shouldCompile = false;
+            return false;
+          }
           if (node.attrs.length > 0) {
             for (const attr of node.attrs) {
               if (
