@@ -39,7 +39,7 @@ const _$lit_template_1: CompiledTemplate = {
 };
 
 /**
- * This will be false if this file has been compiled by @lit-labs/compiler.
+ * Use to check if the file has been compiled with @lit-labs/compiler.
  */
 const isTestFileNotCompiled = isTemplateResult(html``, TemplateResultType.HTML);
 

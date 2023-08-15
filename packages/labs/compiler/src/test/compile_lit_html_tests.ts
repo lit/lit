@@ -39,8 +39,8 @@ function programFromTsConfig(tsConfigPath: string): ts.Program {
  * branch, and allows the lit-html tests to be built and run while multiple
  * versions of TypeScript exist.
  *
- * Essentially compile only the lit-html test directory into a `compiled`
- * directory from the compiler package.
+ * Essentially compile only the lit-html test directory with the
+ * @lit-labs/compiler TypeScript transformer applied.
  */
 function compile(tsconfigPath: string) {
   const configPath = path.resolve(tsconfigPath);
