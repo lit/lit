@@ -39,7 +39,7 @@ export default {
 };
 ```
 
-This is based on a rollup config used to test that source-maps are preserved after compilation in the lit repo. See [the test rollup config for a full example](https://github.com/lit/lit/blob/main/packages/labs/compiler/rollup.source_map_tests.js).
+See an example of the transformer in use in this project's test for source-maps validity in this [rollup config file](https://github.com/lit/lit/blob/main/packages/labs/compiler/rollup.source_map_tests.js).
 
 # FAQ
 
