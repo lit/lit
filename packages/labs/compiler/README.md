@@ -11,7 +11,7 @@ A compiler for optimizing Lit templates.
 ## Overview
 
 `@lit-labs/compiler` exports a [TypeScript
-Transformer](https://github.com/itsdouges/typescript-transformer-handbook#types-of-transformers)
+Transformer](https://github.com/itsdouges/typescript-transformer-handbook#the-basics)
 that can be run over your JavaScript or TypeScript files to optimize away the
 `lit-html` **prepare** render phase. For template heavy applications this can result in a quicker first render.
 
