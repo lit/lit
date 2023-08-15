@@ -70,7 +70,7 @@ const hi = (name) => ({_$litType$: lit_template_1, values: [name]});
 
 In order for a template to be optimized by the compiler, it must be:
 
-1. A well-formed template that wouldn't raise runtime diagnostics. For example, templates with expressions in [invalid locations](https://lit.dev/docs/templates/expressions/#invalid-locations) will not be compiled.
+1. A well-formed template that wouldn't raise runtime diagnostics in development builds of lit-html. For example, templates with expressions in [invalid locations](https://lit.dev/docs/templates/expressions/#invalid-locations) will not be compiled.
 1. Use `html` imported directly from the module `lit` or `lit-html`. The following imports are supported:
    1. `import {html} from 'lit';` Usage: `` html`...` ``
    1. `import {html as litHtml} from 'lit';` Usage: `` litHtml`...` ``
