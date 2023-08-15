@@ -432,6 +432,7 @@
         "test:prod",
         "test:node",
         "test:node-dev",
+        "test:dev:compiled",
         "check-version"
       ]
     },
