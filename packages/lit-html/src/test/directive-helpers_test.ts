@@ -38,6 +38,11 @@ const _$lit_template_1: CompiledTemplate = {
   parts: [],
 };
 
+/**
+ * This will be false if this file has been compiled by @lit-labs/compiler.
+ */
+const isTestFileNotCompiled = isTemplateResult(html``, TemplateResultType.HTML);
+
 suite('directive-helpers', () => {
   let container: HTMLDivElement;
 
@@ -67,7 +72,13 @@ suite('directive-helpers', () => {
   test('isTemplateResult', () => {
     assert.isTrue(isTemplateResult(html``));
     assert.isTrue(isTemplateResult(svg``));
-    assert.isTrue(isTemplateResult(html``, TemplateResultType.HTML));
+    if (isTestFileNotCompiled) {
+      assert.isTrue(isTemplateResult(html``, TemplateResultType.HTML));
+    } else {
+      // This template was compiled, so `isTemplateResult` with an explicit
+      // check for `TemplateResultType.HTML` returns false.
+      assert.isFalse(isTemplateResult(html``, TemplateResultType.HTML));
+    }
     assert.isTrue(isTemplateResult(svg``, TemplateResultType.SVG));
 
     assert.isFalse(isTemplateResult(null));
@@ -148,7 +159,9 @@ suite('directive-helpers', () => {
       })
     );
 
-    assert.isFalse(isCompiledTemplateResult(html``));
+    if (isTestFileNotCompiled) {
+      assert.isFalse(isCompiledTemplateResult(html``));
+    }
     assert.isFalse(isCompiledTemplateResult(svg``));
     assert.isFalse(isCompiledTemplateResult(null));
     assert.isFalse(isCompiledTemplateResult(undefined));
