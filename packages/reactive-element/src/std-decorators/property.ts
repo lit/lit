@@ -85,14 +85,14 @@ export const property = (
           this.requestUpdate(name, oldValue, options);
         },
         init(this: C, v: V): V {
-          // Save instance property through setter
-          if (this.hasOwnProperty(name)) {
-            // @ts-expect-error: argh
-            delete this[name as keyof this];
-            // @ts-expect-error: argh
-            this[name as keyof this] = v;
-          }
-          this.requestUpdate(name, undefined, options, true, v);
+          // Call requestUpdate with initial=true so that we don't reflect
+          // the initial value to an attribute.
+          // We must call requestUpdate after a microtask so that the
+          // private storage for the field is set up and we can access
+          // the field value
+          queueMicrotask(() =>
+            this.requestUpdate(name, undefined, options, true)
+          );
           return v;
         },
       };

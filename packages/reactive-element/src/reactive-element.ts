@@ -893,7 +893,6 @@ export abstract class ReactiveElement
       : undefined;
   }
 
-  private __instanceProperties?: PropertyValues = new Map();
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
   private __updatePromise!: Promise<boolean>;
@@ -949,6 +948,8 @@ export abstract class ReactiveElement
       (res) => (this.enableUpdating = res)
     );
     this._$changedProperties = new Map();
+    // This enqueues a microtask that ust run before the first udpate, so it
+    // must be called before requestUpdate()
     this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
     // `updateComplete`
@@ -1001,13 +1002,22 @@ export abstract class ReactiveElement
    * the native platform default).
    */
   private __saveInstanceProperties() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const instanceProperties: Array<[keyof this, any]> = [];
     const elementProperties = (this.constructor as typeof ReactiveElement)
       .elementProperties;
-    for (const p of elementProperties.keys()) {
+    for (const p of elementProperties.keys() as IterableIterator<keyof this>) {
       if (this.hasOwnProperty(p)) {
-        this.__instanceProperties!.set(p, this[p as keyof this]);
-        delete this[p as keyof this];
+        instanceProperties.push([p, this[p]]);
+        delete this[p];
       }
+    }
+    if (instanceProperties.length) {
+      queueMicrotask(() => {
+        for (const [p, value] of instanceProperties) {
+          this[p] = value;
+        }
+      });
     }
   }
 
@@ -1178,31 +1188,17 @@ export abstract class ReactiveElement
    * @param oldValue old value of requesting property
    * @param options property options to use instead of the previously
    *     configured options
+   * @param initial whether this call is for the initial value of the property.
+   *     Initial values do not reflect to an attribute.
    * @category updates
    */
   requestUpdate(
     name?: PropertyKey,
     oldValue?: unknown,
-    options?: PropertyDeclaration
-  ): void;
-  requestUpdate(
-    name: PropertyKey,
-    oldValue: unknown,
-    options: PropertyDeclaration,
-    initial: true,
-    newValue: unknown
-  ): void;
-  requestUpdate(
-    name?: PropertyKey,
-    oldValue?: unknown,
     options?: PropertyDeclaration,
-    // This is needed because standard decorators can't call requestUpdate()
-    // after the field is defined and acceessing the field before it's
-    // defined is an error.
     // TODO: Copy the reflection logic to the decorator, or hide this parameter
     // from the public API.
-    initial?: boolean,
-    newValue?: unknown
+    initial?: boolean
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -1211,7 +1207,7 @@ export abstract class ReactiveElement
       ).getPropertyOptions(name);
       const hasChanged = options.hasChanged ?? notEqual;
 
-      if (hasChanged(initial ? newValue : this[name as keyof this], oldValue)) {
+      if (hasChanged(this[name as keyof this], oldValue)) {
         // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
         // vs just Map.set()
         if (!this._$changedProperties.has(name)) {
@@ -1319,18 +1315,16 @@ export abstract class ReactiveElement
       return;
     }
     debugLogEvent?.({kind: 'update'});
-    // create renderRoot before first update.
-    if (!this.hasUpdated) {
-      // Produce warning if any class properties are shadowed by class fields
-      if (DEV_MODE) {
-        const shadowedProperties: string[] = [];
-        (
-          this.constructor as typeof ReactiveElement
-        ).__reactivePropertyKeys?.forEach((p) => {
-          if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
-            shadowedProperties.push(p as string);
-          }
-        });
+    if (DEV_MODE) {
+      if (!this.hasUpdated) {
+        // Produce warning if any class properties are shadowed by class fields
+        const reactivePropertyKeys =
+          (
+            this.constructor as typeof ReactiveElement
+          ).__reactivePropertyKeys?.keys() ?? [];
+        const shadowedProperties = [...reactivePropertyKeys].filter((p) =>
+          this.hasOwnProperty(p)
+        );
         if (shadowedProperties.length) {
           throw new Error(
             `The following properties on element ${this.localName} will not ` +
@@ -1344,14 +1338,6 @@ export abstract class ReactiveElement
         }
       }
     }
-    // Mixin instance properties once, if they exist.
-    // The forEach() expression will only run when when __instanceProperties is
-    // defined, and it returns undefined, setting __instanceProperties to
-    // undefined
-    this.__instanceProperties &&= this.__instanceProperties.forEach(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (v, p) => ((this as any)[p] = v)
-    ) as undefined;
     let shouldUpdate = false;
     const changedProperties = this._$changedProperties;
     try {

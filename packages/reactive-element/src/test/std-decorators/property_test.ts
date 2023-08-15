@@ -273,7 +273,7 @@ suite('@property', () => {
   });
 
   // This test isn't valid. You can not override a field that's initialized
-  // with an accessor that uses private storage, becase the base class's
+  // with an accessor that uses private storage, because the base class's
   // initializer will run before the subclass's private storage is setup.
   // test.only('property options via decorator do not modify superclass', async () => {
   //   class E extends ReactiveElement {
@@ -352,6 +352,49 @@ suite('@property', () => {
     await el.updateComplete;
     assert.equal(el.foo, 'foo2');
     assert.equal(el.bar, 'bar2');
+  });
+
+  // This is a duplicate of the same-named test in react-element_test.ts,
+  // copied here so that we ensure that this step is performed if the code
+  // that does this is removed from ReactiveElement and moved to the decorator
+  test('properties set before upgrade are applied', async () => {
+    let changedProperties: PropertyValues<E> | undefined = undefined;
+
+    class E extends ReactiveElement {
+      @property() accessor foo = '';
+      @property() accessor bar = true;
+      @property() accessor zug: unknown = null;
+
+      override update(properties: PropertyValues<this>) {
+        super.update(properties);
+        changedProperties = properties;
+      }
+    }
+
+    const name = generateElementName();
+    const el = document.createElement(name) as E;
+    container.appendChild(el);
+
+    // Set properties before the element is defined
+    const objectValue = {};
+    el.foo = 'hi';
+    el.bar = false;
+    el.zug = objectValue;
+
+    customElements.define(name, E);
+    await el.updateComplete;
+
+    // Properties should have the pre-upgraded values
+    assert.equal(el.foo, 'hi');
+    assert.equal(el.bar, false);
+    assert.equal(el.zug, objectValue);
+    assert.isTrue(changedProperties!.has('foo'));
+
+    // Check that the element is still reactive
+    changedProperties = undefined;
+    el.foo = 'bye';
+    await el.updateComplete;
+    assert.isTrue(changedProperties!.has('foo'));
   });
 
   // We can not support custom property descriptors anymore. This use case
