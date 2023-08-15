@@ -13,7 +13,7 @@ A compiler for optimizing Lit templates.
 `@lit-labs/compiler` exports a [TypeScript
 Transformer](https://github.com/itsdouges/typescript-transformer-handbook#the-basics)
 that can be run over your JavaScript or TypeScript files to optimize away the
-`lit-html` **prepare** render phase. For template heavy applications this can result in a quicker first render.
+[`lit-html` **prepare** render phase](https://github.com/lit/lit/blob/main/dev-docs/design/how-lit-html-works.md#rendering). For template heavy applications this can result in a quicker first render.
 
 ## Usage
 
@@ -47,7 +47,7 @@ See an example of the transformer in use in this project's test for source-maps 
 
 1. Running the compiler requires a build step that can accept a TypeScript transformer.
 
-2. The very first template render is faster (sometimes up to 45% faster for template heavy sites), but it currently comes with a 5% output file size increase (gzipped).
+2. The very first template render is faster (sometimes up to 45% faster for template heavy pages), but currently the output file is about 5% larger (gzipped).
 
 ## How do I know optimizations have been applied?
 
@@ -71,7 +71,7 @@ const hi = (name) => ({_$litType$: lit_template_1, values: [name]});
 In order for a template to be optimized by the compiler, it must be:
 
 1. A well-formed template that wouldn't raise runtime diagnostics in development builds of lit-html. For example, templates with expressions in [invalid locations](https://lit.dev/docs/templates/expressions/#invalid-locations) will not be compiled.
-1. Use `html` imported directly from the module `lit` or `lit-html`. The following imports are supported:
+1. Use `html` imported directly from the module `lit` or `lit-html`. Re-exports of `html` from other modules are not supported. The following imports are supported:
    1. `import {html} from 'lit';` Usage: `` html`...` ``
    1. `import {html as litHtml} from 'lit';` Usage: `` litHtml`...` ``
    1. `import * as litModule from 'lit'` Usage: `` litModule.html`...` ``
