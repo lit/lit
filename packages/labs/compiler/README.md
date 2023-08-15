@@ -2,44 +2,44 @@
 
 A compiler for optimizing Lit templates.
 
-> **Warning** > `@lit-labs/compiler` is part of the Lit Labs set of packages – it is published
+> **Warning** `@lit-labs/compiler` is part of the Lit Labs set of packages – it is published
 > in order to get feedback on the design and may receive breaking changes.
 > Tracking RFC: https://github.com/lit/rfcs/pull/21
 
-> **Warning** > `@lit-labs/compiler` is not yet published so it cannot be installed from npm.
+> **Warning** `@lit-labs/compiler` is not yet published so it cannot be installed from npm.
 
 ## Overview
 
 `@lit-labs/compiler` exports a [TypeScript
 Transformer](https://github.com/itsdouges/typescript-transformer-handbook#types-of-transformers)
 that can be run over your JavaScript or TypeScript files to optimize away the
-`lit-html` **prepare** render phase.
+`lit-html` **prepare** render phase. For template heavy applications this can result in a quicker first render.
 
 ## Usage
 
-This transformer can be used anywhere TypeScript transformers are accepted, which changes based on your build setup.
+This transformer can be used anywhere TypeScript transformers are accepted, which is dependent on your build setup.
 
-Below is an example using [Rollup](https://rollupjs.org/), and the plugin [`@rollup/plugin-typescript`](https://www.npmjs.com/package/@rollup/plugin-typescript):
+Below is an example using [Rollup](https://rollupjs.org/) with the plugin [`@rollup/plugin-typescript`](https://www.npmjs.com/package/@rollup/plugin-typescript):
 
 ```js
 // File: rollup.config.js
 import typescript from '@rollup/plugin-typescript';
-import {compileLitTemplates} from './lib/template-transform.js';
+import {compileLitTemplates} from '@lit-labs/compiler';
 
 export default {
-  // ... `input` and `output` configuration is specific to your project.
+  // ...
   plugins: [
     typescript({
       transformers: {
         before: [compileLitTemplates()],
       },
     }),
-    // Other rollup plugins
+    // other rollup plugins
   ],
 };
 ```
 
-This is based on a real rollup config used to test that source-maps are preserved after compilation in the lit repo [here](https://github.com/lit/lit/blob/main/packages/labs/compiler/rollup.source_map_tests.js).
+This is based on a rollup config used to test that source-maps are preserved after compilation in the lit repo. See [the test rollup config for a full example](https://github.com/lit/lit/blob/main/packages/labs/compiler/rollup.source_map_tests.js).
 
 # FAQ
 
