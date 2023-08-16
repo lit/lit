@@ -90,6 +90,36 @@ export class SignalExample extends LitElement {
 
 You can mix and match the `SignalWatcher` mixins and the `watch()` directive. When you pass a signal directly to `watch()` it is not accessed in a callback watched by `SignalWatcher`, so an update to that signal will cause a targeted DOM update and not an entire element update.
 
-## Upcoming features
+### html tag and withWatch()
 
-- An `html` template tag that automatically unwraps signals.
+This package also exports an `html` template tag that can be used in place of Lit's default `html` tag and automatically wraps any signals in `watch()`.
+
+```ts
+import {LitElement} from 'lit';
+import {customElement, property} from 'lit';
+import {html, signal} from '@lit-labs/preact-signals';
+
+const count = signal(0);
+
+@customElement('signal-example')
+export class SignalExample extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+    }
+  `;
+
+  render() {
+    return html`
+      <p>The count is ${count}</p>
+      <button @click=${this._onClick}>Increment<button></button></button>
+    `;
+  }
+
+  private _onClick() {
+    count.value = count.value + 1;
+  }
+}
+```
+
+`withWatch()` is a function that wraps an `html` tag function with the auto-watching functionality. This allows you to compose this wrapper with other html-tag wrappers like Lit's `withStatic()` static template wrapper.
