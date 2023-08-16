@@ -31,22 +31,32 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       // If we have a previous effect, dispose it
       this._disposeEffect?.();
 
+      // Tracks whether the effect callback is triggered by this performUpdate
+      // call directly, or by a signal change.
+      let updateFromLit = true;
+
       // We create a new effect to capture all signal access within the
       // performUpdate phase (update, render, updated, etc) of the element.
-      // Q: Do we need to create a new effect each non-Signal-triggered render?
+      // Q: Do we need to create a new effect each render?
       // TODO: test various combinations of render triggers:
       //  - from requestUpdate()
       //  - from signals
       //  - from both (do we get one or two re-renders)
       // and see if we really need a new effect here.
       this._disposeEffect = effect(() => {
-        // When Signals change we need to re-render, but we need to get past
-        // the isUpdatePending in performUpdate(), so we set it to true.
-        this.isUpdatePending = true;
-        // We call super.performUpdate() so that we don't create a new effect
-        // only as the result of the effect running.
-        super.performUpdate();
+        if (updateFromLit) {
+          updateFromLit = false;
+          super.performUpdate();
+        } else {
+          // This branch is an effect run from Preact signals.
+          // This will cause another call into performUpdate, which will
+          // then create a new effect watching that update pass.
+          this.requestUpdate();
+        }
       });
     }
+
+    // TODO(justinfagnani): should we wrap any lifecycle methods (willUpdate,
+    // updated, etc) in a signal batch?
   };
 }
