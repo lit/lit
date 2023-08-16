@@ -722,6 +722,7 @@ export abstract class ReactiveElement
           name as string
         ];
         (this as {} as {[key: string]: unknown})[key as string] = value;
+        console.log('getPropertyDescriptor set');
         (this as unknown as ReactiveElement).requestUpdate(
           name,
           oldValue,
@@ -757,9 +758,15 @@ export abstract class ReactiveElement
   protected static collectMetadata() {
     const metadata = this[Symbol.metadata];
     if (metadata == null) {
+      // if (DEV_MODE) {
+      //   issueWarning('missing-class-metadata',
+      //   `The class ${this.constructor.name} is missing decorator metadata. This ` +
+      //   `could mean that you're using a compiler that supports decorators but ` +
+      //   `doesn't support decorator metadata, such as TypeScript 5.1. Please` +
+      //   `update your compiler.`);
+      // }
       return;
     }
-    metadata['cls'] = this;
     const properties = propertyMetadata.get(metadata);
     if (properties === undefined) {
       return;

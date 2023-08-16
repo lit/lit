@@ -30,6 +30,9 @@ suite('@property', () => {
       old === undefined || value > old;
     const fromAttribute = (value: any) => parseInt(value);
     const toAttribute = (value: any) => `${value}-attr`;
+
+    let changedProperties: PropertyValues | undefined;
+
     class E extends ReactiveElement {
       @property({attribute: false})
       accessor noAttr = 'noAttr';
@@ -61,6 +64,7 @@ suite('@property', () => {
 
       override update(changed: PropertyValues) {
         this.updateCount++;
+        changedProperties = changed;
         super.update(changed);
       }
     }
@@ -70,11 +74,13 @@ suite('@property', () => {
     await el.updateComplete;
     assert.equal(el.updateCount, 1);
     assert.equal(el.noAttr, 'noAttr');
+    assert.isTrue(changedProperties!.has('noAttr'));
     assert.equal(el.getAttribute('noAttr'), null);
     assert.equal(el.atTr, 'attr');
     assert.equal(el.getAttribute('attr'), null);
     assert.equal(el.customAttr, 'customAttr');
-    assert.equal(el.getAttribute('customAttr'), null);
+    // Make sure that the default value doesn't reflect
+    assert.equal(el.getAttribute('custom'), null);
     assert.equal(el.hasChanged, 10);
     assert.equal(el.fromAttribute, 1);
     assert.equal(el.toAttribute, 1);
@@ -82,13 +88,16 @@ suite('@property', () => {
     assert.equal(el.all, 10);
     assert.equal(el.getAttribute('all-attr'), null);
 
-    // Test reflection
+    // Test property->attribute reflection
     el.toAttribute = 27;
     el.all = 27;
+    el.customAttr = '27';
     await el.updateComplete;
     assert.equal(el.getAttribute('toattribute'), '27-attr');
     assert.equal(el.getAttribute('all-attr'), '27-attr');
+    assert.equal(el.getAttribute('custom'), '27');
 
+    // Test attribute->property reflection
     el.setAttribute('noattr', 'noAttr2');
     el.setAttribute('attr', 'attr2');
     el.setAttribute('custom', 'customAttr2');

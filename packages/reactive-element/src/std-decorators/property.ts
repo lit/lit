@@ -74,9 +74,6 @@ export const property = (
       // keyword instead.
       const {name} = context;
       return {
-        get(this: C) {
-          return (target as ClassAccessorDecoratorTarget<C, V>).get.call(this);
-        },
         set(this: C, v: V) {
           const oldValue = (
             target as ClassAccessorDecoratorTarget<C, V>
@@ -85,20 +82,22 @@ export const property = (
           this.requestUpdate(name, oldValue, options);
         },
         init(this: C, v: V): V {
-          // Call requestUpdate with initial=true so that we don't reflect
-          // the initial value to an attribute.
-          // We must call requestUpdate after a microtask so that the
-          // private storage for the field is set up and we can access
-          // the field value
-          queueMicrotask(() =>
-            this.requestUpdate(name, undefined, options, true)
-          );
+          if (v !== undefined) {
+            // Call requestUpdate with initial=true so that we don't reflect
+            // the initial value to an attribute.
+            // We must call requestUpdate after a microtask so that the
+            // private storage for the field is set up and we can access
+            // the field value
+            queueMicrotask(() =>
+              this.requestUpdate(name, undefined, options, true)
+            );
+          }
           return v;
         },
       };
     } else if (kind === 'setter') {
       // TODO: legacy decorators do not automatically call requestUpdate() like
-      // this, because it was difficult to wrape the user-written accessors.
+      // this, because it was difficult to wrap the user-written accessors.
       // NOTE: Because we need to wrap the setter, and we can't modify the class
       // directly in a standard decorator, we can only decorate setters, not
       // getters. This is change from our legacy decorators.
