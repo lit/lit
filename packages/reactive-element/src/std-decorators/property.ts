@@ -15,8 +15,27 @@ import {
   ReactiveElement,
   defaultConverter,
   notEqual,
-  propertyMetadata,
 } from '../reactive-element.js';
+
+const DEV_MODE = true;
+
+let issueWarning: (code: string, warning: string) => void;
+
+if (DEV_MODE) {
+  // Ensure warnings are issued only 1x, even if multiple versions of Lit
+  // are loaded.
+  const issuedWarnings: Set<string | undefined> =
+    (globalThis.litIssuedWarnings ??= new Set());
+
+  // Issue a warning, if we haven't already.
+  issueWarning = (code: string, warning: string) => {
+    warning += ` See https://lit.dev/msg/${code} for more information.`;
+    if (!issuedWarnings.has(warning)) {
+      console.warn(warning);
+      issuedWarnings.add(warning);
+    }
+  };
+}
 
 // Overloads for property decorator so that TypeScript can infer the correct
 // return type when a decorator is used as an accessor decorator or a setter
@@ -61,10 +80,20 @@ export const property = (
   ): ClassAccessorDecoratorResult<C, V> | ((this: C, value: V) => void) => {
     const {kind, metadata} = context;
 
+    if (DEV_MODE && metadata == null) {
+      issueWarning(
+        'missing-class-metadata',
+        `The class ${target} is missing decorator metadata. This ` +
+          `could mean that you're using a compiler that supports decorators ` +
+          `but doesn't support decorator metadata, such as TypeScript 5.1. ` +
+          `Please update your compiler.`
+      );
+    }
+
     // Store the property options
-    let properties = propertyMetadata.get(metadata);
+    let properties = globalThis.litPropertyMetadata.get(metadata);
     if (properties === undefined) {
-      propertyMetadata.set(metadata, (properties = new Map()));
+      globalThis.litPropertyMetadata.set(metadata, (properties = new Map()));
     }
     properties.set(context.name, options);
 
@@ -82,6 +111,14 @@ export const property = (
           this.requestUpdate(name, oldValue, options);
         },
         init(this: C, v: V): V {
+          // Store the default value, but only for properties with an
+          // associated attribute. This should usually keep us from retaining
+          // large objects in memory.
+          // TODO: warn if attribute is not false and the initial value is
+          // not a primitive?
+          if (options.attribute !== false) {
+            (this.__propertyDefaults ??= new Map()).set(name, v);
+          }
           if (v !== undefined) {
             // Call requestUpdate with initial=true so that we don't reflect
             // the initial value to an attribute.

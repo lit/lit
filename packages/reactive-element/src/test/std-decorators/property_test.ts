@@ -113,32 +113,44 @@ suite('@property', () => {
     assert.equal(el.toAttribute, 2);
     assert.equal(el.getAttribute('toattribute'), '2-attr');
     assert.equal(el.all, 5);
+
     el.all = 15;
     await el.updateComplete;
     assert.equal(el.updateCount, 4);
     assert.equal(el.all, 15);
     assert.equal(el.getAttribute('all-attr'), '15-attr');
+
     el.setAttribute('all-attr', '16-attr');
     await el.updateComplete;
     assert.equal(el.updateCount, 5);
     assert.equal(el.getAttribute('all-attr'), '16-attr');
     assert.equal(el.all, 16);
+
     el.hasChanged = 5;
     await el.updateComplete;
     assert.equal(el.hasChanged, 5);
     assert.equal(el.updateCount, 5);
+
     el.hasChanged = 15;
     await el.updateComplete;
     assert.equal(el.hasChanged, 15);
     assert.equal(el.updateCount, 6);
+
     el.setAttribute('all-attr', '5-attr');
     await el.updateComplete;
     assert.equal(el.all, 5);
     assert.equal(el.updateCount, 6);
+
     el.all = 15;
     await el.updateComplete;
     assert.equal(el.all, 15);
     assert.equal(el.updateCount, 7);
+
+    // Make sure that removed properties are restored to their default
+    assert.equal(el.customAttr, 'customAttr2');
+    el.removeAttribute('custom');
+    await el.updateComplete;
+    assert.equal(el.customAttr, 'customAttr');
   });
 
   test('can decorate user accessor with @property', async () => {

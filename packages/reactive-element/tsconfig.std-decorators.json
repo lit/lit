@@ -28,6 +28,7 @@
   },
   "include": [
     "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
+    "src/env.d.ts",
     "src/std-decorators/**/*.ts",
     "src/test/std-decorators/**/*.ts"
   ],

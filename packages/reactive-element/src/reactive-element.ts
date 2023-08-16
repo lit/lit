@@ -376,13 +376,21 @@ export type WarningKind =
 
 export type Initializer = (element: ReactiveElement) => void;
 
-// Ensure metadata is enabled...
-// TODO: remove
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(Symbol as any).metadata ??= Symbol('metadata');
+// Ensure metadata is enabled. TypeScript does not polyfill
+// Symbol.metadata, so we must ensure that it exists.
+(Symbol as {metadata: symbol}).metadata ??= Symbol('metadata');
 
-// Maybe from a class's metadata object to property options
-export const propertyMetadata = new WeakMap<
+declare global {
+  // This is public global API, do not change!
+  // eslint-disable-next-line no-var
+  var litPropertyMetadata: WeakMap<
+    object,
+    Map<PropertyKey, PropertyDeclaration>
+  >;
+}
+
+// Map from a class's metadata object to property options
+global.litPropertyMetadata = new WeakMap<
   object,
   Map<PropertyKey, PropertyDeclaration>
 >();
@@ -390,7 +398,7 @@ export const propertyMetadata = new WeakMap<
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
- * should be supplied by subclassers to render updates as desired.
+ * should be supplied by subclasses to render updates as desired.
  * @noInheritDoc
  */
 export abstract class ReactiveElement
@@ -601,7 +609,7 @@ export abstract class ReactiveElement
   static get observedAttributes() {
     // note: piggy backing on this to ensure we're finalized.
     this.finalize();
-    this.collectMetadata();
+    this.__collectMetadata();
     const attributes: string[] = [];
     for (const [p, v] of this.elementProperties) {
       const attr = this.__attributeNameForProperty(p, v);
@@ -638,6 +646,10 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category properties
    */
+  // TODO (justinfagnani): if we remove createProperty in a future major
+  // version we should simplify finalization and how we track reactive
+  // properties. We should require and assume that finalize is only called
+  // once per class, for instance.
   static createProperty(
     name: PropertyKey,
     options: PropertyDeclaration = defaultPropertyDeclaration
@@ -755,19 +767,12 @@ export abstract class ReactiveElement
   // This is a finalization step, but it needs to be separate from `finalize`
   // because `finalize` can be called before a class has been fully initialized.
   // This method should only be called once per class, as late as possible.
-  protected static collectMetadata() {
+  private static __collectMetadata() {
     const metadata = this[Symbol.metadata];
     if (metadata == null) {
-      // if (DEV_MODE) {
-      //   issueWarning('missing-class-metadata',
-      //   `The class ${this.constructor.name} is missing decorator metadata. This ` +
-      //   `could mean that you're using a compiler that supports decorators but ` +
-      //   `doesn't support decorator metadata, such as TypeScript 5.1. Please` +
-      //   `update your compiler.`);
-      // }
       return;
     }
-    const properties = propertyMetadata.get(metadata);
+    const properties = litPropertyMetadata.get(metadata);
     if (properties === undefined) {
       return;
     }
@@ -940,6 +945,13 @@ export abstract class ReactiveElement
    * Set of controllers.
    */
   private __controllers?: ReactiveController[];
+
+  /**
+   * The default values to set a property to if the associated attribute
+   * is removed.
+   */
+  // internal, but we have two separate compilation units
+  protected __propertyDefaults?: Map<PropertyKey, unknown>;
 
   constructor() {
     super();
@@ -1164,20 +1176,27 @@ export abstract class ReactiveElement
     // Use tracking info to avoid reflecting a property value to an attribute
     // if it was just set because the attribute changed.
     if (propName !== undefined && this.__reflectingProperty !== propName) {
-      const options = ctor.getPropertyOptions(propName);
-      const converter =
-        typeof options.converter === 'function'
-          ? {fromAttribute: options.converter}
-          : options.converter?.fromAttribute !== undefined
-          ? options.converter
-          : defaultConverter;
-      // mark state reflecting
-      this.__reflectingProperty = propName;
-      this[propName as keyof this] = converter.fromAttribute!(
-        value,
-        options.type
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ) as any;
+      // Use the default value if we're removing an attribute and have a default
+      if (value === null && this.__propertyDefaults?.has(propName)) {
+        this[propName as keyof this] = this.__propertyDefaults.get(
+          propName
+        ) as this[keyof this];
+      } else {
+        const options = ctor.getPropertyOptions(propName);
+        const converter =
+          typeof options.converter === 'function'
+            ? {fromAttribute: options.converter}
+            : options.converter?.fromAttribute !== undefined
+            ? options.converter
+            : defaultConverter;
+        // mark state reflecting
+        this.__reflectingProperty = propName;
+        this[propName as keyof this] = converter.fromAttribute!(
+          value,
+          options.type
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        ) as any;
+      }
       // mark state not reflecting
       this.__reflectingProperty = null;
     }
