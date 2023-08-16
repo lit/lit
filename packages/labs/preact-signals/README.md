@@ -20,6 +20,8 @@ Preact Signals are a good place to start. They have integrations with other libr
 
 ## Usage
 
+### SignalWatcher
+
 `SignalWatcher` is a mixin that makes an element watch all signal accesses during the element's reactive update lifecycle, then triggers an element update when signals change. This includes signals read in `shouldUpdate()`, `willUpdate()`, `update()`, `render()`, `updated()`, `firstUpdated()`, and reactive controller's `hostUpdate()` and `hostUpdated()`.
 
 ```ts
@@ -52,7 +54,42 @@ export class SignalExample extends SignalWatcher(LitElement) {
 
 Elements should not _write_ to signals in these lifecycle methods or they might cause an infinite loop.
 
+### watch() directive
+
+The `watch()` directive accepts a single Signal and renders its value, subscribing to updates and updating the DOM when the signal changes.
+
+The `watch()` directive allows for very targeted updates of the DOM, which can be good for performance (but as always, measure!). The downside is that the lifecycle callbacks are not automatically watched for signal access, so values computed from signals must by wrapped in computed signals.
+
+```ts
+import {LitElement, html} from 'lit';
+import {customElement, property} from 'lit';
+import {watch, signal} from '@lit-labs/preact-signals';
+
+const count = signal(0);
+
+@customElement('signal-example')
+export class SignalExample extends LitElement {
+  static styles = css`
+    :host {
+      display: block;
+    }
+  `;
+
+  render() {
+    return html`
+      <p>The count is ${watch(count)}</p>
+      <button @click=${this._onClick}>Increment<button></button></button>
+    `;
+  }
+
+  private _onClick() {
+    count.value = count.value + 1;
+  }
+}
+```
+
+You can mix and match the `SignalWatcher` mixins and the `watch()` directive. When you pass a signal directly to `watch()` it is not accessed in a callback watched by `SignalWatcher`, so an update to that signal will cause a targeted DOM update and not an entire element update.
+
 ## Upcoming features
 
-- A signal directive that performs targeted binding updates.
 - An `html` template tag that automatically unwraps signals.
