@@ -19,17 +19,17 @@ function programFromTsConfig(tsConfigPath: string): ts.Program {
   if (error) {
     throw new Error(JSON.stringify(error));
   }
-  const parsedCommandLine = ts.parseJsonConfigFileContent(
+  const parsedConfig = ts.parseJsonConfigFileContent(
     config,
     ts.sys,
     path.dirname(tsConfigPath)
   );
-  if (parsedCommandLine.errors.length > 0) {
+  if (parsedConfig.errors.length > 0) {
     throw new Error(
-      parsedCommandLine.errors.map((error) => JSON.stringify(error)).join('\n')
+      parsedConfig.errors.map((error) => JSON.stringify(error)).join('\n')
     );
   }
-  const {fileNames, options} = parsedCommandLine;
+  const {fileNames, options} = parsedConfig;
   const program = ts.createProgram(fileNames, options);
   return program;
 }

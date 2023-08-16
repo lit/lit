@@ -41,7 +41,7 @@ const _$lit_template_1: CompiledTemplate = {
 /**
  * Use to check if the file has been compiled with @lit-labs/compiler.
  */
-const isTestFileNotCompiled = isTemplateResult(html``, TemplateResultType.HTML);
+const isTestFileNotCompiled = html``['_$litType$'] === 1;
 
 suite('directive-helpers', () => {
   let container: HTMLDivElement;

@@ -485,7 +485,7 @@
       "output": []
     },
     "test:dev:compiled": {
-      "command": "MODE=dev node ../tests/run-web-tests.js \"compiled/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
+      "command": "node ../tests/run-web-tests.js \"compiled/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:compiled:ts:tests",
         "../tests:build"
@@ -493,7 +493,8 @@
       "env": {
         "BROWSERS": {
           "external": true
-        }
+        },
+        "MODE": "dev"
       },
       "files": [],
       "output": []
