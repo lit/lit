@@ -27,7 +27,8 @@
   "files": [
     "/development/",
     "!/development/test/",
-    "/index.{d.ts,d.ts.map,js,js.map}"
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/lib/"
   ],
   "scripts": {
     "build": "wireit",
@@ -40,6 +41,7 @@
   "wireit": {
     "build": {
       "dependencies": [
+        "build:rollup",
         "build:ts",
         "build:ts:types"
       ]
@@ -69,7 +71,24 @@
       "files": [],
       "output": [
         "*.d.ts{,.map}",
+        "lib/*.d.ts{,.map}",
         "test/**/*.d.ts{,.map}"
+      ]
+    },
+    "build:rollup": {
+      "command": "rollup -c",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "rollup.config.js",
+        "../../rollup-common.js",
+        "src/test/*_test.html"
+      ],
+      "output": [
+        "index.js{,.map}",
+        "lib/*.js{,.map}",
+        "test/*_test.html"
       ]
     },
     "test": {
@@ -82,7 +101,7 @@
       "command": "MODE=dev node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
-        "../../reactive-element:build",
+        "../../lit:build",
         "../../tests:build"
       ],
       "env": {
@@ -96,7 +115,7 @@
     "test:prod": {
       "command": "MODE=prod node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
-        "build:ts",
+        "build",
         "../../tests:build"
       ],
       "env": {
@@ -110,13 +129,13 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.1-pre.0",
-    "@lit/reactive-element": "^2.0.0-pre.0"
+    "@lit-internal/scripts": "^1.0.1-pre.0"
   },
   "publishConfig": {
     "access": "public"
   },
   "dependencies": {
+    "lit": "^3.0.0-pre.0",
     "@preact/signals-core": "^1.3.0"
   }
 }
