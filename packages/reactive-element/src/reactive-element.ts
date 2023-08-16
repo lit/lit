@@ -734,7 +734,6 @@ export abstract class ReactiveElement
           name as string
         ];
         (this as {} as {[key: string]: unknown})[key as string] = value;
-        console.log('getPropertyDescriptor set');
         (this as unknown as ReactiveElement).requestUpdate(
           name,
           oldValue,
