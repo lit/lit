@@ -116,6 +116,7 @@ describe('Properly sizing virtualizer within host element', () => {
     expect(rects[4].left - leftOffset).to.equal(50);
   });
 
+  // Regression test for https://github.com/lit/lit/issues/4080
   it('should resize host when total item size changes', async () => {
     const items = array(5);
     const root = await fixture(html`
@@ -150,9 +151,19 @@ describe('Properly sizing virtualizer within host element', () => {
     );
     const litVirtualizer =
       ceclv.shadowRoot!.querySelector<LitVirtualizer>('lit-virtualizer')!;
-    await pass(() => expect(litVirtualizer.textContent).to.contain('[4]'));
-    expect(window.getComputedStyle(litVirtualizer).height).to.equal('50px');
+
+    // Should be:
+    // [0] [1] [2] [3]
+    // [4]
+    await pass(() => {
+      expect(litVirtualizer.textContent).to.contain('[4]');
+      expect(window.getComputedStyle(litVirtualizer).height).to.equal('50px');
+    });
+
     ceclv.items = ceclv.items.slice(0, ceclv.items.length - 1);
+
+    // Now should be:
+    // [0] [1] [2] [3]
     await pass(() => {
       expect(litVirtualizer.textContent).not.to.contain('[4]');
       expect(window.getComputedStyle(litVirtualizer).height).to.equal('25px');
