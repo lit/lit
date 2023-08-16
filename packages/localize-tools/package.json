@@ -139,9 +139,10 @@
     "minimist": "^1.2.5",
     "parse5": "^6.0.1",
     "source-map-support": "^0.5.19",
-    "typescript": "5.2.0-dev.20230625"
+    "typescript": "^5.2.0-beta"
   },
   "devDependencies": {
+    "@lit-internal/tests": "0.0.1-pre.0",
     "@lit-labs/ssr": "^3.1.3-pre.0",
     "@lit/ts-transformers": "^2.0.0-pre.0",
     "@types/fs-extra": "^9.0.1",
@@ -149,7 +150,6 @@
     "@types/parse5": "^6.0.1",
     "@types/prettier": "^2.0.1",
     "rimraf": "^3.0.2",
-    "@lit-internal/tests": "0.0.1-pre.0",
     "typescript-json-schema": "^0.54.0"
   }
 }
