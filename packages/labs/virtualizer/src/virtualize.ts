@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult, ChildPart, html} from 'lit';
+import {TemplateResult, ChildPart, html, noChange} from 'lit';
 import {directive, DirectiveResult, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {repeat, KeyFn} from 'lit/directives/repeat.js';
@@ -88,13 +88,14 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
 
   update(part: ChildPart, [config]: [VirtualizeDirectiveConfig<T>]) {
     this._setFunctions(config);
+    const itemsChanged = this._items !== config.items;
     this._items = config.items || [];
     if (this._virtualizer) {
       this._updateVirtualizerConfig(part, config);
     } else {
       this._initialize(part, config);
     }
-    return this.render();
+    return itemsChanged ? noChange : this.render();
   }
 
   private async _updateVirtualizerConfig(
