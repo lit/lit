@@ -9,15 +9,32 @@ import {AsyncDirective} from 'lit/async-directive.js';
 import {type Signal} from '@preact/signals-core';
 
 class WatchDirective extends AsyncDirective {
-  render(signal: Signal<unknown>) {
+  private __signal?: Signal;
+  private __dispose?: () => void;
+
+  override render(signal: Signal<unknown>) {
     let updateFromLit = true;
-    signal.subscribe((value) => {
-      if (!updateFromLit) {
-        this.setValue(value);
-      }
-      updateFromLit = false;
-    });
+    if (signal !== this.__signal) {
+      this.__dispose?.();
+      this.__signal = signal;
+      this.__dispose = signal.subscribe((value) => {
+        if (!updateFromLit) {
+          this.setValue(value);
+        }
+      });
+    }
+    updateFromLit = false;
     return signal.value;
+  }
+
+  protected override disconnected(): void {
+    this.__dispose?.();
+  }
+
+  protected override reconnected(): void {
+    this.__signal?.subscribe((value) => {
+      this.setValue(value);
+    });
   }
 }
 

@@ -19,7 +19,7 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
   Base: T
 ): T {
   return class SignalWatcher extends Base {
-    private _disposeEffect?: () => void;
+    private __dispose?: () => void;
 
     override performUpdate() {
       // ReactiveElement.performUpdate() also does this check, so we want to
@@ -29,7 +29,7 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
         return;
       }
       // If we have a previous effect, dispose it
-      this._disposeEffect?.();
+      this.__dispose?.();
 
       // Tracks whether the effect callback is triggered by this performUpdate
       // call directly, or by a signal change.
@@ -43,7 +43,7 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       //  - from signals
       //  - from both (do we get one or two re-renders)
       // and see if we really need a new effect here.
-      this._disposeEffect = effect(() => {
+      this.__dispose = effect(() => {
         if (updateFromLit) {
           updateFromLit = false;
           super.performUpdate();
