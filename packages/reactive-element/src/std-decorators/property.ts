@@ -15,6 +15,7 @@ import {
   ReactiveElement,
   defaultConverter,
   notEqual,
+  type PropertyValues,
 } from '../reactive-element.js';
 
 const DEV_MODE = true;
@@ -120,14 +121,9 @@ export const property = (
             (this.__propertyDefaults ??= new Map()).set(name, v);
           }
           if (v !== undefined) {
-            // Call requestUpdate with initial=true so that we don't reflect
-            // the initial value to an attribute.
-            // We must call requestUpdate after a microtask so that the
-            // private storage for the field is set up and we can access
-            // the field value
-            queueMicrotask(() =>
-              this.requestUpdate(name, undefined, options, true)
-            );
+            (
+              this as unknown as {_$changedProperties: PropertyValues}
+            )._$changedProperties.set(name, undefined);
           }
           return v;
         },
