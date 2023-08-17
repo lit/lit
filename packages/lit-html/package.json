@@ -347,7 +347,7 @@
       ]
     },
     "build:compiled:ts:tests": {
-      "#comment": "Compile the test directory with the compiler",
+      "#comment": "Compile the test directory with the lit template compiler.",
       "command": "node ../labs/compiler/test/compile_lit_html_tests.js",
       "dependencies": [
         "../labs/compiler:build"
