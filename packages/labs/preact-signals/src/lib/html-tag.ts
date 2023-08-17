@@ -20,7 +20,7 @@ export const withWatch =
   (coreTag: typeof coreHtml | typeof coreSvg) =>
   (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult => {
     // TODO (justinfagnani): use an alternative to instanceof when
-    // one is available. See preactjs/signals#402
+    // one is available. See https://github.com/preactjs/signals/issues/402
     return coreTag(
       strings,
       ...values.map((v) => (v instanceof Signal ? watch(v) : v))
