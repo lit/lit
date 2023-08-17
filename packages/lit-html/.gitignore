@@ -13,3 +13,4 @@
 /private-ssr-support.*
 /static.*
 /is-server.*
+/compiled/

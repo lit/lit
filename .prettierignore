@@ -77,7 +77,7 @@ packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
 packages/lit-html/is-server.*
-
+packages/lit-html/compiled/
 packages/lit-starter-js/node_modules/
 packages/lit-starter-js/**/custom-elements.json
 # only generated for size check

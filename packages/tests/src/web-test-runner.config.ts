@@ -230,6 +230,8 @@ const config: TestRunnerConfig = {
         if (
           context.url.includes('/packages/') &&
           !context.url.includes('/development/') &&
+          // For compiled tests
+          !context.url.includes('/compiled/') &&
           // lit and labs/testing don't have a dev mode
           !context.url.includes('/packages/lit/') &&
           !context.url.includes('/packages/labs/testing/') &&
