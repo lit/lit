@@ -39,8 +39,7 @@ export type ForwardComponent<
     ref?: React.ForwardedRef<Element>;
   }
 > &
-  React.FC<ReactComponent>;
-
+  Omit<React.FC<ReactComponent>, 'ref'>;
 /**
  * Type of the React component wrapping the web component. This is the return
  * type of `createComponent`.
