@@ -31,6 +31,16 @@ export type WebComponentProps<I extends HTMLElement> = React.DetailedHTMLProps<
 > &
   ElementProps<I>;
 
+export type ForwardComponent<
+  Element extends HTMLElement,
+  ReactComponent extends React.ElementType
+> = React.JSXElementConstructor<
+  React.ComponentPropsWithoutRef<ReactComponent> & {
+    ref?: React.ForwardedRef<Element>;
+  }
+> &
+  React.FC<ReactComponent>;
+
 /**
  * Type of the React component wrapping the web component. This is the return
  * type of `createComponent`.
@@ -214,7 +224,7 @@ export const createComponent = <
   elementClass,
   events,
   displayName,
-}: Options<I, E>): ReactWebComponent<I, E> => {
+}: Options<I, E>): ForwardComponent<I, ReactWebComponent<I, E>> => {
   const eventProps = new Set(Object.keys(events ?? {}));
 
   if (DEV_MODE) {
@@ -321,5 +331,5 @@ export const createComponent = <
 
   ReactComponent.displayName = displayName ?? elementClass.name;
 
-  return ReactComponent;
+  return ReactComponent as ForwardComponent<I, ReactWebComponent<I, E>>;
 };
