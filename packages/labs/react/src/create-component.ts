@@ -38,8 +38,8 @@ export type ForwardComponent<
   React.ComponentPropsWithoutRef<ReactComponent> & {
     ref?: React.ForwardedRef<Element>;
   }
-> &
-  Omit<React.FC<ReactComponent>, 'ref'>;
+> & {displayName?: string};
+
 /**
  * Type of the React component wrapping the web component. This is the return
  * type of `createComponent`.
