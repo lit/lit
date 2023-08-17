@@ -16,13 +16,15 @@ A Lit element template is already somewhat like a signal-produced value: it is c
 
 There are many signal libraries now, and unfortunately they are not seamlessly compatible (we can't generically watch all signal access and run an effect when they change across libraries). So we will need to support each library individually.
 
-Preact Signals are a good place to start. They have integrations with other libraries, are shipped as standard JS modules, and seem comparatively small, fast, and high-quality.
+Preact Signals are a good place to start. It has integrations with other libraries; is shipped as standard JS modules; and is small, fast, and high-quality.
 
 ## Usage
 
 ### SignalWatcher
 
 `SignalWatcher` is a mixin that makes an element watch all signal accesses during the element's reactive update lifecycle, then triggers an element update when signals change. This includes signals read in `shouldUpdate()`, `willUpdate()`, `update()`, `render()`, `updated()`, `firstUpdated()`, and reactive controller's `hostUpdate()` and `hostUpdated()`.
+
+This effectively makes the the return result of `render()` a computed signal.
 
 ```ts
 import {LitElement, html} from 'lit';
