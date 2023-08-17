@@ -1,0 +1,39 @@
+{
+  "name": "@lit-internal/test-elements-react",
+  "type": "module",
+  "scripts": {
+    "build": "wireit"
+  },
+  "version": "1.0.0",
+  "dependencies": {
+    "@lit-internal/test-element-a": "*",
+    "@lit-labs/react": "*"
+  },
+  "peerDependencies": {
+    "react": "^17 || ^18",
+    "@types/react": "^17 || ^18"
+  },
+  "files": [
+    "element-a.{js,js.map,d.ts,d.ts.map}",
+    "element-events.{js,js.map,d.ts,d.ts.map}",
+    "element-props.{js,js.map,d.ts,d.ts.map}"
+  ],
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "../..:build",
+        "../../../test-projects/test-element-a:build"
+      ],
+      "files": [
+        "src/**/*"
+      ],
+      "output": [
+        "element-a.{js,js.map,d.ts,d.ts.map}",
+        "element-events.{js,js.map,d.ts,d.ts.map}",
+        "element-props.{js,js.map,d.ts,d.ts.map}"
+      ]
+    }
+  }
+}

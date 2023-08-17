@@ -1,5 +1,6 @@
 {
   "private": true,
+  "type": "module",
   "name": "@lit-internal/test-element-a",
   "version": "1.0.0",
   "scripts": {

@@ -10,7 +10,8 @@
     "packages/*",
     "packages/labs/*",
     "packages/labs/test-projects/*",
-    "packages/localize/examples/*"
+    "packages/localize/examples/*",
+    "packages/labs/react/examples/*"
   ],
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
@@ -80,7 +81,8 @@
         "./packages/localize/examples/runtime-js:build",
         "./packages/localize/examples/runtime-ts:build",
         "./packages/localize/examples/transform-js:build",
-        "./packages/localize/examples/transform-ts:build"
+        "./packages/localize/examples/transform-ts:build",
+        "./packages/labs/react/examples/test-elements-react:build"
       ]
     },
     "build:ts": {
