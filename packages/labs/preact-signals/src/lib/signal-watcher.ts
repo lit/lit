@@ -25,7 +25,7 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       // ReactiveElement.performUpdate() also does this check, so we want to
       // also bail early so we don't erroneously appear to not depend on any
       // signals.
-      if (!this.isUpdatePending) {
+      if (this.isUpdatePending === false) {
         return;
       }
       // If we have a previous effect, dispose it
@@ -56,7 +56,16 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       });
     }
 
-    // TODO(justinfagnani): should we wrap any lifecycle methods (willUpdate,
-    // updated, etc) in a signal batch?
+    override connectedCallback(): void {
+      super.connectedCallback();
+      // In order to listen for signals again after re-connection, we must
+      // re-render to capture all the current signal accesses.
+      this.requestUpdate();
+    }
+
+    override disconnectedCallback(): void {
+      super.disconnectedCallback();
+      this.__dispose?.();
+    }
   };
 }
