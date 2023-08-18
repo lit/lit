@@ -197,15 +197,6 @@
       "development": "./development/std-decorators/query-assigned-nodes.js",
       "default": "./std-decorators/query-assigned-nodes.js"
     },
-    "./std-decorators/query-async.js": {
-      "types": "./development/std-decorators/query-async.d.ts",
-      "node": {
-        "development": "./node/development/std-decorators/query-async.js",
-        "default": "./node/std-decorators/query-async.js"
-      },
-      "development": "./development/std-decorators/query-async.js",
-      "default": "./std-decorators/query-async.js"
-    },
     "./std-decorators/query.js": {
       "types": "./development/std-decorators/query.d.ts",
       "node": {

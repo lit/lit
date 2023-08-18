@@ -42,7 +42,6 @@ export default litProdConfig({
     'std-decorators/query-all',
     'std-decorators/query-assigned-elements',
     'std-decorators/query-assigned-nodes',
-    'std-decorators/query-async',
   ],
   external: ['lit-html', '@lit/reactive-element'],
   bundled: [

@@ -59,7 +59,6 @@ export default litProdConfig({
     'std-decorators/query-all',
     'std-decorators/query-assigned-elements',
     'std-decorators/query-assigned-nodes',
-    'std-decorators/query-async',
     'std-decorators/state',
     'directive-helpers',
     'directive',

@@ -33,7 +33,6 @@ export default litProdConfig({
     'std-decorators/query-all',
     'std-decorators/query-assigned-elements',
     'std-decorators/query-assigned-nodes',
-    'std-decorators/query-async',
     'legacy-decorators',
     'legacy-decorators/base',
     'legacy-decorators/custom-element',
