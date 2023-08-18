@@ -7,7 +7,7 @@
 import * as url from 'url';
 import * as path from 'path';
 import ts from 'typescript';
-import {compileLitTemplates} from '../lib/template-transform.js';
+import {compileLitTemplates} from '@lit-labs/compiler';
 
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
