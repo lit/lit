@@ -8,10 +8,17 @@
   "license": "BSD-3-Clause",
   "type": "module",
   "main": "index.js",
+  "module": "index.js",
   "files": [
     "/lib/",
     "/index.{d.ts,d.ts.map,js,js.map}"
   ],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Lit/Lit.git",
@@ -48,7 +55,7 @@
         "lib",
         "test",
         "tsconfig.tsbuildinfo",
-        "/index.{d.ts,d.ts.map,js,js.map}"
+        "index.{d.ts,d.ts.map,js,js.map}"
       ],
       "clean": "if-file-deleted"
     },
