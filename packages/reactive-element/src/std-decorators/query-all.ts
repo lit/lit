@@ -13,6 +13,10 @@
 
 import type {ReactiveElement} from '../reactive-element.js';
 
+// Shared fragment used to generate empty NodeLists when a render root is
+// undefined
+let fragment: DocumentFragment;
+
 /**
  * A property decorator that converts a class property into a getter
  * that executes a querySelectorAll on the element's renderRoot.
@@ -38,18 +42,16 @@ import type {ReactiveElement} from '../reactive-element.js';
  * @category Decorator
  */
 export const queryAll =
-  (selector: string) =>
-  <C extends ReactiveElement, V extends NodeList | ReadonlyArray<Element>>(
+  <S extends string>(selector: S) =>
+  <C extends ReactiveElement, V extends NodeList>(
     _target: ClassAccessorDecoratorTarget<C, V>,
     _context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V> => {
     return {
-      get(this: C): V {
-        // TODO: if we want to allow users to assert that the query will never
-        // return null, we need a new option and to throw here if the result
-        // is null.
-        return (this.renderRoot?.querySelectorAll(selector) ??
-          []) as unknown as V;
+      get(this: C) {
+        return (
+          this.renderRoot ?? (fragment ??= document.createDocumentFragment())
+        ).querySelectorAll(selector) as unknown as V;
       },
     };
   };
