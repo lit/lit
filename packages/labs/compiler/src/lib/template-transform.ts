@@ -559,6 +559,34 @@ class CompiledTemplatePass {
   }
 }
 
+/**
+ * A [TypeScript
+ * Transformer](https://github.com/itsdouges/typescript-transformer-handbook#the-basics)
+ * that optimizes lit templates.
+ *
+ * This transform should be used in your build setup, and will need to be used
+ * with a tool that consumes TypeScript transformers. An example usage with
+ * Rollup.js and @rollup/plugin-typescript is:
+ *
+ * @example
+ * ```
+ * // File: rollup.config.js
+ * import typescript from '@rollup/plugin-typescript';
+ * import {compileLitTemplates} from '@lit-labs/compiler';
+ *
+ * export default {
+ *   // ...
+ *   plugins: [
+ *     typescript({
+ *       transformers: {
+ *         before: [compileLitTemplates()],
+ *       },
+ *     }),
+ *     // other rollup plugins
+ *   ],
+ * };
+ * ```
+ */
 export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> =>
   CompiledTemplatePass.getTransformer();
 

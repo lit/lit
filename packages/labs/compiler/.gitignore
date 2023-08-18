@@ -2,5 +2,5 @@
 /node_modules/
 /test/
 /lib/
-
+/index.*
 /test_files/source_map_tests/*.js.map
