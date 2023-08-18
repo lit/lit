@@ -597,6 +597,10 @@ export abstract class ReactiveElement
   /**
    * The set of properties defined by this class that caused an accessor to be
    * added during `createProperty`.
+   *
+   * This field is only used in dev mode. It should be eliminated in prod
+   * builds.
+   *
    * @nocollapse
    */
   private static __reactivePropertyKeys?: Set<PropertyKey>;
@@ -777,14 +781,16 @@ export abstract class ReactiveElement
     }
     for (const [p, options] of properties) {
       this.elementProperties.set(p, options);
-      // If this class doesn't have its own set, create one and initialize
-      // with the values in the set from the nearest ancestor class, if any.
-      if (!this.hasOwnProperty('__reactivePropertyKeys')) {
-        this.__reactivePropertyKeys = new Set(
-          this.__reactivePropertyKeys ?? []
-        );
+      if (DEV_MODE) {
+        // If this class doesn't have its own set, create one and initialize
+        // with the values in the set from the nearest ancestor class, if any.
+        if (!this.hasOwnProperty('__reactivePropertyKeys')) {
+          this.__reactivePropertyKeys = new Set(
+            this.__reactivePropertyKeys ?? []
+          );
+        }
+        this.__reactivePropertyKeys!.add(p);
       }
-      this.__reactivePropertyKeys!.add(p);
     }
   }
 
