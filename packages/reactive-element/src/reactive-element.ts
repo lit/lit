@@ -945,13 +945,6 @@ export abstract class ReactiveElement
    */
   private __controllers?: ReactiveController[];
 
-  /**
-   * The default values to set a property to if the associated attribute
-   * is removed.
-   */
-  // internal, but we have two separate compilation units
-  protected __propertyDefaults?: Map<PropertyKey, unknown>;
-
   constructor() {
     super();
     this.__initialize();
@@ -1175,27 +1168,20 @@ export abstract class ReactiveElement
     // Use tracking info to avoid reflecting a property value to an attribute
     // if it was just set because the attribute changed.
     if (propName !== undefined && this.__reflectingProperty !== propName) {
-      // Use the default value if we're removing an attribute and have a default
-      if (value === null && this.__propertyDefaults?.has(propName)) {
-        this[propName as keyof this] = this.__propertyDefaults.get(
-          propName
-        ) as this[keyof this];
-      } else {
-        const options = ctor.getPropertyOptions(propName);
-        const converter =
-          typeof options.converter === 'function'
-            ? {fromAttribute: options.converter}
-            : options.converter?.fromAttribute !== undefined
-            ? options.converter
-            : defaultConverter;
-        // mark state reflecting
-        this.__reflectingProperty = propName;
-        this[propName as keyof this] = converter.fromAttribute!(
-          value,
-          options.type
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ) as any;
-      }
+      const options = ctor.getPropertyOptions(propName);
+      const converter =
+        typeof options.converter === 'function'
+          ? {fromAttribute: options.converter}
+          : options.converter?.fromAttribute !== undefined
+          ? options.converter
+          : defaultConverter;
+      // mark state reflecting
+      this.__reflectingProperty = propName;
+      this[propName as keyof this] = converter.fromAttribute!(
+        value,
+        options.type
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ) as any;
       // mark state not reflecting
       this.__reflectingProperty = null;
     }

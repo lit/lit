@@ -145,12 +145,6 @@ suite('@property', () => {
     await el.updateComplete;
     assert.equal(el.all, 15);
     assert.equal(el.updateCount, 7);
-
-    // Make sure that removed properties are restored to their default
-    assert.equal(el.customAttr, 'customAttr2');
-    el.removeAttribute('custom');
-    await el.updateComplete;
-    assert.equal(el.customAttr, 'customAttr');
   });
 
   test('can decorate user accessor with @property', async () => {

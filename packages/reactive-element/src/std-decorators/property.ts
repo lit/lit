@@ -112,15 +112,10 @@ export const property = (
           this.requestUpdate(name, oldValue, options);
         },
         init(this: C, v: V): V {
-          // Store the default value, but only for properties with an
-          // associated attribute. This should usually keep us from retaining
-          // large objects in memory.
-          // TODO: warn if attribute is not false and the initial value is
-          // not a primitive?
-          if (options.attribute !== false) {
-            (this.__propertyDefaults ??= new Map()).set(name, v);
-          }
           if (v !== undefined) {
+            // We need this cast because these decorators are in a separate
+            // compilation unit from ReactiveElement, so can't see the
+            // @internal _$changedProperties field.
             (
               this as unknown as {_$changedProperties: PropertyValues}
             )._$changedProperties.set(name, undefined);
