@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {array, ignoreBenignErrors, pass} from '../helpers.js';
+import {array, ignoreBenignErrors} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {nothing} from 'lit';
 import {expect, html, fixture} from '@open-wc/testing';
@@ -62,8 +62,8 @@ describe('Virtualizer re-renders properly after changes to the `items` array', (
     // Make sure we have a Virtualizer and
     // that its initial render is correct
     expect(v).to.be.instanceOf(LitVirtualizer);
-    await pass(() => expect(v.textContent).to.contain('Item 0'));
     await v.layoutComplete;
+    expect(v.textContent).to.contain('Item 0');
 
     // Scroll all the way to the bottom and
     // confirm the last item is in the DOM

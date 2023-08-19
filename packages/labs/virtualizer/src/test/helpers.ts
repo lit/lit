@@ -218,19 +218,3 @@ export function ignoreWindowErrors(
     teardown = undefined;
   });
 }
-
-/**
- * An async function that waits for two animation frames. In most
- * if not all cases, Virtualizer's update and render cycle will
- * complete in this window, making this function a relatively
- * simple way to write tests.
- *
- * Virtualizer currently has some non-trivial plumbing to support
- * a `layoutComplete` promise for similar purposes, but it's unclear
- * how useful that is compared to simply waiting two frames, so we
- * may be able to deprecate it (see note in `Virtualizer.ts`).
- */
-export async function twoFrames() {
-  await new Promise((resolve) => requestAnimationFrame(resolve));
-  await new Promise((resolve) => requestAnimationFrame(resolve));
-}
