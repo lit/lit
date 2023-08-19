@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {array, ignoreBenignErrors, twoFrames, pass} from '../helpers.js';
+import {array, ignoreBenignErrors, pass} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {nothing} from 'lit';
 import {expect, html, fixture} from '@open-wc/testing';
@@ -63,18 +63,18 @@ describe('Virtualizer re-renders properly after changes to the `items` array', (
     // that its initial render is correct
     expect(v).to.be.instanceOf(LitVirtualizer);
     await pass(() => expect(v.textContent).to.contain('Item 0'));
+    await v.layoutComplete;
 
     // Scroll all the way to the bottom and
     // confirm the last item is in the DOM
-    await twoFrames();
     v.scrollBy(0, 100000);
-    await twoFrames();
+    await v.layoutComplete;
     expect(v.textContent).to.contain('Item 99');
 
     // Replace the `items` array with one
     // only half as long
     v.items = _50Things;
-    await twoFrames();
+    await v.layoutComplete;
     // Make sure we've correctly re-rendered
     // and that the new last item is in the DOM
     expect(v.textContent).to.contain('Thing 49');
