@@ -217,6 +217,11 @@ export class Virtualizer {
 
   /**
    * State for `layoutComplete` promise
+   *
+   * TODO (graynorton): Consider deprecating and eventually removing
+   * `layoutComplete`, which exists more or less purely for testing
+   * purposes and isn't obviously more useful than just waiting two
+   * animation frames.
    */
   private _layoutCompletePromise: Promise<void> | null = null;
   private _layoutCompleteResolver: Function | null = null;
