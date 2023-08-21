@@ -534,9 +534,8 @@ export class Virtualizer {
     if (_rangeChanged || _itemsChanged) {
       this._notifyRange();
       this._rangeChanged = false;
-    } else {
-      this._finishDOMUpdate();
     }
+    this._finishDOMUpdate();
   }
 
   _finishDOMUpdate() {

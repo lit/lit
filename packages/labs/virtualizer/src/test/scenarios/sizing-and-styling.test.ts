@@ -115,4 +115,58 @@ describe('Properly sizing virtualizer within host element', () => {
      */
     expect(rects[4].left - leftOffset).to.equal(50);
   });
+
+  // Regression test for https://github.com/lit/lit/issues/4080
+  it('should resize host when total item size changes', async () => {
+    const items = array(5);
+    const root = await fixture(html`
+      <div class="root">
+        <style>
+          .container {
+            display: block;
+            position: absolute;
+            width: 200px;
+            box-sizing: border-box;
+          }
+        </style>
+        <div class="container">
+          <custom-element-containing-lit-virtualizer .items=${items}>
+          </custom-element-containing-lit-virtualizer>
+        </div>
+      </div>
+    `);
+
+    await pass(() =>
+      expect(
+        root.querySelector('custom-element-containing-lit-virtualizer')
+      ).to.be.instanceOf(CustomElementContainingLitVirtualizer)
+    );
+    const ceclv = root.querySelector<CustomElementContainingLitVirtualizer>(
+      'custom-element-containing-lit-virtualizer'
+    )!;
+    await pass(() =>
+      expect(
+        ceclv.shadowRoot?.querySelector('lit-virtualizer')
+      ).to.be.instanceOf(LitVirtualizer)
+    );
+    const litVirtualizer =
+      ceclv.shadowRoot!.querySelector<LitVirtualizer>('lit-virtualizer')!;
+
+    // Should be:
+    // [0] [1] [2] [3]
+    // [4]
+    await pass(() => {
+      expect(litVirtualizer.textContent).to.contain('[4]');
+      expect(window.getComputedStyle(litVirtualizer).height).to.equal('50px');
+    });
+
+    ceclv.items = ceclv.items.slice(0, ceclv.items.length - 1);
+
+    // Now should be:
+    // [0] [1] [2] [3]
+    await pass(() => {
+      expect(litVirtualizer.textContent).not.to.contain('[4]');
+      expect(window.getComputedStyle(litVirtualizer).height).to.equal('25px');
+    });
+  });
 });
