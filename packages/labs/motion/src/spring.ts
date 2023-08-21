@@ -18,15 +18,20 @@ export class SpringController implements ReactiveController {
 
   protected _spring: Spring;
   private _toValue: number;
+  private _fromValue: number;
 
   constructor(
     host: ReactiveControllerHost & HTMLElement,
     options?: SpringConfig
   ) {
     (this._host = host).addController(this);
-    this._toValue = options?.toValue ?? 0;
+    this._fromValue = options?.fromValue ?? 0;
+    this._toValue = options?.toValue ?? 1;
     this._spring = new Spring(options);
     this._spring.onUpdate(() => this._host.requestUpdate());
+    if (this._host.isConnected) {
+      this._spring.start();
+    }
   }
 
   get currentValue() {
@@ -59,6 +64,18 @@ export class SpringController implements ReactiveController {
     return this._spring.isAnimating;
   }
 
+  get fromValue() {
+    return this._fromValue;
+  }
+
+  set fromValue(fromValue: number) {
+    this._fromValue = fromValue;
+    this._spring.updateConfig({fromValue});
+    if (this._host.isConnected) {
+      this._spring.start();
+    }
+  }
+
   get toValue() {
     return this._toValue;
   }
@@ -72,7 +89,7 @@ export class SpringController implements ReactiveController {
   }
 
   hostConnected() {
-    this._spring.start();
+    this._spring?.start();
   }
 
   hostDisconnected() {
@@ -91,47 +108,86 @@ export interface Spring2DConfig
   fromPosition?: Position2D;
 }
 
+const magnitude = ({x, y}: Position2D) => Math.sqrt(x ** 2 + y ** 2);
+const sum = (a: Position2D, b: Position2D): Position2D => ({
+  x: a.x + b.x,
+  y: a.y + b.y,
+});
+const difference = (a: Position2D, b: Position2D): Position2D => ({
+  x: a.x - b.x,
+  y: a.y - b.y,
+});
+const scale = (a: Position2D, s: number): Position2D => ({
+  x: a.x * s,
+  y: a.y * s,
+});
+
 /**
- * A reactive controller that implements a 2D spring physics simulation by
- * combining two 1D spring controllers.
+ * A reactive controller that implements a 2D spring physics simulation.
+ *
+ * The 2D spring is modeled with a 1D spring mapped to the vector from
+ * `fromPosition` to `toPosition`.
  */
 export class SpringController2D implements ReactiveController {
-  // TODO(justinfagnani): rather than using two springs, should we use one
-  // spring with a length equal to the magnitude of the position vector?
-  private _xSpring: SpringController;
-  private _ySpring: SpringController;
+  private _spring: SpringController;
 
-  _toPosition: Position2D;
+  private _toPosition: Position2D;
+  private _fromPosition: Position2D;
 
   constructor(
     host: ReactiveControllerHost & HTMLElement,
     options?: Spring2DConfig
   ) {
-    this._toPosition = options?.toPosition ?? {x: 0, y: 0};
-    this._xSpring = new SpringController(host, {
-      ...options,
-      fromValue: options?.fromPosition?.x,
-      toValue: this._toPosition.x,
+    const fromPosition = (this._fromPosition = options?.fromPosition ?? {
+      x: 0,
+      y: 0,
     });
-    this._ySpring = new SpringController(host, {
+    const toPosition = (this._toPosition = options?.toPosition ?? {x: 1, y: 1});
+    // Vector from toPosition to fromPosition
+    const deltaPosition = difference(toPosition, fromPosition);
+    const toValue = magnitude(deltaPosition);
+
+    this._spring = new SpringController(host, {
       ...options,
-      fromValue: options?.fromPosition?.y,
-      toValue: this._toPosition.y,
+      fromValue: 0,
+      toValue,
     });
   }
 
   get currentPosition(): Position2D {
-    return {x: this._xSpring.currentValue, y: this._ySpring.currentValue};
+    // Vector from toPosition to fromPosition
+    const initialDeltaPosition = difference(
+      this._toPosition,
+      this._fromPosition
+    );
+    const initialDistance = magnitude(initialDeltaPosition);
+    const {currentValue} = this._spring;
+    const currentDeltaPosition = scale(
+      initialDeltaPosition,
+      currentValue / initialDistance
+    );
+    const currentPosition = sum(this._toPosition, currentDeltaPosition);
+    return currentPosition;
   }
 
   /**
    * The spring's current velocity in units / ms.
    */
-  // TODO(justinfagnani): should velocity be a vector?
-  get currentVelocity(): number {
-    const dx = this._xSpring.currentVelocity;
-    const dy = this._ySpring.currentVelocity;
-    return Math.sqrt(dx ** 2 + dy ** 2);
+  get currentVelocity(): Position2D {
+    const currentVelocityMagnitude = this._spring.currentVelocity;
+    const initialDeltaPosition = difference(
+      this._toPosition,
+      this._fromPosition
+    );
+    const initialDeltaMagnitude = magnitude(initialDeltaPosition);
+    // Unit vector in the direction of fromPosition to toPosition
+    const initialDirection = scale(
+      initialDeltaPosition,
+      1 / initialDeltaMagnitude
+    );
+    const currentVelocity = scale(initialDirection, currentVelocityMagnitude);
+
+    return currentVelocity;
   }
 
   /**
@@ -140,7 +196,7 @@ export class SpringController2D implements ReactiveController {
    * during a simulation, both `isAnimating` and `isAtRest` will be false.
    */
   get isAtRest(): boolean {
-    return this._xSpring.isAtRest && this._ySpring.isAtRest;
+    return this._spring.isAtRest;
   }
 
   /**
@@ -150,7 +206,7 @@ export class SpringController2D implements ReactiveController {
    * See also {@link isAtRest}.
    */
   get isAnimating(): boolean {
-    return this._xSpring.isAnimating || this._ySpring.isAnimating;
+    return this._spring.isAnimating;
   }
 
   get toPosition() {
@@ -158,18 +214,18 @@ export class SpringController2D implements ReactiveController {
   }
 
   set toPosition(v: Position2D) {
-    this._toPosition = v;
-    this._xSpring.toValue = v.x;
-    this._ySpring.toValue = v.y;
+    const toPosition = (this._toPosition = v);
+    const deltaPosition = difference(toPosition, this._fromPosition);
+    const toValue = magnitude(deltaPosition);
+
+    this._spring.toValue = toValue;
   }
 
   hostConnected() {
-    this._xSpring.hostConnected();
-    this._ySpring.hostConnected();
+    this._spring.hostConnected();
   }
 
   hostDisconnected() {
-    this._xSpring.hostDisconnected();
-    this._ySpring.hostDisconnected();
+    this._spring.hostDisconnected();
   }
 }

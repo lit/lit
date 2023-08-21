@@ -97,14 +97,14 @@ suite('Spring', () => {
 
       assert.isFalse(el.spring.isAnimating);
       assert.deepEqual(el.spring.currentPosition, {x: 100, y: 100});
-      assert.equal(el.spring.currentVelocity, 0);
+      assert.deepEqual(el.spring.currentVelocity, {x: 0, y: 0});
       assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
       await new Promise((res) => setTimeout(res, 1));
 
       // Make sure it's not moving
       assert.isFalse(el.spring.isAnimating);
       assert.deepEqual(el.spring.currentPosition, {x: 100, y: 100});
-      assert.equal(el.spring.currentVelocity, 0);
+      assert.deepEqual(el.spring.currentVelocity, {x: 0, y: 0});
       assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
     });
 
@@ -117,7 +117,7 @@ suite('Spring', () => {
       assert.isFalse(el.spring.isAtRest);
       assert.isTrue(el.spring.isAnimating);
       assert.deepEqual(el.spring.currentPosition, {x: 100, y: 100});
-      assert.equal(el.spring.currentVelocity, 0);
+      assert.deepEqual(el.spring.currentVelocity, {x: 0, y: 0});
       assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
 
       // Wait at least a frame
@@ -129,8 +129,9 @@ suite('Spring', () => {
       assert.isTrue(el.spring.currentPosition.x < 100);
       assert.isTrue(el.spring.currentPosition.y < 100);
 
-      // TODO(justinfagnani): should velocity be a vector?
-      assert.isTrue(el.spring.currentVelocity > 0);
+      assert.isTrue(
+        el.spring.currentVelocity.x > 0 || el.spring.currentVelocity.y > 0
+      );
 
       // make sure it stops
       el.remove();
