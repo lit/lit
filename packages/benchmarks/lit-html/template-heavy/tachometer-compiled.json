@@ -1,0 +1,95 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
+  "timeout": 0,
+  "sampleSize": 50,
+  "benchmarks": [
+    {
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        },
+        {
+          "mode": "performance",
+          "entryName": "update"
+        }
+      ],
+      "browser": {
+        "headless": true,
+        "name": "chrome",
+        "addArguments": []
+      },
+      "expand": [
+        {
+          "name": "this-change",
+          "url": "template-heavy.html"
+        },
+        {
+          "name": "tip-of-tree",
+          "url": "template-heavy.html",
+          "packageVersions": {
+            "label": "tip-of-tree",
+            "dependencies": {
+              "lit-html": {
+                "kind": "git",
+                "repo": "https://github.com/lit/lit-html.git",
+                "ref": "main",
+                "subdir": "packages/lit-html",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run bootstrap -- --concurrency=1",
+                  "npm run build"
+                ]
+              },
+              "lit-element": {
+                "kind": "git",
+                "repo": "https://github.com/lit/lit-html.git",
+                "ref": "main",
+                "subdir": "packages/lit-element",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run bootstrap -- --concurrency=1",
+                  "npm run build"
+                ]
+              },
+              "@lit/reactive-element": {
+                "kind": "git",
+                "repo": "https://github.com/lit/lit-html.git",
+                "ref": "main",
+                "subdir": "packages/reactive-element",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run bootstrap -- --concurrency=1",
+                  "npm run build"
+                ]
+              }
+            }
+          }
+        },
+        {
+          "name": "previous-release",
+          "url": "template-heavy.html",
+          "packageVersions": {
+            "label": "previous-release",
+            "dependencies": {
+              "lit-html": "^1.0.0",
+              "lit-element": "^2.0.0",
+              "@lit/reactive-element": {
+                "kind": "git",
+                "repo": "https://github.com/lit/lit-html.git",
+                "ref": "main",
+                "subdir": "packages/reactive-element",
+                "setupCommands": [
+                  "npm ci",
+                  "npm run bootstrap -- --concurrency=1",
+                  "npm run build"
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

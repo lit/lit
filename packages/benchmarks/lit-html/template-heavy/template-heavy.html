@@ -22,6 +22,18 @@ Parameters:
   <body>
     <div id="container"></div>
 
-    <script type="module" src="template-heavy.js"></script>
+    <script>
+      const isCompiled = new URLSearchParams(window.location.search).get(
+        'compiled'
+      );
+      const script = document.createElement('script');
+      script.type = 'module';
+      if (isCompiled != null) {
+        script.src = `template-heavy_compiled.js`;
+      } else {
+        script.src = `template-heavy.js`;
+      }
+      document.body.append(script);
+    </script>
   </body>
 </html>
