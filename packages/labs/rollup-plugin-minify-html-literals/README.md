@@ -1,10 +1,10 @@
-# @lit/rollup-plugin-minify-html-literals
+# @lit-labs/rollup-plugin-minify-html-literals
 
 ## Usage
 
 ```js
 import babel from 'rollup-plugin-babel';
-import minifyHTML from '@lit/rollup-plugin-minify-html-literals';
+import minifyHTML from '@lit-labs/rollup-plugin-minify-html-literals';
 import {uglify} from 'rollup-plugin-uglify';
 
 export default {
@@ -19,7 +19,7 @@ export default {
 };
 ```
 
-By default, this will minify any tagged template literal string whose tag contains "html" or "css" (case insensitive). [Additional options](https://www.npmjs.com/package/minify-html-literals#options) may be specified to control what templates should be minified.
+By default, this will minify any tagged template literal string whose tag contains "html" or "css" (case insensitive). [Additional options](#options) may be specified to control what templates should be minified.
 
 ## Options
 
@@ -54,8 +54,8 @@ export default {
 ### Minify Polymer Templates
 
 ```js
-import minifyHTML from '@lit/rollup-plugin-minify-html-literals';
-import {defaultShouldMinify} from 'minify-html-literals';
+import minifyHTML from '@lit-labs/rollup-plugin-minify-html-literals';
+import {defaultShouldMinify} from '@lit-labs/rollup-plugin-minify-html-literals/lib/minify-html-literals.js';
 
 export default {
   entry: 'index.js',

@@ -1,5 +1,5 @@
 {
-  "name": "@lit/rollup-plugin-minify-html-literals",
+  "name": "@lit-labs/rollup-plugin-minify-html-literals",
   "version": "0.0.0",
   "description": "Rollup plugin to minify HTML template literal strings",
   "main": "index.js",
@@ -25,7 +25,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
-    "directory": "packages/rollup-plugin-minify-html-literals"
+    "directory": "packages/labs/rollup-plugin-minify-html-literals"
   },
   "scripts": {
     "build": "wireit",
@@ -55,7 +55,7 @@
     "build:ts:types": {
       "command": "treemirror src/lib/types lib/types \"*.d.ts\"",
       "dependencies": [
-        "../internal-scripts:build",
+        "../../internal-scripts:build",
         "build:ts"
       ],
       "files": [],
