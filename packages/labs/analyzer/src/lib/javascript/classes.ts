@@ -223,13 +223,61 @@ export const getHeritage = (
   };
 };
 
+const getIdentifierFromMixin = (
+  expression: ts.CallExpression,
+  analyzer: AnalyzerInterface
+): ts.Identifier | null => {
+  const [firstArg] = expression.arguments;
+
+  if (expression.arguments.length !== 1 || !firstArg) {
+    return null;
+  }
+
+  if (analyzer.typescript.isIdentifier(firstArg)) {
+    return firstArg;
+  }
+
+  if (analyzer.typescript.isCallExpression(firstArg)) {
+    return getIdentifierFromMixin(firstArg, analyzer);
+  }
+
+  return null;
+};
+
+const getMixinsFromExpression = (
+  expression: ts.Node,
+  analyzer: AnalyzerInterface
+): Reference[] => {
+  if (
+    !analyzer.typescript.isCallExpression(expression) ||
+    !analyzer.typescript.isIdentifier(expression.expression)
+  ) {
+    return [];
+  }
+
+  const exprRef = getReferenceForIdentifier(expression.expression, analyzer);
+  const [firstArg] = expression.arguments;
+
+  if (!exprRef || expression.arguments.length !== 1 || !firstArg) {
+    return [];
+  }
+
+  if (analyzer.typescript.isIdentifier(firstArg)) {
+    return [exprRef];
+  }
+
+  if (analyzer.typescript.isCallExpression(firstArg)) {
+    return [exprRef, ...getMixinsFromExpression(firstArg, analyzer)];
+  }
+
+  return [];
+};
+
 export const getHeritageFromExpression = (
   expression: ts.Expression,
   analyzer: AnalyzerInterface
 ): ClassHeritage => {
-  // TODO(kschaaf): Support for extracting mixing applications from the heritage
-  // expression https://github.com/lit/lit/issues/2998
-  const mixins: Reference[] = [];
+  const mixins: Reference[] = getMixinsFromExpression(expression, analyzer);
   const superClass = getSuperClass(expression, analyzer);
   return {
     superClass,
@@ -244,6 +292,12 @@ export const getSuperClass = (
   // TODO(kschaaf) Could add support for inline class expressions here as well
   if (analyzer.typescript.isIdentifier(expression)) {
     return getReferenceForIdentifier(expression, analyzer);
+  }
+  if (analyzer.typescript.isCallExpression(expression)) {
+    const ident = getIdentifierFromMixin(expression, analyzer);
+    if (ident) {
+      return getReferenceForIdentifier(ident, analyzer);
+    }
   }
   analyzer.addDiagnostic(
     createDiagnostic({
