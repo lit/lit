@@ -29,12 +29,13 @@
   },
   "scripts": {
     "build": "wireit",
+    "build:ts": "wireit",
     "test": "wireit"
   },
   "wireit": {
     "build": {
       "dependencies": [
-        "build:ts:types"
+        "build:ts"
       ]
     },
     "build:ts": {
@@ -47,20 +48,8 @@
       "output": [
         "index.{js,js.map,d.ts,d.ts.map}",
         "lib/**/*.{js,js.map,d.ts,d.ts.map}",
-        "!lib/types/*.d.ts",
         "test/**/*.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
-      ]
-    },
-    "build:ts:types": {
-      "command": "treemirror src/lib/types lib/types \"*.d.ts\"",
-      "dependencies": [
-        "../../internal-scripts:build",
-        "build:ts"
-      ],
-      "files": [],
-      "output": [
-        "lib/types/*.d.ts"
       ]
     },
     "test": {

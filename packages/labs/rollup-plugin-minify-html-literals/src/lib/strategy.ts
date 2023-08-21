@@ -1,5 +1,3 @@
-/// <reference types="./types/clean-css.d.ts" />
-// Reference needed for d.ts distribution files in rollup-plugin-minify-html-literals
 import CleanCSS, {OptionsOutput} from 'clean-css';
 import {
   OptimizationLevel,
