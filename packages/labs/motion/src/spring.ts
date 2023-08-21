@@ -3,10 +3,7 @@
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {
-  ReactiveController,
-  ReactiveControllerHost,
-} from '@lit/reactive-element';
+import type {ReactiveController, ReactiveControllerHost} from 'lit';
 import {Spring, SpringConfig as WobbleSpringConfig} from 'wobble';
 
 export type SpringConfig = Partial<WobbleSpringConfig>;
@@ -69,7 +66,7 @@ export class SpringController implements ReactiveController {
   set toValue(toValue: number) {
     this._toValue = toValue;
     this._spring.updateConfig({toValue});
-    if ((this._host as HTMLElement).isConnected) {
+    if (this._host.isConnected) {
       this._spring.start();
     }
   }
@@ -99,6 +96,8 @@ export interface Spring2DConfig
  * combining two 1D spring controllers.
  */
 export class SpringController2D implements ReactiveController {
+  // TODO(justinfagnani): rather than using two springs, should we use one
+  // spring with a length equal to the magnitude of the position vector?
   private _xSpring: SpringController;
   private _ySpring: SpringController;
 
@@ -121,13 +120,14 @@ export class SpringController2D implements ReactiveController {
     });
   }
 
-  get currentPosition() {
+  get currentPosition(): Position2D {
     return {x: this._xSpring.currentValue, y: this._ySpring.currentValue};
   }
 
   /**
    * The spring's current velocity in units / ms.
    */
+  // TODO(justinfagnani): should velocity be a vector?
   get currentVelocity(): number {
     const dx = this._xSpring.currentVelocity;
     const dy = this._ySpring.currentVelocity;
@@ -147,7 +147,7 @@ export class SpringController2D implements ReactiveController {
    * Whether or not the spring is currently emitting values.
    *
    * Note: this is distinct from whether or not it is at rest.
-   * See also `isAtRest`.
+   * See also {@link isAtRest}.
    */
   get isAnimating(): boolean {
     return this._xSpring.isAnimating || this._ySpring.isAnimating;

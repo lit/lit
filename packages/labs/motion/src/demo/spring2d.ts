@@ -4,29 +4,28 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {
-  ReactiveController,
-  ReactiveControllerHost,
-} from '@lit/reactive-element';
-import {LitElement, html} from 'lit';
+  LitElement,
+  html,
+  type ReactiveController,
+  type ReactiveControllerHost,
+} from 'lit';
 import {styleMap} from 'lit/directives/style-map.js';
+import {customElement} from 'lit/decorators.js';
 
 import {styles} from './styles.css.js';
-import {Position2D, SpringController2D} from '../spring.js';
-import {customElement} from 'lit/decorators.js';
+import {SpringController2D, type Position2D} from '../spring.js';
 
 export class MouseController implements ReactiveController {
   host;
   position: Position2D = {x: 0, y: 0};
 
-  _onMouseMove = ({clientX, clientY}: MouseEvent) => {
+  private _onMouseMove = ({clientX, clientY}: MouseEvent) => {
     this.position = {x: clientX, y: clientY};
     this.host.requestUpdate();
   };
 
   constructor(host: ReactiveControllerHost) {
-    this.host = host;
-    host.addController(this);
-    window.addEventListener('mousemove', this._onMouseMove);
+    (this.host = host).addController(this);
   }
 
   hostConnected() {

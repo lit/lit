@@ -53,7 +53,7 @@ suite('Spring', () => {
       assert.equal(el.spring.toValue, 50);
     });
 
-    test('spring starts when connected, stop when disconnected', async () => {
+    test('spring starts when connected, stops when disconnected', async () => {
       const el = new SpringControllerTest({fromValue: 100, toValue: 50});
       container.append(el);
       assert.isFalse(el.spring.isAtRest);
@@ -92,7 +92,7 @@ suite('Spring', () => {
         fromPosition: {x: 100, y: 100},
         toPosition: {x: 50, y: 50},
       });
-      // This one isn't what you might expect, but is what Wobble returns
+
       assert.isFalse(el.spring.isAtRest);
 
       assert.isFalse(el.spring.isAnimating);
@@ -129,7 +129,7 @@ suite('Spring', () => {
       assert.isTrue(el.spring.currentPosition.x < 100);
       assert.isTrue(el.spring.currentPosition.y < 100);
 
-      // hmm, should velocity be a vector?
+      // TODO(justinfagnani): should velocity be a vector?
       assert.isTrue(el.spring.currentVelocity > 0);
 
       // make sure it stops
