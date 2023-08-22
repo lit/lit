@@ -62,7 +62,8 @@
   "files": [
     "index.js",
     "index.map.js",
-    "index.d.ts"
+    "index.d.ts",
+    "index.d.ts.map"
   ],
   "homepage": "https://github.com/lit/lit",
   "keywords": [
