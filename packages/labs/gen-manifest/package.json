@@ -6,7 +6,7 @@
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
   "type": "module",
-  "main": "lib/index.js",
+  "main": "index.js",
   "repository": "lit/lit",
   "scripts": {
     "build": "wireit",
@@ -60,7 +60,9 @@
     "node": ">=14.8.0"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "index.map.js",
+    "index.d.ts"
   ],
   "homepage": "https://github.com/lit/lit",
   "keywords": [
