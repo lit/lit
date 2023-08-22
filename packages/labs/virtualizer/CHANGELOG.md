@@ -1,5 +1,11 @@
 # @lit-labs/virtualizer
 
+## 2.0.6
+
+### Patch Changes
+
+- [#4108](https://github.com/lit/lit/pull/4108) [`eda56e4f`](https://github.com/lit/lit/commit/eda56e4f74463f1b1ef06045807417de6cb6356d) - Fix bug that prevented host from resizing when total item size changes.
+
 ## 2.0.5
 
 ### Patch Changes

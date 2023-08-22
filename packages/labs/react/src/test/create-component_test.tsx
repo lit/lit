@@ -226,6 +226,25 @@ suite('createComponent', () => {
     <x-foo ref={React.createRef()}></x-foo>;
   });
 
+  // Type only test to be caught at build time.
+  test.skip('Prefer passed in events over built-in React event types', async () => {
+    const TestComponent = createComponent({
+      react: React,
+      tagName: 'event-component',
+      elementClass: class EventComponent extends ReactiveElement {},
+      events: {
+        onInput: 'input' as EventName<CustomEvent<string>>,
+      },
+    });
+
+    // onInput handler below should not error
+    <TestComponent
+      onInput={(e: CustomEvent<string>) => {
+        console.log(e);
+      }}
+    />;
+  });
+
   test('works with text children', async () => {
     const name = 'World';
     act(() => {

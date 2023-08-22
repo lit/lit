@@ -11,7 +11,7 @@
  */
 
 import ts from 'typescript';
-import {compileLitTemplates} from '../lib/template-transform.js';
+import {compileLitTemplates} from '@lit-labs/compiler';
 import {test} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
