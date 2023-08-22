@@ -56,7 +56,6 @@
         "./packages/labs/analyzer:build",
         "./packages/labs/cli:build",
         "./packages/labs/compiler:build",
-        "./packages/labs/compiler:build",
         "./packages/labs/context:build",
         "./packages/labs/eleventy-plugin-lit:build",
         "./packages/labs/gen-utils:build",
