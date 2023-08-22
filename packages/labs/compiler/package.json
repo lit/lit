@@ -2,7 +2,6 @@
   "name": "@lit-labs/compiler",
   "description": "Compiler to prepare Lit templates at build time",
   "version": "0.0.0",
-  "private": true,
   "author": "Google LLC",
   "homepage": "https://github.com/Lit/Lit/tree/main/packages/labs/compiler",
   "license": "BSD-3-Clause",
@@ -116,5 +115,8 @@
   },
   "engines": {
     "node": ">=14.17"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }
