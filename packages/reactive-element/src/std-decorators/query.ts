@@ -38,6 +38,8 @@ import type {ReactiveElement} from '../reactive-element.js';
  * ```
  * @category Decorator
  */
+// TODO(justinfagnani): infer a more precise return type when the query is
+// a tagname.
 export const query =
   (selector: string, cache?: boolean) =>
   <C extends ReactiveElement, V extends Element | null>(

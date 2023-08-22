@@ -57,6 +57,8 @@ export interface QueryAssignedElementsOptions
  *
  * @category Decorator
  */
+// TODO(justinfagnani): infer a more precise return type when the query is
+// a tagname.
 export const queryAssignedElements =
   (options?: QueryAssignedElementsOptions) =>
   <C extends ReactiveElement, V extends ReadonlyArray<Element>>(
@@ -70,12 +72,12 @@ export const queryAssignedElements =
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
         const elements = slotEl?.assignedElements(options) ?? [];
-        if (selector) {
-          // @ts-expect-error: argh!
-          return elements.filter((node) => node.matches(selector));
+        if (selector !== undefined) {
+          return elements.filter((node) =>
+            node.matches(selector)
+          ) as unknown as V;
         }
-        // @ts-expect-error: argh!
-        return elements;
+        return elements as unknown as V;
       },
     };
   };

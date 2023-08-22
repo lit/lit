@@ -290,52 +290,44 @@ suite('@property', () => {
   // This test isn't valid. You can not override a field that's initialized
   // with an accessor that uses private storage, because the base class's
   // initializer will run before the subclass's private storage is setup.
-  // test.only('property options via decorator do not modify superclass', async () => {
-  //   class E extends ReactiveElement {
-  //     static override get properties() {
-  //       return {foo: {type: Number, reflect: true}};
-  //     }
+  test('property options via decorator do not modify superclass', async () => {
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {foo: {type: Number, reflect: true}};
+      }
+      // @ts-expect-error 'accessor' modifier cannot be used with 'declare' modifier.
+      declare accessor foo: number;
+    }
+    const eTagName = generateElementName();
+    console.log("E's tag name", eTagName);
+    customElements.define(eTagName, E);
+    // Note, this forces `E` to finalize
+    const el1 = new E();
 
-  //     // accessor foo: number;
+    class F extends E {
+      @property({type: Number})
+      override accessor foo: number = 2;
+    }
 
-  //     constructor() {
-  //       super();
-  //       // Avoiding class fields for Babel compat.
-  //       // (this as any).foo = 1;
-  //     }
-  //   }
-  //   const eTagName = generateElementName();
-  //   console.log('E\'s tag name', eTagName);
-  //   customElements.define(eTagName, E);
-  //   // Note, this forces `E` to finalize
-  //   const el1 = new E();
+    const fTagName = generateElementName();
+    console.log("F's tag name", fTagName);
+    customElements.define(fTagName, F);
 
-  //   class F extends E {
-  //     @property({type: Number})
-  //     accessor foo = 2;
-
-  //     constructor() {
-  //       console.log('F constructor');
-  //       super();
-  //     }
-  //   }
-
-  //   const fTagName = generateElementName();
-  //   console.log('F\'s tag name', fTagName);
-  //   customElements.define(fTagName, F);
-
-  //   const el2 = new E();
-  //   const el3 = new F();
-  //   container.appendChild(el1);
-  //   container.appendChild(el2);
-  //   container.appendChild(el3);
-  //   await el1.updateComplete;
-  //   await el2.updateComplete;
-  //   await el3.updateComplete;
-  //   assert.isTrue(el1.hasAttribute('foo'));
-  //   assert.isTrue(el2.hasAttribute('foo'));
-  //   assert.isFalse(el3.hasAttribute('foo'));
-  // });
+    const el2 = new E();
+    const el3 = new F();
+    container.appendChild(el1);
+    container.appendChild(el2);
+    container.appendChild(el3);
+    el1.foo = 1;
+    el2.foo = 2;
+    el3.foo = 3;
+    await el1.updateComplete;
+    await el2.updateComplete;
+    await el3.updateComplete;
+    assert.equal(el1.getAttribute('foo'), '1');
+    assert.equal(el2.getAttribute('foo'), '2');
+    assert.isFalse(el3.hasAttribute('foo'));
+  });
 
   test('can mix properties superclass with decorator on subclass', async () => {
     class E extends ReactiveElement {
@@ -411,136 +403,4 @@ suite('@property', () => {
     await el.updateComplete;
     assert.isTrue(changedProperties!.has('foo'));
   });
-
-  // We can not support custom property descriptors anymore. This use case
-  // will need to be handled by custom decorators that handle new property
-  // options directly.
-  // test('can customize property options', async () => {
-  //   interface MyPropertyDeclaration<TypeHint = unknown>
-  //     extends PropertyDeclaration {
-  //     validator?: (value: any) => TypeHint;
-  //     observer?: (oldValue: TypeHint) => void;
-  //   }
-
-  //   interface MyPropertyDeclarations {
-  //     readonly [key: string]: PropertyDeclaration | MyPropertyDeclaration;
-  //   }
-
-  //   const myProperty = (options: MyPropertyDeclaration) => property(options);
-
-  //   class E extends ReactiveElement {
-  //     static override getPropertyDescriptor(
-  //       name: PropertyKey,
-  //       key: string | symbol,
-  //       options: MyPropertyDeclaration
-  //     ) {
-  //       const defaultDescriptor = super.getPropertyDescriptor(
-  //         name,
-  //         key,
-  //         options
-  //       )!;
-  //       return {
-  //         get: defaultDescriptor.get,
-  //         set(this: E, value: unknown) {
-  //           const oldValue = (this as unknown as {[key: string]: unknown})[
-  //             name as string
-  //           ];
-  //           if (options.validator) {
-  //             value = options.validator(value);
-  //           }
-  //           (this as unknown as {[key: string]: unknown})[key as string] =
-  //             value;
-  //           (this as unknown as ReactiveElement).requestUpdate(name, oldValue);
-  //         },
-
-  //         configurable: defaultDescriptor.configurable,
-  //         enumerable: defaultDescriptor.enumerable,
-  //       };
-  //     }
-
-  //     override updated(changedProperties: PropertyValues) {
-  //       super.updated(changedProperties);
-  //       changedProperties.forEach((value: unknown, key: PropertyKey) => {
-  //         const options = (
-  //           this.constructor as typeof ReactiveElement
-  //         ).getPropertyOptions(key) as MyPropertyDeclaration;
-  //         const observer = options.observer;
-  //         if (typeof observer === 'function') {
-  //           observer.call(this, value);
-  //         }
-  //       });
-  //     }
-
-  //     // provide custom decorator expecting extended type
-  //     @myProperty({
-  //       type: Number,
-  //       validator: (value: number) => Math.min(10, Math.max(value, 0)),
-  //     })
-  //     accessor foo = 5;
-
-  //     @property({})
-  //     accessor bar = 'bar';
-
-  //     _observedZot?: any;
-
-  //     _observedZot2?: any;
-
-  //     // use regular decorator and cast to type
-  //     @property({
-  //       observer: function (this: E, oldValue: string) {
-  //         this._observedZot = {value: this.zot, oldValue};
-  //       },
-  //     } as PropertyDeclaration)
-  //     accessor zot = '';
-
-  //     declare zot2: string;
-  //     declare foo2: number;
-
-  //     constructor() {
-  //       super();
-  //       // Avoiding class fields for Babel compat.
-  //       this.zot2 = '';
-  //       this.foo2 = 5;
-  //     }
-
-  //     // custom typed properties
-  //     static override get properties(): MyPropertyDeclarations {
-  //       return {
-  //         // object cast as type
-  //         zot2: {
-  //           observer: function (this: E, oldValue: string) {
-  //             this._observedZot2 = {value: this.zot2, oldValue};
-  //           },
-  //         } as PropertyDeclaration,
-  //         // object satisfying defined custom type.
-  //         foo2: {
-  //           type: Number,
-  //           validator: (value: number) => Math.min(10, Math.max(value, 0)),
-  //         },
-  //       };
-  //     }
-  //   }
-  //   customElements.define(generateElementName(), E);
-
-  //   const el = new E();
-  //   container.appendChild(el);
-  //   await el.updateComplete;
-  //   el.foo = 20;
-  //   el.foo2 = 20;
-  //   assert.equal(el.foo, 10);
-  //   assert.equal(el.foo2, 10);
-  //   assert.deepEqual(el._observedZot, {value: '', oldValue: undefined});
-  //   assert.deepEqual(el._observedZot2, {value: '', oldValue: undefined});
-  //   el.foo = -5;
-  //   el.foo2 = -5;
-  //   assert.equal(el.foo, 0);
-  //   assert.equal(el.foo2, 0);
-  //   el.bar = 'bar2';
-  //   assert.equal(el.bar, 'bar2');
-  //   el.zot = 'zot';
-  //   el.zot2 = 'zot';
-  //   await el.updateComplete;
-  //   assert.deepEqual(el._observedZot, {value: 'zot', oldValue: ''});
-  //   assert.deepEqual(el._observedZot2, {value: 'zot', oldValue: ''});
-  // });
 });

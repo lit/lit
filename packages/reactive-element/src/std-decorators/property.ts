@@ -55,9 +55,9 @@ export type PropertyDecorator = {
   ): (this: C, value: V) => void;
 };
 
-// TODO (justinfagnani): export from ReactiveElement?
-// It actually makes sense to have this default defined with the decorator, so
-// that different decirators could have different defaults.
+// This is duplicated from a similar variable in reactive-element.ts, but
+// actually makes sense to have this default defined with the decorator, so
+// that different decorators could have different defaults.
 const defaultPropertyDeclaration: PropertyDeclaration = {
   attribute: true,
   type: String,
@@ -124,17 +124,8 @@ export const property = (
         },
       };
     } else if (kind === 'setter') {
-      // TODO: legacy decorators do not automatically call requestUpdate() like
-      // this, because it was difficult to wrap the user-written accessors.
-      // NOTE: Because we need to wrap the setter, and we can't modify the class
-      // directly in a standard decorator, we can only decorate setters, not
-      // getters. This is change from our legacy decorators.
-      // const {name} = context;
-      // return function (this: C, value: V) {
-      //   const oldValue = this[name as keyof C];
-      //   (target as (value: V) => void).call(this, value);
-      //   this.requestUpdate(name, oldValue, options);
-      // };
+      // We do not wrap the author's setter. They are expected to call
+      // requestUpdate themselves, and will possibly do so conditionally.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return undefined as any;
     }

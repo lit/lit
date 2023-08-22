@@ -41,6 +41,8 @@ let fragment: DocumentFragment;
  * ```
  * @category Decorator
  */
+// TODO(justinfagnani): infer a more precise return type when the query is
+// a tagname.
 export const queryAll =
   <S extends string>(selector: S) =>
   <C extends ReactiveElement, V extends NodeList>(
