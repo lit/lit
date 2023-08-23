@@ -33,7 +33,7 @@ import {LitElement} from 'lit';
  * @cssProperty [--default-with-description=#324fff] Description for --default-with-description
  * with wraparound
  * @cssProperty [--default-with-description-dash=#324fff] - Description for --default-with-description-dash
- * @cssProperty {<color>} syntax-no-description
+ * @cssProperty {<color>} --syntax-no-description
  * @cssProp --short-no-description
  * @cssProp --short-with-description Description for --short-with-description
  * with wraparound
@@ -52,10 +52,10 @@ import {LitElement} from 'lit';
  * with wraparound
  * @cssprop --lower-short-with-description-dash - Description for --lower-short-with-description-dash
  *
- * @cssProp {<color>} --has-syntax
- * @cssProp {<color>} --has-syntax-with-description Description for --has-syntax-with-description
+ * @cssProp {<color>} --syntax-short-no-description
+ * @cssProp {<color>} --syntax-short-with-description Description for --syntax-short-with-description
  * with wraparound
- * @cssProp {<color>} --has-syntax-with-description-dash - Description for --has-syntax-with-description-dash
+ * @cssProp {<color>} --syntax-short-with-description-dash - Description for --syntax-short-with-description-dash
  */
 export class ElementA extends LitElement {
   /**

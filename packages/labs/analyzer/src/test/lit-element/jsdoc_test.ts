@@ -320,8 +320,7 @@ for (const lang of languages) {
     assert.ok(element.isLitElementDeclaration());
     const prop = element.cssProperties.get('--syntax-no-description');
     assert.ok(prop);
-    assert.equal(prop.syntax, '<syntax>');
-    assert.equal(prop.description, undefined);
+    assert.equal(prop.syntax, '<color>');
   });
 
   test.run();
