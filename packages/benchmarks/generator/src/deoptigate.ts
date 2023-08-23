@@ -11,7 +11,7 @@ import deoptLogToJson from 'deoptigate/deoptigate.log.js';
 const {logToJSON} = deoptLogToJson;
 import createPage from 'deoptigate/app/lib/create-page.js';
 import mkdirp from 'mkdirp';
-import {startDevServer as startServer} from '@web/dev-server';
+import {DevServerConfig, startDevServer} from '@web/dev-server';
 import childProcess from 'child_process';
 
 const generate = async (deoptFolder: string) => {
@@ -37,13 +37,13 @@ export const deoptigate = async (
   url: string,
   open = false
 ) => {
-  const config = {
+  const config: DevServerConfig = {
     port: 9999,
     nodeResolve: true,
     // dedupe: true,
     preserveSymlinks: true,
   };
-  const {server} = await startServer({config});
+  const {server} = await startDevServer({config});
   if (!server) {
     throw new Error(`Server did not start`);
   }
