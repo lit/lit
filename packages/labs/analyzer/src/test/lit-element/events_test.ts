@@ -29,7 +29,7 @@ for (const lang of languages) {
   });
 
   test('Correct number of events found', ({element}) => {
-    assert.equal(element.events.size, 15);
+    assert.equal(element.events.size, 17);
   });
 
   test('Just event name', ({element}) => {

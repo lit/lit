@@ -46,15 +46,19 @@ const normalizeLineEndings = (s: string) => s.replace(/\r/g, '').trim();
 const parseNameTypeDescRE =
   /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:\s+-\s+)?(?<description>[\s\S]*)$/m;
 
+// Regex for parsing type, name, and description from JSDoc comments
+const parseTypeNameDescRE =
+  /^\{(?<type>.*)}\s+(?<name>\S+)(?:\s+-\s+)?(?<description>[\s\S]*)$/m;
+
 // Regex for parsing optional name and description from JSDoc comments, where
 // the dash is required before the description (syntax for `@slot` tag, whose
 // default slot has no name)
 const parseNameDashDescRE =
-  /^(?:\{\s*(?<syntax>[^}]+)\s*})?\s*\[?(?<name>[^{}[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?\s+-\s+(?<description>[\s\S]*)$/;
+  /^(?:\{\s*(?<type>[^}]+)\s*})?\s*\[?(?<name>[^{}[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?\s+-\s+(?<description>[\s\S]*)$/;
 
 // Regex for parsing optional name, default, and description from JSDoc comments
 const parseNameDescRE =
-  /^(?:\{\s*(?<syntax>[^}]+)\s*})?\s*\[?(?<name>[^{}[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?:\s+-\s+)?(?<description>[\s\S]*)$/;
+  /^(?:\{\s*(?<type>[^}]+)\s*})?\s*\[?(?<name>[^{}[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?:\s+-\s+)?(?<description>[\s\S]*)$/;
 
 const getJSDocTagComment = (tag: ts.JSDocTag, analyzer: AnalyzerInterface) => {
   let {comment} = tag;
@@ -94,6 +98,10 @@ const isModuleJSDocTag = (tag: ts.JSDocTag) =>
  * * @fires event-name {Type} description
  * * @fires event-name {Type} - description
  * * @fires event-name {Type}: description
+ * * @fires {Type} event-name
+ * * @fires {Type} event-name description
+ * * @fires {Type} event-name - description
+ * * @fires {Type} event-name: description
  */
 export const parseNamedTypedJSDocInfo = (
   tag: ts.JSDocTag,
@@ -103,7 +111,10 @@ export const parseNamedTypedJSDocInfo = (
   if (comment == undefined) {
     return undefined;
   }
-  const nameTypeDesc = comment.match(parseNameTypeDescRE);
+  const regex = comment.startsWith('{')
+    ? parseTypeNameDescRE
+    : parseNameTypeDescRE;
+  const nameTypeDesc = comment.match(regex);
   if (nameTypeDesc === null) {
     analyzer.addDiagnostic(
       createDiagnostic({
@@ -176,7 +187,7 @@ export const parseNamedJSDocInfo = (
 
     return undefined;
   }
-  const {name, description, defaultValue, syntax} = nameDesc.groups!;
+  const {name, description, defaultValue, type} = nameDesc.groups!;
 
   const info: NamedDescribed | NamedDescribedSyntax = {name};
   if (description?.length > 0) {
@@ -185,8 +196,11 @@ export const parseNamedJSDocInfo = (
   if (defaultValue?.length > 0) {
     info.default = defaultValue;
   }
-  if (syntax?.length > 0) {
-    (info as NamedDescribedSyntax).syntax = syntax;
+  if (
+    tag.tagName.text.toLowerCase().startsWith('cssprop') &&
+    type?.length > 0
+  ) {
+    (info as NamedDescribedSyntax).syntax = type;
   }
   return info;
 };
