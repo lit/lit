@@ -539,6 +539,10 @@ export interface NamedDescribed extends Described {
   default?: string;
 }
 
+export interface NamedDescribedSyntax extends NamedDescribed {
+  syntax?: string;
+}
+
 export interface TypedNamedDescribed extends NamedDescribed {
   type?: string;
 }
@@ -551,7 +555,7 @@ interface CustomElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   events: Map<string, Event>;
   slots: Map<string, NamedDescribed>;
-  cssProperties: Map<string, NamedDescribed>;
+  cssProperties: Map<string, NamedDescribedSyntax>;
   cssParts: Map<string, NamedDescribed>;
 }
 
@@ -572,7 +576,7 @@ export class CustomElementDeclaration extends ClassDeclaration {
   readonly tagname: string | undefined;
   readonly events: Map<string, Event>;
   readonly slots: Map<string, NamedDescribed>;
-  readonly cssProperties: Map<string, NamedDescribed>;
+  readonly cssProperties: Map<string, NamedDescribedSyntax>;
   readonly cssParts: Map<string, NamedDescribed>;
 
   constructor(init: CustomElementDeclarationInit) {
