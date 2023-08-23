@@ -141,12 +141,13 @@ export const getJSDocData = (
           addNamedJSDocInfoToMap(slots, tag, analyzer);
           break;
         case 'cssProp':
-          addNamedJSDocInfoToMap(cssProperties, tag, analyzer);
-          break;
+        case 'cssprop':
         case 'cssProperty':
+        case 'cssproperty':
           addNamedJSDocInfoToMap(cssProperties, tag, analyzer);
           break;
         case 'cssPart':
+        case 'csspart':
           addNamedJSDocInfoToMap(cssParts, tag, analyzer);
           break;
       }
