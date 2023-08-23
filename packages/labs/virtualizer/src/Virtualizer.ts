@@ -435,6 +435,18 @@ export class Virtualizer {
       // If we don't have a constructor yet, load the default
       DefaultLayoutConstructor = Ctor = (await import('./layouts/flow.js'))
         .FlowLayout as unknown as LayoutConstructor;
+    } else {
+      // If we don't have to dynamically import the default layout,
+      // we wait an animation frame to make the timing consistent in
+      // both cases. This is for ease of testing; it means that a
+      // layoutComplete promise requested immediately after a virtualizer
+      // is rendered will always resolve after the initial layout pass.
+      // Without this delay, the first layout pass can complete before
+      // a layoutComplete promise can be requested. It feels slightly
+      // bad to insert this delay strictly for testing purposes, but
+      // the difference in real performance should be negligible and
+      // the tradeoff seems worthwhile.
+      await new Promise((resolve) => requestAnimationFrame(resolve));
     }
 
     this._layout = new Ctor(
@@ -799,6 +811,14 @@ export class Virtualizer {
    * lastVisible.
    */
   private _notifyRange() {
+    // If we're here, it means our range has changed. If it has changed
+    // such that no children will be rendered, we should go ahead and
+    // schedule resolution of the layoutComplete promise now, since the
+    // ResizeObserver callback we use for this purpose in the case where
+    // children *are* rendered won't execute.
+    if (this._first === -1 || this._last === -1) {
+      this._scheduleLayoutComplete();
+    }
     this._hostElement!.dispatchEvent(
       new RangeChangedEvent({first: this._first, last: this._last})
     );

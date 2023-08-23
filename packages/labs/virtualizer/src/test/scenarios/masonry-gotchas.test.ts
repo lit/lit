@@ -57,6 +57,7 @@ describe("Size virtualizer properly even if last item placed doesn't extend the 
       `
     );
     const virtualizer = el.shadowRoot!.querySelector('lit-virtualizer')!;
+    await virtualizer.layoutComplete;
     const virtualizerHeight = virtualizer.getBoundingClientRect().height;
     const firstChildHeight =
       virtualizer.children[0].getBoundingClientRect().height;
@@ -75,6 +76,7 @@ describe("Calculate range properly even if last item placed doesn't extend the f
         `
     );
     const virtualizer = el.shadowRoot!.querySelector('lit-virtualizer')!;
+    await virtualizer.layoutComplete;
     expect(virtualizer.children.length).to.equal(2);
   });
 });
