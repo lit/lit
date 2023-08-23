@@ -11,8 +11,7 @@ import deoptLogToJson from 'deoptigate/deoptigate.log.js';
 const {logToJSON} = deoptLogToJson;
 import createPage from 'deoptigate/app/lib/create-page.js';
 import mkdirp from 'mkdirp';
-import esDevServer from 'es-dev-server';
-const {createConfig, startServer} = esDevServer;
+import {DevServerConfig, startDevServer} from '@web/dev-server';
 import childProcess from 'child_process';
 
 const generate = async (deoptFolder: string) => {
@@ -38,13 +37,16 @@ export const deoptigate = async (
   url: string,
   open = false
 ) => {
-  const config = createConfig({
+  const config: DevServerConfig = {
     port: 9999,
     nodeResolve: true,
     // dedupe: true,
     preserveSymlinks: true,
-  });
-  const {server} = await startServer(config);
+  };
+  const {server} = await startDevServer({config});
+  if (!server) {
+    throw new Error(`Server did not start`);
+  }
   const deoptFolder = path.join(
     process.cwd(),
     outputFolder,
@@ -65,7 +67,7 @@ export const deoptigate = async (
   console.log(`Profiling ${url}...`);
   const page = await browser.newPage();
   await page.goto(`http://localhost:9999/${url}`);
-  await new Promise((r) => setTimeout(() => r(), 2000));
+  await new Promise<void>((r) => setTimeout(() => r(), 2000));
   browser.close();
   // From https://gist.github.com/billti/a2ee40e60611ec9b37b89c7c00cd39ab
   const logText = fs.readFileSync(logFile, 'utf8');

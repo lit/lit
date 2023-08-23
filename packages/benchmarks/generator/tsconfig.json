@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2019",
-    "module": "es2015",
+    "target": "es2020",
+    "module": "esnext",
     "lib": ["es2020", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
@@ -17,7 +17,8 @@
     "noImplicitThis": true,
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "skipLibCheck": true
   },
   "include": ["src/**/*.ts", "types/deoptigate.d.ts"],
   "exclude": []
