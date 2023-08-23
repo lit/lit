@@ -10,7 +10,8 @@
     "packages/*",
     "packages/labs/*",
     "packages/labs/test-projects/*",
-    "packages/localize/examples/*"
+    "packages/localize/examples/*",
+    "packages/benchmarks/generator"
   ],
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",

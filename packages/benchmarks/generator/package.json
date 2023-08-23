@@ -18,14 +18,6 @@
     "serve:open": "web-dev-server --node-resolve --preserve-symlinks --open generated/index.html"
   },
   "dependencies": {
-    "@types/command-line-args": "^5.0.0",
-    "@types/command-line-usage": "^5.0.1",
-    "@types/js-combinatorics": "^0.5.32",
-    "@types/mkdirp": "^1.0.1",
-    "@types/puppeteer": "^3.0.2",
-    "@types/react": "^16.9.36",
-    "@types/react-dom": "^16.9.8",
-    "@types/rimraf": "^3.0.0",
     "@web/dev-server": "^0.3.0",
     "command-line-args": "^5.1.1",
     "command-line-usage": "^6.1.0",
@@ -39,6 +31,14 @@
     "table": "^5.4.6"
   },
   "devDependencies": {
+    "@types/command-line-args": "^5.0.0",
+    "@types/command-line-usage": "^5.0.1",
+    "@types/js-combinatorics": "^0.5.32",
+    "@types/mkdirp": "^1.0.1",
+    "@types/puppeteer": "^3.0.2",
+    "@types/react": "^16.9.36",
+    "@types/react-dom": "^16.9.8",
+    "@types/rimraf": "^3.0.0",
     "puppeteer": "^15.4.0",
     "tachometer": "^0.7.0",
     "typescript": "~4.7.4"
