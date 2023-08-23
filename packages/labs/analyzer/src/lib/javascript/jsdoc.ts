@@ -111,9 +111,8 @@ export const parseNamedTypedJSDocInfo = (
   if (comment == undefined) {
     return undefined;
   }
-  const regex = comment.startsWith('{')
-    ? parseTypeNameDescRE
-    : parseNameTypeDescRE;
+  const regex =
+    comment.charAt(0) === '{' ? parseTypeNameDescRE : parseNameTypeDescRE;
   const nameTypeDesc = comment.match(regex);
   if (nameTypeDesc === null) {
     analyzer.addDiagnostic(
