@@ -47,7 +47,7 @@ const parseNameTypeDescRE =
 
 // Regex for parsing type, name, and description from JSDoc comments
 const parseTypeNameDescRE =
-  /^\{(?<type>[^}]+)\}\s+\[?(?<name>[^{}[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?:\s+-\s+)?(?<description>[\s\S]*)$/m;
+  /^\{(?<type>.+)\}\s+\[?(?<name>[^{}[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?:\s+-\s+)?(?<description>[\s\S]*)$/m;
 
 const getJSDocTagComment = (tag: ts.JSDocTag, analyzer: AnalyzerInterface) => {
   let {comment} = tag;
