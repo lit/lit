@@ -33,6 +33,7 @@ import {LitElement} from 'lit';
  * @cssProperty [--default-with-description=#324fff] Description for --default-with-description
  * with wraparound
  * @cssProperty [--default-with-description-dash=#324fff] - Description for --default-with-description-dash
+ * @cssProperty {<color>} syntax-no-description
  * @cssProp --short-no-description
  * @cssProp --short-with-description Description for --short-with-description
  * with wraparound

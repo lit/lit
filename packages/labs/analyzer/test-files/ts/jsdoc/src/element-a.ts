@@ -15,10 +15,17 @@ import {customElement} from 'lit/decorators.js';
  * @slot with-description Description for with-description
  * with wraparound
  * @slot with-description-dash - Description for with-description-dash
+ *
  * @cssPart no-description
  * @cssPart with-description Description for :part(with-description)
  * with wraparound
  * @cssPart with-description-dash - Description for :part(with-description-dash)
+ *
+ * @csspart lower-no-description
+ * @csspart lower-with-description Description for :part(with-description)
+ * with wraparound
+ * @csspart lower-with-description-dash - Description for :part(with-description-dash)
+ *
  * @cssProperty --no-description
  * @cssProperty --with-description Description for --with-description
  * with wraparound
@@ -27,15 +34,12 @@ import {customElement} from 'lit/decorators.js';
  * @cssProperty [--default-with-description=#324fff] Description for --default-with-description
  * with wraparound
  * @cssProperty [--default-with-description-dash=#324fff] - Description for --default-with-description-dash
+ * @cssProperty {<color>} syntax-no-description
  * @cssProp --short-no-description
  * @cssProp --short-with-description Description for --short-with-description
  * with wraparound
  * @cssProp --short-with-description-dash - Description for --short-with-description-dash
  *
- * @csspart lower-no-description
- * @csspart lower-with-description Description for :part(with-description)
- * with wraparound
- * @csspart lower-with-description-dash - Description for :part(with-description-dash)
  * @cssproperty --lower-no-description
  * @cssproperty --lower-with-description Description for --with-description
  * with wraparound

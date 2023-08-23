@@ -116,7 +116,7 @@ for (const lang of languages) {
   test('cssProperties - Correct number found', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
-    assert.equal(element.cssProperties.size, 24);
+    assert.equal(element.cssProperties.size, 25);
   });
 
   test('cssProperties - no-description', ({getModule}) => {
@@ -313,6 +313,15 @@ for (const lang of languages) {
     assert.equal(method.description, `Method 1 description`);
     assert.equal(method.parameters?.length, 0);
     assert.equal(method.return?.type?.text, 'void');
+  });
+
+  test('cssProperties - syntax-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--syntax-no-description');
+    assert.ok(prop);
+    assert.equal(prop.syntax, '<syntax>');
+    assert.equal(prop.description, undefined);
   });
 
   test.run();
