@@ -18,6 +18,7 @@ import {
   DeprecatableDescribed,
   AnalyzerInterface,
   NamedDescribed,
+  NamedDescribedSyntax,
 } from '../model.js';
 
 export type TypeScript = typeof ts;
@@ -49,11 +50,11 @@ const parseNameTypeDescRE =
 // the dash is required before the description (syntax for `@slot` tag, whose
 // default slot has no name)
 const parseNameDashDescRE =
-  /^\[?(?<name>[^[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?\s+-\s+(?<description>[\s\S]*)$/;
+  /^(?:\{\s*(?<syntax>[^}]+)\s*})?\s*\[?(?<name>[^{}[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?\s+-\s+(?<description>[\s\S]*)$/;
 
 // Regex for parsing optional name, default, and description from JSDoc comments
 const parseNameDescRE =
-  /^\[?(?<name>[^[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?:\s+-\s+)?(?<description>[\s\S]*)$/;
+  /^(?:\{\s*(?<syntax>[^}]+)\s*})?\s*\[?(?<name>[^{}[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?:\s+-\s+)?(?<description>[\s\S]*)$/;
 
 const getJSDocTagComment = (tag: ts.JSDocTag, analyzer: AnalyzerInterface) => {
   let {comment} = tag;
@@ -151,31 +152,41 @@ function makeDashParseDiagnostic(
  * * @cssProp [--name=default] description
  * * @cssProp [--name=default] - description
  * * @cssProp [--name=default]: description
+ * * @cssprop {<color>} [--name=default]
+ * * @cssprop {<color>} [--name=default] description
+ * * @cssprop {<color>} [--name=default] - description
+ * * @cssprop {<color>} [--name=default]: description
  */
 export const parseNamedJSDocInfo = (
   tag: ts.JSDocTag,
   analyzer: AnalyzerInterface,
   requireDash = false
-): NamedDescribed | undefined => {
+): NamedDescribed | NamedDescribedSyntax | undefined => {
   const comment = getJSDocTagComment(tag, analyzer);
   if (comment == undefined) {
     return undefined;
   }
+
   const regex = requireDash ? parseNameDashDescRE : parseNameDescRE;
   const nameDesc = comment.match(regex);
   if (nameDesc === null) {
     analyzer.addDiagnostic(
       makeDashParseDiagnostic(analyzer.typescript, tag, requireDash)
     );
+
     return undefined;
   }
-  const {name, description, defaultValue} = nameDesc.groups!;
-  const info: NamedDescribed = {name};
+  const {name, description, defaultValue, syntax} = nameDesc.groups!;
+
+  const info: NamedDescribed | NamedDescribedSyntax = {name};
   if (description?.length > 0) {
     info.description = normalizeLineEndings(description);
   }
   if (defaultValue?.length > 0) {
     info.default = defaultValue;
+  }
+  if (syntax?.length > 0) {
+    (info as NamedDescribedSyntax).syntax = syntax;
   }
   return info;
 };
