@@ -14,10 +14,17 @@ import {LitElement} from 'lit';
  * @slot with-description Description for with-description
  * with wraparound
  * @slot with-description-dash - Description for with-description-dash
+ *
  * @cssPart no-description
  * @cssPart with-description Description for :part(with-description)
  * with wraparound
  * @cssPart with-description-dash - Description for :part(with-description-dash)
+ *
+ * @csspart lower-no-description
+ * @csspart lower-with-description Description for :part(with-description)
+ * with wraparound
+ * @csspart lower-with-description-dash - Description for :part(with-description-dash)
+ *
  * @cssProperty --no-description
  * @cssProperty --with-description Description for --with-description
  * with wraparound
@@ -31,10 +38,6 @@ import {LitElement} from 'lit';
  * with wraparound
  * @cssProp --short-with-description-dash - Description for --short-with-description-dash
  *
- * @csspart lower-no-description
- * @csspart lower-with-description Description for :part(with-description)
- * with wraparound
- * @csspart lower-with-description-dash - Description for :part(with-description-dash)
  * @cssproperty --lower-no-description
  * @cssproperty --lower-with-description Description for --with-description
  * with wraparound
