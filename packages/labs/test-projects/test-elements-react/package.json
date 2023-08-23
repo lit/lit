@@ -23,8 +23,8 @@
       "command": "tsc --build --pretty",
       "clean": "if-file-deleted",
       "dependencies": [
-        "../..:build",
-        "../../../test-projects/test-element-a:build"
+        "../../react:build",
+        "../test-element-a:build"
       ],
       "files": [
         "src/**/*"

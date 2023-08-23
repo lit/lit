@@ -11,7 +11,6 @@
     "packages/labs/*",
     "packages/labs/test-projects/*",
     "packages/localize/examples/*",
-    "packages/labs/react/examples/*",
     "examples/*"
   ],
   "scripts": {
@@ -83,7 +82,7 @@
         "./packages/localize/examples/runtime-ts:build",
         "./packages/localize/examples/transform-js:build",
         "./packages/localize/examples/transform-ts:build",
-        "./packages/labs/react/examples/test-elements-react:build"
+        "./packages/labs/test-projects/test-elements-react:build"
       ]
     },
     "build:ts": {
