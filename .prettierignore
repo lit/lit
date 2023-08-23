@@ -365,19 +365,19 @@ packages/labs/vue-utils/node_modules/
 packages/labs/vue-utils/index.*
 packages/labs/vue-utils/wrapper-utils.*
 
-packages/lit-starter-js/node_modules/*
-packages/lit-starter-js/docs/*
-packages/lit-starter-js/docs-src/*
-packages/lit-starter-js/**/rollup-config.js
-packages/lit-starter-js/**/custom-elements.json
-packages/lit-starter-js/**/web-dev-server.config.js
-
 packages/lit-starter-ts/node_modules/*
 packages/lit-starter-ts/docs/*
 packages/lit-starter-ts/docs-src/*
 packages/lit-starter-ts/**/rollup-config.js
 packages/lit-starter-ts/**/custom-elements.json
 packages/lit-starter-ts/**/web-dev-server.config.js
+
+packages/lit-starter-js/node_modules/*
+packages/lit-starter-js/docs/*
+packages/lit-starter-js/docs-src/*
+packages/lit-starter-js/**/rollup-config.js
+packages/lit-starter-js/**/custom-elements.json
+packages/lit-starter-js/**/web-dev-server.config.js
 
 package-lock.json
 packages/localize/examples/
