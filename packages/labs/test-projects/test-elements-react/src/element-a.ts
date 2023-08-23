@@ -9,6 +9,13 @@ import {createComponent, EventName} from '@lit-labs/react';
 
 import {ElementA as ElementAElement} from '@lit-internal/test-element-a/element-a.js';
 
+/**
+ * React component that wraps <element-a>
+ * See https://github.com/lit/lit/blob/main/packages/labs/test-projects/test-element-a/src/element-a.ts
+ *
+ * @param props.foo foo string
+ * @param props.onAChanged handler for `a-changed` event
+ */
 export const ElementA = createComponent({
   react: React,
   tagName: 'element-a',

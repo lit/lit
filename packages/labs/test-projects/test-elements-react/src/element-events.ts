@@ -11,10 +11,20 @@ import {ElementEvents as ElementEventsElement} from '@lit-internal/test-element-
 import {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
 import {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
 import {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
-export type {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
-export type {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
-export type {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
+export type {MyDetail, EventSubclass, SpecialEvent};
 
+/**
+ * React component that wraps <element-events>
+ * See https://github.com/lit/lit/blob/main/packages/labs/test-projects/test-element-a/src/element-events.ts
+ *
+ * @param props.aStr a string
+ * @param props.aNumber a number
+ * @param props.onStringCustomEvent handler for `string-custom-event` event
+ * @param props.onNumberCustomEvent handler for `number-custom-event` event
+ * @param props.onMyDetailCustomEvent handler for `my-detail-custom-event` event
+ * @param props.onEventSubclass handler for `event-subclass` event
+ * @param props.onSpecialEvent handler for `special-event` event
+ */
 export const ElementEvents = createComponent({
   react: React,
   tagName: 'element-events',
