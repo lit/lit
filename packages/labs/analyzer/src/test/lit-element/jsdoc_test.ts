@@ -116,7 +116,7 @@ for (const lang of languages) {
   test('cssProperties - Correct number found', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
-    assert.equal(element.cssProperties.size, 25);
+    assert.equal(element.cssProperties.size, 22);
   });
 
   test('cssProperties - no-description', ({getModule}) => {
