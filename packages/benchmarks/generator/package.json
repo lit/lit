@@ -14,8 +14,8 @@
   "scripts": {
     "build": "tsc",
     "build:watch": "tsc --watch",
-    "serve": "web-dev-server --node-resolve --dedupe --preserve-symlinks",
-    "serve:open": "web-dev-server --node-resolve --dedupe --preserve-symlinks --open generated/index.html"
+    "serve": "web-dev-server --node-resolve --preserve-symlinks",
+    "serve:open": "web-dev-server --node-resolve --preserve-symlinks --open generated/index.html"
   },
   "dependencies": {
     "@types/command-line-args": "^5.0.0",
