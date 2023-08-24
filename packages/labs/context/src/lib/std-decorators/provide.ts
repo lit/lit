@@ -70,7 +70,7 @@ export function provide<Expected>({
         )
       );
     });
-    return {
+    const result: ClassAccessorDecoratorResult<This, Providing> = {
       get(this: This) {
         return target.get.call(this);
       },
@@ -78,7 +78,12 @@ export function provide<Expected>({
         controllerMap.get(this)?.setValue(value);
         return target.set.call(this, value);
       },
-    } as unknown as EnforceTypesMatch<
+      init(this: This, value: Providing) {
+        controllerMap.get(this)?.setValue(value);
+        return value;
+      },
+    };
+    return result as unknown as EnforceTypesMatch<
       Expected,
       Providing,
       ClassAccessorDecoratorResult<This, Providing>

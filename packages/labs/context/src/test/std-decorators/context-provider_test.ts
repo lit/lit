@@ -5,7 +5,7 @@
  */
 
 import {LitElement, html, TemplateResult} from 'lit';
-import {property} from '@lit/reactive-element/std-decorators.js';
+import {property, customElement} from '@lit/reactive-element/std-decorators.js';
 
 import {createContext} from '@lit-labs/context';
 import {consume, provide} from '@lit-labs/context/std-decorators.js';
@@ -100,8 +100,8 @@ suite('@consume', () => {
   });
 
   test('consuming and providing with optional fields', async () => {
-    assert.strictEqual(consumer.optionalValue, undefined);
-    assert.strictEqual(consumer.consumeOptionalWithDefault, undefined);
+    assert.strictEqual(consumer.optionalValue, -1);
+    assert.strictEqual(consumer.consumeOptionalWithDefault, -1);
     provider.optionalValue = 500;
     assert.strictEqual(consumer.optionalValue, 500);
     assert.strictEqual(consumer.consumeOptionalWithDefault, 500);
@@ -157,6 +157,48 @@ suite('@consume: multiple instances', () => {
       assert.strictEqual(consumer.value, 500 + i)
     );
   });
+});
+
+test('consuming without an accessor', async () => {
+  const context = createContext<string>(Symbol());
+
+  @customElement('no-accessor-consumer')
+  class Consumer extends LitElement {
+    @consume({context, subscribe: true})
+    public noAccessorValue = 'initial in consumer';
+
+    protected render(): TemplateResult {
+      return html`${this.noAccessorValue}`;
+    }
+  }
+
+  @customElement('no-accessor-provider')
+  class Provider extends LitElement {
+    @provide({context})
+    @property({type: String})
+    public accessor value = 'initial in provider';
+
+    protected render(): TemplateResult {
+      return html`<no-accessor-consumer></no-accessor-consumer>`;
+    }
+  }
+
+  const provider = new Provider();
+  document.body.appendChild(provider);
+  await provider.updateComplete;
+  const consumer = provider.shadowRoot!.querySelector(
+    'no-accessor-consumer'
+  ) as Consumer;
+  assert.strictEqual(consumer.noAccessorValue, 'initial in provider');
+  await consumer.updateComplete;
+  assert.strictEqual(consumer.shadowRoot!.textContent, 'initial in provider');
+
+  provider.value = 'updated';
+  assert.strictEqual(consumer.noAccessorValue, 'updated');
+  // This is the most interesting part. The consumer updates even though
+  // it isn't a reactive property, because @consume called `requestUpdate`.
+  await consumer.updateComplete;
+  assert.strictEqual(consumer.shadowRoot!.textContent, 'updated');
 });
 
 memorySuite('memory leak test', () => {
