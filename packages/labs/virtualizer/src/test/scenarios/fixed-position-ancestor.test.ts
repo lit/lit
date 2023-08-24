@@ -63,6 +63,9 @@ describe('Virtualizer behaves properly when it has a position: fixed ancestor', 
 
     // If virtualizer has properly ignored the zero-width ancestor of our
     // fixed-position scroller, some children will be rendered; otherwise, not.
+    //
+    // In practice, we'll time out if we fail here because the `layoutComplete`
+    // promise will never be fulfilled.
     await virtualizer.layoutComplete;
     expect(virtualizer.textContent).to.contain('Item 0');
   });
@@ -106,13 +109,11 @@ describe('Virtualizer behaves properly when it has a position: fixed ancestor', 
     // If the position: fixed scroller has properly been recognized as
     // a clipping ancestor, then virtualizer will re-render as scrolling
     // occurs; otherwise, not.
+    //
+    // In practice, we'll time out if we fail here because the `layoutComplete`
+    // promise will never be fulfilled.
     scroller.scrollTo(0, scroller.scrollHeight);
-    // We race layoutComplete against a short timeout here because in the case
-    // where the virtualizer doesn't re-render, layoutComplete won't resolve.
-    await Promise.race([
-      virtualizer.layoutComplete,
-      new Promise((resolve) => setTimeout(resolve, 250)),
-    ]);
+    await virtualizer.layoutComplete;
     expect(virtualizer.textContent).to.contain('Item 99');
   });
 });
