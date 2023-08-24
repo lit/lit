@@ -111,6 +111,14 @@ export const getClassMembers = (
     // Ignore non-implementation signatures of overloaded methods by checking
     // for `node.body`.
     if (typescript.isConstructorDeclaration(node) && node.body) {
+      // TODO(bennypowers): We probably want to see if this matches what TypeScript considers a field initialization.
+      // Maybe instead of iterating through the constructor statements, we walk the body looking for any
+      // assignment expression so that we get ones inside of if statements, in parenthesized expressions, etc.
+      //
+      // Also, this doesn't cover destructuring assignment.
+      //
+      // This is ok for now because these are rare ways to "declare" a field,
+      // especially in web components where you shouldn't have constructor parameters.
       node.body.statements.forEach((node) => {
         if (
           typescript.isExpressionStatement(node) &&
@@ -188,9 +196,9 @@ export const getClassMembers = (
           type: getTypeForNode((get ?? set)!, analyzer),
           privacy: getPrivacy(typescript, (get ?? set)!),
           readonly: !!get && !set,
-          // TODO: derive from getter?
-          // default
-          // TODO: reflect, etc?
+          // TODO(bennypowers): derive from getter?
+          // default: ???
+          // TODO(bennypowers): reflect, etc?
         })
       );
     }
