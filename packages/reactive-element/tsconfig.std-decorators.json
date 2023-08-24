@@ -23,10 +23,12 @@
     "noImplicitOverride": true,
     "paths": {
       "@esm-bundle/chai": ["../../local-types/@esm-bundle/chai/index.d.ts"]
-    }
+    },
+    "types": ["mocha"]
   },
   "include": [
     "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
+    "src/env.d.ts",
     "src/std-decorators/**/*.ts",
     "src/test/std-decorators/**/*.ts"
   ],

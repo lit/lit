@@ -105,7 +105,9 @@ const packageJsonTemplate = (
       },
       files: [
         ...litModules.map(({module}) =>
-          module.jsPath.replace(/js$/, '{js,js.map,d.ts,d.ts.map}')
+          module.jsPath
+            .replace(/\\/g, '/')
+            .replace(/js$/, '{js,js.map,d.ts,d.ts.map}')
         ),
       ],
     },
@@ -115,7 +117,9 @@ const packageJsonTemplate = (
 };
 
 const gitIgnoreTemplate = (litModules: ModuleWithLitElementDeclarations[]) => {
-  return litModules.map(({module}) => module.jsPath).join('\n');
+  return litModules
+    .map(({module}) => module.jsPath.replace(/\\/g, '/'))
+    .join('\n');
 };
 
 const tsconfigTemplate = () => {
@@ -171,6 +175,7 @@ const wrapperModuleTemplate = (
   const hasEvents = elements.filter(({events}) => events.size).length > 0;
   const typeImports = getTypeImports(elements);
   const typeExports = getElementTypeExportsFromImports(typeImports);
+  moduleJsPath = moduleJsPath.replace(/\\/g, '/');
   return javascript`
  import * as React from 'react';
  import {createComponent${
@@ -193,11 +198,11 @@ const packageNameToReactPackageName = (pkgName: string) => `${pkgName}-react`;
 
 const wrapperTemplate = ({name, tagname, events}: LitElementDeclaration) => {
   return javascript`
- export const ${name} = createComponent(
-   React,
-   '${tagname}',
-   ${name}Element,
-   {
+ export const ${name} = createComponent({
+   react: React,
+   tagName: '${tagname}',
+   elementClass: ${name}Element,
+   events: {
      ${Array.from(events.values()).map((event: EventModel) => {
        const {name, type} = event;
        return javascript`
@@ -206,6 +211,6 @@ const wrapperTemplate = ({name, tagname, events}: LitElementDeclaration) => {
        }>,`;
      })}
    }
- );
+  });
  `;
 };

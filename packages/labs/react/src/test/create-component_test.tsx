@@ -4,30 +4,40 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {EventName, ReactWebComponent, WebComponentProps} from '@lit-labs/react';
+import type {
+  EventName,
+  ReactWebComponent,
+  WebComponentProps,
+} from '@lit-labs/react';
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
-import 'react/umd/react.development.js';
-import 'react-dom/umd/react-dom.development.js';
+import * as React from 'react';
+// eslint-disable-next-line import/extensions
+import {createRoot, Root} from 'react-dom/client';
+// eslint-disable-next-line import/extensions
+import {act} from 'react-dom/test-utils';
+
 import {createComponent} from '@lit-labs/react';
 import {assert} from '@esm-bundle/chai';
 
 const DEV_MODE = !!ReactiveElement.enableWarning;
-
-// Needed for JSX expressions
-const React = window.React;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).IS_REACT_ACT_ENVIRONMENT = true;
 
 declare global {
   interface HTMLElementTagNameMap {
     [tagName]: BasicElement;
-    'x-foo': XFoo,
+    'x-foo': XFoo;
   }
+}
 
+declare module 'react' {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
   namespace JSX {
     interface IntrinsicElements {
-      "x-foo": WebComponentProps<XFoo>,
+      'x-foo': WebComponentProps<XFoo>;
     }
   }
 }
@@ -63,7 +73,7 @@ class BasicElement extends ReactiveElement {
 
   // override a react reserved property
   @property({type: String})
-  locaName = 'basic-element-x-foo';
+  override localName = 'basic-element';
 
   @property({type: Boolean, reflect: true})
   rbool = false;
@@ -76,11 +86,11 @@ class BasicElement extends ReactiveElement {
   @property({type: Array, reflect: true})
   rarr: unknown[] | null | undefined = null;
 
-  @property({ type: Object })
+  @property({type: Object})
   set customAccessors(customAccessors: Foo) {
     const oldValue = this._customAccessors;
     this._customAccessors = customAccessors;
-    this.requestUpdate("customAccessors", oldValue);
+    this.requestUpdate('customAccessors', oldValue);
   }
   get customAccessors(): Foo {
     return this._customAccessors;
@@ -92,6 +102,7 @@ class BasicElement extends ReactiveElement {
   }
 }
 
+let root: Root;
 let container: HTMLElement;
 let el: HTMLDivElement;
 let wrappedEl: BasicElement;
@@ -101,10 +112,8 @@ const basicElementEvents = {
   onBar: 'bar',
 };
 
-// if some tag, run options
-// otherwise
 const BasicElementComponent = createComponent({
-  react: window.React,
+  react: React,
   elementClass: BasicElement,
   events: basicElementEvents,
   tagName,
@@ -113,14 +122,15 @@ const BasicElementComponent = createComponent({
 const renderReactComponent = async (
   props?: React.ComponentProps<typeof BasicElementComponent>
 ) => {
-  window.ReactDOM.render(
-    <>
-      <div {...(props as React.HTMLAttributes<HTMLDivElement>)}/>,
-      <x-foo {...props}/>
-      <BasicElementComponent {...props}/>,
-    </>,
-    container
-  );
+  act(() => {
+    root.render(
+      <>
+        <div {...(props as React.HTMLAttributes<HTMLDivElement>)} />,
+        <x-foo {...props} />
+        <BasicElementComponent {...props} />,
+      </>
+    );
+  });
 
   el = container.querySelector('div')!;
   wrappedEl = container.querySelector(tagName)! as BasicElement;
@@ -145,9 +155,9 @@ if (DEV_MODE) {
       warnings = [];
     });
 
-    test('warns when react resered properties are used', () => {
+    test('warns when react reserved properties are used', () => {
       createComponent({
-        react: window.React,
+        react: React,
         elementClass: BasicElement,
         events: basicElementEvents,
         tagName,
@@ -157,7 +167,7 @@ if (DEV_MODE) {
       // since we don't warn on overrides of HTMLElement properties
       // that React treats specially.
       assert.equal(warnings.length, 1);
-    })
+    });
   });
 }
 
@@ -165,9 +175,15 @@ suite('createComponent', () => {
   setup(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
+    root = createRoot(container);
   });
 
   teardown(() => {
+    if (root) {
+      act(() => {
+        root.unmount();
+      });
+    }
     if (container && container.parentNode) {
       container.parentNode.removeChild(container);
     }
@@ -179,16 +195,15 @@ suite('createComponent', () => {
   */
   test('renders element without optional event map', async () => {
     const ComponentWithoutEventMap = createComponent({
-      react: window.React,
+      react: React,
       elementClass: BasicElement,
       tagName,
     });
 
     const name = 'Component without event map.';
-    window.ReactDOM.render(
-      <ComponentWithoutEventMap>{name}</ComponentWithoutEventMap>,
-      container
-    );
+    act(() => {
+      root.render(<ComponentWithoutEventMap>{name}</ComponentWithoutEventMap>);
+    });
 
     const elWithoutMap = container.querySelector(tagName)! as BasicElement;
     await elWithoutMap.updateComplete;
@@ -196,28 +211,26 @@ suite('createComponent', () => {
     assert.equal(elWithoutMap.textContent, 'Component without event map.');
   });
 
-  /*
-    The following test is a type-only test.
-  */
-  test('renders element with expected type', async () => {
-    type TypedComponent = ReactWebComponent<BasicElement>;
+  // Type only test to be caught at build time.
+  test.skip('Wrapped component should accept props with correct types', async () => {
+    const TypedBasicElementComponent = {} as ReactWebComponent<BasicElement>;
 
-    let TypedBasicElement!: TypedComponent;
+    <TypedBasicElementComponent str="str" bool={true} num={1} />;
 
-    // If this test fails, we can assume types are broken.
-    // If this test passes, we can assume types are working
-    // because a bool !== 'string'.
-    //
-    // @ts-expect-error
-    <TypedBasicElement bool={"string"}></TypedBasicElement>
+    // @ts-expect-error bool prop only accepts boolean
+    <TypedBasicElementComponent bool={'string'} />;
+  });
+
+  // Type only test to be caught at build time.
+  test.skip('WebComponentProps type allows "ref"', async () => {
+    <x-foo ref={React.createRef()}></x-foo>;
   });
 
   test('works with text children', async () => {
     const name = 'World';
-    window.ReactDOM.render(
-      <BasicElementComponent>Hello {name}</BasicElementComponent>,
-      container
-    );
+    act(() => {
+      root.render(<BasicElementComponent>Hello {name}</BasicElementComponent>);
+    });
 
     const elWithChildren = container.querySelector(tagName)! as BasicElement;
     await elWithChildren.updateComplete;
@@ -229,7 +242,7 @@ suite('createComponent', () => {
     assert.equal(BasicElementComponent.displayName, 'BasicElement');
 
     const NamedComponent = createComponent({
-      react: window.React,
+      react: React,
       elementClass: BasicElement,
       events: basicElementEvents,
       displayName: 'FooBar',
@@ -246,10 +259,10 @@ suite('createComponent', () => {
   });
 
   test('can get ref to element', async () => {
-    const elementRef1 = window.React.createRef<BasicElement>();
+    const elementRef1 = React.createRef<BasicElement>();
     renderReactComponent({ref: elementRef1});
     assert.equal(elementRef1.current, wrappedEl);
-    const elementRef2 = window.React.createRef<BasicElement>();
+    const elementRef2 = React.createRef<BasicElement>();
     renderReactComponent({ref: elementRef2});
     assert.equal(elementRef1.current, null);
     assert.equal(elementRef2.current, wrappedEl);
@@ -262,7 +275,7 @@ suite('createComponent', () => {
     await renderReactComponent({ref: undefined});
 
     const outerHTML = wrappedEl?.outerHTML;
-    const elementRef1 = window.React.createRef<BasicElement>();
+    const elementRef1 = React.createRef<BasicElement>();
     await renderReactComponent({ref: elementRef1});
 
     const elAfterRef = container.querySelector(tagName);
@@ -277,13 +290,37 @@ suite('createComponent', () => {
     const ref2Calls: Array<string | undefined> = [];
     const refCb2 = (e: Element | null) => ref2Calls.push(e?.localName);
     renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName]);
+    assert.deepEqual(ref1Calls, ['div', 'x-foo', tagName]);
     renderReactComponent({ref: refCb2});
-    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName, undefined, undefined, undefined]);
-    assert.deepEqual(ref2Calls, ["div", "x-foo", tagName]);
+    assert.deepEqual(ref1Calls, [
+      'div',
+      'x-foo',
+      tagName,
+      undefined,
+      undefined,
+      undefined,
+    ]);
+    assert.deepEqual(ref2Calls, ['div', 'x-foo', tagName]);
     renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, ["div", "x-foo", tagName, undefined, undefined, undefined, "div", "x-foo", tagName]);
-    assert.deepEqual(ref2Calls, ["div", "x-foo", tagName, undefined, undefined, undefined]);
+    assert.deepEqual(ref1Calls, [
+      'div',
+      'x-foo',
+      tagName,
+      undefined,
+      undefined,
+      undefined,
+      'div',
+      'x-foo',
+      tagName,
+    ]);
+    assert.deepEqual(ref2Calls, [
+      'div',
+      'x-foo',
+      tagName,
+      undefined,
+      undefined,
+      undefined,
+    ]);
   });
 
   test('can set attributes', async () => {
@@ -311,8 +348,8 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('id'), wrappedEl.getAttribute('id'));
     assert.equal(el.id, wrappedEl.id);
 
-    // @ts-expect-error
-    await renderReactComponent({id: null});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({id: null as any});
     assert.equal(el.getAttribute('id'), null);
     assert.equal(el.id, '');
     assert.equal(el.getAttribute('id'), wrappedEl.getAttribute('id'));
@@ -350,8 +387,8 @@ suite('createComponent', () => {
     assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
     assert.equal(el.hidden, wrappedEl.hidden);
 
-    // @ts-expect-error
-    await renderReactComponent({hidden: null});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({hidden: null as any});
     assert.equal(wrappedEl.getAttribute('hidden'), null);
     assert.equal(wrappedEl.hidden, false);
     assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
@@ -380,86 +417,157 @@ suite('createComponent', () => {
     await renderReactComponent({});
     assert.equal(el.getAttribute('draggable'), null);
     assert.equal(el.draggable, false);
-    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(
+      el.getAttribute('draggable'),
+      wrappedEl.getAttribute('draggable')
+    );
     assert.equal(el.draggable, wrappedEl.draggable);
 
     await renderReactComponent({draggable: true});
     assert.equal(el.getAttribute('draggable'), 'true');
     assert.equal(el.draggable, true);
-    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(
+      el.getAttribute('draggable'),
+      wrappedEl.getAttribute('draggable')
+    );
     assert.equal(el.draggable, wrappedEl.draggable);
 
     await renderReactComponent({draggable: false});
     assert.equal(el.getAttribute('draggable'), 'false');
     assert.equal(el.draggable, false);
-    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(
+      el.getAttribute('draggable'),
+      wrappedEl.getAttribute('draggable')
+    );
     assert.equal(el.draggable, wrappedEl.draggable);
 
     await renderReactComponent({draggable: true});
     assert.equal(el.getAttribute('draggable'), 'true');
     assert.equal(el.draggable, true);
-    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(
+      el.getAttribute('draggable'),
+      wrappedEl.getAttribute('draggable')
+    );
     assert.equal(el.draggable, wrappedEl.draggable);
 
-    // @ts-expect-error
-    await renderReactComponent({draggable: null});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({draggable: null as any});
     assert.equal(el.getAttribute('draggable'), null);
     assert.equal(el.draggable, false);
-    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(
+      el.getAttribute('draggable'),
+      wrappedEl.getAttribute('draggable')
+    );
     assert.equal(el.draggable, wrappedEl.draggable);
 
     await renderReactComponent({draggable: true});
     assert.equal(el.getAttribute('draggable'), 'true');
     assert.equal(el.draggable, true);
-    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(
+      el.getAttribute('draggable'),
+      wrappedEl.getAttribute('draggable')
+    );
     assert.equal(el.draggable, wrappedEl.draggable);
 
     await renderReactComponent({draggable: undefined});
     assert.equal(el.getAttribute('draggable'), null);
     assert.equal(el.draggable, false);
-    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(
+      el.getAttribute('draggable'),
+      wrappedEl.getAttribute('draggable')
+    );
     assert.equal(el.draggable, wrappedEl.draggable);
 
     await renderReactComponent({draggable: true});
     assert.equal(el.getAttribute('draggable'), 'true');
     assert.equal(el.draggable, true);
-    assert.equal(el.getAttribute('draggable'), wrappedEl.getAttribute('draggable'));
+    assert.equal(
+      el.getAttribute('draggable'),
+      wrappedEl.getAttribute('draggable')
+    );
     assert.equal(el.draggable, wrappedEl.draggable);
   });
 
   test('sets boolean aria attributes', async () => {
     await renderReactComponent({});
     assert.equal(el.getAttribute('aria-checked'), null);
-    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+    assert.equal(
+      el.getAttribute('aria-checked'),
+      wrappedEl.getAttribute('aria-checked')
+    );
 
     await renderReactComponent({'aria-checked': true});
     assert.equal(el.getAttribute('aria-checked'), 'true');
-    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+    assert.equal(
+      el.getAttribute('aria-checked'),
+      wrappedEl.getAttribute('aria-checked')
+    );
 
     await renderReactComponent({'aria-checked': false});
     assert.equal(el.getAttribute('aria-checked'), 'false');
-    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+    assert.equal(
+      el.getAttribute('aria-checked'),
+      wrappedEl.getAttribute('aria-checked')
+    );
 
     await renderReactComponent({'aria-checked': true});
     assert.equal(el.getAttribute('aria-checked'), 'true');
-    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+    assert.equal(
+      el.getAttribute('aria-checked'),
+      wrappedEl.getAttribute('aria-checked')
+    );
 
-    // @ts-expect-error
-    await renderReactComponent({'aria-checked': null});
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({'aria-checked': null as any});
     assert.equal(el.getAttribute('aria-checked'), null);
-    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+    assert.equal(
+      el.getAttribute('aria-checked'),
+      wrappedEl.getAttribute('aria-checked')
+    );
 
     await renderReactComponent({'aria-checked': true});
     assert.equal(el.getAttribute('aria-checked'), 'true');
-    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+    assert.equal(
+      el.getAttribute('aria-checked'),
+      wrappedEl.getAttribute('aria-checked')
+    );
 
     await renderReactComponent({'aria-checked': undefined});
     assert.equal(el.getAttribute('aria-checked'), null);
-    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+    assert.equal(
+      el.getAttribute('aria-checked'),
+      wrappedEl.getAttribute('aria-checked')
+    );
 
     await renderReactComponent({'aria-checked': true});
     assert.equal(el.getAttribute('aria-checked'), 'true');
-    assert.equal(el.getAttribute('aria-checked'), wrappedEl.getAttribute('aria-checked'));
+    assert.equal(
+      el.getAttribute('aria-checked'),
+      wrappedEl.getAttribute('aria-checked')
+    );
+  });
+
+  test('unsets reflected attributes from property with different specifier on null or undefined prop', async () => {
+    // Our types don't allow `ariaChecked`, only `aria-checked`, but it's
+    // possible for JS users, and the wrapper will set the property on the element
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: true} as any);
+
+    // Firefox does not implement aria properties that reflect to attribute
+    if ('ariaChecked' in HTMLElement) {
+      assert.equal(wrappedEl.hasAttribute('aria-checked'), true);
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: undefined} as any);
+    assert.equal(wrappedEl.hasAttribute('aria-checked'), false);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: true} as any);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    await renderReactComponent({ariaChecked: null} as any);
+    assert.equal(wrappedEl.hasAttribute('aria-checked'), false);
   });
 
   test('can listen to events', async () => {
@@ -531,7 +639,7 @@ suite('createComponent', () => {
   });
 
   test('can set children', async () => {
-    const children = window.React.createElement(
+    const children = React.createElement(
       'div'
       // Note, constructing children like this is rare and the React type expects
       // this to be an HTMLCollection even though that's not the output of
@@ -546,7 +654,7 @@ suite('createComponent', () => {
     await renderReactComponent({
       style: {display: 'block'},
       className: 'foo bar',
-    } as any);
+    });
     assert.equal(wrappedEl.style.display, 'block');
     assert.equal(wrappedEl.getAttribute('class'), 'foo bar');
   });

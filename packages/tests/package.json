@@ -42,7 +42,6 @@
         "../labs/context:build",
         "../labs/motion:build",
         "../labs/observers:build",
-        "../labs/react:build",
         "../labs/router:build",
         "../labs/scoped-registry-mixin:build",
         "../labs/task:build",

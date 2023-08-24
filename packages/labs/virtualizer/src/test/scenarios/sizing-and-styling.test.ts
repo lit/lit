@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {array, ignoreBenignErrors, until} from '../helpers.js';
+import {array, ignoreBenignErrors, pass} from '../helpers.js';
 import {LitElement, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
@@ -78,24 +78,23 @@ describe('Properly sizing virtualizer within host element', () => {
       </div>
     `);
 
-    await until(
-      () =>
-        root.querySelector(
-          'custom-element-containing-lit-virtualizer'
-        ) instanceof CustomElementContainingLitVirtualizer
+    await pass(() =>
+      expect(
+        root.querySelector('custom-element-containing-lit-virtualizer')
+      ).to.be.instanceOf(CustomElementContainingLitVirtualizer)
     );
     const ceclv = root.querySelector(
       'custom-element-containing-lit-virtualizer'
     )!;
-    await until(
-      () =>
-        ceclv.shadowRoot?.querySelector('lit-virtualizer') instanceof
-        LitVirtualizer
+    await pass(() =>
+      expect(
+        ceclv.shadowRoot?.querySelector('lit-virtualizer')
+      ).to.be.instanceOf(LitVirtualizer)
     );
     const litVirtualizer = ceclv.shadowRoot!.querySelector(
       'lit-virtualizer'
     )! as unknown as HTMLElement;
-    await until(() => litVirtualizer.textContent?.includes('[4]'));
+    await pass(() => expect(litVirtualizer.textContent).to.contain('[4]'));
 
     const renderedItems = [...litVirtualizer.querySelectorAll('.item')];
     const rects = renderedItems.map((i) => i.getBoundingClientRect());

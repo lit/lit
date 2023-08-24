@@ -10,6 +10,7 @@ import {
   ignoreBenignErrors,
   isInViewport,
   last,
+  pass,
   until,
 } from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
@@ -58,7 +59,7 @@ describe('VisibilityChanged event', () => {
     const containerEvents: VisibilityChangedEvent[] = [];
     const virtualizerEvents: VisibilityChangedEvent[] = [];
 
-    await until(() => getVisibleItems(virtualizer).length === 4);
+    await pass(() => expect(getVisibleItems(virtualizer).length).to.equal(4));
 
     container.addEventListener('visibilityChanged', (e) => {
       containerEvents.push(e as VisibilityChangedEvent);
@@ -70,7 +71,7 @@ describe('VisibilityChanged event', () => {
 
     first(getVisibleItems(virtualizer)).style.height = '10px';
 
-    await until(() => virtualizerEvents.length === 1);
+    await pass(() => expect(virtualizerEvents.length).to.equal(1));
 
     expect(last(virtualizerEvents).first).to.equal(0);
     expect(last(virtualizerEvents).last).to.equal(4);
@@ -85,7 +86,7 @@ describe('VisibilityChanged event', () => {
     const containerEvents: VisibilityChangedEvent[] = [];
     const virtualizerEvents: VisibilityChangedEvent[] = [];
 
-    await until(() => getVisibleItems(virtualizer).length === 4);
+    await pass(() => expect(getVisibleItems(virtualizer).length).to.equal(4));
 
     container.addEventListener('visibilityChanged', (e) => {
       containerEvents.push(e as VisibilityChangedEvent);
@@ -97,7 +98,7 @@ describe('VisibilityChanged event', () => {
 
     first(getVisibleItems(virtualizer)).style.height = '100px';
 
-    await until(() => virtualizerEvents.length === 1);
+    await pass(() => expect(virtualizerEvents.length).to.equal(1));
 
     expect(last(virtualizerEvents).first).to.equal(0);
     expect(last(virtualizerEvents).last).to.equal(2);
@@ -116,14 +117,16 @@ describe('VisibilityChanged event', () => {
     });
 
     await new Promise(requestAnimationFrame);
+    await pass(() => expect(virtualizerEvents.length).to.be.greaterThan(0));
+
     expect(last(virtualizerEvents).first).to.equal(0);
 
     virtualizer.scrollTo({top: 1000, behavior: 'smooth'});
-    await until(() => virtualizer.scrollTop === 1000);
+    await pass(() => expect(virtualizer.scrollTop).to.equal(1000));
     expect(last(virtualizerEvents).first).to.be.greaterThan(0);
 
     virtualizer.scrollTo({top: 0, behavior: 'smooth'});
-    await until(() => virtualizer.scrollTop === 0);
+    await pass(() => expect(virtualizer.scrollTop).to.equal(0));
     expect(last(virtualizerEvents).first).to.equal(0);
   });
 });

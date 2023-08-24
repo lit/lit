@@ -18,7 +18,8 @@
     "noFallthroughCasesInSwitch": true,
     "allowSyntheticDefaultImports": true,
     "skipLibCheck": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "types": []
   },
   "include": ["src/**/*.ts"],
   "exclude": []

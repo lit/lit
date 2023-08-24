@@ -56,8 +56,8 @@
     }
   },
   "dependencies": {
-    "ts-clone-node": "^2.0.4",
-    "typescript": "5.2.0-dev.20230625"
+    "ts-clone-node": "^3.0.0",
+    "typescript": "^5.2.0-beta"
   },
   "devDependencies": {
     "@lit/localize": "^0.11.5-pre.0",

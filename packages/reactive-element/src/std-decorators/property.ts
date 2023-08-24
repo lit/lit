@@ -15,8 +15,28 @@ import {
   ReactiveElement,
   defaultConverter,
   notEqual,
-  propertyMetadata,
+  type PropertyValues,
 } from '../reactive-element.js';
+
+const DEV_MODE = true;
+
+let issueWarning: (code: string, warning: string) => void;
+
+if (DEV_MODE) {
+  // Ensure warnings are issued only 1x, even if multiple versions of Lit
+  // are loaded.
+  const issuedWarnings: Set<string | undefined> =
+    (globalThis.litIssuedWarnings ??= new Set());
+
+  // Issue a warning, if we haven't already.
+  issueWarning = (code: string, warning: string) => {
+    warning += ` See https://lit.dev/msg/${code} for more information.`;
+    if (!issuedWarnings.has(warning)) {
+      console.warn(warning);
+      issuedWarnings.add(warning);
+    }
+  };
+}
 
 // Overloads for property decorator so that TypeScript can infer the correct
 // return type when a decorator is used as an accessor decorator or a setter
@@ -35,9 +55,9 @@ export type PropertyDecorator = {
   ): (this: C, value: V) => void;
 };
 
-// TODO (justinfagnani): export from ReactiveElement?
-// It actually makes sense to have this default defined with the decorator, so
-// that different decirators could have different defaults.
+// This is duplicated from a similar variable in reactive-element.ts, but
+// actually makes sense to have this default defined with the decorator, so
+// that different decorators could have different defaults.
 const defaultPropertyDeclaration: PropertyDeclaration = {
   attribute: true,
   type: String,
@@ -61,10 +81,20 @@ export const property = (
   ): ClassAccessorDecoratorResult<C, V> | ((this: C, value: V) => void) => {
     const {kind, metadata} = context;
 
+    if (DEV_MODE && metadata == null) {
+      issueWarning(
+        'missing-class-metadata',
+        `The class ${target} is missing decorator metadata. This ` +
+          `could mean that you're using a compiler that supports decorators ` +
+          `but doesn't support decorator metadata, such as TypeScript 5.1. ` +
+          `Please update your compiler.`
+      );
+    }
+
     // Store the property options
-    let properties = propertyMetadata.get(metadata);
+    let properties = globalThis.litPropertyMetadata.get(metadata);
     if (properties === undefined) {
-      propertyMetadata.set(metadata, (properties = new Map()));
+      globalThis.litPropertyMetadata.set(metadata, (properties = new Map()));
     }
     properties.set(context.name, options);
 
@@ -74,9 +104,6 @@ export const property = (
       // keyword instead.
       const {name} = context;
       return {
-        get(this: C) {
-          return (target as ClassAccessorDecoratorTarget<C, V>).get.call(this);
-        },
         set(this: C, v: V) {
           const oldValue = (
             target as ClassAccessorDecoratorTarget<C, V>
@@ -85,32 +112,20 @@ export const property = (
           this.requestUpdate(name, oldValue, options);
         },
         init(this: C, v: V): V {
-          // Save instance property through setter
-          if (this.hasOwnProperty(name)) {
-            // @ts-expect-error: argh
-            delete this[name as keyof this];
-            // @ts-expect-error: argh
-            this[name as keyof this] = v;
+          if (v !== undefined) {
+            // We need this cast because these decorators are in a separate
+            // compilation unit from ReactiveElement, so can't see the
+            // @internal _$changedProperties field.
+            (
+              this as unknown as {_$changedProperties: PropertyValues}
+            )._$changedProperties.set(name, undefined);
           }
-          this.requestUpdate(name, undefined, options, {
-            newValue: v,
-            reflect: false,
-          });
           return v;
         },
       };
     } else if (kind === 'setter') {
-      // TODO: legacy decorators do not automatically call requestUpdate() like
-      // this, because it was difficult to wrape the user-written accessors.
-      // NOTE: Because we need to wrap the setter, and we can't modify the class
-      // directly in a standard decorator, we can only decorate setters, not
-      // getters. This is change from our legacy decorators.
-      // const {name} = context;
-      // return function (this: C, value: V) {
-      //   const oldValue = this[name as keyof C];
-      //   (target as (value: V) => void).call(this, value);
-      //   this.requestUpdate(name, oldValue, options);
-      // };
+      // We do not wrap the author's setter. They are expected to call
+      // requestUpdate themselves, and will possibly do so conditionally.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return undefined as any;
     }

@@ -1,5 +1,20 @@
 # @lit-labs/virtualizer
 
+## 2.0.5
+
+### Patch Changes
+
+- [#4039](https://github.com/lit/lit/pull/4039) [`456c83be`](https://github.com/lit/lit/commit/456c83be0438c2178a06144edd5deb8871613c36) Thanks [@alanbuzek](https://github.com/alanbuzek)! - Removed unnecessary evaluation triggering strict linter error.
+
+- Updated dependencies [[`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d), [`8057c78d`](https://github.com/lit/lit/commit/8057c78def09e345e68c3fc009b8ab9d6cf1c0f2)]:
+  - lit@2.8.0
+
+## 2.0.4
+
+### Patch Changes
+
+- [#3976](https://github.com/lit/lit/pull/3976) [`3cf98cd8`](https://github.com/lit/lit/commit/3cf98cd896e4d6a1aca9714916416d035a722140) Thanks [@Westbrook](https://github.com/Westbrook)! - Fixes #3904 "Clipping parents include ancestors of `position: fixed` element"
+
 ## 2.0.3
 
 ### Patch Changes

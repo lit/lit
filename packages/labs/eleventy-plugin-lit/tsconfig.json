@@ -21,7 +21,8 @@
     "noImplicitAny": true,
     "noImplicitThis": true,
     "moduleResolution": "node",
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "types": ["node"]
   },
   "references": [
     {"path": "src/tsconfig-cjs.json"},

@@ -21,7 +21,8 @@
     "experimentalDecorators": true,
     "skipLibCheck": true,
     "noImplicitOverride": true,
-    "jsx": "react"
+    "jsx": "react",
+    "types": []
   },
   "include": ["src/**/*"],
   "exclude": []

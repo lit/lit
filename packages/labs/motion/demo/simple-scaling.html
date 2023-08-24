@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<!--
+  @license
+  Copyright 2021 Google LLC
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Simple Scaling Animation</title>
+    <style>
+      html,
+      body {
+        font-family: sans-serif;
+        height: 100vh;
+      }
+    </style>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {animate} from '../development/animate.js';
+
+      export class MyElement extends LitElement {
+        static styles = css`
+          :host {
+            display: block;
+          }
+          div {
+            background-color: blue;
+            margin-top: 8px;
+            width: 0px;
+            height: 0px;
+          }
+          div.collapsed {
+            width: 100px;
+            height: 100px;
+          }
+        `;
+
+        static properties = {
+          collapsed: {},
+        };
+
+        constructor() {
+          super();
+          this.collapsed = false;
+        }
+
+        render() {
+          return html`
+            <button @click=${this.onClick}>Toggle</button>
+            <div
+              class="${this.collapsed ? 'collapsed' : ''}"
+              ${animate()}
+            ></div>
+          `;
+        }
+
+        onClick() {
+          this.collapsed = !this.collapsed;
+        }
+      }
+      customElements.define('my-element', MyElement);
+    </script>
+  </head>
+  <body>
+    <h1>Simple Scaling</h1>
+    <my-element></my-element>
+  </body>
+</html>

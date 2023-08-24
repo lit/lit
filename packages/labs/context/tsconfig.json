@@ -21,7 +21,8 @@
     "allowSyntheticDefaultImports": true,
     "paths": {
       "@esm-bundle/chai": ["../../../local-types/@esm-bundle/chai/index.d.ts"]
-    }
+    },
+    "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/test/legacy-decorators/*.ts"],

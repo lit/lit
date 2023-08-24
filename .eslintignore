@@ -30,35 +30,45 @@ packages/internal-scripts/lib/
 packages/lit/decorators/
 packages/lit/development/
 packages/lit/directives/
+packages/lit/legacy-decorators/
 packages/lit/node_modules/
+packages/lit/std-decorators/
 packages/lit/test/
 
+packages/lit/async-directive.*
 packages/lit/decorators.*
 packages/lit/directive-helpers.*
 packages/lit/directive.*
-packages/lit/async-directive.*
+packages/lit/legacy-decorators.*
 packages/lit/html.*
 packages/lit/index.*
 packages/lit/static-html.*
+packages/lit/std-decorators.*
 
 packages/lit/lit-all.min.*
 packages/lit/lit-core.min.*
 packages/lit/polyfill-support.*
 
 packages/lit-element/decorators/
+packages/lit-element/std-decorators/
+packages/lit-element/development/
+packages/lit-element/legacy-decorators/
+packages/lit-element/node_modules/
+packages/lit-element/test/
+
 packages/lit-element/demo/**/*.d.ts
 packages/lit-element/demo/**/*.d.ts.map
 packages/lit-element/demo/**/*.js
 packages/lit-element/demo/**/*.js.map
-packages/lit-element/development/
-packages/lit-element/node_modules/
-packages/lit-element/test/
+
 packages/lit-element/decorators.*
 packages/lit-element/index.*
+packages/lit-element/legacy-decorators.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
 packages/lit-element/polyfill-support.*
 packages/lit-element/private-ssr-support.*
+packages/lit-element/std-decorators.*
 
 packages/lit-html/development/
 packages/lit-html/node/
@@ -118,13 +128,16 @@ packages/localize-tools/testdata/*/output/
 
 packages/reactive-element/decorators/
 packages/reactive-element/development/
+packages/reactive-element/legacy-decorators/
 packages/reactive-element/node/
 packages/reactive-element/std-decorators/
 packages/reactive-element/test/
+
 packages/reactive-element/css-tag.*
 packages/reactive-element/decorators.*
-packages/reactive-element/std-decorators.*
+packages/reactive-element/legacy-decorators.*
 packages/reactive-element/polyfill-support.*
+packages/reactive-element/std-decorators.*
 packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
 
@@ -152,6 +165,11 @@ packages/labs/analyzer/**/index.js.map
 packages/labs/analyzer/**/index.d.ts
 packages/labs/analyzer/**/index.d.ts.map
 
+packages/labs/analyzer/**/package-analyzer.js
+packages/labs/analyzer/**/package-analyzer.js.map
+packages/labs/analyzer/**/package-analyzer.d.ts
+packages/labs/analyzer/**/package-analyzer.d.ts.map
+
 packages/labs/cli/lib/
 packages/labs/cli/test/
 packages/labs/cli/index.js
@@ -162,6 +180,14 @@ packages/labs/cli/test-gen/
 
 packages/labs/cli-localize/lib/
 packages/labs/cli-localize/node_modules/
+
+packages/labs/compiler/**/test_files
+packages/labs/compiler/development/
+packages/labs/compiler/node_modules/
+packages/labs/compiler/test/
+packages/labs/compiler/lib/
+
+packages/labs/compiler/test_files/source_map_tests/*.js.map
 
 packages/labs/context/development/
 packages/labs/context/test/
@@ -253,6 +279,12 @@ packages/labs/observers/performance-controller.*
 packages/labs/observers/resize-controller.*
 packages/labs/observers/intersection-controller.*
 
+packages/labs/preact-signals/development/
+packages/labs/preact-signals/lib/
+packages/labs/preact-signals/node_modules/
+packages/labs/preact-signals/test/
+packages/labs/preact-signals/index.*
+
 packages/labs/react/development/
 packages/labs/react/node/
 packages/labs/react/test/
@@ -305,8 +337,10 @@ packages/labs/ssr-react/enable-lit-ssr.*
 packages/labs/task/development/
 packages/labs/task/test/
 packages/labs/task/node_modules/
+packages/labs/task/deep-equals.*
 packages/labs/task/index.*
 packages/labs/task/task.*
+
 packages/labs/testing/index.*
 packages/labs/testing/fixtures.*
 packages/labs/testing/web-test-runner-ssr-plugin.*

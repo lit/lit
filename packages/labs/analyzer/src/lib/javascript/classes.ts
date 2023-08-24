@@ -10,7 +10,7 @@
  * Utilities for analyzing class declarations
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {DiagnosticCode} from '../diagnostic-code.js';
 import {createDiagnostic} from '../errors.js';
 import {
@@ -40,6 +40,8 @@ import {
   isCustomElementSubclass,
   getCustomElementDeclaration,
 } from '../custom-elements/custom-elements.js';
+
+export type TypeScript = typeof ts;
 
 /**
  * Returns an analyzer `ClassDeclaration` model for the given
@@ -77,6 +79,7 @@ export const getClassMembers = (
   declaration: ts.ClassLikeDeclaration,
   analyzer: AnalyzerInterface
 ) => {
+  const {typescript} = analyzer;
   const fieldMap = new Map<string, ClassField>();
   const staticFieldMap = new Map<string, ClassField>();
   const methodMap = new Map<string, ClassMethod>();
@@ -84,8 +87,8 @@ export const getClassMembers = (
   declaration.members.forEach((node) => {
     // Ignore non-implementation signatures of overloaded methods by checking
     // for `node.body`.
-    if (ts.isMethodDeclaration(node) && node.body) {
-      const info = getMemberInfo(node);
+    if (typescript.isMethodDeclaration(node) && node.body) {
+      const info = getMemberInfo(typescript, node);
       const name = node.name.getText();
       (info.static ? staticMethodMap : methodMap).set(
         name,
@@ -95,22 +98,23 @@ export const getClassMembers = (
           ...parseNodeJSDocInfo(node, analyzer),
         })
       );
-    } else if (ts.isPropertyDeclaration(node)) {
-      if (!ts.isIdentifier(node.name)) {
+    } else if (typescript.isPropertyDeclaration(node)) {
+      if (!typescript.isIdentifier(node.name)) {
         analyzer.addDiagnostic(
           createDiagnostic({
+            typescript,
             node,
             message:
               '@lit-labs/analyzer only supports analyzing class properties ' +
               'named with plain identifiers. This property was ignored.',
-            category: ts.DiagnosticCategory.Warning,
+            category: typescript.DiagnosticCategory.Warning,
             code: DiagnosticCode.UNSUPPORTED,
           })
         );
         return;
       }
 
-      const info = getMemberInfo(node);
+      const info = getMemberInfo(typescript, node);
       (info.static ? staticFieldMap : fieldMap).set(
         node.name.getText(),
         new ClassField({
@@ -130,11 +134,14 @@ export const getClassMembers = (
   };
 };
 
-const getMemberInfo = (node: ts.MethodDeclaration | ts.PropertyDeclaration) => {
+const getMemberInfo = (
+  typescript: TypeScript,
+  node: ts.MethodDeclaration | ts.PropertyDeclaration
+) => {
   return {
     name: node.name.getText(),
-    static: hasStaticModifier(node),
-    privacy: getPrivacy(node),
+    static: hasStaticModifier(typescript, node),
+    privacy: getPrivacy(typescript, node),
   };
 };
 
@@ -149,10 +156,13 @@ const getClassDeclarationName = (
     declaration.name?.text ??
     // The only time a class declaration will not have a name is when it is
     // a default export, aka `export default class { }`
-    (hasDefaultModifier(declaration) ? 'default' : undefined);
+    (hasDefaultModifier(analyzer.typescript, declaration)
+      ? 'default'
+      : undefined);
   if (name === undefined) {
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript: analyzer.typescript,
         node: declaration,
         message: `Illegal syntax: a class declaration must either have a name or be a default export`,
       })
@@ -176,7 +186,7 @@ export const getClassDeclarationInfo = (
     name,
     node: declaration,
     factory: () => getClassDeclaration(declaration, name, analyzer),
-    isExport: hasExportModifier(declaration),
+    isExport: hasExportModifier(analyzer.typescript, declaration),
   };
 };
 
@@ -188,7 +198,7 @@ export const getHeritage = (
   analyzer: AnalyzerInterface
 ): ClassHeritage => {
   const extendsClause = declaration.heritageClauses?.find(
-    (c) => c.token === ts.SyntaxKind.ExtendsKeyword
+    (c) => c.token === analyzer.typescript.SyntaxKind.ExtendsKeyword
   );
   if (extendsClause !== undefined) {
     if (extendsClause.types.length === 1) {
@@ -199,6 +209,7 @@ export const getHeritage = (
     }
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript: analyzer.typescript,
         node: extendsClause,
         message:
           'Illegal syntax: did not expect extends clause to have multiple types',
@@ -231,15 +242,16 @@ export const getSuperClass = (
   analyzer: AnalyzerInterface
 ): Reference | undefined => {
   // TODO(kschaaf) Could add support for inline class expressions here as well
-  if (ts.isIdentifier(expression)) {
+  if (analyzer.typescript.isIdentifier(expression)) {
     return getReferenceForIdentifier(expression, analyzer);
   }
   analyzer.addDiagnostic(
     createDiagnostic({
+      typescript: analyzer.typescript,
       node: expression,
       message: `Expected expression to be a concrete superclass. Mixins are not yet supported.`,
       code: DiagnosticCode.UNSUPPORTED,
-      category: ts.DiagnosticCategory.Warning,
+      category: analyzer.typescript.DiagnosticCategory.Warning,
     })
   );
   return undefined;

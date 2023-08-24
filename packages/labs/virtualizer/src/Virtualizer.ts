@@ -331,7 +331,8 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    this._scrollerController = this._scrollerController!.detach(this) || null;
+    this._scrollerController!.detach(this);
+    this._scrollerController = null;
     this._mutationObserver!.disconnect();
     this._hostElementRO!.disconnect();
     this._childrenRO!.disconnect();
@@ -940,7 +941,10 @@ function getElementAncestors(el: HTMLElement, includeSelf = false) {
 }
 
 function getClippingAncestors(el: HTMLElement, includeSelf = false) {
-  return getElementAncestors(el, includeSelf).filter(
-    (a) => getComputedStyle(a).overflow !== 'visible'
-  );
+  let foundFixed = false;
+  return getElementAncestors(el, includeSelf).filter((a) => {
+    const style = getComputedStyle(a);
+    foundFixed = foundFixed || style.position === 'fixed';
+    return !foundFixed && style.overflow !== 'visible';
+  });
 }

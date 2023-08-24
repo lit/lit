@@ -4,11 +4,26 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
-import {property} from '@lit/reactive-element/decorators/property.js';
-import {initialState, Task, TaskStatus, TaskConfig} from '@lit-labs/task';
+import {ReactiveElement, LitElement, html, PropertyValues} from 'lit';
+import {property, query} from 'lit/decorators.js';
+import {
+  initialState,
+  Task,
+  TaskStatus,
+  TaskConfig,
+  TaskFunctionOptions,
+} from '@lit-labs/task';
+import {deepArrayEquals} from '@lit-labs/task/deep-equals.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
+
+// Safari didn't support reasons until 15.4
+const supportsAbortSignalReason = (() => {
+  const controller = new AbortController();
+  const {signal} = controller;
+  controller.abort('reason');
+  return signal.reason === 'reason';
+})();
 
 suite('Task', () => {
   let container: HTMLElement;
@@ -19,7 +34,8 @@ suite('Task', () => {
     b: string;
     c?: string;
     resolveTask: () => void;
-    rejectTask: (error?: string) => void;
+    rejectTask: (error: string | undefined) => void;
+    signal?: AbortSignal;
     taskValue?: string;
     renderedStatus?: string;
   }
@@ -38,7 +54,8 @@ suite('Task', () => {
       c?: string;
 
       resolveTask!: () => void;
-      rejectTask!: (error?: string) => void;
+      rejectTask!: (error: string | undefined) => void;
+      signal?: AbortSignal;
 
       taskValue?: string;
       renderedStatus?: string;
@@ -46,10 +63,18 @@ suite('Task', () => {
       constructor() {
         super();
         const taskConfig = {
-          task: (...args: unknown[]) =>
+          task: (args: readonly unknown[], options?: TaskFunctionOptions) =>
             new Promise((resolve, reject) => {
-              this.rejectTask = (error = 'error') => reject(error);
+              this.rejectTask = (error) => reject(error);
               this.resolveTask = () => resolve(args.join(','));
+              const signal = (this.signal = options?.signal);
+              if (signal?.aborted) {
+                reject(signal.reason);
+              } else {
+                signal?.addEventListener('abort', () => {
+                  reject(signal.reason);
+                });
+              }
             }),
         };
         Object.assign(taskConfig, config);
@@ -82,6 +107,9 @@ suite('Task', () => {
     return new A();
   };
 
+  // TODO: the name of this function is confusing. It doesn't wait for the task
+  // to complete. It just waits a rAF. That's why it can be used to check that
+  // a task is pending.
   const tasksUpdateComplete = nextFrame;
 
   let warnMessages: Array<string>;
@@ -201,10 +229,78 @@ suite('Task', () => {
     assert.equal(el.taskValue, `a1,b1`);
   });
 
+  test('tasks with args run when args change: deepEqual', async () => {
+    const el = getTestElement({
+      // Wrapping the args in array causes there to be a fresh value every
+      // update, which deepArrayEquals will compare and return true for.
+      args: () => [[el.a], [el.b]],
+      argsEqual: deepArrayEquals,
+    });
+    await renderElement(el);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, `a,b`);
+
+    // Changing task argument runs task
+    el.a = 'a1';
+    // Check task pending.
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.equal(el.taskValue, 'a,b');
+    // Complete task and check result.
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, `a1,b`);
+
+    // No change in arguments doesn't run task
+    el.requestUpdate();
+    // Check task pending.
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+  });
+
+  test('tasks can have initialValue', async () => {
+    // The test helpers make it hard to write proper args callbacks
+    // `args: () => [this.a, this.b]` would work, but `[el.a]` doesn't
+    // since `el` isn't initialized yet. This little hack works:
+    let initializing = true;
+    const el = getTestElement({
+      initialValue: 'initial',
+      args: () => [initializing ? 'a' : el.a, initializing ? 'b' : el.b],
+    });
+    initializing = false;
+    await renderElement(el);
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.task.value, 'initial');
+    assert.equal(el.taskValue, 'initial');
+
+    // The task is complete, so waiting for it shouldn't change anything
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.task.value, 'initial');
+
+    // An element update (which checks args again) should not cause a rerun
+    el.requestUpdate();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.task.value, 'initial');
+
+    // The task still reruns when arguments change
+    el.a = 'a1';
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.taskValue, `a1,b`);
+  });
+
   test('task error is not reset on rerun', async () => {
     const el = getTestElement({args: () => [el.a, el.b]});
     await renderElement(el);
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.taskValue, 'error');
@@ -216,10 +312,63 @@ suite('Task', () => {
     assert.equal(el.task.status, TaskStatus.PENDING);
     assert.equal(el.taskValue, 'error');
     // Reject task and check result.
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.taskValue, `error`);
+  });
+
+  test('task functions receive an AbortSignal', async () => {
+    const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
+    await renderElement(el);
+
+    // Initially we have no signal because the task function hasn't been run
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.INITIAL);
+    assert.equal(el.signal, undefined);
+
+    // When the task is run, we'll get a signal
+    el.task.run();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.ok(el.signal);
+    assert.strictEqual(el.signal?.aborted, false);
+
+    // If we start a new run before the previous is complete, the signal
+    // should be aborted
+    const previousSignal = el.signal;
+    el.task.run();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.strictEqual(previousSignal?.aborted, true);
+
+    // And the new run should have a fresh, non-aborted, signal
+    assert.notStrictEqual(previousSignal, el.signal);
+    assert.strictEqual(el.signal?.aborted, false);
+
+    // When the new run is complete, its signal is not aborted
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.strictEqual(el.signal?.aborted, false);
+  });
+
+  test('tasks can be aborted', async () => {
+    const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
+    await renderElement(el);
+
+    // We can abort a task
+    el.task.run();
+    el.task.abort('testing');
+    await tasksUpdateComplete();
+    assert.strictEqual(el.signal?.aborted, true);
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    if (supportsAbortSignalReason) {
+      assert.equal(el.task.error, 'testing');
+    }
+
+    // We can restart the task
+    el.task.run();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+    assert.strictEqual(el.signal?.aborted, false);
   });
 
   test('tasks do not run when `autoRun` is `false`', async () => {
@@ -318,7 +467,7 @@ suite('Task', () => {
     // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     // Task error reported.
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.task.error, 'error');
@@ -344,7 +493,7 @@ suite('Task', () => {
     await tasksUpdateComplete();
     // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.ERROR);
     assert.equal(el.task.error, 'error');
@@ -362,6 +511,21 @@ suite('Task', () => {
     expected = 'a3,b3';
     assert.equal(el.task.value, expected);
     assert.equal(el.taskValue, expected);
+  });
+
+  test('errors can be undefined', async () => {
+    const el = getTestElement({args: () => [el.a, el.b]});
+    await renderElement(el);
+
+    // Catch the rejection to suppress uncaught rejection warnings
+    el.task.taskComplete.catch(() => {});
+    // Task error reported.
+    el.rejectTask(undefined);
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.ERROR);
+    assert.equal(el.task.error, undefined);
+    assert.equal(el.task.value, undefined);
+    assert.equal(el.taskValue, undefined);
   });
 
   test('reports only most recent value', async () => {
@@ -411,7 +575,7 @@ suite('Task', () => {
     // Catch the rejection to suppress uncaught rejection warnings
     el.task.taskComplete.catch(() => {});
     // Reports error after task rejects.
-    el.rejectTask();
+    el.rejectTask('error');
     await tasksUpdateComplete();
     assert.equal(el.renderedStatus, 'error');
 
@@ -558,7 +722,7 @@ suite('Task', () => {
     assert.equal(warnMessages.length, 0);
   });
 
-  test('Tasks can see effects of update()', async () => {
+  test('Tasks can see effects of willUpdate()', async () => {
     class TestElement extends ReactiveElement {
       task = new Task(this, {
         args: () => [],
@@ -569,8 +733,7 @@ suite('Task', () => {
       value = 'foo';
       taskObservedValue: string | undefined = undefined;
 
-      override update(changedProps: PropertyValues) {
-        super.update(changedProps);
+      override willUpdate() {
         this.value = 'bar';
       }
     }
@@ -583,23 +746,71 @@ suite('Task', () => {
     assert.equal(el.taskObservedValue, 'bar');
   });
 
-  test('performTask waits on the task', async () => {
-    const el = getTestElement({
-      args: () => [el.a],
-    });
-    await renderElement(el);
-    let taskComplete = false;
-    (async () => {
-      el.a = 'z';
-      // @ts-expect-error: We're testing the behavior of a protected method
-      await el.task.performTask();
-      taskComplete = true;
-    })();
-    await tasksUpdateComplete();
-    assert.isFalse(taskComplete);
-    el.resolveTask();
-    await tasksUpdateComplete();
-    assert.isTrue(taskComplete);
+  test('Elements only render once for pending tasks', async () => {
+    let resolveTask: (v: unknown) => void;
+    let renderCount = 0;
+    class TestElement extends ReactiveElement {
+      task = new Task(this, {
+        args: () => [],
+        task: () => new Promise((res) => (resolveTask = res)),
+      });
+
+      override update(changedProperties: PropertyValues) {
+        super.update(changedProperties);
+        renderCount++;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    // The first update will trigger the task
+    await el.task.taskComplete;
+    assert.equal(renderCount, 1);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+
+    // The task starting should not trigger another update
+    await el.updateComplete;
+    assert.equal(renderCount, 1);
+    assert.equal(el.task.status, TaskStatus.PENDING);
+
+    // But the task completing should
+    resolveTask!(undefined);
+    // TODO (justinfagnani): Awaiting taskComplete and updateComplete is
+    // similar in function to await tasksUpdateComplete(), but more accurate
+    // due to not relying on a rAF. We should update all the tests.
+    await el.task.taskComplete;
+    await el.updateComplete;
+    assert.equal(renderCount, 2);
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+  });
+
+  test('Tasks can depend on host rendered DOM', async () => {
+    LitElement.enableWarning?.('change-in-update');
+    class TestElement extends LitElement {
+      task = new Task(this, {
+        args: () => [this.foo],
+        task: async ([foo]) => foo,
+        autoRun: 'afterUpdate',
+      });
+
+      @query('#foo')
+      foo?: HTMLElement;
+
+      override render() {
+        console.log('render');
+        return html`<div id="foo"></div>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.appendChild(el);
+    await el.updateComplete;
+    await el.task.taskComplete;
+
+    assert.ok(el.task.value);
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    // Make sure we avoid change-in-update warnings
+    assert.equal(warnMessages.length, 0);
   });
 
   test('generates a new taskComplete promise on run vs initial', async () => {
@@ -813,5 +1024,40 @@ suite('Task', () => {
 
     assert.equal(el.task.value, secondValue);
     assert.notEqual(firstValue, secondValue);
+  });
+
+  test('type-only render return type test', () => {
+    class TestElement extends ReactiveElement {
+      task = new Task(this, () => 'abc');
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+
+    const accept = <T>(x: T) => x;
+
+    accept<number | undefined>(el.task.render({initial: () => 123}));
+    accept<number | undefined>(el.task.render({complete: () => 123}));
+    accept<number | undefined>(el.task.render({pending: () => 123}));
+    accept<number | undefined>(el.task.render({error: () => 123}));
+    accept<number | undefined>(
+      el.task.render({initial: () => 123, complete: () => 123})
+    );
+
+    accept<number>(
+      el.task.render({
+        initial: () => 123,
+        complete: () => 123,
+        pending: () => 123,
+        error: () => 123,
+      })
+    );
+    accept<number>(
+      el.task.render({
+        initial: () => 123,
+        complete: (value) => Number(accept<string>(value)),
+        pending: () => 123,
+        error: (error) => (error instanceof Error ? 123 : 456),
+      })
+    );
   });
 });

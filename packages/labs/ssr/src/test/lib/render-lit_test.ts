@@ -360,6 +360,15 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('element with mixed case attributes', async () => {
+    const {render, templateWithMixedCaseAttrs} = await setup();
+    const result = await render(templateWithMixedCaseAttrs('dynamic'));
+    assert.is(
+      result,
+      `<!--lit-part F/N3wW1gNj8=--><!--lit-node 0--><svg dynamicCamel="dynamic" staticCamel="static"></svg><!--/lit-part-->`
+    );
+  });
+
   test('element with reflected properties', async () => {
     const {render, elementWithReflectedProperties} = await setup();
     const result = await render(elementWithReflectedProperties);

@@ -10,7 +10,7 @@
  * Utilities for analyzing ES modules
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {
   Module,
   AnalyzerInterface,
@@ -38,6 +38,8 @@ import {
 } from '../references.js';
 import {parseModuleJSDocInfo} from './jsdoc.js';
 import {getFunctionDeclarationInfo} from './functions.js';
+
+export type TypeScript = typeof ts;
 
 /**
  * Returns the sourcePath, jsPath, and package.json contents of the containing
@@ -82,6 +84,7 @@ export const getModule = (
   analyzer: AnalyzerInterface,
   packageInfo: PackageInfo = getPackageInfo(modulePath, analyzer)
 ) => {
+  const {typescript: ts} = analyzer;
   // Return cached module if we've parsed this sourceFile already and its
   // dependencies haven't changed
   const cachedModule = getAndValidateModuleFromCache(modulePath, analyzer);
@@ -104,6 +107,7 @@ export const getModule = (
     if (declarationMap.has(name)) {
       analyzer.addDiagnostic(
         createDiagnostic({
+          typescript: ts,
           node,
           message: `Duplicate declaration '${name}'`,
           category: ts.DiagnosticCategory.Error,
@@ -146,6 +150,7 @@ export const getModule = (
         if (moduleSpecifier === undefined) {
           analyzer.addDiagnostic(
             createDiagnostic({
+              typescript: ts,
               node: statement,
               message: `Unexpected syntax: expected a wildcard export to always have a module specifier.`,
             })
@@ -229,7 +234,8 @@ const finalizeExports = (
  */
 const getAndValidateModuleFromCache = (
   modulePath: AbsolutePath,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  seen = new Set<AbsolutePath>([modulePath])
 ): Module | undefined => {
   const module = analyzer.moduleCache.get(modulePath);
   // A cached module is only valid if the source file that was used has not
@@ -238,7 +244,7 @@ const getAndValidateModuleFromCache = (
   if (module !== undefined) {
     if (
       module.sourceFile === analyzer.program.getSourceFile(modulePath) &&
-      depsAreValid(module, analyzer)
+      depsAreValid(module, analyzer, seen)
     ) {
       return module;
     }
@@ -250,18 +256,35 @@ const getAndValidateModuleFromCache = (
 /**
  * Returns true if all dependencies of the module are still valid.
  */
-const depsAreValid = (module: Module, analyzer: AnalyzerInterface) =>
-  Array.from(module.dependencies).every((path) => depIsValid(path, analyzer));
+const depsAreValid = (
+  module: Module,
+  analyzer: AnalyzerInterface,
+  seen: Set<AbsolutePath>
+): boolean =>
+  Array.from(module.dependencies).every(
+    (path) =>
+      // `seen` is initialized only once, at the entry point for the initial
+      // call to `getAndValidateModuleFromCache`, and modulePaths are only added
+      // to `seen` at  the deepest part of the recursion, in `depIsValid`
+      // because of that, we can be confident that a module path which was 'seen'
+      // has already been validated by `depIsValid` and can be safely skipped here.
+      seen.has(path) || depIsValid(path, analyzer, seen)
+  );
 
 /**
  * Returns true if the given dependency is valid, meaning that if it has a
  * cached model, the model is still valid. Dependencies that don't yet have a
  * cached model are considered valid.
  */
-const depIsValid = (modulePath: AbsolutePath, analyzer: AnalyzerInterface) => {
+const depIsValid = (
+  modulePath: AbsolutePath,
+  analyzer: AnalyzerInterface,
+  seen: Set<AbsolutePath>
+) => {
+  seen.add(modulePath);
   if (analyzer.moduleCache.has(modulePath)) {
     // If a dep has a model, it is valid only if its deps are valid
-    return Boolean(getAndValidateModuleFromCache(modulePath, analyzer));
+    return Boolean(getAndValidateModuleFromCache(modulePath, analyzer, seen));
   } else {
     // Deps that don't have a cached model are considered valid
     return true;
@@ -299,7 +322,7 @@ const getJSPathFromSourcePath = (
   }
   // Use the TS API to determine where the associated JS will be output based
   // on tsconfig settings.
-  const outputPath = ts
+  const outputPath = analyzer.typescript
     .getOutputFileNames(analyzer.commandLine, sourcePath, false)
     .filter((f) => f.endsWith('.js'))[0];
   // TODO(kschaaf): this could happen if someone imported only a .d.ts file;
@@ -332,7 +355,7 @@ export const getPathForModuleSpecifier = (
   location: ts.Node,
   analyzer: AnalyzerInterface
 ): AbsolutePath | undefined => {
-  const resolvedPath = ts.resolveModuleName(
+  const resolvedPath = analyzer.typescript.resolveModuleName(
     specifier,
     location.getSourceFile().fileName,
     analyzer.commandLine.options,
@@ -341,9 +364,10 @@ export const getPathForModuleSpecifier = (
   if (resolvedPath === undefined) {
     analyzer.addDiagnostic(
       createDiagnostic({
+        typescript: analyzer.typescript,
         node: location,
         message: `Could not resolve specifier ${specifier} to filesystem path.`,
-        category: ts.DiagnosticCategory.Error,
+        category: analyzer.typescript.DiagnosticCategory.Error,
       })
     );
     return undefined;

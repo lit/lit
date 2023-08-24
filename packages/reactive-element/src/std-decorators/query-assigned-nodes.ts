@@ -50,6 +50,8 @@ export interface QueryAssignedNodesOptions extends AssignedNodesOptions {
  *
  * @category Decorator
  */
+// TODO(justinfagnani): infer a more precise return type when the query is
+// a tagname.
 export const queryAssignedNodes =
   (options?: QueryAssignedNodesOptions) =>
   <C extends ReactiveElement, V extends ReadonlyArray<Node>>(
@@ -62,8 +64,7 @@ export const queryAssignedNodes =
         const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
-        // @ts-expect-error: argh!
-        return slotEl?.assignedNodes(options) ?? [];
+        return (slotEl?.assignedNodes(options) ?? []) as unknown as V;
       },
     };
   };
