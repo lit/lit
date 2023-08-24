@@ -73,106 +73,6 @@
       "development": "./development/decorators/state.js",
       "default": "./decorators/state.js"
     },
-    "./std-decorators.js": {
-      "types": "./development/std-decorators.d.ts",
-      "development": "./development/std-decorators.js",
-      "default": "./std-decorators.js"
-    },
-    "./std-decorators/custom-element.js": {
-      "types": "./development/std-decorators/custom-element.d.ts",
-      "development": "./development/std-decorators/custom-element.js",
-      "default": "./std-decorators/custom-element.js"
-    },
-    "./std-decorators/event-options.js": {
-      "types": "./development/std-decorators/event-options.d.ts",
-      "development": "./development/std-decorators/event-options.js",
-      "default": "./std-decorators/event-options.js"
-    },
-    "./std-decorators/property.js": {
-      "types": "./development/std-decorators/property.d.ts",
-      "development": "./development/std-decorators/property.js",
-      "default": "./std-decorators/property.js"
-    },
-    "./std-decorators/query-all.js": {
-      "types": "./development/std-decorators/query-all.d.ts",
-      "development": "./development/std-decorators/query-all.js",
-      "default": "./std-decorators/query-all.js"
-    },
-    "./std-decorators/query-assigned-elements.js": {
-      "types": "./development/std-decorators/query-assigned-elements.d.ts",
-      "development": "./development/std-decorators/query-assigned-elements.js",
-      "default": "./std-decorators/query-assigned-elements.js"
-    },
-    "./std-decorators/query-assigned-nodes.js": {
-      "types": "./development/std-decorators/query-assigned-nodes.d.ts",
-      "development": "./development/std-decorators/query-assigned-nodes.js",
-      "default": "./std-decorators/query-assigned-nodes.js"
-    },
-    "./std-decorators/query.js": {
-      "types": "./development/std-decorators/query.d.ts",
-      "development": "./development/std-decorators/query.js",
-      "default": "./std-decorators/query.js"
-    },
-    "./std-decorators/state.js": {
-      "types": "./development/std-decorators/state.d.ts",
-      "development": "./development/std-decorators/state.js",
-      "default": "./std-decorators/state.js"
-    },
-    "./legacy-decorators.js": {
-      "types": "./development/legacy-decorators.d.ts",
-      "development": "./development/legacy-decorators.js",
-      "default": "./legacy-decorators.js"
-    },
-    "./legacy-decorators/base.js": {
-      "types": "./development/legacy-decorators/base.d.ts",
-      "development": "./development/legacy-decorators/base.js",
-      "default": "./legacy-decorators/base.js"
-    },
-    "./legacy-decorators/custom-element.js": {
-      "types": "./development/legacy-decorators/custom-element.d.ts",
-      "development": "./development/legacy-decorators/custom-element.js",
-      "default": "./legacy-decorators/custom-element.js"
-    },
-    "./legacy-decorators/event-options.js": {
-      "types": "./development/legacy-decorators/event-options.d.ts",
-      "development": "./development/legacy-decorators/event-options.js",
-      "default": "./legacy-decorators/event-options.js"
-    },
-    "./legacy-decorators/property.js": {
-      "types": "./development/legacy-decorators/property.d.ts",
-      "development": "./development/legacy-decorators/property.js",
-      "default": "./legacy-decorators/property.js"
-    },
-    "./legacy-decorators/query-all.js": {
-      "types": "./development/legacy-decorators/query-all.d.ts",
-      "development": "./development/legacy-decorators/query-all.js",
-      "default": "./legacy-decorators/query-all.js"
-    },
-    "./legacy-decorators/query-assigned-elements.js": {
-      "types": "./development/legacy-decorators/query-assigned-elements.d.ts",
-      "development": "./development/legacy-decorators/query-assigned-elements.js",
-      "default": "./legacy-decorators/query-assigned-elements.js"
-    },
-    "./legacy-decorators/query-assigned-nodes.js": {
-      "types": "./development/legacy-decorators/query-assigned-nodes.d.ts",
-      "development": "./development/legacy-decorators/query-assigned-nodes.js",
-      "default": "./legacy-decorators/query-assigned-nodes.js"
-    },
-    "./legacy-decorators/query-async.js": {
-      "types": "./development/legacy-decorators/query-async.d.ts",
-      "development": "./development/legacy-decorators/query-async.js",
-      "default": "./legacy-decorators/query-async.js"
-    },
-    "./legacy-decorators/query.js": {
-      "types": "./development/legacy-decorators/query.d.ts",
-      "development": "./development/legacy-decorators/query.js",
-      "default": "./legacy-decorators/query.js"
-    },
-    "./legacy-decorators/state.js": {
-      "types": "./development/legacy-decorators/state.d.ts",
-      "development": "./development/legacy-decorators/state.js",
-      "default": "./legacy-decorators/state.js"
-    },
     "./lit-element.js": {
       "types": "./development/lit-element.d.ts",
       "development": "./development/lit-element.js",
@@ -350,7 +250,6 @@
     "/lit-element.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
-    "/std-decorators.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
     "/development/",
     "!/development/test/"
