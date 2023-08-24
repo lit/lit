@@ -32,6 +32,19 @@ export class ElementA extends LitElement {
 
   notDecorated: string;
 
+  readonly readonlyField = 0;
+
+  get getterOnly(): number {
+    return 0;
+  }
+
+  get accessorPair(): number {
+    return 0;
+  }
+  set accessorPair(_: number) {
+    void 0;
+  }
+
   @property()
   noOptionsString: string;
 

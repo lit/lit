@@ -397,6 +397,7 @@ export class ClassField extends Declaration {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  readonly?: boolean | undefined;
   type?: Type | undefined;
   default?: string | undefined;
   constructor(init: ClassFieldInit) {

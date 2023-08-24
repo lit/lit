@@ -39,9 +39,24 @@ export class ElementA extends LitElement {
 
   [unsupportedPropertyName] = '';
 
+  /** @type {number} */
+  get getterOnly() {
+    return 0;
+  }
+
+  /** @type {number} */
+  get accessorPair() {
+    return 0;
+  }
+  set accessorPair(_) {
+    void 0;
+  }
+
   constructor() {
     super();
     this.notDecorated = '';
+    /** @readonly */
+    this.readonlyField = 0;
     this.noOptionsString = '';
     this.noOptionsNumber = 42;
     this.typeString = '';
