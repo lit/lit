@@ -122,8 +122,17 @@ export const getClassMembers = (
           default: node.initializer?.getText(),
           type: getTypeForNode(node, analyzer),
           ...parseNodeJSDocInfo(node, analyzer),
+          readonly:
+            node.modifiers?.some((mod) =>
+              typescript.isReadonlyKeywordOrPlusOrMinusToken(mod)
+            ) ||
+            (node as ts.PropertyDeclaration & {jsDoc: ts.JSDoc[]}).jsDoc?.some(
+              (doc) => doc.tags?.some((tag) => tag.tagName.text === 'readonly')
+            ),
         })
       );
+    } else if (typescript.isAccessor(node)) {
+      // TODO: handle getter only, accessor pairs
     }
   });
   return {
