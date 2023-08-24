@@ -376,10 +376,29 @@ export type WarningKind =
 
 export type Initializer = (element: ReactiveElement) => void;
 
+// Ensure metadata is enabled. TypeScript does not polyfill
+// Symbol.metadata, so we must ensure that it exists.
+(Symbol as {metadata: symbol}).metadata ??= Symbol('metadata');
+
+declare global {
+  // This is public global API, do not change!
+  // eslint-disable-next-line no-var
+  var litPropertyMetadata: WeakMap<
+    object,
+    Map<PropertyKey, PropertyDeclaration>
+  >;
+}
+
+// Map from a class's metadata object to property options
+global.litPropertyMetadata = new WeakMap<
+  object,
+  Map<PropertyKey, PropertyDeclaration>
+>();
+
 /**
  * Base element class which manages element properties and attributes. When
  * properties change, the `update` method is asynchronously called. This method
- * should be supplied by subclassers to render updates as desired.
+ * should be supplied by subclasses to render updates as desired.
  * @noInheritDoc
  */
 export abstract class ReactiveElement
@@ -498,7 +517,9 @@ export abstract class ReactiveElement
   private static __attributeToPropertyMap: AttributeMap;
 
   /**
-   * Marks class as having finished creating properties.
+   * Marks class as having been finalized, which includes creating properties
+   * from `static properties`, but does *not* include all properties created
+   * from decorators.
    */
   protected static [finalized] = true;
 
@@ -576,6 +597,10 @@ export abstract class ReactiveElement
   /**
    * The set of properties defined by this class that caused an accessor to be
    * added during `createProperty`.
+   *
+   * This field is only used in dev mode. It should be eliminated in prod
+   * builds.
+   *
    * @nocollapse
    */
   private static __reactivePropertyKeys?: Set<PropertyKey>;
@@ -588,6 +613,7 @@ export abstract class ReactiveElement
   static get observedAttributes() {
     // note: piggy backing on this to ensure we're finalized.
     this.finalize();
+    this.__collectMetadata();
     const attributes: string[] = [];
     for (const [p, v] of this.elementProperties) {
       const attr = this.__attributeNameForProperty(p, v);
@@ -624,6 +650,10 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category properties
    */
+  // TODO (justinfagnani): if we remove createProperty in a future major
+  // version we should simplify finalization and how we track reactive
+  // properties. We should require and assume that finalize is only called
+  // once per class, for instance.
   static createProperty(
     name: PropertyKey,
     options: PropertyDeclaration = defaultPropertyDeclaration
@@ -735,6 +765,33 @@ export abstract class ReactiveElement
    */
   static getPropertyOptions(name: PropertyKey) {
     return this.elementProperties.get(name) ?? defaultPropertyDeclaration;
+  }
+
+  // This is a finalization step, but it needs to be separate from `finalize`
+  // because `finalize` can be called before a class has been fully initialized.
+  // This method should only be called once per class, as late as possible.
+  private static __collectMetadata() {
+    const metadata = this[Symbol.metadata];
+    if (metadata == null) {
+      return;
+    }
+    const properties = litPropertyMetadata.get(metadata);
+    if (properties === undefined) {
+      return;
+    }
+    for (const [p, options] of properties) {
+      this.elementProperties.set(p, options);
+      if (DEV_MODE) {
+        // If this class doesn't have its own set, create one and initialize
+        // with the values in the set from the nearest ancestor class, if any.
+        if (!this.hasOwnProperty('__reactivePropertyKeys')) {
+          this.__reactivePropertyKeys = new Set(
+            this.__reactivePropertyKeys ?? []
+          );
+        }
+        this.__reactivePropertyKeys!.add(p);
+      }
+    }
   }
 
   /**
@@ -853,7 +910,6 @@ export abstract class ReactiveElement
       : undefined;
   }
 
-  private __instanceProperties?: PropertyValues = new Map();
   // Initialize to an unresolved Promise so we can make sure the element has
   // connected before first update.
   private __updatePromise!: Promise<boolean>;
@@ -909,6 +965,8 @@ export abstract class ReactiveElement
       (res) => (this.enableUpdating = res)
     );
     this._$changedProperties = new Map();
+    // This enqueues a microtask that ust run before the first udpate, so it
+    // must be called before requestUpdate()
     this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
     // `updateComplete`
@@ -961,13 +1019,22 @@ export abstract class ReactiveElement
    * the native platform default).
    */
   private __saveInstanceProperties() {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const instanceProperties: Array<[keyof this, any]> = [];
     const elementProperties = (this.constructor as typeof ReactiveElement)
       .elementProperties;
-    for (const p of elementProperties.keys()) {
+    for (const p of elementProperties.keys() as IterableIterator<keyof this>) {
       if (this.hasOwnProperty(p)) {
-        this.__instanceProperties!.set(p, this[p as keyof this]);
-        delete this[p as keyof this];
+        instanceProperties.push([p, this[p]]);
+        delete this[p];
       }
+    }
+    if (instanceProperties.length) {
+      queueMicrotask(() => {
+        for (const [p, value] of instanceProperties) {
+          this[p] = value;
+        }
+      });
     }
   }
 
@@ -1138,6 +1205,8 @@ export abstract class ReactiveElement
    * @param oldValue old value of requesting property
    * @param options property options to use instead of the previously
    *     configured options
+   * @param initial whether this call is for the initial value of the property.
+   *     Initial values do not reflect to an attribute.
    * @category updates
    */
   requestUpdate(
@@ -1151,6 +1220,7 @@ export abstract class ReactiveElement
         this.constructor as typeof ReactiveElement
       ).getPropertyOptions(name);
       const hasChanged = options.hasChanged ?? notEqual;
+
       if (hasChanged(this[name as keyof this], oldValue)) {
         // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
         // vs just Map.set()
@@ -1255,18 +1325,16 @@ export abstract class ReactiveElement
       return;
     }
     debugLogEvent?.({kind: 'update'});
-    // create renderRoot before first update.
-    if (!this.hasUpdated) {
-      // Produce warning if any class properties are shadowed by class fields
-      if (DEV_MODE) {
-        const shadowedProperties: string[] = [];
-        (
-          this.constructor as typeof ReactiveElement
-        ).__reactivePropertyKeys?.forEach((p) => {
-          if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
-            shadowedProperties.push(p as string);
-          }
-        });
+    if (DEV_MODE) {
+      if (!this.hasUpdated) {
+        // Produce warning if any class properties are shadowed by class fields
+        const reactivePropertyKeys =
+          (
+            this.constructor as typeof ReactiveElement
+          ).__reactivePropertyKeys?.keys() ?? [];
+        const shadowedProperties = [...reactivePropertyKeys].filter((p) =>
+          this.hasOwnProperty(p)
+        );
         if (shadowedProperties.length) {
           throw new Error(
             `The following properties on element ${this.localName} will not ` +
@@ -1280,14 +1348,6 @@ export abstract class ReactiveElement
         }
       }
     }
-    // Mixin instance properties once, if they exist.
-    // The forEach() expression will only run when when __instanceProperties is
-    // defined, and it returns undefined, setting __instanceProperties to
-    // undefined
-    this.__instanceProperties &&= this.__instanceProperties.forEach(
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (v, p) => ((this as any)[p] = v)
-    ) as undefined;
     let shouldUpdate = false;
     const changedProperties = this._$changedProperties;
     try {

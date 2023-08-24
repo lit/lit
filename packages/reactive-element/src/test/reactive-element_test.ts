@@ -2429,27 +2429,54 @@ suite('ReactiveElement', () => {
   });
 
   test('properties set before upgrade are applied', async () => {
-    const name = generateElementName();
-    const el = document.createElement(name);
-    container.appendChild(el);
-    (el as any).foo = 'hi';
-    (el as any).bar = false;
-    const objectValue = {};
-    (el as any).zug = objectValue;
+    let changedProperties: PropertyValues<E> | undefined = undefined;
+
     class E extends ReactiveElement {
       static override get properties() {
         return {foo: {}, bar: {}, zug: {}};
       }
 
-      foo = '';
-      bar = true;
-      zug = null;
+      declare foo: string;
+      declare bar: boolean;
+      declare zug: object | null;
+
+      constructor() {
+        super();
+        this.foo = '';
+        this.bar = true;
+        this.zug = null;
+      }
+
+      override update(properties: PropertyValues<this>) {
+        super.update(properties);
+        changedProperties = properties;
+      }
     }
+
+    const name = generateElementName();
+    const el = document.createElement(name) as E;
+    container.appendChild(el);
+
+    // Set properties before the element is defined
+    const objectValue = {};
+    el.foo = 'hi';
+    el.bar = false;
+    el.zug = objectValue;
+
     customElements.define(name, E);
-    await (el as ReactiveElement).updateComplete;
-    assert.equal((el as any).foo, 'hi');
-    assert.equal((el as any).bar, false);
-    assert.equal((el as any).zug, objectValue);
+    await el.updateComplete;
+
+    // Properties should have the pre-upgraded values
+    assert.equal(el.foo, 'hi');
+    assert.equal(el.bar, false);
+    assert.equal(el.zug, objectValue);
+    assert.isTrue(changedProperties!.has('foo'));
+
+    // Check that the element is still reactive
+    changedProperties = undefined;
+    el.foo = 'bye';
+    await el.updateComplete;
+    assert.isTrue(changedProperties!.has('foo'));
   });
 
   test('can override scheduleUpdate()', async () => {

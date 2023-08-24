@@ -34,6 +34,9 @@ suite('@property', () => {
       old === undefined || value > old;
     const fromAttribute = (value: any) => parseInt(value);
     const toAttribute = (value: any) => `${value}-attr`;
+
+    let changedProperties: PropertyValues | undefined;
+
     class E extends ReactiveElement {
       @property({attribute: false}) noAttr = 'noAttr';
       @property({attribute: true}) atTr = 'attr';
@@ -55,6 +58,7 @@ suite('@property', () => {
 
       override update(changed: PropertyValues) {
         this.updateCount++;
+        changedProperties = changed;
         super.update(changed);
       }
     }
@@ -64,8 +68,12 @@ suite('@property', () => {
     await el.updateComplete;
     assert.equal(el.updateCount, 1);
     assert.equal(el.noAttr, 'noAttr');
+    assert.isTrue(changedProperties!.has('noAttr'));
     assert.equal(el.atTr, 'attr');
     assert.equal(el.customAttr, 'customAttr');
+    // Make sure that the default value does reflect, as opposed
+    // to the std-decorators implementation which doesn't
+    assert.equal(el.getAttribute('custom'), 'customAttr');
     assert.equal(el.hasChanged, 10);
     assert.equal(el.fromAttribute, 1);
     assert.equal(el.toAttribute, 1);

@@ -134,6 +134,186 @@
       "development": "./development/decorators/state.js",
       "default": "./decorators/state.js"
     },
+    "./std-decorators.js": {
+      "types": "./development/std-decorators.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators.js",
+        "default": "./node/std-decorators.js"
+      },
+      "development": "./development/std-decorators.js",
+      "default": "./std-decorators.js"
+    },
+    "./std-decorators/custom-element.js": {
+      "types": "./development/std-decorators/custom-element.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/custom-element.js",
+        "default": "./node/std-decorators/custom-element.js"
+      },
+      "development": "./development/std-decorators/custom-element.js",
+      "default": "./std-decorators/custom-element.js"
+    },
+    "./std-decorators/event-options.js": {
+      "types": "./development/std-decorators/event-options.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/event-options.js",
+        "default": "./node/std-decorators/event-options.js"
+      },
+      "development": "./development/std-decorators/event-options.js",
+      "default": "./std-decorators/event-options.js"
+    },
+    "./std-decorators/property.js": {
+      "types": "./development/std-decorators/property.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/property.js",
+        "default": "./node/std-decorators/property.js"
+      },
+      "development": "./development/std-decorators/property.js",
+      "default": "./std-decorators/property.js"
+    },
+    "./std-decorators/query-all.js": {
+      "types": "./development/std-decorators/query-all.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/query-all.js",
+        "default": "./node/std-decorators/query-all.js"
+      },
+      "development": "./development/std-decorators/query-all.js",
+      "default": "./std-decorators/query-all.js"
+    },
+    "./std-decorators/query-assigned-elements.js": {
+      "types": "./development/std-decorators/query-assigned-elements.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/query-assigned-elements.js",
+        "default": "./node/std-decorators/query-assigned-elements.js"
+      },
+      "development": "./development/std-decorators/query-assigned-elements.js",
+      "default": "./std-decorators/query-assigned-elements.js"
+    },
+    "./std-decorators/query-assigned-nodes.js": {
+      "types": "./development/std-decorators/query-assigned-nodes.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/query-assigned-nodes.js",
+        "default": "./node/std-decorators/query-assigned-nodes.js"
+      },
+      "development": "./development/std-decorators/query-assigned-nodes.js",
+      "default": "./std-decorators/query-assigned-nodes.js"
+    },
+    "./std-decorators/query.js": {
+      "types": "./development/std-decorators/query.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/query.js",
+        "default": "./node/std-decorators/query.js"
+      },
+      "development": "./development/std-decorators/query.js",
+      "default": "./std-decorators/query.js"
+    },
+    "./std-decorators/state.js": {
+      "types": "./development/std-decorators/state.d.ts",
+      "node": {
+        "development": "./node/development/std-decorators/state.js",
+        "default": "./node/std-decorators/state.js"
+      },
+      "development": "./development/std-decorators/state.js",
+      "default": "./std-decorators/state.js"
+    },
+    "./legacy-decorators.js": {
+      "types": "./development/legacy-decorators.d.ts",
+      "node": {
+        "development": "./node/development/legacy-decorators.js",
+        "default": "./node/legacy-decorators.js"
+      },
+      "development": "./development/legacy-decorators.js",
+      "default": "./legacy-decorators.js"
+    },
+    "./legacy-decorators/base.js": {
+      "types": "./development/legacy-decorators/base.d.ts",
+      "node": {
+        "development": "./node/development/legacy-decorators/base.js",
+        "default": "./node/legacy-decorators/base.js"
+      },
+      "development": "./development/legacy-decorators/base.js",
+      "default": "./legacy-decorators/base.js"
+    },
+    "./legacy-decorators/custom-element.js": {
+      "types": "./development/legacy-decorators/custom-element.d.ts",
+      "node": {
+        "development": "./node/development/legacy-decorators/custom-element.js",
+        "default": "./node/legacy-decorators/custom-element.js"
+      },
+      "development": "./development/legacy-decorators/custom-element.js",
+      "default": "./legacy-decorators/custom-element.js"
+    },
+    "./legacy-decorators/event-options.js": {
+      "types": "./development/legacy-decorators/event-options.d.ts",
+      "node": {
+        "development": "./node/development/legacy-decorators/event-options.js",
+        "default": "./node/legacy-decorators/event-options.js"
+      },
+      "development": "./development/legacy-decorators/event-options.js",
+      "default": "./legacy-decorators/event-options.js"
+    },
+    "./legacy-decorators/property.js": {
+      "types": "./development/legacy-decorators/property.d.ts",
+      "node": {
+        "development": "./node/development/legacy-decorators/property.js",
+        "default": "./node/legacy-decorators/property.js"
+      },
+      "development": "./development/legacy-decorators/property.js",
+      "default": "./legacy-decorators/property.js"
+    },
+    "./legacy-decorators/query-all.js": {
+      "types": "./development/legacy-decorators/query-all.d.ts",
+      "node": {
+        "development": "./node/development/legacy-decorators/query-all.js",
+        "default": "./node/legacy-decorators/query-all.js"
+      },
+      "development": "./development/legacy-decorators/query-all.js",
+      "default": "./legacy-decorators/query-all.js"
+    },
+    "./legacy-decorators/query-assigned-elements.js": {
+      "types": "./development/legacy-decorators/query-assigned-elements.d.ts",
+      "node": {
+        "development": "./node/development/legacy-decorators/query-assigned-elements.js",
+        "default": "./node/legacy-decorators/query-assigned-elements.js"
+      },
+      "development": "./development/legacy-decorators/query-assigned-elements.js",
+      "default": "./legacy-decorators/query-assigned-elements.js"
+    },
+    "./legacy-decorators/query-assigned-nodes.js": {
+      "types": "./development/legacy-decorators/query-assigned-nodes.d.ts",
+      "node": {
+        "development": "./node/development/legacy-decorators/query-assigned-nodes.js",
+        "default": "./node/legacy-decorators/query-assigned-nodes.js"
+      },
+      "development": "./development/legacy-decorators/query-assigned-nodes.js",
+      "default": "./legacy-decorators/query-assigned-nodes.js"
+    },
+    "./legacy-decorators/query-async.js": {
+      "types": "./development/legacy-decorators/query-async.d.ts",
+      "node": {
+        "development": "./node/development/legacy-decorators/query-async.js",
+        "default": "./node/legacy-decorators/query-async.js"
+      },
+      "development": "./development/legacy-decorators/query-async.js",
+      "default": "./legacy-decorators/query-async.js"
+    },
+    "./legacy-decorators/query.js": {
+      "types": "./development/legacy-decorators/query.d.ts",
+      "node": {
+        "development": "./node/development/legacy-decorators/query.js",
+        "default": "./node/legacy-decorators/query.js"
+      },
+      "development": "./development/legacy-decorators/query.js",
+      "default": "./legacy-decorators/query.js"
+    },
+    "./legacy-decorators/state.js": {
+      "types": "./development/legacy-decorators/state.d.ts",
+      "node": {
+        "development": "./node/development/legacy-decorators/state.js",
+        "default": "./node/legacy-decorators/state.js"
+      },
+      "development": "./development/legacy-decorators/state.js",
+      "default": "./legacy-decorators/state.js"
+    },
     "./polyfill-support.js": {
       "types": "./development/polyfill-support.d.ts",
       "node": {
@@ -156,6 +336,7 @@
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
+    "build:ts:std-decorators": "wireit",
     "build:ts:types": "wireit",
     "build:rollup": "wireit",
     "build:babel": "wireit",
@@ -176,6 +357,7 @@
         "build:rollup",
         "build:babel",
         "build:ts",
+        "build:ts:std-decorators",
         "build:ts:types"
       ]
     },
@@ -195,6 +377,7 @@
       "output": [
         "development/**/*.{js,js.map,d.ts,d.ts.map}",
         "!development/test/decorators-babel",
+        "!development/test/std-decorators",
         "tsconfig.tsbuildinfo",
         "tsconfig.polyfill-support.tsbuildinfo"
       ]
@@ -203,18 +386,37 @@
       "command": "treemirror development . \"**/*.d.ts{,.map}\"",
       "dependencies": [
         "../internal-scripts:build",
-        "build:ts"
+        "build:ts",
+        "build:ts:std-decorators"
       ],
       "files": [],
       "output": [
         "*.d.ts{,.map}",
-        "decorators/*.d.ts{,.map}"
+        "decorators/*.d.ts{,.map}",
+        "legacy-decorators/*.d.ts{,.map}"
+      ]
+    },
+    "build:ts:std-decorators": {
+      "#comment": "This is a separate script from build:ts because it needs a tsconfig without experimentalDecorators.",
+      "command": "tsc --pretty --project tsconfig.std-decorators.json",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "src/test/std-decorators/**/*.ts",
+        "tsconfig.std-decorators.json"
+      ],
+      "output": [
+        "development/test/std-decorators",
+        "tsconfig.std-decorators.tsbuildinfo"
       ]
     },
     "build:rollup": {
       "command": "rollup -c",
       "dependencies": [
-        "build:ts"
+        "build:ts",
+        "build:ts:std-decorators"
       ],
       "files": [
         "rollup.config.js",
@@ -225,10 +427,13 @@
       "output": [
         "css-tag.js{,.map}",
         "decorators.js{,.map}",
+        "legacy-decorators.js{,.map}",
         "polyfill-support.js{,.map}",
         "reactive-controller.js{,.map}",
         "reactive-element.js{,.map}",
         "decorators/*.js{,.map}",
+        "legacy-decorators/*.js{,.map}",
+        "std-decorators/*.js{,.map}",
         "test/*_test.html",
         "development/test/*_test.html",
         "test/polyfill-support/*_test.html",
@@ -280,6 +485,7 @@
       "command": "MODE=dev node ../tests/run-web-tests.js \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
+        "build:ts:std-decorators",
         "build:babel",
         "../tests:build"
       ],
@@ -295,6 +501,7 @@
       "command": "MODE=prod node ../tests/run-web-tests.js \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
+        "build:ts:std-decorators",
         "build:rollup",
         "build:babel",
         "../tests:build"
@@ -311,6 +518,7 @@
       "command": "node development/test/node-imports.js",
       "dependencies": [
         "build:ts",
+        "build:ts:std-decorators",
         "build:rollup"
       ],
       "files": [],
@@ -320,6 +528,7 @@
       "command": "node --conditions=development development/test/node-imports.js",
       "dependencies": [
         "build:ts",
+        "build:ts:std-decorators",
         "build:rollup"
       ],
       "files": [],
@@ -329,6 +538,7 @@
       "command": "node development/test/node-dom-shim.js",
       "dependencies": [
         "build:ts",
+        "build:ts:std-decorators",
         "build:rollup"
       ],
       "files": [],
@@ -338,6 +548,7 @@
       "command": "node --conditions=development development/test/node-dom-shim.js",
       "dependencies": [
         "build:ts",
+        "build:ts:std-decorators",
         "build:rollup"
       ],
       "files": [],
@@ -351,6 +562,8 @@
     "/reactive-controller.{d.ts,d.ts.map,js,js.map}",
     "/reactive-element.{d.ts,d.ts.map,js,js.map}",
     "/decorators/",
+    "/legacy-decorators/",
+    "/srd-decorators/",
     "/development/",
     "!/development/test/",
     "/node/"
