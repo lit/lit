@@ -390,6 +390,7 @@ export interface ClassFieldInit extends PropertyLike {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  readonly?: boolean | undefined;
 }
 
 export class ClassField extends Declaration {
@@ -397,6 +398,7 @@ export class ClassField extends Declaration {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  readonly?: boolean | undefined;
   type?: Type | undefined;
   default?: string | undefined;
   constructor(init: ClassFieldInit) {
@@ -407,6 +409,7 @@ export class ClassField extends Declaration {
     this.source = init.source;
     this.type = init.type;
     this.default = init.default;
+    this.readonly = init.readonly;
   }
 }
 

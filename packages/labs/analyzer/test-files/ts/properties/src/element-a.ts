@@ -25,12 +25,28 @@ export class ElementA extends LitElement {
 
   declare staticProp: number;
 
+  declare constructorAssignOnly: number;
+
   constructor() {
     super();
     this.staticProp = 42;
+    this.constructorAssignOnly = 0;
   }
 
   notDecorated: string;
+
+  readonly readonlyField = 0;
+
+  get getterOnly(): number {
+    return 0;
+  }
+
+  get accessorPair(): number {
+    return 0;
+  }
+  set accessorPair(_: number) {
+    void 0;
+  }
 
   @property()
   noOptionsString: string;
