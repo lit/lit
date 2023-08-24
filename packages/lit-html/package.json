@@ -270,6 +270,7 @@
     "build": "wireit",
     "build:ts": "wireit",
     "build:ts:types": "wireit",
+    "build:compiled:ts:tests": "wireit",
     "build:rollup": "wireit",
     "build:version-stability-test": "wireit",
     "check-version": "wireit",
@@ -279,7 +280,8 @@
     "test:dev": "wireit",
     "test:prod": "wireit",
     "test:node": "wireit",
-    "test:node-dev": "wireit"
+    "test:node-dev": "wireit",
+    "test:dev:compiled": "wireit"
   },
   "files": [
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
@@ -332,6 +334,23 @@
       "output": [
         "*.d.ts{,.map}",
         "directives/*.d.ts{,.map}"
+      ]
+    },
+    "build:compiled:ts:tests": {
+      "#comment": "Compile the test directory with the lit template compiler.",
+      "command": "node ../labs/compiler/test/compile_lit_html_tests.js",
+      "dependencies": [
+        "../labs/compiler:build"
+      ],
+      "files": [
+        "src/test/**/*.ts",
+        "tsconfig.json",
+        "tsconfig.compiled-tests.json"
+      ],
+      "output": [
+        "compiled/**/*.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo",
+        "tsconfig.compiled-tests.tsbuildinfo"
       ]
     },
     "build:rollup": {
@@ -402,6 +421,7 @@
         "test:prod",
         "test:node",
         "test:node-dev",
+        "test:dev:compiled",
         "check-version"
       ]
     },
@@ -450,6 +470,21 @@
         "build:ts",
         "build:rollup"
       ],
+      "files": [],
+      "output": []
+    },
+    "test:dev:compiled": {
+      "command": "node ../tests/run-web-tests.js \"compiled/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build:compiled:ts:tests",
+        "../tests:build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        },
+        "MODE": "dev"
+      },
       "files": [],
       "output": []
     }

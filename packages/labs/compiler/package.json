@@ -2,11 +2,22 @@
   "name": "@lit-labs/compiler",
   "description": "Compiler to prepare Lit templates at build time",
   "version": "0.0.0",
-  "private": true,
   "author": "Google LLC",
   "homepage": "https://github.com/Lit/Lit/tree/main/packages/labs/compiler",
   "license": "BSD-3-Clause",
   "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "files": [
+    "/lib/",
+    "/index.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/Lit/Lit.git",
@@ -42,7 +53,8 @@
       "output": [
         "lib",
         "test",
-        "tsconfig.tsbuildinfo"
+        "tsconfig.tsbuildinfo",
+        "index.{d.ts,d.ts.map,js,js.map}"
       ],
       "clean": "if-file-deleted"
     },
@@ -64,7 +76,7 @@
     "test": {
       "command": "uvu test \".*_test\\.js$\"",
       "dependencies": [
-        "build:ts"
+        "build"
       ],
       "files": [
         "test_files/*.ts",
@@ -100,5 +112,11 @@
     "rollup": "^3.27.2",
     "source-map": "^0.7.4",
     "uvu": "^0.5.6"
+  },
+  "engines": {
+    "node": ">=14.17"
+  },
+  "publishConfig": {
+    "access": "public"
   }
 }

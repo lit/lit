@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.1
+
+### Patch Changes
+
+- [#4097](https://github.com/lit/lit/pull/4097) [`364650d0`](https://github.com/lit/lit/commit/364650d0a3a8f873249e39dacf17ac9e3343b89b) - Fix type regression to prefer provided event handler prop type over React's built-in handler type.
+
 ## 2.0.0
 
 ### Major Changes

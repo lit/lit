@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {compileLitTemplates} from './lib/template-transform.js';
+import {compileLitTemplates} from '@lit-labs/compiler';
 import typescript from '@rollup/plugin-typescript';
 
 /**

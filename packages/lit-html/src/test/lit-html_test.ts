@@ -462,7 +462,13 @@ suite('lit-html', () => {
 
     test('comment', () => {
       render(html`<!--${'A'}-->`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<!---->');
+      // Strip only the marker text (and not the entire comment as
+      // stripExpressionMarkers does) so that the test works on both runtime and
+      // compiled templates.
+      assert.equal(
+        container.innerHTML.replace(/lit\$[0-9]+\$/g, ''),
+        '<!----><!---->'
+      );
     });
 
     test('comment with attribute-like content', () => {
