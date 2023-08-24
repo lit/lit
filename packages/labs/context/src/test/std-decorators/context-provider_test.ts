@@ -199,6 +199,46 @@ test('consuming without an accessor', async () => {
   // it isn't a reactive property, because @consume called `requestUpdate`.
   await consumer.updateComplete;
   assert.strictEqual(consumer.shadowRoot!.textContent, 'updated');
+  document.body.removeChild(provider);
+});
+
+test('consuming and producing with private fields', async () => {
+  const context = createContext<string>(Symbol());
+  @customElement('private-field-consumer')
+  class Consumer extends LitElement {
+    @consume({context, subscribe: true})
+    #value = 'initial in consumer';
+
+    protected render(): TemplateResult {
+      return html`${this.#value}`;
+    }
+  }
+  @customElement('private-field-provider')
+  class Provider extends LitElement {
+    @provide({context})
+    accessor #value = 'initial in provider';
+
+    protected render(): TemplateResult {
+      return html`<private-field-consumer></private-field-consumer>`;
+    }
+
+    updatePrivateValue(value: string) {
+      this.#value = value;
+    }
+  }
+
+  const provider = new Provider();
+  document.body.appendChild(provider);
+  await provider.updateComplete;
+  const consumer = provider.shadowRoot!.querySelector(
+    'private-field-consumer'
+  ) as Consumer;
+  assert.strictEqual(consumer.shadowRoot!.textContent, 'initial in provider');
+
+  provider.updatePrivateValue('updated');
+  await consumer.updateComplete;
+  assert.strictEqual(consumer.shadowRoot!.textContent, 'updated');
+  document.body.removeChild(provider);
 });
 
 memorySuite('memory leak test', () => {
