@@ -25,9 +25,12 @@ export class ElementA extends LitElement {
 
   declare staticProp: number;
 
+  declare constructorAssignOnly: number;
+
   constructor() {
     super();
     this.staticProp = 42;
+    this.constructorAssignOnly = 0;
   }
 
   notDecorated: string;

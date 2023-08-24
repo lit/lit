@@ -72,6 +72,28 @@ export const getClassDeclaration = (
   });
 };
 
+const getIsReadonlyForNode = (
+  node: ts.Node,
+  analyzer: AnalyzerInterface
+): boolean => {
+  const {typescript} = analyzer;
+  if (typescript.isPropertyDeclaration(node)) {
+    return (
+      node.modifiers?.some((mod) =>
+        typescript.isReadonlyKeywordOrPlusOrMinusToken(mod)
+      ) ||
+      typescript
+        .getJSDocTags(node)
+        .some((tag) => tag.tagName.text === 'readonly')
+    );
+  } else if (typescript.isStatement(node)) {
+    return typescript
+      .getJSDocTags(node)
+      .some((tag) => tag.tagName.text === 'readonly');
+  }
+  return false;
+};
+
 /**
  * Returns the `fields` and `methods` of a class.
  */
@@ -87,7 +109,30 @@ export const getClassMembers = (
   declaration.members.forEach((node) => {
     // Ignore non-implementation signatures of overloaded methods by checking
     // for `node.body`.
-    if (typescript.isMethodDeclaration(node) && node.body) {
+    if (typescript.isConstructorDeclaration(node) && node.body) {
+      node.body.statements.forEach((node) => {
+        if (
+          typescript.isExpressionStatement(node) &&
+          typescript.isBinaryExpression(node.expression) &&
+          node.expression.operatorToken.kind ===
+            typescript.SyntaxKind.EqualsToken &&
+          typescript.isPropertyAccessExpression(node.expression.left) &&
+          node.expression.left.expression.kind ===
+            typescript.SyntaxKind.ThisKeyword
+        ) {
+          const name = node.expression.left.name.getText();
+          fieldMap.set(
+            name,
+            new ClassField({
+              name,
+              type: getTypeForNode(node.expression.right, analyzer),
+              privacy: getPrivacy(typescript, node),
+              readonly: getIsReadonlyForNode(node, analyzer),
+            })
+          );
+        }
+      });
+    } else if (typescript.isMethodDeclaration(node) && node.body) {
       const info = getMemberInfo(typescript, node);
       const name = node.name.getText();
       (info.static ? staticMethodMap : methodMap).set(
@@ -122,13 +167,7 @@ export const getClassMembers = (
           default: node.initializer?.getText(),
           type: getTypeForNode(node, analyzer),
           ...parseNodeJSDocInfo(node, analyzer),
-          readonly:
-            node.modifiers?.some((mod) =>
-              typescript.isReadonlyKeywordOrPlusOrMinusToken(mod)
-            ) ||
-            (node as ts.PropertyDeclaration & {jsDoc: ts.JSDoc[]}).jsDoc?.some(
-              (doc) => doc.tags?.some((tag) => tag.tagName.text === 'readonly')
-            ),
+          readonly: getIsReadonlyForNode(node, analyzer),
         })
       );
     } else if (typescript.isAccessor(node)) {

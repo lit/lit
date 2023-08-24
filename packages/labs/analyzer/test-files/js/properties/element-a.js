@@ -52,11 +52,13 @@ export class ElementA extends LitElement {
     void 0;
   }
 
+  /** @readonly */
+  readonlyField = 0;
+
   constructor() {
     super();
+    this.constructorAssignOnly = 0;
     this.notDecorated = '';
-    /** @readonly */
-    this.readonlyField = 0;
     this.noOptionsString = '';
     this.noOptionsNumber = 42;
     this.typeString = '';
