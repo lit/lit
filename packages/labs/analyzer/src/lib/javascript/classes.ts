@@ -106,6 +106,7 @@ export const getClassMembers = (
   const staticFieldMap = new Map<string, ClassField>();
   const methodMap = new Map<string, ClassMethod>();
   const staticMethodMap = new Map<string, ClassMethod>();
+  const accessors = new Map<string, {get?: ts.Node; set?: ts.Node}>();
   declaration.members.forEach((node) => {
     // Ignore non-implementation signatures of overloaded methods by checking
     // for `node.body`.
@@ -171,9 +172,29 @@ export const getClassMembers = (
         })
       );
     } else if (typescript.isAccessor(node)) {
-      // TODO: handle getter only, accessor pairs
+      const name = node.name.getText();
+      const _accessors = accessors.get(name) ?? {};
+      if (typescript.isGetAccessor(node)) _accessors.get = node;
+      else if (typescript.isSetAccessor(node)) _accessors.set = node;
+      accessors.set(name, _accessors);
     }
   });
+  for (const [name, {get, set}] of accessors) {
+    if (get ?? set) {
+      fieldMap.set(
+        name,
+        new ClassField({
+          name,
+          type: getTypeForNode((get ?? set)!, analyzer),
+          privacy: getPrivacy(typescript, (get ?? set)!),
+          readonly: !!get && !set,
+          // TODO: derive from getter?
+          // default
+          // TODO: reflect, etc?
+        })
+      );
+    }
+  }
   return {
     fieldMap,
     staticFieldMap,
