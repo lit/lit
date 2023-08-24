@@ -355,7 +355,6 @@
     "build": {
       "dependencies": [
         "build:rollup",
-        "build:babel",
         "build:ts",
         "build:ts:std-decorators",
         "build:ts:types"
@@ -442,8 +441,9 @@
       ]
     },
     "build:babel": {
-      "command": "babel --extensions .ts src/test/decorators --out-dir development/test/decorators-babel",
+      "command": "babel --extensions .ts src/test/std-decorators --out-dir development/test/decorators-babel",
       "files": [
+        ".babelrc",
         "src/test/decorators/**/*.ts"
       ],
       "output": [
@@ -482,11 +482,10 @@
       ]
     },
     "test:dev": {
-      "command": "MODE=dev node ../tests/run-web-tests.js \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
+      "command": "MODE=dev node ../tests/run-web-tests.js \"development/test/**/*_test.js\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
         "build:ts:std-decorators",
-        "build:babel",
         "../tests:build"
       ],
       "env": {
@@ -503,7 +502,6 @@
         "build:ts",
         "build:ts:std-decorators",
         "build:rollup",
-        "build:babel",
         "../tests:build"
       ],
       "env": {
@@ -572,11 +570,12 @@
     "@lit-labs/ssr-dom-shim": "^1.1.2-pre.0"
   },
   "devDependencies": {
-    "@babel/cli": "^7.14.6",
-    "@babel/core": "^7.14.6",
-    "@babel/plugin-proposal-class-properties": "^7.14.5",
-    "@babel/plugin-proposal-decorators": "^7.14.5",
-    "@babel/plugin-transform-typescript": "^7.14.6",
+    "@babel/cli": "^7.22.10",
+    "@babel/core": "^7.22.11",
+    "@babel/plugin-proposal-class-properties": "^7.18.6",
+    "@babel/plugin-proposal-decorators": "^7.22.10",
+    "@babel/plugin-transform-class-static-block": "^7.22.11",
+    "@babel/plugin-transform-typescript": "^7.22.11",
     "@lit-internal/scripts": "^1.0.1-pre.0",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",

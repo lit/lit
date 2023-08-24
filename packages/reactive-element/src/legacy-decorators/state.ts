@@ -35,6 +35,7 @@ export interface InternalPropertyDeclaration<Type = unknown> {
 export function state(options?: InternalPropertyDeclaration) {
   return property({
     ...options,
+    attribute: false,
     state: true,
   });
 }

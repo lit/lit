@@ -10,9 +10,33 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
+import {queryAll as standardQueryAll} from '../std-decorators/query-all.js';
+import type {ReactiveElement} from '../reactive-element.js';
 
-import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
+/**
+ * Generates a public interface type that removes private and protected fields.
+ * This allows accepting otherwise compatible versions of the type (e.g. from
+ * multiple copies of the same package in `node_modules`).
+ */
+type Interface<T> = {
+  [K in keyof T]: T[K];
+};
+
+export type QueryAllDecorator = {
+  // legacy
+  (
+    proto: Interface<ReactiveElement>,
+    name: PropertyKey
+    // Note TypeScript requires the return type to be `void|any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+
+  // standard
+  <C extends ReactiveElement, V extends NodeList>(
+    value: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): void;
+};
 
 /**
  * A property decorator that converts a class property into a getter
@@ -38,14 +62,26 @@ import {decorateProperty} from './base.js';
  * ```
  * @category Decorator
  */
-export function queryAll(selector: string) {
-  return decorateProperty({
-    descriptor: (_name: PropertyKey) => ({
-      get(this: ReactiveElement) {
-        return this.renderRoot?.querySelectorAll(selector) ?? [];
-      },
-      enumerable: true,
-      configurable: true,
-    }),
-  });
+export function queryAll(selector: string): QueryAllDecorator {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (<C extends ReactiveElement, V extends NodeList>(
+    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
+    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
+  ) => {
+    if (typeof nameOrContext === 'object') {
+      return standardQueryAll(selector)(
+        protoOrTarget,
+        nameOrContext as ClassAccessorDecoratorContext<C, V>
+      );
+    } else {
+      Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+        get(this: ReactiveElement) {
+          return this.renderRoot?.querySelectorAll(selector) ?? [];
+        },
+        enumerable: true,
+        configurable: true,
+      });
+      return;
+    }
+  }) as QueryAllDecorator;
 }

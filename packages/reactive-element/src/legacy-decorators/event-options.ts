@@ -12,7 +12,32 @@
  */
 
 import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
+
+/**
+ * Generates a public interface type that removes private and protected fields.
+ * This allows accepting otherwise compatible versions of the type (e.g. from
+ * multiple copies of the same package in `node_modules`).
+ */
+type Interface<T> = {
+  [K in keyof T]: T[K];
+};
+
+export type EventOptionsDecorator = {
+  // legacy
+  (
+    proto: Interface<ReactiveElement>,
+    name: PropertyKey
+    // Note TypeScript requires the return type to be `void|any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+
+  // standard
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  <C, V extends (this: C, ...args: any) => any>(
+    value: V,
+    _context: ClassMethodDecoratorContext<C, V>
+  ): void;
+};
 
 /**
  * Adds event listener options to a method used as an event listener in a
@@ -44,14 +69,22 @@ import {decorateProperty} from './base.js';
  * ```
  * @category Decorator
  */
-export function eventOptions(options: AddEventListenerOptions) {
-  return decorateProperty({
-    finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
+export function eventOptions(
+  options: AddEventListenerOptions
+): EventOptionsDecorator {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (<C, V extends (this: C, ...args: any) => any>(
+    protoOrValue: V,
+    nameOrContext: PropertyKey | ClassMethodDecoratorContext<C, V>
+  ) => {
+    if (typeof protoOrValue === 'function') {
+      Object.assign(protoOrValue, options);
+    } else {
       Object.assign(
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        ctor.prototype[name as keyof ReactiveElement] as any,
+        protoOrValue[nameOrContext as keyof ReactiveElement] as any,
         options
       );
-    },
-  });
+    }
+  }) as EventOptionsDecorator;
 }

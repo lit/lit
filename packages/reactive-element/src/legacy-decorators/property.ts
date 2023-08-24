@@ -11,60 +11,44 @@
  * not an arrow function.
  */
 import {PropertyDeclaration, ReactiveElement} from '../reactive-element.js';
-import {ClassElement} from './base.js';
+import {property as standardProperty} from '../std-decorators/property.js';
 
-const standardProperty = (
-  options: PropertyDeclaration,
-  element: ClassElement
-) => {
-  // When decorating an accessor, pass it through and add property metadata.
-  // Note, the `hasOwnProperty` check in `createProperty` ensures we don't
-  // stomp over the user's accessor.
-  if (
-    element.kind === 'method' &&
-    element.descriptor &&
-    !('value' in element.descriptor)
-  ) {
-    return {
-      ...element,
-      finisher(clazz: typeof ReactiveElement) {
-        clazz.createProperty(element.key, options);
-      },
-    };
-  } else {
-    // createProperty() takes care of defining the property, but we still
-    // must return some kind of descriptor, so return a descriptor for an
-    // unused prototype field. The finisher calls createProperty().
-    return {
-      kind: 'field',
-      key: Symbol(),
-      placement: 'own',
-      descriptor: {},
-      // store the original key so subsequent decorators have access to it.
-      originalKey: element.key,
-      // When @babel/plugin-proposal-decorators implements initializers,
-      // do this instead of the initializer below. See:
-      // https://github.com/babel/babel/issues/9260 extras: [
-      //   {
-      //     kind: 'initializer',
-      //     placement: 'own',
-      //     initializer: descriptor.initializer,
-      //   }
-      // ],
-      initializer(this: {[key: string]: unknown}) {
-        if (typeof element.initializer === 'function') {
-          this[element.key as string] = element.initializer.call(this);
-        }
-      },
-      finisher(clazz: typeof ReactiveElement) {
-        clazz.createProperty(element.key, options);
-      },
-    };
-  }
+// Overloads for property decorator so that TypeScript can infer the correct
+// return type when a decorator is used as an accessor decorator or a setter
+// decorator.
+export type PropertyDecorator = {
+  // accessor decorator signature
+  <C extends ReactiveElement, V>(
+    target: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V>;
+
+  // setter decorator signature
+  <C extends ReactiveElement, V>(
+    target: (value: V) => void,
+    context: ClassSetterDecoratorContext<C, V>
+  ): (this: C, value: V) => void;
+
+  // legacy experimental decorator signature
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (protoOrDescriptor: Object, name: PropertyKey): any;
+
+  // union
+  <C extends ReactiveElement, V>(
+    protoOrTarget:
+      | object
+      | ClassAccessorDecoratorTarget<C, V>
+      | ((value: V) => void),
+    nameOrContext:
+      | PropertyKey
+      | ClassAccessorDecoratorContext
+      | ClassSetterDecoratorContext
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any;
 };
 
 const legacyProperty = (
-  options: PropertyDeclaration,
+  options: PropertyDeclaration | undefined,
   proto: Object,
   name: PropertyKey
 ) => {
@@ -72,8 +56,8 @@ const legacyProperty = (
 };
 
 /**
- * A property decorator which creates a reactive property that reflects a
- * corresponding attribute value. When a decorated property is set
+ * A class field or accessor decorator which creates a reactive property that
+ * reflects a corresponding attribute value. When a decorated property is set
  * the element will update and render. A {@linkcode PropertyDeclaration} may
  * optionally be supplied to configure property features.
  *
@@ -103,10 +87,31 @@ const legacyProperty = (
  * @category Decorator
  * @ExportDecoratedItems
  */
-export function property(options?: PropertyDeclaration) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (protoOrDescriptor: Object | ClassElement, name?: PropertyKey): any =>
-    name !== undefined
-      ? legacyProperty(options!, protoOrDescriptor as Object, name)
-      : standardProperty(options!, protoOrDescriptor as ClassElement);
+export function property(options?: PropertyDeclaration): PropertyDecorator {
+  return <C extends ReactiveElement, V>(
+    protoOrTarget:
+      | object
+      | ClassAccessorDecoratorTarget<C, V>
+      | ((value: V) => void),
+    nameOrContext:
+      | PropertyKey
+      | ClassAccessorDecoratorContext<C, V>
+      | ClassSetterDecoratorContext<C, V>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any => {
+    return (
+      typeof nameOrContext === 'object'
+        ? standardProperty(options)<C, V>(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            protoOrTarget as any /*ClassAccessorDecoratorTarget<C, V> | ((value: V) => void)*/,
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            nameOrContext as any /*ClassAccessorDecoratorContext<C, V> | ClassSetterDecoratorContext<C, V>*/
+          )
+        : legacyProperty(
+            options,
+            protoOrTarget as Object,
+            nameOrContext as PropertyKey
+          )
+    ) as PropertyDecorator;
+  };
 }
