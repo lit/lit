@@ -42,7 +42,7 @@ export const packageJsonTemplate = (
         '@vitejs/plugin-vue': '^3.1.2',
         '@rollup/plugin-typescript': '^9.0.1',
         vite: '^3.1.8',
-        'vue-tsc': '^1.0.8',
+        'vue-tsc': '^1.8.8',
       },
       files: [...moduleNames.map((f) => `${f}.*`)],
     },
