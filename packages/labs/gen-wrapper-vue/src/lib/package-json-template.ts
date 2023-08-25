@@ -38,7 +38,7 @@ export const packageJsonTemplate = (
       },
       devDependencies: {
         // Use typescript from source package, assuming it exists
-        typescript: pkgJson?.devDependencies?.typescript ?? '~4.7.4',
+        typescript: pkgJson?.devDependencies?.typescript ?? '~5.2.0',
         '@vitejs/plugin-vue': '^3.1.2',
         '@rollup/plugin-typescript': '^9.0.1',
         vite: '^3.1.8',
