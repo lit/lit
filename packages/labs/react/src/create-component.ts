@@ -102,8 +102,22 @@ type EventListeners<R extends EventNames> = {
     : (e: Event) => void;
 };
 
+// Interface that includes parts of the React module that we use. This allows
+// users to construct an object with just the needed methods and prevents type
+// incompatibilities when there are multiple React types being used.
+interface ReactLike {
+  forwardRef: typeof React.forwardRef;
+  useRef: typeof React.useRef;
+  // typeof React.useLayoutEffect uses a unique symbol brand making it
+  // incompatible across copies.
+  useLayoutEffect: (effect: () => void, deps?: unknown[]) => void;
+  // typeof React.createElement is incompatible across copies due to overloads.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  createElement: (type: any, props?: any, ...children: any[]) => any;
+}
+
 interface Options<I extends HTMLElement, E extends EventNames = {}> {
-  react: typeof React;
+  react: ReactLike;
   tagName: string;
   elementClass: Constructor<I>;
   events?: E;
@@ -221,12 +235,14 @@ export const createComponent = <
   I extends HTMLElement,
   E extends EventNames = {}
 >({
-  react: React,
+  react,
   tagName,
   elementClass,
   events,
   displayName,
 }: Options<I, E>): ReactWebComponent<I, E> => {
+  const {forwardRef, useRef, useLayoutEffect, createElement} =
+    react as typeof React;
   const eventProps = new Set(Object.keys(events ?? {}));
 
   if (DEV_MODE) {
@@ -247,9 +263,9 @@ export const createComponent = <
 
   type Props = ComponentProps<I, E>;
 
-  const ReactComponent = React.forwardRef<I, Props>((props, ref) => {
-    const prevPropsRef = React.useRef<Props | null>(null);
-    const elementRef = React.useRef<I | null>(null);
+  const ReactComponent = forwardRef<I, Props>((props, ref) => {
+    const prevPropsRef = useRef<Props | null>(null);
+    const elementRef = useRef<I | null>(null);
 
     // Props to be passed to React.createElement
     const reactProps: Record<string, unknown> = {};
@@ -275,7 +291,7 @@ export const createComponent = <
     // useLayoutEffect produces warnings during server rendering.
     if (!NODE_MODE) {
       // This one has no dependency array so it'll run on every re-render.
-      React.useLayoutEffect(() => {
+      useLayoutEffect(() => {
         if (elementRef.current === null) {
           return;
         }
@@ -296,7 +312,7 @@ export const createComponent = <
       });
 
       // Empty dependency array so this will only run once after first render.
-      React.useLayoutEffect(() => {
+      useLayoutEffect(() => {
         elementRef.current?.removeAttribute('defer-hydration');
       }, []);
     }
@@ -306,7 +322,7 @@ export const createComponent = <
       // element properties in a special bag to be set by the server-side
       // element renderer.
       if (
-        React.createElement.name === 'litPatchedCreateElement' &&
+        createElement.name === 'litPatchedCreateElement' &&
         Object.keys(elementProps).length
       ) {
         // This property needs to remain unminified.
@@ -318,7 +334,7 @@ export const createComponent = <
       reactProps['suppressHydrationWarning'] = true;
     }
 
-    return React.createElement(tagName, {
+    return createElement(tagName, {
       ...reactProps,
       ref: (node: I) => {
         elementRef.current = node;
