@@ -42,7 +42,7 @@ export const generatePackageJson = (
       language !== 'ts'
         ? ''
         : `,
-    "typescript": "^4.7.4"`
+    "typescript": "~5.2.0"`
     }
   },
   "exports": {

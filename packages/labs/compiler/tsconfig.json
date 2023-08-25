@@ -3,7 +3,7 @@
     "composite": true,
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
     "target": "es2020",
-    "module": "ESNext",
+    "module": "NodeNext",
     "lib": ["es2021", "DOM"],
     "declaration": true,
     "declarationMap": true,
