@@ -336,11 +336,19 @@ export const getSuperClassAndMixins = (
     // super class is passed into
     const mixin = mixinRef?.dereference(MixinDeclaration);
     if (mixinRef === undefined || mixin === undefined) {
-      throw new Error(
-        `This is presumed to be a mixin but could it was not included in ` +
-          `the source files of this package and no custom-elements.json ` +
-          `was found for it.`
+      analyzer.addDiagnostic(
+        createDiagnostic({
+          typescript: analyzer.typescript,
+          node: expression,
+          message:
+            `This is presumed to be a mixin but could it was not included in ` +
+            `the source files of this package and no custom-elements.json ` +
+            `was found for it.`,
+          code: DiagnosticCode.UNSUPPORTED,
+          category: analyzer.typescript.DiagnosticCategory.Warning,
+        })
       );
+      return undefined;
     }
     foundMixins.push(mixinRef);
     const superArg = expression.arguments[mixin.superClassArgIdx];
