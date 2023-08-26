@@ -128,15 +128,13 @@ suite('@property', () => {
       _foo?: number;
       updatedContent?: number;
 
-      @property({reflect: true, type: Number})
       get foo() {
         return this._foo as number;
       }
 
+      @property({reflect: true, type: Number})
       set foo(v: number) {
-        const old = this.foo;
         this._foo = v;
-        this.requestUpdate('foo', old);
       }
 
       override updated() {

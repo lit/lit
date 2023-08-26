@@ -154,9 +154,7 @@ suite('@property', () => {
 
       @property({reflect: true, type: Number})
       set foo(v: number) {
-        const old = this.foo;
         this._foo = v;
-        this.requestUpdate('foo', old);
       }
 
       get foo() {

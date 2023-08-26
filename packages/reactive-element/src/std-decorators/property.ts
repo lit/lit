@@ -122,10 +122,13 @@ export const property = (
         },
       };
     } else if (kind === 'setter') {
-      // We do not wrap the author's setter. They are expected to call
-      // requestUpdate themselves, and will possibly do so conditionally.
+      const {name} = context;
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return undefined as any;
+      return function (this: C, value: V) {
+        const oldValue = this[name as keyof C];
+        (target as (value: V) => void).call(this, value);
+        this.requestUpdate(name, oldValue, options);
+      };
     }
     throw new Error(`Unsupported decorator location: ${kind}`);
   }) as PropertyDecorator;

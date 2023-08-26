@@ -53,6 +53,9 @@ const legacyProperty = (
   name: PropertyKey
 ) => {
   (proto.constructor as typeof ReactiveElement).createProperty(name, options);
+  // We need to return a descriptor here otherwise TypeScript overwrites
+  // the decorator we define in createProperty().
+  return Object.getOwnPropertyDescriptor(proto, name);
 };
 
 /**

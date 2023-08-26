@@ -31,7 +31,13 @@ export type {
 } from './reactive-controller.js';
 
 // TODO (justinfagnani): Add `hasOwn` here when we ship ES2022
-const {is, defineProperty, getOwnPropertyNames, getOwnPropertySymbols} = Object;
+const {
+  is,
+  defineProperty,
+  getOwnPropertyDescriptor,
+  getOwnPropertyNames,
+  getOwnPropertySymbols,
+} = Object;
 
 const NODE_MODE = false;
 
@@ -668,12 +674,7 @@ export abstract class ReactiveElement
     // is called before `finalize`, we ensure finalization has been kicked off.
     this.finalize();
     this.elementProperties.set(name, options);
-    // Do not generate an accessor if the prototype already has one, since
-    // it would be lost otherwise and that would never be the user's intention;
-    // Instead, we expect users to call `requestUpdate` themselves from
-    // user-defined accessors. Note that if the super has an accessor we will
-    // still overwrite it
-    if (!options.noAccessor && !this.prototype.hasOwnProperty(name)) {
+    if (!options.noAccessor) {
       const key = DEV_MODE
         ? // Use Symbol.for in dev mode to make it easier to maintain state
           // when doing HMR.
@@ -728,16 +729,24 @@ export abstract class ReactiveElement
     key: string | symbol,
     options: PropertyDeclaration
   ): PropertyDescriptor | undefined {
+    const {get, set} = getOwnPropertyDescriptor(this.prototype, name) ?? {};
     return {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       get(): any {
-        return (this as {[key: string]: unknown})[key as string];
+        return get === undefined
+          ? (this as {[key: string]: unknown})[key as string]
+          : get.call(this);
       },
       set(this: ReactiveElement, value: unknown) {
-        const oldValue = (this as {} as {[key: string]: unknown})[
-          name as string
-        ];
-        (this as {} as {[key: string]: unknown})[key as string] = value;
+        const oldValue =
+          get === undefined
+            ? (this as {} as {[key: string]: unknown})[name as string]
+            : get.call(this);
+        if (set === undefined) {
+          (this as {} as {[key: string]: unknown})[key as string] = value;
+        } else {
+          set.call(this, value);
+        }
         (this as unknown as ReactiveElement).requestUpdate(
           name,
           oldValue,
@@ -837,6 +846,22 @@ export abstract class ReactiveElement
       }
     }
     this.elementStyles = this.finalizeStyles(this.styles);
+    if (DEV_MODE) {
+      if (this.hasOwnProperty('createProperty')) {
+        issueWarning(
+          'no-override-create-property',
+          'Overriding ReactiveElement.createProperty() is deprecated. ' +
+            'The override will not be called with standard decorators'
+        );
+      }
+      if (this.hasOwnProperty('getPropertyDescriptor')) {
+        issueWarning(
+          'no-override-get-property-descriptor',
+          'Overriding ReactiveElement.getPropertyDescriptor() is deprecated. ' +
+            'The override will not be called with standard decorators'
+        );
+      }
+    }
     return true;
   }
 
