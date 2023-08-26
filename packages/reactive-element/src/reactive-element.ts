@@ -1213,6 +1213,14 @@ export abstract class ReactiveElement
     name?: PropertyKey,
     oldValue?: unknown,
     options?: PropertyDeclaration
+  ): void;
+  /* @internal */
+  requestUpdate(
+    name?: PropertyKey,
+    oldValue?: unknown,
+    options?: PropertyDeclaration,
+    initial = false,
+    initialValue?: unknown
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -1220,8 +1228,8 @@ export abstract class ReactiveElement
         this.constructor as typeof ReactiveElement
       ).getPropertyOptions(name);
       const hasChanged = options.hasChanged ?? notEqual;
-
-      if (hasChanged(this[name as keyof this], oldValue)) {
+      const newValue = initial ? initialValue : this[name as keyof this];
+      if (hasChanged(newValue, oldValue)) {
         // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
         // vs just Map.set()
         if (!this._$changedProperties.has(name)) {

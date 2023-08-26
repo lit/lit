@@ -15,7 +15,6 @@ import {
   ReactiveElement,
   defaultConverter,
   notEqual,
-  type PropertyValues,
 } from '../reactive-element.js';
 
 const DEV_MODE = true;
@@ -112,14 +111,13 @@ export const property = (
           this.requestUpdate(name, oldValue, options);
         },
         init(this: C, v: V): V {
-          if (v !== undefined) {
-            // We need this cast because these decorators are in a separate
-            // compilation unit from ReactiveElement, so can't see the
-            // @internal _$changedProperties field.
-            (
-              this as unknown as {_$changedProperties: PropertyValues}
-            )._$changedProperties.set(name, undefined);
-          }
+          (this.requestUpdate as InternalRequestUpdate)(
+            name,
+            undefined,
+            options,
+            true,
+            v
+          );
           return v;
         },
       };
@@ -131,3 +129,11 @@ export const property = (
     }
     throw new Error(`Unsupported decorator location: ${kind}`);
   }) as PropertyDecorator;
+
+type InternalRequestUpdate = (
+  name?: PropertyKey,
+  oldValue?: unknown,
+  options?: PropertyDeclaration,
+  _initial?: boolean,
+  _initialValue?: unknown
+) => void;

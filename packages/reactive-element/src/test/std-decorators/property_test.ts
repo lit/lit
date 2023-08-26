@@ -80,13 +80,13 @@ suite('@property', () => {
     assert.equal(el.getAttribute('attr'), null);
     assert.equal(el.customAttr, 'customAttr');
     // Make sure that the default value doesn't reflect
-    assert.equal(el.getAttribute('custom'), null);
+    assert.equal(el.getAttribute('custom'), 'customAttr');
     assert.equal(el.hasChanged, 10);
     assert.equal(el.fromAttribute, 1);
     assert.equal(el.toAttribute, 1);
-    assert.equal(el.getAttribute('toattribute'), null);
+    assert.equal(el.getAttribute('toattribute'), '1-attr');
     assert.equal(el.all, 10);
-    assert.equal(el.getAttribute('all-attr'), null);
+    assert.equal(el.getAttribute('all-attr'), '10-attr');
 
     // Test property->attribute reflection
     el.toAttribute = 27;
@@ -241,9 +241,9 @@ suite('@property', () => {
     assert.equal(el.hasChanged, 10);
     assert.equal(el.fromAttribute, 1);
     assert.equal(el.toAttribute, 1);
-    assert.equal(el.getAttribute('toattribute'), null);
+    assert.equal(el.getAttribute('toattribute'), '1-attr');
     assert.equal(el.all, 10);
-    assert.equal(el.getAttribute('all-attr'), null);
+    assert.equal(el.getAttribute('all-attr'), '10-attr');
     el.setAttribute('noattr', 'noAttr2');
     el.setAttribute('attr', 'attr2');
     el.setAttribute('custom', 'customAttr2');
