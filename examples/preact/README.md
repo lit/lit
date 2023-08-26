@@ -1,4 +1,4 @@
-# `@lit-labs/react` components in Preat
+# `@lit-labs/react` components in Preact
 
 This example project demonstrates React components made with `createComponent()`
 from `@lit-labs/react` being used in a Preact project.
