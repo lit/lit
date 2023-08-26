@@ -22,7 +22,11 @@ import {ElementProps} from '@lit-internal/test-elements-react/element-props.js';
 export function App() {
   return (
     <>
-      <ElementA foo="foo" onAChanged={() => {}} />
+      <ElementA foo="foo" onAChanged={() => {}}>
+        This goes in default slot
+        {/* TODO(augustjk): Add this back with #4142 */}
+        {/* <div slot="stuff">This goes in stuff slot</div> */}
+      </ElementA>
       <ElementEvents
         foo="foo"
         onStringCustomEvent={(e: CustomEvent<String>) => {
