@@ -6,7 +6,7 @@
 
 import {ifDefined} from 'lit-html/directives/if-defined.js';
 import {html, render} from 'lit-html';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {stripExpressionMarkers} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
 
 suite('ifDefined directive', () => {

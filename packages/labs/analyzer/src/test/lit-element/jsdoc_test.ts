@@ -7,35 +7,17 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {fileURLToPath} from 'url';
-import {getSourceFilename, InMemoryAnalyzer, languages} from '../utils.js';
-
-import {createPackageAnalyzer, Module, AbsolutePath} from '../../index.js';
+import {
+  AnalyzerTestContext,
+  languages,
+  setupAnalyzerForTest,
+} from '../utils.js';
 
 for (const lang of languages) {
-  const test = suite<{
-    getModule: (name: string) => Module;
-  }>(`LitElement event tests (${lang})`);
+  const test = suite<AnalyzerTestContext>(`JSDoc tests (${lang})`);
 
   test.before((ctx) => {
-    try {
-      const packagePath = fileURLToPath(
-        new URL(`../../test-files/${lang}/jsdoc`, import.meta.url).href
-      ) as AbsolutePath;
-      const analyzer = createPackageAnalyzer(packagePath);
-      ctx.getModule = (name: string) =>
-        analyzer.getModule(
-          getSourceFilename(
-            analyzer.path.join(packagePath, name),
-            lang
-          ) as AbsolutePath
-        );
-    } catch (error) {
-      // Uvu has a bug where it silently ignores failures in before and after,
-      // see https://github.com/lukeed/uvu/issues/191.
-      console.error('uvu before error', error);
-      process.exit(1);
-    }
+    setupAnalyzerForTest(ctx, lang, 'jsdoc');
   });
 
   // slots
@@ -81,7 +63,7 @@ for (const lang of languages) {
   test('cssParts - Correct number found', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
-    assert.equal(element.cssParts.size, 3);
+    assert.equal(element.cssParts.size, 6);
   });
 
   test('cssParts - no-description', ({getModule}) => {
@@ -117,18 +99,39 @@ for (const lang of languages) {
     );
   });
 
+  test('cssParts - lowercase', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const part = element.cssParts.get('lower-with-description-dash');
+    assert.ok(part);
+    assert.equal(part.summary, undefined);
+    assert.equal(
+      part.description,
+      'Description for :part(with-description-dash)'
+    );
+  });
+
   // cssProperties
 
   test('cssProperties - Correct number found', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
-    assert.equal(element.cssProperties.size, 6);
+    assert.equal(element.cssProperties.size, 22);
   });
 
   test('cssProperties - no-description', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
     const prop = element.cssProperties.get('--no-description');
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(prop.description, undefined);
+  });
+
+  test('cssProperties - lower-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-no-description');
     assert.ok(prop);
     assert.equal(prop.summary, undefined);
     assert.equal(prop.description, undefined);
@@ -146,6 +149,18 @@ for (const lang of languages) {
     );
   });
 
+  test('cssProperties - lower-with-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-with-description');
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(
+      prop.description,
+      'Description for --lower-with-description\nwith wraparound'
+    );
+  });
+
   test('cssProperties - with-description-dash', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
@@ -155,10 +170,81 @@ for (const lang of languages) {
     assert.equal(prop.description, 'Description for --with-description-dash');
   });
 
+  test('cssProperties - lower-with-description-dash', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-with-description-dash');
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(
+      prop.description,
+      'Description for --lower-with-description-dash'
+    );
+  });
+
+  test('cssProperties - default-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--default-no-description');
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
+  });
+
+  test('cssProperties - lower-default-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-default-no-description');
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
+  });
+
+  test('cssProperties - default-with-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--default-with-description');
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
+  });
+
+  test('cssProperties - lower-default-with-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-default-with-description');
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
+  });
+
+  test('cssProperties - default-with-description-dash', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--default-with-description-dash');
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
+  });
+
+  test('cssProperties - lower-default-with-description-dash', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get(
+      '--lower-default-with-description-dash'
+    );
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
+  });
+
   test('cssProperties - short-no-description', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
     const prop = element.cssProperties.get('--short-no-description');
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(prop.description, undefined);
+  });
+
+  test('cssProperties - lower-short-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-short-no-description');
     assert.ok(prop);
     assert.equal(prop.summary, undefined);
     assert.equal(prop.description, undefined);
@@ -176,6 +262,18 @@ for (const lang of languages) {
     );
   });
 
+  test('cssProperties - lower-short-with-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-short-with-description');
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(
+      prop.description,
+      'Description for --lower-short-with-description\nwith wraparound'
+    );
+  });
+
   test('cssProperties - short-with-description-dash', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
@@ -188,165 +286,47 @@ for (const lang of languages) {
     );
   });
 
-  // Class description, summary, deprecated
-
-  test('tagged description and summary', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('TaggedDescription');
+  test('cssProperties - lower-short-with-description-dash', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
-    assert.equal(
-      element.description,
-      `TaggedDescription description. Lorem ipsum dolor sit amet, consectetur
-adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-nisi ut aliquip ex ea commodo consequat.`
+    const prop = element.cssProperties.get(
+      '--lower-short-with-description-dash'
     );
-    assert.equal(element.summary, `TaggedDescription summary.`);
-    assert.equal(element.deprecated, `TaggedDescription deprecated message.`);
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(
+      prop.description,
+      'Description for --lower-short-with-description-dash'
+    );
   });
 
-  test('untagged description', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration(
-      'UntaggedDescription'
-    );
+  test('basic class analysis', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isClassDeclaration());
+    assert.equal(element.description, 'A cool custom element.');
+    const field = element.getField('field1');
+    assert.ok(field?.isClassField());
+    assert.equal(field.description, `Class field 1 description`);
+    assert.equal(field.type?.text, 'string');
+    const method = element.getMethod('method1');
+    assert.ok(method?.isClassMethod());
+    assert.equal(method.description, `Method 1 description`);
+    assert.equal(method.parameters?.length, 0);
+    assert.equal(method.return?.type?.text, 'void');
+  });
+
+  test('cssProperties - syntax-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
-    assert.equal(
-      element.description,
-      `UntaggedDescription description. Lorem ipsum dolor sit amet, consectetur
-adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna
-aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris
-nisi ut aliquip ex ea commodo consequat.`
-    );
-    assert.equal(element.summary, `UntaggedDescription summary.`);
-    assert.equal(element.deprecated, `UntaggedDescription deprecated message.`);
-  });
-
-  // Fields
-
-  test('field1', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isClassDeclaration());
-    const member = element.getField('field1');
-    assert.ok(member?.isClassField());
-    assert.equal(
-      member.description,
-      `Class field 1 description\nwith wraparound`
-    );
-    assert.equal(member.default, `'default1'`);
-    assert.equal(member.privacy, 'private');
-    assert.equal(member.type?.text, 'string');
-  });
-
-  test('field2', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isClassDeclaration());
-    const member = element.getField('field2');
-    assert.ok(member?.isClassField());
-    assert.equal(member.summary, `Class field 2 summary\nwith wraparound`);
-    assert.equal(
-      member.description,
-      `Class field 2 description\nwith wraparound`
-    );
-    assert.equal(member.default, undefined);
-    assert.equal(member.privacy, 'protected');
-    assert.equal(member.type?.text, 'string | number');
-  });
-
-  test('field3', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isClassDeclaration());
-    const member = element.getField('field3');
-    assert.ok(member?.isClassField());
-    assert.equal(
-      member.description,
-      `Class field 3 description\nwith wraparound`
-    );
-    assert.equal(member.default, undefined);
-    assert.equal(member.privacy, 'public');
-    assert.equal(member.type?.text, 'string');
-    assert.equal(member.deprecated, true);
-  });
-
-  test('field4', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isClassDeclaration());
-    const member = element.getField('field4');
-    assert.ok(member?.isClassField());
-    assert.equal(member.summary, `Class field 4 summary\nwith wraparound`);
-    assert.equal(
-      member.description,
-      `Class field 4 description\nwith wraparound`
-    );
-    assert.equal(
-      member.default,
-      `new Promise${lang === 'ts' ? '<void>' : ''}((r) => r())`
-    );
-    assert.equal(member.type?.text, 'Promise<void>');
-    assert.equal(member.deprecated, 'Class field 4 deprecated');
-  });
-
-  test('static field1', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isClassDeclaration());
-    const member = element.getField('field1', true);
-    assert.ok(member?.isClassField());
-    assert.equal(member.summary, `Static class field 1 summary`);
-    assert.equal(member.description, `Static class field 1 description`);
-    assert.equal(member.default, undefined);
-    assert.equal(member.privacy, 'protected');
-    assert.equal(member.type?.text, 'string | number');
-  });
-
-  // Methods
-
-  test('method1', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isClassDeclaration());
-    const member = element.getMethod('method1');
-    assert.ok(member?.isClassMethod());
-    assert.equal(member.description, `Method 1 description\nwith wraparound`);
-    assert.equal(member.parameters?.length, 0);
-    assert.equal(member.return?.type?.text, 'void');
-  });
-
-  test('method2', ({getModule}) => {
-    const element = getModule('element-a').getDeclaration('ElementA');
-    assert.ok(element.isClassDeclaration());
-    const member = element.getMethod('method2');
-    assert.ok(member?.isClassMethod());
-    assert.equal(member.summary, `Method 2 summary\nwith wraparound`);
-    assert.equal(member.description, `Method 2 description\nwith wraparound`);
-    assert.equal(member.parameters?.length, 3);
-    assert.equal(member.parameters?.[0].name, 'a');
-    assert.equal(member.parameters?.[0].description, 'Param a description');
-    assert.equal(member.parameters?.[0].summary, undefined);
-    assert.equal(member.parameters?.[0].type?.text, 'string');
-    assert.equal(member.parameters?.[0].default, undefined);
-    assert.equal(member.parameters?.[0].rest, false);
-    assert.equal(member.parameters?.[1].name, 'b');
-    assert.equal(
-      member.parameters?.[1].description,
-      'Param b description\nwith wraparound'
-    );
-    assert.equal(member.parameters?.[1].type?.text, 'boolean');
-    assert.equal(member.parameters?.[1].optional, true);
-    assert.equal(member.parameters?.[1].default, 'false');
-    assert.equal(member.parameters?.[1].rest, false);
-    assert.equal(member.parameters?.[2].name, 'c');
-    assert.equal(member.parameters?.[2].description, 'Param c description');
-    assert.equal(member.parameters?.[2].summary, undefined);
-    assert.equal(member.parameters?.[2].type?.text, 'number[]');
-    assert.equal(member.parameters?.[2].optional, false);
-    assert.equal(member.parameters?.[2].default, undefined);
-    assert.equal(member.parameters?.[2].rest, true);
-    assert.equal(member.return?.type?.text, 'string');
-    assert.equal(member.return?.description, 'Method 2 return description');
-    assert.equal(member.deprecated, 'Method 2 deprecated');
+    const prop = element.cssProperties.get('--syntax-no-description');
+    assert.ok(prop);
+    assert.equal(prop.syntax, '<color>');
   });
 
   test('static method1', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isClassDeclaration());
-    const member = element.getMethod('method1', true);
+    const member = element.getMethod('method1');
     assert.ok(member?.isClassMethod());
     assert.equal(member.summary, `Static method 1 summary`);
     assert.equal(member.description, `Static method 1 description`);
@@ -379,261 +359,4 @@ nisi ut aliquip ex ea commodo consequat.`
   });
 
   test.run();
-
-  // Doing module JSDoc tests in-memory, to test a number of variations
-  // without needing to maintain a file for each.
-
-  for (const hasFirstStatementDoc of [false, true]) {
-    const moduleTest = suite<{
-      analyzer: InMemoryAnalyzer;
-    }>(
-      `Module jsDoc tests, ${
-        hasFirstStatementDoc ? 'has' : 'no'
-      } first statement docs (${lang})`
-    );
-
-    moduleTest.before.each((ctx) => {
-      ctx.analyzer = new InMemoryAnalyzer(lang, {
-        '/package.json': JSON.stringify({name: '@lit-internal/in-memory-test'}),
-      });
-    });
-
-    const firstStatementDoc = hasFirstStatementDoc
-      ? `
-      /**
-       * First statement description
-       * @summary First statement summary
-       */
-    `
-      : '';
-
-    moduleTest('untagged module description with @module tag', ({analyzer}) => {
-      analyzer.setFile(
-        '/module',
-        `
-          /**
-           * Module description
-           * more description
-           * @module
-           */
-          ${firstStatementDoc}
-          export const foo = 42;
-        `
-      );
-      const module = analyzer.getModule(
-        getSourceFilename('/module', lang) as AbsolutePath
-      );
-      assert.equal(module.description, 'Module description\nmore description');
-    });
-
-    moduleTest(
-      'untagged module description with @fileoverview tag',
-      ({analyzer}) => {
-        analyzer.setFile(
-          '/module',
-          `
-          /**
-           * Module description
-           * more description
-           * @fileoverview
-           */
-          ${firstStatementDoc}
-          export const foo = 42;
-        `
-        );
-        const module = analyzer.getModule(
-          getSourceFilename('/module', lang) as AbsolutePath
-        );
-        assert.equal(
-          module.description,
-          'Module description\nmore description'
-        );
-      }
-    );
-
-    moduleTest('module description in @fileoverview tag', ({analyzer}) => {
-      analyzer.setFile(
-        '/module',
-        `
-          /**
-           * @fileoverview Module description
-           * more description
-           */
-          ${firstStatementDoc}
-          export const foo = 42;
-        `
-      );
-      const module = analyzer.getModule(
-        getSourceFilename('/module', lang) as AbsolutePath
-      );
-      assert.equal(module.description, 'Module description\nmore description');
-    });
-
-    moduleTest(
-      'untagged module description with @packageDocumentation tag',
-      ({analyzer}) => {
-        analyzer.setFile(
-          '/module',
-          `
-          /**
-           * Module description
-           * more description
-           * @packageDocumentation
-           */
-          ${firstStatementDoc}
-          export const foo = 42;
-        `
-        );
-        const module = analyzer.getModule(
-          getSourceFilename('/module', lang) as AbsolutePath
-        );
-        assert.equal(
-          module.description,
-          'Module description\nmore description'
-        );
-      }
-    );
-
-    moduleTest(
-      'module description in @packageDocumentation tag',
-      ({analyzer}) => {
-        analyzer.setFile(
-          '/module',
-          `
-          /**
-           * @packageDocumentation Module description
-           * more description
-           */
-          ${firstStatementDoc}
-          export const foo = 42;
-        `
-        );
-        const module = analyzer.getModule(
-          getSourceFilename('/module', lang) as AbsolutePath
-        );
-        assert.equal(
-          module.description,
-          'Module description\nmore description'
-        );
-      }
-    );
-
-    moduleTest(
-      'module description in @packageDocumentation tag with other tags',
-      ({analyzer}) => {
-        analyzer.setFile(
-          '/module',
-          `
-          /**
-           * @packageDocumentation Module description
-           * more description
-           * @module foo
-           * @deprecated Module is deprecated
-           */
-          ${firstStatementDoc}
-          export const foo = 42;
-        `
-        );
-        const module = analyzer.getModule(
-          getSourceFilename('/module', lang) as AbsolutePath
-        );
-        assert.equal(
-          module.description,
-          'Module description\nmore description'
-        );
-        assert.equal(module.deprecated, 'Module is deprecated');
-      }
-    );
-
-    moduleTest('untagged module description', ({analyzer}) => {
-      analyzer.setFile(
-        '/module',
-        `
-          /**
-           * Module description
-           * more module description
-           * @summary Module summary
-           * @deprecated
-           */
-          /**
-           * First statement description
-           * @summary First statement summary
-           */
-          export const foo = 42;
-        `
-      );
-      const module = analyzer.getModule(
-        getSourceFilename('/module', lang) as AbsolutePath
-      );
-      assert.equal(
-        module.description,
-        'Module description\nmore module description'
-      );
-      assert.equal(module.summary, 'Module summary');
-      assert.equal(module.deprecated, true);
-    });
-
-    moduleTest('multiple untagged module descriptions', ({analyzer}) => {
-      analyzer.setFile(
-        '/module',
-        `
-          /**
-           * Module description
-           * more module description
-           */
-          /**
-           * Even more module description
-           */
-          /**
-           * First statement description
-           * @summary First statement summary
-           */
-          export const foo = 42;
-        `
-      );
-      const module = analyzer.getModule(
-        getSourceFilename('/module', lang) as AbsolutePath
-      );
-      assert.equal(
-        module.description,
-        'Module description\nmore module description\nEven more module description'
-      );
-    });
-
-    moduleTest(
-      'multiple untagged module descriptions with other tags',
-      ({analyzer}) => {
-        analyzer.setFile(
-          '/module',
-          `
-          /**
-           * Module description
-           * more module description
-           * @deprecated
-          */
-          /**
-           * Even more module description
-           * @summary Module summary
-           */
-          /**
-           * First statement description
-           * @summary First statement summary
-           */
-          export const foo = 42;
-        `
-        );
-        const module = analyzer.getModule(
-          getSourceFilename('/module', lang) as AbsolutePath
-        );
-        assert.equal(
-          module.description,
-          'Module description\nmore module description\nEven more module description'
-        );
-        assert.equal(module.summary, 'Module summary');
-        assert.equal(module.deprecated, true);
-      }
-    );
-
-    moduleTest.run();
-  }
 }

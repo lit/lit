@@ -9,7 +9,7 @@ import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
-export {digestForTemplateResult} from 'lit/experimental-hydrate.js';
+export {digestForTemplateResult} from '@lit-labs/ssr-client';
 
 export {render} from '../../lib/render-lit-html.js';
 
@@ -20,6 +20,10 @@ export const simpleTemplateResult = html`<div></div>`;
 /* Text Expressions */
 // prettier-ignore
 export const templateWithTextExpression = (x: string|null|undefined) => html`<div>${x}</div>`;
+
+/* Iterable Expression */
+// prettier-ignore
+export const templateWithIterableExpression = (x: Iterable<string>) => html`<div>${x}</div>`;
 
 /* Attribute Expressions */
 // prettier-ignore
@@ -41,6 +45,8 @@ html`<input x=${x}>`;
 // prettier-ignore
 export const inputTemplateWithAttributeExpressionAndChildElement = (x: string) =>
   html`<input x=${x}><p>hi</p></input>`;
+// prettier-ignore
+export const templateWithMixedCaseAttrs = (str: string) => html`<svg dynamicCamel=${str} staticCamel="static"></svg>`;
 
 /* Reflected Property Expressions */
 

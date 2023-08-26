@@ -33,6 +33,9 @@ if (DEV_MODE) {
   LitElement.disableWarning?.('change-in-update');
 }
 
+const isSafari = /apple/i.test(navigator.vendor);
+const testSkipSafari = isSafari ? test.skip : test;
+
 /**
  * TODO
  * 1. work out when onStart/onComplete and animates run
@@ -124,6 +127,70 @@ if (DEV_MODE) {
     if (container && container.parentNode) {
       container.parentNode.removeChild(container);
     }
+  });
+
+  test('can animate to zero', async () => {
+    class ToZero extends LitElement {
+      static override styles = css`
+        :host {
+          display: block;
+        }
+        div {
+          width: 100px;
+          height: 100px;
+        }
+        div.collapse {
+          width: 0;
+          height: 0;
+        }
+      `;
+
+      @property()
+      collapse = false;
+
+      @query('div')
+      div!: HTMLElement;
+
+      animationComplete = new Promise<void>(
+        (res) => (this._onComplete = () => res())
+      );
+
+      _onComplete!: () => void;
+
+      override render() {
+        return html`
+          <div
+            class="${this.collapse ? 'collapse' : ''}"
+            ${animate({
+              onComplete: this._onComplete,
+            })}
+          ></div>
+        `;
+      }
+    }
+    customElements.define(generateElementName(), ToZero);
+    const el = new ToZero();
+    container.append(el);
+    await el.updateComplete;
+
+    const div = el.div;
+    const initialRect = div.getBoundingClientRect();
+    assert.equal(initialRect.width, 100);
+    assert.equal(initialRect.height, 100);
+
+    el.collapse = true;
+    await el.updateComplete;
+    // The animation hasn't started yet, but the first keyframe should be
+    // applied, meaning we have the same size as the initial state. If the
+    // size-to-zero bug were present, the size would be 0.
+    const startRect = div.getBoundingClientRect();
+    assert.equal(startRect.width, 100);
+    assert.equal(startRect.height, 100);
+
+    await el.animationComplete;
+    const collapsedRect = div.getBoundingClientRect();
+    assert.equal(collapsedRect.width, 0);
+    assert.equal(collapsedRect.height, 0);
   });
 
   // TODO(sorvell): when should onComplete go?
@@ -356,7 +423,7 @@ if (DEV_MODE) {
     assert.equal((frames![1].color as string).trim(), 'rgb(255, 165, 0)');
   });
 
-  test('adjusts for ancestor position', async () => {
+  testSkipSafari('adjusts for ancestor position', async () => {
     let shiftChild = false;
     let shiftGChild = false;
     let childAnimateProps: CSSValues;
@@ -594,7 +661,7 @@ if (DEV_MODE) {
   });
 
   // TODO(sorvell) This is too flakey on Safari.
-  (/apple/i.test(navigator.vendor) ? test.skip : test)(
+  testSkipSafari(
     'animates in based on an element that animated out',
     async () => {
       let shouldRender = true;

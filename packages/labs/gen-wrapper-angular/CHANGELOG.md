@@ -1,5 +1,39 @@
 # @lit-labs/gen-wrapper-angular
 
+## 0.0.9
+
+### Patch Changes
+
+- [#4052](https://github.com/lit/lit/pull/4052) [`94665515`](https://github.com/lit/lit/commit/946655151e4ae0cf873c8710436c2544fca9743b) Thanks [@zh-lx](https://github.com/zh-lx)! - Add support for packages containing elements in sub directories and fixes module import paths in generated output to have forward slash separators even when run in Windows.
+
+## 0.0.8
+
+### Patch Changes
+
+- Updated dependencies [[`9001f9c1`](https://github.com/lit/lit/commit/9001f9c12e0ba125b930dcc126476e384ddc23fe), [`55bfed2f`](https://github.com/lit/lit/commit/55bfed2f95cfcf10757e24edf56092b8e9d36405), [`91611d73`](https://github.com/lit/lit/commit/91611d73600e163459da5d2bfb9753c88ad3f45a), [`da6646d8`](https://github.com/lit/lit/commit/da6646d827d8932ba7c241780cbd03a9ade64009)]:
+  - @lit-labs/analyzer@0.9.0
+
+## 0.0.7
+
+### Patch Changes
+
+- Updated dependencies [[`d8e80656`](https://github.com/lit/lit/commit/d8e806561e2d5c12bc99fcee34bce1825c3ca1ae)]:
+  - @lit-labs/analyzer@0.8.0
+
+## 0.0.6
+
+### Patch Changes
+
+- Updated dependencies [[`2c59ceb9`](https://github.com/lit/lit/commit/2c59ceb9427ca76a591084258eedab76644f2a63)]:
+  - @lit-labs/analyzer@0.7.0
+
+## 0.0.5
+
+### Patch Changes
+
+- Updated dependencies [[`dfdc3f71`](https://github.com/lit/lit/commit/dfdc3f714e511d30acc28809fa6643a4c764cad1), [`cabc6189`](https://github.com/lit/lit/commit/cabc61894e57ba89ecadc1deb20f121fecdfffc9), [`b7b01c0d`](https://github.com/lit/lit/commit/b7b01c0d21c0ac301cd5b8d4cb595f3bbfeebe6b), [`520b4713`](https://github.com/lit/lit/commit/520b47132af8e21868df5dc4dfdf5e003a38d158), [`39ac5275`](https://github.com/lit/lit/commit/39ac52758064dc521c2e3701e28348d7dc637a98), [`7e20a528`](https://github.com/lit/lit/commit/7e20a5287a46eadcd06a0804147b3b27110326ad), [`389d0c55`](https://github.com/lit/lit/commit/389d0c558d78982d8265588d1935ede91f46f3a0)]:
+  - @lit-labs/analyzer@0.6.0
+
 ## 0.0.4
 
 ### Patch Changes

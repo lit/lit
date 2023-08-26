@@ -50,8 +50,8 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
   private _rangeMap: Map<number, RangeMapEntry> = new Map();
   private _getAspectRatio?: GetAspectRatio;
 
-  protected get _defaultConfig(): MasonryLayoutConfig {
-    return Object.assign({}, super._defaultConfig, {
+  protected _getDefaultConfig(): MasonryLayoutConfig {
+    return Object.assign({}, super._getDefaultConfig(), {
       getAspectRatio: () => 1,
     });
   }
@@ -60,14 +60,11 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     this._getAspectRatio = getAspectRatio;
   }
 
-  set items(items: unknown[]) {
+  protected _setItems(items: unknown[]) {
     if (items !== this._items) {
       this._scheduleLayoutUpdate();
     }
-    super.items = items;
-  }
-  get items() {
-    return super.items;
+    super._setItems(items);
   }
 
   protected _getItemSize(_idx: number): Size {
@@ -128,7 +125,7 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
         const [minIdx, maxIdx] = this._rangeMap.get(n) ?? [Infinity, -Infinity];
         this._rangeMap.set(n, [Math.min(idx, minIdx), Math.max(idx, maxIdx)]);
       }
-      scrollSize = max1 + padding1.end;
+      scrollSize = Math.max(scrollSize, max1 + padding1.end);
       nextPosPerRolumn[nextRolumn] += size1 + gap1;
       nextPos = Infinity;
       nextPosPerRolumn.forEach((pos, rolumn) => {
@@ -166,11 +163,16 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
         this._scrollSize,
         this._scrollPosition + this._viewDim1 + this._overhang
       );
-      this._first =
-        this._rangeMap.get(this._getRangeMapKey(min, MIN))?.[0] ?? 0;
-      this._last =
-        this._rangeMap.get(this._getRangeMapKey(max, MAX))?.[1] ??
-        this.items.length - 1;
+      const maxIdx = this.items.length - 1;
+      const minRange = this._rangeMap.get(this._getRangeMapKey(min, MIN)) ?? [
+        0, 0,
+      ];
+      const maxRange = this._rangeMap.get(this._getRangeMapKey(max, MAX)) ?? [
+        maxIdx,
+        maxIdx,
+      ];
+      this._first = Math.min(minRange[0], maxRange[0]);
+      this._last = Math.max(minRange[1], maxRange[1]);
     }
   }
 

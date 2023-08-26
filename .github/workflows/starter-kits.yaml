@@ -19,14 +19,14 @@ jobs:
           git config --global user.email "lit-robot@google.com"
 
       - name: Checkout Lit Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: lit
           # Fetch all history, otherwise we can't fetch from this repo.
           fetch-depth: 0
 
       - name: Checkout lit-element-starter-ts repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: lit/lit-element-starter-ts
           ref: main
@@ -61,7 +61,7 @@ jobs:
           echo "Done."
 
       - name: Checkout lit-element-starter-js repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           repository: lit/lit-element-starter-js
           ref: main

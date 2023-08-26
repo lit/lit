@@ -1,5 +1,54 @@
 # Change Log
 
+## 2.0.1
+
+### Patch Changes
+
+- [#4097](https://github.com/lit/lit/pull/4097) [`364650d0`](https://github.com/lit/lit/commit/364650d0a3a8f873249e39dacf17ac9e3343b89b) - Fix type regression to prefer provided event handler prop type over React's built-in handler type.
+
+## 2.0.0
+
+### Major Changes
+
+- [#4027](https://github.com/lit/lit/pull/4027) [`c28cb6ed`](https://github.com/lit/lit/commit/c28cb6ed45445fb8cb5e20af5076f3d5ec9f3bea) - - [BREAKING] Removed deprecated call signature for `createComponent()` taking multiple arguments. A single option object must be passed in instead.
+
+  Example:
+
+  ```diff
+  - createComponent(React, 'my-element', MyElement, {onfoo: 'foo'})
+  + createComponent({
+  +   react: React,
+  +   tagName: 'my-element',
+  +   elementClass: MyElement,
+  +   events: {onfoo: 'foo'},
+  + })
+  ```
+
+  - Refactored to move implementation directly into render function of `forwardRef` rather than creating a class component. This removes an extra React component of the same name showing up in the component tree.
+
+### Patch Changes
+
+- [#4000](https://github.com/lit/lit/pull/4000) [`2118aeb6`](https://github.com/lit/lit/commit/2118aeb6f83d2e0b0afbba5ce486876711658e82) - Add `@types/react@17||18` as peer dependency as the package makes direct use of those types.
+
+- [#4061](https://github.com/lit/lit/pull/4061) [`25d10ee1`](https://github.com/lit/lit/commit/25d10ee1e1299d4ea22e10bf4fae9b370eae05b3) - Update `WebComponentProps` type to allow providing `ref` prop in JSX.
+
+## 1.2.1
+
+### Patch Changes
+
+- [#3978](https://github.com/lit/lit/pull/3978) [`3711e665`](https://github.com/lit/lit/commit/3711e6650a59966e5be8d92dd0abf053d9a50d32) - Only add `suppressHydrationWarning` prop when rendered in the client. This will prevent `suppresshydrationwarning` attribute being added to the host element when using `@lit-labs/ssr-react`.
+
+## 1.2.0
+
+### Minor Changes
+
+- [#3885](https://github.com/lit/lit/pull/3885) [`7932f7dd`](https://github.com/lit/lit/commit/7932f7ddc21308dc0bf7b1bbd0dde781a6c8dece) - `@lit-labs/ssr-react` and `@lit-labs/react` now coordinate prop handling during server rendering and hydration.
+
+  - [Breaking] `@lit-labs/ssr-react` will call `setAttribute()` with all props provided during server rendering unless they are provided in <code>\_$litProps$</code> object made by `@lit-labs/react`. Previously, it would call `setProperty()` for props that were found in the element's prototype, and `setAttribute()` for those that weren't. If you wish to server render custom elements that take properties that can not be set as attributes (i.e. not serializeable or have different name as attribute/property), you must use `@lit-labs/react` to create a React wrapper component.
+  - `@lit-labs/react` now has a Node build and export condition to do special prop handling during server rendering. It detects the presence of `React.createElement` monkey patch by `@lit-labs/ssr-react` and provides props to be set as properties to the `createElement()` call.
+  - `@lit-labs/ssr-react` will add the `defer-hydration` attribute to custom elements that had properties set so that `@lit-labs/react` wrapped elements have a chance to set properties on the element before Lit element hydration is triggered.
+  - `@lit-labs/react` wrapped components will suppress hydration warnings raised by React due to server rendered attributes.
+
 ## 1.1.1
 
 ### Patch Changes

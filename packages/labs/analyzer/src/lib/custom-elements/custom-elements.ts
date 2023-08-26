@@ -20,7 +20,10 @@ import {
   NamedDescribed,
 } from '../model.js';
 import {addEventsToMap} from './events.js';
-import {parseNodeJSDocInfo, parseNamedJSDocInfo} from '../javascript/jsdoc.js';
+import {
+  parseNodeJSDocInfo,
+  parseNamedTypedJSDocInfo,
+} from '../javascript/jsdoc.js';
 
 const _isCustomElementClassDeclaration = (
   t: ts.BaseType,
@@ -109,9 +112,10 @@ export const getTagName = (
  */
 const addNamedJSDocInfoToMap = (
   map: Map<string, NamedDescribed>,
-  tag: ts.JSDocTag
+  tag: ts.JSDocTag,
+  analyzer: AnalyzerInterface
 ) => {
-  const info = parseNamedJSDocInfo(tag);
+  const info = parseNamedTypedJSDocInfo(tag, analyzer);
   if (info !== undefined) {
     map.set(info.name, info);
   }
@@ -137,22 +141,23 @@ export const getJSDocData = (
           addEventsToMap(tag, events, analyzer);
           break;
         case 'slot':
-          addNamedJSDocInfoToMap(slots, tag);
+          addNamedJSDocInfoToMap(slots, tag, analyzer);
           break;
         case 'cssProp':
-          addNamedJSDocInfoToMap(cssProperties, tag);
-          break;
+        case 'cssprop':
         case 'cssProperty':
-          addNamedJSDocInfoToMap(cssProperties, tag);
+        case 'cssproperty':
+          addNamedJSDocInfoToMap(cssProperties, tag, analyzer);
           break;
         case 'cssPart':
-          addNamedJSDocInfoToMap(cssParts, tag);
+        case 'csspart':
+          addNamedJSDocInfoToMap(cssParts, tag, analyzer);
           break;
       }
     }
   }
   return {
-    ...parseNodeJSDocInfo(node),
+    ...parseNodeJSDocInfo(node, analyzer),
     events,
     slots,
     cssProperties,

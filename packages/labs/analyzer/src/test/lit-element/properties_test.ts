@@ -7,52 +7,72 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {fileURLToPath} from 'url';
-import {getSourceFilename, languages} from '../utils.js';
-
 import {
-  createPackageAnalyzer,
-  Analyzer,
-  AbsolutePath,
-  LitElementDeclaration,
-} from '../../index.js';
+  AnalyzerModuleTestContext,
+  languages,
+  setupAnalyzerForTestWithModule,
+} from '../utils.js';
+
+import {LitElementDeclaration} from '../../index.js';
+import {DiagnosticCode} from '../../lib/diagnostic-code.js';
+
+interface TestContext extends AnalyzerModuleTestContext {
+  element: LitElementDeclaration;
+}
 
 for (const lang of languages) {
-  const test = suite<{
-    analyzer: Analyzer;
-    packagePath: AbsolutePath;
-    element: LitElementDeclaration;
-  }>(`LitElement property tests (${lang})`);
+  const test = suite<TestContext>(`LitElement property tests (${lang})`);
 
   test.before((ctx) => {
-    try {
-      const packagePath = fileURLToPath(
-        new URL(`../../test-files/${lang}/properties`, import.meta.url).href
-      ) as AbsolutePath;
-      const analyzer = createPackageAnalyzer(packagePath);
-
-      const result = analyzer.getPackage();
-      const elementAModule = result.modules.find(
-        (m) => m.sourcePath === getSourceFilename('element-a', lang)
-      );
-      const element = elementAModule?.getDeclaration('ElementA');
-      assert.ok(element?.isLitElementDeclaration());
-
-      ctx.packagePath = packagePath;
-      ctx.analyzer = analyzer;
-      ctx.element = element;
-    } catch (error) {
-      // Uvu has a bug where it silently ignores failures in before and after,
-      // see https://github.com/lukeed/uvu/issues/191.
-      console.error('uvu before error', error);
-      process.exit(1);
-    }
+    setupAnalyzerForTestWithModule(ctx, lang, 'properties', 'element-a');
+    ctx.element = ctx.module.declarations.find((d) =>
+      d.isLitElementDeclaration()
+    ) as LitElementDeclaration;
   });
 
   test('non-decorated fields are not reactive', ({element}) => {
     // TODO(justinfagnani): we might want to change the representation
     // so we have a collection of all fields, some of which are reactive.
     assert.equal(element.reactiveProperties.has('notDecorated'), false);
+  });
+
+  test('constructor-assigned non-decorated field', ({element}) => {
+    const property = element.getField('constructorAssignOnly')!;
+    assert.ok(property);
+    assert.ok(property.type);
+    assert.equal(property.name, 'constructorAssignOnly');
+    assert.equal(property.type?.text, 'number');
+    assert.equal(property.type?.references.length, 0);
+  });
+
+  test('readonly field', ({element}) => {
+    const property = element.getField('readonlyField')!;
+    assert.ok(property);
+    assert.ok(property.type);
+    assert.equal(property.name, 'readonlyField');
+    assert.equal(property.readonly, true);
+    assert.equal(property.type?.text, 'number');
+    assert.equal(property.type?.references.length, 0);
+  });
+
+  test('getter-only accessor', ({element}) => {
+    const property = element.getField('getterOnly')!;
+    assert.ok(property);
+    assert.ok(property.type);
+    assert.equal(property.name, 'getterOnly');
+    assert.equal(property.readonly, true);
+    assert.equal(property.type?.text, 'number');
+    assert.equal(property.type?.references.length, 0);
+  });
+
+  test('accessor pair', ({element}) => {
+    const property = element.getField('accessorPair')!;
+    assert.ok(property);
+    assert.ok(property.type);
+    assert.equal(property.name, 'accessorPair');
+    assert.not.equal(property.readonly, true);
+    assert.equal(property.type?.text, 'number');
+    assert.equal(property.type?.references.length, 0);
   });
 
   test('string property with no options', ({element}) => {
@@ -213,6 +233,104 @@ for (const lang of languages) {
     assert.equal(element.getField('staticProp')?.type?.references.length, 0);
     assert.equal(property.typeOption, 'Number');
     assert.equal(property.attribute, 'static-prop');
+  });
+
+  test('method with an overloaded signature', ({element}) => {
+    const fn = Array.from(element.methods).find((m) => m.name === 'overloaded');
+    assert.ok(fn?.isFunctionDeclaration());
+    assert.equal(fn.name, 'overloaded');
+    assert.equal(
+      fn.description,
+      'This signature works with strings or numbers.'
+    );
+    assert.equal(fn.summary, undefined);
+    assert.equal(fn.parameters?.length, 1);
+    assert.equal(fn.parameters?.[0].name, 'x');
+    assert.equal(
+      fn.parameters?.[0].description,
+      'Accepts either a string or a number.'
+    );
+    assert.equal(fn.parameters?.[0].summary, undefined);
+    assert.equal(fn.parameters?.[0].type?.text, 'string | number');
+    assert.equal(fn.parameters?.[0].default, undefined);
+    assert.equal(fn.parameters?.[0].rest, false);
+    assert.equal(fn.return?.type?.text, 'string | number');
+    assert.equal(
+      fn.return?.description,
+      'Returns either a string or a number.'
+    );
+    assert.equal(fn.deprecated, undefined);
+
+    // TODO: Run the same assertions in both languages once TS supports
+    // `@overload` for JSDoc in JS.
+    // <https://devblogs.microsoft.com/typescript/announcing-typescript-5-0-rc/#overload-support-in-jsdoc>
+    if (lang === 'ts') {
+      assert.ok(fn.overloads);
+      assert.equal(fn.overloads.length, 2);
+
+      assert.equal(fn.overloads[0].name, 'overloaded');
+      assert.equal(
+        fn.overloads[0].description,
+        'This signature only works with strings.'
+      );
+      assert.equal(fn.overloads[0].summary, undefined);
+      assert.equal(fn.overloads[0].parameters?.length, 1);
+      assert.equal(fn.overloads[0].parameters?.[0].name, 'x');
+      assert.equal(
+        fn.overloads[0].parameters?.[0].description,
+        'Accepts a string.'
+      );
+      assert.equal(fn.overloads[0].parameters?.[0].summary, undefined);
+      assert.equal(fn.overloads[0].parameters?.[0].type?.text, 'string');
+      assert.equal(fn.overloads[0].parameters?.[0].default, undefined);
+      assert.equal(fn.overloads[0].parameters?.[0].rest, false);
+      assert.equal(fn.overloads[0].return?.type?.text, 'string');
+      assert.equal(fn.overloads[0].return?.description, 'Returns a string.');
+      assert.equal(fn.overloads[0].deprecated, undefined);
+
+      assert.equal(fn.overloads[1].name, 'overloaded');
+      assert.equal(
+        fn.overloads[1].description,
+        'This signature only works with numbers.'
+      );
+      assert.equal(fn.overloads[1].summary, undefined);
+      assert.equal(fn.overloads[1].parameters?.length, 1);
+      assert.equal(fn.overloads[1].parameters?.[0].name, 'x');
+      assert.equal(
+        fn.overloads[1].parameters?.[0].description,
+        'Accepts a number.'
+      );
+      assert.equal(fn.overloads[1].parameters?.[0].summary, undefined);
+      assert.equal(fn.overloads[1].parameters?.[0].type?.text, 'number');
+      assert.equal(fn.overloads[1].parameters?.[0].default, undefined);
+      assert.equal(fn.overloads[1].parameters?.[0].rest, false);
+      assert.equal(fn.overloads[1].return?.type?.text, 'number');
+      assert.equal(fn.overloads[1].return?.description, 'Returns a number.');
+      assert.equal(fn.overloads[1].deprecated, undefined);
+    } else {
+      assert.equal(fn.overloads?.length ?? 0, 0);
+    }
+  });
+
+  test('property with an unsupported name type', ({analyzer, element}) => {
+    // This currently results in two diagnostics: one for the
+    // `LitElement`-specific part of the analysis and one for the vanilla class
+    // analysis.
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, 1);
+    assert.equal(diagnostics[0].code, DiagnosticCode.UNSUPPORTED);
+
+    // Fields named with symbols are not visible in the `fields` iterator.
+    const field = Array.from(element.fields).find(
+      (x) => x.name === '[unsupportedPropertyName]'
+    );
+    assert.not(field);
+
+    // Reactive properties named with symbols are not supported.
+    const reactiveProperty = element.reactiveProperties.get(
+      '[unsupportedPropertyName]'
+    );
+    assert.not(reactiveProperty);
   });
 
   test.run();

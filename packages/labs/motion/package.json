@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/motion",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Lit directives for making things move.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -44,10 +44,13 @@
   },
   "wireit": {
     "start": {
-      "command": "web-dev-server -- --node-resolve --watch --preserve-sym-links --open demo/index.html",
-      "#comment": "TODO(aomarks) Depend only on build:ts, but needs export conditions",
+      "command": "web-dev-server -- --watch --preserve-sym-links --open demo/index.html",
+      "service": true,
       "dependencies": [
-        "build"
+        {
+          "script": "build:ts",
+          "cascade": false
+        }
       ]
     },
     "build": {
@@ -122,7 +125,7 @@
     "test:dev": {
       "command": "MODE=dev node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
-        "build",
+        "build:ts",
         "../../tests:build"
       ],
       "env": {
@@ -154,7 +157,7 @@
     "@lit-internal/scripts": "^1.0.0"
   },
   "dependencies": {
-    "lit": "^2.0.0"
+    "lit": "^2.8.0"
   },
   "publishConfig": {
     "access": "public"

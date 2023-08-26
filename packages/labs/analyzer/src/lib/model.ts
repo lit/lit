@@ -4,11 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {AbsolutePath, PackagePath} from './paths.js';
 
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
+
+export type TypeScript = typeof ts;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Constructor<T> = new (...args: any[]) => T;
@@ -333,15 +335,29 @@ export interface FunctionLikeInit extends DeprecatableDescribed {
   name: string;
   parameters?: Parameter[] | undefined;
   return?: Return | undefined;
+  overloads?: FunctionOverloadDeclaration[] | undefined;
 }
 
 export class FunctionDeclaration extends Declaration {
   parameters?: Parameter[] | undefined;
   return?: Return | undefined;
+  overloads?: FunctionOverloadDeclaration[] | undefined;
   constructor(init: FunctionLikeInit) {
     super(init);
     this.parameters = init.parameters;
     this.return = init.return;
+    this.overloads = init.overloads;
+  }
+}
+
+export interface FunctionLikeOverloadInit extends FunctionLikeInit {
+  overloads?: undefined;
+}
+
+export class FunctionOverloadDeclaration extends FunctionDeclaration {
+  override overloads: undefined;
+  constructor(init: FunctionLikeOverloadInit) {
+    super(init);
   }
 }
 
@@ -358,21 +374,17 @@ export interface ClassMethodInit extends FunctionLikeInit {
   source?: SourceReference | undefined;
 }
 
-export class ClassMethod extends Declaration {
+export class ClassMethod extends FunctionDeclaration {
   static?: boolean | undefined;
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
-  parameters?: Parameter[] | undefined;
-  return?: Return | undefined;
   constructor(init: ClassMethodInit) {
     super(init);
     this.static = init.static;
     this.privacy = init.privacy;
     this.inheritedFrom = init.inheritedFrom;
     this.source = init.source;
-    this.parameters = init.parameters;
-    this.return = init.return;
   }
 }
 
@@ -381,6 +393,7 @@ export interface ClassFieldInit extends PropertyLike {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  readonly?: boolean | undefined;
 }
 
 export class ClassField extends Declaration {
@@ -388,6 +401,7 @@ export class ClassField extends Declaration {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  readonly?: boolean | undefined;
   type?: Type | undefined;
   default?: string | undefined;
   constructor(init: ClassFieldInit) {
@@ -398,6 +412,7 @@ export class ClassField extends Declaration {
     this.source = init.source;
     this.type = init.type;
     this.default = init.default;
+    this.readonly = init.readonly;
   }
 }
 
@@ -446,35 +461,67 @@ export class ClassDeclaration extends Declaration {
   }
 
   /**
-   * Returns iterator of the `ClassField`s defined on the immediate class
-   * (excluding any inherited members).
+   * Returns iterator of the non-static `ClassField`s defined on the immediate
+   * class (excluding any inherited members).
    */
-  get fields() {
-    return [...this._fieldMap.values(), ...this._staticFieldMap.values()];
+  get fields(): IterableIterator<ClassField> {
+    return this._fieldMap.values();
   }
 
   /**
-   * Returns iterator of the `ClassMethod`s defined on the immediate class
+   * Returns iterator of the static `ClassField`s defined on the immediate class
    * (excluding any inherited members).
    */
-  get methods() {
-    return [...this._methodMap.values(), ...this._staticMethodMap.values()];
+  get staticFields(): IterableIterator<ClassField> {
+    return this._staticFieldMap.values();
   }
 
   /**
-   * Returns a `ClassField` model the given name defined on the immediate class
-   * (excluding any inherited members).
+   * Returns iterator of the non-static `ClassMethod`s defined on the immediate
+   * class (excluding any inherited members).
+   */
+  get methods(): IterableIterator<ClassMethod> {
+    return this._methodMap.values();
+  }
+
+  /**
+   * Returns iterator of the static `ClassMethod`s defined on the immediate
+   * class (excluding any inherited members).
+   */
+  get staticMethods(): IterableIterator<ClassMethod> {
+    return this._staticMethodMap.values();
+  }
+
+  /**
+   * Returns a non-static `ClassField` model the given name defined on the
+   * immediate class (excluding any inherited members).
    */
   getField(name: string, isStatic = false): ClassField | undefined {
     return (isStatic ? this._staticFieldMap : this._fieldMap).get(name);
   }
 
   /**
-   * Returns a `ClassMethod` model for the given name defined on the immediate
+   * Returns a static `ClassField` model the given name defined on the immediate
    * class (excluding any inherited members).
    */
-  getMethod(name: string, isStatic = false): ClassMethod | undefined {
-    return (isStatic ? this._staticMethodMap : this._methodMap).get(name);
+  getStaticField(name: string): ClassField | undefined {
+    return this._staticFieldMap.get(name);
+  }
+
+  /**
+   * Returns a non-static `ClassMethod` model for the given name defined on the
+   * immediate class (excluding any inherited members).
+   */
+  getMethod(name: string): ClassMethod | undefined {
+    return this._methodMap.get(name);
+  }
+
+  /**
+   * Returns a static `ClassMethod` model for the given name defined on the
+   * immediate class (excluding any inherited members).
+   */
+  getStaticMethod(name: string): ClassMethod | undefined {
+    return this._staticMethodMap.get(name);
   }
 
   /**
@@ -514,6 +561,11 @@ export interface Described {
 
 export interface NamedDescribed extends Described {
   name: string;
+  default?: string;
+}
+
+export interface CSSPropertyInfo extends NamedDescribed {
+  syntax?: string;
 }
 
 export interface TypedNamedDescribed extends NamedDescribed {
@@ -528,7 +580,7 @@ interface CustomElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   events: Map<string, Event>;
   slots: Map<string, NamedDescribed>;
-  cssProperties: Map<string, NamedDescribed>;
+  cssProperties: Map<string, CSSPropertyInfo>;
   cssParts: Map<string, NamedDescribed>;
 }
 
@@ -549,7 +601,7 @@ export class CustomElementDeclaration extends ClassDeclaration {
   readonly tagname: string | undefined;
   readonly events: Map<string, Event>;
   readonly slots: Map<string, NamedDescribed>;
-  readonly cssProperties: Map<string, NamedDescribed>;
+  readonly cssProperties: Map<string, CSSPropertyInfo>;
   readonly cssParts: Map<string, NamedDescribed>;
 
   constructor(init: CustomElementDeclarationInit) {
@@ -595,7 +647,7 @@ export interface Parameter extends PropertyLike {
   rest?: boolean | undefined;
 }
 
-export interface ReactiveProperty {
+export interface ReactiveProperty extends PropertyLike {
   name: string;
 
   reflect: boolean;
@@ -732,6 +784,7 @@ export const getImportsStringForReferences = (references: Reference[]) => {
 
 export interface AnalyzerInterface {
   moduleCache: Map<AbsolutePath, Module>;
+  typescript: TypeScript;
   program: ts.Program;
   commandLine: ts.ParsedCommandLine;
   fs: Pick<
@@ -753,6 +806,9 @@ export interface AnalyzerInterface {
     | 'normalize'
     | 'isAbsolute'
   >;
+
+  addDiagnostic(diagnostic: ts.Diagnostic): void;
+  getDiagnostics(): IterableIterator<ts.Diagnostic>;
 }
 
 /**
@@ -760,6 +816,7 @@ export interface AnalyzerInterface {
  */
 export type DeclarationInfo = {
   name: string;
+  node: ts.Node;
   factory: () => Declaration;
   isExport?: boolean;
 };

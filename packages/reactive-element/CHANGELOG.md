@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.6.3
+
+### Patch Changes
+
+- [#4031](https://github.com/lit/lit/pull/4031) [`8057c78d`](https://github.com/lit/lit/commit/8057c78def09e345e68c3fc009b8ab9d6cf1c0f2) - Rename ReactiveElement.\_initialize to \_\_initialize, make it private, and remove the @internal annotation. This will help prevent collisions with subclasses that implement their own \_initialize method, while using development builds.
+
+## 1.6.2
+
+### Patch Changes
+
+- [#3917](https://github.com/lit/lit/pull/3917) [`f6387e35`](https://github.com/lit/lit/commit/f6387e3532194bafd4be9621ccb162fc7c4046ba) - Allow decorators to accept `ReactiveElement` class from a different source.
+
 ## 1.6.1
 
 ### Patch Changes

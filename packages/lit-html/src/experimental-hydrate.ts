@@ -12,6 +12,7 @@ import {
   isPrimitive,
   isSingleExpression,
   isTemplateResult,
+  isCompiledTemplateResult,
 } from './directive-helpers.js';
 
 // In the Node build, this import will be injected by Rollup:
@@ -113,12 +114,20 @@ type ChildPartState =
  * @param rootValue
  * @param container
  * @param userOptions
+ *
+ * @deprecated This has been moved to `@lit-labs/ssr-client` and will be removed
+ * in a future release.
  */
 export const hydrate = (
   rootValue: unknown,
   container: Element | DocumentFragment,
   options: Partial<RenderOptions> = {}
 ) => {
+  console.warn(
+    'Importing `hydrate()` from `lit-html/experimental-hydrate.js` is deprecated.' +
+      'Import from `@lit-labs/ssr-client` instead.'
+  );
+
   // TODO(kschaaf): Do we need a helper for _$litPart$ ("part for node")?
   // This property needs to remain unminified.
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -212,7 +221,7 @@ const openChildPart = (
     const state = stack[stack.length - 1];
     if (state.type === 'template-instance') {
       part = new ChildPart(marker, null, state.instance, options);
-      state.instance._parts.push(part);
+      state.instance._$parts.push(part);
       value = state.result.values[state.instancePartIndex++];
       state.templatePartIndex++;
     } else if (state.type === 'iterable') {
@@ -267,6 +276,9 @@ const openChildPart = (
     //   throw new Error('Hydration value mismatch: Primitive found where TemplateResult expected');
     // }
   } else if (isTemplateResult(value)) {
+    if (isCompiledTemplateResult(value)) {
+      throw new Error('compiled templates are not supported');
+    }
     // Check for a template result digest
     const markerWithDigest = `lit-part ${digestForTemplateResult(value)}`;
     if (marker.data === markerWithDigest) {
@@ -348,11 +360,10 @@ const createAttributeParts = (
   const match = /lit-node (\d+)/.exec(comment.data)!;
   const nodeIndex = parseInt(match[1]);
 
-  // For void elements, the node the comment was referring to will be
-  // the previousSibling; for non-void elements, the comment is guaranteed
-  // to be the first child of the element (i.e. it won't have a previousSibling
-  // meaning it should use the parentElement)
-  const node = comment.previousElementSibling ?? comment.parentElement;
+  // Node markers are added as a previous sibling to identify elements
+  // with attribute/property/element/event bindings or custom elements
+  // whose `defer-hydration` attribute needs to be removed
+  const node = comment.nextElementSibling;
   if (node === null) {
     throw new Error('could not find node for attribute parts');
   }
@@ -408,7 +419,7 @@ const createAttributeParts = (
           noCommit
         );
         state.instancePartIndex += templatePart.strings.length - 1;
-        instance._parts.push(instancePart);
+        instance._$parts.push(instancePart);
       } else {
         // templatePart.type === PartType.ELEMENT
         const instancePart = new ElementPart(node, state.instance, options);
@@ -416,7 +427,7 @@ const createAttributeParts = (
           instancePart,
           state.result.values[state.instancePartIndex++]
         );
-        instance._parts.push(instancePart);
+        instance._$parts.push(instancePart);
       }
       state.templatePartIndex++;
     }

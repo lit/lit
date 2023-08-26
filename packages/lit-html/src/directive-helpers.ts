@@ -4,7 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {_$LH, Part, DirectiveParent, TemplateResult} from './lit-html.js';
+import {
+  _$LH,
+  Part,
+  DirectiveParent,
+  TemplateResult,
+  CompiledTemplateResult,
+} from './lit-html.js';
 import {
   DirectiveResult,
   DirectiveClass,
@@ -40,12 +46,20 @@ export const TemplateResultType = {
 } as const;
 
 export type TemplateResultType =
-  typeof TemplateResultType[keyof typeof TemplateResultType];
+  (typeof TemplateResultType)[keyof typeof TemplateResultType];
+
+type IsTemplateResult = {
+  (val: unknown): val is TemplateResult | CompiledTemplateResult;
+  <T extends TemplateResultType>(
+    val: unknown,
+    type: T
+  ): val is TemplateResult<T>;
+};
 
 /**
- * Tests if a value is a TemplateResult.
+ * Tests if a value is a TemplateResult or a CompiledTemplateResult.
  */
-export const isTemplateResult = (
+export const isTemplateResult: IsTemplateResult = (
   value: unknown,
   type?: TemplateResultType
 ): value is TemplateResult =>
@@ -53,6 +67,15 @@ export const isTemplateResult = (
     ? // This property needs to remain unminified.
       (value as TemplateResult)?.['_$litType$'] !== undefined
     : (value as TemplateResult)?.['_$litType$'] === type;
+
+/**
+ * Tests if a value is a CompiledTemplateResult.
+ */
+export const isCompiledTemplateResult = (
+  value: unknown
+): value is CompiledTemplateResult => {
+  return (value as CompiledTemplateResult)?.['_$litType$']?.h != null;
+};
 
 /**
  * Tests if a value is a DirectiveResult.

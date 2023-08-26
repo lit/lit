@@ -1,5 +1,17 @@
 # @lit-internal/benchmarks
 
+## 1.0.4
+
+### Patch Changes
+
+- [#3897](https://github.com/lit/lit/pull/3897) [`e9362d5b`](https://github.com/lit/lit/commit/e9362d5bc14eba8715048a94f2049f767ac15ed5) - Updated chromedriver to 113.0.0
+
+## 1.0.3
+
+### Patch Changes
+
+- [#3862](https://github.com/lit/lit/pull/3862) [`a2177c0d`](https://github.com/lit/lit/commit/a2177c0d18d5c6b35b1c4def6911a802a68d828c) - Fixing a typo in the comment
+
 ## 1.0.2
 
 ### Patch Changes

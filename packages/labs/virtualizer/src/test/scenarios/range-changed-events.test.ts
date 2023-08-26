@@ -9,6 +9,7 @@ import {
   ignoreBenignErrors,
   isInViewport,
   last,
+  pass,
   until,
 } from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
@@ -38,10 +39,10 @@ describe('RangeChanged event', () => {
         .renderItem=${(item: T) => html`<div class="item">${item}</div>`}
       ></lit-virtualizer>
     </div>`);
-    const virtualizer = (await until(() =>
-      container.querySelector('lit-virtualizer')
-    )) as LitVirtualizer;
-    expect(virtualizer).to.be.instanceof(LitVirtualizer);
+    const virtualizer = await until(
+      () => container.querySelector('lit-virtualizer') as LitVirtualizer
+    );
+    expect(virtualizer).to.be.instanceOf(LitVirtualizer);
     return {container, virtualizer};
   }
 
@@ -57,7 +58,7 @@ describe('RangeChanged event', () => {
     const containerEvents: RangeChangedEvent[] = [];
     const virtualizerEvents: RangeChangedEvent[] = [];
 
-    await until(() => getVisibleItems(virtualizer).length === 4);
+    await pass(() => expect(getVisibleItems(virtualizer).length).to.equal(4));
 
     container.addEventListener('rangeChanged', (e) => {
       containerEvents.push(e as RangeChangedEvent);
@@ -69,7 +70,7 @@ describe('RangeChanged event', () => {
 
     virtualizer.element(500)!.scrollIntoView();
 
-    await until(() => virtualizerEvents.length === 1);
+    await pass(() => expect(virtualizerEvents.length).to.equal(1));
 
     // The overhang (i.e. length-in-pixels of rendered DOM that are outside
     // the viewport) is currently baked in at 1000px, which means there

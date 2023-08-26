@@ -24,7 +24,7 @@ export interface SSRTestDescription {
      *
      * Does not need to contain lit-html marker comments.
      */
-    html: SSRExpectedHTML;
+    html: SSRExpectedHTMLGroup | SSRExpectedHTML;
 
     setup?(assert: Chai.Assert, dom: HTMLElement): void | Promise<unknown>;
     check?(assert: Chai.Assert, dom: HTMLElement): void | Promise<unknown>;
@@ -37,6 +37,7 @@ export interface SSRTestDescription {
   expectMutationsOnFirstRender?: boolean;
   expectMutationsDuringHydration?: boolean;
   expectMutationsDuringUpgrade?: boolean;
+  skipPreHydrationAssertHtml?: boolean;
   skip?: boolean;
   only?: boolean;
   registerElements?(): void | Promise<unknown>;
@@ -48,3 +49,19 @@ export type SSRTestFactory = () => SSRTestDescription;
 export type SSRTest = SSRTestDescription | SSRTestFactory;
 
 export type SSRTestSuite = {[name: string]: SSRTest};
+
+export type SSRExpectedHTMLGroup = {
+  match: 'any';
+  expectations: Array<SSRExpectedHTML>;
+};
+
+export const anyHtml = (
+  expectations: Array<SSRExpectedHTML>
+): SSRExpectedHTMLGroup => ({
+  match: 'any',
+  expectations,
+});
+
+export const isAnyHtml = (
+  html: SSRExpectedHTMLGroup | SSRExpectedHTML
+): html is SSRExpectedHTMLGroup => html.match === 'any';

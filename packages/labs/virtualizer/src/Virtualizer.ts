@@ -331,7 +331,8 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    this._scrollerController = this._scrollerController!.detach(this) || null;
+    this._scrollerController!.detach(this);
+    this._scrollerController = null;
     this._mutationObserver!.disconnect();
     this._hostElementRO!.disconnect();
     this._childrenRO!.disconnect();
@@ -377,7 +378,7 @@ export class Virtualizer {
         visibility: 'hidden',
         fontSize: '2px',
       });
-      sizer.innerHTML = '&nbsp;';
+      sizer.textContent = '&nbsp;';
       sizer.setAttribute(SIZER_ATTRIBUTE, '');
       this._sizer = sizer;
     }
@@ -533,9 +534,8 @@ export class Virtualizer {
     if (_rangeChanged || _itemsChanged) {
       this._notifyRange();
       this._rangeChanged = false;
-    } else {
-      this._finishDOMUpdate();
     }
+    this._finishDOMUpdate();
   }
 
   _finishDOMUpdate() {
@@ -601,13 +601,17 @@ export class Virtualizer {
   _handleLayoutMessage(message: LayoutHostMessage) {
     if (message.type === 'stateChanged') {
       this._updateDOM(message);
+    } else if (message.type === 'visibilityChanged') {
+      this._firstVisible = message.firstVisible;
+      this._lastVisible = message.lastVisible;
+      this._notifyVisibility();
     } else if (message.type === 'unpinned') {
       this._hostElement!.dispatchEvent(new UnpinnedEvent());
     }
   }
 
   get _children(): Array<HTMLElement> {
-    const arr = [];
+    const arr: Array<HTMLElement> = [];
     let next = this._hostElement!.firstElementChild as HTMLElement;
     while (next) {
       if (!next.hasAttribute(SIZER_ATTRIBUTE)) {
@@ -874,7 +878,7 @@ export class Virtualizer {
   // the virtualizer update cycle.
   private _childrenSizeChanged(changes: ResizeObserverEntry[]) {
     // Only measure if the layout requires it
-    if (this._layout!.measureChildren) {
+    if (this._layout?.measureChildren) {
       for (const change of changes) {
         this._toBeMeasured.set(
           change.target as HTMLElement,
@@ -926,7 +930,7 @@ function getParentElement(el: Element) {
 ///
 
 function getElementAncestors(el: HTMLElement, includeSelf = false) {
-  const ancestors = [];
+  const ancestors: Array<HTMLElement> = [];
   let parent = includeSelf ? el : (getParentElement(el) as HTMLElement);
   while (parent !== null) {
     ancestors.push(parent);
@@ -936,7 +940,13 @@ function getElementAncestors(el: HTMLElement, includeSelf = false) {
 }
 
 function getClippingAncestors(el: HTMLElement, includeSelf = false) {
-  return getElementAncestors(el, includeSelf).filter(
-    (a) => getComputedStyle(a).overflow !== 'visible'
-  );
+  let foundFixed = false;
+  return getElementAncestors(el, includeSelf).filter((a) => {
+    if (foundFixed) {
+      return false;
+    }
+    const style = getComputedStyle(a);
+    foundFixed = style.position === 'fixed';
+    return style.overflow !== 'visible';
+  });
 }

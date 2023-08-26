@@ -30,7 +30,7 @@ import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
   stripExpressionMarkers,
-} from './test-utils/strip-markers.js';
+} from '@lit-labs/testing';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {AsyncDirective} from 'lit-html/async-directive.js';
 
@@ -462,7 +462,13 @@ suite('lit-html', () => {
 
     test('comment', () => {
       render(html`<!--${'A'}-->`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<!---->');
+      // Strip only the marker text (and not the entire comment as
+      // stripExpressionMarkers does) so that the test works on both runtime and
+      // compiled templates.
+      assert.equal(
+        container.innerHTML.replace(/lit\$[0-9]+\$/g, ''),
+        '<!----><!---->'
+      );
     });
 
     test('comment with attribute-like content', () => {
@@ -1590,16 +1596,12 @@ suite('lit-html', () => {
   });
 
   suite('compiled', () => {
-    const trustedTypes = (globalThis as unknown as Partial<Window>)
-      .trustedTypes;
-    const policy = trustedTypes?.createPolicy('lit-html', {
-      createHTML: (s) => s,
-    }) ?? {createHTML: (s) => s as unknown as TrustedHTML};
+    const branding_tag = (s: TemplateStringsArray) => s;
 
     test('only text', () => {
       // A compiled template for html`${'A'}`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML('<!---->'),
+        h: branding_tag`<!---->`,
         parts: [{type: 2, index: 0}],
       };
       assertRender(
@@ -1615,7 +1617,7 @@ suite('lit-html', () => {
     test('text expression', () => {
       // A compiled template for html`<div>${'A'}</div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML(`<div><!----></div>`),
+        h: branding_tag`<div><!----></div>`,
         parts: [{type: 2, index: 1}],
       };
       const result = {
@@ -1629,7 +1631,7 @@ suite('lit-html', () => {
     test('attribute expression', () => {
       // A compiled template for html`<div foo=${'A'}></div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML('<div></div>'),
+        h: branding_tag`<div></div>`,
         parts: [
           {
             type: 1,
@@ -1652,7 +1654,7 @@ suite('lit-html', () => {
       const r = createRef();
       // A compiled template for html`<div ${ref(r)}></div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML('<div></div>'),
+        h: branding_tag`<div></div>`,
         parts: [{type: 6, index: 0}],
       };
       const result = {
@@ -1664,6 +1666,19 @@ suite('lit-html', () => {
       const div = container.firstElementChild;
       assert.isDefined(div);
       assert.strictEqual(r.value, div);
+    });
+
+    test(`throw if unbranded`, () => {
+      const _$lit_template_1: CompiledTemplate = {
+        h: ['<div><!----></div>'] as unknown as TemplateStringsArray,
+        parts: [{type: 2, index: 1}],
+      };
+      const result = {
+        // This property needs to remain unminified.
+        ['_$litType$']: _$lit_template_1,
+        values: ['A'],
+      };
+      assert.throws(() => render(result, container));
     });
   });
 

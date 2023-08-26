@@ -15,6 +15,8 @@ export interface LocalInterface {
   someData: number;
 }
 
+const unsupportedPropertyName = Symbol();
+
 @customElement('element-a')
 export class ElementA extends LitElement {
   static properties = {
@@ -23,12 +25,28 @@ export class ElementA extends LitElement {
 
   declare staticProp: number;
 
+  declare constructorAssignOnly: number;
+
   constructor() {
     super();
     this.staticProp = 42;
+    this.constructorAssignOnly = 0;
   }
 
   notDecorated: string;
+
+  readonly readonlyField = 0;
+
+  get getterOnly(): number {
+    return 0;
+  }
+
+  get accessorPair(): number {
+    return 0;
+  }
+  set accessorPair(_: number) {
+    void 0;
+  }
 
   @property()
   noOptionsString: string;
@@ -80,4 +98,32 @@ export class ElementA extends LitElement {
 
   @property()
   union: LocalClass | HTMLElement | ImportedClass;
+
+  /**
+   * This signature only works with strings.
+   * @param x Accepts a string.
+   * @returns Returns a string.
+   */
+  overloaded(x: string): string;
+  /**
+   * This signature only works with numbers.
+   * @param x Accepts a number.
+   * @returns Returns a number.
+   */
+  overloaded(x: number): number;
+  /**
+   * This signature works with strings or numbers.
+   * @param x Accepts either a string or a number.
+   * @returns Returns either a string or a number.
+   */
+  overloaded(x: string | number): string | number {
+    if (typeof x === 'string') {
+      return x + 'abc';
+    } else {
+      return x + 123;
+    }
+  }
+
+  @property()
+  [unsupportedPropertyName]: string;
 }

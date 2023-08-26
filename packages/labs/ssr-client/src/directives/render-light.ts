@@ -48,7 +48,7 @@ class RenderLightDirective extends Directive {
  * <x-story>
  *   #shadow-root
  *     <slot></slot>
- *     <button>Like></button>
+ *     <button>Like</button>
  *   <h1>Hello World</h1>
  *   <p>This is a story about greeting the earth.</p>
  * </x-story>

@@ -1,5 +1,67 @@
 # @lit-labs/analyzer
 
+## 0.9.1
+
+### Patch Changes
+
+- [#4065](https://github.com/lit/lit/pull/4065) [`47be5910`](https://github.com/lit/lit/commit/47be5910ebff413e504a6582f476123437982e32) Thanks [@bennypowers](https://github.com/bennypowers)! - Analyzer can now handle module graphs which reexport names from their circular dependencies
+
+## 0.9.0
+
+### Minor Changes
+
+- [#4030](https://github.com/lit/lit/pull/4030) [`55bfed2f`](https://github.com/lit/lit/commit/55bfed2f95cfcf10757e24edf56092b8e9d36405) - Upgrade TypeScript to ~5.0
+
+- [#3980](https://github.com/lit/lit/pull/3980) [`91611d73`](https://github.com/lit/lit/commit/91611d73600e163459da5d2bfb9753c88ad3f45a) - Add separate entrypoint for createPackageAnalyzer() which requires Node APIs
+
+- [#4029](https://github.com/lit/lit/pull/4029) [`da6646d8`](https://github.com/lit/lit/commit/da6646d827d8932ba7c241780cbd03a9ade64009) - Require a TypeScript object to construct an Analyzer
+
+### Patch Changes
+
+- [#4006](https://github.com/lit/lit/pull/4006) [`9001f9c1`](https://github.com/lit/lit/commit/9001f9c12e0ba125b930dcc126476e384ddc23fe) Thanks [@bennypowers](https://github.com/bennypowers)! - Detect sources when the `tsconfig.json` `extends` from another config.
+
+## 0.8.0
+
+### Minor Changes
+
+- [#3866](https://github.com/lit/lit/pull/3866) [`d8e80656`](https://github.com/lit/lit/commit/d8e806561e2d5c12bc99fcee34bce1825c3ca1ae) - The analyzer no longer crashes in many cases when encountering code with unexpected syntax or cases that the analyzer does not yet handle. The custom elements manifest generator also logs diagnostics collected while generating the manifest, but generates the manifest whenever possible.
+
+## 0.7.0
+
+### Minor Changes
+
+- [#3812](https://github.com/lit/lit/pull/3812) [`2c59ceb9`](https://github.com/lit/lit/commit/2c59ceb9427ca76a591084258eedab76644f2a63) - Add CSS Custom Property fallback (default) values to manifest
+
+## 0.6.0
+
+### Minor Changes
+
+- [#3621](https://github.com/lit/lit/pull/3621) [`dfdc3f71`](https://github.com/lit/lit/commit/dfdc3f714e511d30acc28809fa6643a4c764cad1) - Added analysys of vanilla custom elements that extend HTMLElement.
+
+- [#3662](https://github.com/lit/lit/pull/3662) [`cabc6189`](https://github.com/lit/lit/commit/cabc61894e57ba89ecadc1deb20f121fecdfffc9) - Added support for analyzing const variables initialized to class or function expressions as ClassDeclaration and FunctionDeclaration, respectively.
+
+- [#3658](https://github.com/lit/lit/pull/3658) [`b7b01c0d`](https://github.com/lit/lit/commit/b7b01c0d21c0ac301cd5b8d4cb595f3bbfeebe6b) - JSDoc types in TS files now have no effect on the analyzer's output, matching TS itself.
+
+- [#3702](https://github.com/lit/lit/pull/3702) [`520b4713`](https://github.com/lit/lit/commit/520b47132af8e21868df5dc4dfdf5e003a38d158) - Adds support for overloaded functions. Methods of model objects that accept a
+  string key will now specifically return the `FunctionDeclaration` of the
+  implementation signature of an overloaded function, which has a new `overloads`
+  field containing a `FunctionOverloadDeclaration` for each overload signature.
+
+- [#3648](https://github.com/lit/lit/pull/3648) [`39ac5275`](https://github.com/lit/lit/commit/39ac52758064dc521c2e3701e28348d7dc637a98) - Fix support for static class members by storing them in separate maps by name.
+
+- [#3655](https://github.com/lit/lit/pull/3655) [`7e20a528`](https://github.com/lit/lit/commit/7e20a5287a46eadcd06a0804147b3b27110326ad) - Added support for analyzing function declarations.
+
+- [#3529](https://github.com/lit/lit/pull/3529) [`389d0c55`](https://github.com/lit/lit/commit/389d0c558d78982d8265588d1935ede91f46f3a0) - Added CLI improvements:
+
+  - Add support for --exclude options (important for excluding test files from e.g. manifest or wrapper generation)
+
+  Added more analysis support and manifest emit:
+
+  - TS enum type variables
+  - description, summary, and deprecated for all models
+  - module-level description & summary
+  - ClassField and ClassMethod
+
 ## 0.5.0
 
 ### Minor Changes

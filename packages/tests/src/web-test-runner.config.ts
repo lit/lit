@@ -36,9 +36,9 @@ const browserPresets = {
   // Many browser configurations don't yet work with @web/test-runner-saucelabs.
   // See https://github.com/modernweb-dev/web/issues/472.
   sauce: [
-    'sauce:Windows 10/Firefox@91', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
+    'sauce:Windows 10/Firefox@102', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-2',
-    'sauce:macOS 10.15/Safari@latest',
+    'sauce:macOS 11/Safari@latest',
     // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
   'sauce-ie11': ['sauce:Windows 10/Internet Explorer@11'],
@@ -168,7 +168,6 @@ const config: TestRunnerConfig = {
     '../labs/context/development/**/*_test.(js|html)',
     '../labs/motion/development/**/*_test.(js|html)',
     '../labs/observers/development/**/*_test.(js|html)',
-    '../labs/react/development/**/*_test.(js|html)',
     '../labs/router/development/**/*_test.js',
     '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
     '../labs/task/development/**/*_test.(js|html)',
@@ -222,17 +221,20 @@ const config: TestRunnerConfig = {
      *
      * The most common way to get an error here is to have a relative import in
      * a /test/ module (e.g. `import '../lit-element.js'`). A bare module should
-     * instead always be used in test modules (e.g. `import
-     * '../lit-element.js'`). The bare module is necessary, even for imports
-     * from the same package, so that export conditions take effect.
+     * instead always be used in test modules (e.g. `import 'lit-element'`). The
+     * bare module is necessary, even for imports from the same package, so that
+     * export conditions take effect.
      */
     function devVsProdSourcesChecker(context, next) {
       if (mode === 'dev') {
         if (
           context.url.includes('/packages/') &&
           !context.url.includes('/development/') &&
-          // lit doesn't have a dev mode
+          // For compiled tests
+          !context.url.includes('/compiled/') &&
+          // lit and labs/testing don't have a dev mode
           !context.url.includes('/packages/lit/') &&
+          !context.url.includes('/packages/labs/testing/') &&
           // some 3rd party modules can come from e.g. /packages/node_modules/*
           !context.url.includes('/node_modules/')
         ) {
@@ -248,6 +250,19 @@ const config: TestRunnerConfig = {
           !context.url.includes('/development/test/')
         ) {
           console.log('Unexpected dev request in prod mode:', context.url);
+          const refererHeader = context.req.headers['referer'];
+          if (refererHeader) {
+            // Try and extract the <filename>_test.js from the referer.
+            const maybeTestFile = /[\w-]*_test\.js/.exec(refererHeader)?.[0];
+            if (maybeTestFile) {
+              console.log(
+                `❌ There may be a relative import in '${maybeTestFile}' which ` +
+                  `is resolving to '${context.url}'. Ensure the import is a bare module. ` +
+                  'Reproduce locally with: ' +
+                  '`MODE=prod npm run test:common -w @lit-internal/tests`'
+              );
+            }
+          }
           context.response.status = 403;
           return;
         }

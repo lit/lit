@@ -8,46 +8,24 @@ import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 import path from 'path';
-import {fileURLToPath} from 'url';
-import {getSourceFilename, InMemoryAnalyzer, languages} from '../utils.js';
-
 import {
-  createPackageAnalyzer,
-  Analyzer,
-  AbsolutePath,
-  Module,
-} from '../../index.js';
+  AnalyzerModuleTestContext,
+  AnalyzerTestContext,
+  getSourceFilename,
+  InMemoryAnalyzer,
+  languages,
+  setupAnalyzerForTest,
+  setupAnalyzerForTestWithModule,
+} from '../utils.js';
+
+import {AbsolutePath} from '../../index.js';
+import {fileURLToPath} from 'url';
 
 for (const lang of languages) {
-  const test = suite<{
-    analyzer: Analyzer;
-    packagePath: AbsolutePath;
-    module: Module;
-  }>(`Module tests (${lang})`);
+  const test = suite<AnalyzerModuleTestContext>(`Module tests (${lang})`);
 
   test.before((ctx) => {
-    try {
-      const packagePath = fileURLToPath(
-        new URL(`../../test-files/${lang}/modules`, import.meta.url).href
-      ) as AbsolutePath;
-      const analyzer = createPackageAnalyzer(packagePath);
-
-      const result = analyzer.getPackage();
-      const file = getSourceFilename('module-a', lang);
-      const module = result.modules.find((m) => m.sourcePath === file);
-      if (module === undefined) {
-        throw new Error(`Analyzer did not analyze file '${file}'`);
-      }
-
-      ctx.packagePath = packagePath;
-      ctx.analyzer = analyzer;
-      ctx.module = module;
-    } catch (error) {
-      // Uvu has a bug where it silently ignores failures in before and after,
-      // see https://github.com/lukeed/uvu/issues/191.
-      console.error('uvu before error', error);
-      process.exit(1);
-    }
+    setupAnalyzerForTestWithModule(ctx, lang, 'modules', 'module-a');
   });
 
   test('Dependencies correctly analyzed', ({module}) => {
@@ -235,4 +213,328 @@ for (const lang of languages) {
   );
 
   cachingTest.run();
+
+  const circularTest = suite<AnalyzerTestContext>(
+    `Circular module cache (${lang})`
+  );
+  circularTest.before((ctx) => {
+    setupAnalyzerForTest(ctx, lang, 'circular-modules');
+  });
+
+  circularTest(
+    'getModule processes circular re-exports',
+    async ({analyzer}) => {
+      const modules = analyzer.getPackage().modules;
+      for (const {sourcePath} of modules) {
+        const agnosticModuleName = path
+          .basename(sourcePath)
+          .replace(/\...$/, '');
+        const sourceFilename = getSourceFilename(
+          path.join(
+            fileURLToPath(
+              new URL(
+                `../../test-files/${lang}/circular-modules/`,
+                import.meta.url
+              )
+            ),
+            agnosticModuleName
+          ),
+          lang
+        ) as AbsolutePath;
+        const module = analyzer.getModule(sourceFilename);
+        assert.not.throws(() => module.exportNames);
+      }
+    }
+  );
+
+  circularTest.run();
+
+  // Doing module JSDoc tests in-memory, to test a number of variations
+  // without needing to maintain a file for each.
+
+  for (const hasFirstStatementDoc of [false, true]) {
+    const moduleTest = suite<{
+      analyzer: InMemoryAnalyzer;
+    }>(
+      `Module jsDoc tests, ${
+        hasFirstStatementDoc ? 'has' : 'no'
+      } first statement docs (${lang})`
+    );
+
+    moduleTest.before.each((ctx) => {
+      ctx.analyzer = new InMemoryAnalyzer(lang, {
+        '/package.json': JSON.stringify({name: '@lit-internal/in-memory-test'}),
+      });
+    });
+
+    const firstStatementDoc = hasFirstStatementDoc
+      ? `
+      /**
+       * First statement description
+       * @summary First statement summary
+       */
+    `
+      : '';
+
+    moduleTest('untagged module description with @module tag', ({analyzer}) => {
+      analyzer.setFile(
+        '/module',
+        `
+          /**
+           * Module description
+           * more description
+           * @module
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+      );
+      const module = analyzer.getModule(
+        getSourceFilename('/module', lang) as AbsolutePath
+      );
+      assert.equal(module.description, 'Module description\nmore description');
+    });
+
+    moduleTest(
+      'untagged module description with @fileoverview tag',
+      ({analyzer}) => {
+        analyzer.setFile(
+          '/module',
+          `
+          /**
+           * Module description
+           * more description
+           * @fileoverview
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+        );
+        const module = analyzer.getModule(
+          getSourceFilename('/module', lang) as AbsolutePath
+        );
+        assert.equal(
+          module.description,
+          'Module description\nmore description'
+        );
+        assert.equal(
+          module.getDeclaration('foo').description,
+          hasFirstStatementDoc ? 'First statement description' : undefined
+        );
+      }
+    );
+
+    moduleTest('module description in @fileoverview tag', ({analyzer}) => {
+      analyzer.setFile(
+        '/module',
+        `
+          /**
+           * @fileoverview Module description
+           * more description
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+      );
+      const module = analyzer.getModule(
+        getSourceFilename('/module', lang) as AbsolutePath
+      );
+      assert.equal(module.description, 'Module description\nmore description');
+      assert.equal(
+        module.getDeclaration('foo').description,
+        hasFirstStatementDoc ? 'First statement description' : undefined
+      );
+    });
+
+    moduleTest(
+      'untagged module description with @packageDocumentation tag',
+      ({analyzer}) => {
+        analyzer.setFile(
+          '/module',
+          `
+          /**
+           * Module description
+           * more description
+           * @packageDocumentation
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+        );
+        const module = analyzer.getModule(
+          getSourceFilename('/module', lang) as AbsolutePath
+        );
+        assert.equal(
+          module.description,
+          'Module description\nmore description'
+        );
+        assert.equal(
+          module.getDeclaration('foo').description,
+          hasFirstStatementDoc ? 'First statement description' : undefined
+        );
+      }
+    );
+
+    moduleTest(
+      'module description in @packageDocumentation tag',
+      ({analyzer}) => {
+        analyzer.setFile(
+          '/module',
+          `
+          /**
+           * @packageDocumentation Module description
+           * more description
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+        );
+        const module = analyzer.getModule(
+          getSourceFilename('/module', lang) as AbsolutePath
+        );
+        assert.equal(
+          module.description,
+          'Module description\nmore description'
+        );
+        assert.equal(
+          module.getDeclaration('foo').description,
+          hasFirstStatementDoc ? 'First statement description' : undefined
+        );
+      }
+    );
+
+    moduleTest(
+      'module description in @packageDocumentation tag with other tags',
+      ({analyzer}) => {
+        analyzer.setFile(
+          '/module',
+          `
+          /**
+           * @packageDocumentation Module description
+           * more description
+           * @module foo
+           * @deprecated Module is deprecated
+           */
+          ${firstStatementDoc}
+          export const foo = 42;
+        `
+        );
+        const module = analyzer.getModule(
+          getSourceFilename('/module', lang) as AbsolutePath
+        );
+        assert.equal(
+          module.description,
+          'Module description\nmore description'
+        );
+        assert.equal(module.deprecated, 'Module is deprecated');
+        assert.equal(
+          module.getDeclaration('foo').description,
+          hasFirstStatementDoc ? 'First statement description' : undefined
+        );
+      }
+    );
+
+    moduleTest('untagged module description', ({analyzer}) => {
+      analyzer.setFile(
+        '/module',
+        `
+          /**
+           * Module description
+           * more module description
+           * @summary Module summary
+           * @deprecated
+           */
+          /**
+           * First statement description
+           * @summary First statement summary
+           */
+          export const foo = 42;
+        `
+      );
+      const module = analyzer.getModule(
+        getSourceFilename('/module', lang) as AbsolutePath
+      );
+      assert.equal(
+        module.description,
+        'Module description\nmore module description'
+      );
+      assert.equal(module.summary, 'Module summary');
+      assert.equal(module.deprecated, true);
+      assert.equal(
+        module.getDeclaration('foo').description,
+        'First statement description'
+      );
+    });
+
+    moduleTest('multiple untagged module descriptions', ({analyzer}) => {
+      analyzer.setFile(
+        '/module',
+        `
+          /**
+           * Module description
+           * more module description
+           */
+          /**
+           * Even more module description
+           */
+          /**
+           * First statement description
+           * @summary First statement summary
+           */
+          export const foo = 42;
+        `
+      );
+      const module = analyzer.getModule(
+        getSourceFilename('/module', lang) as AbsolutePath
+      );
+      assert.equal(
+        module.description,
+        'Module description\nmore module description\nEven more module description'
+      );
+      assert.equal(
+        module.getDeclaration('foo').description,
+        'First statement description'
+      );
+    });
+
+    moduleTest(
+      'multiple untagged module descriptions with other tags',
+      ({analyzer}) => {
+        analyzer.setFile(
+          '/module',
+          `
+          /**
+           * Module description
+           * more module description
+           * @deprecated
+          */
+          /**
+           * Even more module description
+           * @summary Module summary
+           */
+          /**
+           * First statement description
+           * @summary First statement summary
+           */
+          export const foo = 42;
+        `
+        );
+        const module = analyzer.getModule(
+          getSourceFilename('/module', lang) as AbsolutePath
+        );
+        assert.equal(
+          module.description,
+          'Module description\nmore module description\nEven more module description'
+        );
+        assert.equal(module.summary, 'Module summary');
+        assert.equal(module.deprecated, true);
+        assert.equal(
+          module.getDeclaration('foo').description,
+          'First statement description'
+        );
+      }
+    );
+
+    moduleTest.run();
+  }
 }

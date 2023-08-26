@@ -12,7 +12,7 @@ import {fileURLToPath} from 'url';
 import {languages} from '../utils.js';
 
 import {Analyzer} from '../../index.js';
-import {createPackageAnalyzer} from '../../lib/analyze-package.js';
+import {createPackageAnalyzer} from '../../package-analyzer.js';
 import {AbsolutePath, PackagePath} from '../../lib/paths.js';
 import {ClassDeclaration, LitElementDeclaration} from '../../lib/model.js';
 

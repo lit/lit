@@ -143,8 +143,8 @@ afterEach(() => {
 ### Notes
 
 Any `lit` imports including those for custom element definitions, **must**
-follow the fixture imports so that `lit/experimental-hydrate-support.js` is
-imported before it.
+follow the fixture imports so that
+`@lit-labs/ssr-client/lit-element-hydrate-support.js` is imported before it.
 
 The fixture functions expect a Lit `TemplateResult` with a single top level
 element.

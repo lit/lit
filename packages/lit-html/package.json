@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "2.6.1",
+  "version": "2.8.0",
   "description": "HTML templates literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": {
@@ -279,6 +279,7 @@
     "build": "wireit",
     "build:ts": "wireit",
     "build:ts:types": "wireit",
+    "build:compiled:ts:tests": "wireit",
     "build:rollup": "wireit",
     "build:version-stability-test": "wireit",
     "check-version": "wireit",
@@ -288,7 +289,8 @@
     "test:dev": "wireit",
     "test:prod": "wireit",
     "test:node": "wireit",
-    "test:node-dev": "wireit"
+    "test:node-dev": "wireit",
+    "test:dev:compiled": "wireit"
   },
   "files": [
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
@@ -317,6 +319,9 @@
     "build:ts": {
       "#comment": "Note this also builds polyfill-support via a TypeScript project reference.",
       "command": "tsc --build --pretty",
+      "dependencies": [
+        "../labs/testing:build:ts:utils"
+      ],
       "clean": "if-file-deleted",
       "files": [
         "src/**/*.ts",
@@ -339,6 +344,23 @@
       "output": [
         "*.d.ts{,.map}",
         "directives/*.d.ts{,.map}"
+      ]
+    },
+    "build:compiled:ts:tests": {
+      "#comment": "Compile the test directory with the lit template compiler.",
+      "command": "node ../labs/compiler/test/compile_lit_html_tests.js",
+      "dependencies": [
+        "../labs/compiler:build"
+      ],
+      "files": [
+        "src/test/**/*.ts",
+        "tsconfig.json",
+        "tsconfig.compiled-tests.json"
+      ],
+      "output": [
+        "compiled/**/*.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo",
+        "tsconfig.compiled-tests.tsbuildinfo"
       ]
     },
     "build:rollup": {
@@ -410,6 +432,7 @@
         "test:prod",
         "test:node",
         "test:node-dev",
+        "test:dev:compiled",
         "check-version"
       ]
     },
@@ -460,17 +483,33 @@
       ],
       "files": [],
       "output": []
+    },
+    "test:dev:compiled": {
+      "command": "node ../tests/run-web-tests.js \"compiled/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build:compiled:ts:tests",
+        "../tests:build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        },
+        "MODE": "dev"
+      },
+      "files": [],
+      "output": []
     }
   },
   "dependencies": {
     "@types/trusted-types": "^2.0.2"
   },
   "devDependencies": {
+    "@lit-internal/scripts": "^1.0.0",
+    "@lit-labs/testing": "^0.2.0",
     "@types/web-ie11": "^0.0.0",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.6.0",
-    "@lit-internal/scripts": "^1.0.0"
+    "@webcomponents/webcomponentsjs": "^2.6.0"
   },
   "typings": "lit-html.d.ts",
   "directories": {

@@ -1,5 +1,17 @@
 # @lit-labs/ssr-dom-shim
 
+## 1.1.1
+
+### Patch Changes
+
+- [#3793](https://github.com/lit/lit/pull/3793) [`8a11f7ea`](https://github.com/lit/lit/commit/8a11f7ea0964c8d8f055e1a085e3f5b99877dccd) - Warn instead of throwing on repeat custom element registration in development mode.
+
+## 1.1.0
+
+### Minor Changes
+
+- [#3677](https://github.com/lit/lit/pull/3677) [`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86) - Add rough support for HTMLElement.prototype.attachInternals
+
 ## 1.0.0
 
 ### Major Changes

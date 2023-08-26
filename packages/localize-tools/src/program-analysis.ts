@@ -370,9 +370,11 @@ interface Expression {
  */
 const EXPRESSION_RAND = String(Math.random()).slice(2);
 const EXPRESSION_START = `_START_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
-const EXPRESSION_START_REGEXP = new RegExp(EXPRESSION_START, 'g');
 const EXPRESSION_END = `_END_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
-const EXPRESSION_END_REGEXP = new RegExp(EXPRESSION_END, 'g');
+const EXPRESSION_START_END_REGEXP = new RegExp(
+  EXPRESSION_START + '(.*?)' + EXPRESSION_END,
+  'g'
+);
 
 /**
  * Our template is split apart based on template string literal expressions.
@@ -401,10 +403,17 @@ function replaceExpressionsAndHtmlWithPlaceholders(
   parts: Array<string | Expression>
 ): Array<string | Omit<Placeholder, 'index'>> {
   const concatenatedHtml = parts
-    .map((part) =>
+    .map((part, expressionIndex) =>
       typeof part === 'string'
         ? part
-        : EXPRESSION_START + part.identifier + EXPRESSION_END
+        : EXPRESSION_START +
+          // Use the index of the expression instead of the actual expression,
+          // because the actual expression might contain embedded HTML which
+          // will confuse HTML parsing. We could also escape it, but it's
+          // simpler to just use the index and swap it back with the actual
+          // expression after HTML parsing.
+          expressionIndex +
+          EXPRESSION_END
     )
     .join('');
   const contents: Array<string | Omit<Placeholder, 'index'>> = [];
@@ -418,8 +427,13 @@ function replaceExpressionsAndHtmlWithPlaceholders(
             contents.push(substr);
           }
         } else {
-          const [identifier, tail] = endSplit;
-          contents.push({untranslatable: '${' + identifier + '}'});
+          // Swap the expression index with the actual expression.
+          const [expressionIndexStr, tail] = endSplit;
+          const expressionIndex = Number(expressionIndexStr);
+          const expression = (parts[expressionIndex] as Expression).identifier;
+          contents.push({
+            untranslatable: '${' + expression + '}',
+          });
           if (tail) {
             contents.push(tail);
           }
@@ -430,9 +444,16 @@ function replaceExpressionsAndHtmlWithPlaceholders(
       // markup, it's fine and good to just keep this one placeholder. We just
       // need to fix the syntax.
       contents.push({
-        untranslatable: part.untranslatable
-          .replace(EXPRESSION_START_REGEXP, '${')
-          .replace(EXPRESSION_END_REGEXP, '}'),
+        untranslatable: part.untranslatable.replace(
+          EXPRESSION_START_END_REGEXP,
+          (_, expressionIndexStr) => {
+            // Swap the expression index with the actual expression.
+            const expressionIndex = Number(expressionIndexStr);
+            const expression = (parts[expressionIndex] as Expression)
+              .identifier;
+            return '${' + expression + '}';
+          }
+        ),
       });
     }
   }

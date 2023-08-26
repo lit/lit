@@ -10,7 +10,7 @@ const global = NODE_MODE ? globalThis : window;
 /**
  * Whether the current browser supports `adoptedStyleSheets`.
  */
-export const supportsAdoptingStyleSheets =
+export const supportsAdoptingStyleSheets: boolean =
   global.ShadowRoot &&
   (global.ShadyCSS === undefined || global.ShadyCSS.nativeShadow) &&
   'adoptedStyleSheets' in Document.prototype &&

@@ -153,7 +153,15 @@ root.attach(document.body);
 
 The `ContextRoot` can be attached to any element and it will gather a list of any context requests which are received at the attached element. The `ContextProvider` controllers will emit `context-provider` events when they are connected to the DOM. These events act as triggers for the `ContextRoot` to redispatch these `context-request` events from their sources.
 
-This solution has a small overhead, in that if a provider is not within the DOM hierarchy of the unsatisfied requests we are unnecessarily refiring these requests, but this approach is safest and most correct in that it is very hard to manage stable DOM hierarchies with the semantics of slotting and reparenting that is common in web components implementations.
+This solution has a small overhead, in that if a provider is not within the DOM hierarchy of the unsatisfied requests we are unnecessarily refiring these requests, but this approach is safest and most correct in that it is very hard to manage unstable DOM hierarchies with the semantics of slotting and reparenting that is common in web components implementations.
+
+Note that ContextRoot uses [WeakRefs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef) which are not supported in IE11.
+
+### Protected / Private Properties
+
+You can use the `@consume` and `@provide` decorators on TypeScript `protected` and `private` properties, but be aware that there is no type checking between the type of the context and the type of the property. This is because the TypeScript compiler does not make type information for protected or private properties available to decorators. Standard `#private` properties are not supported at all.
+
+We expect to fix all of this when we switch to standard decorators. See [#3926](https://github.com/lit/lit/issues/3926).
 
 ## Contributing
 

@@ -6,7 +6,7 @@
 
 import {unsafeSVG} from 'lit-html/directives/unsafe-svg.js';
 import {render, html, nothing, noChange} from 'lit-html';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {stripExpressionMarkers} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
 
 suite('unsafeSVG', () => {

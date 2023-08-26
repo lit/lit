@@ -56,15 +56,15 @@ export abstract class GridBaseLayout<
   flex: FlexSpec | null = null;
   justify: JustifySpec | null = null;
 
-  protected get _defaultConfig(): C {
-    return Object.assign({}, super._defaultConfig, {
+  protected _getDefaultConfig(): C {
+    return Object.assign({}, super._getDefaultConfig(), {
       flex: false,
       justify: 'start',
     });
   }
 
   set gap(spec: AutoGapSpec) {
-    super.gap = spec;
+    super._setGap(spec);
   }
 
   protected _updateLayout() {

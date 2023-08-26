@@ -1,5 +1,64 @@
 # Change Log
 
+## 3.1.5
+
+### Patch Changes
+
+- [#3977](https://github.com/lit/lit/pull/3977) [`a2366a39`](https://github.com/lit/lit/commit/a2366a39635366dd252db4d4766867959ba03dff) - Make attribute handling case-insensitive for custom element rendering as it is in the browser for HTML elements.
+
+## 3.1.4
+
+### Patch Changes
+
+- [#3942](https://github.com/lit/lit/pull/3942) [`ed42d5f0`](https://github.com/lit/lit/commit/ed42d5f07fc8eed344deaa2cd7b9a88ecdd68d54) - Fix adding node marker for hydration for nested custom elements without attributes. This ensures nested custom elements have their `defer-hydration` attribute removed when parent is hydrated even without any attributes or bindings.
+
+## 3.1.3
+
+### Patch Changes
+
+- [#3905](https://github.com/lit/lit/pull/3905) [`f8d72859`](https://github.com/lit/lit/commit/f8d7285976390bbb35c540eb7b516f3748064d19) - Handle non-array iterables including `map` directive in child parts
+
+## 3.1.2
+
+### Patch Changes
+
+- [#3849](https://github.com/lit/lit/pull/3849) [`02d6a35a`](https://github.com/lit/lit/commit/02d6a35ab75285905b28a5b29e8a7740d3cb5e3f) - Add "module" to condition names to resolve for module loader
+
+## 3.1.1
+
+### Patch Changes
+
+- [#3720](https://github.com/lit/lit/pull/3720) [`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7) - Use hydration modules from `@lit-labs/ssr-client`
+
+- Updated dependencies [[`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7)]:
+  - @lit-labs/ssr-client@1.1.0
+
+## 3.1.0
+
+### Minor Changes
+
+- [#3599](https://github.com/lit/lit/pull/3599) [`ca74ff6e`](https://github.com/lit/lit/commit/ca74ff6eda710b929ca7aaf759a98cdfa350cc0d) - Forwards compatibility for Declarative Shadow DOM's shadowrootmode rename
+
+- [#3677](https://github.com/lit/lit/pull/3677) [`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86) - Reflect ARIA attributes onto server rendered Lit elements with attached internals during SSR and remove them upon hydration.
+
+- [#3667](https://github.com/lit/lit/pull/3667) [`e00f6f52`](https://github.com/lit/lit/commit/e00f6f52199d5dbc08d4c15f62380422e77cde7f) - Improved how nodes with attribute/property/event/element bindings are rendered in SSR, to avoid adding comments inside of "raw text elements" like `<textarea>`. Fixes #3663.
+
+  Note: `@lit-labs/ssr` and `lit-html` must be updated together.
+
+### Patch Changes
+
+- [#3712](https://github.com/lit/lit/pull/3712) [`f2eb9796`](https://github.com/lit/lit/commit/f2eb97962c7e77373b3b8861ab59639de22da3d0) - Fix a few things in the README
+
+- [#3590](https://github.com/lit/lit/pull/3590) [`1d8a38ed`](https://github.com/lit/lit/commit/1d8a38ed0b962f23813a90c3c6423716c9271d83) - Make FallbackRenderer not emit a shadow root
+
+- [#3584](https://github.com/lit/lit/pull/3584) [`61ec3dab`](https://github.com/lit/lit/commit/61ec3dab761e379c65f9e27946e53137da83fb58) - Remove `abstract` from members of the ElementRendererConstructor type
+
+- Updated dependencies [[`4d698430`](https://github.com/lit/lit/commit/4d698430b38efa49c97b841238b331340af5fef0), [`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86), [`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86), [`e00f6f52`](https://github.com/lit/lit/commit/e00f6f52199d5dbc08d4c15f62380422e77cde7f), [`88a40177`](https://github.com/lit/lit/commit/88a40177de9be5d117a21e3da5414bd777872544)]:
+  - lit-html@2.7.0
+  - @lit-labs/ssr-dom-shim@1.1.0
+  - lit@2.7.0
+  - lit-element@3.3.0
+
 ## 3.0.1
 
 ### Patch Changes

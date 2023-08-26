@@ -29,6 +29,13 @@ suite('ref', () => {
     assert.equal(divRef, div);
   });
 
+  test('handles an undefined ref', () => {
+    render(html`<div ${ref(undefined)}></div>`, container);
+    const div = container.firstElementChild;
+    // Not much to assert. We mainly care that we didn't throw
+    assert.isOk(div);
+  });
+
   test('sets a ref when Ref object changes', () => {
     const divRef1 = createRef();
     const divRef2 = createRef();

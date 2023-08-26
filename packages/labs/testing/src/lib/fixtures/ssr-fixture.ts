@@ -6,7 +6,7 @@
 
 import {executeServerCommand} from '@web/test-runner-commands';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot';
-import {hydrate as hydrateFunc} from 'lit/experimental-hydrate.js';
+import {hydrate as hydrateFunc} from '@lit-labs/ssr-client';
 import {createContainer} from './fixture-wrapper.js';
 import {litSsrPluginCommand} from '../constants.js';
 import {nextFrame} from '../utils.js';
@@ -57,11 +57,12 @@ export async function ssrFixture<T extends HTMLElement>(
     // asyncFunctionResume@[native code]
     // asyncFunctionResume@[native code]
     // @http://localhost:8000/test/my-element_test.js?wtr-session-id=aKWON-wBOBGyzb2CwIvmK:65:37
-    const match = new Error().stack?.match(
-      /http:\/\/localhost.+(?=\?wtr-session-id)/
-    );
+    const {stack} = new Error();
+    const match = stack?.match(/http:\/\/localhost.+(?=\?wtr-session-id)/);
     if (!match) {
-      throw new Error('Could not find call site for ssrFixture');
+      throw new Error(
+        `Could not find call site for ssrFixture in stack:\n${stack}`
+      );
     }
     base = match[0];
   }

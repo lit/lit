@@ -3,8 +3,8 @@
 A simple base class for creating fast, lightweight web components.
 
 [![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
-[![Published on npm](https://img.shields.io/npm/v/lit-element/next)](https://www.npmjs.com/package/lit-element)
-[![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg)](https://www.polymer-project.org/slack-invite)
+[![Published on npm](https://img.shields.io/npm/v/lit-element.svg?logo=npm)](https://www.npmjs.com/package/lit-element)
+[![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
 
 LitElement is the base class that powers the [Lit](https://lit.dev) library for building fast web components. Most users should import `LitElement` from the [`lit`](https://www.npmjs.com/package/lit) package rather than installing and importing from the `lit-element` package directly.

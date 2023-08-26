@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 import {ReactiveControllerHost} from 'lit';
 import {Animate, Options} from './animate.js';
 

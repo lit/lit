@@ -10,8 +10,9 @@
  * Utilities for analyzing class declarations
  */
 
-import ts from 'typescript';
-import {DiagnosticsError} from '../errors.js';
+import type ts from 'typescript';
+import {DiagnosticCode} from '../diagnostic-code.js';
+import {createDiagnostic} from '../errors.js';
 import {
   ClassDeclaration,
   AnalyzerInterface,
@@ -41,14 +42,22 @@ import {
   getCustomElementDeclaration,
 } from '../custom-elements/custom-elements.js';
 
+export type TypeScript = typeof ts;
+
 /**
  * Returns an analyzer `ClassDeclaration` model for the given
- * ts.ClassDeclaration.
+ * ts.ClassLikeDeclaration.
+ *
+ * Note, the `docNode` may differ from the `declaration` in the case of a const
+ * assignment to a class expression, as the JSDoc will be attached to the
+ * VariableStatement rather than the class-like expression.
  */
 export const getClassDeclaration = (
   declaration: ts.ClassLikeDeclaration,
+  name: string,
   isMixinClass: boolean,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  docNode?: ts.Node
 ) => {
   if (isLitElementSubclass(declaration, analyzer)) {
     return getLitElementDeclaration(declaration, analyzer);
@@ -57,13 +66,34 @@ export const getClassDeclaration = (
     return getCustomElementDeclaration(declaration, analyzer);
   }
   return new ClassDeclaration({
-    // TODO(kschaaf): support anonymous class expressions when assigned to a const
-    name: declaration.name?.text ?? '',
+    name,
     node: declaration,
     getHeritage: () => getHeritage(declaration, isMixinClass, analyzer),
-    ...parseNodeJSDocInfo(declaration),
+    ...parseNodeJSDocInfo(docNode ?? declaration, analyzer),
     ...getClassMembers(declaration, analyzer),
   });
+};
+
+const getIsReadonlyForNode = (
+  node: ts.Node,
+  analyzer: AnalyzerInterface
+): boolean => {
+  const {typescript} = analyzer;
+  if (typescript.isPropertyDeclaration(node)) {
+    return (
+      node.modifiers?.some((mod) =>
+        typescript.isReadonlyKeywordOrPlusOrMinusToken(mod)
+      ) ||
+      typescript
+        .getJSDocTags(node)
+        .some((tag) => tag.tagName.text === 'readonly')
+    );
+  } else if (typescript.isStatement(node)) {
+    return typescript
+      .getJSDocTags(node)
+      .some((tag) => tag.tagName.text === 'readonly');
+  }
+  return false;
 };
 
 /**
@@ -73,36 +103,108 @@ export const getClassMembers = (
   declaration: ts.ClassLikeDeclaration,
   analyzer: AnalyzerInterface
 ) => {
+  const {typescript} = analyzer;
   const fieldMap = new Map<string, ClassField>();
   const staticFieldMap = new Map<string, ClassField>();
   const methodMap = new Map<string, ClassMethod>();
   const staticMethodMap = new Map<string, ClassMethod>();
+  const accessors = new Map<string, {get?: ts.Node; set?: ts.Node}>();
   declaration.members.forEach((node) => {
-    if (ts.isMethodDeclaration(node)) {
-      const info = getMemberInfo(node);
+    // Ignore non-implementation signatures of overloaded methods by checking
+    // for `node.body`.
+    if (typescript.isConstructorDeclaration(node) && node.body) {
+      // TODO(bennypowers): We probably want to see if this matches what TypeScript considers a field initialization.
+      // Maybe instead of iterating through the constructor statements, we walk the body looking for any
+      // assignment expression so that we get ones inside of if statements, in parenthesized expressions, etc.
+      //
+      // Also, this doesn't cover destructuring assignment.
+      //
+      // This is ok for now because these are rare ways to "declare" a field,
+      // especially in web components where you shouldn't have constructor parameters.
+      node.body.statements.forEach((node) => {
+        if (
+          typescript.isExpressionStatement(node) &&
+          typescript.isBinaryExpression(node.expression) &&
+          node.expression.operatorToken.kind ===
+            typescript.SyntaxKind.EqualsToken &&
+          typescript.isPropertyAccessExpression(node.expression.left) &&
+          node.expression.left.expression.kind ===
+            typescript.SyntaxKind.ThisKeyword
+        ) {
+          const name = node.expression.left.name.getText();
+          fieldMap.set(
+            name,
+            new ClassField({
+              name,
+              type: getTypeForNode(node.expression.right, analyzer),
+              privacy: getPrivacy(typescript, node),
+              readonly: getIsReadonlyForNode(node, analyzer),
+            })
+          );
+        }
+      });
+    } else if (typescript.isMethodDeclaration(node) && node.body) {
+      const info = getMemberInfo(typescript, node);
+      const name = node.name.getText();
       (info.static ? staticMethodMap : methodMap).set(
-        node.name.getText(),
+        name,
         new ClassMethod({
           ...info,
-          ...getFunctionLikeInfo(node, analyzer),
-          ...parseNodeJSDocInfo(node),
+          ...getFunctionLikeInfo(node, name, analyzer),
+          ...parseNodeJSDocInfo(node, analyzer),
         })
       );
-    } else if (ts.isPropertyDeclaration(node)) {
-      const info = getMemberInfo(node);
+    } else if (typescript.isPropertyDeclaration(node)) {
+      if (!typescript.isIdentifier(node.name)) {
+        analyzer.addDiagnostic(
+          createDiagnostic({
+            typescript,
+            node,
+            message:
+              '@lit-labs/analyzer only supports analyzing class properties ' +
+              'named with plain identifiers. This property was ignored.',
+            category: typescript.DiagnosticCategory.Warning,
+            code: DiagnosticCode.UNSUPPORTED,
+          })
+        );
+        return;
+      }
+
+      const info = getMemberInfo(typescript, node);
       (info.static ? staticFieldMap : fieldMap).set(
         node.name.getText(),
         new ClassField({
           ...info,
           default: node.initializer?.getText(),
           type: getTypeForNode(node, analyzer),
-          ...parseNodeJSDocInfo(node),
+          ...parseNodeJSDocInfo(node, analyzer),
+          readonly: getIsReadonlyForNode(node, analyzer),
         })
       );
-    } else if (ts.isConstructorDeclaration(node)) {
-      addConstructorFields(node, fieldMap, analyzer);
+    } else if (typescript.isAccessor(node)) {
+      const name = node.name.getText();
+      const _accessors = accessors.get(name) ?? {};
+      if (typescript.isGetAccessor(node)) _accessors.get = node;
+      else if (typescript.isSetAccessor(node)) _accessors.set = node;
+      accessors.set(name, _accessors);
     }
   });
+  for (const [name, {get, set}] of accessors) {
+    if (get ?? set) {
+      fieldMap.set(
+        name,
+        new ClassField({
+          name,
+          type: getTypeForNode((get ?? set)!, analyzer),
+          privacy: getPrivacy(typescript, (get ?? set)!),
+          readonly: !!get && !set,
+          // TODO(bennypowers): derive from getter?
+          // default: ???
+          // TODO(bennypowers): reflect, etc?
+        })
+      );
+    }
+  }
   return {
     fieldMap,
     staticFieldMap,
@@ -111,62 +213,38 @@ export const getClassMembers = (
   };
 };
 
-/**
- * Add ClassFields that are defined via an initializer in the
- * constructor only
- */
-const addConstructorFields = (
-  ctor: ts.ConstructorDeclaration,
-  fieldMap: Map<string, ClassField>,
-  analyzer: AnalyzerInterface
+const getMemberInfo = (
+  typescript: TypeScript,
+  node: ts.MethodDeclaration | ts.PropertyDeclaration
 ) => {
-  ctor.body?.statements.forEach((stmt) => {
-    // Look for initializers in the form of `this.foo = xxxx`
-    if (
-      ts.isExpressionStatement(stmt) &&
-      ts.isBinaryExpression(stmt.expression) &&
-      ts.isPropertyAccessExpression(stmt.expression.left) &&
-      stmt.expression.left.expression.kind === ts.SyntaxKind.ThisKeyword &&
-      ts.isIdentifier(stmt.expression.left.name)
-    ) {
-      const name = stmt.expression.left.name.text;
-      const initializer = stmt.expression.right;
-      fieldMap.set(
-        name,
-        new ClassField({
-          name,
-          static: false,
-          privacy: getPrivacy(stmt),
-          default: initializer.getText(),
-          type: getTypeForNode(initializer, analyzer),
-          ...parseNodeJSDocInfo(stmt),
-        })
-      );
-    }
-  });
-};
-
-const getMemberInfo = (node: ts.MethodDeclaration | ts.PropertyDeclaration) => {
   return {
     name: node.name.getText(),
-    static: hasStaticModifier(node),
-    privacy: getPrivacy(node),
+    static: hasStaticModifier(typescript, node),
+    privacy: getPrivacy(typescript, node),
   };
 };
 
 /**
  * Returns the name of a class declaration.
  */
-const getClassDeclarationName = (declaration: ts.ClassDeclaration) => {
+const getClassDeclarationName = (
+  declaration: ts.ClassDeclaration,
+  analyzer: AnalyzerInterface
+) => {
   const name =
     declaration.name?.text ??
     // The only time a class declaration will not have a name is when it is
     // a default export, aka `export default class { }`
-    (hasDefaultModifier(declaration) ? 'default' : undefined);
+    (hasDefaultModifier(analyzer.typescript, declaration)
+      ? 'default'
+      : undefined);
   if (name === undefined) {
-    throw new DiagnosticsError(
-      declaration,
-      'Unexpected class declaration without a name'
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        typescript: analyzer.typescript,
+        node: declaration,
+        message: `Illegal syntax: a class declaration must either have a name or be a default export`,
+      })
     );
   }
   return name;
@@ -178,11 +256,16 @@ const getClassDeclarationName = (declaration: ts.ClassDeclaration) => {
 export const getClassDeclarationInfo = (
   declaration: ts.ClassDeclaration,
   analyzer: AnalyzerInterface
-): DeclarationInfo => {
+): DeclarationInfo | undefined => {
+  const name = getClassDeclarationName(declaration, analyzer);
+  if (name === undefined) {
+    return undefined;
+  }
   return {
-    name: getClassDeclarationName(declaration),
-    factory: () => getClassDeclaration(declaration, false, analyzer),
-    isExport: hasExportModifier(declaration),
+    name,
+    node: declaration,
+    factory: () => getClassDeclaration(declaration, name, false, analyzer),
+    isExport: hasExportModifier(analyzer.typescript, declaration),
   };
 };
 
@@ -195,19 +278,23 @@ export const getHeritage = (
   analyzer: AnalyzerInterface
 ): ClassHeritage => {
   const extendsClause = declaration.heritageClauses?.find(
-    (c) => c.token === ts.SyntaxKind.ExtendsKeyword
+    (c) => c.token === analyzer.typescript.SyntaxKind.ExtendsKeyword
   );
   if (extendsClause !== undefined) {
-    if (extendsClause.types.length !== 1) {
-      throw new DiagnosticsError(
-        extendsClause,
-        'Internal error: did not expect extends clause to have multiple types'
+    if (extendsClause.types.length === 1) {
+      return getHeritageFromExpression(
+        extendsClause.types[0].expression,
+        isMixinClass,
+        analyzer
       );
     }
-    return getHeritageFromExpression(
-      extendsClause.types[0].expression,
-      isMixinClass,
-      analyzer
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        typescript: analyzer.typescript,
+        node: extendsClause,
+        message:
+          'Illegal syntax: did not expect extends clause to have multiple types',
+      })
     );
   }
   // No extends clause; return empty heritage
@@ -236,21 +323,20 @@ export const getSuperClassAndMixins = (
   expression: ts.Expression,
   foundMixins: Reference[],
   analyzer: AnalyzerInterface
-): Reference => {
+): Reference | undefined => {
   // TODO(kschaaf) Could add support for inline class expressions here as well
-  if (ts.isIdentifier(expression)) {
+  if (analyzer.typescript.isIdentifier(expression)) {
     return getReferenceForIdentifier(expression, analyzer);
   } else if (
-    ts.isCallExpression(expression) &&
-    ts.isIdentifier(expression.expression)
+    analyzer.typescript.isCallExpression(expression) &&
+    analyzer.typescript.isIdentifier(expression.expression)
   ) {
     const mixinRef = getReferenceForIdentifier(expression.expression, analyzer);
     // We need to eagerly dereference a mixin ref to know what argument the
     // super class is passed into
-    const mixin = mixinRef.dereference(MixinDeclaration);
-    if (mixin === undefined) {
-      throw new DiagnosticsError(
-        expression.expression,
+    const mixin = mixinRef?.dereference(MixinDeclaration);
+    if (mixinRef === undefined || mixin === undefined) {
+      throw new Error(
         `This is presumed to be a mixin but could it was not included in ` +
           `the source files of this package and no custom-elements.json ` +
           `was found for it.`
@@ -261,10 +347,16 @@ export const getSuperClassAndMixins = (
     const superClass = getSuperClassAndMixins(superArg, foundMixins, analyzer);
     return superClass;
   }
-  throw new DiagnosticsError(
-    expression,
-    `Expected expression to either be a concrete superclass or a mixin`
+  analyzer.addDiagnostic(
+    createDiagnostic({
+      typescript: analyzer.typescript,
+      node: expression,
+      message: `Expected expression to be a concrete superclass or mixin.`,
+      code: DiagnosticCode.UNSUPPORTED,
+      category: analyzer.typescript.DiagnosticCategory.Warning,
+    })
   );
+  return undefined;
 };
 
 export const maybeGetAppliedMixin = (
@@ -272,7 +364,7 @@ export const maybeGetAppliedMixin = (
   identifier: ts.Identifier,
   analyzer: AnalyzerInterface
 ): ClassDeclaration | undefined => {
-  if (ts.isCallExpression(expression)) {
+  if (analyzer.typescript.isCallExpression(expression)) {
     const heritage = getHeritageFromExpression(expression, false, analyzer);
     if (heritage.superClass) {
       return new ClassDeclaration({

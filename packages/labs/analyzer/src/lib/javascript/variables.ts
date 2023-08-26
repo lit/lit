@@ -10,20 +10,22 @@
  * Utilities for analyzing variable declarations
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {
   VariableDeclaration,
   AnalyzerInterface,
   DeclarationInfo,
-  DeprecatableDescribed,
   Declaration,
 } from '../model.js';
 import {hasExportModifier} from '../utils.js';
-import {DiagnosticsError} from '../errors.js';
 import {getTypeForNode} from '../types.js';
 import {parseNodeJSDocInfo} from './jsdoc.js';
 import {getFunctionDeclaration} from './functions.js';
 import {getClassDeclaration, maybeGetAppliedMixin} from './classes.js';
+import {createDiagnostic} from '../errors.js';
+import {DiagnosticCode} from '../diagnostic-code.js';
+
+export type TypeScript = typeof ts;
 
 type VariableName =
   | ts.Identifier
@@ -35,19 +37,19 @@ type VariableName =
  * ts.Identifier within a potentially nested ts.VariableDeclaration.
  */
 const getVariableDeclaration = (
-  dec: ts.VariableDeclaration | ts.EnumDeclaration,
+  statement: ts.VariableStatement,
+  dec: ts.VariableDeclaration,
   name: ts.Identifier,
-  isConst: boolean,
-  jsDocInfo: DeprecatableDescribed,
   analyzer: AnalyzerInterface
 ): Declaration => {
+  const {typescript: ts} = analyzer;
   // For const variable declarations initialized to functions or classes, we
   // treat these as FunctionDeclaration and ClassDeclaration, respectively since
   // they are (mostly) unobservably different to the module consumer and we can
   // give better docs this way
   if (
     ts.isVariableDeclaration(dec) &&
-    isConst &&
+    Boolean(statement.declarationList.flags & ts.NodeFlags.Const) &&
     dec.initializer !== undefined
   ) {
     const {initializer} = dec;
@@ -55,9 +57,20 @@ const getVariableDeclaration = (
       ts.isArrowFunction(initializer) ||
       ts.isFunctionExpression(initializer)
     ) {
-      return getFunctionDeclaration(initializer, name.getText(), analyzer);
+      return getFunctionDeclaration(
+        initializer,
+        name.getText(),
+        analyzer,
+        statement
+      );
     } else if (ts.isClassExpression(initializer)) {
-      return getClassDeclaration(initializer, false, analyzer);
+      return getClassDeclaration(
+        initializer,
+        name.getText(),
+        false,
+        analyzer,
+        statement
+      );
     } else {
       const classDec = maybeGetAppliedMixin(initializer, name, analyzer);
       if (classDec !== undefined) {
@@ -69,7 +82,7 @@ const getVariableDeclaration = (
     name: name.text,
     node: dec,
     type: getTypeForNode(name, analyzer),
-    ...jsDocInfo,
+    ...parseNodeJSDocInfo(statement, analyzer),
   });
 };
 
@@ -81,20 +94,11 @@ export const getVariableDeclarationInfo = (
   statement: ts.VariableStatement,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
-  const isExport = hasExportModifier(statement);
-  const jsDocInfo = parseNodeJSDocInfo(statement);
+  const isExport = hasExportModifier(analyzer.typescript, statement);
   const {declarationList} = statement;
-  const isConst = Boolean(declarationList.flags & ts.NodeFlags.Const);
   return declarationList.declarations
     .map((d) =>
-      getVariableDeclarationInfoList(
-        d,
-        d.name,
-        isExport,
-        isConst,
-        jsDocInfo,
-        analyzer
-      )
+      getVariableDeclarationInfoList(statement, d, d.name, isExport, analyzer)
     )
     .flat();
 };
@@ -105,19 +109,19 @@ export const getVariableDeclarationInfo = (
  * tuples of name and factory for each declaration.
  */
 const getVariableDeclarationInfoList = (
+  statement: ts.VariableStatement,
   dec: ts.VariableDeclaration,
   name: VariableName,
   isExport: boolean,
-  isConst: boolean,
-  jsDocInfo: DeprecatableDescribed,
   analyzer: AnalyzerInterface
 ): DeclarationInfo[] => {
+  const {typescript: ts} = analyzer;
   if (ts.isIdentifier(name)) {
     return [
       {
         name: name.text,
-        factory: () =>
-          getVariableDeclaration(dec, name, isConst, jsDocInfo, analyzer),
+        node: name,
+        factory: () => getVariableDeclaration(statement, dec, name, analyzer),
         isExport,
       },
     ];
@@ -133,20 +137,25 @@ const getVariableDeclarationInfoList = (
     return els
       .map((el) =>
         getVariableDeclarationInfoList(
+          statement,
           dec,
           el.name,
           isExport,
-          isConst,
-          jsDocInfo,
           analyzer
         )
       )
       .flat();
   } else {
-    throw new DiagnosticsError(
-      dec,
-      `Expected declaration name to either be an Identifier or a BindingPattern`
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        typescript: ts,
+        node: dec,
+        message: `Expected declaration name to either be an identifier or a destructuring`,
+        category: ts.DiagnosticCategory.Warning,
+        code: DiagnosticCode.UNSUPPORTED,
+      })
     );
+    return [];
   }
 };
 
@@ -159,6 +168,7 @@ export const getExportAssignmentVariableDeclarationInfo = (
 ): DeclarationInfo => {
   return {
     name: 'default',
+    node: exportAssignment,
     factory: () =>
       getExportAssignmentVariableDeclaration(exportAssignment, analyzer),
     isExport: true,
@@ -181,25 +191,30 @@ const getExportAssignmentVariableDeclaration = (
     name: 'default',
     node: exportAssignment,
     type: getTypeForNode(exportAssignment.expression, analyzer),
-    ...parseNodeJSDocInfo(exportAssignment),
+    ...parseNodeJSDocInfo(exportAssignment, analyzer),
   });
 };
 
 export const getEnumDeclarationInfo = (
-  statement: ts.EnumDeclaration,
+  dec: ts.EnumDeclaration,
   analyzer: AnalyzerInterface
 ) => {
-  const jsDocInfo = parseNodeJSDocInfo(statement);
   return {
-    name: statement.name.text,
-    factory: () =>
-      getVariableDeclaration(
-        statement,
-        statement.name,
-        false,
-        jsDocInfo,
-        analyzer
-      ),
-    isExport: hasExportModifier(statement),
+    name: dec.name.text,
+    node: dec,
+    factory: () => getEnumDeclaration(dec, analyzer),
+    isExport: hasExportModifier(analyzer.typescript, dec),
   };
+};
+
+const getEnumDeclaration = (
+  dec: ts.EnumDeclaration,
+  analyzer: AnalyzerInterface
+) => {
+  return new VariableDeclaration({
+    name: dec.name.text,
+    node: dec,
+    type: getTypeForNode(dec.name, analyzer),
+    ...parseNodeJSDocInfo(dec, analyzer),
+  });
 };

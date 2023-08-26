@@ -35,17 +35,6 @@ export const inferredLocalClass = new LocalClass();
 export const inferredImportedClass = new ImportedClass();
 export const inferredExternalClass = new LitElement();
 
-/** @type {string} */
-export let jsdocString;
-/** @type {LocalClass} */
-export let jsdocLocalClass;
-/** @type {ImportedClass} */
-export let jsdocImportedClass;
-/** @type {string | ImportedClass} */
-export let jsdocStringExternalClassUnion;
-/** @type {string | ImportedClass | HTMLElement} */
-export let jsdocStringExternalGlobalClassUnion;
-
 export let complexType: Promise<Map<keyof LitElement, ImportedClass[]>>[];
 
 export const {

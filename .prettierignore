@@ -10,6 +10,7 @@ node_modules/
 .vscode/
 .wireit
 /temp
+.idea
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
@@ -76,7 +77,7 @@ packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
 packages/lit-html/is-server.*
-
+packages/lit-html/compiled/
 packages/lit-starter-js/node_modules/
 packages/lit-starter-js/**/custom-elements.json
 # only generated for size check
@@ -138,6 +139,11 @@ packages/labs/analyzer/**/index.js.map
 packages/labs/analyzer/**/index.d.ts
 packages/labs/analyzer/**/index.d.ts.map
 
+packages/labs/analyzer/**/package-analyzer.js
+packages/labs/analyzer/**/package-analyzer.js.map
+packages/labs/analyzer/**/package-analyzer.d.ts
+packages/labs/analyzer/**/package-analyzer.d.ts.map
+
 packages/labs/cli/lib/
 packages/labs/cli/test/
 packages/labs/cli/index.js
@@ -149,6 +155,15 @@ packages/labs/cli/test-gen/
 packages/labs/cli/test-goldens/
 packages/labs/cli-localize/lib/
 packages/labs/cli-localize/node_modules/
+
+packages/labs/compiler/development/
+packages/labs/compiler/node_modules/
+packages/labs/compiler/test/
+packages/labs/compiler/lib/
+packages/labs/compiler/index.*
+packages/labs/compiler/test_files/source_map_tests/*.js.map
+
+packages/labs/compiler/**/test_files
 
 packages/labs/context/development/
 packages/labs/context/test/
@@ -164,6 +179,14 @@ packages/labs/eleventy-plugin-lit/worker/worker.*
 packages/labs/eleventy-plugin-lit/test/
 # Switches Node into module mode for tests
 !packages/labs/eleventy-plugin-lit/test/package.json
+
+packages/labs/eslint-plugin/lib/
+packages/labs/eslint-plugin/test/
+
+packages/labs/eslint-plugin/**/index.js
+packages/labs/eslint-plugin/**/index.js.map
+packages/labs/eslint-plugin/**/index.d.ts
+packages/labs/eslint-plugin/**/index.d.ts.map
 
 packages/labs/gen-manifest/index.js
 packages/labs/gen-manifest/index.js.map
@@ -219,20 +242,31 @@ packages/labs/motion/index.*
 packages/labs/motion/animate.*
 packages/labs/motion/position.*
 packages/labs/motion/animate-controller.*
+packages/labs/nextjs/index.*
+
 packages/labs/observers/development/
 packages/labs/observers/test/
 packages/labs/observers/node_modules/
 packages/labs/observers/index.*
-packages/labs/observers/mutation_controller.*
-packages/labs/observers/performance_controller.*
-packages/labs/observers/resize_controller.*
-packages/labs/observers/intersection_controller.*
+packages/labs/observers/mutation-controller.*
+packages/labs/observers/performance-controller.*
+packages/labs/observers/resize-controller.*
+packages/labs/observers/intersection-controller.*
+
 packages/labs/react/development/
+packages/labs/react/node/
 packages/labs/react/test/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
 packages/labs/react/create-component.*
 packages/labs/react/use-controller.*
+
+packages/labs/rollup-plugin-minify-html-literals/node_modules
+packages/labs/rollup-plugin-minify-html-literals/coverage
+packages/labs/rollup-plugin-minify-html-literals/.nyc_output
+packages/labs/rollup-plugin-minify-html-literals/lib
+packages/labs/rollup-plugin-minify-html-literals/test
+packages/labs/rollup-plugin-minify-html-literals/**/index.*
 
 packages/labs/router/development/
 packages/labs/router/test/
@@ -258,22 +292,36 @@ packages/labs/ssr/index.*
 
 packages/labs/ssr-client/development/
 packages/labs/ssr-client/directives/
-packages/labs/ssr-client/controllers/
+packages/labs/ssr-client/lib/
+packages/labs/ssr-client/node/
 packages/labs/ssr-client/node_modules/
 packages/labs/ssr-client/index.*
+packages/labs/ssr-client/lit-element-hydrate-support.*
 
 packages/labs/ssr-dom-shim/index.*
+packages/labs/ssr-dom-shim/lib/
+
+packages/labs/ssr-react/node/
+packages/labs/ssr-react/lib/
+packages/labs/ssr-react/test/
+packages/labs/ssr-react/index.*
+packages/labs/ssr-react/jsx-runtime.*
+packages/labs/ssr-react/jsx-dev-runtime.*
+packages/labs/ssr-react/enable-lit-ssr.*
 
 packages/labs/task/development/
 packages/labs/task/test/
 packages/labs/task/node_modules/
+packages/labs/task/deep-equals.*
 packages/labs/task/index.*
 packages/labs/task/task.*
+
 packages/labs/testing/index.*
 packages/labs/testing/fixtures.*
 packages/labs/testing/web-test-runner-ssr-plugin.*
 packages/labs/testing/lib
 packages/labs/testing/test
+packages/labs/testing/**/.tsbuildinfo-utils
 
 packages/labs/virtualizer/layouts/
 packages/labs/virtualizer/polyfillLoaders/
@@ -298,6 +346,10 @@ packages/labs/virtualizer/ScrollerController.js
 packages/labs/virtualizer/ScrollerController.d.ts
 packages/labs/virtualizer/ScrollerController.d.ts.map
 packages/labs/virtualizer/ScrollerController.js.map
+packages/labs/virtualizer/support/**/*.d.ts
+packages/labs/virtualizer/support/**/*.d.ts.map
+packages/labs/virtualizer/support/**/*.js
+packages/labs/virtualizer/support/**/*.js.map
 packages/labs/virtualizer/test/**/*.d.ts
 packages/labs/virtualizer/test/**/*.d.ts.map
 packages/labs/virtualizer/test/**/*.js

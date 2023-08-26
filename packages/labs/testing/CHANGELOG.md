@@ -1,5 +1,14 @@
 # @lit-labs/testing
 
+## 0.2.1
+
+### Patch Changes
+
+- [#3720](https://github.com/lit/lit/pull/3720) [`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7) - Use hydration modules from `@lit-labs/ssr-client`
+
+- Updated dependencies [[`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7)]:
+  - @lit-labs/ssr-client@1.1.0
+
 ## 0.2.0
 
 ### Minor Changes

@@ -354,7 +354,7 @@ const d =
     : document;
 
 // Creates a dynamic marker. We never have to search for these in the DOM.
-const createMarker = (v = '') => d.createComment(v);
+const createMarker = () => d.createComment('');
 
 // https://tc39.github.io/ecma262/#sec-typeof-operator
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
@@ -489,7 +489,9 @@ export interface CompiledTemplate extends Omit<Template, 'el'> {
   el?: HTMLTemplateElement;
 
   // The prepared HTML string to create a template element from.
-  h: TrustedHTML;
+  // The type is a TemplateStringsArray to guarantee that the value came from
+  // source code, preventing a JSON injection attack.
+  h: TemplateStringsArray;
 }
 
 /**
@@ -650,6 +652,39 @@ export interface DirectiveParent {
   _$isConnected: boolean;
   __directive?: Directive;
   __directives?: Array<Directive | undefined>;
+}
+
+function trustFromTemplateString(
+  tsa: TemplateStringsArray,
+  stringFromTSA: string
+): TrustedHTML {
+  // A security check to prevent spoofing of Lit template results.
+  // In the future, we may be able to replace this with Array.isTemplateObject,
+  // though we might need to make that check inside of the html and svg
+  // functions, because precompiled templates don't come in as
+  // TemplateStringArray objects.
+  if (!Array.isArray(tsa) || !tsa.hasOwnProperty('raw')) {
+    let message = 'invalid template strings array';
+    if (DEV_MODE) {
+      message = `
+          Internal Error: expected template strings to be an array
+          with a 'raw' field. Faking a template strings array by
+          calling html or svg like an ordinary function is effectively
+          the same as calling unsafeHtml and can lead to major security
+          issues, e.g. opening your code up to XSS attacks.
+          If you're using the html or svg tagged template functions normally
+          and still seeing this error, please file a bug at
+          https://github.com/lit/lit/issues/new?template=bug_report.md
+          and include information about your build tooling, if any.
+        `
+        .trim()
+        .replace(/\n */g, '\n');
+    }
+    throw new Error(message);
+  }
+  return policy !== undefined
+    ? policy.createHTML(stringFromTSA)
+    : (stringFromTSA as unknown as TrustedHTML);
 }
 
 /**
@@ -816,38 +851,8 @@ const getTemplateHtml = (
   const htmlResult: string | TrustedHTML =
     html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : '');
 
-  // A security check to prevent spoofing of Lit template results.
-  // In the future, we may be able to replace this with Array.isTemplateObject,
-  // though we might need to make that check inside of the html and svg
-  // functions, because precompiled templates don't come in as
-  // TemplateStringArray objects.
-  if (!Array.isArray(strings) || !strings.hasOwnProperty('raw')) {
-    let message = 'invalid template strings array';
-    if (DEV_MODE) {
-      message = `
-          Internal Error: expected template strings to be an array
-          with a 'raw' field. Faking a template strings array by
-          calling html or svg like an ordinary function is effectively
-          the same as calling unsafeHtml and can lead to major security
-          issues, e.g. opening your code up to XSS attacks.
-
-          If you're using the html or svg tagged template functions normally
-          and still seeing this error, please file a bug at
-          https://github.com/lit/lit/issues/new?template=bug_report.md
-          and include information about your build tooling, if any.
-        `
-        .trim()
-        .replace(/\n */g, '\n');
-    }
-    throw new Error(message);
-  }
   // Returned as an array for terseness
-  return [
-    policy !== undefined
-      ? policy.createHTML(htmlResult)
-      : (htmlResult as unknown as TrustedHTML),
-    attrNames,
-  ];
+  return [trustFromTemplateString(strings, htmlResult), attrNames];
 };
 
 /** @internal */
@@ -855,7 +860,7 @@ export type {Template};
 class Template {
   /** @internal */
   el!: HTMLTemplateElement;
-  /** @internal */
+
   parts: Array<TemplatePart> = [];
 
   constructor(
@@ -1005,6 +1010,9 @@ class Template {
       }
       nodeIndex++;
     }
+    // We could set walker.currentNode to another node here to prevent a memory
+    // leak, but every time we prepare a template, we immediately render it
+    // and re-use the walker in new TemplateInstance._clone().
     debugLogEvent?.({
       kind: 'template prep',
       template: this,
@@ -1082,15 +1090,14 @@ function resolveDirective(
   return value;
 }
 
+export type {TemplateInstance};
 /**
  * An updateable instance of a Template. Holds references to the Parts used to
  * update the template instance.
  */
 class TemplateInstance implements Disconnectable {
-  /** @internal */
   _$template: Template;
-  /** @internal */
-  _parts: Array<Part | undefined> = [];
+  _$parts: Array<Part | undefined> = [];
 
   /** @internal */
   _$parent: ChildPart;
@@ -1148,7 +1155,7 @@ class TemplateInstance implements Disconnectable {
         } else if (templatePart.type === ELEMENT_PART) {
           part = new ElementPart(node as HTMLElement, this, options);
         }
-        this._parts.push(part);
+        this._$parts.push(part);
         templatePart = parts[++partIndex];
       }
       if (nodeIndex !== templatePart?.index) {
@@ -1156,12 +1163,16 @@ class TemplateInstance implements Disconnectable {
         nodeIndex++;
       }
     }
+    // We need to set the currentNode away from the cloned tree so that we
+    // don't hold onto the tree even if the tree is detached and should be
+    // freed.
+    walker.currentNode = d;
     return fragment;
   }
 
   _update(values: Array<unknown>) {
     let i = 0;
-    for (const part of this._parts) {
+    for (const part of this._$parts) {
       if (part !== undefined) {
         debugLogEvent?.({
           kind: 'set part',
@@ -1193,12 +1204,10 @@ type AttributeTemplatePart = {
   readonly type: typeof ATTRIBUTE_PART;
   readonly index: number;
   readonly name: string;
-  /** @internal */
   readonly ctor: typeof AttributePart;
-  /** @internal */
   readonly strings: ReadonlyArray<string>;
 };
-type NodeTemplatePart = {
+type ChildTemplatePart = {
   readonly type: typeof CHILD_PART;
   readonly index: number;
 };
@@ -1217,7 +1226,7 @@ type CommentTemplatePart = {
  * TemplateParts.
  */
 type TemplatePart =
-  | NodeTemplatePart
+  | ChildTemplatePart
   | AttributeTemplatePart
   | ElementTemplatePart
   | CommentTemplatePart;
@@ -1398,8 +1407,11 @@ class ChildPart implements Disconnectable {
     }
   }
 
-  private _insert<T extends Node>(node: T, ref = this._$endNode) {
-    return wrap(wrap(this._$startNode).parentNode!).insertBefore(node, ref);
+  private _insert<T extends Node>(node: T) {
+    return wrap(wrap(this._$startNode).parentNode!).insertBefore(
+      node,
+      this._$endNode
+    );
   }
 
   private _commitNode(value: Node): void {
@@ -1467,7 +1479,7 @@ class ChildPart implements Disconnectable {
       (node as Text).data = value as string;
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
-        const textNode = document.createTextNode('');
+        const textNode = d.createTextNode('');
         this._commitNode(textNode);
         // When setting text content, for security purposes it matters a lot
         // what the parent is. For example, <style> and <script> need to be
@@ -1510,7 +1522,10 @@ class ChildPart implements Disconnectable {
       typeof type === 'number'
         ? this._$getTemplate(result as TemplateResult)
         : (type.el === undefined &&
-            (type.el = Template.createElement(type.h, this.options)),
+            (type.el = Template.createElement(
+              trustFromTemplateString(type.h, type.h[0]),
+              this.options
+            )),
           type);
 
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
@@ -1518,7 +1533,7 @@ class ChildPart implements Disconnectable {
         kind: 'template updating',
         template,
         instance: this._$committedValue as TemplateInstance,
-        parts: (this._$committedValue as TemplateInstance)._parts,
+        parts: (this._$committedValue as TemplateInstance)._$parts,
         options: this.options,
         values,
       });
@@ -1530,7 +1545,7 @@ class ChildPart implements Disconnectable {
         kind: 'template instantiated',
         template,
         instance,
-        parts: instance._parts,
+        parts: instance._$parts,
         options: this.options,
         fragment,
         values,
@@ -1540,7 +1555,7 @@ class ChildPart implements Disconnectable {
         kind: 'template instantiated and updated',
         template,
         instance,
-        parts: instance._parts,
+        parts: instance._$parts,
         options: this.options,
         fragment,
         values,
@@ -2075,11 +2090,10 @@ export const _$LH = {
   _markerMatch: markerMatch,
   _HTML_RESULT: HTML_RESULT,
   _getTemplateHtml: getTemplateHtml,
-  // Used in hydrate
+  // Used in tests and private-ssr-support
   _TemplateInstance: TemplateInstance,
   _isIterable: isIterable,
   _resolveDirective: resolveDirective,
-  // Used in tests and private-ssr-support
   _ChildPart: ChildPart,
   _AttributePart: AttributePart,
   _BooleanAttributePart: BooleanAttributePart,
@@ -2096,7 +2110,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(global.litHtmlVersions ??= []).push('2.6.1');
+(global.litHtmlVersions ??= []).push('2.8.0');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

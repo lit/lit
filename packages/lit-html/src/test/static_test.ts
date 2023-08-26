@@ -6,7 +6,7 @@
 import {render} from 'lit-html';
 import {html, literal, unsafeStatic} from 'lit-html/static.js';
 import {assert} from '@esm-bundle/chai';
-import {stripExpressionComments} from './test-utils/strip-markers.js';
+import {stripExpressionComments} from '@lit-labs/testing';
 
 suite('static', () => {
   let container: HTMLElement;
@@ -176,5 +176,13 @@ suite('static', () => {
       stripExpressionComments(container.innerHTML),
       '<div>[object Object]</div>'
     );
+  });
+
+  test('static html should not add value for consumed static expression', () => {
+    const tagName = literal`div`;
+    const template = html`<${tagName}>${'foo'}</${tagName}>`;
+    assert.equal(template.values.length, 1);
+    const template2 = html`<${tagName}>${'foo'}</${tagName}>${'bar'}`;
+    assert.equal(template2.values.length, 2);
   });
 });

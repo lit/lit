@@ -23,6 +23,8 @@ if (DEV_MODE) {
   ReactiveElement.disableWarning?.('change-in-update');
 }
 
+const isIE = navigator.userAgent.indexOf('Trident/') >= 0;
+
 suite('ReactiveElement', () => {
   let container: HTMLElement;
 
@@ -238,6 +240,18 @@ suite('ReactiveElement', () => {
     await el.updateComplete;
     assert.equal(el.all, 15);
     assert.equal(el.updateCount, 6);
+  });
+
+  test('PropertyDeclaration field `hasChanged` can be passed concrete types', () => {
+    function takePropertyDeclaration(_p: PropertyDeclaration) {}
+
+    // Type-only test ensuring that `hasChanged` can be defined.
+    takePropertyDeclaration({
+      // Expect no type errors on the next line.
+      hasChanged(newValue: number[], oldValue: number[]) {
+        return newValue !== oldValue;
+      },
+    });
   });
 
   test('property option `converter` can use `type` info', async () => {
@@ -731,7 +745,7 @@ suite('ReactiveElement', () => {
   });
 
   if ((Object as Partial<typeof Object>).getOwnPropertySymbols) {
-    test('properties defined using symbols', async () => {
+    (isIE ? test.skip : test)('properties defined using symbols', async () => {
       const zug = Symbol();
 
       class E extends ReactiveElement {
@@ -766,40 +780,43 @@ suite('ReactiveElement', () => {
       assert.equal(el[zug], 66);
     });
 
-    test('properties as symbols can set property options', async () => {
-      const zug = Symbol();
+    (isIE ? test.skip : test)(
+      'properties as symbols can set property options',
+      async () => {
+        const zug = Symbol();
 
-      class E extends ReactiveElement {
-        static override get properties() {
-          return {
-            [zug]: {
-              attribute: 'zug',
-              reflect: true,
-              converter: (value: string) => Number(value) + 100,
-            },
-          };
-        }
+        class E extends ReactiveElement {
+          static override get properties() {
+            return {
+              [zug]: {
+                attribute: 'zug',
+                reflect: true,
+                converter: (value: string) => Number(value) + 100,
+              },
+            };
+          }
 
-        constructor() {
-          super();
-          (this as any)[zug] = 5;
+          constructor() {
+            super();
+            (this as any)[zug] = 5;
+          }
         }
+        customElements.define(generateElementName(), E);
+        const el = new E() as any;
+        container.appendChild(el);
+        await el.updateComplete;
+        assert.equal(el[zug], 5);
+        assert.equal(el.getAttribute('zug'), '5');
+        el[zug] = 6;
+        await el.updateComplete;
+        assert.equal(el[zug], 6);
+        assert.equal(el.getAttribute('zug'), '6');
+        el.setAttribute('zug', '7');
+        await el.updateComplete;
+        assert.equal(el.getAttribute('zug'), '7');
+        assert.equal(el[zug], 107);
       }
-      customElements.define(generateElementName(), E);
-      const el = new E() as any;
-      container.appendChild(el);
-      await el.updateComplete;
-      assert.equal(el[zug], 5);
-      assert.equal(el.getAttribute('zug'), '5');
-      el[zug] = 6;
-      await el.updateComplete;
-      assert.equal(el[zug], 6);
-      assert.equal(el.getAttribute('zug'), '6');
-      el.setAttribute('zug', '7');
-      await el.updateComplete;
-      assert.equal(el.getAttribute('zug'), '7');
-      assert.equal(el[zug], 107);
-    });
+    );
   }
 
   test('property options compose when subclassing', async () => {

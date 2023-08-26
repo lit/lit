@@ -20,6 +20,14 @@
  * @cssProperty --with-description Description for --with-description
  * with wraparound
  * @cssProperty --with-description-dash - Description for --with-description-dash
+ * @cssProperty [--default-no-description=#324fff]
+ * @cssProperty [--default-with-description=#324fff] Description for --default-with-description
+ * with wraparound
+ * @cssProperty [--default-with-description-dash=#324fff] - Description for --default-with-description-dash
+ * @cssProperty [--optional-no-description]
+ * @cssProperty [--optional-with-description] Description for --optional-with-description
+ * with wraparound
+ * @cssProperty [--optional-with-description-dash] - Description for --optional-with-description-dash
  * @cssProp --short-no-description
  * @cssProp --short-with-description Description for --short-with-description
  * with wraparound
@@ -28,60 +36,13 @@
 export class ElementA extends HTMLElement {
   /**
    * Class field 1 description
-   * with wraparound
    */
   private field1 = 'default1';
 
   /**
-   * @summary Class field 2 summary
-   * with wraparound
-   *
-   * @description Class field 2 description
-   * with wraparound
-   */
-  protected field2: number | string;
-
-  /**
-   * @description Class field 3 description
-   * with wraparound
-   * @deprecated
-   */
-  field3?: string;
-
-  /**
-   * Class field 4 description
-   * with wraparound
-   * @summary Class field 4 summary
-   * with wraparound
-   * @deprecated Class field 4 deprecated
-   */
-  field4 = new Promise<void>((r) => r());
-
-  /**
    * Method 1 description
-   * with wraparound
    */
   method1() {}
-
-  /**
-   * @summary Method 2 summary
-   * with wraparound
-   *
-   * @description Method 2 description
-   * with wraparound
-   *
-   * @param a Param a description
-   * @param b Param b description
-   * with wraparound
-   *
-   * @param c Param c description
-   * @returns Method 2 return description
-   *
-   * @deprecated Method 2 deprecated
-   */
-  method2(a: string, b = false, ...c: number[]) {
-    return b ? a : c[0].toFixed();
-  }
 }
 
 customElements.define('element-a', ElementA);

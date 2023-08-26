@@ -8,11 +8,14 @@
  * LitElement support for hydration of content rendered using lit-ssr.
  *
  * @packageDocumentation
+ *
+ * @deprecated Moved to `@lit-labs/ssr-client/lit-element-hydrate-support.js`.
  */
 
 import type {PropertyValues} from '@lit/reactive-element';
 import {render, RenderOptions} from 'lit-html';
 import {hydrate} from 'lit-html/experimental-hydrate.js';
+import {HYDRATE_INTERNALS_ATTR_PREFIX} from '@lit-labs/ssr-dom-shim';
 
 interface PatchableLitElement extends HTMLElement {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
@@ -95,9 +98,25 @@ globalThis.litElementHydrateSupport = ({
     update.call(this, changedProperties);
     if (this._$needsHydration) {
       this._$needsHydration = false;
+      // Remove aria attributes added by internals shim during SSR
+      for (let i = 0; i < this.attributes.length; i++) {
+        const attr = this.attributes[i];
+        if (attr.name.startsWith(HYDRATE_INTERNALS_ATTR_PREFIX)) {
+          const ariaAttr = attr.name.slice(
+            HYDRATE_INTERNALS_ATTR_PREFIX.length
+          );
+          this.removeAttribute(ariaAttr);
+          this.removeAttribute(attr.name);
+        }
+      }
       hydrate(value, this.renderRoot, this.renderOptions);
     } else {
       render(value, this.renderRoot, this.renderOptions);
     }
   };
 };
+
+console.warn(
+  'Import from `lit-element/experimental-hydrate-support.js` is deprecated.' +
+    'Import `@lit-labs/ssr-client/lit-element-hydrate-support.js` instead.'
+);

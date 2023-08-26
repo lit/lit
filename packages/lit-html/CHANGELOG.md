@@ -1,5 +1,65 @@
 # Change Log
 
+## 2.8.0
+
+### Minor Changes
+
+- [#3993](https://github.com/lit/lit/pull/3993) [`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d) - Fix return type of `isTemplateResult` helper to include the `CompiledTemplateResult` and fix the `cache` directive to work correctly with `CompiledTemplateResult`s. Also add an explicit `isCompiledTemplateResult` helper.
+
+## 2.7.5
+
+### Patch Changes
+
+- [#3968](https://github.com/lit/lit/pull/3968) [`5bb40831`](https://github.com/lit/lit/commit/5bb408315f89b8855329074ad5d707880dc77923) - Allow undefined to be passed to the ref() directive
+
+- [#3969](https://github.com/lit/lit/pull/3969) [`7d8d4a15`](https://github.com/lit/lit/commit/7d8d4a1517a10f51b7de442acd9354f6083e1518) - Make RefOrCallback generic like Ref<T>
+
+- [#3987](https://github.com/lit/lit/pull/3987) [`bb2560f1`](https://github.com/lit/lit/commit/bb2560f15884c3decbedb5be6bab587150910668) - Change the `h` field of `CompiledTemplate`s to a `TemplateStringsArray` preventing the spoofing of `CompiledTemplate`s by JSON injection attacks. This should not be a breaking change for most users unless you're using CompiledTemplates. This is a necessary security fix, similar to [#2307](https://github.com/lit/lit/pull/2307).
+
+## 2.7.4
+
+### Patch Changes
+
+- [#3888](https://github.com/lit/lit/pull/3888) [`0f30e6fb`](https://github.com/lit/lit/commit/0f30e6fbcc1aba2649e7670ac9c03544f4932b6d) - Fix a memory leak cause by lit-html's shared TreeWalker holding a reference to the last tree it walked.
+
+## 2.7.3
+
+### Patch Changes
+
+- [#3825](https://github.com/lit/lit/pull/3825) [`343187b1`](https://github.com/lit/lit/commit/343187b1acbbdb02ce8d01fa0a0d326870419763) - `static-html` no longer adds an item to `TemplateResult`'s value array for the last consumed static value. This fixes an error with server-side rendering of static html.
+
+- [#3766](https://github.com/lit/lit/pull/3766) [`4431cbb8`](https://github.com/lit/lit/commit/4431cbb85428e54bafa090088056a325fe623aa1) - Fix styleMap initial render of mixed-case custom props
+
+## 2.7.2
+
+### Patch Changes
+
+- [#3788](https://github.com/lit/lit/pull/3788) [`88fe0390`](https://github.com/lit/lit/commit/88fe039015ff979e031efbdde1861ae5b11a0da5) - Allow numbers to be used as values in styleMap()
+
+## 2.7.1
+
+### Patch Changes
+
+- [#3768](https://github.com/lit/lit/pull/3768) [`7c1191da`](https://github.com/lit/lit/commit/7c1191da8e2f33e145ea58265531b7c744835401) - Fix styleMap's handling of important flags
+
+- [#3720](https://github.com/lit/lit/pull/3720) [`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7) - `lit-html/experimental-hydrate.js` and `lit-element/experimental-hydrate-support.js` have been moved to `@lit-labs/ssr-client`.
+
+  The modules in the original location have been marked deprecated and will be removed in a future version.
+
+## 2.7.0
+
+### Minor Changes
+
+- [#3667](https://github.com/lit/lit/pull/3667) [`e00f6f52`](https://github.com/lit/lit/commit/e00f6f52199d5dbc08d4c15f62380422e77cde7f) - [SSR only] Improved how nodes with attribute/property/event/element bindings are rendered in SSR, to avoid adding comments inside of "raw text elements" like `<textarea>`. Fixes #3663.
+
+  Note: `@lit-labs/ssr` and `lit-html` must be updated together.
+
+### Patch Changes
+
+- [#3615](https://github.com/lit/lit/pull/3615) [`4d698430`](https://github.com/lit/lit/commit/4d698430b38efa49c97b841238b331340af5fef0) - Don't throw in `ChildPart.parentNode` if the `parentNode` is null
+
+- [#3583](https://github.com/lit/lit/pull/3583) [`88a40177`](https://github.com/lit/lit/commit/88a40177de9be5d117a21e3da5414bd777872544) - [SSR only] Add more detail to some hydration errors
+
 ## 2.6.1
 
 ### Patch Changes

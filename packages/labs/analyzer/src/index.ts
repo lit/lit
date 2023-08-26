@@ -5,7 +5,6 @@
  */
 
 export {Analyzer} from './lib/analyzer.js';
-export {createPackageAnalyzer} from './lib/analyze-package.js';
 
 export type {
   Package,
@@ -26,6 +25,7 @@ export type {
   PackageJson,
   ModuleWithLitElementDeclarations,
   DeprecatableDescribed,
+  FunctionDeclaration,
 } from './lib/model.js';
 
 export type {AbsolutePath, PackagePath} from './lib/paths.js';

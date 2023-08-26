@@ -3,3 +3,4 @@
 /web-test-runner-ssr-plugin.*
 /lib
 /test
+.tsbuildinfo-utils

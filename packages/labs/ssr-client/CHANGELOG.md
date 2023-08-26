@@ -1,5 +1,35 @@
 # Change Log
 
+## 1.1.3
+
+### Patch Changes
+
+- [#3993](https://github.com/lit/lit/pull/3993) [`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d) - Add better error message during hydration when throwing on `CompiledTemplate`s.
+
+- Updated dependencies [[`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d), [`8057c78d`](https://github.com/lit/lit/commit/8057c78def09e345e68c3fc009b8ab9d6cf1c0f2)]:
+  - lit-html@2.8.0
+  - lit@2.8.0
+
+## 1.1.2
+
+### Patch Changes
+
+- [#3901](https://github.com/lit/lit/pull/3901) [`82e9f370`](https://github.com/lit/lit/commit/82e9f3708973709e916ccbb6d8a450110dea7755) - Bump minimum version of `lit-html` dependency to 2.7.1 which includes needed shared internals.
+
+## 1.1.1
+
+### Patch Changes
+
+- [#3781](https://github.com/lit/lit/pull/3781) [`41b18f30`](https://github.com/lit/lit/commit/41b18f3004163e9011c822dddf73a8669e3c74d8) - Include node build output in npm package. Fixes "Cannot find module ... ssr-client/node/index.js" errors.
+
+## 1.1.0
+
+### Minor Changes
+
+- [#3720](https://github.com/lit/lit/pull/3720) [`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7) - `lit-html/experimental-hydrate.js` and `lit-element/experimental-hydrate-support.js` have been moved to `@lit-labs/ssr-client`.
+
+  The modules in the original location have been marked deprecated and will be removed in a future version.
+
 ## 1.0.1
 
 ### Patch Changes

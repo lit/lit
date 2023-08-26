@@ -1,5 +1,52 @@
 # @lit-labs/context
 
+## 0.4.0
+
+### Minor Changes
+
+- [#4014](https://github.com/lit/lit/pull/4014) [`15a3b5c0`](https://github.com/lit/lit/commit/15a3b5c059a92b3204f6001608de92ea9e0763a2) - Late loaded elements can take over the context subscriptions for their children.
+
+  Breaking change: ValueNotifier.addCallback now takes the consuming element as a mandatory second argument.
+
+## 0.3.3
+
+### Patch Changes
+
+- [#3956](https://github.com/lit/lit/pull/3956) [`d1cc410e`](https://github.com/lit/lit/commit/d1cc410ed9c9b36422e088c3dc66dffde1a9dee1) - Fix a memory leak when a context consumer sets `subscribe: true`.
+
+## 0.3.2
+
+### Patch Changes
+
+- [#3733](https://github.com/lit/lit/pull/3733) [`a7e17ad7`](https://github.com/lit/lit/commit/a7e17ad7bc36da7fa535fbc3a8272f72d70b62b2) Thanks [@jpzwarte](https://github.com/jpzwarte)! - Improve type checking of `@provide` and `@consume`. We now support optional properties, and public properties should be fully type checked.
+
+  This also adds support for using `@provide` and `@consume` with protected and private fields, but be aware that due to limitations in TypeScript's experimental decorators, the connection between the context and the property can not be type checked. We'll be able to fix this when standard decorators are released (current ETA TypeScript 5.2 in August 2023), see https://github.com/lit/lit/issues/3926 for more.
+
+## 0.3.1
+
+### Patch Changes
+
+- [#3834](https://github.com/lit/lit/pull/3834) [`9a4a1786`](https://github.com/lit/lit/commit/9a4a178618ba1a7c3e0e4eb603d5ca6c22ca58d7) - Fixes ContextRoot for requesters in nested shadowRoots, #3833
+
+## 0.3.0
+
+### Minor Changes
+
+- [#3632](https://github.com/lit/lit/pull/3632) [`2fa009f3`](https://github.com/lit/lit/commit/2fa009f327017bef9fdcedca4acac8820f33166a) - Add options object to ContextConsumer and ContextProvider constructors. Deprecate positional forms.
+
+### Patch Changes
+
+- [#3691](https://github.com/lit/lit/pull/3691) [`4fa03114`](https://github.com/lit/lit/commit/4fa031148bbf3954118e83df4106c711da35d186) - Work around a common bug in compilers that target ES5 when extending built in classes like Event.
+
+- [#3628](https://github.com/lit/lit/pull/3628) [`61ce8148`](https://github.com/lit/lit/commit/61ce8148e3272a21a4cb009537c2db761b21a9df) - Add type parameter for key to createContext()
+
+- [#3451](https://github.com/lit/lit/pull/3451) [`7c93499c`](https://github.com/lit/lit/commit/7c93499ccdfc493df9397163e552356e64bfd2c3) - Make ContextRoot deduplicate context requests by element and callback identity
+
+- [#3698](https://github.com/lit/lit/pull/3698) [`b9c27c51`](https://github.com/lit/lit/commit/b9c27c5156ecdd752380c725fec17dab1f3fb704) - Explicitly annotate the this value of a set function. This makes some tooling happier.
+
+- Updated dependencies [[`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86), [`e00f6f52`](https://github.com/lit/lit/commit/e00f6f52199d5dbc08d4c15f62380422e77cde7f), [`88a40177`](https://github.com/lit/lit/commit/88a40177de9be5d117a21e3da5414bd777872544)]:
+  - lit@2.7.0
+
 ## 0.2.0
 
 ### Minor Changes

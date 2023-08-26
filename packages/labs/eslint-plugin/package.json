@@ -1,0 +1,55 @@
+{
+  "name": "eslint-plugin-lit",
+  "private": true,
+  "version": "0.0.0",
+  "description": "Lit support for ESLint",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/esling-plugin-lit",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/esling-plugin-lit"
+  },
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "index.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "cross-env NODE_OPTIONS=--enable-source-maps uvu test \"_test\\.js$\"",
+      "dependencies": [
+        "build",
+        "../../lit:build"
+      ],
+      "files": [],
+      "output": []
+    }
+  },
+  "files": [
+    "index.*",
+    "/lib/",
+    "!/lib/.tsbuildinfo"
+  ],
+  "exports": {
+    ".": "./index.js"
+  },
+  "dependencies": {}
+}

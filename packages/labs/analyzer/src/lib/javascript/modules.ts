@@ -10,7 +10,7 @@
  * Utilities for analyzing ES modules
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {
   Module,
   AnalyzerInterface,
@@ -30,7 +30,7 @@ import {
 } from './variables.js';
 import {AbsolutePath, PackagePath, absoluteToPackage} from '../paths.js';
 import {getPackageInfo} from './packages.js';
-import {DiagnosticsError} from '../errors.js';
+import {createDiagnostic} from '../errors.js';
 import {
   getExportReferences,
   getImportReferenceForSpecifierExpression,
@@ -38,6 +38,8 @@ import {
 } from '../references.js';
 import {parseModuleJSDocInfo} from './jsdoc.js';
 import {getFunctionDeclarationInfo} from './functions.js';
+
+export type TypeScript = typeof ts;
 
 /**
  * Returns the sourcePath, jsPath, and package.json contents of the containing
@@ -82,6 +84,7 @@ export const getModule = (
   analyzer: AnalyzerInterface,
   packageInfo: PackageInfo = getPackageInfo(modulePath, analyzer)
 ) => {
+  const {typescript: ts} = analyzer;
   // Return cached module if we've parsed this sourceFile already and its
   // dependencies haven't changed
   const cachedModule = getAndValidateModuleFromCache(modulePath, analyzer);
@@ -100,11 +103,17 @@ export const getModule = (
   const exportMap: ExportMap = new Map<string, LocalNameOrReference>();
   const reexports: ts.Expression[] = [];
   const addDeclaration = (info: DeclarationInfo) => {
-    const {name, factory, isExport} = info;
+    const {name, node, factory, isExport} = info;
     if (declarationMap.has(name)) {
-      throw new Error(
-        `Internal error: duplicate declaration '${name}' in ${sourceFile.fileName}`
+      analyzer.addDiagnostic(
+        createDiagnostic({
+          typescript: ts,
+          node,
+          message: `Duplicate declaration '${name}'`,
+          category: ts.DiagnosticCategory.Error,
+        })
       );
+      return;
     }
     declarationMap.set(name, factory);
     if (isExport) {
@@ -116,9 +125,17 @@ export const getModule = (
   // TODO(kschaaf): Add Function and MixinDeclarations
   for (const statement of sourceFile.statements) {
     if (ts.isClassDeclaration(statement)) {
-      addDeclaration(getClassDeclarationInfo(statement, analyzer));
-    } else if (ts.isFunctionDeclaration(statement)) {
-      addDeclaration(getFunctionDeclarationInfo(statement, analyzer));
+      const decl = getClassDeclarationInfo(statement, analyzer);
+      if (decl !== undefined) {
+        addDeclaration(decl);
+      }
+      // Ignore non-implementation signatures of overloaded functions by
+      // checking for `statement.body`.
+    } else if (ts.isFunctionDeclaration(statement) && statement.body) {
+      const decl = getFunctionDeclarationInfo(statement, analyzer);
+      if (decl !== undefined) {
+        addDeclaration(decl);
+      }
     } else if (ts.isVariableStatement(statement)) {
       getVariableDeclarationInfo(statement, analyzer).forEach(addDeclaration);
     } else if (ts.isEnumDeclaration(statement)) {
@@ -131,12 +148,16 @@ export const getModule = (
         // `reexports` list, and we will add references to the exportMap lazily
         // the first time exports are queried
         if (moduleSpecifier === undefined) {
-          throw new DiagnosticsError(
-            statement,
-            `Expected a wildcard export to have a module specifier.`
+          analyzer.addDiagnostic(
+            createDiagnostic({
+              typescript: ts,
+              node: statement,
+              message: `Unexpected syntax: expected a wildcard export to always have a module specifier.`,
+            })
           );
+        } else {
+          reexports.push(moduleSpecifier);
         }
-        reexports.push(moduleSpecifier);
       } else {
         // Case: `export {...}` and `export {...} from '...'`
         // Add all of the exports in this export statement to the exportMap
@@ -150,9 +171,13 @@ export const getModule = (
         getExportAssignmentVariableDeclarationInfo(statement, analyzer)
       );
     } else if (ts.isImportDeclaration(statement)) {
-      dependencies.add(
-        getPathForModuleSpecifierExpression(statement.moduleSpecifier, analyzer)
+      const path = getPathForModuleSpecifierExpression(
+        statement.moduleSpecifier,
+        analyzer
       );
+      if (path !== undefined) {
+        dependencies.add(path);
+      }
     }
   }
   // Construct module and save in cache
@@ -163,7 +188,7 @@ export const getModule = (
     dependencies,
     exportMap,
     finalizeExports: () => finalizeExports(reexports, exportMap, analyzer),
-    ...parseModuleJSDocInfo(sourceFile),
+    ...parseModuleJSDocInfo(sourceFile, analyzer),
   });
   analyzer.moduleCache.set(
     analyzer.path.normalize(sourceFile.fileName) as AbsolutePath,
@@ -183,10 +208,11 @@ const finalizeExports = (
   analyzer: AnalyzerInterface
 ) => {
   for (const moduleSpecifier of reexportSpecifiers) {
-    const module = getModule(
-      getPathForModuleSpecifierExpression(moduleSpecifier, analyzer),
-      analyzer
-    );
+    const path = getPathForModuleSpecifierExpression(moduleSpecifier, analyzer);
+    if (path === undefined) {
+      continue;
+    }
+    const module = getModule(path, analyzer);
     for (const name of module.exportNames) {
       exportMap.set(
         name,
@@ -208,7 +234,8 @@ const finalizeExports = (
  */
 const getAndValidateModuleFromCache = (
   modulePath: AbsolutePath,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  seen = new Set<AbsolutePath>([modulePath])
 ): Module | undefined => {
   const module = analyzer.moduleCache.get(modulePath);
   // A cached module is only valid if the source file that was used has not
@@ -217,7 +244,7 @@ const getAndValidateModuleFromCache = (
   if (module !== undefined) {
     if (
       module.sourceFile === analyzer.program.getSourceFile(modulePath) &&
-      depsAreValid(module, analyzer)
+      depsAreValid(module, analyzer, seen)
     ) {
       return module;
     }
@@ -229,18 +256,35 @@ const getAndValidateModuleFromCache = (
 /**
  * Returns true if all dependencies of the module are still valid.
  */
-const depsAreValid = (module: Module, analyzer: AnalyzerInterface) =>
-  Array.from(module.dependencies).every((path) => depIsValid(path, analyzer));
+const depsAreValid = (
+  module: Module,
+  analyzer: AnalyzerInterface,
+  seen: Set<AbsolutePath>
+): boolean =>
+  Array.from(module.dependencies).every(
+    (path) =>
+      // `seen` is initialized only once, at the entry point for the initial
+      // call to `getAndValidateModuleFromCache`, and modulePaths are only added
+      // to `seen` at  the deepest part of the recursion, in `depIsValid`
+      // because of that, we can be confident that a module path which was 'seen'
+      // has already been validated by `depIsValid` and can be safely skipped here.
+      seen.has(path) || depIsValid(path, analyzer, seen)
+  );
 
 /**
  * Returns true if the given dependency is valid, meaning that if it has a
  * cached model, the model is still valid. Dependencies that don't yet have a
  * cached model are considered valid.
  */
-const depIsValid = (modulePath: AbsolutePath, analyzer: AnalyzerInterface) => {
+const depIsValid = (
+  modulePath: AbsolutePath,
+  analyzer: AnalyzerInterface,
+  seen: Set<AbsolutePath>
+) => {
+  seen.add(modulePath);
   if (analyzer.moduleCache.has(modulePath)) {
     // If a dep has a model, it is valid only if its deps are valid
-    return Boolean(getAndValidateModuleFromCache(modulePath, analyzer));
+    return Boolean(getAndValidateModuleFromCache(modulePath, analyzer, seen));
   } else {
     // Deps that don't have a cached model are considered valid
     return true;
@@ -278,7 +322,7 @@ const getJSPathFromSourcePath = (
   }
   // Use the TS API to determine where the associated JS will be output based
   // on tsconfig settings.
-  const outputPath = ts
+  const outputPath = analyzer.typescript
     .getOutputFileNames(analyzer.commandLine, sourcePath, false)
     .filter((f) => f.endsWith('.js'))[0];
   // TODO(kschaaf): this could happen if someone imported only a .d.ts file;
@@ -298,7 +342,7 @@ const getJSPathFromSourcePath = (
 export const getPathForModuleSpecifierExpression = (
   specifierExpression: ts.Expression,
   analyzer: AnalyzerInterface
-): AbsolutePath => {
+): AbsolutePath | undefined => {
   const specifier = getSpecifierString(specifierExpression);
   return getPathForModuleSpecifier(specifier, specifierExpression, analyzer);
 };
@@ -310,18 +354,23 @@ export const getPathForModuleSpecifier = (
   specifier: string,
   location: ts.Node,
   analyzer: AnalyzerInterface
-): AbsolutePath => {
-  const resolvedPath = ts.resolveModuleName(
+): AbsolutePath | undefined => {
+  const resolvedPath = analyzer.typescript.resolveModuleName(
     specifier,
     location.getSourceFile().fileName,
     analyzer.commandLine.options,
     analyzer.fs
   ).resolvedModule?.resolvedFileName;
   if (resolvedPath === undefined) {
-    throw new DiagnosticsError(
-      location,
-      `Could not resolve specifier ${specifier} to filesystem path.`
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        typescript: analyzer.typescript,
+        node: location,
+        message: `Could not resolve specifier ${specifier} to filesystem path.`,
+        category: analyzer.typescript.DiagnosticCategory.Error,
+      })
     );
+    return undefined;
   }
   return analyzer.path.normalize(resolvedPath) as AbsolutePath;
 };

@@ -11,20 +11,15 @@
  */
 
 import ts from 'typescript';
-import {DiagnosticsError} from '../errors.js';
 import {AnalyzerInterface, MixinDeclaration} from '../model.js';
 import {getClassDeclaration} from './classes.js';
 
 const nodeHasMixinHint = (node: ts.Node) =>
   ts.getJSDocTags(node).some((tag) => tag.tagName.text === 'mixin');
 
-const throwIfMixin = (
-  hasMixinHint: boolean,
-  node: ts.Node,
-  message: string
-) => {
+const throwIfMixin = (hasMixinHint: boolean, message: string) => {
   if (hasMixinHint) {
-    throw new DiagnosticsError(node, message);
+    throw new Error(message);
   } else {
     return undefined;
   }
@@ -57,7 +52,6 @@ export const maybeGetMixinFromVariableDeclaration = (
   ) {
     return throwIfMixin(
       hasMixinHint,
-      initializer ?? declaration,
       `Expected mixin to be defined as a single const assignment to an ` +
         `arrow function or function expression.`
     );
@@ -91,7 +85,6 @@ export const maybeGetMixinFromFunctionLike = (
   if (!fn.parameters || fn.parameters.length < 1) {
     return throwIfMixin(
       hasMixinHint,
-      fn,
       `Expected mixin to have a superClass parameter.`
     );
   }
@@ -102,14 +95,12 @@ export const maybeGetMixinFromFunctionLike = (
   if (functionBody === undefined) {
     return throwIfMixin(
       hasMixinHint,
-      fn,
       `Expected mixin to have a block function body.`
     );
   }
   if (!ts.isBlock(functionBody)) {
     return throwIfMixin(
       hasMixinHint,
-      functionBody,
       `Expected mixin to have a block function body; arrow-function class ` +
         `expression syntax is not supported.`
     );
@@ -127,14 +118,12 @@ export const maybeGetMixinFromFunctionLike = (
   if (!classDeclaration) {
     return throwIfMixin(
       hasMixinHint,
-      functionBody,
       `Expected mixin to contain a class declaration statement.`
     );
   }
   if (!returnStatement) {
     return throwIfMixin(
       hasMixinHint,
-      functionBody,
       `Expected mixin to contain a return statement returning a class.`
     );
   }
@@ -144,13 +133,11 @@ export const maybeGetMixinFromFunctionLike = (
   if (extendsClause === undefined) {
     return throwIfMixin(
       hasMixinHint,
-      classDeclaration,
       `Expected mixin to contain class declaration extending a superClass argument to function.`
     );
   }
   if (extendsClause.types.length !== 1) {
-    throw new DiagnosticsError(
-      extendsClause,
+    throw new Error(
       'Internal error: did not expect a mixin class extends clause to have multiple types'
     );
   }
@@ -159,17 +146,25 @@ export const maybeGetMixinFromFunctionLike = (
     extendsClause.types[0].expression
   );
   if (superClassArgIdx < 0) {
-    throw new DiagnosticsError(
-      extendsClause,
+    throw new Error(
       'Did not find a "superClass" argument used in the extends clause of mixin class.'
     );
   }
+
+  // TODO (43081j): deal with empty class declaration names properly, maybe
+  // throw an error?
+  const classDeclarationName = classDeclaration.name?.text ?? 'unknown';
 
   return new MixinDeclaration({
     node: fn,
     name,
     superClassArgIdx,
-    classDeclaration: getClassDeclaration(classDeclaration, true, analyzer),
+    classDeclaration: getClassDeclaration(
+      classDeclaration,
+      classDeclarationName,
+      true,
+      analyzer
+    ),
   });
 };
 

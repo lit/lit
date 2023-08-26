@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {
+  ignoreWindowOnError,
+  setupIgnoreWindowResizeObserverLoopErrors,
+} from '../support/resize-observer-errors.js';
+
 /**
  * Returns an array of 'n' items.  If no map function given, it
  * contains just numbers from 0 to length - 1.  Otherwise, the
@@ -102,29 +107,66 @@ export function isInViewport(element: Element, viewport?: Element) {
 }
 
 /**
- * A promise which will resolve to the first truthy result of condition
- * function or the last result of calling it within the given timeout.
- * The intended usage of this function in a test would look something
- * like:
- *
- *     const thing = await eventually(() => doc.query('thing'));
- *
+ * Not exporting this function because the name is too generic and
+ * there are two more semantically meaningful use cases expressed by
+ * its dependent functions `pass` and `until`.
  */
-export async function eventually<T>(cond: () => T, timeout = 1000): Promise<T> {
+async function eventually<T>(cond: () => T, timeout = 1000): Promise<T> {
   const start = new Date().getTime();
-  return new Promise((resolve, _reject) => {
+  return new Promise((resolve, reject) => {
     check();
     function check() {
-      const result = cond();
-      if (result || new Date().getTime() - start > timeout) {
+      const [result, err] = testCond();
+      if (result) {
         return resolve(result);
       }
+      if (new Date().getTime() - start > timeout) {
+        if (err) {
+          return reject(err);
+        }
+        return resolve(result!);
+      }
       setTimeout(check, 0);
+    }
+    function testCond(): [T?, Error?] {
+      try {
+        return [cond(), undefined];
+      } catch (e: unknown) {
+        return [undefined, e as Error];
+      }
     }
   });
 }
 
 /**
+ * Returns a promise for the result of the code block given.  Errors are swallowed
+ * by the function until the timeout is reached, after which the error will be
+ * thrown.  This means you can use `pass` to wait for expectations like so:
+ *
+ *     await pass(() => expect(thing).to.be.true);
+ *
+ * @param block Callback function to be executed again and again until no errors
+ * are thrown.  Pass will always immediately return any successful result of the
+ * block, even if it is undefined or falsy.
+ * @param timeout
+ * @returns
+ */
+export async function pass<T>(block: () => T, timeout = 1000): Promise<T> {
+  let result: T;
+  await eventually(() => {
+    result = block();
+    return result || true;
+  }, timeout);
+  return result! as T;
+}
+
+/**
+ * Returns a promise which will resolve to the first truthy result of condition
+ * function.  The intended usage of this function in a test would look something
+ * like:
+ *
+ *     const thing = await until(() => doc.query('thing'));
+ *
  * Use this to await a condition (given as an anonymous function that returns
  * a boolean value) to be met.  We will stop waiting after the timeout is
  * exceeded, after which time we will reject the promise.
@@ -153,45 +195,26 @@ export function ignoreBenignErrors(
   before: Mocha.HookFunction,
   after: Mocha.HookFunction
 ) {
-  ignoreWindowErrors(
-    before,
-    after,
-    /ResizeObserver loop limit exceeded|ResizeObserver loop completed with undelivered notifications/
-  );
+  return setupIgnoreWindowResizeObserverLoopErrors(before, after);
 }
+
 /**
- * Sets up the window.onerror handler to ignore uncaught exceptions which match the regexp.
+ *
+ * @param before
+ * @param after
+ * @param regexp
  */
 export function ignoreWindowErrors(
   before: Mocha.HookFunction,
   after: Mocha.HookFunction,
   regexp: RegExp
 ) {
-  let onerrorOriginal: OnErrorEventHandler;
-  let onerrorNew: OnErrorEventHandler;
-
-  before(() => {
-    onerrorOriginal = window.onerror;
-    onerrorNew = (err, ...restArgs) => {
-      if (regexp.test(`${err}`)) {
-        console.warn(`Ignored Error: ${err}`);
-        return false;
-      }
-      if (onerrorOriginal) {
-        return onerrorOriginal.apply(window, [
-          err,
-          ...restArgs,
-        ] as unknown as Parameters<typeof onerrorOriginal>);
-      }
-    };
-    window.onerror = onerrorNew;
-  });
+  let teardown: Function | undefined;
+  before(
+    () => (teardown = ignoreWindowOnError((message) => regexp.test(message)))
+  );
   after(() => {
-    if (onerrorNew !== window.onerror) {
-      throw new Error(
-        'Unexpected window.onerror handler due to out-of-sequence teardown.'
-      );
-    }
-    window.onerror = onerrorOriginal;
+    teardown?.();
+    teardown = undefined;
   });
 }

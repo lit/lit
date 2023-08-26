@@ -1,5 +1,51 @@
 # Change Log
 
+## 3.0.1
+
+### Patch Changes
+
+- [#4070](https://github.com/lit/lit/pull/4070) [`3be62b07`](https://github.com/lit/lit/commit/3be62b07acfb3452aab9c8901f3383237ca69f05) Thanks [@mlcui-google](https://github.com/mlcui-google)! - Fix Task.render()'s return type always being undefined
+
+## 3.0.0
+
+### Major Changes
+
+- [#4004](https://github.com/lit/lit/pull/4004) [`5beb5f9a`](https://github.com/lit/lit/commit/5beb5f9acbb5edb4f8df179d0e93fe4c9ae59b51) - Adds the `'afterUpdate'` option for `autoRun` to Task, and runs tasks by default in `hostUpdate()` instead of `hostUpdated()`. `'afterUpdate'` is needed to run tasks dependent on DOM updates, but will cause multiple renders of the host element.
+
+- [#4013](https://github.com/lit/lit/pull/4013) [`a5bf2507`](https://github.com/lit/lit/commit/a5bf250770e6527e209eb6201761065ab2196179) - Add pluggable task args equality functions and deepArrayEquals. Breaking: this removes performTask() and shouldRun() protected methods.
+
+### Minor Changes
+
+- [#3998](https://github.com/lit/lit/pull/3998) [`937f4e9b`](https://github.com/lit/lit/commit/937f4e9ba6cf200c2112a55f1d6f572cb4fcadd3) - Allow cancelling a task with a Task.abort() method
+
+- [#3996](https://github.com/lit/lit/pull/3996) [`012e8bc8`](https://github.com/lit/lit/commit/012e8bc874ac1128f4c719648a3a8c9f29d43b7d) - Provide an AbortSignal to task functions
+
+- [#4001](https://github.com/lit/lit/pull/4001) [`2ce10e4d`](https://github.com/lit/lit/commit/2ce10e4d879c5a342357f7e36a2a1de76b0cd625) - Allow tasks to have an initial value
+
+### Patch Changes
+
+- [#4008](https://github.com/lit/lit/pull/4008) [`fd7e7cdf`](https://github.com/lit/lit/commit/fd7e7cdf771d71efb02f3945c14dadd1c4d95130) - Infer the return type of Task.render()
+
+## 2.1.2
+
+### Patch Changes
+
+- [#3953](https://github.com/lit/lit/pull/3953) [`2407c808`](https://github.com/lit/lit/commit/2407c808007268c1f96f14e311eb36d525080968) - Fix taskComplete not rejecting if after an error state
+
+- [#3947](https://github.com/lit/lit/pull/3947) [`0480e006`](https://github.com/lit/lit/commit/0480e00633e15740640f9ce937573085e91848b2) - Task will not throw errors unless user requests taskComplete
+
+## 2.1.1
+
+### Patch Changes
+
+- [#3847](https://github.com/lit/lit/pull/3847) [`b3625853`](https://github.com/lit/lit/commit/b36258534e6cce799297e837dadbd4bc37ab49fa) - Add a missing await in performTask
+
+## 2.1.0
+
+### Minor Changes
+
+- [#3660](https://github.com/lit/lit/pull/3660) [`65df149f`](https://github.com/lit/lit/commit/65df149f761ff4052beb064386bd59f568a87154) - Fix the change-in-update warning from Tasks by delaying the initial host update
+
 ## 2.0.0
 
 ### Major Changes

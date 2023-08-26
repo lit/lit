@@ -111,6 +111,46 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  /* Iterable Expression */
+  test('iterable expression with array value', async () => {
+    const {render, templateWithIterableExpression} = await setup();
+    const result = await render(
+      templateWithIterableExpression(['foo', 'bar', 'baz'])
+    );
+    assert.is(
+      result,
+      `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part--><!--lit-part-->foo<!--/lit-part--><!--lit-part-->bar<!--/lit-part--><!--lit-part-->baz<!--/lit-part--><!--/lit-part--></div><!--/lit-part-->`
+    );
+  });
+
+  test('iterable expression with set value', async () => {
+    const {render, templateWithIterableExpression} = await setup();
+    const result = await render(
+      templateWithIterableExpression(new Set(['foo', 'bar', 'baz']))
+    );
+    assert.is(
+      result,
+      `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part--><!--lit-part-->foo<!--/lit-part--><!--lit-part-->bar<!--/lit-part--><!--lit-part-->baz<!--/lit-part--><!--/lit-part--></div><!--/lit-part-->`
+    );
+  });
+
+  test('iterable expression with generator value', async () => {
+    const {render, templateWithIterableExpression} = await setup();
+    const result = await render(
+      templateWithIterableExpression(
+        (function* () {
+          yield 'foo';
+          yield 'bar';
+          yield 'baz';
+        })()
+      )
+    );
+    assert.is(
+      result,
+      `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part--><!--lit-part-->foo<!--/lit-part--><!--lit-part-->bar<!--/lit-part--><!--lit-part-->baz<!--/lit-part--><!--/lit-part--></div><!--/lit-part-->`
+    );
+  });
+
   /* Attribute Expressions */
 
   test('attribute expression with string value', async () => {
@@ -118,7 +158,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(templateWithAttributeExpression('foo'));
     assert.is(
       result,
-      `<!--lit-part FAR9hgjJqTI=--><div class="foo"><!--lit-node 0--></div><!--/lit-part-->`
+      `<!--lit-part FAR9hgjJqTI=--><!--lit-node 0--><div class="foo"></div><!--/lit-part-->`
     );
   });
 
@@ -127,7 +167,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(inputTemplateWithAttributeExpression('foo'));
     assert.is(
       result,
-      `<!--lit-part AYwG7rAvcnw=--><input x="foo"><!--lit-node 0--><!--/lit-part-->`
+      `<!--lit-part AYwG7rAvcnw=--><!--lit-node 0--><input x="foo"><!--/lit-part-->`
     );
   });
 
@@ -144,7 +184,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
     assert.is(
       result,
-      `<!--lit-part BIugdiAuV4I=--><input x="foo"><!--lit-node 0--><p>hi</p></input><!--/lit-part-->`
+      `<!--lit-part BIugdiAuV4I=--><!--lit-node 0--><input x="foo"><p>hi</p></input><!--/lit-part-->`
     );
   });
 
@@ -156,7 +196,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // Has marker attribute for number of bound attributes.
     assert.is(
       result,
-      `<!--lit-part FQlA2/EioQk=--><div x="foo" y="bar" z="not-dynamic"><!--lit-node 0--></div><!--/lit-part-->`
+      `<!--lit-part FQlA2/EioQk=--><!--lit-node 0--><div x="foo" y="bar" z="not-dynamic"></div><!--/lit-part-->`
     );
   });
 
@@ -167,7 +207,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
     assert.is(
       result,
-      `<!--lit-part D+PQMst9obo=--><div test="a foo b bar c"><!--lit-node 0--></div><!--/lit-part-->`
+      `<!--lit-part D+PQMst9obo=--><!--lit-node 0--><div test="a foo b bar c"></div><!--/lit-part-->`
     );
   });
 
@@ -178,7 +218,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(inputTemplateWithValueProperty('foo'));
     assert.is(
       result,
-      `<!--lit-part AxWziS+Adpk=--><input value="foo"><!--lit-node 0--><!--/lit-part-->`
+      `<!--lit-part AxWziS+Adpk=--><!--lit-node 0--><input value="foo"><!--/lit-part-->`
     );
   });
 
@@ -187,7 +227,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(elementTemplateWithClassNameProperty('foo'));
     assert.is(
       result,
-      `<!--lit-part I7NxrdZ/Zxo=--><div class="foo"><!--lit-node 0--></div><!--/lit-part-->`
+      `<!--lit-part I7NxrdZ/Zxo=--><!--lit-node 0--><div class="foo"></div><!--/lit-part-->`
     );
   });
 
@@ -196,7 +236,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(elementTemplateWithClassnameProperty('foo'));
     assert.is(
       result,
-      `<!--lit-part I7NxrbZzZGA=--><div ><!--lit-node 0--></div><!--/lit-part-->`
+      `<!--lit-part I7NxrbZzZGA=--><!--lit-node 0--><div ></div><!--/lit-part-->`
     );
   });
 
@@ -205,7 +245,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(elementTemplateWithIDProperty('foo'));
     assert.is(
       result,
-      `<!--lit-part IgnmhhM3LsA=--><div id="foo"><!--lit-node 0--></div><!--/lit-part-->`
+      `<!--lit-part IgnmhhM3LsA=--><!--lit-node 0--><div id="foo"></div><!--/lit-part-->`
     );
   });
 
@@ -276,7 +316,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part v2CxGIW+qHI=--><test-property ><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part v2CxGIW+qHI=--><!--lit-node 0--><test-property ><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -286,7 +326,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo="bar"><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo="bar"><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -296,7 +336,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -306,7 +346,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -316,7 +356,16 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><test-property  foo><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+    );
+  });
+
+  test('element with mixed case attributes', async () => {
+    const {render, templateWithMixedCaseAttrs} = await setup();
+    const result = await render(templateWithMixedCaseAttrs('dynamic'));
+    assert.is(
+      result,
+      `<!--lit-part F/N3wW1gNj8=--><!--lit-node 0--><svg dynamicCamel="dynamic" staticCamel="static"></svg><!--/lit-part-->`
     );
   });
 
@@ -326,7 +375,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part 7z41MJchKXM=--><test-reflected-properties   bar baz="default reflected string" reflect-foo="badazzled"><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
+      `<!--lit-part 7z41MJchKXM=--><!--lit-node 0--><test-reflected-properties   bar baz="default reflected string" reflect-foo="badazzled"><template shadowroot="open" shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
     );
   });
 
@@ -345,7 +394,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part Q0bbGrx71ic=--><test-will-update  ><!--lit-node 0--><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->Foo Bar<!--/lit-part--></main><!--/lit-part--></template></test-will-update><!--/lit-part-->`
+      `<!--lit-part Q0bbGrx71ic=--><!--lit-node 0--><test-will-update  ><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->Foo Bar<!--/lit-part--></main><!--/lit-part--></template></test-will-update><!--/lit-part-->`
     );
   });
 
@@ -442,7 +491,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(classMapDirective);
     assert.is(
       result,
-      '<!--lit-part PkF/hiJU4II=--><div class=" a c "><!--lit-node 0--></div><!--/lit-part-->'
+      '<!--lit-part PkF/hiJU4II=--><!--lit-node 0--><div class=" a c "></div><!--/lit-part-->'
     );
   });
 
@@ -451,7 +500,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(classMapDirectiveMultiBinding);
     assert.is(
       result,
-      '<!--lit-part pNgepkKFbd0=--><div class="z hi a c"><!--lit-node 0--></div><!--/lit-part-->'
+      '<!--lit-part pNgepkKFbd0=--><!--lit-node 0--><div class="z hi a c"></div><!--/lit-part-->'
     );
   });
 

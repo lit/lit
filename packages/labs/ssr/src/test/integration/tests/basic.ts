@@ -4,9 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import 'lit/experimental-hydrate-support.js';
+import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
 
 import {html, noChange, nothing, Part} from 'lit';
+import {html as staticHtml, literal} from 'lit/static-html.js';
 import {
   directive,
   Directive,
@@ -16,6 +17,7 @@ import {
   PartType,
 } from 'lit/directive.js';
 import {repeat} from 'lit/directives/repeat.js';
+import {map} from 'lit/directives/map.js';
 import {guard} from 'lit/directives/guard.js';
 import {cache} from 'lit/directives/cache.js';
 import {classMap} from 'lit/directives/class-map.js';
@@ -38,7 +40,7 @@ import {
   RenderLightHost,
 } from '@lit-labs/ssr-client/directives/render-light.js';
 
-import {SSRTest} from './ssr-test.js';
+import {anyHtml, SSRTest} from './ssr-test.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 
 interface DivWithProp extends HTMLDivElement {
@@ -168,6 +170,40 @@ export const tests: {[name: string]: SSRTest} = {
       {
         args: ['foo'],
         html: '<div>foo</div>',
+      },
+    ],
+    stableSelectors: ['div'],
+  },
+
+  'ChildPart accepts array': {
+    render(x: unknown) {
+      return html` <div>${x}</div> `;
+    },
+    expectations: [
+      {
+        args: [[1, 2, 3]],
+        html: '<div>123</div>',
+      },
+      {
+        args: [[4, 5, 6]],
+        html: '<div>456</div>',
+      },
+    ],
+    stableSelectors: ['div'],
+  },
+
+  'ChildPart accepts set': {
+    render(x: unknown) {
+      return html` <div>${x}</div> `;
+    },
+    expectations: [
+      {
+        args: [new Set([1, 2, 3])],
+        html: '<div>123</div>',
+      },
+      {
+        args: [new Set([4, 5, 6])],
+        html: '<div>456</div>',
       },
     ],
     stableSelectors: ['div'],
@@ -598,6 +634,23 @@ export const tests: {[name: string]: SSRTest} = {
       return html`
         ${repeat(words, (word, i) => html` <p>${i}) ${word}</p> `)}
       `;
+    },
+    expectations: [
+      {
+        args: [['foo', 'bar', 'qux']],
+        html: '<p>\n  0) foo\n</p>\n<p>\n  1) bar\n</p>\n<p>\n  2) qux\n</p>\n',
+      },
+      {
+        args: [['A', 'B', 'C']],
+        html: '<p>\n  0) A\n</p>\n<p>\n  1) B\n</p>\n<p>\n  2) C\n</p>\n',
+      },
+    ],
+    stableSelectors: ['p'],
+  },
+
+  'ChildPart accepts directive: map': {
+    render(words: string[]) {
+      return html` ${map(words, (word, i) => html` <p>${i}) ${word}</p> `)} `;
     },
     expectations: [
       {
@@ -1290,7 +1343,10 @@ export const tests: {[name: string]: SSRTest} = {
               webkitAppearance: 'none',
             },
           ],
-          html: '<div style="--my-prop:green; appearance: none;"></div>',
+          html: anyHtml([
+            '<div style="--my-prop: green; appearance: none;"></div>',
+            '<div style="--my-prop:green; appearance: none;"></div>',
+          ]),
         },
         {
           args: [
@@ -1299,7 +1355,10 @@ export const tests: {[name: string]: SSRTest} = {
               webkitAppearance: 'inherit',
             },
           ],
-          html: '<div style="--my-prop:gray; appearance: inherit;"></div>',
+          html: anyHtml([
+            '<div style="--my-prop: gray; appearance: inherit;"></div>',
+            '<div style="--my-prop:gray; appearance: inherit;"></div>',
+          ]),
         },
       ],
       // styleMap does not dirty check individual properties before setting,
@@ -1626,6 +1685,49 @@ export const tests: {[name: string]: SSRTest} = {
       },
     ],
     stableSelectors: ['input'],
+  },
+
+  'AttributePart on raw text element in shadow root': {
+    // Regression test for https://github.com/lit/lit/issues/3663.
+    //
+    // Confirms that attribute bindings to raw text elements now
+    // work as expected.
+    registerElements() {
+      class RawElementHost extends LitElement {
+        @property()
+        text = 'hello';
+
+        override render() {
+          return html`<textarea .value=${this.text}></textarea>`;
+        }
+      }
+      customElements.define('raw-element-host', RawElementHost);
+    },
+    render() {
+      return html`<raw-element-host></raw-element-host>`;
+    },
+    expectations: [
+      {
+        args: [],
+        html: '<raw-element-host></raw-element-host>',
+        async check(assert: Chai.Assert, dom: HTMLElement) {
+          const host = dom.querySelector('raw-element-host') as LitElement & {
+            text: string;
+          };
+          assert.instanceOf(host, LitElement);
+          assert.equal(host.text, 'hello');
+
+          await host.updateComplete;
+          const textarea = host.shadowRoot?.querySelector('textarea');
+          assert.equal(textarea?.value, 'hello');
+
+          host.text = 'goodbye';
+          await host.updateComplete;
+          assert.equal(textarea?.value, 'goodbye');
+        },
+      },
+    ],
+    stableSelectors: ['textarea'],
   },
 
   /******************************************************
@@ -4209,6 +4311,28 @@ export const tests: {[name: string]: SSRTest} = {
   },
 
   /******************************************************
+   * Static html tests
+   ******************************************************/
+
+  'Static html': {
+    render(x: unknown) {
+      const tagName = x === 'foo' ? literal`div` : literal`p`;
+      return staticHtml`<${tagName}>${x}</${tagName}>`;
+    },
+    expectations: [
+      {
+        args: ['foo'],
+        html: '<div>foo</div>',
+      },
+      {
+        args: ['foo2'],
+        html: '<p>foo2</p>',
+      },
+    ],
+    stableSelectors: [],
+  },
+
+  /******************************************************
    * AsyncDirective tests
    ******************************************************/
 
@@ -4707,6 +4831,88 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
+  'LitElement: Attribute binding (mixed case)': () => {
+    return {
+      registerElements() {
+        class LEMixedAttrBinding extends LitElement {
+          @property()
+          camelProp = 'default';
+          override render() {
+            return html` <div>[${this.camelProp}]</div> `;
+          }
+        }
+        customElements.define('le-mixed-attr-binding', LEMixedAttrBinding);
+      },
+      render(prop: unknown) {
+        return html`
+          <le-mixed-attr-binding
+            camelProp=${prop}
+            static
+          ></le-mixed-attr-binding>
+        `;
+      },
+      expectations: [
+        {
+          args: ['boundProp1'],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-mixed-attr-binding'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).camelProp, 'boundProp1');
+          },
+          html: {
+            root: `<le-mixed-attr-binding camelprop="boundProp1" static></le-mixed-attr-binding>`,
+            'le-mixed-attr-binding': `<div>\n  [boundProp1]\n</div>`,
+          },
+        },
+        {
+          args: ['boundProp2'],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-mixed-attr-binding'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).camelProp, 'boundProp2');
+          },
+          html: {
+            root: `<le-mixed-attr-binding camelprop="boundProp2" static></le-mixed-attr-binding>`,
+            'le-mixed-attr-binding': `<div>\n  [boundProp2]\n</div>`,
+          },
+        },
+        {
+          args: [undefined],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-mixed-attr-binding'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).camelProp, '');
+          },
+          html: {
+            root: `<le-mixed-attr-binding camelprop="" static></le-mixed-attr-binding>`,
+            'le-mixed-attr-binding': `<div>\n  []\n</div>`,
+          },
+        },
+        {
+          args: [null],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-mixed-attr-binding'
+            )! as LitElement;
+            await el.updateComplete;
+            assert.strictEqual((el as any).camelProp, '');
+          },
+          html: {
+            root: `<le-mixed-attr-binding camelprop="" static></le-mixed-attr-binding>`,
+            'le-mixed-attr-binding': `<div>\n  []\n</div>`,
+          },
+        },
+      ],
+      stableSelectors: ['le-mixed-attr-binding'],
+    };
+  },
+
   'LitElement: Reflected number attribute': () => {
     return {
       registerElements() {
@@ -5140,6 +5346,147 @@ export const tests: {[name: string]: SSRTest} = {
         },
       ],
       stableSelectors: ['le-defer'],
+    };
+  },
+
+  'LitElement: hydrate nested element without attrs': () => {
+    // Regression test for https://github.com/lit/lit/issues/3939
+    //
+    // Confirms nested custom elements should have their defer-hydration
+    // attribute removed when parent is hydrated even without any attributes or
+    // bindings
+    return {
+      registerElements() {
+        class LEParent extends LitElement {
+          override render() {
+            return html`<le-child></le-child>`;
+          }
+        }
+        customElements.define('le-parent', LEParent);
+
+        class LEChild extends LitElement {
+          override render() {
+            return html`le-child`;
+          }
+        }
+        customElements.define('le-child', LEChild);
+      },
+      render() {
+        return html`<le-parent></le-parent>`;
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const parent = dom.querySelector('le-parent') as LitElement;
+            await parent.updateComplete;
+            const child = parent.shadowRoot!.querySelector(
+              'le-child'
+            ) as LitElement;
+            assert.isFalse(child.hasAttribute('defer-hydration'));
+          },
+          html: {
+            root: `<le-parent></le-parent>`,
+            'le-parent': {
+              root: `<le-child></le-child>`,
+            },
+          },
+        },
+      ],
+      stableSelectors: ['le-parent'],
+    };
+  },
+
+  'LitElement: ElementInternals': () => {
+    return {
+      // ElementInternals is not implemented in Safari yet
+      skip: Boolean(
+        globalThis.navigator &&
+          navigator.userAgent.includes('Safari/') &&
+          navigator.userAgent.includes('Version/')
+      ),
+      registerElements() {
+        class LEInternals extends LitElement {
+          constructor() {
+            super();
+            const internals = this.attachInternals() as ElementInternals & {
+              role: string;
+            };
+            internals.role = 'widget';
+          }
+        }
+        customElements.define('le-internals', LEInternals);
+      },
+      render() {
+        return html`<le-internals></le-internals>`;
+      },
+      serverRenderOptions: {
+        deferHydration: true,
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector('le-internals') as LitElement;
+            assert.equal(el.getAttribute('role'), 'widget');
+          },
+          html: {
+            root: `<le-internals role="widget" hydrate-internals-role="widget"></le-internals>`,
+            'le-internals': ``,
+          },
+        },
+      ],
+      stableSelectors: ['le-internals'],
+    };
+  },
+
+  'LitElement: ElementInternals with hydration': () => {
+    return {
+      // ElementInternals is not implemented in Safari yet
+      skip: Boolean(
+        globalThis.navigator &&
+          navigator.userAgent.includes('Safari/') &&
+          navigator.userAgent.includes('Version/')
+      ),
+      registerElements() {
+        class LEInternalsHydrate extends LitElement {
+          internals;
+          constructor() {
+            super();
+            const internals = this.attachInternals() as ElementInternals & {
+              role: string;
+            };
+            internals.role = 'widget';
+            this.internals = internals;
+          }
+        }
+        customElements.define('le-internals-hydrate', LEInternalsHydrate);
+      },
+      render() {
+        return html`<le-internals-hydrate></le-internals-hydrate>`;
+      },
+      serverRenderOptions: {
+        deferHydration: false,
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            const el = dom.querySelector(
+              'le-internals-hydrate'
+            ) as LitElement & {internals: {role: string}};
+            assert.isFalse(el.hasAttribute('role'));
+          },
+          html: {
+            root: `<le-internals-hydrate></le-internals-hydrate>`,
+            'le-internals-hydrate': ``,
+          },
+        },
+      ],
+      expectMutationsDuringHydration: true,
+      expectMutationsDuringUpgrade: true,
+      skipPreHydrationAssertHtml: true,
+      stableSelectors: ['le-internals-hydrate'],
     };
   },
 };

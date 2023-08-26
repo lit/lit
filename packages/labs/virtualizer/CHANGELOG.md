@@ -1,5 +1,73 @@
 # @lit-labs/virtualizer
 
+## 2.0.6
+
+### Patch Changes
+
+- [#4108](https://github.com/lit/lit/pull/4108) [`eda56e4f`](https://github.com/lit/lit/commit/eda56e4f74463f1b1ef06045807417de6cb6356d) - Fix bug that prevented host from resizing when total item size changes.
+
+## 2.0.5
+
+### Patch Changes
+
+- [#4039](https://github.com/lit/lit/pull/4039) [`456c83be`](https://github.com/lit/lit/commit/456c83be0438c2178a06144edd5deb8871613c36) Thanks [@alanbuzek](https://github.com/alanbuzek)! - Removed unnecessary evaluation triggering strict linter error.
+
+- Updated dependencies [[`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d), [`8057c78d`](https://github.com/lit/lit/commit/8057c78def09e345e68c3fc009b8ab9d6cf1c0f2)]:
+  - lit@2.8.0
+
+## 2.0.4
+
+### Patch Changes
+
+- [#3976](https://github.com/lit/lit/pull/3976) [`3cf98cd8`](https://github.com/lit/lit/commit/3cf98cd896e4d6a1aca9714916416d035a722140) Thanks [@Westbrook](https://github.com/Westbrook)! - Fixes #3904 "Clipping parents include ancestors of `position: fixed` element"
+
+## 2.0.3
+
+### Patch Changes
+
+- [#3909](https://github.com/lit/lit/pull/3909) [`feded34b`](https://github.com/lit/lit/commit/feded34bf640291885b7d9de8713075cd7da1a54) Thanks [@chrispaterson](https://github.com/chrispaterson)! - Refactored and refurbished ScrollerController attach/detach code in effort to reduce potential memory leaks due to held instance references.
+
+- [#3892](https://github.com/lit/lit/pull/3892) [`f5b2013d`](https://github.com/lit/lit/commit/f5b2013ddc38eb9b540e0b633a879ea860bc92d8) - Changed accessor and iterator code to support ES5 compilation.
+
+- [#3929](https://github.com/lit/lit/pull/3929) [`c3672fca`](https://github.com/lit/lit/commit/c3672fca5ca6ed65156a2715fd1baf1d4430b0b1) - Added new support utilities for dealing with ResizeObserver loop limit exceeded errors.
+
+## 2.0.2
+
+### Patch Changes
+
+- [#3877](https://github.com/lit/lit/pull/3877) [`4418bed5`](https://github.com/lit/lit/commit/4418bed55635c8340c335c3be32895899fa703f4) - Converted a benign innerHTML assignment to textContent.
+
+- [#3884](https://github.com/lit/lit/pull/3884) [`2684dd65`](https://github.com/lit/lit/commit/2684dd6554a0ecb6ab2561b91488075fc9db9397) - Added license headers to files.
+
+- [#3874](https://github.com/lit/lit/pull/3874) [`d32eec70`](https://github.com/lit/lit/commit/d32eec70c7eac08746dd4fb4378050b20bb724ba) - Fix [#3873: visibilityChange event not fired if other state (e.g. range) hasn't also changed](https://github.com/lit/lit/issues/3873)
+
+## 2.0.1
+
+### Patch Changes
+
+- [#3819](https://github.com/lit/lit/pull/3819) [`f0c8336a`](https://github.com/lit/lit/commit/f0c8336a03ca2c02c48a13710eca8aca3ba70758) - Fix [#3815: Masonry: size and range bugs when the last item placed isn't the one extending the furthest](https://github.com/lit/lit/issues/3815)
+
+- [#3708](https://github.com/lit/lit/pull/3708) [`a1f8c345`](https://github.com/lit/lit/commit/a1f8c345cc978be06c6416edd1228fc5471c53d8) - [@lit-labs/virtualizer]: handle uninitialized layout in \_childrenSizeChanged
+
+## 2.0.0
+
+### Major Changes
+
+- [#3624](https://github.com/lit/lit/pull/3624) [`e51ff229`](https://github.com/lit/lit/commit/e51ff229843aaac22805bc0a39bf5e6db6862a5c) - ResizeObserver polyfill is no longer automatically loaded. If you target older browsers without native ResizeObserver support, see the docs for guidance on manual polyfill loading.
+
+### Minor Changes
+
+- [#3609](https://github.com/lit/lit/pull/3609) [`54046b0b`](https://github.com/lit/lit/commit/54046b0bbea4ff161567a92328700391efa35ff6) - RangeChangedEvent and VisibilityChangedEvent both no longer bubble up. Listeners for these events must be placed on the lit-virtualizer or virtualize directive's host element.
+
+### Patch Changes
+
+- [#3606](https://github.com/lit/lit/pull/3606) [`441baca2`](https://github.com/lit/lit/commit/441baca292f7e7df2c2a2a2453b027b3ade0a8bc) - Trigger reflow after padding is set
+
+- [#3624](https://github.com/lit/lit/pull/3624) [`e51ff229`](https://github.com/lit/lit/commit/e51ff229843aaac22805bc0a39bf5e6db6862a5c) - Additional fix for [#3481: Error when immediately re-rendering](https://github.com/lit/lit/issues/3481); initialization code significantly simplified
+
+- Updated dependencies [[`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86), [`e00f6f52`](https://github.com/lit/lit/commit/e00f6f52199d5dbc08d4c15f62380422e77cde7f), [`88a40177`](https://github.com/lit/lit/commit/88a40177de9be5d117a21e3da5414bd777872544)]:
+  - lit@2.7.0
+
 ## 1.0.1
 
 ### Patch Changes

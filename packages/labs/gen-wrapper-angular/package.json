@@ -2,7 +2,7 @@
   "private": true,
   "name": "@lit-labs/gen-wrapper-angular",
   "description": "Code generator for Angular wrappers for Lit components",
-  "version": "0.0.4",
+  "version": "0.0.9",
   "publishConfig": {
     "access": "public"
   },
@@ -22,6 +22,7 @@
     "build": {
       "command": "tsc --build --pretty",
       "dependencies": [
+        "../analyzer:build",
         "../gen-utils:build"
       ],
       "files": [
@@ -57,7 +58,7 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.5.0",
+    "@lit-labs/analyzer": "^0.9.0",
     "@lit-labs/gen-utils": "^0.2.0"
   },
   "devDependencies": {
