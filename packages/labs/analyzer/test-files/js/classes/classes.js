@@ -44,6 +44,17 @@ export class Class1 extends BaseClass {
    */
   field4 = new Promise((r) => r());
 
+  /** ecma private field */
+  #privateField = 'private';
+
+  /**
+   * ecma private method
+   * @param {string} a
+   */
+  #privateMethod(a) {
+    this.#privateField = a;
+  }
+
   /**
    * Method 1 description
    * with wraparound

@@ -153,7 +153,10 @@ export const getClassMembers = (
         })
       );
     } else if (typescript.isPropertyDeclaration(node)) {
-      if (!typescript.isIdentifier(node.name)) {
+      if (
+        !typescript.isIdentifier(node.name) &&
+        !typescript.isPrivateIdentifier(node.name)
+      ) {
         analyzer.addDiagnostic(
           createDiagnostic({
             typescript,
@@ -169,6 +172,7 @@ export const getClassMembers = (
       }
 
       const info = getMemberInfo(typescript, node);
+
       (info.static ? staticFieldMap : fieldMap).set(
         node.name.getText(),
         new ClassField({
