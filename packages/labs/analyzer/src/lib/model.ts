@@ -496,8 +496,8 @@ export class ClassDeclaration extends Declaration {
    * Returns a non-static `ClassField` model the given name defined on the
    * immediate class (excluding any inherited members).
    */
-  getField(name: string, isStatic = false): ClassField | undefined {
-    return (isStatic ? this._staticFieldMap : this._fieldMap).get(name);
+  getField(name: string): ClassField | undefined {
+    return this._fieldMap.get(name);
   }
 
   /**
@@ -648,8 +648,6 @@ export interface Parameter extends PropertyLike {
 }
 
 export interface ReactiveProperty extends PropertyLike {
-  name: string;
-
   reflect: boolean;
 
   // TODO(justinfagnani): should we convert into attribute name?
