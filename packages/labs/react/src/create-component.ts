@@ -48,7 +48,9 @@ export type ReactWebComponent<
 // lifecycle methods or allow user to explicitly provide props.
 type ElementProps<I> = Partial<Omit<I, keyof HTMLElement>>;
 
-// Child type compatible with both React and Preact.
+// Child type compatible with both React and Preact. It's based on
+// `React.ReactNode` but using `JSX.Element` allows`VNode` to be acceptable in
+// Preact projects.
 type Child =
   | JSX.Element
   | React.ReactPortal
@@ -63,7 +65,7 @@ type ComponentProps<I, E extends EventNames = {}> = Omit<
   // Omit keyof E to prefer provided event handler mapping over React's
   // built-in event handler props.
   | keyof E
-  // Omit children to replace with out own that's compatible with Preact.
+  // Omit children to replace with our own that's compatible with Preact.
   | 'children'
 > &
   EventListeners<E> & {children?: Child | Child[]} & ElementProps<I>;
