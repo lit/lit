@@ -102,10 +102,27 @@ type EventListeners<R extends EventNames> = {
     : (e: Event) => void;
 };
 
-// Interface that includes parts of the React module that we use. This allows
-// users to construct an object with just the needed methods and prevents type
-// incompatibilities when there are multiple React types being used.
-interface ReactLike {
+/**
+ * Interface that includes parts of the React module that `createComponent()`
+ * uses. Use this to create an object to pass into the `react` option.
+ *
+ * Example:
+ *
+ * ```ts
+ * const myReactLike = {
+ *   forwardRef,
+ *   useRef,
+ *   useLayoutEffect,
+ *   createElement,
+ * } satisfies ReactLike;
+ *
+ * createComponnt({
+ *   react: myReactLike,
+ *   ...
+ * });
+ * ```
+ */
+export interface ReactLike {
   forwardRef: typeof React.forwardRef;
   useRef: typeof React.useRef;
   // typeof React.useLayoutEffect uses a unique symbol brand making it
