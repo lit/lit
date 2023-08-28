@@ -47,6 +47,8 @@ export const hasProtectedModifier = (ts: TypeScript, node: ts.HasModifiers) => {
 const isPrivate = (ts: TypeScript, node: ts.Node) => {
   return (
     (ts.canHaveModifiers(node) && hasPrivateModifier(ts, node)) ||
+    ((ts.isPropertyDeclaration(node) || ts.isMethodDeclaration(node)) &&
+      ts.isPrivateIdentifier(node.name)) ||
     hasJSDocTag(ts, node, 'private')
   );
 };
