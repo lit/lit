@@ -24,8 +24,7 @@ export function App() {
     <>
       <ElementA foo="foo" onAChanged={() => {}}>
         This goes in default slot
-        {/* TODO(augustjk): Add this back with #4142 */}
-        {/* <div slot="stuff">This goes in stuff slot</div> */}
+        <div slot="stuff">This goes in stuff slot</div>
       </ElementA>
       <ElementEvents
         foo="foo"
