@@ -111,23 +111,3 @@ export function queryAssignedNodes(
     }
   }) as QueryAssignedNodesDecorator;
 }
-
-// export function queryAssignedNodes(
-//   options?: QueryAssignedNodesOptions
-// ): TSDecoratorReturnType {
-//   const slot = options?.slot;
-//   const assignedNodesOptions = options;
-
-//   return decorateProperty({
-//     descriptor: (_name: PropertyKey) => ({
-//       get(this: ReactiveElement) {
-//         const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
-//         const slotEl =
-//           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
-//         return slotEl?.assignedNodes(assignedNodesOptions) ?? [];
-//       },
-//       enumerable: true,
-//       configurable: true,
-//     }),
-//   });
-// }

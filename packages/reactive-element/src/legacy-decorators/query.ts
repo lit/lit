@@ -107,33 +107,3 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
     }
   }) as QueryDecorator;
 }
-
-// export function query(selector: string, cache?: boolean) {
-//   return decorateProperty({
-//     descriptor: (name: PropertyKey) => {
-//       const descriptor = {
-//         get(this: ReactiveElement) {
-//           return this.renderRoot?.querySelector(selector) ?? null;
-//         },
-//         enumerable: true,
-//         configurable: true,
-//       };
-//       if (cache) {
-//         const key = DEV_MODE
-//           ? Symbol(`${String(name)} (@query() cache)`)
-//           : Symbol();
-//         descriptor.get = function (this: ReactiveElement) {
-//           if (
-//             (this as unknown as {[key: symbol]: Element | null})[key] ===
-//             undefined
-//           ) {
-//             (this as unknown as {[key: symbol]: Element | null})[key] =
-//               this.renderRoot?.querySelector(selector) ?? null;
-//           }
-//           return (this as unknown as {[key: symbol]: Element | null})[key];
-//         };
-//       }
-//       return descriptor;
-//     },
-//   });
-// }
