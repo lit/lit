@@ -30,6 +30,7 @@ body:
         - Starter Kits (@lit/lit-starter-js / @lit/lit-starter-ts)
         - Task (@lit-labs/task)
         - Virtualizer (@lit-labs/virtualizer)
+        - Analyzer (@lit-labs/analyzer)
         - Other/unknown (please mention in description)
 
   - type: textarea
