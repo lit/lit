@@ -5,7 +5,6 @@
  */
 
 import {ReactiveElement} from '@lit/reactive-element';
-import {decorateProperty} from '@lit/reactive-element/decorators/base.js';
 import {ContextConsumer} from '../controllers/context-consumer.js';
 import {Context} from '../create-context.js';
 
@@ -48,20 +47,23 @@ export function consume<ValueType>({
   context: Context<unknown, ValueType>;
   subscribe?: boolean;
 }): ConsumerDecorator<ValueType> {
-  return decorateProperty({
-    finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-      ctor.addInitializer((element: ReactiveElement): void => {
+  return (<K extends PropertyKey, Proto extends ReactiveElement>(
+    proto: Proto,
+    name: K
+  ) => {
+    (proto.constructor as typeof ReactiveElement).addInitializer(
+      (element: ReactiveElement): void => {
         new ContextConsumer(element, {
           context,
           callback: (value: ValueType) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- have to force the property on the type
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (element as any)[name] = value;
           },
           subscribe,
         });
-      });
-    },
-  });
+      }
+    );
+  }) as ConsumerDecorator<ValueType>;
 }
 
 type ConsumerDecorator<ValueType> = {

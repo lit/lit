@@ -5,7 +5,6 @@
  */
 
 import {ReactiveElement} from '@lit/reactive-element';
-import {decorateProperty} from '@lit/reactive-element/decorators/base.js';
 import {Context} from '../create-context.js';
 import {ContextProvider} from '../controllers/context-provider.js';
 
@@ -48,28 +47,31 @@ export function provide<ValueType>({
 }: {
   context: Context<unknown, ValueType>;
 }): ProvideDecorator<ValueType> {
-  return decorateProperty({
-    finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-      const controllerMap = new WeakMap();
-      ctor.addInitializer((element: ReactiveElement): void => {
+  return (<K extends PropertyKey, Proto extends ReactiveElement>(
+    proto: Proto,
+    name: K
+  ) => {
+    const controllerMap = new WeakMap();
+    (proto.constructor as typeof ReactiveElement).addInitializer(
+      (element: ReactiveElement): void => {
         controllerMap.set(element, new ContextProvider(element, {context}));
-      });
-      // proxy any existing setter for this property and use it to
-      // notify the controller of an updated value
-      const descriptor = Object.getOwnPropertyDescriptor(ctor.prototype, name);
-      const oldSetter = descriptor?.set;
-      const newDescriptor = {
-        ...descriptor,
-        set: function (this: ReactiveElement, value: ValueType) {
-          controllerMap.get(this)?.setValue(value);
-          if (oldSetter) {
-            oldSetter.call(this, value);
-          }
-        },
-      };
-      Object.defineProperty(ctor.prototype, name, newDescriptor);
-    },
-  });
+      }
+    );
+    // proxy any existing setter for this property and use it to
+    // notify the controller of an updated value
+    const descriptor = Object.getOwnPropertyDescriptor(proto, name);
+    const oldSetter = descriptor?.set;
+    const newDescriptor = {
+      ...descriptor,
+      set: function (this: ReactiveElement, value: ValueType) {
+        controllerMap.get(this)?.setValue(value);
+        if (oldSetter) {
+          oldSetter.call(this, value);
+        }
+      },
+    };
+    Object.defineProperty(proto, name, newDescriptor);
+  }) as ProvideDecorator<ValueType>;
 }
 
 type ProvideDecorator<ContextType> = {
