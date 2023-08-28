@@ -47,38 +47,78 @@ export function provide<ValueType>({
 }: {
   context: Context<unknown, ValueType>;
 }): ProvideDecorator<ValueType> {
-  return (<K extends PropertyKey, Proto extends ReactiveElement>(
-    proto: Proto,
-    name: K
+  return (<C extends ReactiveElement, V extends ValueType>(
+    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
+    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
   ) => {
+    // Map of instances to controllers
     const controllerMap = new WeakMap();
-    (proto.constructor as typeof ReactiveElement).addInitializer(
-      (element: ReactiveElement): void => {
-        controllerMap.set(element, new ContextProvider(element, {context}));
-      }
-    );
-    // proxy any existing setter for this property and use it to
-    // notify the controller of an updated value
-    const descriptor = Object.getOwnPropertyDescriptor(proto, name);
-    const oldSetter = descriptor?.set;
-    const newDescriptor = {
-      ...descriptor,
-      set: function (this: ReactiveElement, value: ValueType) {
-        controllerMap.get(this)?.setValue(value);
-        if (oldSetter) {
-          oldSetter.call(this, value);
+    if (typeof nameOrContext === 'object') {
+      nameOrContext.addInitializer(function (this: C) {
+        controllerMap.set(this, new ContextProvider(this, {context}));
+      });
+      return {
+        get(this: C) {
+          return protoOrTarget.get.call(this);
+        },
+        set(this: C, value: V) {
+          controllerMap.get(this)?.setValue(value);
+          return protoOrTarget.set.call(this, value);
+        },
+        init(this: C, value: V) {
+          controllerMap.get(this)?.setValue(value);
+          return value;
+        },
+      };
+    } else {
+      (protoOrTarget.constructor as typeof ReactiveElement).addInitializer(
+        (element: ReactiveElement): void => {
+          controllerMap.set(element, new ContextProvider(element, {context}));
         }
-      },
-    };
-    Object.defineProperty(proto, name, newDescriptor);
+      );
+      // proxy any existing setter for this property and use it to
+      // notify the controller of an updated value
+      const descriptor = Object.getOwnPropertyDescriptor(
+        protoOrTarget,
+        nameOrContext
+      );
+      const oldSetter = descriptor?.set;
+      const newDescriptor = {
+        ...descriptor,
+        set: function (this: ReactiveElement, value: ValueType) {
+          controllerMap.get(this)?.setValue(value);
+          if (oldSetter) {
+            oldSetter.call(this, value);
+          }
+        },
+      };
+      Object.defineProperty(protoOrTarget, nameOrContext, newDescriptor);
+      return;
+    }
   }) as ProvideDecorator<ValueType>;
 }
 
+/**
+ * Generates a public interface type that removes private and protected fields.
+ * This allows accepting otherwise compatible versions of the type (e.g. from
+ * multiple copies of the same package in `node_modules`).
+ */
+type Interface<T> = {
+  [K in keyof T]: T[K];
+};
+
 type ProvideDecorator<ContextType> = {
+  // legacy
   <K extends PropertyKey, Proto extends ReactiveElement>(
     protoOrDescriptor: Proto,
     name?: K
   ): FieldMustMatchContextType<Proto, K, ContextType>;
+
+  // standard
+  <C extends Interface<ReactiveElement>, V extends ContextType>(
+    value: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): void;
 };
 
 // Note TypeScript requires the return type of a decorator to be `void | any`
