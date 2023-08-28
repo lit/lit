@@ -1,5 +1,5 @@
 {
-  "name": "@lit-exampels/preact",
+  "name": "@lit-examples/preact",
   "private": true,
   "type": "module",
   "scripts": {
