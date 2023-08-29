@@ -729,29 +729,22 @@ export abstract class ReactiveElement
     key: string | symbol,
     options: PropertyDeclaration
   ): PropertyDescriptor | undefined {
-    const {get, set} = getOwnPropertyDescriptor(this.prototype, name) ?? {};
+    const {get, set} = getOwnPropertyDescriptor(this.prototype, name) ?? {
+      get(this: ReactiveElement) {
+        return this[key as keyof typeof this];
+      },
+      set(this: ReactiveElement, v: unknown) {
+        (this as unknown as Record<string | symbol, unknown>)[key] = v;
+      },
+    };
     return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      get(): any {
-        return get === undefined
-          ? (this as {[key: string]: unknown})[key as string]
-          : get.call(this);
+      get() {
+        return get!.call(this);
       },
       set(this: ReactiveElement, value: unknown) {
-        const oldValue =
-          get === undefined
-            ? (this as {} as {[key: string]: unknown})[name as string]
-            : get.call(this);
-        if (set === undefined) {
-          (this as {} as {[key: string]: unknown})[key as string] = value;
-        } else {
-          set.call(this, value);
-        }
-        (this as unknown as ReactiveElement).requestUpdate(
-          name,
-          oldValue,
-          options
-        );
+        const oldValue = get!.call(this);
+        set!.call(this, value);
+        this.requestUpdate(name, oldValue, options);
       },
       configurable: true,
       enumerable: true,

@@ -12,6 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
+import type {Interface} from '../legacy-decorators/base.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
 
 /**
@@ -61,7 +62,7 @@ export interface QueryAssignedElementsOptions
 // a tagname.
 export const queryAssignedElements =
   (options?: QueryAssignedElementsOptions) =>
-  <C extends ReactiveElement, V extends ReadonlyArray<Element>>(
+  <C extends Interface<ReactiveElement>, V extends ReadonlyArray<Element>>(
     _target: ClassAccessorDecoratorTarget<C, V>,
     _context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V> => {

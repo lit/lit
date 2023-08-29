@@ -10,19 +10,11 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
-import {queryAssignedElements as standardQueryAssignedElements} from '../std-decorators/query-assigned-elements.js';
 
 import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
-
-/**
- * Generates a public interface type that removes private and protected fields.
- * This allows accepting otherwise compatible versions of the type (e.g. from
- * multiple copies of the same package in `node_modules`).
- */
-type Interface<T> = {
-  [K in keyof T]: T[K];
-};
+import {queryAssignedElements as standardQueryAssignedElements} from '../std-decorators/query-assigned-elements.js';
+import {Interface} from './base.js';
 
 export type QueryAssignedElementsDecorator = {
   // legacy
@@ -34,7 +26,7 @@ export type QueryAssignedElementsDecorator = {
   ): void | any;
 
   // standard
-  <C extends ReactiveElement, V extends Array<Element>>(
+  <C extends Interface<ReactiveElement>, V extends Array<Element>>(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): void;
@@ -101,7 +93,7 @@ export function queryAssignedElements(
   options?: QueryAssignedElementsOptions
 ): QueryAssignedElementsDecorator {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (<C extends ReactiveElement, V extends Array<Element>>(
+  return (<C extends Interface<ReactiveElement>, V extends Array<Element>>(
     protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
     nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
   ) => {

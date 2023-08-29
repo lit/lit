@@ -10,10 +10,10 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
-import {
-  customElement as standardCustomElement,
-  type Constructor,
-} from '../std-decorators/custom-element.js';
+
+import type {Constructor} from './base.js';
+import {customElement as standardCustomElement} from '../std-decorators/custom-element.js';
+
 /**
  * Allow for custom element classes with private constructors
  */
@@ -37,12 +37,6 @@ export type CustomElementDecorator = {
   // standard
   (
     target: unknown,
-    context: ClassDecoratorContext<Constructor<HTMLElement>>
-  ): void;
-
-  // union
-  (
-    classOrTarget: CustomElementClass | unknown,
     context: ClassDecoratorContext<Constructor<HTMLElement>>
   ): void;
 };

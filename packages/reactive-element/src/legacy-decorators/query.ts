@@ -12,17 +12,9 @@
  */
 import {query as standardQuery} from '../std-decorators/query.js';
 import type {ReactiveElement} from '../reactive-element.js';
+import type {Interface} from './base.js';
 
 const DEV_MODE = true;
-
-/**
- * Generates a public interface type that removes private and protected fields.
- * This allows accepting otherwise compatible versions of the type (e.g. from
- * multiple copies of the same package in `node_modules`).
- */
-type Interface<T> = {
-  [K in keyof T]: T[K];
-};
 
 export type QueryDecorator = {
   // legacy
@@ -34,7 +26,7 @@ export type QueryDecorator = {
   ): void | any;
 
   // standard
-  <C extends ReactiveElement, V extends Element>(
+  <C extends Interface<ReactiveElement>, V extends Element>(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): void;
@@ -66,7 +58,7 @@ export type QueryDecorator = {
  * @category Decorator
  */
 export function query(selector: string, cache?: boolean): QueryDecorator {
-  return (<C extends ReactiveElement, V extends Element>(
+  return (<C extends Interface<ReactiveElement>, V extends Element>(
     protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
     nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
   ) => {
@@ -107,33 +99,3 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
     }
   }) as QueryDecorator;
 }
-
-// export function query(selector: string, cache?: boolean) {
-//   return decorateProperty({
-//     descriptor: (name: PropertyKey) => {
-//       const descriptor = {
-//         get(this: ReactiveElement) {
-//           return this.renderRoot?.querySelector(selector) ?? null;
-//         },
-//         enumerable: true,
-//         configurable: true,
-//       };
-//       if (cache) {
-//         const key = DEV_MODE
-//           ? Symbol(`${String(name)} (@query() cache)`)
-//           : Symbol();
-//         descriptor.get = function (this: ReactiveElement) {
-//           if (
-//             (this as unknown as {[key: symbol]: Element | null})[key] ===
-//             undefined
-//           ) {
-//             (this as unknown as {[key: symbol]: Element | null})[key] =
-//               this.renderRoot?.querySelector(selector) ?? null;
-//           }
-//           return (this as unknown as {[key: symbol]: Element | null})[key];
-//         };
-//       }
-//       return descriptor;
-//     },
-//   });
-// }
