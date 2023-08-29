@@ -5,42 +5,25 @@
  */
 
 import {suite} from 'uvu';
-import 'source-map-support/register.js';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {fileURLToPath} from 'url';
-import {languages} from '../utils.js';
 
-import {Analyzer} from '../../index.js';
-import {createPackageAnalyzer} from '../../package-analyzer.js';
-import {AbsolutePath, PackagePath} from '../../lib/paths.js';
+import {
+  AnalyzerTestContext,
+  languages,
+  setupAnalyzerForTest,
+} from '../utils.js';
 import {ClassDeclaration, LitElementDeclaration} from '../../lib/model.js';
 
 for (const lang of languages) {
-  const test = suite<{analyzer: Analyzer; packagePath: AbsolutePath}>(
-    `LitElement tests (${lang})`
-  );
+  const test = suite<AnalyzerTestContext>(`Mixin tests (${lang})`);
 
   test.before((ctx) => {
-    try {
-      const packagePath = (ctx.packagePath = fileURLToPath(
-        new URL(`../../test-files/${lang}/mixins`, import.meta.url).href
-      ) as AbsolutePath);
-      ctx.analyzer = createPackageAnalyzer(packagePath);
-    } catch (error) {
-      // Uvu has a bug where it silently ignores failures in before and after,
-      // see https://github.com/lukeed/uvu/issues/191.
-      console.error('uvu before error', error);
-      process.exit(1);
-    }
+    setupAnalyzerForTest(ctx, lang, 'mixins');
   });
 
-  test('basic mixin declaration', ({analyzer}) => {
-    const module = analyzer
-      .getPackage()
-      .modules.find((m) => m.jsPath === ('mixins.js' as PackagePath));
-    assert.ok(module);
-    const decl = module.getResolvedExport('Highlightable');
+  test('basic mixin declaration', ({getModule}) => {
+    const decl = getModule('mixins').getDeclaration('Highlightable');
     assert.ok(decl.isMixinDeclaration());
     assert.instance(decl.classDeclaration, ClassDeclaration);
     assert.instance(decl.classDeclaration, LitElementDeclaration);
@@ -49,12 +32,8 @@ for (const lang of languages) {
     assert.ok(classDecl.reactiveProperties.get('highlight'));
   });
 
-  test('basic mixin usage', ({analyzer}) => {
-    const module = analyzer
-      .getPackage()
-      .modules.find((m) => m.jsPath === ('element-a.js' as PackagePath));
-    assert.ok(module);
-    const decl = module.getResolvedExport('ElementA');
+  test('basic mixin usage', ({getModule}) => {
+    const decl = getModule('element-a').getDeclaration('ElementA');
     assert.ok(decl.isLitElementDeclaration());
     assert.ok(decl.heritage.superClass);
     assert.equal(decl.heritage.superClass.name, 'LitElement');
@@ -62,12 +41,8 @@ for (const lang of languages) {
     assert.equal(decl.heritage.mixins[0].name, 'Highlightable');
   });
 
-  test('complex mixin declaration A', ({analyzer}) => {
-    const module = analyzer
-      .getPackage()
-      .modules.find((m) => m.jsPath === ('mixins.js' as PackagePath));
-    assert.ok(module);
-    const decl = module.getResolvedExport('A');
+  test('complex mixin declaration A', ({getModule}) => {
+    const decl = getModule('mixins').getDeclaration('A');
     assert.ok(decl.isMixinDeclaration());
     assert.instance(decl.classDeclaration, ClassDeclaration);
     assert.instance(decl.classDeclaration, LitElementDeclaration);
@@ -80,12 +55,8 @@ for (const lang of languages) {
     assert.ok(classDecl.reactiveProperties.get('a'));
   });
 
-  test('complex mixin declaration B', ({analyzer}) => {
-    const module = analyzer
-      .getPackage()
-      .modules.find((m) => m.jsPath === ('mixins.js' as PackagePath));
-    assert.ok(module);
-    const decl = module.getResolvedExport('B');
+  test('complex mixin declaration B', ({getModule}) => {
+    const decl = getModule('mixins').getDeclaration('B');
     assert.ok(decl.isMixinDeclaration());
     assert.instance(decl.classDeclaration, ClassDeclaration);
     assert.instance(decl.classDeclaration, LitElementDeclaration);
@@ -98,12 +69,8 @@ for (const lang of languages) {
     assert.ok(classDecl.reactiveProperties.get('b'));
   });
 
-  test('complex mixin declaration C', ({analyzer}) => {
-    const module = analyzer
-      .getPackage()
-      .modules.find((m) => m.jsPath === ('mixins.js' as PackagePath));
-    assert.ok(module);
-    const decl = module.getResolvedExport('C');
+  test('complex mixin declaration C', ({getModule}) => {
+    const decl = getModule('mixins').getDeclaration('C');
     assert.ok(decl.isMixinDeclaration());
     assert.instance(decl.classDeclaration, ClassDeclaration);
     assert.instance(decl.classDeclaration, LitElementDeclaration);
@@ -116,12 +83,8 @@ for (const lang of languages) {
     assert.ok(classDecl.reactiveProperties.get('c'));
   });
 
-  test('complex mixin usage', ({analyzer}) => {
-    const module = analyzer
-      .getPackage()
-      .modules.find((m) => m.jsPath === ('element-b.js' as PackagePath));
-    assert.ok(module);
-    const decl = module.getResolvedExport('ElementB');
+  test('complex mixin usage', ({getModule}) => {
+    const decl = getModule('element-b').getDeclaration('ElementB');
     assert.ok(decl.isLitElementDeclaration());
     assert.ok(decl.heritage.superClass);
     assert.equal(decl.heritage.superClass.name, 'LitElement');
@@ -155,12 +118,8 @@ for (const lang of languages) {
     assert.ok(c.classDeclaration.reactiveProperties.get('c'));
   });
 
-  test('mixins applied outside extends clause', ({analyzer}) => {
-    const module = analyzer
-      .getPackage()
-      .modules.find((m) => m.jsPath === ('element-c.js' as PackagePath));
-    assert.ok(module);
-    const decl = module.getResolvedExport('ElementC');
+  test('mixins applied outside extends clause', ({getModule}) => {
+    const decl = getModule('element-c').getDeclaration('ElementC');
     assert.ok(decl.isLitElementDeclaration());
     assert.ok(decl.heritage.superClass);
     assert.equal(decl.heritage.superClass.name, 'CBase');
