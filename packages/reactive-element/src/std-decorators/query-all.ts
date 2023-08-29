@@ -12,6 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
+import type {Interface} from '../legacy-decorators/base.js';
 
 // Shared fragment used to generate empty NodeLists when a render root is
 // undefined
@@ -45,7 +46,7 @@ let fragment: DocumentFragment;
 // a tagname.
 export const queryAll =
   <S extends string>(selector: S) =>
-  <C extends ReactiveElement, V extends NodeList>(
+  <C extends Interface<ReactiveElement>, V extends NodeList>(
     _target: ClassAccessorDecoratorTarget<C, V>,
     _context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V> => {

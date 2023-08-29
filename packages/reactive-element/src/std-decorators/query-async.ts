@@ -12,6 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
+import type {Interface} from '../legacy-decorators/base.js';
 
 /**
  * A property decorator that converts a class property into a getter that
@@ -49,7 +50,7 @@ import type {ReactiveElement} from '../reactive-element.js';
 // a tagname.
 export const queryAsync =
   (selector: string) =>
-  <C extends ReactiveElement, V extends Promise<Element | null>>(
+  <C extends Interface<ReactiveElement>, V extends Promise<Element | null>>(
     _target: ClassAccessorDecoratorTarget<C, V>,
     _context: ClassAccessorDecoratorContext<C, V>
   ) => {

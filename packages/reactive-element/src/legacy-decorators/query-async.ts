@@ -12,16 +12,8 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
+import {Interface} from './base.js';
 import {queryAsync as standardQueryAsync} from '../std-decorators/query-async.js';
-
-/**
- * Generates a public interface type that removes private and protected fields.
- * This allows accepting otherwise compatible versions of the type (e.g. from
- * multiple copies of the same package in `node_modules`).
- */
-type Interface<T> = {
-  [K in keyof T]: T[K];
-};
 
 export type QueryAsyncDecorator = {
   // legacy
@@ -33,7 +25,7 @@ export type QueryAsyncDecorator = {
   ): void | any;
 
   // standard
-  <C extends ReactiveElement, V extends Promise<Element | null>>(
+  <C extends Interface<ReactiveElement>, V extends Promise<Element | null>>(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): void;
@@ -77,7 +69,7 @@ export type QueryAsyncDecorator = {
  * @category Decorator
  */
 export function queryAsync(selector: string) {
-  return (<C extends ReactiveElement, V extends Promise<Element>>(
+  return (<C extends Interface<ReactiveElement>, V extends Promise<Element>>(
     protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
     nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
   ) => {

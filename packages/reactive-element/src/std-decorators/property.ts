@@ -11,11 +11,12 @@
  * not an arrow function.
  */
 import {
-  PropertyDeclaration,
-  ReactiveElement,
+  type PropertyDeclaration,
+  type ReactiveElement,
   defaultConverter,
   notEqual,
 } from '../reactive-element.js';
+import type {Interface} from '../legacy-decorators/base.js';
 
 const DEV_MODE = true;
 
@@ -42,16 +43,24 @@ if (DEV_MODE) {
 // decorator.
 export type PropertyDecorator = {
   // accessor decorator signature
-  <C extends ReactiveElement, V>(
+  <C extends Interface<ReactiveElement>, V>(
     target: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V>;
 
   // setter decorator signature
-  <C extends ReactiveElement, V>(
+  <C extends Interface<ReactiveElement>, V>(
     target: (value: V) => void,
     context: ClassSetterDecoratorContext<C, V>
   ): (this: C, value: V) => void;
+
+  // union
+  <C extends Interface<ReactiveElement>, V>(
+    target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void),
+    context:
+      | ClassAccessorDecoratorContext<C, V>
+      | ClassSetterDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V> | ((this: C, value: V) => void);
 };
 
 // This is duplicated from a similar variable in reactive-element.ts, but
@@ -72,7 +81,7 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 export const property = (
   options: PropertyDeclaration = defaultPropertyDeclaration
 ): PropertyDecorator =>
-  (<C extends ReactiveElement, V>(
+  (<C extends Interface<ReactiveElement>, V>(
     target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void),
     context:
       | ClassAccessorDecoratorContext<C, V>
@@ -111,6 +120,16 @@ export const property = (
           this.requestUpdate(name, oldValue, options);
         },
         init(this: C, v: V): V {
+          // We need to call requestUpdate() for initial values, like we do in
+          // the legacy decorators, to both populate the changedProperties map
+          // and to perform the initial reflection. But standard decorators
+          // call init() too early and it would be an error to read the field
+          // to get the previous value at that point. So we pass initial=true
+          // and the initial value so requestUpdate() doesn't have to access
+          // the field.
+          // We can switch to using context.addInitializer() when
+          // https://github.com/tc39/proposal-decorators/issues/513 is
+          // resolved and shipping in TypeScript and Babel.
           (this.requestUpdate as InternalRequestUpdate)(
             name,
             undefined,
