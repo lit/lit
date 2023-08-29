@@ -65,41 +65,53 @@ class ClassMapDirective extends Directive {
             .filter((s) => s !== '')
         );
       }
-      for (const name in classInfo) {
-        if (classInfo[name] && !this._staticClasses?.has(name)) {
-          this._previousClasses.add(name);
+      for (const key in classInfo) {
+        // Account for object keys containing multiple class names separated by whitespace.
+        const names = key.split(/\s/).filter((s) => s !== '');
+        for (const name of names) {
+          if (classInfo[key] && !this._staticClasses?.has(name)) {
+            this._previousClasses.add(name);
+          }
         }
       }
       return this.render(classInfo);
     }
 
     const classList = part.element.classList;
+    const classInfoKeys = Object.keys(classInfo);
 
     // Remove old classes that no longer apply
     // We use forEach() instead of for-of so that we don't require down-level
     // iteration.
     this._previousClasses.forEach((name) => {
-      if (!(name in classInfo)) {
+      // Check for strict equality or if a object key contains the name as a substring.
+      if (
+        !(name in classInfo) &&
+        !classInfoKeys.some((key) => key.includes(name))
+      ) {
         classList.remove(name);
         this._previousClasses!.delete(name);
       }
     });
 
     // Add or remove classes based on their classMap value
-    for (const name in classInfo) {
+    for (const key in classInfo) {
       // We explicitly want a loose truthy check of `value` because it seems
       // more convenient that '' and 0 are skipped.
-      const value = !!classInfo[name];
-      if (
-        value !== this._previousClasses.has(name) &&
-        !this._staticClasses?.has(name)
-      ) {
-        if (value) {
-          classList.add(name);
-          this._previousClasses.add(name);
-        } else {
-          classList.remove(name);
-          this._previousClasses.delete(name);
+      const value = !!classInfo[key];
+      const names = key.split(/\s/).filter((s) => s !== '');
+      for (const name of names) {
+        if (
+          value !== this._previousClasses.has(name) &&
+          !this._staticClasses?.has(name)
+        ) {
+          if (value) {
+            classList.add(name);
+            this._previousClasses.add(name);
+          } else {
+            classList.remove(name);
+            this._previousClasses.delete(name);
+          }
         }
       }
     }
