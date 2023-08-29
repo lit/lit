@@ -12,6 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
+import type {Interface} from '../legacy-decorators/base.js';
 
 /**
  * Options for the {@linkcode queryAssignedNodes} decorator. Extends the options
@@ -54,7 +55,7 @@ export interface QueryAssignedNodesOptions extends AssignedNodesOptions {
 // a tagname.
 export const queryAssignedNodes =
   (options?: QueryAssignedNodesOptions) =>
-  <C extends ReactiveElement, V extends ReadonlyArray<Node>>(
+  <C extends Interface<ReactiveElement>, V extends ReadonlyArray<Node>>(
     _target: ClassAccessorDecoratorTarget<C, V>,
     _context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V> => {

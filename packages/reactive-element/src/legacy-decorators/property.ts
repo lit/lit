@@ -10,7 +10,11 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
-import {PropertyDeclaration, ReactiveElement} from '../reactive-element.js';
+import type {
+  PropertyDeclaration,
+  ReactiveElement,
+} from '../reactive-element.js';
+import type {Interface} from './base.js';
 import {property as standardProperty} from '../std-decorators/property.js';
 
 // Overloads for property decorator so that TypeScript can infer the correct
@@ -18,33 +22,20 @@ import {property as standardProperty} from '../std-decorators/property.js';
 // decorator.
 export type PropertyDecorator = {
   // accessor decorator signature
-  <C extends ReactiveElement, V>(
+  <C extends Interface<ReactiveElement>, V>(
     target: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V>;
 
   // setter decorator signature
-  <C extends ReactiveElement, V>(
+  <C extends Interface<ReactiveElement>, V>(
     target: (value: V) => void,
     context: ClassSetterDecoratorContext<C, V>
   ): (this: C, value: V) => void;
 
-  // legacy experimental decorator signature
+  // legacy decorator signature
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   (protoOrDescriptor: Object, name: PropertyKey): any;
-
-  // union
-  <C extends ReactiveElement, V>(
-    protoOrTarget:
-      | object
-      | ClassAccessorDecoratorTarget<C, V>
-      | ((value: V) => void),
-    nameOrContext:
-      | PropertyKey
-      | ClassAccessorDecoratorContext
-      | ClassSetterDecoratorContext
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ): any;
 };
 
 const legacyProperty = (
@@ -88,7 +79,7 @@ const legacyProperty = (
  * @ExportDecoratedItems
  */
 export function property(options?: PropertyDeclaration): PropertyDecorator {
-  return <C extends ReactiveElement, V>(
+  return <C extends Interface<ReactiveElement>, V>(
     protoOrTarget:
       | object
       | ClassAccessorDecoratorTarget<C, V>
@@ -102,10 +93,12 @@ export function property(options?: PropertyDeclaration): PropertyDecorator {
     return (
       typeof nameOrContext === 'object'
         ? standardProperty(options)<C, V>(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            protoOrTarget as any /*ClassAccessorDecoratorTarget<C, V> | ((value: V) => void)*/,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            nameOrContext as any /*ClassAccessorDecoratorContext<C, V> | ClassSetterDecoratorContext<C, V>*/
+            protoOrTarget as
+              | ClassAccessorDecoratorTarget<C, V>
+              | ((value: V) => void),
+            nameOrContext as
+              | ClassAccessorDecoratorContext<C, V>
+              | ClassSetterDecoratorContext<C, V>
           )
         : legacyProperty(
             options,

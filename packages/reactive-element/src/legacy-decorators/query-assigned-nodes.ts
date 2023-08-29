@@ -10,9 +10,9 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
-import {queryAssignedNodes as standardQueryAssignedNodes} from '../std-decorators/query-assigned-nodes.js';
-
 import type {ReactiveElement} from '../reactive-element.js';
+import type {Interface} from './base.js';
+import {queryAssignedNodes as standardQueryAssignedNodes} from '../std-decorators/query-assigned-nodes.js';
 
 /**
  * Options for the {@linkcode queryAssignedNodes} decorator. Extends the options
@@ -25,15 +25,6 @@ export interface QueryAssignedNodesOptions extends AssignedNodesOptions {
   slot?: string;
 }
 
-/**
- * Generates a public interface type that removes private and protected fields.
- * This allows accepting otherwise compatible versions of the type (e.g. from
- * multiple copies of the same package in `node_modules`).
- */
-type Interface<T> = {
-  [K in keyof T]: T[K];
-};
-
 export type QueryAssignedNodesDecorator = {
   // legacy
   (
@@ -44,15 +35,11 @@ export type QueryAssignedNodesDecorator = {
   ): void | any;
 
   // standard
-  <C extends ReactiveElement, V extends Array<Node>>(
+  <C extends Interface<ReactiveElement>, V extends Array<Node>>(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): void;
 };
-
-// TypeScript requires the decorator return type to be `void|any`.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-// type TSDecoratorReturnType = void | any;
 
 /**
  * A property decorator that converts a class property into a getter that
@@ -84,7 +71,7 @@ export function queryAssignedNodes(
   options?: QueryAssignedNodesOptions
 ): QueryAssignedNodesDecorator {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (<C extends ReactiveElement, V extends Array<Node>>(
+  return (<C extends Interface<ReactiveElement>, V extends Array<Node>>(
     protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
     nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
   ) => {

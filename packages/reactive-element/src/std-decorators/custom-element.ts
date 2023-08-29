@@ -11,10 +11,7 @@
  * not an arrow function.
  */
 
-export type Constructor<T> = {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  new (...args: any[]): T;
-};
+import type {Constructor} from '../legacy-decorators/base.js';
 
 /**
  * Class decorator factory that defines the decorated class as a custom element.
