@@ -80,11 +80,9 @@ for (const lang of languages) {
     assert.ok(property);
     assert.equal(property.name, 'noOptionsString');
     assert.equal(property.attribute, 'nooptionsstring');
-    assert.equal(element.getField('noOptionsString')?.type?.text, 'string');
-    assert.equal(
-      element.getField('noOptionsString')?.type?.references.length,
-      0
-    );
+    assert.equal(property.type?.text, 'string');
+    assert.equal(property.type?.references.length, 0);
+    assert.ok(property.type);
     assert.equal(property.reflect, false);
     assert.equal(property.converter, undefined);
   });
@@ -93,36 +91,34 @@ for (const lang of languages) {
     const property = element.reactiveProperties.get('noOptionsNumber')!;
     assert.equal(property.name, 'noOptionsNumber');
     assert.equal(property.attribute, 'nooptionsnumber');
-    assert.equal(element.getField('noOptionsNumber')?.type?.text, 'number');
-    assert.equal(
-      element.getField('noOptionsNumber')?.type?.references.length,
-      0
-    );
+    assert.equal(property.type?.text, 'number');
+    assert.equal(property.type?.references.length, 0);
+    assert.ok(property.type);
   });
 
   test('string property with type', ({element}) => {
-    const property = element.getField('typeString')!;
+    const property = element.reactiveProperties.get('typeString')!;
     assert.equal(property.type?.text, 'string');
     assert.equal(property.type?.references.length, 0);
     assert.ok(property.type);
   });
 
   test('number property with type', ({element}) => {
-    const property = element.getField('typeNumber')!;
+    const property = element.reactiveProperties.get('typeNumber')!;
     assert.equal(property.type?.text, 'number');
     assert.equal(property.type?.references.length, 0);
     assert.ok(property.type);
   });
 
   test('boolean property with type', ({element}) => {
-    const property = element.getField('typeBoolean')!;
+    const property = element.reactiveProperties.get('typeBoolean')!;
     assert.equal(property.type?.text, 'boolean');
     assert.equal(property.type?.references.length, 0);
     assert.ok(property.type);
   });
 
   test('property typed with local class', ({element}) => {
-    const property = element.getField('localClass')!;
+    const property = element.reactiveProperties.get('localClass')!;
     assert.equal(property.type?.text, 'LocalClass');
     assert.equal(property.type?.references.length, 1);
     assert.equal(property.type?.references[0].name, 'LocalClass');
@@ -134,7 +130,7 @@ for (const lang of languages) {
   });
 
   test('property typed with imported class', ({element}) => {
-    const property = element.getField('importedClass')!;
+    const property = element.reactiveProperties.get('importedClass')!;
     assert.equal(property.type?.text, 'ImportedClass');
     assert.equal(property.type?.references.length, 1);
     assert.equal(property.type?.references[0].name, 'ImportedClass');
@@ -146,7 +142,7 @@ for (const lang of languages) {
   });
 
   test('property typed with global class', ({element}) => {
-    const property = element.getField('globalClass')!;
+    const property = element.reactiveProperties.get('globalClass')!;
     assert.equal(property.type?.text, 'HTMLElement');
     assert.equal(property.type?.references.length, 1);
     assert.equal(property.type?.references[0].name, 'HTMLElement');
@@ -161,7 +157,7 @@ for (const lang of languages) {
     if (lang === 'js') {
       return;
     }
-    const property = element.getField('union')!;
+    const property = element.reactiveProperties.get('union')!;
     assert.equal(property.type?.references.length, 3);
     // The order is not necessarily reliable. It changed between TypeScript
     // versions once.
@@ -229,8 +225,8 @@ for (const lang of languages) {
 
   test('property defined in static properties block', ({element}) => {
     const property = element.reactiveProperties.get('staticProp')!;
-    assert.equal(element.getField('staticProp')?.type?.text, 'number');
-    assert.equal(element.getField('staticProp')?.type?.references.length, 0);
+    assert.equal(property.type?.text, 'number');
+    assert.equal(property.type?.references.length, 0);
     assert.equal(property.typeOption, 'Number');
     assert.equal(property.attribute, 'static-prop');
   });
