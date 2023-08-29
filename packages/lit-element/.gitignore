@@ -1,7 +1,5 @@
 /decorators/
-/std-decorators/
 /development/
-/legacy-decorators/
 /node_modules/
 /test/
 
@@ -12,9 +10,7 @@
 
 /decorators.*
 /index.*
-/legacy-decorators.*
 /lit-element.*
 /lit.min.*
 /polyfill-support.*
 /private-ssr-support.*
-/std-decorators.*

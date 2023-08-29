@@ -4,4 +4,4 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export * from '@lit/reactive-element/legacy-decorators/query-async.js';
+export * from '@lit/reactive-element/decorators/query-async.js';

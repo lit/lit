@@ -1,20 +1,16 @@
 /decorators/
 /development/
 /directives/
-/legacy-decorators/
 /node_modules/
-/std-decorators/
 /test/
 
 /async-directive.*
 /decorators.*
 /directive-helpers.*
 /directive.*
-/legacy-decorators.*
 /html.*
 /index.*
 /static-html.*
-/std-decorators.*
 
 /lit-all.min.*
 /lit-core.min.*

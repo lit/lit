@@ -30,29 +30,23 @@ packages/internal-scripts/lib/
 packages/lit/decorators/
 packages/lit/development/
 packages/lit/directives/
-packages/lit/legacy-decorators/
 packages/lit/node_modules/
-packages/lit/std-decorators/
 packages/lit/test/
 
 packages/lit/async-directive.*
 packages/lit/decorators.*
 packages/lit/directive-helpers.*
 packages/lit/directive.*
-packages/lit/legacy-decorators.*
 packages/lit/html.*
 packages/lit/index.*
 packages/lit/static-html.*
-packages/lit/std-decorators.*
 
 packages/lit/lit-all.min.*
 packages/lit/lit-core.min.*
 packages/lit/polyfill-support.*
 
 packages/lit-element/decorators/
-packages/lit-element/std-decorators/
 packages/lit-element/development/
-packages/lit-element/legacy-decorators/
 packages/lit-element/node_modules/
 packages/lit-element/test/
 
@@ -63,12 +57,10 @@ packages/lit-element/demo/**/*.js.map
 
 packages/lit-element/decorators.*
 packages/lit-element/index.*
-packages/lit-element/legacy-decorators.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
 packages/lit-element/polyfill-support.*
 packages/lit-element/private-ssr-support.*
-packages/lit-element/std-decorators.*
 
 packages/lit-html/development/
 packages/lit-html/node/
