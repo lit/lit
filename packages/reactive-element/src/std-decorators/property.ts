@@ -12,7 +12,6 @@
  */
 import {
   type PropertyDeclaration,
-  type PropertyValues,
   type ReactiveElement,
   defaultConverter,
   notEqual,
@@ -121,14 +120,21 @@ export const property = (
           this.requestUpdate(name, oldValue, options);
         },
         init(this: C, v: V): V {
-          if (v !== undefined) {
-            // We need this cast because these decorators are in a separate
-            // compilation unit from ReactiveElement, so can't see the
-            // @internal _$changedProperties field.
-            (
-              this as unknown as {_$changedProperties: PropertyValues}
-            )._$changedProperties.set(name, undefined);
-          }
+          // We need to call requestUpdate() for initial values, like we do in
+          // the legacy decorators, to both populate the changedProperties map
+          // and to perform the initial reflection. But standard decorators
+          // call init() too early and it would be an error to read the field
+          // to get the previous value at that point.
+          // We can switch to using context.addInitializer() when
+          // https://github.com/tc39/proposal-decorators/issues/513 is
+          // resolved and shipping in TypeScript and Babel.
+          (this.requestUpdate as InternalRequestUpdate)(
+            name,
+            undefined,
+            options,
+            true,
+            v
+          );
           return v;
         },
       };
@@ -140,3 +146,11 @@ export const property = (
     }
     throw new Error(`Unsupported decorator location: ${kind}`);
   }) as PropertyDecorator;
+
+type InternalRequestUpdate = (
+  name?: PropertyKey,
+  oldValue?: unknown,
+  options?: PropertyDeclaration,
+  _initial?: boolean,
+  _initialValue?: unknown
+) => void;
