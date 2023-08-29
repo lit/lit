@@ -14,6 +14,7 @@ import {
   setupAnalyzerForTest,
 } from '../utils.js';
 import {ClassDeclaration, LitElementDeclaration} from '../../lib/model.js';
+import {DiagnosticCode} from '../../lib/diagnostic-code.js';
 
 for (const lang of languages) {
   const test = suite<AnalyzerTestContext>(`Mixin tests (${lang})`);
@@ -129,6 +130,25 @@ for (const lang of languages) {
     assert.equal(superClass.heritage.superClass.name, 'LitElement');
     assert.equal(superClass.heritage.mixins.length, 1);
     assert.equal(superClass.heritage.mixins[0].name, 'C');
+  });
+
+  test('element with complex base class expression', ({
+    getModule,
+    analyzer,
+  }) => {
+    const decl = getModule(
+      'element-with-unsupported-mixin-syntax'
+    ).getDeclaration('ElementWithNonIdentBase');
+    assert.ok(decl.isLitElementDeclaration());
+    assert.equal(decl.heritage.superClass, undefined);
+    assert.equal(decl.heritage.mixins.length, 0);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, 1);
+    assert.equal(
+      diagnostics[0].messageText,
+      'Expected expression to be a concrete superclass or mixin.'
+    );
+    assert.equal(diagnostics[0].code, DiagnosticCode.UNSUPPORTED);
   });
 
   test.run();

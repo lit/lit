@@ -51,48 +51,6 @@ const addDiagnosticIfMixin = (
  * the `@mixin` annotation can be added to produce specific diagnostic errors
  * when a condition for being analyzed as a mixin is not met.
  */
-export const maybeGetMixinFromVariableDeclaration = (
-  declaration: ts.VariableDeclaration,
-  analyzer: AnalyzerInterface
-): MixinDeclaration | undefined => {
-  const hasMixinHint = nodeHasMixinHint(declaration);
-  const initializer = declaration.initializer;
-  if (
-    initializer === undefined ||
-    !(
-      ts.isArrowFunction(initializer) || ts.isFunctionExpression(initializer)
-    ) ||
-    !ts.isIdentifier(declaration.name)
-  ) {
-    addDiagnosticIfMixin(
-      declaration,
-      hasMixinHint,
-      `Expected mixin to be defined as a single const assignment to an ` +
-        `arrow function or function expression.`,
-      analyzer
-    );
-    return undefined;
-  }
-  return maybeGetMixinFromFunctionLike(
-    initializer,
-    declaration.name.getText(),
-    analyzer,
-    hasMixinHint
-  );
-};
-
-/**
- * If the given variable declaration was a mixin function, returns a
- * MixinDeclaration, otherwise returns undefined.
- *
- * The mixin logic requires a few important syntactic heuristics to be met in
- * order to be detected as a mixin.
- *
- * If the function is unannotated and does not match the above mixin shape, it
- * will silently just be analyzed as a simple function and not a mixin. However,
- * the `@mixin` annotation can be added to produce specific diagnostic errors
- * when a condition for being analyzed as a mixin is not met.
- */
 export const maybeGetMixinFromFunctionLike = (
   fn: ts.FunctionLikeDeclaration,
   name: string,
