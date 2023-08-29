@@ -730,32 +730,38 @@ export abstract class ReactiveElement
     options: PropertyDeclaration
   ): PropertyDescriptor | undefined {
     const {get, set} = getOwnPropertyDescriptor(this.prototype, name) ?? {};
-    return {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      get(): any {
-        return get === undefined
-          ? (this as {[key: string]: unknown})[key as string]
-          : get.call(this);
-      },
-      set(this: ReactiveElement, value: unknown) {
-        const oldValue =
-          get === undefined
-            ? (this as {} as {[key: string]: unknown})[name as string]
-            : get.call(this);
-        if (set === undefined) {
-          (this as {} as {[key: string]: unknown})[key as string] = value;
-        } else {
-          set.call(this, value);
+    // If we have no original accessors, return a descriptor that uses
+    // `this[key]` as storage. If we have any accessors, return a descriptor
+    // that uses them. If there are either get or set accessors we assume
+    // the other exists and will error if they don't, which matches the
+    // behavior of JS if you define only one then try to use the other.
+    // A user could try define a read-only field, but it wouldn't make much
+    // sense to turn that into a reactive property.
+    return get === undefined && set === undefined
+      ? {
+          get(this: ReactiveElement) {
+            return this[key as keyof typeof this];
+          },
+          set(this: ReactiveElement, value: unknown) {
+            const oldValue = this[key as keyof typeof this];
+            (this as unknown as Record<string | symbol, unknown>)[key] = value;
+            this.requestUpdate(name, oldValue, options);
+          },
+          configurable: true,
+          enumerable: true,
         }
-        (this as unknown as ReactiveElement).requestUpdate(
-          name,
-          oldValue,
-          options
-        );
-      },
-      configurable: true,
-      enumerable: true,
-    };
+      : {
+          get() {
+            return get!.call(this);
+          },
+          set(this: ReactiveElement, value: unknown) {
+            const oldValue = get!.call(this);
+            set!.call(this, value);
+            this.requestUpdate(name, oldValue, options);
+          },
+          configurable: true,
+          enumerable: true,
+        };
   }
 
   /**
