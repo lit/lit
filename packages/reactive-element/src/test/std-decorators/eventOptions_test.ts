@@ -5,7 +5,7 @@
  */
 
 import {ReactiveElement} from '@lit/reactive-element';
-import {eventOptions} from '@lit/reactive-element/std-decorators/event-options.js';
+import {eventOptions} from '@lit/reactive-element/decorators/event-options.js';
 import {
   canTestReactiveElement,
   generateElementName,

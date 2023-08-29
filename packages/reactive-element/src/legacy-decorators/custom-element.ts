@@ -10,7 +10,9 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
-import {Constructor, ClassDescriptor} from './base.js';
+
+import type {Constructor} from './base.js';
+import {customElement as standardCustomElement} from '../std-decorators/custom-element.js';
 
 /**
  * Allow for custom element classes with private constructors
@@ -28,19 +30,15 @@ const legacyCustomElement = (tagName: string, clazz: CustomElementClass) => {
   return clazz as any;
 };
 
-const standardCustomElement = (
-  tagName: string,
-  descriptor: ClassDescriptor
-) => {
-  const {kind, elements} = descriptor;
-  return {
-    kind,
-    elements,
-    // This callback is called once the class is otherwise fully defined
-    finisher(clazz: Constructor<HTMLElement>) {
-      customElements.define(tagName, clazz);
-    },
-  };
+export type CustomElementDecorator = {
+  // legacy
+  (cls: CustomElementClass): void;
+
+  // standard
+  (
+    target: unknown,
+    context: ClassDecoratorContext<Constructor<HTMLElement>>
+  ): void;
 };
 
 /**
@@ -58,8 +56,14 @@ const standardCustomElement = (
  * @param tagName The tag name of the custom element to define.
  */
 export const customElement =
-  (tagName: string) =>
-  (classOrDescriptor: CustomElementClass | ClassDescriptor) =>
-    typeof classOrDescriptor === 'function'
-      ? legacyCustomElement(tagName, classOrDescriptor)
-      : standardCustomElement(tagName, classOrDescriptor as ClassDescriptor);
+  (tagName: string): CustomElementDecorator =>
+  (
+    classOrTarget: CustomElementClass | unknown,
+    context?: ClassDecoratorContext<Constructor<HTMLElement>>
+  ) =>
+    (typeof classOrTarget === 'function'
+      ? legacyCustomElement(tagName, classOrTarget)
+      : standardCustomElement(tagName)(
+          classOrTarget,
+          context!
+        )) as CustomElementDecorator;

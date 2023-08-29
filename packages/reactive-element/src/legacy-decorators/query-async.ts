@@ -11,8 +11,25 @@
  * not an arrow function.
  */
 
-import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
+import type {ReactiveElement} from '../reactive-element.js';
+import {Interface} from './base.js';
+import {queryAsync as standardQueryAsync} from '../std-decorators/query-async.js';
+
+export type QueryAsyncDecorator = {
+  // legacy
+  (
+    proto: Interface<ReactiveElement>,
+    name: PropertyKey
+    // Note TypeScript requires the return type to be `void|any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+
+  // standard
+  <C extends Interface<ReactiveElement>, V extends Promise<Element | null>>(
+    value: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): void;
+};
 
 // Note, in the future, we may extend this decorator to support the use case
 // where the queried element may need to do work to become ready to interact
@@ -52,14 +69,25 @@ import {decorateProperty} from './base.js';
  * @category Decorator
  */
 export function queryAsync(selector: string) {
-  return decorateProperty({
-    descriptor: (_name: PropertyKey) => ({
-      async get(this: ReactiveElement) {
-        await this.updateComplete;
-        return this.renderRoot?.querySelector(selector);
-      },
-      enumerable: true,
-      configurable: true,
-    }),
-  });
+  return (<C extends Interface<ReactiveElement>, V extends Promise<Element>>(
+    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
+    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
+  ) => {
+    if (typeof nameOrContext === 'object') {
+      return standardQueryAsync(selector)(
+        protoOrTarget,
+        nameOrContext as ClassAccessorDecoratorContext<C, V>
+      );
+    } else {
+      Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+        async get(this: ReactiveElement) {
+          await this.updateComplete;
+          return this.renderRoot?.querySelector(selector);
+        },
+        enumerable: true,
+        configurable: true,
+      });
+      return;
+    }
+  }) as QueryAsyncDecorator;
 }

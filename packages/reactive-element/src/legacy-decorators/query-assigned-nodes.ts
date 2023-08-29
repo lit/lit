@@ -10,10 +10,9 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
-
-import {decorateProperty} from './base.js';
-
 import type {ReactiveElement} from '../reactive-element.js';
+import type {Interface} from './base.js';
+import {queryAssignedNodes as standardQueryAssignedNodes} from '../std-decorators/query-assigned-nodes.js';
 
 /**
  * Options for the {@linkcode queryAssignedNodes} decorator. Extends the options
@@ -26,9 +25,21 @@ export interface QueryAssignedNodesOptions extends AssignedNodesOptions {
   slot?: string;
 }
 
-// TypeScript requires the decorator return type to be `void|any`.
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TSDecoratorReturnType = void | any;
+export type QueryAssignedNodesDecorator = {
+  // legacy
+  (
+    proto: Interface<ReactiveElement>,
+    name: PropertyKey
+    // Note TypeScript requires the return type to be `void|any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+
+  // standard
+  <C extends Interface<ReactiveElement>, V extends Array<Node>>(
+    value: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): void;
+};
 
 /**
  * A property decorator that converts a class property into a getter that
@@ -58,20 +69,32 @@ type TSDecoratorReturnType = void | any;
  */
 export function queryAssignedNodes(
   options?: QueryAssignedNodesOptions
-): TSDecoratorReturnType {
-  const slot = options?.slot;
-  const assignedNodesOptions = options;
-
-  return decorateProperty({
-    descriptor: (_name: PropertyKey) => ({
-      get(this: ReactiveElement) {
-        const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
-        const slotEl =
-          this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
-        return slotEl?.assignedNodes(assignedNodesOptions) ?? [];
-      },
-      enumerable: true,
-      configurable: true,
-    }),
-  });
+): QueryAssignedNodesDecorator {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (<C extends Interface<ReactiveElement>, V extends Array<Node>>(
+    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
+    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
+  ) => {
+    if (typeof nameOrContext === 'object') {
+      return standardQueryAssignedNodes(options)(
+        protoOrTarget,
+        nameOrContext as ClassAccessorDecoratorContext<C, V>
+      );
+    } else {
+      const {slot} = options ?? {};
+      Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+        get(this: ReactiveElement) {
+          const slotSelector = `slot${
+            slot ? `[name=${slot}]` : ':not([name])'
+          }`;
+          const slotEl =
+            this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
+          return slotEl?.assignedNodes(options) ?? [];
+        },
+        enumerable: true,
+        configurable: true,
+      });
+      return;
+    }
+  }) as QueryAssignedNodesDecorator;
 }

@@ -10,11 +10,27 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
-
-import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
+import {query as standardQuery} from '../std-decorators/query.js';
+import type {ReactiveElement} from '../reactive-element.js';
+import type {Interface} from './base.js';
 
 const DEV_MODE = true;
+
+export type QueryDecorator = {
+  // legacy
+  (
+    proto: Interface<ReactiveElement>,
+    name: PropertyKey
+    // Note TypeScript requires the return type to be `void|any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+
+  // standard
+  <C extends Interface<ReactiveElement>, V extends Element>(
+    value: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): void;
+};
 
 /**
  * A property decorator that converts a class property into a getter that
@@ -41,32 +57,45 @@ const DEV_MODE = true;
  * ```
  * @category Decorator
  */
-export function query(selector: string, cache?: boolean) {
-  return decorateProperty({
-    descriptor: (name: PropertyKey) => {
-      const descriptor = {
-        get(this: ReactiveElement) {
-          return this.renderRoot?.querySelector(selector) ?? null;
-        },
-        enumerable: true,
-        configurable: true,
-      };
+export function query(selector: string, cache?: boolean): QueryDecorator {
+  return (<C extends Interface<ReactiveElement>, V extends Element>(
+    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
+    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
+  ) => {
+    if (typeof nameOrContext === 'object') {
+      return standardQuery(selector, cache)(
+        protoOrTarget,
+        nameOrContext as ClassAccessorDecoratorContext<C, V>
+      );
+    } else {
       if (cache) {
         const key = DEV_MODE
-          ? Symbol(`${String(name)} (@query() cache)`)
+          ? Symbol(`${String(nameOrContext)} (@query() cache)`)
           : Symbol();
-        descriptor.get = function (this: ReactiveElement) {
-          if (
-            (this as unknown as {[key: symbol]: Element | null})[key] ===
-            undefined
-          ) {
-            (this as unknown as {[key: symbol]: Element | null})[key] =
-              this.renderRoot?.querySelector(selector) ?? null;
-          }
-          return (this as unknown as {[key: symbol]: Element | null})[key];
-        };
+        Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+          get(this: ReactiveElement) {
+            if (
+              (this as unknown as {[key: symbol]: Element | null})[key] ===
+              undefined
+            ) {
+              (this as unknown as {[key: symbol]: Element | null})[key] =
+                this.renderRoot?.querySelector(selector) ?? null;
+            }
+            return (this as unknown as {[key: symbol]: Element | null})[key];
+          },
+          enumerable: true,
+          configurable: true,
+        });
+      } else {
+        Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+          get(this: ReactiveElement) {
+            return this.renderRoot?.querySelector(selector) ?? null;
+          },
+          enumerable: true,
+          configurable: true,
+        });
       }
-      return descriptor;
-    },
-  });
+      return;
+    }
+  }) as QueryDecorator;
 }

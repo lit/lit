@@ -11,10 +11,26 @@
  * not an arrow function.
  */
 
-import {decorateProperty} from './base.js';
-
 import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
+import {queryAssignedElements as standardQueryAssignedElements} from '../std-decorators/query-assigned-elements.js';
+import {Interface} from './base.js';
+
+export type QueryAssignedElementsDecorator = {
+  // legacy
+  (
+    proto: Interface<ReactiveElement>,
+    name: PropertyKey
+    // Note TypeScript requires the return type to be `void|any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+
+  // standard
+  <C extends Interface<ReactiveElement>, V extends Array<Element>>(
+    value: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): void;
+};
 
 /**
  * A tiny module scoped polyfill for HTMLSlotElement.assignedElements.
@@ -73,23 +89,39 @@ export interface QueryAssignedElementsOptions
  *
  * @category Decorator
  */
-export function queryAssignedElements(options?: QueryAssignedElementsOptions) {
-  const {slot, selector} = options ?? {};
-  return decorateProperty({
-    descriptor: (_name: PropertyKey) => ({
-      get(this: ReactiveElement) {
-        const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
-        const slotEl =
-          this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
-        const elements =
-          slotEl != null ? slotAssignedElements(slotEl, options) : [];
-        if (selector) {
-          return elements.filter((node) => node.matches(selector));
-        }
-        return elements;
-      },
-      enumerable: true,
-      configurable: true,
-    }),
-  });
+export function queryAssignedElements(
+  options?: QueryAssignedElementsOptions
+): QueryAssignedElementsDecorator {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (<C extends Interface<ReactiveElement>, V extends Array<Element>>(
+    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
+    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
+  ) => {
+    if (typeof nameOrContext === 'object') {
+      return standardQueryAssignedElements(options)(
+        protoOrTarget,
+        nameOrContext as ClassAccessorDecoratorContext<C, V>
+      );
+    } else {
+      const {slot, selector} = options ?? {};
+      Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+        get(this: ReactiveElement) {
+          const slotSelector = `slot${
+            slot ? `[name=${slot}]` : ':not([name])'
+          }`;
+          const slotEl =
+            this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
+          const elements =
+            slotEl != null ? slotAssignedElements(slotEl, options) : [];
+          if (selector) {
+            return elements.filter((node) => node.matches(selector));
+          }
+          return elements;
+        },
+        enumerable: true,
+        configurable: true,
+      });
+      return;
+    }
+  }) as QueryAssignedElementsDecorator;
 }

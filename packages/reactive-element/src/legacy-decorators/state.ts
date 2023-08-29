@@ -13,7 +13,7 @@
 
 import {property} from './property.js';
 
-export interface InternalPropertyDeclaration<Type = unknown> {
+export interface StateDeclaration<Type = unknown> {
   /**
    * A function that indicates if a property should be considered changed when
    * it is set. The function should take the `newValue` and `oldValue` and
@@ -21,6 +21,12 @@ export interface InternalPropertyDeclaration<Type = unknown> {
    */
   hasChanged?(value: Type, oldValue: Type): boolean;
 }
+
+/**
+ * @deprecated use StateDeclaration
+ */
+export type InternalPropertyDeclaration<Type = unknown> =
+  StateDeclaration<Type>;
 
 /**
  * Declares a private or protected reactive property that still triggers
@@ -32,9 +38,9 @@ export interface InternalPropertyDeclaration<Type = unknown> {
  * properties may be renamed by optimization tools like closure compiler.
  * @category Decorator
  */
-export function state(options?: InternalPropertyDeclaration) {
+export function state(options?: StateDeclaration) {
   return property({
     ...options,
-    state: true,
+    attribute: false,
   });
 }

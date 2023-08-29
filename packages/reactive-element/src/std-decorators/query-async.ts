@@ -14,23 +14,22 @@
 import type {ReactiveElement} from '../reactive-element.js';
 import type {Interface} from '../legacy-decorators/base.js';
 
-// Shared fragment used to generate empty NodeLists when a render root is
-// undefined
-let fragment: DocumentFragment;
-
 /**
- * A property decorator that converts a class property into a getter
- * that executes a querySelectorAll on the element's renderRoot.
+ * A property decorator that converts a class property into a getter that
+ * returns a promise that resolves to the result of a querySelector on the
+ * element's renderRoot done after the element's `updateComplete` promise
+ * resolves. When the queried property may change with element state, this
+ * decorator can be used instead of requiring users to await the
+ * `updateComplete` before accessing the property.
  *
  * @param selector A DOMString containing one or more selectors to match.
  *
- * See:
- * https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelectorAll
+ * See: https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
  *
  * ```ts
  * class MyElement {
- *   @queryAll('div')
- *   divs: NodeListOf<HTMLDivElement>;
+ *   @queryAsync('#first')
+ *   first: Promise<HTMLDivElement>;
  *
  *   render() {
  *     return html`
@@ -39,22 +38,26 @@ let fragment: DocumentFragment;
  *     `;
  *   }
  * }
+ *
+ * // external usage
+ * async doSomethingWithFirst() {
+ *  (await aMyElement.first).doSomething();
+ * }
  * ```
  * @category Decorator
  */
 // TODO(justinfagnani): infer a more precise return type when the query is
 // a tagname.
-export const queryAll =
-  <S extends string>(selector: S) =>
-  <C extends Interface<ReactiveElement>, V extends NodeList>(
+export const queryAsync =
+  (selector: string) =>
+  <C extends Interface<ReactiveElement>, V extends Promise<Element | null>>(
     _target: ClassAccessorDecoratorTarget<C, V>,
     _context: ClassAccessorDecoratorContext<C, V>
-  ): ClassAccessorDecoratorResult<C, V> => {
+  ) => {
     return {
-      get(this: C) {
-        return (
-          this.renderRoot ?? (fragment ??= document.createDocumentFragment())
-        ).querySelectorAll(selector) as unknown as V;
+      async get(this: C) {
+        await this.updateComplete;
+        return this.renderRoot?.querySelector(selector) ?? null;
       },
     };
   };
