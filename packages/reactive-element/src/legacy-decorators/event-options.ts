@@ -11,16 +11,8 @@
  * not an arrow function.
  */
 
-import {ReactiveElement} from '../reactive-element.js';
-
-/**
- * Generates a public interface type that removes private and protected fields.
- * This allows accepting otherwise compatible versions of the type (e.g. from
- * multiple copies of the same package in `node_modules`).
- */
-type Interface<T> = {
-  [K in keyof T]: T[K];
-};
+import type {ReactiveElement} from '../reactive-element.js';
+import type {Interface} from './base.js';
 
 export type EventOptionsDecorator = {
   // legacy
@@ -77,14 +69,10 @@ export function eventOptions(
     protoOrValue: V,
     nameOrContext: PropertyKey | ClassMethodDecoratorContext<C, V>
   ) => {
-    if (typeof protoOrValue === 'function') {
-      Object.assign(protoOrValue, options);
-    } else {
-      Object.assign(
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        protoOrValue[nameOrContext as keyof ReactiveElement] as any,
-        options
-      );
-    }
+    const method =
+      typeof protoOrValue === 'function'
+        ? protoOrValue
+        : protoOrValue[nameOrContext as keyof ReactiveElement];
+    Object.assign(method, options);
   }) as EventOptionsDecorator;
 }

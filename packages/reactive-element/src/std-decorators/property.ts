@@ -11,11 +11,12 @@
  * not an arrow function.
  */
 import {
-  PropertyDeclaration,
-  ReactiveElement,
+  type PropertyDeclaration,
+  type ReactiveElement,
   defaultConverter,
   notEqual,
 } from '../reactive-element.js';
+import type {Interface} from '../legacy-decorators/base.js';
 
 const DEV_MODE = true;
 
@@ -42,16 +43,24 @@ if (DEV_MODE) {
 // decorator.
 export type PropertyDecorator = {
   // accessor decorator signature
-  <C extends ReactiveElement, V>(
+  <C extends Interface<ReactiveElement>, V>(
     target: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V>;
 
   // setter decorator signature
-  <C extends ReactiveElement, V>(
+  <C extends Interface<ReactiveElement>, V>(
     target: (value: V) => void,
     context: ClassSetterDecoratorContext<C, V>
   ): (this: C, value: V) => void;
+
+  // union
+  <C extends Interface<ReactiveElement>, V>(
+    target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void),
+    context:
+      | ClassAccessorDecoratorContext<C, V>
+      | ClassSetterDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V> | ((this: C, value: V) => void);
 };
 
 // This is duplicated from a similar variable in reactive-element.ts, but
@@ -72,7 +81,7 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 export const property = (
   options: PropertyDeclaration = defaultPropertyDeclaration
 ): PropertyDecorator =>
-  (<C extends ReactiveElement, V>(
+  (<C extends Interface<ReactiveElement>, V>(
     target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void),
     context:
       | ClassAccessorDecoratorContext<C, V>
