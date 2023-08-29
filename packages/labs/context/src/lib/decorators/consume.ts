@@ -81,7 +81,7 @@ export function consume<ValueType>({
 
 /**
  * Generates a public interface type that removes private and protected fields.
- * This allows accepting otherwise compatible versions of the type (e.g. from
+ * This allows accepting otherwise incompatible versions of the type (e.g. from
  * multiple copies of the same package in `node_modules`).
  */
 type Interface<T> = {
