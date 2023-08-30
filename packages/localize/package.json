@@ -18,6 +18,7 @@
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
+    "build:ts:std-decorators-tests": "wireit",
     "test": "wireit"
   },
   "wireit": {
@@ -45,6 +46,21 @@
         "internal",
         "tests",
         ".tsbuildinfo"
+      ]
+    },
+    "build:ts:std-decorators-tests": {
+      "command": "tsc --pretty --project tsconfig.std-decorators-tests.json",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "src/tests/**/*.ts",
+        "tsconfig.std-decorators-tests.json"
+      ],
+      "output": [
+        "tests-std-decorators",
+        "tsconfig.std-decorators-tests.tsbuildinfo"
       ]
     },
     "test": {

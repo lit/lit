@@ -108,7 +108,9 @@ packages/lit-starter-ts/**/my-element.d.ts.map
 packages/lit-starter-ts/**/my-element.bundled.js
 packages/localize/node_modules/
 packages/localize/tests/
+packages/localize/tests-std-decorators/
 packages/localize/.tsbuildinfo
+packages/localize/tsconfig.std-decorators-tests.tsbuildinfo
 packages/localize/lit-localize.*
 packages/localize/examples/*/node_modules/
 packages/localize/internal/
