@@ -14,7 +14,6 @@ export default litProdConfig({
     'reactive-controller',
     'css-tag',
     'decorators',
-    'decorators/base',
     'decorators/custom-element',
     'decorators/event-options',
     'decorators/state',

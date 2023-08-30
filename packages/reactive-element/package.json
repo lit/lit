@@ -249,8 +249,6 @@
         "reactive-controller.js{,.map}",
         "reactive-element.js{,.map}",
         "decorators/*.js{,.map}",
-        "legacy-decorators/*.js{,.map}",
-        "std-decorators/*.js{,.map}",
         "test/*_test.html",
         "development/test/*_test.html",
         "test/polyfill-support/*_test.html",
