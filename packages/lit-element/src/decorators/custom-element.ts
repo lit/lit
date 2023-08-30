@@ -4,4 +4,4 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export * from '@lit/reactive-element/legacy-decorators/custom-element.js';
+export * from '@lit/reactive-element/decorators/custom-element.js';

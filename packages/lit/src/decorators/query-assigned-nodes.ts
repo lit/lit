@@ -4,4 +4,4 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export * from '@lit/reactive-element/legacy-decorators/query-assigned-nodes.js';
+export * from '@lit/reactive-element/decorators/query-assigned-nodes.js';

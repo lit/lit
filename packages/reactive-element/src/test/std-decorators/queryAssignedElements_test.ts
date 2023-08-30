@@ -5,7 +5,7 @@
  */
 
 import {queryAssignedElements} from '@lit/reactive-element/decorators/query-assigned-elements.js';
-import {customElement} from '@lit/reactive-element/std-decorators/custom-element.js';
+import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
 import {
   canTestReactiveElement,
   generateElementName,
