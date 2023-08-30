@@ -4,11 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-// This module exports decorators that are compatible with TypeScript's
-// experimentalDecorators option. At some point, the default decorators we
-// export from ./decorators.js will be the standard decorators, not these,
-// so you can import this file directly to future-proof code that uses
-// experimentalDecorators.
+// This module exports decorators that are compatible both with standard
+// decorators as implemented by TypeScript 5.2 and Babel, and with TypeScript's
+// experimentalDecorators option.
 
 export * from './decorators/custom-element.js';
 export * from './decorators/property.js';

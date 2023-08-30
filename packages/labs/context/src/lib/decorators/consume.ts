@@ -52,6 +52,7 @@ export function consume<ValueType>({
     nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
   ) => {
     if (typeof nameOrContext === 'object') {
+      // Standard decorators branch
       nameOrContext.addInitializer(function (this: ReactiveElement): void {
         new ContextConsumer(this, {
           context,
@@ -63,6 +64,7 @@ export function consume<ValueType>({
         });
       });
     } else {
+      // Experimental decorators branch
       (protoOrTarget.constructor as typeof ReactiveElement).addInitializer(
         (element: ReactiveElement): void => {
           new ContextConsumer(element, {
@@ -81,7 +83,7 @@ export function consume<ValueType>({
 
 /**
  * Generates a public interface type that removes private and protected fields.
- * This allows accepting otherwise compatible versions of the type (e.g. from
+ * This allows accepting otherwise incompatible versions of the type (e.g. from
  * multiple copies of the same package in `node_modules`).
  */
 type Interface<T> = {
