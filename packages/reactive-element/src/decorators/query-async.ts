@@ -12,7 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
-import {Interface} from './base.js';
+import {Interface, defineProperty} from './base.js';
 
 export type QueryAsyncDecorator = {
   // legacy
@@ -80,13 +80,11 @@ export function queryAsync(selector: string) {
         },
       };
     } else {
-      Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+      defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
         async get(this: ReactiveElement) {
           await this.updateComplete;
           return this.renderRoot?.querySelector(selector);
         },
-        enumerable: true,
-        configurable: true,
       });
       return;
     }

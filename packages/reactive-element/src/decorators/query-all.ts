@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from './base.js';
+import {defineProperty, type Interface} from './base.js';
 
 export type QueryAllDecorator = {
   // legacy
@@ -74,12 +74,10 @@ export function queryAll(selector: string): QueryAllDecorator {
         },
       };
     } else {
-      Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+      defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
         get(this: ReactiveElement) {
           return doQuery(this);
         },
-        enumerable: true,
-        configurable: true,
       });
       return;
     }

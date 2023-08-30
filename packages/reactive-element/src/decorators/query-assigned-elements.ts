@@ -13,7 +13,7 @@
 
 import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
-import {Interface} from './base.js';
+import {Interface, defineProperty} from './base.js';
 
 export type QueryAssignedElementsDecorator = {
   // legacy
@@ -100,12 +100,10 @@ export function queryAssignedElements(
         },
       };
     } else {
-      Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+      defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
         get(this: ReactiveElement) {
           return doQuery(this);
         },
-        enumerable: true,
-        configurable: true,
       });
       return;
     }

@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from './base.js';
+import {defineProperty, type Interface} from './base.js';
 
 const DEV_MODE = true;
 
@@ -87,23 +87,19 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
           ? Symbol(`${String(nameOrContext)} (@query() cache)`)
           : Symbol();
         type WithCache = ReactiveElement & {[key: symbol]: Element | null};
-        Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+        defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
           get(this: WithCache) {
             if (this[key] === undefined) {
               this[key] = doQuery(this);
             }
             return this[key];
           },
-          enumerable: true,
-          configurable: true,
         });
       } else {
-        Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+        defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
           get(this: ReactiveElement) {
             return doQuery(this);
           },
-          enumerable: true,
-          configurable: true,
         });
       }
       return;

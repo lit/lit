@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from './base.js';
+import {defineProperty, type Interface} from './base.js';
 
 /**
  * Options for the {@linkcode queryAssignedNodes} decorator. Extends the options
@@ -88,12 +88,10 @@ export function queryAssignedNodes(
         },
       };
     } else {
-      Object.defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
+      defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
         get(this: ReactiveElement) {
           return doQuery(this);
         },
-        enumerable: true,
-        configurable: true,
       });
       return;
     }

@@ -17,3 +17,15 @@ export type Constructor<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   new (...args: any[]): T;
 };
+
+export const defineProperty = <T>(
+  o: T,
+  p: PropertyKey,
+  attributes: PropertyDescriptor & ThisType<unknown>
+): T => {
+  return Object.defineProperty(o, p, {
+    enumerable: true,
+    configurable: true,
+    ...attributes,
+  });
+};
