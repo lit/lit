@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    "composite": true,
     "target": "es2021",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
@@ -10,19 +9,19 @@
     "noUnusedParameters": true,
     "preserveConstEnums": true,
     "forceConsistentCasingInFileNames": true,
-    "rootDir": "src/",
-    "outDir": ".",
+    "rootDir": "src/tests/",
+    "outDir": "./tests-std-decorators",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
     "incremental": true,
-    "tsBuildInfoFile": ".tsbuildinfo",
+    "tsBuildInfoFile": "tsconfig.std-decorators-tests.tsbuildinfo",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
     "types": ["mocha"],
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
-  "exclude": []
+  "include": ["src/tests/**/*"],
+  "exclude": ["src/internal/**/*"],
+  "references": [{"path": "./tsconfig.json"}]
 }

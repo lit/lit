@@ -7,10 +7,17 @@
 import {updateWhenLocaleChanges} from './localized-controller.js';
 
 import type {ReactiveElement} from '@lit/reactive-element';
-import type {
-  Constructor,
-  ClassDescriptor,
-} from '@lit/reactive-element/decorators/base.js';
+
+export type LocalizedDecorator = {
+  // legacy
+  (cls: typeof ReactiveElement): void;
+
+  // standard
+  (
+    target: typeof ReactiveElement,
+    context: ClassDecoratorContext<typeof ReactiveElement>
+  ): void;
+};
 
 /**
  * Class decorator to enable re-rendering the given LitElement whenever a new
@@ -36,28 +43,18 @@ import type {
  *     }
  *   }
  */
-const _localized =
-  () => (classOrDescriptor: Constructor<ReactiveElement> | ClassDescriptor) =>
-    typeof classOrDescriptor === 'function'
-      ? legacyLocalized(classOrDescriptor as unknown as typeof ReactiveElement)
-      : standardLocalized(classOrDescriptor);
-
-export const localized: typeof _localized & {
-  _LIT_LOCALIZE_DECORATOR_?: never;
-} = _localized;
-
-const standardLocalized = ({kind, elements}: ClassDescriptor) => {
-  return {
-    kind,
-    elements,
-    finisher(clazz: typeof ReactiveElement) {
-      clazz.addInitializer(updateWhenLocaleChanges);
-    },
+export const localized: Localized =
+  (): LocalizedDecorator =>
+  (
+    clazz: typeof ReactiveElement,
+    _context?: ClassDecoratorContext<typeof ReactiveElement>
+  ) => {
+    (clazz as typeof ReactiveElement).addInitializer(updateWhenLocaleChanges);
+    return clazz;
   };
-};
 
-const legacyLocalized = (clazz: typeof ReactiveElement) => {
-  clazz.addInitializer(updateWhenLocaleChanges);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return clazz as any;
+type Localized = (() => LocalizedDecorator) & {
+  // Used by the localize-tools transform to detect this decorator based
+  // on type.
+  _LIT_LOCALIZE_DECORATOR_?: never;
 };
