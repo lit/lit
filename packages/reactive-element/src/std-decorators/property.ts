@@ -124,7 +124,9 @@ export const property = (
           // the legacy decorators, to both populate the changedProperties map
           // and to perform the initial reflection. But standard decorators
           // call init() too early and it would be an error to read the field
-          // to get the previous value at that point.
+          // to get the previous value at that point. So we pass initial=true
+          // and the initial value so requestUpdate() doesn't have to access
+          // the field.
           // We can switch to using context.addInitializer() when
           // https://github.com/tc39/proposal-decorators/issues/513 is
           // resolved and shipping in TypeScript and Babel.
@@ -139,10 +141,12 @@ export const property = (
         },
       };
     } else if (kind === 'setter') {
-      // We do not wrap the author's setter. They are expected to call
-      // requestUpdate themselves, and will possibly do so conditionally.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return undefined as any;
+      const {name} = context;
+      return function (this: C, value: V) {
+        const oldValue = this[name as keyof C];
+        (target as (value: V) => void).call(this, value);
+        this.requestUpdate(name, oldValue, options);
+      };
     }
     throw new Error(`Unsupported decorator location: ${kind}`);
   }) as PropertyDecorator;

@@ -125,36 +125,72 @@ suite('@property', () => {
 
   test('can decorate user accessor with @property', async () => {
     class E extends ReactiveElement {
-      _foo?: number;
-      updatedContent?: number;
+      updatedProperties?: PropertyValues<this>;
 
-      @property({reflect: true, type: Number})
+      _foo?: number;
+
       get foo() {
         return this._foo as number;
       }
 
+      @property({reflect: true, type: Number})
       set foo(v: number) {
-        const old = this.foo;
         this._foo = v;
-        this.requestUpdate('foo', old);
       }
 
-      override updated() {
-        this.updatedContent = this.foo;
+      _bar?: number;
+
+      get bar() {
+        return this._bar as number;
+      }
+
+      @property({reflect: true, type: Number})
+      set bar(v: number) {
+        this._bar = v;
+      }
+
+      override updated(changedProperties: PropertyValues<this>) {
+        this.updatedProperties = changedProperties;
       }
     }
     customElements.define(generateElementName(), E);
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
+
+    // Check initial values
     assert.equal(el._foo, undefined);
-    assert.equal(el.updatedContent, undefined);
+    assert.isFalse(el.updatedProperties!.has('foo'));
     assert.isFalse(el.hasAttribute('foo'));
+    assert.equal(el._bar, undefined);
+    assert.isFalse(el.updatedProperties!.has('bar'));
+    assert.isFalse(el.hasAttribute('bar'));
+
+    // Setting values should reflect and populate changedProperties
     el.foo = 5;
+    el.bar = 6;
     await el.updateComplete;
+
     assert.equal(el._foo, 5);
-    assert.equal(el.updatedContent, 5);
+    assert.isTrue(el.updatedProperties!.has('foo'));
+    assert.equal(el.updatedProperties!.get('foo'), undefined);
     assert.equal(el.getAttribute('foo'), '5');
+    assert.equal(el._bar, 6);
+    assert.isTrue(el.updatedProperties!.has('bar'));
+    assert.equal(el.updatedProperties!.get('bar'), undefined);
+    assert.equal(el.getAttribute('bar'), '6');
+
+    // Setting values again should populate changedProperties with old values
+    el.foo = 7;
+    el.bar = 8;
+    await el.updateComplete;
+
+    assert.equal(el._foo, 7);
+    assert.equal(el.updatedProperties!.get('foo'), 5);
+    assert.equal(el.getAttribute('foo'), '7');
+    assert.equal(el._bar, 8);
+    assert.equal(el.updatedProperties!.get('bar'), 6);
+    assert.equal(el.getAttribute('bar'), '8');
   });
 
   test('can mix property options via decorator and via getter', async () => {

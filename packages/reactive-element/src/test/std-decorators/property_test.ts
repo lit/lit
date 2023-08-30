@@ -149,36 +149,48 @@ suite('@property', () => {
 
   test('can decorate user accessor with @property', async () => {
     class E extends ReactiveElement {
-      _foo?: number;
-      updatedContent?: number;
+      updatedProperties?: PropertyValues<this>;
 
+      _foo?: number;
       @property({reflect: true, type: Number})
       set foo(v: number) {
-        const old = this.foo;
         this._foo = v;
-        this.requestUpdate('foo', old);
       }
 
       get foo() {
         return this._foo as number;
       }
 
-      override updated() {
-        this.updatedContent = this.foo;
+      override updated(changedProperties: PropertyValues<this>) {
+        this.updatedProperties = changedProperties;
       }
     }
     customElements.define(generateElementName(), E);
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
+
+    // Check initial values
     assert.equal(el._foo, undefined);
-    assert.equal(el.updatedContent, undefined);
+    assert.isFalse(el.updatedProperties!.has('foo'));
     assert.isFalse(el.hasAttribute('foo'));
+
+    // Setting values should reflect and populate changedProperties
     el.foo = 5;
     await el.updateComplete;
+
     assert.equal(el._foo, 5);
-    assert.equal(el.updatedContent, 5);
+    assert.isTrue(el.updatedProperties!.has('foo'));
+    assert.equal(el.updatedProperties!.get('foo'), undefined);
     assert.equal(el.getAttribute('foo'), '5');
+
+    // Setting values again should populate changedProperties with old values
+    el.foo = 7;
+    await el.updateComplete;
+
+    assert.equal(el._foo, 7);
+    assert.equal(el.updatedProperties!.get('foo'), 5);
+    assert.equal(el.getAttribute('foo'), '7');
   });
 
   test('can mix property options via decorator and via getter', async () => {

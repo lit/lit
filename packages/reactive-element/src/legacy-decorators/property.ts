@@ -43,7 +43,16 @@ const legacyProperty = (
   proto: Object,
   name: PropertyKey
 ) => {
+  const hasOwnProperty = proto.hasOwnProperty(name);
   (proto.constructor as typeof ReactiveElement).createProperty(name, options);
+  // For accessors (which have a descriptor on the prototype) we need to
+  // return a descriptor, otherwise TypeScript overwrites the descriptor we
+  // define in createProperty() with the original descriptor. We don't do this
+  // for fields, which don't have a descriptor, because this could overwrite
+  // descriptor defined by other decorators.
+  return hasOwnProperty
+    ? Object.getOwnPropertyDescriptor(proto, name)
+    : undefined;
 };
 
 /**

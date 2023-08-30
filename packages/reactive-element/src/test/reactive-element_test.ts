@@ -1160,9 +1160,7 @@ suite('ReactiveElement', () => {
       }
 
       set bar(value) {
-        const old = this.bar;
         this.__bar = Number(value);
-        this.requestUpdate('bar', old);
       }
 
       override updated() {
@@ -1213,9 +1211,7 @@ suite('ReactiveElement', () => {
       }
 
       set bar(value) {
-        const old = this.bar;
         this.__bar = Number(value);
-        this.requestUpdate('bar', old);
       }
     }
     customElements.define(generateElementName(), E);
@@ -1255,9 +1251,7 @@ suite('ReactiveElement', () => {
       }
 
       set foo(value) {
-        const old = this.foo;
         this.__foo = Number(value);
-        this.requestUpdate('foo', old);
       }
     }
     class F extends E {
@@ -1272,9 +1266,7 @@ suite('ReactiveElement', () => {
       }
 
       set bar(value) {
-        const old = this.foo;
         this.__bar = value;
-        this.requestUpdate('bar', old);
       }
     }
 
