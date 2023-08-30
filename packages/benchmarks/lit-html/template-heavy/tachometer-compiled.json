@@ -1,0 +1,35 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
+  "timeout": 0,
+  "sampleSize": 50,
+  "benchmarks": [
+    {
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        },
+        {
+          "mode": "performance",
+          "entryName": "update"
+        }
+      ],
+      "browser": {
+        "headless": true,
+        "name": "chrome",
+        "addArguments": []
+      },
+      "expand": [
+        {
+          "name": "compiled",
+          "url": "template-heavy.html?compiled=true"
+        },
+        {
+          "name": "uncompiled",
+          "url": "template-heavy.html"
+        }
+      ]
+    }
+  ]
+}
