@@ -1,5 +1,25 @@
 # @lit-labs/analyzer
 
+## 0.9.2
+
+### Patch Changes
+
+- [#4135](https://github.com/lit/lit/pull/4135) [`5ff19a06`](https://github.com/lit/lit/commit/5ff19a06378a2e9aaafd87e9eaeeff6f1850d0ad) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports class accessors (pairs, readonly, or setter-only)
+
+- [#4135](https://github.com/lit/lit/pull/4135) [`5ff19a06`](https://github.com/lit/lit/commit/5ff19a06378a2e9aaafd87e9eaeeff6f1850d0ad) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports non-reactive, constructor assigned class fields
+
+- [#4135](https://github.com/lit/lit/pull/4135) [`5ff19a06`](https://github.com/lit/lit/commit/5ff19a06378a2e9aaafd87e9eaeeff6f1850d0ad) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports jsDoc `@readonly` tag on non-reactive class fields
+
+- [#4135](https://github.com/lit/lit/pull/4135) [`5ff19a06`](https://github.com/lit/lit/commit/5ff19a06378a2e9aaafd87e9eaeeff6f1850d0ad) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports typescript `readonly` keyword on non-reactive class fields
+
+- [#4132](https://github.com/lit/lit/pull/4132) [`b9c34431`](https://github.com/lit/lit/commit/b9c3443185ef2f7bbe728dc61eb4b13b7a0dccb4) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports `@fires {EventType} name`, with type preceding name
+
+- [#4132](https://github.com/lit/lit/pull/4132) [`b9c34431`](https://github.com/lit/lit/commit/b9c3443185ef2f7bbe728dc61eb4b13b7a0dccb4) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports lowercase `@cssprop`, `@cssproperty`, and `@csspart`
+
+- [#4148](https://github.com/lit/lit/pull/4148) [`5d68e64e`](https://github.com/lit/lit/commit/5d68e64ee612d28b713fc8513ea3d6cc10cf92b5) Thanks [@bennypowers](https://github.com/bennypowers)! - Correctly sets `privacy` field for ECMAScript private methods
+
+- [#4132](https://github.com/lit/lit/pull/4132) [`b9c34431`](https://github.com/lit/lit/commit/b9c3443185ef2f7bbe728dc61eb4b13b7a0dccb4) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports `@cssProperty {<color>} --my-color` with syntax metadata
+
 ## 0.9.1
 
 ### Patch Changes

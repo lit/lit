@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.2
+
+### Patch Changes
+
+- [#4161](https://github.com/lit/lit/pull/4161) [`4fdc47cf`](https://github.com/lit/lit/commit/4fdc47cf71fe345ffc8c68020a74dfdb6850bd31) - Disambiguate `TypeFunction` type to fix type error when providing a task function making use of the abort signal.
+
 ## 3.0.1
 
 ### Patch Changes
