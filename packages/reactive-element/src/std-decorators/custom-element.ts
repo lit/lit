@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 
-import type {Constructor} from '../legacy-decorators/base.js';
+import type {Constructor} from '../decorators/base.js';
 
 /**
  * Class decorator factory that defines the decorated class as a custom element.

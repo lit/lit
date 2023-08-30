@@ -12,7 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
-import {Interface} from './base.js';
+import {Interface} from '../decorators/base.js';
 import {queryAsync as standardQueryAsync} from '../std-decorators/query-async.js';
 
 export type QueryAsyncDecorator = {

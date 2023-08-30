@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from './base.js';
+import type {Interface} from '../decorators/base.js';
 import {queryAll as standardQueryAll} from '../std-decorators/query-all.js';
 
 export type QueryAllDecorator = {

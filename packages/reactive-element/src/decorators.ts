@@ -10,7 +10,6 @@
 // so you can import this file directly to future-proof code that uses
 // experimentalDecorators.
 
-export * from './decorators/base.js';
 export * from './decorators/custom-element.js';
 export * from './decorators/property.js';
 export * from './decorators/state.js';

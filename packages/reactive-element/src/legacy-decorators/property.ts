@@ -14,7 +14,7 @@ import type {
   PropertyDeclaration,
   ReactiveElement,
 } from '../reactive-element.js';
-import type {Interface} from './base.js';
+import type {Interface} from '../decorators/base.js';
 import {property as standardProperty} from '../std-decorators/property.js';
 
 // Overloads for property decorator so that TypeScript can infer the correct

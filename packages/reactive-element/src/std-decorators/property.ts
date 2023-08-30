@@ -16,7 +16,7 @@ import {
   defaultConverter,
   notEqual,
 } from '../reactive-element.js';
-import type {Interface} from '../legacy-decorators/base.js';
+import type {Interface} from '../decorators/base.js';
 
 const DEV_MODE = true;
 

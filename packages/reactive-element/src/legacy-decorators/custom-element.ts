@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 
-import type {Constructor} from './base.js';
+import type {Constructor} from '../decorators/base.js';
 import {customElement as standardCustomElement} from '../std-decorators/custom-element.js';
 
 /**

@@ -12,7 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from '../legacy-decorators/base.js';
+import type {Interface} from '../decorators/base.js';
 
 /**
  * Options for the {@linkcode queryAssignedNodes} decorator. Extends the options

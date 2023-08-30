@@ -12,7 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from './base.js';
+import type {Interface} from '../decorators/base.js';
 
 export type EventOptionsDecorator = {
   // legacy

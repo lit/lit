@@ -12,7 +12,7 @@
  */
 import {query as standardQuery} from '../std-decorators/query.js';
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from './base.js';
+import type {Interface} from '../decorators/base.js';
 
 const DEV_MODE = true;
 

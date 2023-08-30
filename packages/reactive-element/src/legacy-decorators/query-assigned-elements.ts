@@ -14,7 +14,7 @@
 import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
 import {queryAssignedElements as standardQueryAssignedElements} from '../std-decorators/query-assigned-elements.js';
-import {Interface} from './base.js';
+import {Interface} from '../decorators/base.js';
 
 export type QueryAssignedElementsDecorator = {
   // legacy

@@ -12,7 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from '../legacy-decorators/base.js';
+import type {Interface} from '../decorators/base.js';
 
 /**
  * A property decorator that converts a class property into a getter that
