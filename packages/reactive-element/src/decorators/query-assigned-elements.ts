@@ -12,7 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
-import type {QueryAssignedNodesOptions} from '../legacy-decorators/query-assigned-nodes.js';
+import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
 import {Interface} from './base.js';
 
 export type QueryAssignedElementsDecorator = {
