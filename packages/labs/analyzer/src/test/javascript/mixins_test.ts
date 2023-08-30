@@ -151,5 +151,98 @@ for (const lang of languages) {
     assert.equal(diagnostics[0].code, DiagnosticCode.UNSUPPORTED);
   });
 
+  test('mixin without params errors', ({getModule, analyzer}) => {
+    const currentDiagnostics = [...analyzer.getDiagnostics()];
+    const decl = getModule('mixins-with-invalid-shape').getDeclaration(
+      'MixinWithoutParams'
+    );
+    assert.equal(decl.isMixinDeclaration(), false);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, currentDiagnostics.length + 1);
+    const lastDiagnostic = diagnostics[diagnostics.length - 1];
+    assert.equal(
+      lastDiagnostic.messageText,
+      'Expected mixin to have a superClass parameter.'
+    );
+  });
+
+  test('mixin without block body errors', ({getModule, analyzer}) => {
+    const currentDiagnostics = [...analyzer.getDiagnostics()];
+    const decl = getModule('mixins-with-invalid-shape').getDeclaration(
+      'MixinWithLiteralBody'
+    );
+    assert.equal(decl.isMixinDeclaration(), false);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, currentDiagnostics.length + 1);
+    const lastDiagnostic = diagnostics[diagnostics.length - 1];
+    assert.equal(
+      lastDiagnostic.messageText,
+      'Expected mixin to have a block function body; arrow-function class ' +
+        'expression syntax is not supported.'
+    );
+  });
+
+  test('mixin without class errors', ({getModule, analyzer}) => {
+    const currentDiagnostics = [...analyzer.getDiagnostics()];
+    const decl = getModule('mixins-with-invalid-shape').getDeclaration(
+      'MixinWithoutClass'
+    );
+    assert.equal(decl.isMixinDeclaration(), false);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, currentDiagnostics.length + 1);
+    const lastDiagnostic = diagnostics[diagnostics.length - 1];
+    assert.equal(
+      lastDiagnostic.messageText,
+      'Expected mixin to contain a class declaration statement.'
+    );
+  });
+
+  test('mixin without return errors', ({getModule, analyzer}) => {
+    const currentDiagnostics = [...analyzer.getDiagnostics()];
+    const decl = getModule('mixins-with-invalid-shape').getDeclaration(
+      'MixinWithoutReturn'
+    );
+    assert.equal(decl.isMixinDeclaration(), false);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, currentDiagnostics.length + 1);
+    const lastDiagnostic = diagnostics[diagnostics.length - 1];
+    assert.equal(
+      lastDiagnostic.messageText,
+      'Expected mixin to contain a return statement returning a class.'
+    );
+  });
+
+  test('mixin without extends clause errors', ({getModule, analyzer}) => {
+    const currentDiagnostics = [...analyzer.getDiagnostics()];
+    const decl = getModule('mixins-with-invalid-shape').getDeclaration(
+      'MixinWithoutExtends'
+    );
+    assert.equal(decl.isMixinDeclaration(), false);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, currentDiagnostics.length + 1);
+    const lastDiagnostic = diagnostics[diagnostics.length - 1];
+    assert.equal(
+      lastDiagnostic.messageText,
+      'Expected mixin to contain class declaration extending a superClass ' +
+        'argument to function.'
+    );
+  });
+
+  test('mixin without super param errors', ({getModule, analyzer}) => {
+    const currentDiagnostics = [...analyzer.getDiagnostics()];
+    const decl = getModule('mixins-with-invalid-shape').getDeclaration(
+      'MixinWithoutSuperParam'
+    );
+    assert.equal(decl.isMixinDeclaration(), false);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, currentDiagnostics.length + 1);
+    const lastDiagnostic = diagnostics[diagnostics.length - 1];
+    assert.equal(
+      lastDiagnostic.messageText,
+      'Did not find a "superClass" argument used in the extends ' +
+        'clause of mixin class.'
+    );
+  });
+
   test.run();
 }
