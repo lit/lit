@@ -5,7 +5,6 @@
  */
 
 import {ReactiveElement} from '@lit/reactive-element';
-import {decorateProperty} from '@lit/reactive-element/decorators/base.js';
 import {ContextConsumer} from '../controllers/context-consumer.js';
 import {Context} from '../create-context.js';
 
@@ -47,28 +46,62 @@ export function consume<ValueType>({
 }: {
   context: Context<unknown, ValueType>;
   subscribe?: boolean;
-}): ConsumerDecorator<ValueType> {
-  return decorateProperty({
-    finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-      ctor.addInitializer((element: ReactiveElement): void => {
-        new ContextConsumer(element, {
+}): ConsumeDecorator<ValueType> {
+  return (<C extends ReactiveElement, V extends ValueType>(
+    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
+    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
+  ) => {
+    if (typeof nameOrContext === 'object') {
+      // Standard decorators branch
+      nameOrContext.addInitializer(function (this: ReactiveElement): void {
+        new ContextConsumer(this, {
           context,
           callback: (value: ValueType) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any -- have to force the property on the type
-            (element as any)[name] = value;
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (this as any)[nameOrContext.name] = value;
           },
           subscribe,
         });
       });
-    },
-  });
+    } else {
+      // Experimental decorators branch
+      (protoOrTarget.constructor as typeof ReactiveElement).addInitializer(
+        (element: ReactiveElement): void => {
+          new ContextConsumer(element, {
+            context,
+            callback: (value: ValueType) => {
+              // eslint-disable-next-line @typescript-eslint/no-explicit-any
+              (element as any)[nameOrContext] = value;
+            },
+            subscribe,
+          });
+        }
+      );
+    }
+  }) as ConsumeDecorator<ValueType>;
 }
 
-type ConsumerDecorator<ValueType> = {
-  <K extends PropertyKey, Proto extends ReactiveElement>(
+/**
+ * Generates a public interface type that removes private and protected fields.
+ * This allows accepting otherwise incompatible versions of the type (e.g. from
+ * multiple copies of the same package in `node_modules`).
+ */
+type Interface<T> = {
+  [K in keyof T]: T[K];
+};
+
+type ConsumeDecorator<ValueType> = {
+  // legacy
+  <K extends PropertyKey, Proto extends Interface<ReactiveElement>>(
     protoOrDescriptor: Proto,
     name?: K
   ): FieldMustMatchProvidedType<Proto, K, ValueType>;
+
+  // standard
+  <C extends Interface<ReactiveElement>, V extends ValueType>(
+    value: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): void;
 };
 
 // Note TypeScript requires the return type of a decorator to be `void | any`
