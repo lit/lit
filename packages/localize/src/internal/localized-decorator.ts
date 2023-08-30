@@ -8,14 +8,28 @@ import {updateWhenLocaleChanges} from './localized-controller.js';
 
 import type {ReactiveElement} from '@lit/reactive-element';
 
+/**
+ * Generates a public interface type that removes private and protected fields.
+ * This allows accepting otherwise incompatible versions of the type (e.g. from
+ * multiple copies of the same package in `node_modules`).
+ */
+export type Interface<T> = {
+  [K in keyof T]: T[K];
+};
+
+type ReactiveElementClass = Interface<typeof ReactiveElement> & {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  new (...args: any[]): Interface<ReactiveElement>;
+};
+
 export type LocalizedDecorator = {
   // legacy
-  (cls: typeof ReactiveElement): void;
+  (cls: ReactiveElementClass): void;
 
   // standard
   (
-    target: typeof ReactiveElement,
-    context: ClassDecoratorContext<typeof ReactiveElement>
+    target: ReactiveElementClass,
+    context: ClassDecoratorContext<ReactiveElementClass>
   ): void;
 };
 
@@ -46,10 +60,10 @@ export type LocalizedDecorator = {
 export const localized: Localized =
   (): LocalizedDecorator =>
   (
-    clazz: typeof ReactiveElement,
-    _context?: ClassDecoratorContext<typeof ReactiveElement>
+    clazz: ReactiveElementClass,
+    _context?: ClassDecoratorContext<ReactiveElementClass>
   ) => {
-    (clazz as typeof ReactiveElement).addInitializer(updateWhenLocaleChanges);
+    clazz.addInitializer(updateWhenLocaleChanges);
     return clazz;
   };
 
