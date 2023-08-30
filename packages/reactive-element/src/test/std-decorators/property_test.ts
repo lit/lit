@@ -172,7 +172,7 @@ suite('@property', () => {
 
     // Check initial values
     assert.equal(el._foo, undefined);
-    assert.equal(el.updatedProperties!.get('foo'), undefined);
+    assert.isFalse(el.updatedProperties!.has('foo'));
     assert.isFalse(el.hasAttribute('foo'));
 
     // Setting values should reflect and populate changedProperties
