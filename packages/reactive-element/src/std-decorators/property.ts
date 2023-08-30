@@ -142,7 +142,6 @@ export const property = (
       };
     } else if (kind === 'setter') {
       const {name} = context;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       return function (this: C, value: V) {
         const oldValue = this[name as keyof C];
         (target as (value: V) => void).call(this, value);
