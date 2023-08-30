@@ -52,6 +52,7 @@ export function consume<ValueType>({
     nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
   ) => {
     if (typeof nameOrContext === 'object') {
+      // Standard decorators branch
       nameOrContext.addInitializer(function (this: ReactiveElement): void {
         new ContextConsumer(this, {
           context,
@@ -63,6 +64,7 @@ export function consume<ValueType>({
         });
       });
     } else {
+      // Experimental decorators branch
       (protoOrTarget.constructor as typeof ReactiveElement).addInitializer(
         (element: ReactiveElement): void => {
           new ContextConsumer(element, {

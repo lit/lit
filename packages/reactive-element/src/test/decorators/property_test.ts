@@ -160,10 +160,10 @@ suite('@property', () => {
 
     // Check initial values
     assert.equal(el._foo, undefined);
-    assert.equal(el.updatedProperties!.get('foo'), undefined);
+    assert.isFalse(el.updatedProperties!.has('foo'));
     assert.isFalse(el.hasAttribute('foo'));
     assert.equal(el._bar, undefined);
-    assert.equal(el.updatedProperties!.get('bar'), undefined);
+    assert.isFalse(el.updatedProperties!.has('bar'));
     assert.isFalse(el.hasAttribute('bar'));
 
     // Setting values should reflect and populate changedProperties

@@ -54,6 +54,7 @@ export function provide<ValueType>({
     // Map of instances to controllers
     const controllerMap = new WeakMap();
     if (typeof nameOrContext === 'object') {
+      // Standard decorators branch
       nameOrContext.addInitializer(function (this: C) {
         controllerMap.set(this, new ContextProvider(this, {context}));
       });
@@ -71,6 +72,7 @@ export function provide<ValueType>({
         },
       };
     } else {
+      // Experimental decorators branch
       (protoOrTarget.constructor as typeof ReactiveElement).addInitializer(
         (element: ReactiveElement): void => {
           controllerMap.set(element, new ContextProvider(element, {context}));
