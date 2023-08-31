@@ -16,7 +16,7 @@ import {getTypeForTypeString} from '../types.js';
  */
 export const addJSDocAttributeToMap = (
   tag: ts.JSDocTag,
-  events: Map<string, Attribute>,
+  attributes: Map<string, Attribute>,
   analyzer: AnalyzerInterface
 ) => {
   const info = parseNamedTypedJSDocInfo(tag, analyzer);
@@ -24,7 +24,7 @@ export const addJSDocAttributeToMap = (
     return;
   }
   const {name, type, description, summary} = info;
-  events.set(name, {
+  attributes.set(name, {
     name,
     type: type ? getTypeForTypeString(type, tag, analyzer) : undefined,
     description,
