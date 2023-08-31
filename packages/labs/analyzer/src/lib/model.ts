@@ -393,6 +393,11 @@ export interface ClassFieldInit extends PropertyLike {
   readonly?: boolean | undefined;
 }
 
+export interface CustomElementFieldInit extends ClassFieldInit {
+  attribute?: string | undefined;
+  reflects?: boolean | undefined;
+}
+
 export class ClassField extends Declaration {
   static?: boolean | undefined;
   privacy?: Privacy | undefined;
@@ -410,6 +415,16 @@ export class ClassField extends Declaration {
     this.type = init.type;
     this.default = init.default;
     this.readonly = init.readonly;
+  }
+}
+
+export class CustomElementField extends ClassField {
+  attribute?: string | undefined;
+  reflects?: boolean | undefined;
+  constructor(init: CustomElementFieldInit) {
+    super(init);
+    this.attribute = init.attribute;
+    this.reflects = init.reflects;
   }
 }
 
@@ -557,6 +572,7 @@ export interface DeprecatableDescribed extends Described {
 interface CustomElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   events: Map<string, Event>;
+  attributes: Map<string, Attribute>;
   slots: Map<string, NamedDescribed>;
   cssProperties: Map<string, CSSPropertyInfo>;
   cssParts: Map<string, NamedDescribed>;
@@ -577,6 +593,7 @@ export class CustomElementDeclaration extends ClassDeclaration {
    * base class or with scoped custom element registries.
    */
   readonly tagname: string | undefined;
+  readonly attributes: Map<string, Attribute>;
   readonly events: Map<string, Event>;
   readonly slots: Map<string, NamedDescribed>;
   readonly cssProperties: Map<string, CSSPropertyInfo>;
@@ -585,6 +602,7 @@ export class CustomElementDeclaration extends ClassDeclaration {
   constructor(init: CustomElementDeclarationInit) {
     super(init);
     this.tagname = init.tagname;
+    this.attributes = init.attributes;
     this.events = init.events;
     this.slots = init.slots;
     this.cssProperties = init.cssProperties;
@@ -655,6 +673,17 @@ export interface Event {
   description: string | undefined;
   summary: string | undefined;
   type: Type | undefined;
+}
+
+export interface Attribute {
+  name: string;
+  summary?: string | undefined;
+  description?: string | undefined;
+  inheritedFrom?: Reference | undefined;
+  type?: Type | undefined;
+  default?: string | undefined;
+  fieldName?: string | undefined;
+  deprecated?: boolean | string | undefined;
 }
 
 export interface LitModule {
