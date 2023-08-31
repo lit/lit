@@ -1,5 +1,5 @@
 ---
-'@lit/localize-tools': minor
+'@lit/localize-tools': patch
 '@lit-labs/ssr': patch
 ---
 
