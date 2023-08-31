@@ -101,7 +101,7 @@ for (const lang of languages) {
     assert.equal(bProp.typeOption, 'Number');
   });
 
-  test('Analyezr finds subclass of LitElement', ({getModule}) => {
+  test('Analyzer finds subclass of LitElement', ({getModule}) => {
     const module = getModule('element-c');
     const elementC = module?.getDeclaration('ElementC');
     assert.ok(elementC?.isLitElementDeclaration());

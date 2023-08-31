@@ -22,6 +22,104 @@ for (const lang of languages) {
     setupAnalyzerForTest(ctx, lang, 'vanilla-jsdoc');
   });
 
+  // attributes
+
+  test('attributes - Correct number found', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    assert.equal(element.attributes.size, 8);
+  });
+
+  test('attributes - no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    const attr = element.attributes.get('no-description');
+    assert.ok(attr);
+    assert.equal(attr.summary, undefined);
+    assert.equal(attr.description, undefined);
+  });
+
+  test('attributes - with-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    const attr = element.attributes.get('with-description');
+    assert.ok(attr);
+    assert.equal(attr.summary, undefined);
+    assert.equal(
+      attr.description,
+      'Description for with-description\nwith wraparound'
+    );
+  });
+
+  test('attributes - with-description-dash', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    const attr = element.attributes.get('with-description-dash');
+    assert.ok(attr);
+    assert.equal(attr.summary, undefined);
+    assert.equal(attr.description, 'Description for with-description-dash');
+  });
+
+  test('attributes - with-description-type', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    const attr = element.attributes.get('with-description-type');
+    assert.ok(attr);
+    assert.equal(attr.summary, undefined);
+    assert.equal(attr.description, 'Description for with-description-type');
+    assert.equal(attr.type?.text, 'number');
+  });
+
+  test('attributes - default-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    const attr = element.attributes.get('default-no-description');
+    assert.ok(attr);
+    assert.equal(attr.summary, undefined);
+    assert.equal(attr.description, undefined);
+    assert.equal(attr.default, '0');
+  });
+
+  test('attributes - default-with-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    const attr = element.attributes.get('default-with-description');
+    assert.ok(attr);
+    assert.equal(attr.summary, undefined);
+    assert.equal(
+      attr.description,
+      'Description for default-with-description\nwith wraparound'
+    );
+    assert.equal(attr.default, '0');
+  });
+
+  test('attributes - default-with-description-dash', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    const attr = element.attributes.get('default-with-description-dash');
+    assert.ok(attr);
+    assert.equal(attr.summary, undefined);
+    assert.equal(
+      attr.description,
+      'Description for default-with-description-dash'
+    );
+    assert.equal(attr.default, '0');
+  });
+
+  test('attributes - default-with-description-type', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isCustomElementDeclaration());
+    const attr = element.attributes.get('default-with-description-type');
+    assert.ok(attr);
+    assert.equal(attr.summary, undefined);
+    assert.equal(
+      attr.description,
+      'Description for default-with-description-type'
+    );
+    assert.equal(attr.type?.text, 'number');
+    assert.equal(attr.default, '0');
+  });
+
   // slots
 
   test('slots - Correct number found', ({getModule}) => {

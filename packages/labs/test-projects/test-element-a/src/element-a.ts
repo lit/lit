@@ -13,6 +13,7 @@ import {Foo, Bar as Baz} from './package-stuff.js';
  * text that spans multiple lines.
  *
  * @summary My awesome element
+ * @attr {number} [count=0] - Count of things
  * @fires a-changed - An awesome event to fire
  * @slot default - The default slot
  * @slot stuff - A slot for stuff

@@ -7,15 +7,29 @@
 /**
  * A cool custom element.
  *
+ * @attr no-description
+ * @attr with-description Description for with-description
+ * with wraparound
+ * @attr with-description-dash - Description for with-description-dash
+ * @attr {number} with-description-type - Description for with-description-type
+ *
+ * @attr [default-no-description=0]
+ * @attr [default-with-description=0] Description for default-with-description
+ * with wraparound
+ * @attr [default-with-description-dash=0] - Description for default-with-description-dash
+ * @attr {number} [default-with-description-type=0] - Description for default-with-description-type
+ *
  * @slot - Description for default slot
  * @slot no-description
  * @slot with-description Description for with-description
  * with wraparound
  * @slot with-description-dash - Description for with-description-dash
+ *
  * @cssPart no-description
  * @cssPart with-description Description for :part(with-description)
  * with wraparound
  * @cssPart with-description-dash - Description for :part(with-description-dash)
+ *
  * @cssProperty --no-description
  * @cssProperty --with-description Description for --with-description
  * with wraparound
@@ -28,6 +42,7 @@
  * @cssProperty [--optional-with-description] Description for --optional-with-description
  * with wraparound
  * @cssProperty [--optional-with-description-dash] - Description for --optional-with-description-dash
+ *
  * @cssProp --short-no-description
  * @cssProp --short-with-description Description for --short-with-description
  * with wraparound

@@ -34,6 +34,12 @@ export class ElementProps extends LitElement {
   @property({type: Array})
   aStrArray = ['a', 'b'];
 
+  @property({reflect: true})
+  reflect = 'reflect';
+
+  @property({attribute: 'custom-attr'})
+  customAttr = 'custom-attr';
+
   @property({type: Object, attribute: false})
   aMyType: MyType = {
     a: 'a',

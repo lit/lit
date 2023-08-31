@@ -10,6 +10,18 @@ import {customElement} from 'lit/decorators.js';
 /**
  * A cool custom element.
  *
+ * @attr no-description
+ * @attr with-description Description for with-description
+ * with wraparound
+ * @attr with-description-dash - Description for with-description-dash
+ * @attr {number} with-description-type - Description for with-description-type
+ *
+ * @attr [default-no-description=0]
+ * @attr [default-with-description=0] Description for default-with-description
+ * with wraparound
+ * @attr [default-with-description-dash=0] - Description for default-with-description-dash
+ * @attr {number} [default-with-description-type=0] - Description for default-with-description-type
+ *
  * @slot - Description for default slot
  * @slot no-description
  * @slot with-description Description for with-description

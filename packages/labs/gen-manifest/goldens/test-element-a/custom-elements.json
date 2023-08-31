@@ -17,6 +17,7 @@
               "kind": "field",
               "name": "foo",
               "privacy": "public",
+              "attribute": "foo",
               "type": {"text": "string | undefined"}
             },
             {
@@ -59,6 +60,16 @@
           ],
           "tagName": "element-a",
           "customElement": true,
+          "attributes": [
+            {
+              "name": "count",
+              "description": "Count of things",
+              "default": "0",
+              "type": {
+                "text": "number"
+              }
+            }
+          ],
           "events": [
             {
               "name": "a-changed",
@@ -550,6 +561,7 @@
               "name": "aStr",
               "privacy": "public",
               "type": {"text": "string"},
+              "attribute": "aStr",
               "default": "'aStr'"
             },
             {
@@ -557,6 +569,7 @@
               "name": "aNum",
               "privacy": "public",
               "type": {"text": "number"},
+              "attribute": "aNum",
               "default": "-1"
             },
             {
@@ -564,6 +577,7 @@
               "name": "aBool",
               "privacy": "public",
               "type": {"text": "boolean"},
+              "attribute": "aBool",
               "default": "false"
             },
             {
@@ -571,7 +585,26 @@
               "name": "aStrArray",
               "privacy": "public",
               "type": {"text": "string[]"},
+              "attribute": "aStrArray",
               "default": "['a', 'b']"
+            },
+            {
+              "kind": "field",
+              "name": "reflect",
+              "privacy": "public",
+              "type": {"text": "string"},
+              "reflects": true,
+              "attribute": "reflect",
+              "default": "'reflect'"
+            },
+            {
+              "kind": "field",
+              "name": "customAttr",
+              "privacy": "public",
+              "type": {"text": "string"},
+              "reflects": true,
+              "attribute": "custom-attr",
+              "default": "'custom-attr'"
             },
             {
               "kind": "field",
