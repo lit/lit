@@ -203,7 +203,7 @@ export const getClassMembers = (
         new CustomElementField({
           name,
           type: getTypeForNode(accessor, analyzer),
-          privacy: getPrivacy(typescript, accessor!),
+          privacy: getPrivacy(typescript, accessor),
           readonly: !!get && !set,
           // TODO(bennypowers): derive from getter?
           // default: ???
