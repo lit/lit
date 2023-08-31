@@ -5,6 +5,7 @@
  */
 
 import {
+  Attribute,
   ClassDeclaration,
   Declaration,
   Event,
@@ -16,6 +17,7 @@ import {
   VariableDeclaration,
   LitElementExport,
   ClassField,
+  CustomElementField,
   ClassMethod,
   Parameter,
   Return,
@@ -170,7 +172,9 @@ const convertLitElementDeclaration = (
     ...convertClassDeclaration(declaration),
     tagName: declaration.tagname,
     customElement: true,
-    // attributes: [], // TODO
+    attributes: transformIfNotEmpty(declaration.attributes, (v) =>
+      Array.from(v.values()).map(convertAttribute)
+    ),
     events: transformIfNotEmpty(declaration.events, (v) =>
       Array.from(v.values()).map(convertEvent)
     ),
@@ -199,7 +203,11 @@ const convertClassDeclaration = (
     ),
     // mixins: [], // TODO
     members: ifNotEmpty([
-      ...Array.from(declaration.fields).map(convertClassField),
+      ...Array.from(declaration.fields).map(
+        declaration.isCustomElementDeclaration()
+          ? convertCustomElementField
+          : convertClassField
+      ),
       ...Array.from(declaration.staticFields).map(convertClassField),
       ...Array.from(declaration.methods).map(convertClassMethod),
       ...Array.from(declaration.staticMethods).map(convertClassMethod),
@@ -272,6 +280,22 @@ const convertClassField = (field: ClassField): cem.ClassField => {
   };
 };
 
+const convertCustomElementFieldInfo = (field: CustomElementField) => {
+  return {
+    attribute: ifNotEmpty(field.attribute),
+    reflects: ifNotEmpty(field.reflects),
+  };
+};
+
+const convertCustomElementField = (
+  field: CustomElementField
+): cem.CustomElementField => {
+  return {
+    ...convertClassField(field),
+    ...convertCustomElementFieldInfo(field),
+  };
+};
+
 const convertClassMethod = (method: ClassMethod): cem.ClassMethod => {
   return {
     kind: 'method',
@@ -308,6 +332,16 @@ const convertType = (type: Type): cem.Type => {
     references: transformIfNotEmpty(type.references, (r) =>
       convertTypeReferences(type.text, r)
     ),
+  };
+};
+
+const convertAttribute = (attr: Attribute): cem.Attribute => {
+  return {
+    name: attr.name,
+    type: transformIfNotEmpty(attr.type, convertType) ?? {text: 'string'},
+    description: ifNotEmpty(attr.description),
+    summary: ifNotEmpty(attr.summary),
+    default: ifNotEmpty(attr.default),
   };
 };
 
