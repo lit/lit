@@ -1,0 +1,41 @@
+{
+  "name": "@lit-internal/test-elements-react",
+  "version": "1.0.0",
+  "private": true,
+  "description": "React components made by wrapping @lit-internal/test-element-a with @lit-labs/react used for testing.",
+  "type": "module",
+  "scripts": {
+    "build": "wireit"
+  },
+  "dependencies": {
+    "@lit-internal/test-element-a": "*",
+    "@lit-labs/react": "*"
+  },
+  "peerDependencies": {
+    "react": "^17 || ^18",
+    "@types/react": "^17 || ^18"
+  },
+  "files": [
+    "element-a.{js,js.map,d.ts,d.ts.map}",
+    "element-events.{js,js.map,d.ts,d.ts.map}",
+    "element-props.{js,js.map,d.ts,d.ts.map}"
+  ],
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "../../react:build",
+        "../test-element-a:build"
+      ],
+      "files": [
+        "src/**/*"
+      ],
+      "output": [
+        "element-a.{js,js.map,d.ts,d.ts.map}",
+        "element-events.{js,js.map,d.ts,d.ts.map}",
+        "element-props.{js,js.map,d.ts,d.ts.map}"
+      ]
+    }
+  }
+}

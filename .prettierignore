@@ -273,6 +273,13 @@ packages/labs/react/index.*
 packages/labs/react/create-component.*
 packages/labs/react/use-controller.*
 
+packages/labs/rollup-plugin-minify-html-literals/node_modules
+packages/labs/rollup-plugin-minify-html-literals/coverage
+packages/labs/rollup-plugin-minify-html-literals/.nyc_output
+packages/labs/rollup-plugin-minify-html-literals/lib
+packages/labs/rollup-plugin-minify-html-literals/test
+packages/labs/rollup-plugin-minify-html-literals/**/index.*
+
 packages/labs/router/development/
 packages/labs/router/test/
 packages/labs/router/node_modules/

@@ -390,6 +390,7 @@ export interface ClassFieldInit extends PropertyLike {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  readonly?: boolean | undefined;
 }
 
 export class ClassField extends Declaration {
@@ -397,6 +398,7 @@ export class ClassField extends Declaration {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  readonly?: boolean | undefined;
   type?: Type | undefined;
   default?: string | undefined;
   constructor(init: ClassFieldInit) {
@@ -407,6 +409,7 @@ export class ClassField extends Declaration {
     this.source = init.source;
     this.type = init.type;
     this.default = init.default;
+    this.readonly = init.readonly;
   }
 }
 
@@ -539,6 +542,10 @@ export interface NamedDescribed extends Described {
   default?: string;
 }
 
+export interface CSSPropertyInfo extends NamedDescribed {
+  syntax?: string;
+}
+
 export interface TypedNamedDescribed extends NamedDescribed {
   type?: string;
 }
@@ -551,7 +558,7 @@ interface CustomElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   events: Map<string, Event>;
   slots: Map<string, NamedDescribed>;
-  cssProperties: Map<string, NamedDescribed>;
+  cssProperties: Map<string, CSSPropertyInfo>;
   cssParts: Map<string, NamedDescribed>;
 }
 
@@ -572,7 +579,7 @@ export class CustomElementDeclaration extends ClassDeclaration {
   readonly tagname: string | undefined;
   readonly events: Map<string, Event>;
   readonly slots: Map<string, NamedDescribed>;
-  readonly cssProperties: Map<string, NamedDescribed>;
+  readonly cssProperties: Map<string, CSSPropertyInfo>;
   readonly cssParts: Map<string, NamedDescribed>;
 
   constructor(init: CustomElementDeclarationInit) {

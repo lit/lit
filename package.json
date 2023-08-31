@@ -10,7 +10,8 @@
     "packages/*",
     "packages/labs/*",
     "packages/labs/test-projects/*",
-    "packages/localize/examples/*"
+    "packages/localize/examples/*",
+    "examples/*"
   ],
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
@@ -67,6 +68,7 @@
         "./packages/labs/observers:build",
         "./packages/labs/preact-signals:build",
         "./packages/labs/react:build",
+        "./packages/labs/rollup-plugin-minify-html-literals:build",
         "./packages/labs/router:build",
         "./packages/labs/scoped-registry-mixin:build",
         "./packages/labs/ssr:build",
@@ -81,7 +83,8 @@
         "./packages/localize/examples/runtime-js:build",
         "./packages/localize/examples/runtime-ts:build",
         "./packages/localize/examples/transform-js:build",
-        "./packages/localize/examples/transform-ts:build"
+        "./packages/localize/examples/transform-ts:build",
+        "./packages/labs/test-projects/test-elements-react:build"
       ]
     },
     "build:ts": {
@@ -102,6 +105,7 @@
         "./packages/labs/observers:build:ts",
         "./packages/labs/preact-signals:build:ts",
         "./packages/labs/react:build:ts",
+        "./packages/labs/rollup-plugin-minify-html-literals:build:ts",
         "./packages/labs/router:build:ts",
         "./packages/labs/scoped-registry-mixin:build:ts",
         "./packages/labs/ssr:build:ts",
@@ -154,10 +158,12 @@
         "./packages/labs/gen-wrapper-vue:test",
         "./packages/labs/preact-signals:test",
         "./packages/labs/react:test",
+        "./packages/labs/rollup-plugin-minify-html-literals:test",
         "./packages/labs/ssr:test",
         "./packages/labs/ssr-react:test",
         "./packages/labs/testing:test",
-        "./packages/labs/virtualizer:test"
+        "./packages/labs/virtualizer:test",
+        "./examples/preact:test"
       ]
     },
     "test:lit-starter-js": {

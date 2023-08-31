@@ -44,15 +44,23 @@ export const hasProtectedModifier = (ts: TypeScript, node: ts.HasModifiers) => {
   return hasModifier(ts, node, ts.SyntaxKind.ProtectedKeyword);
 };
 
-const isPrivate = (ts: TypeScript, node: ts.HasModifiers) => {
-  return hasPrivateModifier(ts, node) || hasJSDocTag(ts, node, 'private');
+const isPrivate = (ts: TypeScript, node: ts.Node) => {
+  return (
+    (ts.canHaveModifiers(node) && hasPrivateModifier(ts, node)) ||
+    ((ts.isPropertyDeclaration(node) || ts.isMethodDeclaration(node)) &&
+      ts.isPrivateIdentifier(node.name)) ||
+    hasJSDocTag(ts, node, 'private')
+  );
 };
 
-const isProtected = (ts: TypeScript, node: ts.HasModifiers) => {
-  return hasProtectedModifier(ts, node) || hasJSDocTag(ts, node, 'protected');
+const isProtected = (ts: TypeScript, node: ts.Node) => {
+  return (
+    (ts.canHaveModifiers(node) && hasProtectedModifier(ts, node)) ||
+    hasJSDocTag(ts, node, 'protected')
+  );
 };
 
-export const getPrivacy = (ts: TypeScript, node: ts.HasModifiers): Privacy => {
+export const getPrivacy = (ts: TypeScript, node: ts.Node): Privacy => {
   return isPrivate(ts, node)
     ? 'private'
     : isProtected(ts, node)

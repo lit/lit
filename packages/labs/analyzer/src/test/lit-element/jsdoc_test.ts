@@ -63,7 +63,7 @@ for (const lang of languages) {
   test('cssParts - Correct number found', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
-    assert.equal(element.cssParts.size, 3);
+    assert.equal(element.cssParts.size, 6);
   });
 
   test('cssParts - no-description', ({getModule}) => {
@@ -99,18 +99,39 @@ for (const lang of languages) {
     );
   });
 
+  test('cssParts - lowercase', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const part = element.cssParts.get('lower-with-description-dash');
+    assert.ok(part);
+    assert.equal(part.summary, undefined);
+    assert.equal(
+      part.description,
+      'Description for :part(with-description-dash)'
+    );
+  });
+
   // cssProperties
 
   test('cssProperties - Correct number found', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
-    assert.equal(element.cssProperties.size, 9);
+    assert.equal(element.cssProperties.size, 22);
   });
 
   test('cssProperties - no-description', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
     const prop = element.cssProperties.get('--no-description');
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(prop.description, undefined);
+  });
+
+  test('cssProperties - lower-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-no-description');
     assert.ok(prop);
     assert.equal(prop.summary, undefined);
     assert.equal(prop.description, undefined);
@@ -128,6 +149,18 @@ for (const lang of languages) {
     );
   });
 
+  test('cssProperties - lower-with-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-with-description');
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(
+      prop.description,
+      'Description for --lower-with-description\nwith wraparound'
+    );
+  });
+
   test('cssProperties - with-description-dash', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
@@ -137,10 +170,30 @@ for (const lang of languages) {
     assert.equal(prop.description, 'Description for --with-description-dash');
   });
 
+  test('cssProperties - lower-with-description-dash', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-with-description-dash');
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(
+      prop.description,
+      'Description for --lower-with-description-dash'
+    );
+  });
+
   test('cssProperties - default-no-description', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
     const prop = element.cssProperties.get('--default-no-description');
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
+  });
+
+  test('cssProperties - lower-default-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-default-no-description');
     assert.ok(prop);
     assert.equal(prop.default, '#324fff');
   });
@@ -153,6 +206,14 @@ for (const lang of languages) {
     assert.equal(prop.default, '#324fff');
   });
 
+  test('cssProperties - lower-default-with-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-default-with-description');
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
+  });
+
   test('cssProperties - default-with-description-dash', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
@@ -161,10 +222,29 @@ for (const lang of languages) {
     assert.equal(prop.default, '#324fff');
   });
 
+  test('cssProperties - lower-default-with-description-dash', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get(
+      '--lower-default-with-description-dash'
+    );
+    assert.ok(prop);
+    assert.equal(prop.default, '#324fff');
+  });
+
   test('cssProperties - short-no-description', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
     const prop = element.cssProperties.get('--short-no-description');
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(prop.description, undefined);
+  });
+
+  test('cssProperties - lower-short-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-short-no-description');
     assert.ok(prop);
     assert.equal(prop.summary, undefined);
     assert.equal(prop.description, undefined);
@@ -182,6 +262,18 @@ for (const lang of languages) {
     );
   });
 
+  test('cssProperties - lower-short-with-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--lower-short-with-description');
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(
+      prop.description,
+      'Description for --lower-short-with-description\nwith wraparound'
+    );
+  });
+
   test('cssProperties - short-with-description-dash', ({getModule}) => {
     const element = getModule('element-a').getDeclaration('ElementA');
     assert.ok(element.isLitElementDeclaration());
@@ -191,6 +283,20 @@ for (const lang of languages) {
     assert.equal(
       prop.description,
       'Description for --short-with-description-dash'
+    );
+  });
+
+  test('cssProperties - lower-short-with-description-dash', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get(
+      '--lower-short-with-description-dash'
+    );
+    assert.ok(prop);
+    assert.equal(prop.summary, undefined);
+    assert.equal(
+      prop.description,
+      'Description for --lower-short-with-description-dash'
     );
   });
 
@@ -207,6 +313,14 @@ for (const lang of languages) {
     assert.equal(method.description, `Method 1 description`);
     assert.equal(method.parameters?.length, 0);
     assert.equal(method.return?.type?.text, 'void');
+  });
+
+  test('cssProperties - syntax-no-description', ({getModule}) => {
+    const element = getModule('element-a').getDeclaration('ElementA');
+    assert.ok(element.isLitElementDeclaration());
+    const prop = element.cssProperties.get('--syntax-no-description');
+    assert.ok(prop);
+    assert.equal(prop.syntax, '<color>');
   });
 
   test.run();

@@ -36,6 +36,45 @@ for (const lang of languages) {
     assert.equal(element.reactiveProperties.has('notDecorated'), false);
   });
 
+  test('constructor-assigned non-decorated field', ({element}) => {
+    const property = element.getField('constructorAssignOnly')!;
+    assert.ok(property);
+    assert.ok(property.type);
+    assert.equal(property.name, 'constructorAssignOnly');
+    assert.equal(property.type?.text, 'number');
+    assert.equal(property.type?.references.length, 0);
+  });
+
+  test('readonly field', ({element}) => {
+    const property = element.getField('readonlyField')!;
+    assert.ok(property);
+    assert.ok(property.type);
+    assert.equal(property.name, 'readonlyField');
+    assert.equal(property.readonly, true);
+    assert.equal(property.type?.text, 'number');
+    assert.equal(property.type?.references.length, 0);
+  });
+
+  test('getter-only accessor', ({element}) => {
+    const property = element.getField('getterOnly')!;
+    assert.ok(property);
+    assert.ok(property.type);
+    assert.equal(property.name, 'getterOnly');
+    assert.equal(property.readonly, true);
+    assert.equal(property.type?.text, 'number');
+    assert.equal(property.type?.references.length, 0);
+  });
+
+  test('accessor pair', ({element}) => {
+    const property = element.getField('accessorPair')!;
+    assert.ok(property);
+    assert.ok(property.type);
+    assert.equal(property.name, 'accessorPair');
+    assert.not.equal(property.readonly, true);
+    assert.equal(property.type?.text, 'number');
+    assert.equal(property.type?.references.length, 0);
+  });
+
   test('string property with no options', ({element}) => {
     const property = element.reactiveProperties.get('noOptionsString');
     assert.ok(property);

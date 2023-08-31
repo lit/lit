@@ -1,0 +1,108 @@
+{
+  "name": "@lit-labs/rollup-plugin-minify-html-literals",
+  "version": "0.0.0",
+  "description": "Rollup plugin to minify HTML template literal strings",
+  "main": "index.js",
+  "types": "index.d.ts",
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "private": true,
+  "type": "module",
+  "files": [
+    "index.*",
+    "/lib/"
+  ],
+  "keywords": [
+    "rollup-plugin",
+    "minify",
+    "html",
+    "literal",
+    "literals",
+    "template",
+    "tagged",
+    "lit-html"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/rollup-plugin-minify-html-literals"
+  },
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "index.{js,js.map,d.ts,d.ts.map}",
+        "lib/**/*.{js,js.map,d.ts,d.ts.map}",
+        "test/**/*.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ]
+    },
+    "test": {
+      "command": "nyc mocha -r ts-node/register -r source-map-support/register test/*.js",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": [
+        ".nyc_output/"
+      ]
+    }
+  },
+  "nyc": {
+    "extension": [
+      ".ts"
+    ],
+    "include": [
+      "src/**/*.ts"
+    ],
+    "exclude": [
+      "src/**/*.d.ts"
+    ],
+    "reporter": [
+      "text-summary"
+    ],
+    "all": true
+  },
+  "dependencies": {
+    "clean-css": "^4.2.1",
+    "html-minifier": "^4.0.0",
+    "magic-string": "^0.25.0",
+    "rollup-pluginutils": "^2.8.2",
+    "typescript": "^2.9.2 || ^3.0.0 || ^4.0.0 || ^5.0.0"
+  },
+  "peerDependencies": {
+    "rollup": "^0.65.2 || ^1.0.0 || ^2.0.0 || ^3.0.0"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.1.4",
+    "@types/clean-css": "^4.2.0",
+    "@types/html-minifier": "^3.5.3",
+    "@types/mocha": "^5.2.5",
+    "@types/node": "^14.14.32",
+    "@types/sinon": "^5.0.1",
+    "chai": "^4.1.2",
+    "husky": "^0.14.3",
+    "mocha": "^7.2.0",
+    "nyc": "^15.0.0",
+    "rollup": "^3.5.1",
+    "sinon": "^6.1.4",
+    "source-map-support": "^0.5.6",
+    "standard-version": "^9.0.0",
+    "ts-node": "^7.0.0"
+  }
+}

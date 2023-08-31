@@ -20,7 +20,10 @@ import {
   NamedDescribed,
 } from '../model.js';
 import {addEventsToMap} from './events.js';
-import {parseNodeJSDocInfo, parseNamedJSDocInfo} from '../javascript/jsdoc.js';
+import {
+  parseNodeJSDocInfo,
+  parseNamedTypedJSDocInfo,
+} from '../javascript/jsdoc.js';
 
 const _isCustomElementClassDeclaration = (
   t: ts.BaseType,
@@ -112,7 +115,7 @@ const addNamedJSDocInfoToMap = (
   tag: ts.JSDocTag,
   analyzer: AnalyzerInterface
 ) => {
-  const info = parseNamedJSDocInfo(tag, analyzer);
+  const info = parseNamedTypedJSDocInfo(tag, analyzer);
   if (info !== undefined) {
     map.set(info.name, info);
   }
@@ -141,12 +144,13 @@ export const getJSDocData = (
           addNamedJSDocInfoToMap(slots, tag, analyzer);
           break;
         case 'cssProp':
-          addNamedJSDocInfoToMap(cssProperties, tag, analyzer);
-          break;
+        case 'cssprop':
         case 'cssProperty':
+        case 'cssproperty':
           addNamedJSDocInfoToMap(cssProperties, tag, analyzer);
           break;
         case 'cssPart':
+        case 'csspart':
           addNamedJSDocInfoToMap(cssParts, tag, analyzer);
           break;
       }

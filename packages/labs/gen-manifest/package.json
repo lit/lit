@@ -1,12 +1,12 @@
 {
   "name": "@lit-labs/gen-manifest",
   "description": "Code generator for generating Custom Elements Manifests for Lit components",
-  "version": "0.2.4",
+  "version": "0.2.5",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
   "type": "module",
-  "main": "lib/index.js",
+  "main": "index.js",
   "repository": "lit/lit",
   "scripts": {
     "build": "wireit",
@@ -60,7 +60,10 @@
     "node": ">=14.8.0"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "index.map.js",
+    "index.d.ts",
+    "index.d.ts.map"
   ],
   "homepage": "https://github.com/lit/lit",
   "keywords": [

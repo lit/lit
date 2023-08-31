@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.0.2
+
+### Patch Changes
+
+- [#4142](https://github.com/lit/lit/pull/4142) [`170e9164`](https://github.com/lit/lit/commit/170e91648472d21ecee3fca9ac7a0a52787b6e98) - Fix type compatibility with Preact when adding children to wrapped components.
+
 ## 2.0.1
 
 ### Patch Changes

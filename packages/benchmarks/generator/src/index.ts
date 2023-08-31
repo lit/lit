@@ -6,8 +6,7 @@
 
 import fs from 'fs';
 import path from 'path';
-import tachPkg from 'tachometer/lib/cli.js';
-const {main: tachometer} = tachPkg;
+import {main as tachometer} from 'tachometer/lib/cli.js';
 import tablePkg from 'table';
 const {table, getBorderCharacters} = tablePkg;
 import rimraf from 'rimraf';
@@ -178,6 +177,12 @@ const generateBenchmark = (
 
   // Output benchmark script file
   const script = `
+/**
+ * @license
+ * Copyright ${new Date().getFullYear()} Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 /*\n${generatedByComment}\n*/
 ${renderer.startBenchmark(parseRenderer(opts.renderers).base)}
 ${generateTemplate()}

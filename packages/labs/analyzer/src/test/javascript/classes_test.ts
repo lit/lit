@@ -114,6 +114,17 @@ nisi ut aliquip ex ea commodo consequat.`
     assert.equal(member.deprecated, 'Class field 4 deprecated');
   });
 
+  test('#privateField', ({getModule}) => {
+    const dec = getModule('classes').getDeclaration('Class1');
+    assert.ok(dec.isClassDeclaration());
+    const member = dec.getField('#privateField');
+    assert.ok(member?.isClassField(), 'is class field');
+    assert.equal(member.description, 'ecma private field');
+    assert.equal(member.default, `'private'`);
+    assert.equal(member.privacy, 'private');
+    assert.equal(member.type?.text, 'string');
+  });
+
   test('static field1', ({getModule}) => {
     const dec = getModule('classes').getDeclaration('Class1');
     assert.ok(dec.isClassDeclaration());
@@ -206,6 +217,17 @@ nisi ut aliquip ex ea commodo consequat.`
       'Static method 1 return description'
     );
     assert.equal(member.deprecated, 'Static method 1 deprecated');
+  });
+
+  test('#privateMethod', ({getModule}) => {
+    const dec = getModule('classes').getDeclaration('Class1');
+    assert.ok(dec.isClassDeclaration());
+    const member = dec.getMethod('#privateMethod');
+    assert.ok(member?.isClassMethod());
+    assert.equal(member.description, 'ecma private method');
+    assert.equal(member.privacy, 'private');
+    assert.equal(member.parameters?.length, 1);
+    assert.equal(member.return?.type?.text, 'void');
   });
 
   test('superClass', ({getModule}) => {

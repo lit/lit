@@ -17,7 +17,7 @@ import {
   TypedNamedDescribed,
   DeprecatableDescribed,
   AnalyzerInterface,
-  NamedDescribed,
+  CSSPropertyInfo,
 } from '../model.js';
 
 export type TypeScript = typeof ts;
@@ -43,17 +43,11 @@ const normalizeLineEndings = (s: string) => s.replace(/\r/g, '').trim();
 
 // Regex for parsing name, type, and description from JSDoc comments
 const parseNameTypeDescRE =
-  /^(?<name>\S+)(?:\s+{(?<type>.*)})?(?:\s+-\s+)?(?<description>[\s\S]*)$/m;
+  /^\[?(?<name>[^{}[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?:\s+{(?<type>.*)})?(?:\s+-\s+)?(?<description>[\s\S]*)$/m;
 
-// Regex for parsing optional name and description from JSDoc comments, where
-// the dash is required before the description (syntax for `@slot` tag, whose
-// default slot has no name)
-const parseNameDashDescRE =
-  /^\[?(?<name>[^[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?\s+-\s+(?<description>[\s\S]*)$/;
-
-// Regex for parsing optional name, default, and description from JSDoc comments
-const parseNameDescRE =
-  /^\[?(?<name>[^[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?:\s+-\s+)?(?<description>[\s\S]*)$/;
+// Regex for parsing type, name, and description from JSDoc comments
+const parseTypeNameDescRE =
+  /^\{(?<type>.+)\}\s+\[?(?<name>[^{}[\]\s=]+)(?:=(?<defaultValue>[^\]]+))?\]?(?:\s+-\s+)?(?<description>[\s\S]*)$/m;
 
 const getJSDocTagComment = (tag: ts.JSDocTag, analyzer: AnalyzerInterface) => {
   let {comment} = tag;
@@ -93,6 +87,22 @@ const isModuleJSDocTag = (tag: ts.JSDocTag) =>
  * * @fires event-name {Type} description
  * * @fires event-name {Type} - description
  * * @fires event-name {Type}: description
+ * * @fires {Type} event-name
+ * * @fires {Type} event-name description
+ * * @fires {Type} event-name - description
+ * * @fires {Type} event-name: description
+ * * @slot name
+ * * @slot name description
+ * * @slot name - description
+ * * @slot name: description
+ * * @cssProp [--name=default]
+ * * @cssProp [--name=default] description
+ * * @cssProp [--name=default] - description
+ * * @cssProp [--name=default]: description
+ * * @cssprop {<color>} [--name=default]
+ * * @cssprop {<color>} [--name=default] description
+ * * @cssprop {<color>} [--name=default] - description
+ * * @cssprop {<color>} [--name=default]: description
  */
 export const parseNamedTypedJSDocInfo = (
   tag: ts.JSDocTag,
@@ -102,7 +112,9 @@ export const parseNamedTypedJSDocInfo = (
   if (comment == undefined) {
     return undefined;
   }
-  const nameTypeDesc = comment.match(parseNameTypeDescRE);
+  const regex =
+    comment.charAt(0) === '{' ? parseTypeNameDescRE : parseNameTypeDescRE;
+  const nameTypeDesc = comment.match(regex);
   if (nameTypeDesc === null) {
     analyzer.addDiagnostic(
       createDiagnostic({
@@ -113,69 +125,18 @@ export const parseNamedTypedJSDocInfo = (
     );
     return undefined;
   }
-  const {name, type, description} = nameTypeDesc.groups!;
-  const info: TypedNamedDescribed = {name, type};
+  const {name, type, defaultValue, description} = nameTypeDesc.groups!;
+  const info: TypedNamedDescribed = {name};
   if (description.length > 0) {
-    info.description = normalizeLineEndings(description);
-  }
-  return info;
-};
-
-function makeDashParseDiagnostic(
-  typescript: TypeScript,
-  tag: ts.JSDocTag,
-  requireDash: boolean
-) {
-  return createDiagnostic({
-    typescript,
-    node: tag,
-    message: `Unexpected JSDoc format.${
-      requireDash
-        ? ' Tag must contain a whitespace-separated dash between the name and description, ' +
-          "i.e. '@slot header - This is the description'"
-        : ''
-    }`,
-  });
-}
-
-/**
- * Parses name and description from JSDoc tag for things like `@slot`,
- * `@cssPart`, and `@cssProp`.
- *
- * Supports the following patterns following the tag (TS parses the tag for us):
- * * @slot name
- * * @slot name description
- * * @slot name - description
- * * @slot name: description
- * * @cssProp [--name=default]
- * * @cssProp [--name=default] description
- * * @cssProp [--name=default] - description
- * * @cssProp [--name=default]: description
- */
-export const parseNamedJSDocInfo = (
-  tag: ts.JSDocTag,
-  analyzer: AnalyzerInterface,
-  requireDash = false
-): NamedDescribed | undefined => {
-  const comment = getJSDocTagComment(tag, analyzer);
-  if (comment == undefined) {
-    return undefined;
-  }
-  const regex = requireDash ? parseNameDashDescRE : parseNameDescRE;
-  const nameDesc = comment.match(regex);
-  if (nameDesc === null) {
-    analyzer.addDiagnostic(
-      makeDashParseDiagnostic(analyzer.typescript, tag, requireDash)
-    );
-    return undefined;
-  }
-  const {name, description, defaultValue} = nameDesc.groups!;
-  const info: NamedDescribed = {name};
-  if (description?.length > 0) {
     info.description = normalizeLineEndings(description);
   }
   if (defaultValue?.length > 0) {
     info.default = defaultValue;
+  }
+  if (tag.tagName.text.toLowerCase().startsWith('cssprop')) {
+    (info as CSSPropertyInfo).syntax = type;
+  } else {
+    info.type = type;
   }
   return info;
 };

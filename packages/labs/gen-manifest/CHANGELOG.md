@@ -1,5 +1,11 @@
 # @lit-labs/gen-manifest
 
+## 0.2.5
+
+### Patch Changes
+
+- [#4126](https://github.com/lit/lit/pull/4126) [`28c33d23`](https://github.com/lit/lit/commit/28c33d2327d7bfd256e4c8709c277ea6e6437b4a) Thanks [@bennypowers](https://github.com/bennypowers)! - Includes TypeScript typings and source maps in npm tarball, corrects `main` package.json field
+
 ## 0.2.4
 
 ### Patch Changes

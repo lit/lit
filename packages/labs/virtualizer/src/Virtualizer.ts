@@ -942,8 +942,11 @@ function getElementAncestors(el: HTMLElement, includeSelf = false) {
 function getClippingAncestors(el: HTMLElement, includeSelf = false) {
   let foundFixed = false;
   return getElementAncestors(el, includeSelf).filter((a) => {
+    if (foundFixed) {
+      return false;
+    }
     const style = getComputedStyle(a);
-    foundFixed = foundFixed || style.position === 'fixed';
-    return !foundFixed && style.overflow !== 'visible';
+    foundFixed = style.position === 'fixed';
+    return style.overflow !== 'visible';
   });
 }
