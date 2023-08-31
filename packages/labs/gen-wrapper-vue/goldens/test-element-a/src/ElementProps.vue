@@ -13,6 +13,8 @@ export interface Props {
   aBool?: boolean;
   aStrArray?: string[];
   aMyType?: MyType;
+  reflect?: string;
+  customAttr?: string;
 }
 
 const vueProps = defineProps<Props>();

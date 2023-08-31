@@ -67,6 +67,24 @@ export class ElementProps {
   }
 
   @Input()
+  set reflect(v: string) {
+    this._ngZone.runOutsideAngular(() => (this._el.reflect = v));
+  }
+
+  get reflect() {
+    return this._el.reflect;
+  }
+
+  @Input()
+  set customAttr(v: string) {
+    this._ngZone.runOutsideAngular(() => (this._el.customAttr = v));
+  }
+
+  get customAttr() {
+    return this._el.customAttr;
+  }
+
+  @Input()
   set aMyType(v: MyType) {
     this._ngZone.runOutsideAngular(() => (this._el.aMyType = v));
   }
