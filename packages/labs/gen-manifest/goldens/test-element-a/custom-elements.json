@@ -590,16 +590,16 @@
             },
             {
               "kind": "field",
-              "name": "reflect",
+              "name": "aReflect",
               "privacy": "public",
               "type": {"text": "string"},
               "reflects": true,
-              "attribute": "reflect",
+              "attribute": "areflect",
               "default": "'reflect'"
             },
             {
               "kind": "field",
-              "name": "customAttr",
+              "name": "aCustomAttr",
               "privacy": "public",
               "type": {"text": "string"},
               "reflects": true,

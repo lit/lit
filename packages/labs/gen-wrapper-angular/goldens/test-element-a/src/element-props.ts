@@ -67,21 +67,21 @@ export class ElementProps {
   }
 
   @Input()
-  set reflect(v: string) {
-    this._ngZone.runOutsideAngular(() => (this._el.reflect = v));
+  set aReflect(v: string) {
+    this._ngZone.runOutsideAngular(() => (this._el.aReflect = v));
   }
 
-  get reflect() {
-    return this._el.reflect;
+  get aReflect() {
+    return this._el.aReflect;
   }
 
   @Input()
-  set customAttr(v: string) {
-    this._ngZone.runOutsideAngular(() => (this._el.customAttr = v));
+  set aCustomAttr(v: string) {
+    this._ngZone.runOutsideAngular(() => (this._el.aCustomAttr = v));
   }
 
-  get customAttr() {
-    return this._el.customAttr;
+  get aCustomAttr() {
+    return this._el.aCustomAttr;
   }
 
   @Input()
