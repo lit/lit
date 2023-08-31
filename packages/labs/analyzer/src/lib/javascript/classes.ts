@@ -20,6 +20,7 @@ import {
   ClassHeritage,
   Reference,
   ClassField,
+  CustomElementField,
   ClassMethod,
 } from '../model.js';
 import {
@@ -106,7 +107,10 @@ export const getClassMembers = (
   const staticFieldMap = new Map<string, ClassField>();
   const methodMap = new Map<string, ClassMethod>();
   const staticMethodMap = new Map<string, ClassMethod>();
-  const accessors = new Map<string, {get?: ts.Node; set?: ts.Node}>();
+  const accessors = new Map<
+    string,
+    {get?: ts.AccessorDeclaration; set?: ts.AccessorDeclaration}
+  >();
   declaration.members.forEach((node) => {
     // Ignore non-implementation signatures of overloaded methods by checking
     // for `node.body`.
@@ -175,7 +179,7 @@ export const getClassMembers = (
 
       (info.static ? staticFieldMap : fieldMap).set(
         node.name.getText(),
-        new ClassField({
+        new CustomElementField({
           ...info,
           default: node.initializer?.getText(),
           type: getTypeForNode(node, analyzer),
@@ -192,17 +196,17 @@ export const getClassMembers = (
     }
   });
   for (const [name, {get, set}] of accessors) {
-    if (get ?? set) {
+    const accessor = get ?? set;
+    if (accessor) {
       fieldMap.set(
         name,
-        new ClassField({
+        new CustomElementField({
           name,
-          type: getTypeForNode((get ?? set)!, analyzer),
-          privacy: getPrivacy(typescript, (get ?? set)!),
+          type: getTypeForNode(accessor!, analyzer),
+          privacy: getPrivacy(typescript, accessor!),
           readonly: !!get && !set,
           // TODO(bennypowers): derive from getter?
           // default: ???
-          // TODO(bennypowers): reflect, etc?
         })
       );
     }
