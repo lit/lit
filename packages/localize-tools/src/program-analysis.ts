@@ -514,13 +514,15 @@ function replaceHtmlWithPlaceholders(
 ): Array<string | Omit<Placeholder, 'index'>> {
   const components: Array<string | Omit<Placeholder, 'index'>> = [];
 
-  const traverse = (node: parse5.ChildNode): void => {
+  const traverse = (node: parse5.DefaultTreeAdapterMap['childNode']): void => {
     if (node.nodeName === '#text') {
-      const text = (node as parse5.TextNode).value;
+      const text = (node as parse5.DefaultTreeAdapterMap['textNode']).value;
       components.push(text);
     } else if (node.nodeName === '#comment') {
       components.push({
-        untranslatable: serializeComment(node as parse5.CommentNode),
+        untranslatable: serializeComment(
+          node as parse5.DefaultTreeAdapterMap['commentNode']
+        ),
       });
     } else {
       const {open, close} = serializeOpenCloseTags(node);
@@ -549,12 +551,19 @@ function replaceHtmlWithPlaceholders(
  *
  *   <b class="red">foo</b> --> {open: '<b class="red">, close: '</b>'}
  */
-function serializeOpenCloseTags(node: parse5.ChildNode): {
+function serializeOpenCloseTags(
+  node: parse5.DefaultTreeAdapterMap['childNode']
+): {
   open: string;
   close: string;
 } {
-  const withoutChildren: parse5.ChildNode = {...node, childNodes: []};
-  const fakeParent = {childNodes: [withoutChildren]} as parse5.Node;
+  const withoutChildren: parse5.DefaultTreeAdapterMap['childNode'] = {
+    ...node,
+    childNodes: [],
+  };
+  const fakeParent = {
+    childNodes: [withoutChildren],
+  } as parse5.DefaultTreeAdapterMap['parentNode'];
   const serialized = parse5.serialize(fakeParent);
   const lastLt = serialized.lastIndexOf('<');
   const open = serialized.slice(0, lastLt);
@@ -569,8 +578,12 @@ function serializeOpenCloseTags(node: parse5.ChildNode): {
  *
  *   {data: "foo"} --> "<!-- foo -->"
  */
-function serializeComment(comment: parse5.CommentNode): string {
-  return parse5.serialize({childNodes: [comment]} as parse5.Node);
+function serializeComment(
+  comment: parse5.DefaultTreeAdapterMap['commentNode']
+): string {
+  return parse5.serialize({
+    childNodes: [comment],
+  } as parse5.DefaultTreeAdapterMap['parentNode']);
 }
 
 /**
