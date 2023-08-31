@@ -63,10 +63,12 @@
       "clean": "if-file-deleted",
       "files": [
         "tsconfig.json",
-        "src/**/*.ts"
+        "src/**/*.ts",
+        "!src/test/std-decorators"
       ],
       "output": [
         "development",
+        "!development/test/std-decorators",
         "tsconfig.tsbuildinfo"
       ]
     },
@@ -87,7 +89,7 @@
       ]
     },
     "build:ts:types": {
-      "command": "treemirror development . \"**/*.d.ts{,.map}\"",
+      "command": "treemirror development . \"**/*.d.ts{,.map}\" \"!test\"",
       "dependencies": [
         "../../internal-scripts:build",
         "build:ts"
@@ -95,8 +97,7 @@
       "files": [],
       "output": [
         "*.d.ts{,.map}",
-        "lib/**/*.d.ts{,.map}",
-        "test/**/*.d.ts{,.map}"
+        "lib/**/*.d.ts{,.map}"
       ]
     },
     "build:rollup": {
@@ -110,8 +111,7 @@
       ],
       "output": [
         "index.js{,.map}",
-        "lib/**/*.js{,.map}",
-        "test/**/*.js{,.map}"
+        "lib/**/*.js{,.map}"
       ]
     },
     "checksize": {
