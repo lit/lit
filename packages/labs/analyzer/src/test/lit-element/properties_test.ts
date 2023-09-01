@@ -205,7 +205,7 @@ for (const lang of languages) {
 
   test('attribute: false', ({element}) => {
     const property = element.reactiveProperties.get('attributeFalse')!;
-    assert.equal(property.attribute, undefined);
+    assert.equal(property.attribute, false);
   });
 
   test('attribute: undefined', ({element}) => {
