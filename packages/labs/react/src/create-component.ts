@@ -31,6 +31,18 @@ export type WebComponentProps<I extends HTMLElement> = React.DetailedHTMLProps<
 > &
   ElementProps<I>;
 
+// Type below taken from https://github.com/DefinitelyTyped/DefinitelyTyped/blob/05094b6df4fb6f4404333725f13d63dd8aabeb34/types/react/index.d.ts#L825-L830
+// We make a copy here so that preact users can still use it as it is not
+// included in preact/compat yet.
+// See: https://github.com/preactjs/preact/issues/4124
+/** Ensures that the props do not include ref at all */
+type PropsWithoutRef<P> =
+  // Omit would not be sufficient for this. We'd like to avoid unnecessary mapping and need a distributive conditional to support unions.
+  // see: https://www.typescriptlang.org/docs/handbook/2/conditional-types.html#distributive-conditional-types
+  // https://github.com/Microsoft/TypeScript/issues/28339
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  P extends any ? ('ref' extends keyof P ? Omit<P, 'ref'> : P) : P;
+
 /**
  * Type of the React component wrapping the web component. This is the return
  * type of `createComponent`.
@@ -39,7 +51,7 @@ export type ReactWebComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 > = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<ComponentProps<I, E>> & React.RefAttributes<I>
+  PropsWithoutRef<ComponentProps<I, E>> & React.RefAttributes<I>
 >;
 
 // Props derived from custom element class. Currently has limitations of making
@@ -48,27 +60,15 @@ export type ReactWebComponent<
 // lifecycle methods or allow user to explicitly provide props.
 type ElementProps<I> = Partial<Omit<I, keyof HTMLElement>>;
 
-// Child type compatible with both React and Preact. It's based on
-// `React.ReactNode` but using `JSX.Element` allows`VNode` to be acceptable in
-// Preact projects.
-type Child =
-  | JSX.Element
-  | React.ReactPortal
-  | string
-  | number
-  | boolean
-  | undefined;
-
 // Acceptable props to the React component.
 type ComponentProps<I, E extends EventNames = {}> = Omit<
   React.HTMLAttributes<I>,
   // Omit keyof E to prefer provided event handler mapping over React's
   // built-in event handler props.
-  | keyof E
-  // Omit children to replace with our own that's compatible with Preact.
-  | 'children'
+  keyof E
 > &
-  EventListeners<E> & {children?: Child | Child[]} & ElementProps<I>;
+  EventListeners<E> &
+  ElementProps<I>;
 
 /**
  * Type used to cast an event name with an event type when providing the
