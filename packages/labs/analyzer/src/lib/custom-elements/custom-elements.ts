@@ -141,6 +141,7 @@ export const getJSDocData = (
     for (const tag of jsDocTags) {
       switch (tag.tagName.text) {
         case 'attr':
+        case 'attribute':
           addJSDocAttributeToMap(tag, attributes, analyzer);
           break;
         case 'fires':
