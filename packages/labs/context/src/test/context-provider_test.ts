@@ -226,7 +226,7 @@ memorySuite('memory leak test', () => {
   });
 });
 
-test('regression test for https://github.com/lit/lit/issues/4158?', async () => {
+test('regression test for https://github.com/lit/lit/issues/4158', async () => {
   const context = createContext<string>('my-context');
 
   class Provider extends LitElement {
@@ -254,7 +254,6 @@ test('regression test for https://github.com/lit/lit/issues/4158?', async () => 
   customElements.define('r-consumer', Consumer);
 
   class Container extends LitElement {
-    // uncomment for infinite loop:
     @provide({context})
     n2 = 'd';
 
@@ -266,8 +265,9 @@ test('regression test for https://github.com/lit/lit/issues/4158?', async () => 
 
   const provider = new Provider();
   document.body.appendChild(provider);
-  await new Promise((r) => setTimeout(r, 100));
+  // Ensure that the elements have enough time to update.
+  await new Promise((r) => setTimeout(r, 0));
   // This test passes if it doesn't get into an infinite loop of attempted
   // repartenting of subscriptions.
-  // document.body.removeChild(provider);
+  document.body.removeChild(provider);
 });

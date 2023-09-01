@@ -2,4 +2,4 @@
 '@lit-labs/context': patch
 ---
 
-Fix an infinite loop that could result when declares multiple providers for a single context. This is an error, but we shouldn't go into an infinite loop over it.
+Fix an infinite loop that occurred when multiple providers were declared for a single context on the same host. This is an error, but we shouldn't go into an infinite loop over it.
