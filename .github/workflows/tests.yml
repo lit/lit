@@ -68,6 +68,7 @@ jobs:
 
       - name: Test
         env:
+          WIREIT_LOGGER: quiet
           BROWSERS: preset:local
           CONCURRENT_BROWSERS: 3
         run: npm run test
@@ -91,5 +92,6 @@ jobs:
 
       - name: Test
         env:
+          WIREIT_LOGGER: quiet
           RUN_BROWSER_TESTS: false
         run: npm run test:windows
