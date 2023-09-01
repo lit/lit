@@ -21,6 +21,10 @@
       "path": "packages/labs/ssr"
     },
     {
+      "name": "task",
+      "path": "packages/task"
+    },
+    {
       "name": "lit-starter-ts",
       "path": "packages/lit-starter-ts"
     },
