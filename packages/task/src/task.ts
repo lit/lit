@@ -7,12 +7,12 @@ import {notEqual} from '@lit/reactive-element';
 import {ReactiveControllerHost} from '@lit/reactive-element/reactive-controller.js';
 
 export interface TaskFunctionOptions {
-  signal?: AbortSignal;
+  signal: AbortSignal;
 }
 
 export type TaskFunction<D extends ReadonlyArray<unknown>, R = unknown> = (
   args: D,
-  options?: TaskFunctionOptions
+  options: TaskFunctionOptions
 ) => R | typeof initialState | Promise<R | typeof initialState>;
 export type ArgsFunction<D extends ReadonlyArray<unknown>> = () => D;
 
