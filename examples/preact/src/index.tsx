@@ -26,6 +26,8 @@ export function App() {
         This goes in default slot
         <div slot="stuff">This goes in stuff slot</div>
       </ElementA>
+      {/* @ts-expect-error bar is not a valid prop */}
+      <ElementA bar="bar" />
       <ElementEvents
         foo="foo"
         onStringCustomEvent={(e: CustomEvent<String>) => {
