@@ -115,7 +115,25 @@ export class ContextProvider<T extends Context<unknown, unknown>>
     }
     // Re-parent all of our subscriptions in case this new child provider
     // should take them over.
+    const seen = new Set<unknown>();
     for (const [callback, {consumerHost}] of this.subscriptions) {
+      // Prevent infinite loops in the case where a one host element
+      // is providing the same context multiple times.
+      //
+      // While normally it's a no-op to attempt to re-parent a subscription
+      // that already has its proper parent, in the case where there's more
+      // than one ValueProvider for the same context on the same hostElement,
+      // they will each call the consumer, and since they will each have their
+      // own dispose function, a well behaved consumer will notice the change
+      // in dispose function and call their old one.
+      //
+      // This will cause the subscriptions to thrash, but worse, without this
+      // set check here, we can end up in an infinite loop, as we add and remove
+      // the same subscriptions onto the end of the map over and over.
+      if (seen.has(callback)) {
+        continue;
+      }
+      seen.add(callback);
       consumerHost.dispatchEvent(
         new ContextRequestEvent(this.context, callback, true)
       );
