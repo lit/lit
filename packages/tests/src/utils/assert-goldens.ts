@@ -81,7 +81,7 @@ function colorLineDiff(a: string, b: string): string {
 export const assertGoldensMatch = async (
   outputDir: string,
   goldensDir: string,
-  {formatGlob = '**/*.{ts,js}', noFormat = false} = {}
+  {formatGlob = '**/*.{ts,js}', noFormat = false, type = 'ts'} = {}
 ) => {
   if (!noFormat) {
     // https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
@@ -100,16 +100,28 @@ export const assertGoldensMatch = async (
     return;
   }
 
-  const diff = await dirCompare.compare(goldensDir, outputDir, {
-    compareContent: true,
-    compareFileSync:
-      dirCompare.fileCompareHandlers.lineBasedFileCompare.compareSync,
-    compareFileAsync:
-      dirCompare.fileCompareHandlers.lineBasedFileCompare.compareAsync,
-    ignoreLineEnding: true,
-  });
+  if (type === 'json') {
+    for (const filename of await fsExtra.promises.readdir(goldensDir)) {
+      const expected = JSON.parse(
+        await fsExtra.promises.readFile(path.join(goldensDir, filename), 'utf8')
+      );
+      const actual = JSON.parse(
+        await fsExtra.promises.readFile(path.join(outputDir, filename), 'utf8')
+      );
+      assert.equal(actual, expected, filename);
+    }
+  } else {
+    const diff = await dirCompare.compare(goldensDir, outputDir, {
+      compareContent: true,
+      compareFileSync:
+        dirCompare.fileCompareHandlers.lineBasedFileCompare.compareSync,
+      compareFileAsync:
+        dirCompare.fileCompareHandlers.lineBasedFileCompare.compareAsync,
+      ignoreLineEnding: true,
+    });
 
-  if (!diff.same) {
-    assert.unreachable(formatDirDiff(diff));
+    if (!diff.same) {
+      assert.unreachable(formatDirDiff(diff));
+    }
   }
 };
