@@ -96,6 +96,27 @@ const getIsReadonlyForNode = (
 };
 
 /**
+ * Is the node a constructor assignment to `this`
+ * @example `this.foo = 'bar'`
+ */
+function isConstructorAssignmentStatement(
+  node: ts.Node,
+  typescript: typeof ts
+): node is ts.ExpressionStatement & {
+  expression: ts.BinaryExpression & {
+    left: ts.PropertyAccessExpression;
+  };
+} {
+  return (
+    typescript.isExpressionStatement(node) &&
+    typescript.isBinaryExpression(node.expression) &&
+    node.expression.operatorToken.kind === typescript.SyntaxKind.EqualsToken &&
+    typescript.isPropertyAccessExpression(node.expression.left) &&
+    node.expression.left.expression.kind === typescript.SyntaxKind.ThisKeyword
+  );
+}
+
+/**
  * Returns the `fields` and `methods` of a class.
  */
 export const getClassMembers = (
@@ -124,15 +145,7 @@ export const getClassMembers = (
       // This is ok for now because these are rare ways to "declare" a field,
       // especially in web components where you shouldn't have constructor parameters.
       node.body.statements.forEach((node) => {
-        if (
-          typescript.isExpressionStatement(node) &&
-          typescript.isBinaryExpression(node.expression) &&
-          node.expression.operatorToken.kind ===
-            typescript.SyntaxKind.EqualsToken &&
-          typescript.isPropertyAccessExpression(node.expression.left) &&
-          node.expression.left.expression.kind ===
-            typescript.SyntaxKind.ThisKeyword
-        ) {
+        if (isConstructorAssignmentStatement(node, typescript)) {
           const name = node.expression.left.name.getText();
           fieldMap.set(
             name,
