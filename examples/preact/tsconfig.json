@@ -8,7 +8,10 @@
     "checkJs": true,
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "paths": {
+      "react": ["../../node_modules/preact/compat/src/index.d.ts"]
+    }
   },
   "include": ["./node_modules/vite/client.d.ts", "src/**/*"]
 }
