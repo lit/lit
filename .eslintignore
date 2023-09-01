@@ -135,6 +135,13 @@ packages/reactive-element/std-decorators.*
 packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
 
+packages/task/development/
+packages/task/test/
+packages/task/node_modules/
+packages/task/deep-equals.*
+packages/task/index.*
+packages/task/task.*
+
 packages/tests/node_modules/
 packages/tests/utils/
 packages/tests/**/run-web-tests.js

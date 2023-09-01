@@ -28,7 +28,7 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit-labs/react': '_$G',
   '@lit-labs/scoped-registry-mixin': '_$H',
   '@lit-labs/ssr-client': '_$I',
-  '@lit-labs/task': '_$J',
+  '@lit/task': '_$J',
   '@lit-labs/router': '_$K',
   '@lit-labs/observers': '_$L',
   '@lit-labs/context': '_$M',
