@@ -14,6 +14,8 @@ jobs:
     # When lit-robot creates a release PR, skip this check as it will always
     # fail.
     if: ${{ github.actor != 'lit-robot' }}
+    env:
+      WIREIT_LOGGER: quiet-ci
 
     steps:
       - uses: actions/checkout@v3
@@ -45,6 +47,8 @@ jobs:
 
   tests-local:
     runs-on: ubuntu-latest
+    env:
+      WIREIT_LOGGER: quiet-ci
 
     steps:
       - uses: actions/checkout@v3
@@ -74,6 +78,8 @@ jobs:
 
   windows-tools:
     runs-on: windows-latest
+    env:
+      WIREIT_LOGGER: quiet-ci
 
     steps:
       - uses: actions/checkout@v3
