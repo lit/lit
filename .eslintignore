@@ -272,6 +272,7 @@ packages/labs/react/node_modules/
 packages/labs/react/index.*
 packages/labs/react/create-component.*
 packages/labs/react/use-controller.*
+packages/labs/react/props-without-ref.*
 
 packages/labs/rollup-plugin-minify-html-literals/node_modules
 packages/labs/rollup-plugin-minify-html-literals/coverage

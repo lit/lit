@@ -5,3 +5,4 @@
 /index.*
 /create-component.*
 /use-controller.*
+/props-without-ref.*
