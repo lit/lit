@@ -12,7 +12,12 @@
 
 import type ts from 'typescript';
 import {getClassMembers, getHeritage} from '../javascript/classes.js';
-import {LitElementDeclaration, AnalyzerInterface} from '../model.js';
+import {
+  LitElementDeclaration,
+  AnalyzerInterface,
+  CustomElementField,
+  ReactiveProperty,
+} from '../model.js';
 import {
   CustomElementDecorator,
   isCustomElementDecorator,
@@ -33,16 +38,38 @@ export const getLitElementDeclaration = (
   declaration: LitClassDeclaration,
   analyzer: AnalyzerInterface
 ): LitElementDeclaration => {
+  const reactiveProperties = getProperties(declaration, analyzer);
   return new LitElementDeclaration({
     tagname: getTagName(analyzer.typescript, declaration),
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
     name: declaration.name?.text ?? '',
     node: declaration,
-    reactiveProperties: getProperties(declaration, analyzer),
+    reactiveProperties,
     ...getJSDocData(declaration, analyzer),
     getHeritage: () => getHeritage(declaration, analyzer),
-    ...getClassMembers(declaration, analyzer),
+    ...getLitElementClassMembers(declaration, analyzer, reactiveProperties),
   });
+};
+
+const getLitElementClassMembers = (
+  declaration: LitClassDeclaration,
+  analyzer: AnalyzerInterface,
+  reactiveProperties: Map<string, ReactiveProperty>
+) => {
+  const info = getClassMembers(declaration, analyzer);
+  for (const [name, prop] of reactiveProperties) {
+    const field = info.fieldMap.get(name);
+    if (field instanceof CustomElementField) {
+      field.attribute =
+        prop?.attribute === false
+          ? undefined
+          : typeof prop?.attribute === 'string'
+          ? prop.attribute
+          : name.toLowerCase();
+      field.reflects = prop?.reflect ?? undefined;
+    }
+  }
+  return info;
 };
 
 /**

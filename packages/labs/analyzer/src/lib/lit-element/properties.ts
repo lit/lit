@@ -264,7 +264,7 @@ export const getPropertyAttribute = (
     return initializer.text;
   }
   if (initializer.kind === ts.SyntaxKind.FalseKeyword) {
-    return undefined;
+    return false;
   }
   if (
     initializer.kind === ts.SyntaxKind.TrueKeyword ||

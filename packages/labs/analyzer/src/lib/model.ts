@@ -616,16 +616,6 @@ export class LitElementDeclaration extends CustomElementDeclaration {
   constructor(init: LitElementDeclarationInit) {
     super(init);
     this.reactiveProperties = init.reactiveProperties;
-    for (const [name, prop] of this.reactiveProperties) {
-      const field = this.getField(name);
-      if (field instanceof CustomElementField) {
-        field.attribute =
-          typeof prop?.attribute === 'string'
-            ? prop.attribute
-            : name.toLowerCase();
-        field.reflects = prop?.reflect ?? undefined;
-      }
-    }
   }
 }
 
