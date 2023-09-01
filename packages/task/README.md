@@ -1,4 +1,4 @@
-# @lit-labs/task
+# @lit/task
 
 A controller for Lit that renders asynchronous tasks.
 
@@ -36,7 +36,7 @@ typically return a Lit `TemplateResult` to render.
 From inside your project folder, run:
 
 ```bash
-$ npm install @lit-labs/task
+$ npm install @lit/task
 ```
 
 ## Usage
@@ -44,7 +44,7 @@ $ npm install @lit-labs/task
 Here's an example:
 
 ```ts
-import {Task, TaskStatus} from '@lit-labs/task';
+import {Task, TaskStatus} from '@lit/task';
 // ...
 
 class MyElement extends LitElement {
