@@ -156,8 +156,9 @@
     "@lit-internal/scripts": "^1.0.1-pre.0",
     "lit": "^3.0.0-pre.0"
   },
+  "#versionComment": "We depend on <2.0.0 of task because we want to be compatible with 0.x.x versions, as well as the 1.x.x versions, as they're intended to all be compatible with the 3.x.x API of lit-labs/task before it graduated out of labs.",
   "dependencies": {
-    "@lit/reactive-element": "^2.0.0-pre.0"
+    "@lit/task": "<2.0.0"
   },
   "publishConfig": {
     "access": "public"
