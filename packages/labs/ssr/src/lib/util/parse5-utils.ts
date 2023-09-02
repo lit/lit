@@ -8,12 +8,12 @@ import {
   traverse,
   replaceWith,
   isElementNode,
-  Element as p5Element,
-  Node as p5Node,
+  Element,
+  Node,
 } from '@parse5/tools';
 
-export function removeFakeRootElements(node: p5Node) {
-  const fakeRootElements: p5Element[] = [];
+export function removeFakeRootElements(node: Node) {
+  const fakeRootElements: Element[] = [];
 
   traverse(node, {
     'pre:node': (node) => {
