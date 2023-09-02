@@ -4,11 +4,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {DefaultTreeAdapterMap} from 'parse5';
-import {traverse, replaceWith, isElementNode} from '@parse5/tools';
+import {
+  traverse,
+  replaceWith,
+  isElementNode,
+  Element as p5Element,
+  Node as p5Node,
+} from '@parse5/tools';
 
-export function removeFakeRootElements(node: DefaultTreeAdapterMap['node']) {
-  const fakeRootElements: DefaultTreeAdapterMap['element'][] = [];
+export function removeFakeRootElements(node: p5Node) {
+  const fakeRootElements: p5Element[] = [];
 
   traverse(node, {
     'pre:node': (node) => {
