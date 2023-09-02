@@ -14,6 +14,7 @@ import {
   Reference,
   Type,
   VariableDeclaration,
+  MixinDeclaration,
   LitElementExport,
   ClassField,
   ClassMethod,
@@ -129,10 +130,11 @@ const convertDeclaration = (declaration: Declaration): cem.Declaration => {
     return convertClassDeclaration(declaration);
   } else if (declaration.isVariableDeclaration()) {
     return convertVariableDeclaration(declaration);
+  } else if (declaration.isMixinDeclaration()) {
+    return convertMixinDeclaration(declaration);
   } else if (declaration.isFunctionDeclaration()) {
     return convertFunctionDeclaration(declaration);
   } else {
-    // TODO: MixinDeclaration
     // TODO: CustomElementMixinDeclaration;
     throw new Error(
       `Unknown declaration: ${(declaration as Object).constructor.name}`
@@ -216,6 +218,16 @@ const convertCommonMemberInfo = (member: ClassField | ClassMethod) => {
     privacy: ifNotEmpty(member.privacy),
     inheritedFrom: transformIfNotEmpty(member.inheritedFrom, convertReference),
     source: ifNotEmpty(member.source),
+  };
+};
+
+const convertMixinDeclaration = (
+  declaration: MixinDeclaration
+): cem.MixinDeclaration => {
+  return {
+    kind: 'mixin',
+    ...convertCommonDeclarationInfo(declaration),
+    ...convertCommonFunctionLikeInfo(declaration),
   };
 };
 

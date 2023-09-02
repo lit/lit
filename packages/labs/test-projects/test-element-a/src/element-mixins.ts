@@ -11,6 +11,7 @@ import {customElement, property} from 'lit/decorators.js';
 type Constructor<T> = new (...args: any[]) => T;
 
 /**
+ * Some generic mixin
  * @mixin
  */
 export const mixin = <T extends Constructor<LitElement>>(superClass: T) => {

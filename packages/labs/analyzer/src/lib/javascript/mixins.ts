@@ -15,6 +15,8 @@ import {AnalyzerInterface, MixinDeclaration} from '../model.js';
 import {getClassDeclaration} from './classes.js';
 import {createDiagnostic} from '../errors.js';
 import {DiagnosticCode} from '../diagnostic-code.js';
+import {parseNodeJSDocInfo} from './jsdoc.js';
+import {getFunctionLikeInfo} from './functions.js';
 
 const nodeHasMixinHint = (node: ts.Node) =>
   ts.getJSDocTags(node).some((tag) => tag.tagName.text === 'mixin');
@@ -166,7 +168,6 @@ export const maybeGetMixinFromFunctionLike = (
 
   return new MixinDeclaration({
     node: fn,
-    name,
     superClassArgIdx,
     classDeclaration: getClassDeclaration(
       classDeclaration,
@@ -174,6 +175,8 @@ export const maybeGetMixinFromFunctionLike = (
       true,
       analyzer
     ),
+    ...parseNodeJSDocInfo(fn, analyzer),
+    ...getFunctionLikeInfo(fn, name, analyzer),
   });
 };
 
