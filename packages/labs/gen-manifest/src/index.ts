@@ -197,7 +197,9 @@ const convertClassDeclaration = (
       declaration.heritage.superClass,
       convertReference
     ),
-    // mixins: [], // TODO
+    mixins: ifNotEmpty([
+      ...Array.from(declaration.heritage.mixins).map(convertReference),
+    ]),
     members: ifNotEmpty([
       ...Array.from(declaration.fields).map(convertClassField),
       ...Array.from(declaration.staticFields).map(convertClassField),
