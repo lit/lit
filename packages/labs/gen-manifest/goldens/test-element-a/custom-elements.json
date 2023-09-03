@@ -749,9 +749,9 @@
             {
               "kind": "field",
               "name": "aStr",
+              "attribute": "astr",
               "privacy": "public",
               "default": "'aStr'",
-              "attribute": "astr",
               "type": {
                 "text": "string"
               }
@@ -759,9 +759,9 @@
             {
               "kind": "field",
               "name": "aNum",
+              "attribute": "anum",
               "privacy": "public",
               "default": "-1",
-              "attribute": "anum",
               "type": {
                 "text": "number"
               }
@@ -769,9 +769,9 @@
             {
               "kind": "field",
               "name": "aBool",
+              "attribute": "abool",
               "privacy": "public",
               "default": "false",
-              "attribute": "abool",
               "type": {
                 "text": "boolean"
               }
@@ -779,9 +779,9 @@
             {
               "kind": "field",
               "name": "aStrArray",
+              "attribute": "astrarray",
               "privacy": "public",
               "default": "['a', 'b']",
-              "attribute": "astrarray",
               "type": {
                 "text": "string[]"
               }
@@ -789,10 +789,10 @@
             {
               "kind": "field",
               "name": "aReflect",
-              "privacy": "public",
-              "default": "'reflect'",
               "attribute": "areflect",
               "reflects": true,
+              "privacy": "public",
+              "default": "'reflect'",
               "type": {
                 "text": "string"
               }
@@ -800,9 +800,9 @@
             {
               "kind": "field",
               "name": "aCustomAttr",
+              "attribute": "custom-attr",
               "privacy": "public",
               "default": "'custom-attr'",
-              "attribute": "custom-attr",
               "type": {
                 "text": "string"
               }
@@ -856,10 +856,10 @@
           "events": [
             {
               "name": "a-changed",
+              "description": "An awesome event to fire",
               "type": {
                 "text": "Event"
-              },
-              "description": "An awesome event to fire"
+              }
             }
           ]
         }
@@ -909,12 +909,12 @@
             {
               "kind": "field",
               "name": "mainDefault",
+              "attribute": "maindefault",
               "privacy": "public",
+              "default": "'mainDefault'",
               "type": {
                 "text": "string"
-              },
-              "default": "'mainDefault'",
-              "attribute": "maindefault"
+              }
             },
             {
               "kind": "method",
@@ -966,10 +966,10 @@
               "kind": "field",
               "name": "bar",
               "privacy": "public",
+              "default": "true",
               "type": {
                 "text": "boolean"
-              },
-              "default": "true"
+              }
             }
           ]
         },
@@ -1023,19 +1023,19 @@
             {
               "name": "b",
               "description": "Param b description\nwith wraparound",
+              "default": "false",
+              "optional": true,
               "type": {
                 "text": "boolean"
-              },
-              "default": "false",
-              "optional": true
+              }
             },
             {
               "name": "c",
               "description": "Param c description",
+              "rest": true,
               "type": {
                 "text": "number[]"
-              },
-              "rest": true
+              }
             }
           ],
           "return": {
@@ -1156,17 +1156,18 @@
             {
               "kind": "field",
               "name": "foo",
+              "attribute": "foo",
               "privacy": "public",
               "type": {
                 "text": "string | undefined"
-              },
-              "attribute": "foo"
+              }
             },
             {
               "kind": "field",
               "name": "styles",
               "static": true,
               "privacy": "public",
+              "default": "css`\n    :host {\n      display: block;\n      background-color: var(--background-color);\n      color: var(-foreground-color);\n    }\n  `",
               "type": {
                 "text": "CSSResult",
                 "references": [
@@ -1178,8 +1179,7 @@
                     "end": 9
                   }
                 ]
-              },
-              "default": "css`\n    :host {\n      display: block;\n      background-color: var(--background-color);\n      color: var(-foreground-color);\n    }\n  `"
+              }
             },
             {
               "kind": "method",
@@ -1203,10 +1203,10 @@
           "events": [
             {
               "name": "sub-changed",
+              "description": "An awesome event to fire",
               "type": {
                 "text": "Event"
-              },
-              "description": "An awesome event to fire"
+              }
             }
           ],
           "slots": [
