@@ -419,7 +419,7 @@ export class ClassField extends Declaration {
 }
 
 export class CustomElementField extends ClassField {
-  attribute?: string | undefined;
+  attribute?: string | boolean | undefined;
   reflects?: boolean | undefined;
   constructor(init: CustomElementFieldInit) {
     super(init);
@@ -569,7 +569,7 @@ export interface DeprecatableDescribed extends Described {
   deprecated?: string | boolean | undefined;
 }
 
-interface CustomElementDeclarationInit extends ClassDeclarationInit {
+export interface CustomElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   events: Map<string, Event>;
   attributes: Map<string, Attribute>;
@@ -608,6 +608,36 @@ export class CustomElementDeclaration extends ClassDeclaration {
     this.cssProperties = init.cssProperties;
     this.cssParts = init.cssParts;
   }
+
+  #addFieldToAttributeMap(
+    field: ClassField,
+    attributes: Map<string, Attribute>
+  ) {
+    if (field instanceof CustomElementField && field.attribute) {
+      const {attribute, name: fieldName, ...rest} = field;
+      const name =
+        typeof attribute === 'boolean' ? fieldName.toLowerCase() : attribute;
+      const attrDefault = rest.default ?? this.getField(name)?.default;
+      attributes.set(name, {
+        name,
+        fieldName,
+        ...rest,
+        default: attrDefault,
+      });
+    }
+  }
+
+  /**
+   * provides a map of all attributes by combining those specified only in the
+   * `attributes` map, as well as all class fields which specify an `attribute`.
+   */
+  getAllAttributes(): Map<string, Attribute> {
+    const attributes = new Map(this.attributes);
+    for (const field of this.fields) {
+      this.#addFieldToAttributeMap(field, attributes);
+    }
+    return attributes;
+  }
 }
 
 export class LitElementDeclaration extends CustomElementDeclaration {
@@ -616,6 +646,37 @@ export class LitElementDeclaration extends CustomElementDeclaration {
   constructor(init: LitElementDeclarationInit) {
     super(init);
     this.reactiveProperties = init.reactiveProperties;
+  }
+
+  #addReactivePropertyToAttributeMap(
+    prop: ReactiveProperty,
+    attributes: Map<string, Attribute>
+  ) {
+    if (prop.attribute !== false) {
+      const {attribute, name: fieldName, ...rest} = prop;
+      const name =
+        attribute === true || attribute === undefined
+          ? fieldName.toLowerCase()
+          : attribute;
+      const attrDefault = rest.default ?? this.getField(fieldName)?.default;
+      attributes.set(name, {
+        name,
+        fieldName,
+        ...rest,
+        // TODO(bennypowers): an attr can have a different type than it's field,
+        // if a converter is specified. example: attr can be comma-separated
+        // list when field is number[]
+        default: attrDefault,
+      });
+    }
+  }
+
+  override getAllAttributes(): Map<string, Attribute> {
+    const attributes = super.getAllAttributes();
+    for (const prop of this.reactiveProperties.values()) {
+      this.#addReactivePropertyToAttributeMap(prop, attributes);
+    }
+    return attributes;
   }
 }
 

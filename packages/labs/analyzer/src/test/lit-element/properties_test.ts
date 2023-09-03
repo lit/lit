@@ -329,5 +329,9 @@ for (const lang of languages) {
     assert.not(reactiveProperty);
   });
 
+  test('getAllAttributes - correct count', ({element}) => {
+    assert.equal(element.getAllAttributes()?.size, 17);
+  });
+
   test.run();
 }

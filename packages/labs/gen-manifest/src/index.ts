@@ -79,7 +79,7 @@ export const generateManifest = async (
   analysis: Package
 ): Promise<FileTree> => {
   return {
-    'custom-elements.json': JSON.stringify(convertPackage(analysis)),
+    'custom-elements.json': JSON.stringify(convertPackage(analysis), null, 2),
   };
 };
 
@@ -168,13 +168,20 @@ const convertCustomElementExport = (
 const convertLitElementDeclaration = (
   declaration: LitElementDeclaration
 ): cem.CustomElementDeclaration => {
+  const {kind, name, description, summary, superclass, ...rest} =
+    convertClassDeclaration(declaration);
   return {
-    ...convertClassDeclaration(declaration),
-    tagName: declaration.tagname,
+    kind,
+    name,
+    summary,
+    description,
     customElement: true,
-    attributes: transformIfNotEmpty(declaration.attributes, (v) =>
+    tagName: declaration.tagname,
+    superclass,
+    attributes: transformIfNotEmpty(declaration.getAllAttributes(), (v) =>
       Array.from(v.values()).map(convertAttribute)
     ),
+    ...rest,
     events: transformIfNotEmpty(declaration.events, (v) =>
       Array.from(v.values()).map(convertEvent)
     ),
@@ -256,18 +263,20 @@ const convertCommonPropertyLikeInfo = (
   propertyLike: Parameter | ClassField
 ) => {
   return {
-    type: transformIfNotEmpty(propertyLike.type, convertType),
     default: ifNotEmpty(propertyLike.default),
+    type: transformIfNotEmpty(propertyLike.type, convertType),
   };
 };
 
 const convertParameter = (param: Parameter): cem.Parameter => {
+  const {type, ...props} = convertCommonPropertyLikeInfo(param);
   return {
     name: param.name,
     ...convertCommonInfo(param),
-    ...convertCommonPropertyLikeInfo(param),
+    ...props,
     optional: ifNotEmpty(param.optional),
     rest: ifNotEmpty(param.rest),
+    type,
   };
 };
 
@@ -280,19 +289,31 @@ const convertClassField = (field: ClassField): cem.ClassField => {
   };
 };
 
-const convertCustomElementFieldInfo = (field: CustomElementField) => {
-  return {
-    attribute: ifNotEmpty(field.attribute),
-    reflects: ifNotEmpty(field.reflects),
-  };
+const normalizeCemFieldAttribute = (
+  field: CustomElementField
+): string | undefined => {
+  return field.attribute === true
+    ? field.name.toLowerCase()
+    : field.attribute === false
+    ? undefined
+    : field.attribute;
 };
 
 const convertCustomElementField = (
   field: CustomElementField
 ): cem.CustomElementField => {
+  const {kind, name, summary, description, privacy, type, ...rest} =
+    convertClassField(field);
   return {
-    ...convertClassField(field),
-    ...convertCustomElementFieldInfo(field),
+    kind,
+    name,
+    summary,
+    description,
+    attribute: normalizeCemFieldAttribute(field),
+    reflects: ifNotEmpty(field.reflects),
+    privacy,
+    ...rest,
+    type,
   };
 };
 
@@ -320,9 +341,9 @@ const convertVariableDeclaration = (
 const convertEvent = (event: Event): cem.Event => {
   return {
     name: event.name,
-    type: transformIfNotEmpty(event.type, convertType) ?? {text: 'Event'}, // TODO(kschaaf) type isn't optional in CEM
-    description: ifNotEmpty(event.description),
     summary: ifNotEmpty(event.summary),
+    description: ifNotEmpty(event.description),
+    type: transformIfNotEmpty(event.type, convertType) ?? {text: 'Event'}, // TODO(kschaaf) type isn't optional in CEM
   };
 };
 
@@ -338,10 +359,11 @@ const convertType = (type: Type): cem.Type => {
 const convertAttribute = (attr: Attribute): cem.Attribute => {
   return {
     name: attr.name,
-    type: transformIfNotEmpty(attr.type, convertType) ?? {text: 'string'},
-    description: ifNotEmpty(attr.description),
+    fieldName: ifNotEmpty(attr.fieldName),
     summary: ifNotEmpty(attr.summary),
+    description: ifNotEmpty(attr.description),
     default: ifNotEmpty(attr.default),
+    type: transformIfNotEmpty(attr.type, convertType) ?? {text: 'string'},
   };
 };
 
