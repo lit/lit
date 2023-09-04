@@ -20,7 +20,6 @@ import {
   ClassHeritage,
   Reference,
   ClassField,
-  CustomElementField,
   ClassMethod,
 } from '../model.js';
 import {
@@ -192,7 +191,7 @@ export const getClassMembers = (
 
       (info.static ? staticFieldMap : fieldMap).set(
         node.name.getText(),
-        new CustomElementField({
+        new ClassField({
           ...info,
           default: node.initializer?.getText(),
           type: getTypeForNode(node, analyzer),
@@ -213,7 +212,7 @@ export const getClassMembers = (
     if (accessor) {
       fieldMap.set(
         name,
-        new CustomElementField({
+        new ClassField({
           name,
           type: getTypeForNode(accessor, analyzer),
           privacy: getPrivacy(typescript, accessor),
