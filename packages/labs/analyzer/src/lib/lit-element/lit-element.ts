@@ -17,6 +17,7 @@ import {
   AnalyzerInterface,
   CustomElementField,
   ReactiveProperty,
+  ClassField,
 } from '../model.js';
 import {
   CustomElementDecorator,
@@ -51,6 +52,45 @@ export const getLitElementDeclaration = (
   });
 };
 
+function getCustomElementField(
+  field: ClassField,
+  prop: ReactiveProperty
+): CustomElementField {
+  const {name} = field;
+  const {
+    privacy,
+    inheritedFrom,
+    source,
+    readonly,
+    type,
+    description,
+    deprecated,
+    summary,
+  } = field;
+  const attribute =
+    prop?.attribute === false
+      ? undefined
+      : typeof prop?.attribute === 'string'
+      ? prop.attribute
+      : name.toLowerCase();
+  const reflects = prop?.reflect ?? undefined;
+  return new CustomElementField({
+    name,
+    attribute,
+    reflects,
+    static: field.static,
+    privacy,
+    summary,
+    description,
+    deprecated,
+    default: field.default,
+    readonly,
+    inheritedFrom,
+    source,
+    type,
+  });
+}
+
 const getLitElementClassMembers = (
   declaration: LitClassDeclaration,
   analyzer: AnalyzerInterface,
@@ -58,15 +98,11 @@ const getLitElementClassMembers = (
 ) => {
   const info = getClassMembers(declaration, analyzer);
   for (const [name, prop] of reactiveProperties) {
-    const field = info.fieldMap.get(name);
-    if (field instanceof CustomElementField) {
-      field.attribute =
-        prop?.attribute === false
-          ? undefined
-          : typeof prop?.attribute === 'string'
-          ? prop.attribute
-          : name.toLowerCase();
-      field.reflects = prop?.reflect ?? undefined;
+    if (info.fieldMap.has(name)) {
+      info.fieldMap.set(
+        name,
+        getCustomElementField(info.fieldMap.get(name)!, prop)
+      );
     }
   }
   return info;

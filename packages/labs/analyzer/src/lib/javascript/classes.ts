@@ -115,6 +115,113 @@ function isConstructorAssignmentStatement(
   );
 }
 
+export function deriveFieldsFromConstructorAssignments(
+  node: ts.ConstructorDeclaration,
+  fieldMap: Map<string, ClassField>,
+  analyzer: AnalyzerInterface
+) {
+  // TODO(bennypowers): We probably want to see if this matches what TypeScript considers a field initialization.
+  // Maybe instead of iterating through the constructor statements, we walk the body looking for any
+  // assignment expression so that we get ones inside of if statements, in parenthesized expressions, etc.
+  //
+  // Also, this doesn't cover destructuring assignment.
+  //
+  // This is ok for now because these are rare ways to "declare" a field,
+  // especially in web components where you shouldn't have constructor parameters.
+  node.body?.statements.forEach((node) => {
+    if (isConstructorAssignmentStatement(node, analyzer.typescript)) {
+      const name = node.expression.left.name.getText();
+      fieldMap.set(
+        name,
+        new ClassField({
+          name,
+          type: getTypeForNode(node.expression.right, analyzer),
+          privacy: getPrivacy(analyzer.typescript, node),
+          readonly: getIsReadonlyForNode(node, analyzer),
+        })
+      );
+    }
+  });
+}
+
+export function addMethodDeclarationToMethodMap(
+  node: ts.MethodDeclaration,
+  methodMap: Map<string, ClassMethod>,
+  staticMethodMap: Map<string, ClassMethod>,
+  analyzer: AnalyzerInterface
+) {
+  const info = getMemberInfo(analyzer.typescript, node);
+  const name = node.name.getText();
+  (info.static ? staticMethodMap : methodMap).set(
+    name,
+    new ClassMethod({
+      ...info,
+      ...getFunctionLikeInfo(node, name, analyzer),
+      ...parseNodeJSDocInfo(node, analyzer),
+    })
+  );
+}
+
+export function addPropertyDeclarationToFieldMap(
+  node: ts.PropertyDeclaration,
+  fieldMap: Map<string, ClassField>,
+  staticFieldMap: Map<string, ClassField>,
+  analyzer: AnalyzerInterface
+) {
+  const info = getMemberInfo(analyzer.typescript, node);
+  const map = info.static ? staticFieldMap : fieldMap;
+  map.set(
+    node.name.getText(),
+    new ClassField({
+      ...info,
+      default: node.initializer?.getText(),
+      type: getTypeForNode(node, analyzer),
+      ...parseNodeJSDocInfo(node, analyzer),
+      readonly: getIsReadonlyForNode(node, analyzer),
+    })
+  );
+}
+
+interface AccessorPair {
+  get?: ts.AccessorDeclaration;
+  set?: ts.AccessorDeclaration;
+}
+
+export function addAccessorToAccessorsMap(
+  node: ts.AccessorDeclaration,
+  accessorsMap: Map<string, AccessorPair>,
+  analyzer: AnalyzerInterface
+) {
+  const name = node.name.getText();
+  const _accessors = accessorsMap.get(name) ?? {};
+  if (analyzer.typescript.isGetAccessor(node)) _accessors.get = node;
+  else if (analyzer.typescript.isSetAccessor(node)) _accessors.set = node;
+  accessorsMap.set(name, _accessors);
+}
+
+export function addAccessorsToFieldMap(
+  accessorsMap: Map<string, AccessorPair>,
+  fieldMap: Map<string, ClassField>,
+  analyzer: AnalyzerInterface
+) {
+  for (const [name, {get, set}] of accessorsMap) {
+    const accessor = get ?? set;
+    if (accessor) {
+      fieldMap.set(
+        name,
+        new ClassField({
+          name,
+          type: getTypeForNode(accessor, analyzer),
+          privacy: getPrivacy(analyzer.typescript, accessor),
+          readonly: !!get && !set,
+          // TODO(bennypowers): derive from getter?
+          // default: ???
+        })
+      );
+    }
+  }
+}
+
 /**
  * Returns the `fields` and `methods` of a class.
  */
@@ -127,47 +234,21 @@ export const getClassMembers = (
   const staticFieldMap = new Map<string, ClassField>();
   const methodMap = new Map<string, ClassMethod>();
   const staticMethodMap = new Map<string, ClassMethod>();
-  const accessors = new Map<
-    string,
-    {get?: ts.AccessorDeclaration; set?: ts.AccessorDeclaration}
-  >();
+  const accessorsMap = new Map<string, AccessorPair>();
   declaration.members.forEach((node) => {
     // Ignore non-implementation signatures of overloaded methods by checking
     // for `node.body`.
     if (typescript.isConstructorDeclaration(node) && node.body) {
-      // TODO(bennypowers): We probably want to see if this matches what TypeScript considers a field initialization.
-      // Maybe instead of iterating through the constructor statements, we walk the body looking for any
-      // assignment expression so that we get ones inside of if statements, in parenthesized expressions, etc.
-      //
-      // Also, this doesn't cover destructuring assignment.
-      //
-      // This is ok for now because these are rare ways to "declare" a field,
-      // especially in web components where you shouldn't have constructor parameters.
-      node.body.statements.forEach((node) => {
-        if (isConstructorAssignmentStatement(node, typescript)) {
-          const name = node.expression.left.name.getText();
-          fieldMap.set(
-            name,
-            new ClassField({
-              name,
-              type: getTypeForNode(node.expression.right, analyzer),
-              privacy: getPrivacy(typescript, node),
-              readonly: getIsReadonlyForNode(node, analyzer),
-            })
-          );
-        }
-      });
+      deriveFieldsFromConstructorAssignments(node, fieldMap, analyzer);
     } else if (typescript.isMethodDeclaration(node) && node.body) {
-      const info = getMemberInfo(typescript, node);
-      const name = node.name.getText();
-      (info.static ? staticMethodMap : methodMap).set(
-        name,
-        new ClassMethod({
-          ...info,
-          ...getFunctionLikeInfo(node, name, analyzer),
-          ...parseNodeJSDocInfo(node, analyzer),
-        })
+      addMethodDeclarationToMethodMap(
+        node,
+        methodMap,
+        staticMethodMap,
+        analyzer
       );
+    } else if (typescript.isAccessor(node)) {
+      addAccessorToAccessorsMap(node, accessorsMap, analyzer);
     } else if (typescript.isPropertyDeclaration(node)) {
       if (
         !typescript.isIdentifier(node.name) &&
@@ -186,43 +267,15 @@ export const getClassMembers = (
         );
         return;
       }
-
-      const info = getMemberInfo(typescript, node);
-
-      (info.static ? staticFieldMap : fieldMap).set(
-        node.name.getText(),
-        new ClassField({
-          ...info,
-          default: node.initializer?.getText(),
-          type: getTypeForNode(node, analyzer),
-          ...parseNodeJSDocInfo(node, analyzer),
-          readonly: getIsReadonlyForNode(node, analyzer),
-        })
+      addPropertyDeclarationToFieldMap(
+        node,
+        fieldMap,
+        staticFieldMap,
+        analyzer
       );
-    } else if (typescript.isAccessor(node)) {
-      const name = node.name.getText();
-      const _accessors = accessors.get(name) ?? {};
-      if (typescript.isGetAccessor(node)) _accessors.get = node;
-      else if (typescript.isSetAccessor(node)) _accessors.set = node;
-      accessors.set(name, _accessors);
     }
   });
-  for (const [name, {get, set}] of accessors) {
-    const accessor = get ?? set;
-    if (accessor) {
-      fieldMap.set(
-        name,
-        new ClassField({
-          name,
-          type: getTypeForNode(accessor, analyzer),
-          privacy: getPrivacy(typescript, accessor),
-          readonly: !!get && !set,
-          // TODO(bennypowers): derive from getter?
-          // default: ???
-        })
-      );
-    }
-  }
+  addAccessorsToFieldMap(accessorsMap, fieldMap, analyzer);
   return {
     fieldMap,
     staticFieldMap,
