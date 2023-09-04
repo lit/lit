@@ -289,19 +289,10 @@ const convertClassField = (field: ClassField): cem.ClassField => {
   };
 };
 
-const normalizeCemFieldAttribute = (
-  field: CustomElementField
-): string | undefined => {
-  return field.attribute === true
-    ? field.name.toLowerCase()
-    : field.attribute === false
-    ? undefined
-    : field.attribute;
-};
-
 const convertCustomElementField = (
   field: CustomElementField
 ): cem.CustomElementField => {
+  const {attribute} = field;
   const {kind, name, summary, description, privacy, type, ...rest} =
     convertClassField(field);
   return {
@@ -309,7 +300,7 @@ const convertCustomElementField = (
     name,
     summary,
     description,
-    attribute: normalizeCemFieldAttribute(field),
+    attribute,
     reflects: ifNotEmpty(field.reflects),
     privacy,
     ...rest,
