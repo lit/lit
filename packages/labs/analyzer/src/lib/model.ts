@@ -419,7 +419,7 @@ export class ClassField extends Declaration {
 }
 
 export class CustomElementField extends ClassField {
-  attribute?: string | boolean | undefined;
+  attribute?: string | undefined;
   reflects?: boolean | undefined;
   constructor(init: CustomElementFieldInit) {
     super(init);
