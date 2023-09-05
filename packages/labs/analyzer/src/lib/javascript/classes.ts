@@ -43,6 +43,11 @@ import {
 
 export type TypeScript = typeof ts;
 
+interface AccessorPair {
+  get?: ts.AccessorDeclaration;
+  set?: ts.AccessorDeclaration;
+}
+
 /**
  * Returns an analyzer `ClassDeclaration` model for the given
  * ts.ClassLikeDeclaration.
@@ -180,11 +185,6 @@ export function addPropertyDeclarationToFieldMap(
       readonly: getIsReadonlyForNode(node, analyzer),
     })
   );
-}
-
-interface AccessorPair {
-  get?: ts.AccessorDeclaration;
-  set?: ts.AccessorDeclaration;
 }
 
 export function addAccessorToAccessorsMap(
