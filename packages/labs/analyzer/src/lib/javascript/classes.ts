@@ -48,6 +48,17 @@ interface AccessorPair {
   set?: ts.AccessorDeclaration;
 }
 
+interface ClassMemberInfo {
+  fieldMap: Map<string, ClassField>;
+  staticFieldMap: Map<string, ClassField>;
+  methodMap: Map<string, ClassMethod>;
+  staticMethodMap: Map<string, ClassMethod>;
+}
+
+interface ClassMemberInfoIntermediate extends ClassMemberInfo {
+  accessorsMap: Map<string, AccessorPair>;
+}
+
 /**
  * Returns an analyzer `ClassDeclaration` model for the given
  * ts.ClassLikeDeclaration.
@@ -103,28 +114,25 @@ const getIsReadonlyForNode = (
  * Is the node a constructor assignment to `this`
  * @example `this.foo = 'bar'`
  */
-function isConstructorAssignmentStatement(
+const isConstructorAssignmentStatement = (
   node: ts.Node,
   typescript: typeof ts
 ): node is ts.ExpressionStatement & {
   expression: ts.BinaryExpression & {
     left: ts.PropertyAccessExpression;
   };
-} {
-  return (
-    typescript.isExpressionStatement(node) &&
-    typescript.isBinaryExpression(node.expression) &&
-    node.expression.operatorToken.kind === typescript.SyntaxKind.EqualsToken &&
-    typescript.isPropertyAccessExpression(node.expression.left) &&
-    node.expression.left.expression.kind === typescript.SyntaxKind.ThisKeyword
-  );
-}
+} =>
+  typescript.isExpressionStatement(node) &&
+  typescript.isBinaryExpression(node.expression) &&
+  node.expression.operatorToken.kind === typescript.SyntaxKind.EqualsToken &&
+  typescript.isPropertyAccessExpression(node.expression.left) &&
+  node.expression.left.expression.kind === typescript.SyntaxKind.ThisKeyword;
 
-export function deriveFieldsFromConstructorAssignments(
+export const deriveFieldsFromConstructorAssignments = (
   node: ts.ConstructorDeclaration,
   {fieldMap}: ClassMemberInfo,
   analyzer: AnalyzerInterface
-) {
+) => {
   // Ignore non-implementation signatures of overloaded methods by checking
   // for `node.body`.
   if (node.body) {
@@ -151,13 +159,13 @@ export function deriveFieldsFromConstructorAssignments(
       }
     });
   }
-}
+};
 
-export function addMethodDeclarationToMethodMap(
+export const addMethodDeclarationToMethodMap = (
   node: ts.MethodDeclaration,
   {methodMap, staticMethodMap}: ClassMemberInfo,
   analyzer: AnalyzerInterface
-) {
+) => {
   // Ignore non-implementation signatures of overloaded methods by checking
   // for `node.body`.
   if (node.body) {
@@ -172,13 +180,13 @@ export function addMethodDeclarationToMethodMap(
       })
     );
   }
-}
+};
 
-export function addPropertyDeclarationToFieldMap(
+export const addPropertyDeclarationToFieldMap = (
   node: ts.PropertyDeclaration,
   {fieldMap, staticFieldMap}: ClassMemberInfo,
   analyzer: AnalyzerInterface
-) {
+) => {
   const info = getMemberInfo(analyzer.typescript, node);
   const map = info.static ? staticFieldMap : fieldMap;
   map.set(
@@ -191,24 +199,24 @@ export function addPropertyDeclarationToFieldMap(
       readonly: getIsReadonlyForNode(node, analyzer),
     })
   );
-}
+};
 
-export function addAccessorToAccessorsMap(
+export const addAccessorToAccessorsMap = (
   node: ts.AccessorDeclaration,
   {accessorsMap}: ClassMemberInfoIntermediate,
   analyzer: AnalyzerInterface
-) {
+) => {
   const name = node.name.getText();
   const _accessors = accessorsMap.get(name) ?? {};
   if (analyzer.typescript.isGetAccessor(node)) _accessors.get = node;
   else if (analyzer.typescript.isSetAccessor(node)) _accessors.set = node;
   accessorsMap.set(name, _accessors);
-}
+};
 
-export function addAccessorsToFieldMap(
+export const addAccessorsToFieldMap = (
   {accessorsMap, fieldMap}: ClassMemberInfoIntermediate,
   analyzer: AnalyzerInterface
-) {
+) => {
   for (const [name, {get, set}] of accessorsMap) {
     const accessor = get ?? set;
     if (accessor) {
@@ -225,18 +233,7 @@ export function addAccessorsToFieldMap(
       );
     }
   }
-}
-
-interface ClassMemberInfo {
-  fieldMap: Map<string, ClassField>;
-  staticFieldMap: Map<string, ClassField>;
-  methodMap: Map<string, ClassMethod>;
-  staticMethodMap: Map<string, ClassMethod>;
-}
-
-interface ClassMemberInfoIntermediate extends ClassMemberInfo {
-  accessorsMap: Map<string, AccessorPair>;
-}
+};
 
 /**
  * Returns the `fields` and `methods` of a class.
