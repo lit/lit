@@ -9,11 +9,6 @@ import {createRequire} from 'module';
 
 export default litProdConfig({
   packageName: createRequire(import.meta.url)('./package.json').name,
-  entryPoints: [
-    'index',
-    'create-component',
-    'use-controller',
-    'props-without-ref',
-  ],
+  entryPoints: ['index', 'create-component', 'use-controller'],
   includeNodeBuild: true,
 });
