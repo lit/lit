@@ -122,55 +122,61 @@ function isConstructorAssignmentStatement(
 
 export function deriveFieldsFromConstructorAssignments(
   node: ts.ConstructorDeclaration,
-  fieldMap: Map<string, ClassField>,
+  {fieldMap}: ClassMemberInfo,
   analyzer: AnalyzerInterface
 ) {
-  // TODO(bennypowers): We probably want to see if this matches what TypeScript considers a field initialization.
-  // Maybe instead of iterating through the constructor statements, we walk the body looking for any
-  // assignment expression so that we get ones inside of if statements, in parenthesized expressions, etc.
-  //
-  // Also, this doesn't cover destructuring assignment.
-  //
-  // This is ok for now because these are rare ways to "declare" a field,
-  // especially in web components where you shouldn't have constructor parameters.
-  node.body?.statements.forEach((node) => {
-    if (isConstructorAssignmentStatement(node, analyzer.typescript)) {
-      const name = node.expression.left.name.getText();
-      fieldMap.set(
-        name,
-        new ClassField({
+  // Ignore non-implementation signatures of overloaded methods by checking
+  // for `node.body`.
+  if (node.body) {
+    // TODO(bennypowers): We probably want to see if this matches what TypeScript considers a field initialization.
+    // Maybe instead of iterating through the constructor statements, we walk the body looking for any
+    // assignment expression so that we get ones inside of if statements, in parenthesized expressions, etc.
+    //
+    // Also, this doesn't cover destructuring assignment.
+    //
+    // This is ok for now because these are rare ways to "declare" a field,
+    // especially in web components where you shouldn't have constructor parameters.
+    node.body.statements.forEach((node) => {
+      if (isConstructorAssignmentStatement(node, analyzer.typescript)) {
+        const name = node.expression.left.name.getText();
+        fieldMap.set(
           name,
-          type: getTypeForNode(node.expression.right, analyzer),
-          privacy: getPrivacy(analyzer.typescript, node),
-          readonly: getIsReadonlyForNode(node, analyzer),
-        })
-      );
-    }
-  });
+          new ClassField({
+            name,
+            type: getTypeForNode(node.expression.right, analyzer),
+            privacy: getPrivacy(analyzer.typescript, node),
+            readonly: getIsReadonlyForNode(node, analyzer),
+          })
+        );
+      }
+    });
+  }
 }
 
 export function addMethodDeclarationToMethodMap(
   node: ts.MethodDeclaration,
-  methodMap: Map<string, ClassMethod>,
-  staticMethodMap: Map<string, ClassMethod>,
+  {methodMap, staticMethodMap}: ClassMemberInfo,
   analyzer: AnalyzerInterface
 ) {
-  const info = getMemberInfo(analyzer.typescript, node);
-  const name = node.name.getText();
-  (info.static ? staticMethodMap : methodMap).set(
-    name,
-    new ClassMethod({
-      ...info,
-      ...getFunctionLikeInfo(node, name, analyzer),
-      ...parseNodeJSDocInfo(node, analyzer),
-    })
-  );
+  // Ignore non-implementation signatures of overloaded methods by checking
+  // for `node.body`.
+  if (node.body) {
+    const info = getMemberInfo(analyzer.typescript, node);
+    const name = node.name.getText();
+    (info.static ? staticMethodMap : methodMap).set(
+      name,
+      new ClassMethod({
+        ...info,
+        ...getFunctionLikeInfo(node, name, analyzer),
+        ...parseNodeJSDocInfo(node, analyzer),
+      })
+    );
+  }
 }
 
 export function addPropertyDeclarationToFieldMap(
   node: ts.PropertyDeclaration,
-  fieldMap: Map<string, ClassField>,
-  staticFieldMap: Map<string, ClassField>,
+  {fieldMap, staticFieldMap}: ClassMemberInfo,
   analyzer: AnalyzerInterface
 ) {
   const info = getMemberInfo(analyzer.typescript, node);
@@ -189,7 +195,7 @@ export function addPropertyDeclarationToFieldMap(
 
 export function addAccessorToAccessorsMap(
   node: ts.AccessorDeclaration,
-  accessorsMap: Map<string, AccessorPair>,
+  {accessorsMap}: ClassMemberInfoIntermediate,
   analyzer: AnalyzerInterface
 ) {
   const name = node.name.getText();
@@ -200,8 +206,7 @@ export function addAccessorToAccessorsMap(
 }
 
 export function addAccessorsToFieldMap(
-  accessorsMap: Map<string, AccessorPair>,
-  fieldMap: Map<string, ClassField>,
+  {accessorsMap, fieldMap}: ClassMemberInfoIntermediate,
   analyzer: AnalyzerInterface
 ) {
   for (const [name, {get, set}] of accessorsMap) {
@@ -222,33 +227,44 @@ export function addAccessorsToFieldMap(
   }
 }
 
+interface ClassMemberInfo {
+  fieldMap: Map<string, ClassField>;
+  staticFieldMap: Map<string, ClassField>;
+  methodMap: Map<string, ClassMethod>;
+  staticMethodMap: Map<string, ClassMethod>;
+}
+
+interface ClassMemberInfoIntermediate extends ClassMemberInfo {
+  accessorsMap: Map<string, AccessorPair>;
+}
+
 /**
  * Returns the `fields` and `methods` of a class.
  */
 export const getClassMembers = (
   declaration: ts.ClassLikeDeclaration,
   analyzer: AnalyzerInterface
-) => {
+): ClassMemberInfo => {
   const {typescript} = analyzer;
   const fieldMap = new Map<string, ClassField>();
   const staticFieldMap = new Map<string, ClassField>();
   const methodMap = new Map<string, ClassMethod>();
   const staticMethodMap = new Map<string, ClassMethod>();
   const accessorsMap = new Map<string, AccessorPair>();
+  const info: ClassMemberInfoIntermediate = {
+    fieldMap,
+    staticFieldMap,
+    methodMap,
+    staticMethodMap,
+    accessorsMap,
+  };
   declaration.members.forEach((node) => {
-    // Ignore non-implementation signatures of overloaded methods by checking
-    // for `node.body`.
-    if (typescript.isConstructorDeclaration(node) && node.body) {
-      deriveFieldsFromConstructorAssignments(node, fieldMap, analyzer);
-    } else if (typescript.isMethodDeclaration(node) && node.body) {
-      addMethodDeclarationToMethodMap(
-        node,
-        methodMap,
-        staticMethodMap,
-        analyzer
-      );
+    if (typescript.isConstructorDeclaration(node)) {
+      deriveFieldsFromConstructorAssignments(node, info, analyzer);
+    } else if (typescript.isMethodDeclaration(node)) {
+      addMethodDeclarationToMethodMap(node, info, analyzer);
     } else if (typescript.isAccessor(node)) {
-      addAccessorToAccessorsMap(node, accessorsMap, analyzer);
+      addAccessorToAccessorsMap(node, info, analyzer);
     } else if (typescript.isPropertyDeclaration(node)) {
       if (
         !typescript.isIdentifier(node.name) &&
@@ -267,21 +283,11 @@ export const getClassMembers = (
         );
         return;
       }
-      addPropertyDeclarationToFieldMap(
-        node,
-        fieldMap,
-        staticFieldMap,
-        analyzer
-      );
+      addPropertyDeclarationToFieldMap(node, info, analyzer);
     }
   });
-  addAccessorsToFieldMap(accessorsMap, fieldMap, analyzer);
-  return {
-    fieldMap,
-    staticFieldMap,
-    methodMap,
-    staticMethodMap,
-  };
+  addAccessorsToFieldMap(info, analyzer);
+  return {fieldMap, staticFieldMap, methodMap, staticMethodMap};
 };
 
 const getMemberInfo = (
