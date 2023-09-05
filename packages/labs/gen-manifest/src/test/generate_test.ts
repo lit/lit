@@ -33,7 +33,9 @@ test('basic manifest generation', async () => {
 
   await assertGoldensMatch(outputFolder, path.join('goldens', project), {
     formatGlob: '**/*.json',
-    type: 'json',
+    // uncomment for record-equivalency comparison
+    // otherwise, the default is string equality
+    // type: 'json',
   });
 });
 
