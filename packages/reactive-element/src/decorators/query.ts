@@ -19,7 +19,8 @@ export type QueryDecorator = {
   // legacy
   (
     proto: Interface<ReactiveElement>,
-    name: PropertyKey
+    name: PropertyKey,
+    descriptor?: PropertyDescriptor
     // Note TypeScript requires the return type to be `void|any`
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): void | any;

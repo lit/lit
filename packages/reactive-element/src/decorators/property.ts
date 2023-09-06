@@ -56,8 +56,12 @@ export type PropertyDecorator = {
   ): (this: C, value: V) => void;
 
   // legacy decorator signature
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (protoOrDescriptor: Object, name: PropertyKey): any;
+  (
+    protoOrDescriptor: Object,
+    name: PropertyKey,
+    descriptor?: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any;
 };
 
 const legacyProperty = (

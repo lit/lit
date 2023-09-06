@@ -16,6 +16,7 @@ suite('@customElement', () => {
     const DefinedC = customElements.get(tagName);
     assert.strictEqual(DefinedC, C0);
   });
+
   test('elements with private constructors can be defined', () => {
     const tagName = generateElementName();
     @customElement(tagName)

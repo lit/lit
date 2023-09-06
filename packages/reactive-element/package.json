@@ -223,7 +223,7 @@
         "build:ts"
       ],
       "files": [
-        "src/test/std-decorators/**/*.ts",
+        "src/test/decorators-modern/**/*.ts",
         "tsconfig.std-decorators-tests.json"
       ],
       "output": [
