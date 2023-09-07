@@ -15,7 +15,7 @@ export const ViewTransitionUpdate =
   
         async performUpdate() {
             if (!(document as DocumentWithTransition).startViewTransition)
-                return await super.performUpdate();
+                return super.performUpdate();
     
             if (this.lifecycleRenderTransition) {
                 try {
@@ -30,8 +30,10 @@ export const ViewTransitionUpdate =
             }
           
             this.lifecycleRenderTransition = (document as DocumentWithTransition).startViewTransition(
-                async () => 
-                    await super.performUpdate());
+                () => {
+                    super.performUpdate();
+                    return this.updateComplete; // Return a promise from the callback that resolves once the DOM update is done
+                });
         }
     }
       
