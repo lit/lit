@@ -371,6 +371,7 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
  * this hack to bypass any rewriting by the compiler.
  */
 const finalized = 'finalized';
+const collectedMetadata = 'collectedMetadata';
 
 /**
  * A string representing one of the supported dev mode warning categories.
@@ -528,6 +529,7 @@ export abstract class ReactiveElement
    * from decorators.
    */
   protected static [finalized] = true;
+  protected static [collectedMetadata] = true;
 
   /**
    * Memoized list of all element properties, including any superclass properties.
@@ -619,6 +621,7 @@ export abstract class ReactiveElement
   static get observedAttributes() {
     // note: piggy backing on this to ensure we're finalized.
     this.finalize();
+    this.__collectMetadata();
     const attributes: string[] = [];
     for (const [p, v] of this.elementProperties) {
       const attr = this.__attributeNameForProperty(p, v);
@@ -772,6 +775,13 @@ export abstract class ReactiveElement
   // because `finalize` can be called before a class has been fully initialized.
   // This method should only be called once per class, as late as possible.
   private static __collectMetadata() {
+    if (this.hasOwnProperty(collectedMetadata)) {
+      return;
+    }
+    this[collectedMetadata] = true;
+    const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
+    superCtor.__collectMetadata();
+
     const metadata = this[Symbol.metadata];
     if (metadata == null) {
       return;
@@ -779,6 +789,11 @@ export abstract class ReactiveElement
     const properties = litPropertyMetadata.get(metadata);
     if (properties === undefined) {
       return;
+    }
+    // Grab reactive properties from superclass that may have been added by
+    // metadata.
+    for (const [k, v] of superCtor.elementProperties.entries()) {
+      this.elementProperties.set(k, v);
     }
     for (const [p, options] of properties) {
       this.elementProperties.set(p, options);
@@ -816,7 +831,6 @@ export abstract class ReactiveElement
       this._initializers = [...superCtor._initializers];
     }
     this.elementProperties = new Map(superCtor.elementProperties);
-    this.__collectMetadata();
     // initialize Map populated in observedAttributes
     this.__attributeToPropertyMap = new Map();
     // make any properties
