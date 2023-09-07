@@ -151,18 +151,26 @@ export const deriveFieldsFromConstructorAssignments = (
     // This is ok for now because these are rare ways to "declare" a field,
     // especially in web components where you shouldn't have
     // constructor parameters.
-    node.body.statements.forEach((node) => {
-      if (isConstructorAssignmentStatement(node, analyzer.typescript)) {
-        const name = node.expression.left.name.getText();
-        fieldMap.set(
-          name,
-          new ClassField({
+    node.body.statements.forEach((statementNode) => {
+      if (
+        isConstructorAssignmentStatement(statementNode, analyzer.typescript)
+      ) {
+        const name = statementNode.expression.left.name.getText();
+        // TODO(bennypowers): we may wish to override `default` of
+        // field initializers with constructor assignment values
+        if (!fieldMap.has(name)) {
+          const info = parseNodeJSDocInfo(statementNode, analyzer);
+          fieldMap.set(
             name,
-            type: getTypeForNode(node.expression.right, analyzer),
-            privacy: getPrivacy(analyzer.typescript, node),
-            readonly: getIsReadonlyForNode(node, analyzer),
-          })
-        );
+            new ClassField({
+              name,
+              type: getTypeForNode(statementNode.expression.right, analyzer),
+              privacy: getPrivacy(analyzer.typescript, statementNode),
+              readonly: getIsReadonlyForNode(statementNode, analyzer),
+              ...info,
+            })
+          );
+        }
       }
     });
   }

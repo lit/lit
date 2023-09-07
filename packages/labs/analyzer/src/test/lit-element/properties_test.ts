@@ -41,6 +41,7 @@ for (const lang of languages) {
     assert.ok(property);
     assert.ok(property.type);
     assert.equal(property.name, 'constructorAssignOnly');
+    assert.equal(property.description, 'declared in the constructor');
     assert.equal(property.type?.text, 'number');
     assert.equal(property.type?.references.length, 0);
   });

@@ -61,6 +61,7 @@ export class ElementA extends LitElement {
 
   constructor() {
     super();
+    /** declared in the constructor */
     this.constructorAssignOnly = 0;
     this.notDecorated = '';
     this.noOptionsString = '';

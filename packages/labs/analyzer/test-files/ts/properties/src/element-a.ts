@@ -29,11 +29,13 @@ export class ElementA extends LitElement {
 
   declare staticProp: number;
 
+  /** declared in the constructor */
   declare constructorAssignOnly: number;
 
   constructor() {
     super();
     this.staticProp = 42;
+    /** don't clobber the field! */
     this.constructorAssignOnly = 0;
   }
 
