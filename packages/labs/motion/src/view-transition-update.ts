@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2023 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 import {LitElement} from 'lit';
 
 type Constructor<T> = new (...args: any[]) => T;
