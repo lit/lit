@@ -74,7 +74,7 @@ suite('@property', () => {
     await el.updateComplete;
     assert.equal(el.updateCount, 1);
     assert.equal(el.noAttr, 'noAttr');
-    assert.isTrue(changedProperties!.has('noAttr'), 'A');
+    assert.isTrue(changedProperties!.has('noAttr'));
     assert.equal(el.getAttribute('noAttr'), null);
     assert.equal(el.atTr, 'attr');
     assert.equal(el.getAttribute('attr'), null);
@@ -404,7 +404,7 @@ suite('@property', () => {
     await el.updateComplete;
 
     // Properties should have the pre-upgraded values
-    assert.equal(el.foo, 'hi', 'B');
+    assert.equal(el.foo, 'hi');
     assert.equal(el.bar, false);
     assert.equal(el.zug, objectValue);
     assert.isTrue(changedProperties!.has('foo'));
