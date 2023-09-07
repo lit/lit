@@ -1050,9 +1050,19 @@ export abstract class ReactiveElement
     if (elementProperties.size > 0) {
       queueMicrotask(() => {
         for (const [p, options] of elementProperties) {
-          this.requestUpdate(p, undefined, options);
           if (instanceProperties.has(p as keyof this)) {
             this[p as keyof this] = instanceProperties.get(p as keyof this)!;
+          } else if (
+            this[p as keyof this] !== undefined &&
+            !this._$changedProperties.has(p)
+          ) {
+            // Trigger initial value reflection and populate the initial
+            // changedProperties map, but only for the case of experimental
+            // decorators on accessors, which will not have already populated
+            // the changedProperties map. We skip `undefined` values assuming
+            // those aren't initial values - a small difference from
+            // experimental decorators on fields.
+            this.requestUpdate(p, undefined, options);
           }
         }
       });

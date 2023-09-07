@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import {type Interface} from './base.js';
+import type {Interface} from './base.js';
 
 const DEV_MODE = true;
 

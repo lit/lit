@@ -13,7 +13,7 @@
 
 import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
-import {Interface, defineProperty} from './base.js';
+import type {Interface} from './base.js';
 
 export type QueryAssignedElementsDecorator = {
   // legacy
@@ -29,7 +29,7 @@ export type QueryAssignedElementsDecorator = {
   <C extends Interface<ReactiveElement>, V extends Array<Element>>(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
-  ): void;
+  ): ClassAccessorDecoratorResult<C, V>;
 };
 
 /**
@@ -78,35 +78,23 @@ export interface QueryAssignedElementsOptions
 export function queryAssignedElements(
   options?: QueryAssignedElementsOptions
 ): QueryAssignedElementsDecorator {
-  return (<C extends Interface<ReactiveElement>, V extends Array<Element>>(
-    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
-    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
-  ) => {
+  return (<
+    C extends Interface<ReactiveElement>,
+    V extends Array<Element>
+  >() => {
     const {slot, selector} = options ?? {};
     const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
-    const doQuery = (el: Interface<ReactiveElement>) => {
-      const slotEl =
-        el.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
-      const elements = slotEl?.assignedElements(options) ?? [];
-      return (
-        selector === undefined
-          ? elements
-          : elements.filter((node) => node.matches(selector))
-      ) as V;
+    return {
+      get(this: C): V {
+        const slotEl =
+          this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
+        const elements = slotEl?.assignedElements(options) ?? [];
+        return (
+          selector === undefined
+            ? elements
+            : elements.filter((node) => node.matches(selector))
+        ) as V;
+      },
     };
-    if (typeof nameOrContext === 'object') {
-      return {
-        get(this: C): V {
-          return doQuery(this);
-        },
-      };
-    } else {
-      defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
-        get(this: ReactiveElement) {
-          return doQuery(this);
-        },
-      });
-      return;
-    }
   }) as QueryAssignedElementsDecorator;
 }

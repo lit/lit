@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import {defineProperty, type Interface} from './base.js';
+import type {Interface} from './base.js';
 
 /**
  * Options for the {@linkcode queryAssignedNodes} decorator. Extends the options
@@ -38,7 +38,7 @@ export type QueryAssignedNodesDecorator = {
   <C extends Interface<ReactiveElement>, V extends Array<Node>>(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
-  ): void;
+  ): ClassAccessorDecoratorResult<C, V>;
 };
 
 /**
@@ -71,30 +71,15 @@ export function queryAssignedNodes(
   options?: QueryAssignedNodesOptions
 ): QueryAssignedNodesDecorator {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (<C extends Interface<ReactiveElement>, V extends Array<Node>>(
-    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
-    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
-  ) => {
+  return (<C extends Interface<ReactiveElement>, V extends Array<Node>>() => {
     const {slot} = options ?? {};
     const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
-    const doQuery = (el: Interface<ReactiveElement>) => {
-      const slotEl =
-        el.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
-      return (slotEl?.assignedNodes(options) ?? []) as unknown as V;
+    return {
+      get(this: C): V {
+        const slotEl =
+          this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
+        return (slotEl?.assignedNodes(options) ?? []) as unknown as V;
+      },
     };
-    if (typeof nameOrContext === 'object') {
-      return {
-        get(this: C): V {
-          return doQuery(this);
-        },
-      };
-    } else {
-      defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
-        get(this: ReactiveElement) {
-          return doQuery(this);
-        },
-      });
-      return;
-    }
   }) as QueryAssignedNodesDecorator;
 }

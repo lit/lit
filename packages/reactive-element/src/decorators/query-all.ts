@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import {type Interface} from './base.js';
+import type {Interface} from './base.js';
 
 export type QueryAllDecorator = {
   // legacy
@@ -60,14 +60,11 @@ let fragment: DocumentFragment;
  */
 export function queryAll(selector: string): QueryAllDecorator {
   return (<C extends Interface<ReactiveElement>>() => {
-    const doQuery = (el: Interface<ReactiveElement>) => {
-      const container =
-        el.renderRoot ?? (fragment ??= document.createDocumentFragment());
-      return container.querySelectorAll(selector);
-    };
     return {
       get(this: C) {
-        return doQuery(this);
+        const container =
+          this.renderRoot ?? (fragment ??= document.createDocumentFragment());
+        return container.querySelectorAll(selector);
       },
     };
   }) as QueryAllDecorator;
