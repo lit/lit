@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import {defineProperty, type Interface} from './base.js';
+import {type Interface} from './base.js';
 
 const DEV_MODE = true;
 
@@ -29,7 +29,7 @@ export type QueryDecorator = {
   <C extends Interface<ReactiveElement>, V extends Element>(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
-  ): void;
+  ): ClassAccessorDecoratorResult<C, V>;
 };
 
 /**
@@ -60,50 +60,63 @@ export type QueryDecorator = {
 export function query(selector: string, cache?: boolean): QueryDecorator {
   return (<C extends Interface<ReactiveElement>, V extends Element>(
     protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
-    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
+    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>,
+    descriptor?: PropertyDescriptor
   ) => {
     const doQuery = (el: Interface<ReactiveElement>): V => {
+      // TODO: if we want to allow users to assert that the query will never
+      // return null, we need a new option and to throw here if the result
+      // is null.
       return (el.renderRoot?.querySelector(selector) ?? null) as V;
     };
-    if (typeof nameOrContext === 'object') {
+    if (cache) {
+      // Accessors to wrap from either:
+      //   1. The decorator target, in the case of standard decorators
+      //   2. The property descriptor, in the case of experimental decorators
+      //      on auto-accessors.
+      //   3. Functions that access our own cache-key property on the instance,
+      //      in the case of experimental decorators on fields.
+      const {get, set} =
+        typeof nameOrContext === 'object'
+          ? protoOrTarget
+          : descriptor ??
+            (() => {
+              const key = DEV_MODE
+                ? Symbol(`${String(nameOrContext)} (@query() cache)`)
+                : Symbol();
+              type WithCache = ReactiveElement & {
+                [key: symbol]: Element | null;
+              };
+              return {
+                get() {
+                  return (this as WithCache)[key];
+                },
+                set(v) {
+                  (this as WithCache)[key] = v;
+                },
+              };
+            })();
       return {
         get(this: C): V {
           if (cache) {
-            let result: V | null = protoOrTarget.get.call(this);
+            let result: V = get!.call(this);
             if (result === undefined) {
               result = doQuery(this);
-              protoOrTarget.set.call(this, result);
+              set!.call(this, result);
             }
             return result;
           }
-          // TODO: if we want to allow users to assert that the query will never
-          // return null, we need a new option and to throw here if the result
-          // is null.
           return doQuery(this);
         },
       };
     } else {
-      if (cache) {
-        const key = DEV_MODE
-          ? Symbol(`${String(nameOrContext)} (@query() cache)`)
-          : Symbol();
-        type WithCache = ReactiveElement & {[key: symbol]: Element | null};
-        defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
-          get(this: WithCache) {
-            if (this[key] === undefined) {
-              this[key] = doQuery(this);
-            }
-            return this[key];
-          },
-        });
-      } else {
-        defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
-          get(this: ReactiveElement) {
-            return doQuery(this);
-          },
-        });
-      }
-      return;
+      // This object works as the return type for both standard and
+      // experimental decorators.
+      return {
+        get(this: ReactiveElement) {
+          return doQuery(this);
+        },
+      };
     }
   }) as QueryDecorator;
 }
