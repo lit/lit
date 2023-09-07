@@ -1038,19 +1038,22 @@ export abstract class ReactiveElement
    */
   private __saveInstanceProperties() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const instanceProperties: Array<[keyof this, any]> = [];
+    const instanceProperties = new Map<keyof this, this[keyof this]>();
     const elementProperties = (this.constructor as typeof ReactiveElement)
       .elementProperties;
     for (const p of elementProperties.keys() as IterableIterator<keyof this>) {
       if (this.hasOwnProperty(p)) {
-        instanceProperties.push([p, this[p]]);
+        instanceProperties.set(p, this[p]);
         delete this[p];
       }
     }
-    if (instanceProperties.length) {
+    if (elementProperties.size > 0) {
       queueMicrotask(() => {
-        for (const [p, value] of instanceProperties) {
-          this[p] = value;
+        for (const [p, options] of elementProperties) {
+          this.requestUpdate(p, undefined, options);
+          if (instanceProperties.has(p as keyof this)) {
+            this[p as keyof this] = instanceProperties.get(p as keyof this)!;
+          }
         }
       });
     }

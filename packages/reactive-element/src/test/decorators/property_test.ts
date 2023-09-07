@@ -71,8 +71,7 @@ suite('@property', () => {
     assert.isTrue(changedProperties!.has('noAttr'));
     assert.equal(el.atTr, 'attr');
     assert.equal(el.customAttr, 'customAttr');
-    // Make sure that the default value does reflect, as opposed
-    // to the std-decorators implementation which doesn't
+    // Make sure that the default value reflects
     assert.equal(el.getAttribute('custom'), 'customAttr');
     assert.equal(el.hasChanged, 10);
     assert.equal(el.fromAttribute, 1);
