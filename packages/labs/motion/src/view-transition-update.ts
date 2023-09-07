@@ -7,7 +7,8 @@ import {LitElement} from 'lit';
 
 type Constructor<T> = new (...args: any[]) => T;
 
-/** Extend a LitElement to use view transitions (if available) on DOM updates */
+/** Extend a LitElement to use view transitions (if available) on DOM updates.
+ *  DOM updates will wait for transition animations to finish before running. */
 export const ViewTransitionUpdate =
     <T extends Constructor<LitElement>>(superClass: T) => {
     class LitElementTransition extends superClass {
