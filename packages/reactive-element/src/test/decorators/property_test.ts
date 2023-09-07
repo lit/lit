@@ -525,16 +525,24 @@ suite('@property', () => {
     }
 
     @customElement(elName)
-    class SubClass extends BaseTest {}
+    class SubClass extends BaseTest {
+      @property() second = 'second';
+    }
 
-    container.innerHTML = `<${elName} first="overrideFirst"></${elName}>`;
-    const el: SubClass = container.querySelector(elName)!;
+    container.innerHTML = `<${elName} first="overrideFirst" second="overrideSecond"></${elName}>`;
+
     // Check initialization
+    const el: SubClass = container.querySelector(elName)!;
     assert.equal(el.first, 'overrideFirst');
+    assert.equal(el.second, 'overrideSecond');
 
     // Property can be set from attribute
     el.setAttribute('first', 'first updated');
+    el.setAttribute('second', 'second updated');
+
     await el.updateComplete;
+
     assert.equal(el.first, 'first updated');
+    assert.equal(el.second, 'second updated');
   });
 });
