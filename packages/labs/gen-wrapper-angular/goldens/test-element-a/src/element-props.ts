@@ -85,6 +85,15 @@ export class ElementProps {
   }
 
   @Input()
+  set aCustomConverter(v: string) {
+    this._ngZone.runOutsideAngular(() => (this._el.aCustomConverter = v));
+  }
+
+  get aCustomConverter() {
+    return this._el.aCustomConverter;
+  }
+
+  @Input()
   set aMyType(v: MyType) {
     this._ngZone.runOutsideAngular(() => (this._el.aMyType = v));
   }

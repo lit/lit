@@ -14,6 +14,7 @@ export interface Props {
   aStrArray?: string[];
   aReflect?: string;
   aCustomAttr?: string;
+  aCustomConverter?: string;
   aMyType?: MyType;
 }
 
