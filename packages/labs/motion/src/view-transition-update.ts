@@ -1,8 +1,11 @@
 import {LitElement} from 'lit';
 
-/** Mixin to extend a LitElement to use view transitions (if available) on DOM updates */
-export function ViewTransitionUpdate<TBase extends LitElement>(Base: TBase) {
-    return class extends LitElement {
+type Constructor<T> = new (...args: any[]) => T;
+
+/** Extend a LitElement to use view transitions (if available) on DOM updates */
+export const ViewTransitionUpdate =
+    <T extends Constructor<LitElement>>(superClass: T) => {
+    class LitElementTransition extends superClass {
         private lifecycleRenderTransition: ViewTransition;
   
         async performUpdate() {
@@ -16,8 +19,11 @@ export function ViewTransitionUpdate<TBase extends LitElement>(Base: TBase) {
                 async () => 
                     await super.performUpdate());
         }
-    };
-  }
+    }
+      
+      return LitElementTransition as Constructor<LitElement> & T;
+  };
+
 
 interface DocumentWithTransition 
     extends Document {
