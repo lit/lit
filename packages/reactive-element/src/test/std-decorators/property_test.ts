@@ -8,6 +8,7 @@ import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
+import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
 
 suite('@property', () => {
   let container: HTMLElement;
@@ -414,5 +415,54 @@ suite('@property', () => {
     el.foo = 'bye';
     await el.updateComplete;
     assert.isTrue(changedProperties!.has('foo'));
+  });
+
+  test('property decorator should not break superclass property', async () => {
+    class BaseTest extends ReactiveElement {
+      @property() accessor first = 'first';
+    }
+
+    class SubClass extends BaseTest {
+      // The presence of this decorator should not cause `first` to break.
+      @property() accessor second = 'second';
+    }
+
+    const elName = generateElementName();
+    customElements.define(elName, SubClass);
+    container.innerHTML = `<${elName} first="overrideFirst" second="overrideSecond"></${elName}>`;
+
+    // Check initialization
+    const el: SubClass = container.querySelector(elName)!;
+    assert.equal(el.first, 'first'); // BUG: Expected "overrideFirst"
+    assert.equal(el.second, 'overrideSecond');
+
+    // Property can be set from attribute
+    el.setAttribute('first', 'first updated');
+    el.setAttribute('second', 'second updated');
+
+    await el.updateComplete;
+
+    assert.equal(el.first, 'first'); // BUG: Expected "first updated".
+    assert.equal(el.second, 'second updated');
+  });
+
+  test('customElement decorator should not break superclass property', async () => {
+    const elName = generateElementName();
+    class BaseTest extends ReactiveElement {
+      @property() accessor first = 'first';
+    }
+
+    @customElement(elName)
+    class SubClass extends BaseTest {}
+
+    container.innerHTML = `<${elName} first="overrideFirst"></${elName}>`;
+    const el: SubClass = container.querySelector(elName)!;
+    // Check initialization
+    assert.equal(el.first, 'first'); // BUG: Expected "overrideFirst"
+
+    // Property can be set from attribute
+    el.setAttribute('first', 'first updated');
+    await el.updateComplete;
+    assert.equal(el.first, 'first'); // BUG: Expected "first updated"
   });
 });
