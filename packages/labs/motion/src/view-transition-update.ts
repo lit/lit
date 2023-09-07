@@ -17,9 +17,18 @@ export const ViewTransitionUpdate =
             if (!(document as DocumentWithTransition).startViewTransition)
                 return await super.performUpdate();
     
-            if (this.lifecycleRenderTransition)
-                await this.lifecycleRenderTransition.finished;
-    
+            if (this.lifecycleRenderTransition) {
+                try {
+                    // Wait for the previous _animation_ to finish before starting the DOM update
+                    await this.lifecycleRenderTransition.finished;
+                }
+                catch (e) { 
+                    // The promise can reject, but the DOM update should still happen
+                    // see https://github.com/WICG/view-transitions/blob/main/explainer.md#error-handling
+                    console.error('Error in transition animation', e); 
+                }
+            }
+          
             this.lifecycleRenderTransition = (document as DocumentWithTransition).startViewTransition(
                 async () => 
                     await super.performUpdate());
