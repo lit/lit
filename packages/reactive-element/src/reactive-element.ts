@@ -619,7 +619,6 @@ export abstract class ReactiveElement
   static get observedAttributes() {
     // note: piggy backing on this to ensure we're finalized.
     this.finalize();
-    this.__collectMetadata();
     const attributes: string[] = [];
     for (const [p, v] of this.elementProperties) {
       const attr = this.__attributeNameForProperty(p, v);
@@ -817,6 +816,7 @@ export abstract class ReactiveElement
       this._initializers = [...superCtor._initializers];
     }
     this.elementProperties = new Map(superCtor.elementProperties);
+    this.__collectMetadata();
     // initialize Map populated in observedAttributes
     this.__attributeToPropertyMap = new Map();
     // make any properties

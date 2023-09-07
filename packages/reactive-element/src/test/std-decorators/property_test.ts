@@ -423,7 +423,6 @@ suite('@property', () => {
     }
 
     class SubClass extends BaseTest {
-      // The presence of this decorator should not cause `first` to break.
       @property() accessor second = 'second';
     }
 
@@ -433,7 +432,7 @@ suite('@property', () => {
 
     // Check initialization
     const el: SubClass = container.querySelector(elName)!;
-    assert.equal(el.first, 'first'); // BUG: Expected "overrideFirst"
+    assert.equal(el.first, 'overrideFirst');
     assert.equal(el.second, 'overrideSecond');
 
     // Property can be set from attribute
@@ -442,7 +441,7 @@ suite('@property', () => {
 
     await el.updateComplete;
 
-    assert.equal(el.first, 'first'); // BUG: Expected "first updated".
+    assert.equal(el.first, 'first updated');
     assert.equal(el.second, 'second updated');
   });
 
@@ -458,11 +457,11 @@ suite('@property', () => {
     container.innerHTML = `<${elName} first="overrideFirst"></${elName}>`;
     const el: SubClass = container.querySelector(elName)!;
     // Check initialization
-    assert.equal(el.first, 'first'); // BUG: Expected "overrideFirst"
+    assert.equal(el.first, 'overrideFirst');
 
     // Property can be set from attribute
     el.setAttribute('first', 'first updated');
     await el.updateComplete;
-    assert.equal(el.first, 'first'); // BUG: Expected "first updated"
+    assert.equal(el.first, 'first updated');
   });
 });
