@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import {defineProperty, type Interface} from './base.js';
+import {type Interface} from './base.js';
 
 export type QueryAllDecorator = {
   // legacy
@@ -27,7 +27,7 @@ export type QueryAllDecorator = {
   <C extends Interface<ReactiveElement>, V extends NodeList>(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
-  ): void;
+  ): ClassAccessorDecoratorResult<C, V>;
 };
 
 // Shared fragment used to generate empty NodeLists when a render root is
@@ -59,28 +59,16 @@ let fragment: DocumentFragment;
  * @category Decorator
  */
 export function queryAll(selector: string): QueryAllDecorator {
-  return (<C extends Interface<ReactiveElement>, V extends NodeList>(
-    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
-    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
-  ) => {
+  return (<C extends Interface<ReactiveElement>>() => {
     const doQuery = (el: Interface<ReactiveElement>) => {
       const container =
         el.renderRoot ?? (fragment ??= document.createDocumentFragment());
       return container.querySelectorAll(selector);
     };
-    if (typeof nameOrContext === 'object') {
-      return {
-        get(this: C) {
-          return doQuery(this);
-        },
-      };
-    } else {
-      defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
-        get(this: ReactiveElement) {
-          return doQuery(this);
-        },
-      });
-      return;
-    }
+    return {
+      get(this: C) {
+        return doQuery(this);
+      },
+    };
   }) as QueryAllDecorator;
 }
