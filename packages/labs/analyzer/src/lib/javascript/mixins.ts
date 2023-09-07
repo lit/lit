@@ -81,6 +81,9 @@ export const maybeGetMixinFromFunctionLike = (
     );
     return undefined;
   }
+  // TODO (43081j): in typescript, you currently cannot have decorators on
+  // a class expression, hence why we effectively disallow them here. However,
+  // we may want to loosen this constraint for JS users some day
   if (!ts.isBlock(functionBody)) {
     addDiagnosticIfMixin(
       fn,
@@ -162,9 +165,7 @@ export const maybeGetMixinFromFunctionLike = (
     return undefined;
   }
 
-  // TODO (43081j): deal with empty class declaration names properly, maybe
-  // throw an error?
-  const classDeclarationName = classDeclaration.name?.text ?? 'unknown';
+  const classDeclarationName = classDeclaration.name?.text ?? name;
 
   return new MixinDeclaration({
     node: fn,

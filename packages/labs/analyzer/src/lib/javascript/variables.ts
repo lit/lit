@@ -72,6 +72,8 @@ const getVariableDeclaration = (
         statement
       );
     } else {
+      // This supports const assignments of mixins applied to classes, ala:
+      // `export const MyClassWithSomeMixin = SomeMixin(MyClass);`
       const classDec = maybeGetAppliedMixin(initializer, name, analyzer);
       if (classDec !== undefined) {
         return classDec;

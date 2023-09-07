@@ -309,8 +309,6 @@ export const getHeritageFromExpression = (
   isMixinClass: boolean,
   analyzer: AnalyzerInterface
 ): ClassHeritage => {
-  // TODO(kschaaf): Support for extracting mixing applications from the heritage
-  // expression https://github.com/lit/lit/issues/2998
   const mixins: Reference[] = [];
   const superClass = getSuperClassAndMixins(expression, mixins, analyzer);
   return {
@@ -331,19 +329,23 @@ export const getSuperClassAndMixins = (
     analyzer.typescript.isCallExpression(expression) &&
     analyzer.typescript.isIdentifier(expression.expression)
   ) {
+    // FYI we purposely restrict to identifiers since we represent mixins
+    // as references. If we want to support complex expressions in future,
+    // we will need to rework that in the model.
     const mixinRef = getReferenceForIdentifier(expression.expression, analyzer);
     // We need to eagerly dereference a mixin ref to know what argument the
     // super class is passed into
     const mixin = mixinRef?.dereference(MixinDeclaration);
+    // TODO (43081j): consider supporting external mixins properly at some point
     if (mixinRef === undefined || mixin === undefined) {
       analyzer.addDiagnostic(
         createDiagnostic({
           typescript: analyzer.typescript,
           node: expression,
           message:
-            `This is presumed to be a mixin but could it was not included in ` +
-            `the source files of this package and no custom-elements.json ` +
-            `was found for it.`,
+            `This is presumed to be a mixin but it could not be found ` +
+            `in the current project. Mixins imported from outside the ` +
+            `project are not yet supported.`,
           code: DiagnosticCode.UNSUPPORTED,
           category: analyzer.typescript.DiagnosticCategory.Warning,
         })

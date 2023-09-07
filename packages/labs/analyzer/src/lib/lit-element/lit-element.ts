@@ -114,6 +114,8 @@ export const isLitElementSubclass = (
   const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
   const baseTypes = checker.getBaseTypes(type);
   return baseTypes.some((t) =>
+    // Mixins will cause the base types to be an intersection that
+    // includes `LitElement`
     t.isIntersection()
       ? t.types.some((t) => _isLitElementClassDeclaration(t, analyzer))
       : _isLitElementClassDeclaration(t, analyzer)
