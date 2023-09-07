@@ -613,10 +613,12 @@ export class CustomElementDeclaration extends ClassDeclaration {
     field: ClassField,
     attributes: Map<string, Attribute>
   ) {
-    if (field instanceof CustomElementField && field.attribute) {
+    if (
+      field instanceof CustomElementField &&
+      typeof field.attribute === 'string'
+    ) {
       const {attribute, name: fieldName, ...rest} = field;
-      const name =
-        typeof attribute === 'boolean' ? fieldName.toLowerCase() : attribute;
+      const name = attribute ?? fieldName.toLowerCase();
       const attrDefault = rest.default ?? this.getField(name)?.default;
       attributes.set(name, {
         name,

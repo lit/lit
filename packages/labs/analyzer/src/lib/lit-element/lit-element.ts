@@ -27,6 +27,7 @@ import {getProperties} from './properties.js';
 import {
   getJSDocData,
   getTagName as getCustomElementTagName,
+  getCustomElementFieldMapByAttribute,
 } from '../custom-elements/custom-elements.js';
 
 export type TypeScript = typeof ts;
@@ -40,56 +41,66 @@ export const getLitElementDeclaration = (
   analyzer: AnalyzerInterface
 ): LitElementDeclaration => {
   const reactiveProperties = getProperties(declaration, analyzer);
+  const members = getLitElementClassMembers(
+    declaration,
+    analyzer,
+    reactiveProperties
+  );
   return new LitElementDeclaration({
     tagname: getTagName(analyzer.typescript, declaration),
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
     name: declaration.name?.text ?? '',
     node: declaration,
     reactiveProperties,
-    ...getJSDocData(declaration, analyzer),
+    ...getJSDocData(
+      declaration,
+      analyzer,
+      getCustomElementFieldMapByAttribute(members)
+    ),
     getHeritage: () => getHeritage(declaration, analyzer),
-    ...getLitElementClassMembers(declaration, analyzer, reactiveProperties),
+    ...members,
   });
 };
 
-function getCustomElementField(
+const attributeNameForReactiveProperty = (prop: ReactiveProperty) =>
+  prop?.attribute === false
+    ? undefined
+    : typeof prop?.attribute === 'string'
+    ? prop.attribute
+    : prop.name.toLowerCase();
+
+const getCustomElementFieldFromClassField = (
   field: ClassField,
   prop: ReactiveProperty
-): CustomElementField {
-  const {name} = field;
-  const {
-    privacy,
-    inheritedFrom,
-    source,
-    readonly,
-    type,
-    description,
-    deprecated,
-    summary,
-  } = field;
-  const attribute =
-    prop?.attribute === false
-      ? undefined
-      : typeof prop?.attribute === 'string'
-      ? prop.attribute
-      : name.toLowerCase();
-  const reflects = prop?.reflect ?? undefined;
-  return new CustomElementField({
-    name,
-    attribute,
-    reflects,
+) =>
+  new CustomElementField({
+    name: field.name,
+    attribute: attributeNameForReactiveProperty(prop),
+    reflects: prop.reflect ?? undefined,
     static: field.static,
-    privacy,
-    summary,
-    description,
-    deprecated,
+    privacy: field.privacy,
+    summary: field.summary,
+    description: field.description,
+    deprecated: field.deprecated,
     default: field.default,
-    readonly,
-    inheritedFrom,
-    source,
-    type,
+    readonly: field.readonly,
+    inheritedFrom: field.inheritedFrom,
+    source: field.source,
+    type: field.type,
   });
-}
+
+const getCustomElementFieldFromReactiveProp = (prop: ReactiveProperty) =>
+  new CustomElementField({
+    name: prop.name,
+    attribute: attributeNameForReactiveProperty(prop),
+    reflects: prop.reflect ?? undefined,
+    privacy: 'public',
+    summary: prop.summary,
+    description: prop.description,
+    deprecated: prop.deprecated,
+    default: prop.default,
+    type: prop.type,
+  });
 
 const getLitElementClassMembers = (
   declaration: LitClassDeclaration,
@@ -98,12 +109,19 @@ const getLitElementClassMembers = (
 ) => {
   const info = getClassMembers(declaration, analyzer);
   for (const [name, prop] of reactiveProperties) {
-    if (info.fieldMap.has(name)) {
-      info.fieldMap.set(
-        name,
-        getCustomElementField(info.fieldMap.get(name)!, prop)
-      );
-    }
+    info.fieldMap.set(
+      name,
+      info.fieldMap.has(name)
+        ? // if the reactive property is already a ClassField,
+          // this will narrow it's type to CustomElementField
+          getCustomElementFieldFromClassField(info.fieldMap.get(name)!, prop)
+        : // users can define a reactive property in a static properties block
+          // but fail to also define a corresponding class field. although this is
+          // bad practice on the user's part, the property thus defined will
+          // nonetheless function as a class field at runtime, so we add it to the
+          // field map here
+          getCustomElementFieldFromReactiveProp(prop)
+    );
   }
   return info;
 };

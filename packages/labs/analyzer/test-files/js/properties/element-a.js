@@ -15,6 +15,9 @@ export class LocalClass {
 
 const unsupportedPropertyName = Symbol();
 
+/**
+ * @attr customconverter - attribute docs can override
+ */
 export class ElementA extends LitElement {
   static properties = {
     noOptionsString: {},
@@ -35,6 +38,7 @@ export class ElementA extends LitElement {
     globalClass: {},
     union: {},
     staticProp: {attribute: 'static-prop', type: Number},
+    staticPropWithoutField: {},
   };
 
   [unsupportedPropertyName] = '';

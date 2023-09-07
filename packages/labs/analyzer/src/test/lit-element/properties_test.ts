@@ -13,7 +13,7 @@ import {
   setupAnalyzerForTestWithModule,
 } from '../utils.js';
 
-import {LitElementDeclaration} from '../../index.js';
+import {CustomElementField, LitElementDeclaration} from '../../index.js';
 import {DiagnosticCode} from '../../lib/diagnostic-code.js';
 
 interface TestContext extends AnalyzerModuleTestContext {
@@ -220,7 +220,36 @@ for (const lang of languages) {
 
   test('custom converter', ({element}) => {
     const property = element.reactiveProperties.get('customConverter')!;
-    assert.ok(property.converter);
+    const field = element.getField('customConverter');
+    const attribute = element.attributes.get('customconverter');
+    assert.ok(property.converter, 'property converter');
+    assert.ok(field, 'field');
+    assert.equal(
+      field.name,
+      attribute?.fieldName,
+      'field name matches attribute.fieldName'
+    );
+    assert.equal((field as CustomElementField).attribute, attribute?.name);
+  });
+
+  test('attr docs for reactive property', ({element}) => {
+    const field = element.getField('customConverter');
+    const attribute = element.attributes.get('customconverter')!;
+    assert.ok(field, 'field');
+    assert.ok(attribute, 'attribute');
+    assert.ok(attribute.fieldName, 'fieldName');
+    assert.equal(
+      (field as CustomElementField).attribute,
+      attribute.name,
+      'field.attribute matches attribute.name'
+    );
+    assert.equal(
+      field.name,
+      attribute.fieldName,
+      'field.name equal to attribute.fieldName'
+    );
+    assert.not.ok(field.description);
+    assert.equal(attribute.description, 'attribute docs can override');
   });
 
   test('property defined in static properties block', ({element}) => {
@@ -229,6 +258,24 @@ for (const lang of languages) {
     assert.equal(property.type?.references.length, 0);
     assert.equal(property.typeOption, 'Number');
     assert.equal(property.attribute, 'static-prop');
+    const field = element.getField('staticProp');
+    assert.ok(field);
+    assert.equal(field.type?.text, 'number');
+    assert.equal(field.type?.references.length, 0);
+    assert.equal((field as CustomElementField).attribute, 'static-prop');
+  });
+
+  test('property defined in static properties block but without corresponding class field', ({
+    element,
+  }) => {
+    const property = element.reactiveProperties.get('staticPropWithoutField')!;
+    assert.equal(property.attribute, 'staticpropwithoutfield');
+    const field = element.getField('staticPropWithoutField');
+    assert.ok(field);
+    assert.equal(
+      (field as CustomElementField).attribute,
+      'staticpropwithoutfield'
+    );
   });
 
   test('method with an overloaded signature', ({element}) => {
@@ -330,7 +377,7 @@ for (const lang of languages) {
   });
 
   test('getAllAttributes - correct count', ({element}) => {
-    assert.equal(element.getAllAttributes()?.size, 17);
+    assert.equal(element.getAllAttributes()?.size, 18);
   });
 
   test.run();

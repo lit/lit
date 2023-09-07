@@ -19,6 +19,7 @@ export interface MyType {
 /**
  * My awesome element
  * @fires a-changed - An awesome event to fire
+ * @attr custom-attr - Attr jsdoc overrides
  */
 @customElement('element-props')
 export class ElementProps extends LitElement {
@@ -39,6 +40,10 @@ export class ElementProps extends LitElement {
 
   @property({attribute: 'custom-attr'})
   aCustomAttr = 'custom-attr';
+
+  /** result of conversion */
+  @property({converter: {fromAttribute() {}, toAttribute() {}}})
+  aCustomConverter = 'custom-converter';
 
   @property({type: Object, attribute: false})
   aMyType: MyType = {

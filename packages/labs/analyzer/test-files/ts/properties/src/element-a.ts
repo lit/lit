@@ -17,10 +17,14 @@ export interface LocalInterface {
 
 const unsupportedPropertyName = Symbol();
 
+/**
+ * @attr customconverter - attribute docs can override
+ */
 @customElement('element-a')
 export class ElementA extends LitElement {
   static properties = {
     staticProp: {attribute: 'static-prop', type: Number},
+    staticPropWithoutField: {},
   };
 
   declare staticProp: number;

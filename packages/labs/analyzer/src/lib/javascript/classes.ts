@@ -48,13 +48,17 @@ interface AccessorPair {
   set?: ts.AccessorDeclaration;
 }
 
-interface ClassMemberInfo {
+export interface ClassMemberInfo {
   fieldMap: Map<string, ClassField>;
   staticFieldMap: Map<string, ClassField>;
   methodMap: Map<string, ClassMethod>;
   staticMethodMap: Map<string, ClassMethod>;
 }
 
+/**
+ * Because the accessorsMap is an intermediate step while processing
+ * a ClassDeclaration, which does not appear in the final members list
+ */
 interface ClassMemberInfoIntermediate extends ClassMemberInfo {
   accessorsMap: Map<string, AccessorPair>;
 }
@@ -136,14 +140,17 @@ export const deriveFieldsFromConstructorAssignments = (
   // Ignore non-implementation signatures of overloaded methods by checking
   // for `node.body`.
   if (node.body) {
-    // TODO(bennypowers): We probably want to see if this matches what TypeScript considers a field initialization.
-    // Maybe instead of iterating through the constructor statements, we walk the body looking for any
-    // assignment expression so that we get ones inside of if statements, in parenthesized expressions, etc.
+    // TODO(bennypowers): We probably want to see if this matches what
+    // TypeScript considers a field initialization. Maybe instead of
+    // iterating through the constructor statements, we walk the body
+    // looking for any assignment expression so that we get ones inside
+    // of if statements, in parenthesized expressions, etc.
     //
     // Also, this doesn't cover destructuring assignment.
     //
     // This is ok for now because these are rare ways to "declare" a field,
-    // especially in web components where you shouldn't have constructor parameters.
+    // especially in web components where you shouldn't have
+    // constructor parameters.
     node.body.statements.forEach((node) => {
       if (isConstructorAssignmentStatement(node, analyzer.typescript)) {
         const name = node.expression.left.name.getText();
