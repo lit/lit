@@ -11,12 +11,10 @@
  */
 
 import ts from 'typescript';
-import {AnalyzerInterface, MixinDeclaration} from '../model.js';
+import {AnalyzerInterface, MixinDeclarationInit} from '../model.js';
 import {getClassDeclaration} from './classes.js';
 import {createDiagnostic} from '../errors.js';
 import {DiagnosticCode} from '../diagnostic-code.js';
-import {parseNodeJSDocInfo} from './jsdoc.js';
-import {getFunctionLikeInfo} from './functions.js';
 
 const nodeHasMixinHint = (node: ts.Node) =>
   ts.getJSDocTags(node).some((tag) => tag.tagName.text === 'mixin');
@@ -58,7 +56,7 @@ export const maybeGetMixinFromFunctionLike = (
   name: string,
   analyzer: AnalyzerInterface,
   hasMixinHint = nodeHasMixinHint(fn)
-) => {
+): MixinDeclarationInit | undefined => {
   if (!fn.parameters || fn.parameters.length < 1) {
     addDiagnosticIfMixin(
       fn,
@@ -167,8 +165,9 @@ export const maybeGetMixinFromFunctionLike = (
 
   const classDeclarationName = classDeclaration.name?.text ?? name;
 
-  return new MixinDeclaration({
+  return {
     node: fn,
+    name,
     superClassArgIdx,
     classDeclaration: getClassDeclaration(
       classDeclaration,
@@ -176,9 +175,7 @@ export const maybeGetMixinFromFunctionLike = (
       true,
       analyzer
     ),
-    ...parseNodeJSDocInfo(fn, analyzer),
-    ...getFunctionLikeInfo(fn, name, analyzer),
-  });
+  };
 };
 
 const findSuperClassArgIndexFromHeritage = (

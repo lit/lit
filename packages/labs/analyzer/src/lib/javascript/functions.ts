@@ -20,6 +20,7 @@ import {
   FunctionOverloadDeclaration,
   Parameter,
   Return,
+  MixinDeclaration,
 } from '../model.js';
 import {getTypeForNode, getTypeForType} from '../types.js';
 import {maybeGetMixinFromFunctionLike} from './mixins.js';
@@ -85,13 +86,24 @@ export const getFunctionDeclaration = (
   analyzer: AnalyzerInterface,
   docNode?: ts.Node
 ): FunctionDeclaration => {
-  return (
-    maybeGetMixinFromFunctionLike(declaration, name, analyzer) ??
-    new FunctionDeclaration({
+  const mixinDeclarationInfo = maybeGetMixinFromFunctionLike(
+    declaration,
+    name,
+    analyzer
+  );
+
+  if (mixinDeclarationInfo) {
+    return new MixinDeclaration({
+      ...mixinDeclarationInfo,
       ...parseNodeJSDocInfo(docNode ?? declaration, analyzer),
       ...getFunctionLikeInfo(declaration, name, analyzer),
-    })
-  );
+    });
+  }
+
+  return new FunctionDeclaration({
+    ...parseNodeJSDocInfo(docNode ?? declaration, analyzer),
+    ...getFunctionLikeInfo(declaration, name, analyzer),
+  });
 };
 
 /**
