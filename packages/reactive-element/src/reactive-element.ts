@@ -1048,7 +1048,11 @@ export abstract class ReactiveElement
       }
     }
     if (elementProperties.size > 0) {
-      queueMicrotask(() => {
+      // This has to run in a microtask so that we go after field
+      // initialization in subclasses. This microtask can be removed when both
+      // standard decorator addInitializer() runs after field initialization
+      // and experimental decorators are no longer supporter, or
+      Promise.resolve().then(() => {
         for (const [p, options] of elementProperties) {
           if (instanceProperties.has(p as keyof this)) {
             this[p as keyof this] = instanceProperties.get(p as keyof this)!;
