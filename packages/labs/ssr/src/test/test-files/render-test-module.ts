@@ -277,3 +277,9 @@ export class TestShadowrootdelegatesfocus extends LitElement {
 }
 
 export const shadowrootdelegatesfocus = html`<test-shadowrootdelegatesfocus></test-shadowrootdelegatesfocus>`;
+
+/* Invalid Expression Locations */
+export const templateUsingAnInvalidExpressLocation = () => {
+  const value = 'Invalid expression location';
+  return html`<template><div>${value}</div></template>`;
+};
