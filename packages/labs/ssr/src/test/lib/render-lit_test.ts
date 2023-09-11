@@ -519,7 +519,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       );
       assert.match(
         (err as Error).message,
-        '<template><div>Invalid expression location</div></template>'
+        '<template><div>${...}</div></template>'
       );
       assert.match(
         (err as Error).message,

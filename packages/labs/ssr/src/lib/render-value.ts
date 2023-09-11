@@ -767,15 +767,12 @@ function throwErrorForPartIndexMismatch(
   partIndex: number,
   result: TemplateResult
 ) {
-  let template = result.strings[0];
-  for (let i = 0; i < result.values.length; i++) {
-    template += result.values[i] + result.strings[i + 1];
-  }
-
   const errorMsg = `
-    Unexpected final partIndex: ${partIndex} !== ${result.values.length} while processing the following template:
+    Unexpected final partIndex: ${partIndex} !== ${
+    result.values.length
+  } while processing the following template:
 
-    ${template}
+    ${result.strings.join('${...}')}
 
     This could be because you're attempting to render an expression in an invalid location. See
     https://lit.dev/docs/templates/expressions/#invalid-locations for more information about invalid expression
