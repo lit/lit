@@ -33,10 +33,39 @@
       "clean": "if-file-deleted"
     },
     "test": {
-      "command": "npm run test:common && MODE=prod npm run test:common"
+      "dependencies": [
+        "test:common",
+        "test:common:prod"
+      ]
     },
     "test:common": {
       "command": "node ./run-web-tests.js",
+      "dependencies": [
+        "build:deps"
+      ],
+      "files": [],
+      "output": [],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      }
+    },
+    "test:common:prod": {
+      "command": "MODE=prod node ./run-web-tests.js",
+      "dependencies": [
+        "build:deps"
+      ],
+      "files": [],
+      "output": [],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        },
+        "MODE": "prod"
+      }
+    },
+    "build:deps": {
       "dependencies": [
         "build",
         "../labs/context:build",
@@ -49,17 +78,7 @@
         "../lit-html:build",
         "../lit:build",
         "../reactive-element:build"
-      ],
-      "files": [],
-      "output": [],
-      "env": {
-        "BROWSERS": {
-          "external": true
-        },
-        "MODE": {
-          "external": true
-        }
-      }
+      ]
     }
   }
 }
