@@ -56,7 +56,8 @@
         "build:ts:types",
         "build:rollup",
         "../../lit:build",
-        "../../reactive-element:build"
+        "../../reactive-element:build",
+        "../../task:build"
       ]
     },
     "build:ts": {
