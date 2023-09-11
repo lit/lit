@@ -62,6 +62,7 @@
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
+        "../../task:build:ts:types",
         "../../lit:build:ts:types",
         "../../reactive-element:build:ts:types"
       ],
