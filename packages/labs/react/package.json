@@ -80,7 +80,7 @@
       ]
     },
     "build:ts:types": {
-      "command": "treemirror development . \"**/*.d.ts{,.map}\" \"!development/test\"",
+      "command": "treemirror development . \"**/*.d.ts{,.map}\" \"!test\"",
       "dependencies": [
         "../../internal-scripts:build",
         "build:ts"

@@ -9,6 +9,14 @@ import type React from 'react';
 const NODE_MODE = false;
 const DEV_MODE = true;
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DistributiveOmit<T, K extends string | number | symbol> = T extends any
+  ? K extends keyof T
+    ? Omit<T, K>
+    : T
+  : T;
+type PropsWithoutRef<T> = DistributiveOmit<T, 'ref'>;
+
 /**
  * Creates a type to be used for the props of a web component used directly in
  * React JSX.
@@ -39,7 +47,9 @@ export type ReactWebComponent<
   I extends HTMLElement,
   E extends EventNames = {}
 > = React.ForwardRefExoticComponent<
-  React.PropsWithoutRef<ComponentProps<I, E>> & React.RefAttributes<I>
+  // TODO(augustjk): Remove and use `React.PropsWithoutRef` when
+  // https://github.com/preactjs/preact/issues/4124 is fixed.
+  PropsWithoutRef<ComponentProps<I, E>> & React.RefAttributes<I>
 >;
 
 // Props derived from custom element class. Currently has limitations of making
@@ -48,27 +58,15 @@ export type ReactWebComponent<
 // lifecycle methods or allow user to explicitly provide props.
 type ElementProps<I> = Partial<Omit<I, keyof HTMLElement>>;
 
-// Child type compatible with both React and Preact. It's based on
-// `React.ReactNode` but using `JSX.Element` allows`VNode` to be acceptable in
-// Preact projects.
-type Child =
-  | JSX.Element
-  | React.ReactPortal
-  | string
-  | number
-  | boolean
-  | undefined;
-
 // Acceptable props to the React component.
 type ComponentProps<I, E extends EventNames = {}> = Omit<
   React.HTMLAttributes<I>,
   // Omit keyof E to prefer provided event handler mapping over React's
   // built-in event handler props.
-  | keyof E
-  // Omit children to replace with our own that's compatible with Preact.
-  | 'children'
+  keyof E
 > &
-  EventListeners<E> & {children?: Child | Child[]} & ElementProps<I>;
+  EventListeners<E> &
+  ElementProps<I>;
 
 /**
  * Type used to cast an event name with an event type when providing the
