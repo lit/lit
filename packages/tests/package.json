@@ -6,7 +6,8 @@
   "scripts": {
     "build": "wireit",
     "test": "wireit",
-    "test:common": "wireit"
+    "test:common": "wireit",
+    "test:common:prod": "wireit"
   },
   "devDependencies": {
     "@types/diff": "^5.0.0",
