@@ -5,10 +5,17 @@
  */
 
 import type React from 'react';
-import {PropsWithoutRef} from './props-without-ref.js';
 
 const NODE_MODE = false;
 const DEV_MODE = true;
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type DistributiveOmit<T, K extends string | number | symbol> = T extends any
+  ? K extends keyof T
+    ? Omit<T, K>
+    : T
+  : T;
+type PropsWithoutRef<T> = DistributiveOmit<T, 'ref'>;
 
 /**
  * Creates a type to be used for the props of a web component used directly in

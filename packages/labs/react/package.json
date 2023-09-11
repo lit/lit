@@ -42,8 +42,7 @@
     "/node/",
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/create-component.{d.ts,d.ts.map,js,js.map}",
-    "/use-controller.{d.ts,d.ts.map,js,js.map}",
-    "/props-without-ref.{d.ts,d.ts.map,js,js.map}"
+    "/use-controller.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "wireit",
@@ -104,7 +103,6 @@
         "create-component.js{,.map}",
         "index.js{,.map}",
         "use-controller.js{,.map}",
-        "props-without-ref.js{,.map}",
         "node/**/*.js{,.map}"
       ]
     },
