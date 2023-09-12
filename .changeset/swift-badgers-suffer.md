@@ -1,6 +1,5 @@
 ---
 '@lit/localize-tools': patch
-'@lit-labs/compiler': patch
 '@lit-labs/ssr': patch
 ---
 
