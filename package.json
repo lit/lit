@@ -142,7 +142,10 @@
         "Also, note that context, motion, observers, router, ",
         "scoped-registry-mixin, task, lit-element, lit-html, and ",
         "reactive-element are all tested as part of ./packages/tests.",
-        "See ./packages/tests/src/web-test-runner.config.ts"
+        "See ./packages/tests/src/web-test-runner.config.ts",
+        "",
+        "./packages/labs/gen-manifest:test should be here, but it is currently",
+        "failing."
       ],
       "dependencies": [
         "./packages/localize:test",
@@ -155,7 +158,6 @@
         "./packages/labs/compiler:test",
         "./packages/labs/eleventy-plugin-lit:test",
         "./packages/labs/eslint-plugin:test",
-        "./packages/labs/gen-manifest:test",
         "./packages/labs/gen-utils:test",
         "./packages/labs/gen-wrapper-angular:test",
         "./packages/labs/gen-wrapper-react:test",
