@@ -505,6 +505,28 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
   });
 
   test('calls customElementRendered', () => {});
+
+  /* Invalid Expression Locations */
+
+  test('throws a descriptive error for invalid expression locations', async () => {
+    const {render, templateUsingAnInvalidExpressLocation} = await setup();
+    try {
+      render(templateUsingAnInvalidExpressLocation());
+    } catch (err: unknown) {
+      assert.match(
+        (err as Error).message,
+        'Unexpected final partIndex: 0 !== 1 while processing the following template:'
+      );
+      assert.match(
+        (err as Error).message,
+        '<template><div>${...}</div></template>'
+      );
+      assert.match(
+        (err as Error).message,
+        'https://lit.dev/docs/templates/expressions/#invalid-locations'
+      );
+    }
+  });
 }
 
 test.run();
