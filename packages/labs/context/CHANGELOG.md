@@ -1,5 +1,11 @@
 # @lit-labs/context
 
+## 0.4.1
+
+### Patch Changes
+
+- [#4171](https://github.com/lit/lit/pull/4171) [`c9f12f65`](https://github.com/lit/lit/commit/c9f12f65a9f31bb135dc4175c70acf194f9dfef0) - Fix an infinite loop that occurred when multiple providers were declared for a single context on the same host. This is an error, but we shouldn't go into an infinite loop over it.
+
 ## 0.4.0
 
 ### Minor Changes

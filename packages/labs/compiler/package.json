@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/compiler",
   "description": "Compiler to prepare Lit templates at build time",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "author": "Google LLC",
   "homepage": "https://github.com/Lit/Lit/tree/main/packages/labs/compiler",
