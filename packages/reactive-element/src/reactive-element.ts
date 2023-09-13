@@ -254,6 +254,14 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
    * the property changes.
    */
   readonly noAccessor?: boolean;
+
+  /**
+   * Whether this property is wrapping accessors. This is set by `@property`
+   * to control the initial value change and reflection logic.
+   *
+   * @internal
+   */
+  wrapped?: boolean;
 }
 
 /**
@@ -630,6 +638,8 @@ export abstract class ReactiveElement
     }
     return attributes;
   }
+
+  private __instanceProperties?: PropertyValues = undefined;
 
   /**
    * Creates a property accessor on the element prototype if one does not exist
@@ -1037,8 +1047,7 @@ export abstract class ReactiveElement
    * the native platform default).
    */
   private __saveInstanceProperties() {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const instanceProperties = new Map<keyof this, this[keyof this]>();
+    const instanceProperties = new Map();
     const elementProperties = (this.constructor as typeof ReactiveElement)
       .elementProperties;
     for (const p of elementProperties.keys() as IterableIterator<keyof this>) {
@@ -1047,29 +1056,8 @@ export abstract class ReactiveElement
         delete this[p];
       }
     }
-    if (elementProperties.size > 0) {
-      // This has to run in a microtask so that we go after field
-      // initialization in subclasses. This microtask can be removed when both
-      // standard decorator addInitializer() runs after field initialization
-      // and experimental decorators are no longer supporter, or
-      Promise.resolve().then(() => {
-        for (const [p, options] of elementProperties) {
-          if (instanceProperties.has(p as keyof this)) {
-            this[p as keyof this] = instanceProperties.get(p as keyof this)!;
-          } else if (
-            this[p as keyof this] !== undefined &&
-            !this._$changedProperties.has(p)
-          ) {
-            // Trigger initial value reflection and populate the initial
-            // changedProperties map, but only for the case of experimental
-            // decorators on accessors, which will not have already populated
-            // the changedProperties map. We skip `undefined` values assuming
-            // those aren't initial values - a small difference from
-            // experimental decorators on fields.
-            this.requestUpdate(p, undefined, options);
-          }
-        }
-      });
+    if (instanceProperties.size > 0) {
+      this.__instanceProperties = instanceProperties as PropertyValues<this>;
     }
   }
 
@@ -1265,18 +1253,7 @@ export abstract class ReactiveElement
       const hasChanged = options.hasChanged ?? notEqual;
       const newValue = initial ? initialValue : this[name as keyof this];
       if (hasChanged(newValue, oldValue)) {
-        // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
-        // vs just Map.set()
-        if (!this._$changedProperties.has(name)) {
-          this._$changedProperties.set(name, oldValue);
-        }
-        // Add to reflecting properties set.
-        // Note, it's important that every change has a chance to add the
-        // property to `_reflectingProperties`. This ensures setting
-        // attribute + property reflects correctly.
-        if (options.reflect === true && this.__reflectingProperty !== name) {
-          (this.__reflectingProperties ??= new Map()).set(name, options);
-        }
+        this._$changeProperty(name, oldValue, options);
       } else {
         // Abort the request if the property should not be considered changed.
         return;
@@ -1284,6 +1261,28 @@ export abstract class ReactiveElement
     }
     if (this.isUpdatePending === false) {
       this.__updatePromise = this.__enqueueUpdate();
+    }
+  }
+
+  /**
+   * @internal
+   */
+  _$changeProperty(
+    name: PropertyKey,
+    oldValue: unknown,
+    options: PropertyDeclaration
+  ) {
+    // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
+    // vs just Map.set()
+    if (!this._$changedProperties.has(name)) {
+      this._$changedProperties.set(name, oldValue);
+    }
+    // Add to reflecting properties set.
+    // Note, it's important that every change has a chance to add the
+    // property to `_reflectingProperties`. This ensures setting
+    // attribute + property reflects correctly.
+    if (options.reflect === true && this.__reflectingProperty !== name) {
+      (this.__reflectingProperties ??= new Map()).set(name, options);
     }
   }
 
@@ -1368,17 +1367,18 @@ export abstract class ReactiveElement
       return;
     }
     debugLogEvent?.({kind: 'update'});
-    if (DEV_MODE) {
-      if (!this.hasUpdated) {
-        // Produce warning if any class properties are shadowed by class fields
-        const reactivePropertyKeys =
-          (
-            this.constructor as typeof ReactiveElement
-          ).__reactivePropertyKeys?.keys() ?? [];
-        const shadowedProperties = [...reactivePropertyKeys].filter((p) =>
-          this.hasOwnProperty(p)
-        );
+    if (!this.hasUpdated) {
+      if (DEV_MODE) {
+        const shadowedProperties: string[] = [];
+        (
+          this.constructor as typeof ReactiveElement
+        ).__reactivePropertyKeys?.forEach((p) => {
+          if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
+            shadowedProperties.push(p as string);
+          }
+        });
         if (shadowedProperties.length) {
+          // Produce warning if any class properties are shadowed by class fields
           throw new Error(
             `The following properties on element ${this.localName} will not ` +
               `trigger updates as expected because they are set using class ` +
@@ -1388,6 +1388,35 @@ export abstract class ReactiveElement
               `https://lit.dev/msg/class-field-shadowing ` +
               `for more information.`
           );
+        }
+      }
+      // Mixin instance properties once, if they exist.
+      if (this.__instanceProperties) {
+        // TODO (justinfagnani): should we use the stored value? Could a new value
+        // have been set since we stored the own property value?
+        for (const [p, value] of this.__instanceProperties) {
+          this[p as keyof this] = value as this[keyof this];
+        }
+        this.__instanceProperties = undefined;
+      }
+      // Trigger initial value reflection and populate the initial
+      // changedProperties map, but only for the case of experimental
+      // decorators on accessors, which will not have already populated the
+      // changedProperties map. We can't know if these accessors had
+      // initializers, so we just set them anyway - a difference from
+      // experimental decorators on fields and standard decorators on
+      // auto-accessors.
+      const elementProperties = (this.constructor as typeof ReactiveElement)
+        .elementProperties;
+      if (elementProperties.size > 0) {
+        for (const [p, options] of elementProperties) {
+          if (
+            options.wrapped === true &&
+            !this._$changedProperties.has(p) &&
+            this[p as keyof this] !== undefined
+          ) {
+            this._$changeProperty(p, this[p as keyof this], options);
+          }
         }
       }
     }
