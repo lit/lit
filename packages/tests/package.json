@@ -50,10 +50,11 @@
         "BROWSERS": {
           "external": true
         }
-      }
+      },
+      "MODE": "dev"
     },
     "test:common:prod": {
-      "command": "MODE=prod node ./run-web-tests.js",
+      "command": "node ./run-web-tests.js",
       "dependencies": [
         "build:deps"
       ],
