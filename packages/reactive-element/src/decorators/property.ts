@@ -56,8 +56,12 @@ export type PropertyDecorator = {
   ): (this: C, value: V) => void;
 
   // legacy decorator signature
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (protoOrDescriptor: Object, name: PropertyKey): any;
+  (
+    protoOrDescriptor: Object,
+    name: PropertyKey,
+    descriptor?: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any;
 };
 
 const legacyProperty = (
@@ -66,7 +70,10 @@ const legacyProperty = (
   name: PropertyKey
 ) => {
   const hasOwnProperty = proto.hasOwnProperty(name);
-  (proto.constructor as typeof ReactiveElement).createProperty(name, options);
+  (proto.constructor as typeof ReactiveElement).createProperty(
+    name,
+    hasOwnProperty ? {...options, wrapped: true} : options
+  );
   // For accessors (which have a descriptor on the prototype) we need to
   // return a descriptor, otherwise TypeScript overwrites the descriptor we
   // define in createProperty() with the original descriptor. We don't do this
@@ -132,23 +139,9 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
         this.requestUpdate(name, oldValue, options);
       },
       init(this: C, v: V): V {
-        // We need to call requestUpdate() for initial values, like we do in
-        // the legacy decorators, to both populate the changedProperties map
-        // and to perform the initial reflection. But standard decorators
-        // call init() too early and it would be an error to read the field
-        // to get the previous value at that point. So we pass initial=true
-        // and the initial value so requestUpdate() doesn't have to access
-        // the field.
-        // We can switch to using context.addInitializer() when
-        // https://github.com/tc39/proposal-decorators/issues/513 is
-        // resolved and shipping in TypeScript and Babel.
-        (this.requestUpdate as InternalRequestUpdate)(
-          name,
-          undefined,
-          options,
-          true,
-          v
-        );
+        if (v !== undefined) {
+          this._$changeProperty(name, undefined, options);
+        }
         return v;
       },
     };
@@ -163,14 +156,6 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
   }
   throw new Error(`Unsupported decorator location: ${kind}`);
 };
-
-type InternalRequestUpdate = (
-  name?: PropertyKey,
-  oldValue?: unknown,
-  options?: PropertyDeclaration,
-  _initial?: boolean,
-  _initialValue?: unknown
-) => void;
 
 /**
  * A class field or accessor decorator which creates a reactive property that

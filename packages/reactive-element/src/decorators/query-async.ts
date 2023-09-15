@@ -12,13 +12,14 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
-import {Interface, defineProperty} from './base.js';
+import type {Interface} from './base.js';
 
 export type QueryAsyncDecorator = {
   // legacy
   (
     proto: Interface<ReactiveElement>,
-    name: PropertyKey
+    name: PropertyKey,
+    descriptor?: PropertyDescriptor
     // Note TypeScript requires the return type to be `void|any`
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): void | any;
@@ -27,7 +28,7 @@ export type QueryAsyncDecorator = {
   <C extends Interface<ReactiveElement>, V extends Promise<Element | null>>(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
-  ): void;
+  ): ClassAccessorDecoratorResult<C, V>;
 };
 
 // Note, in the future, we may extend this decorator to support the use case
@@ -68,25 +69,12 @@ export type QueryAsyncDecorator = {
  * @category Decorator
  */
 export function queryAsync(selector: string) {
-  return (<C extends Interface<ReactiveElement>, V extends Promise<Element>>(
-    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
-    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
-  ) => {
-    if (typeof nameOrContext === 'object') {
-      return {
-        async get(this: C) {
-          await this.updateComplete;
-          return this.renderRoot?.querySelector(selector) ?? null;
-        },
-      };
-    } else {
-      defineProperty(protoOrTarget, nameOrContext as PropertyKey, {
-        async get(this: ReactiveElement) {
-          await this.updateComplete;
-          return this.renderRoot?.querySelector(selector);
-        },
-      });
-      return;
-    }
+  return (<C extends Interface<ReactiveElement>>() => {
+    return {
+      async get(this: C) {
+        await this.updateComplete;
+        return this.renderRoot?.querySelector(selector) ?? null;
+      },
+    };
   }) as QueryAsyncDecorator;
 }
