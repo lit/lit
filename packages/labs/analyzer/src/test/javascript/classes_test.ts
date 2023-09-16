@@ -142,8 +142,9 @@ nisi ut aliquip ex ea commodo consequat.`
   test('accessor1', ({getModule}) => {
     if (lang === 'js') {
       // Accessors are not supported in JS
-      return;
+      test.skip();
     }
+
     const dec = getModule('classes').getDeclaration('Class1');
     assert.ok(dec.isClassDeclaration());
     const member = dec.getField('accessor1');
@@ -157,8 +158,9 @@ nisi ut aliquip ex ea commodo consequat.`
   test('accessor2', ({getModule}) => {
     if (lang === 'js') {
       // Accessors are not supported in JS
-      return;
+      test.skip();
     }
+
     const dec = getModule('classes').getDeclaration('Class1');
     assert.ok(dec.isClassDeclaration());
     const member = dec.getField('accessor2');
