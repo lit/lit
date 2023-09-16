@@ -40,6 +40,27 @@ test('RenderResultReadable collects strings and nested Promises of iterables', a
   assert.equal(s, 'abcd');
 });
 
+test('RenderResultReadable collects all iterables 2', async () => {
+  class TestRenderResultReadable extends RenderResultReadable {
+    override push(value: any) {
+      super.push(value);
+
+      // for the value different from "__" we return true to indicate that we can accept more data
+      return value !== '__';
+    }
+  }
+
+  const readable = new TestRenderResultReadable([
+    'a',
+    Promise.resolve([Promise.resolve(['__', 'b'])]),
+    '__',
+    'c',
+  ]);
+
+  const s = await collectReadable(readable);
+  assert.equal(s, 'a__b__c');
+});
+
 test.run();
 
 const collectReadable = async (r: Readable) => {
