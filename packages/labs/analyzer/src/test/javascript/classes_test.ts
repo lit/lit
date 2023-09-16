@@ -137,6 +137,30 @@ nisi ut aliquip ex ea commodo consequat.`
     assert.equal(member.type?.text, 'string | number');
   });
 
+  // Accessors
+
+  test('accessor1', ({getModule}) => {
+    const dec = getModule('classes').getDeclaration('Class1');
+    assert.ok(dec.isClassDeclaration());
+    const member = dec.getField('accessor1');
+    assert.ok(member?.isClassField());
+    assert.equal(member?.description, `accessor1 description`);
+    assert.equal(member?.privacy, 'public');
+    assert.equal(member?.type?.text, 'boolean');
+    assert.equal(member?.readonly, false);
+  });
+
+  test('accessor2', ({getModule}) => {
+    const dec = getModule('classes').getDeclaration('Class1');
+    assert.ok(dec.isClassDeclaration());
+    const member = dec.getField('accessor2');
+    assert.ok(member?.isClassField());
+    assert.equal(member?.description, `readonly accessor`);
+    assert.equal(member?.privacy, 'protected');
+    assert.equal(member?.type?.text, 'boolean');
+    assert.equal(member?.readonly, true);
+  });
+
   // Methods
 
   test('method1', ({getModule}) => {

@@ -200,6 +200,7 @@ export const getClassMembers = (
           type: getTypeForNode((get ?? set)!, analyzer),
           privacy: getPrivacy(typescript, (get ?? set)!),
           readonly: !!get && !set,
+          ...parseNodeJSDocInfo((get ?? set)!, analyzer),
           // TODO(bennypowers): derive from getter?
           // default: ???
           // TODO(bennypowers): reflect, etc?
