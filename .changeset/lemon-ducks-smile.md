@@ -1,6 +1,5 @@
 ---
-"@lit-labs/ssr": patch
+'@lit-labs/ssr': patch
 ---
 
 Fix SSR returning a truncated response
- 
