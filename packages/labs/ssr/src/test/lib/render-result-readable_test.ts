@@ -40,7 +40,7 @@ test('RenderResultReadable collects strings and nested Promises of iterables', a
   assert.equal(s, 'abcd');
 });
 
-test('RenderResultReadable collects all iterables 2', async () => {
+test('RenderResultReadable collects all iterables when stream is back pressured', async () => {
   class TestRenderResultReadable extends RenderResultReadable {
     override push(value: any) {
       super.push(value);
