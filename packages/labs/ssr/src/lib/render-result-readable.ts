@@ -57,10 +57,9 @@ export class RenderResultReadable extends Readable {
     // result, because we must be able to return in the middle of the loop
     // and resume on the next call to _read().
 
-    // Get the current iterator, only if we don't already have one from the previous call to _read()
-    if (!this._currentIterator) {
-      this._currentIterator = this._iterators.pop();
-    }
+    // Get the current iterator, only if we don't already have one from the
+    // previous call to _read()
+    this._currentIterator ??= this._iterators.pop();
 
     while (this._currentIterator !== undefined) {
       const next = this._currentIterator.next();
