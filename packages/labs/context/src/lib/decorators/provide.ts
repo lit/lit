@@ -84,16 +84,33 @@ export function provide<ValueType>({
         protoOrTarget,
         nameOrContext
       );
-      const oldSetter = descriptor?.set;
-      const newDescriptor = {
-        ...descriptor,
-        set: function (this: ReactiveElement, value: ValueType) {
-          controllerMap.get(this)?.setValue(value);
-          if (oldSetter) {
-            oldSetter.call(this, value);
-          }
-        },
-      };
+      let newDescriptor;
+      if (descriptor === undefined) {
+        const symbol = Symbol();
+        newDescriptor = {
+          get: function (this: ReactiveElement & {[symbol]: ValueType}) {
+            return this[symbol];
+          },
+          set: function (
+            this: ReactiveElement & {[symbol]: ValueType},
+            value: ValueType
+          ) {
+            controllerMap.get(this)?.setValue(value);
+            this[symbol] = value;
+          },
+        };
+      } else {
+        const oldSetter = descriptor?.set;
+        newDescriptor = {
+          ...descriptor,
+          set: function (this: ReactiveElement, value: ValueType) {
+            controllerMap.get(this)?.setValue(value);
+            if (oldSetter) {
+              oldSetter.call(this, value);
+            }
+          },
+        };
+      }
       Object.defineProperty(protoOrTarget, nameOrContext, newDescriptor);
       return;
     }
