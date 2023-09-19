@@ -5,7 +5,7 @@
  */
 
 import {Context, consume, provide} from '@lit-labs/context';
-import {assert} from 'chai';
+import {assert} from '@esm-bundle/chai';
 import {LitElement, TemplateResult, html} from 'lit';
 
 const simpleContext = 'simple-context' as Context<'simple-context', number>;
