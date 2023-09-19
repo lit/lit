@@ -843,7 +843,7 @@ suite('until directive', () => {
       const heap = performance.memory.usedJSHeapSize;
       for (let i = 0; i < 1000; i++) {
         // Promise passed to until that will never resolve
-        const promise: Promise<void> = new Promise((r) => resolvers.push(r));
+        const promise = new Promise<void>((r) => resolvers.push(r));
         // Render the until into a `<span>` with a 10kb expando, to exaggerate
         // when DOM is not being gc'ed
         render(
