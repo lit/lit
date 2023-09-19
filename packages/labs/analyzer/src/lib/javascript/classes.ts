@@ -242,6 +242,7 @@ export const addAccessorsToFieldMap = (
           type: getTypeForNode(accessor, analyzer),
           privacy: getPrivacy(analyzer.typescript, accessor),
           readonly: !!get && !set,
+          ...parseNodeJSDocInfo(accessor, analyzer),
           // TODO(bennypowers): derive from getter?
           // default: ???
         })
