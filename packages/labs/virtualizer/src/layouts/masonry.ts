@@ -46,8 +46,8 @@ type MinOrMax = 'MIN' | 'MAX';
 
 export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
   private _RANGE_MAP_GRANULARITY = 100;
-  private _positions: Map<number, Positions> = new Map();
-  private _rangeMap: Map<number, RangeMapEntry> = new Map();
+  private _positions = new Map<number, Positions>();
+  private _rangeMap = new Map<number, RangeMapEntry>();
   private _getAspectRatio?: GetAspectRatio;
 
   protected _getDefaultConfig(): MasonryLayoutConfig {

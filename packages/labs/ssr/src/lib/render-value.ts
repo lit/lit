@@ -63,8 +63,7 @@ declare module 'parse5/dist/tree-adapters/default.js' {
   }
 }
 
-const patchedDirectiveCache: WeakMap<DirectiveClass, DirectiveClass> =
-  new Map();
+const patchedDirectiveCache = new WeakMap<DirectiveClass, DirectiveClass>();
 
 /**
  * Looks for values of type `DirectiveResult` and replaces its Directive class

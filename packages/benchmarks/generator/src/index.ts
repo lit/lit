@@ -48,7 +48,7 @@ const generateBenchmark = (
   console.log(`Generating variant ${name}`);
 
   const renderer = rendererForName(parseRenderer(opts.renderers).base)!;
-  const generatedTemplates = new Set();
+  const generatedTemplates = new Set<string>();
 
   // Generates a template for a given level
   const generateTemplate = (s = '', templateLevel = '', tag = 'div') => {

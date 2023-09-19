@@ -24,8 +24,8 @@
     "format:check": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --check",
     "format:fix": "prettier \"**/*.{cjs,html,js,json,md,ts}\" --write",
     "ignore-sync": "ignore-sync .",
-    "lint": "npm run lint:check",
-    "lint:check": "eslint --ignore-pattern=examples/ \"**/*.{js,ts}\"",
+    "lint": "wireit",
+    "lint:check": "wireit",
     "lint:fix": "eslint --ignore-pattern=examples/ --fix \"**/*.{js,ts}\"",
     "test": "npm run test:not-starter-kits && npm run test:lit-starter-js && npm run test:lit-starter-ts",
     "test:not-starter-kits": "wireit",
@@ -210,6 +210,22 @@
         "scripts/check-size-out.md"
       ],
       "command": "node scripts/check-size.js"
+    },
+    "lint": {
+      "dependencies": [
+        "lint:check"
+      ]
+    },
+    "lint:check": {
+      "files": [
+        "**/*.{js,ts}",
+        ".eslintignore",
+        ".eslintrc.json",
+        "!**/examples/**/*.{js,ts}",
+        "!node_modules/"
+      ],
+      "output": [],
+      "command": "eslint --ignore-pattern=examples/ \"**/*.{js,ts}\""
     }
   },
   "devDependencies": {

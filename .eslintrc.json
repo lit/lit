@@ -46,7 +46,8 @@
           "packages/labs/react/**"
         ]
       }
-    ]
+    ],
+    "@typescript-eslint/consistent-generic-constructors": "error"
   },
   "overrides": [
     {
