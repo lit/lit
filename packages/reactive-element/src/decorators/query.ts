@@ -97,7 +97,7 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
               };
             })();
       return {
-        get(this: C): V {
+        get(this: ReactiveElement): V {
           if (cache) {
             let result: V = get!.call(this);
             if (result === undefined) {

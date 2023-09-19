@@ -390,6 +390,13 @@ export type WarningKind =
 
 export type Initializer = (element: ReactiveElement) => void;
 
+// Temporary, until google3 is on TypeScript 5.2
+declare global {
+  interface SymbolConstructor {
+    readonly metadata: unique symbol;
+  }
+}
+
 // Ensure metadata is enabled. TypeScript does not polyfill
 // Symbol.metadata, so we must ensure that it exists.
 (Symbol as {metadata: symbol}).metadata ??= Symbol('metadata');
@@ -748,7 +755,7 @@ export abstract class ReactiveElement
       },
     };
     return {
-      get() {
+      get(this: ReactiveElement) {
         return get!.call(this);
       },
       set(this: ReactiveElement, value: unknown) {
@@ -779,9 +786,12 @@ export abstract class ReactiveElement
     return this.elementProperties.get(name) ?? defaultPropertyDeclaration;
   }
 
+  declare static [Symbol.metadata]: object;
+
   // This is a finalization step, but it needs to be separate from `finalize`
   // because `finalize` can be called before a class has been fully initialized.
   // This method should only be called once per class, as late as possible.
+  /** @nocollapse */
   private static __collectMetadata() {
     const metadata = this[Symbol.metadata];
     if (metadata == null) {

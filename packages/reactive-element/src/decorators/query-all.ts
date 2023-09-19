@@ -59,9 +59,9 @@ let fragment: DocumentFragment;
  * @category Decorator
  */
 export function queryAll(selector: string): QueryAllDecorator {
-  return (<C extends Interface<ReactiveElement>>() => {
+  return (() => {
     return {
-      get(this: C) {
+      get(this: ReactiveElement) {
         const container =
           this.renderRoot ?? (fragment ??= document.createDocumentFragment());
         return container.querySelectorAll(selector);

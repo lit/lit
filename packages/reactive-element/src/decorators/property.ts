@@ -95,6 +95,12 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   hasChanged: notEqual,
 };
 
+// Temporary type, until google3 is on TypeScript 5.2
+type StandardPropertyContext<C, V> = (
+  | ClassAccessorDecoratorContext<C, V>
+  | ClassSetterDecoratorContext<C, V>
+) & {metadata: object};
+
 /**
  * Wraps a class accessor or setter so that `requestUpdate()` is called with the
  * property name and old value when the accessor is set.
@@ -102,9 +108,7 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 export const standardProperty = <C extends Interface<ReactiveElement>, V>(
   options: PropertyDeclaration = defaultPropertyDeclaration,
   target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void),
-  context:
-    | ClassAccessorDecoratorContext<C, V>
-    | ClassSetterDecoratorContext<C, V>
+  context: StandardPropertyContext<C, V>
 ): ClassAccessorDecoratorResult<C, V> | ((this: C, value: V) => void) => {
   const {kind, metadata} = context;
 
@@ -131,28 +135,30 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
     // keyword instead.
     const {name} = context;
     return {
-      set(this: C, v: V) {
+      set(this: ReactiveElement, v: V) {
         const oldValue = (
           target as ClassAccessorDecoratorTarget<C, V>
-        ).get.call(this);
-        (target as ClassAccessorDecoratorTarget<C, V>).set.call(this, v);
+        ).get.call(this as unknown as C);
+        (target as ClassAccessorDecoratorTarget<C, V>).set.call(
+          this as unknown as C,
+          v
+        );
         this.requestUpdate(name, oldValue, options);
       },
-      init(this: C, v: V): V {
+      init(this: ReactiveElement, v: V): V {
         if (v !== undefined) {
           this._$changeProperty(name, undefined, options);
         }
         return v;
       },
-    };
+    } as unknown as ClassAccessorDecoratorResult<C, V>;
   } else if (kind === 'setter') {
     const {name} = context;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return function (this: C, value: V) {
-      const oldValue = this[name as keyof C];
+    return function (this: ReactiveElement, value: V) {
+      const oldValue = this[name as keyof ReactiveElement];
       (target as (value: V) => void).call(this, value);
       this.requestUpdate(name, oldValue, options);
-    };
+    } as unknown as (this: C, value: V) => void;
   }
   throw new Error(`Unsupported decorator location: ${kind}`);
 };
@@ -208,9 +214,7 @@ export function property(options?: PropertyDeclaration): PropertyDecorator {
             protoOrTarget as
               | ClassAccessorDecoratorTarget<C, V>
               | ((value: V) => void),
-            nameOrContext as
-              | ClassAccessorDecoratorContext<C, V>
-              | ClassSetterDecoratorContext<C, V>
+            nameOrContext as StandardPropertyContext<C, V>
           )
         : legacyProperty(
             options,

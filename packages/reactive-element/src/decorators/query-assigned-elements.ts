@@ -78,14 +78,11 @@ export interface QueryAssignedElementsOptions
 export function queryAssignedElements(
   options?: QueryAssignedElementsOptions
 ): QueryAssignedElementsDecorator {
-  return (<
-    C extends Interface<ReactiveElement>,
-    V extends Array<Element>
-  >() => {
+  return (<V extends Array<Element>>() => {
     const {slot, selector} = options ?? {};
     const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
     return {
-      get(this: C): V {
+      get(this: ReactiveElement): V {
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
         const elements = slotEl?.assignedElements(options) ?? [];
