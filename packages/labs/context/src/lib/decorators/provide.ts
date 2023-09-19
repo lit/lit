@@ -86,17 +86,14 @@ export function provide<ValueType>({
       );
       let newDescriptor;
       if (descriptor === undefined) {
-        const symbol = Symbol();
+        const valueMap = new WeakMap<ReactiveElement, ValueType>();
         newDescriptor = {
-          get: function (this: ReactiveElement & {[symbol]: ValueType}) {
-            return this[symbol];
+          get: function (this: ReactiveElement) {
+            return valueMap.get(this);
           },
-          set: function (
-            this: ReactiveElement & {[symbol]: ValueType},
-            value: ValueType
-          ) {
-            controllerMap.get(this)?.setValue(value);
-            this[symbol] = value;
+          set: function (this: ReactiveElement, value: ValueType) {
+            controllerMap.get(this)!.setValue(value);
+            valueMap.set(this, value);
           },
         };
       } else {
@@ -105,9 +102,7 @@ export function provide<ValueType>({
           ...descriptor,
           set: function (this: ReactiveElement, value: ValueType) {
             controllerMap.get(this)?.setValue(value);
-            if (oldSetter) {
-              oldSetter.call(this, value);
-            }
+            oldSetter?.call(this, value);
           },
         };
       }
