@@ -101,6 +101,28 @@ export class Class1 extends BaseClass {
   static method1(a, b = false, ...c) {
     return b ? a : c[0].toFixed();
   }
+
+  /** @private */
+  _accessor1 = false;
+
+  /**
+   * accessor1 description
+   */
+  get accessor1() {
+    return this._accessor1;
+  }
+
+  set accessor1(value) {
+    this._accessor1 = value;
+  }
+
+  /**
+   * readonly accessor
+   * @protected
+   */
+  get accessor2() {
+    return true;
+  }
 }
 
 /**
