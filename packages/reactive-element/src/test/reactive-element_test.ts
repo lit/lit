@@ -1354,7 +1354,7 @@ suite('ReactiveElement', () => {
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
-    const testMap = new Map();
+    const testMap = new Map<string, unknown>();
     testMap.set('foo', undefined);
     assert.deepEqual(el.changedProperties, testMap);
     assert.equal(el.wasUpdatedCount, 1);
@@ -1404,7 +1404,7 @@ suite('ReactiveElement', () => {
     assert.equal(el.wasFirstUpdated, 0);
     el.requestUpdate();
     await el.updateComplete;
-    const testMap = new Map();
+    const testMap = new Map<never, never>();
     assert.deepEqual(el.changedProperties, testMap);
     assert.equal(el.triedToUpdatedCount, 2);
     assert.equal(el.wasUpdatedCount, 1);
@@ -1547,7 +1547,7 @@ suite('ReactiveElement', () => {
     const el = new E() as any;
     container.appendChild(el);
     await el.updateComplete;
-    const testMap = new Map();
+    const testMap = new Map<string, unknown>();
     testMap.set('zot', undefined);
     assert.deepEqual(el.changedProperties, testMap);
     assert.isNaN(el.zot);
@@ -2866,7 +2866,7 @@ suite('ReactiveElement', () => {
       await a.updateComplete;
       assert.equal(a.updatedFoo, 5);
       shouldThrow = true;
-      a.changedProps = new Map();
+      a.changedProps = new Map<never, never>();
       a.foo = 10;
       let threw = false;
       try {

@@ -52,7 +52,10 @@ export function provide<ValueType>({
     nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
   ) => {
     // Map of instances to controllers
-    const controllerMap = new WeakMap();
+    const controllerMap = new WeakMap<
+      ReactiveElement,
+      ContextProvider<Context<unknown, ValueType>>
+    >();
     if (typeof nameOrContext === 'object') {
       // Standard decorators branch
       nameOrContext.addInitializer(function (this: C) {

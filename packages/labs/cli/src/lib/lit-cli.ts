@@ -31,7 +31,7 @@ export interface Options {
 }
 
 export class LitCli {
-  readonly commands: Map<string, Command> = new Map();
+  readonly commands = new Map<string, Command>();
   readonly args: readonly string[];
   readonly console: LitConsole;
   /** The current working directory. */

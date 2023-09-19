@@ -9,7 +9,7 @@ export interface SizeCacheConfig {
 }
 
 export class SizeCache {
-  private _map: Map<number | string, number> = new Map();
+  private _map = new Map<number | string, number>();
   private _roundAverageSize = false;
   totalSize = 0;
 

@@ -1047,7 +1047,7 @@ export abstract class ReactiveElement
    * the native platform default).
    */
   private __saveInstanceProperties() {
-    const instanceProperties = new Map();
+    const instanceProperties = new Map<PropertyKey, unknown>();
     const elementProperties = (this.constructor as typeof ReactiveElement)
       .elementProperties;
     for (const p of elementProperties.keys() as IterableIterator<keyof this>) {
@@ -1057,7 +1057,7 @@ export abstract class ReactiveElement
       }
     }
     if (instanceProperties.size > 0) {
-      this.__instanceProperties = instanceProperties as PropertyValues<this>;
+      this.__instanceProperties = instanceProperties;
     }
   }
 
@@ -1282,7 +1282,10 @@ export abstract class ReactiveElement
     // property to `_reflectingProperties`. This ensures setting
     // attribute + property reflects correctly.
     if (options.reflect === true && this.__reflectingProperty !== name) {
-      (this.__reflectingProperties ??= new Map()).set(name, options);
+      (this.__reflectingProperties ??= new Map<
+        PropertyKey,
+        PropertyDeclaration<unknown, unknown>
+      >()).set(name, options);
     }
   }
 

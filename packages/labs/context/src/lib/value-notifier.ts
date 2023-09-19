@@ -25,8 +25,10 @@ interface CallbackInfo {
  * likely work for a number of use cases.
  */
 export class ValueNotifier<T> {
-  protected readonly subscriptions: Map<ContextCallback<T>, CallbackInfo> =
-    new Map();
+  protected readonly subscriptions = new Map<
+    ContextCallback<T>,
+    CallbackInfo
+  >();
   private _value!: T;
   get value(): T {
     return this._value;

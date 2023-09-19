@@ -60,7 +60,7 @@ export interface ResizeControllerConfig<T = unknown> {
  */
 export class ResizeController<T = unknown> implements ReactiveController {
   private _host: ReactiveControllerHost;
-  private _targets: Set<Element> = new Set();
+  private _targets = new Set<Element>();
   private _config?: ResizeObserverOptions;
   private _observer!: ResizeObserver;
   private _skipInitial = false;
