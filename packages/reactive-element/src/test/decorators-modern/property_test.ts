@@ -415,4 +415,181 @@ suite('@property', () => {
     await el.updateComplete;
     assert.isTrue(changedProperties!.has('foo'));
   });
+
+  test('property options compose when subclassing', async () => {
+    const hasChanged = (value: any, old: any) =>
+      old === undefined || value > old;
+    const fromAttribute = (value: any) => parseInt(value);
+    const toAttribute = (value: any) => `${value}-attr`;
+    class E extends ReactiveElement {
+      @property({attribute: false})
+      accessor noAttr = 'noAttr';
+      @property({attribute: true})
+      accessor atTr = 'attr';
+      @property()
+      accessor customAttr = 'customAttr';
+      @property()
+      accessor hasChanged = 10;
+
+      updateCount = 0;
+
+      override update(changed: PropertyValues) {
+        this.updateCount++;
+        super.update(changed);
+      }
+    }
+    customElements.define(generateElementName(), E);
+
+    class F extends E {
+      @property({attribute: 'custom', reflect: true})
+      override accessor customAttr = 'customAttr';
+      @property({hasChanged})
+      override accessor hasChanged = 10;
+      @property()
+      accessor fromAttribute = 1;
+      @property()
+      accessor toAttribute = 1;
+      accessor all = 10;
+    }
+
+    class G extends F {
+      @property({converter: fromAttribute})
+      override accessor fromAttribute = 1;
+      @property({reflect: true, converter: {toAttribute}})
+      override accessor toAttribute = 1;
+      @property({
+        attribute: 'all-attr',
+        hasChanged,
+        converter: {fromAttribute, toAttribute},
+        reflect: true,
+      })
+      override accessor all = 10;
+    }
+
+    customElements.define(generateElementName(), G);
+
+    const el = new G();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.equal(el.updateCount, 1);
+    assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.atTr, 'attr');
+    assert.equal(el.customAttr, 'customAttr');
+    assert.equal(el.hasChanged, 10);
+    assert.equal(el.fromAttribute, 1);
+    assert.equal(el.toAttribute, 1);
+    assert.equal(el.getAttribute('toattribute'), '1-attr');
+    assert.equal(el.all, 10);
+    assert.equal(el.getAttribute('all-attr'), '10-attr');
+    el.setAttribute('noattr', 'noAttr2');
+    el.setAttribute('attr', 'attr2');
+    el.setAttribute('custom', 'customAttr2');
+    el.setAttribute('fromattribute', '2attr');
+    el.toAttribute = 2;
+    el.all = 5;
+    await el.updateComplete;
+    assert.equal(el.updateCount, 2);
+    assert.equal(el.noAttr, 'noAttr');
+    assert.equal(el.atTr, 'attr2');
+    assert.equal(el.customAttr, 'customAttr2');
+    assert.equal(el.fromAttribute, 2);
+    assert.equal(el.toAttribute, 2);
+    assert.equal(el.getAttribute('toattribute'), '2-attr');
+    assert.equal(el.all, 5);
+    el.all = 15;
+    await el.updateComplete;
+    assert.equal(el.updateCount, 3);
+    assert.equal(el.all, 15);
+    assert.equal(el.getAttribute('all-attr'), '15-attr');
+    el.setAttribute('all-attr', '16-attr');
+    await el.updateComplete;
+    assert.equal(el.updateCount, 4);
+    assert.equal(el.getAttribute('all-attr'), '16-attr');
+    assert.equal(el.all, 16);
+    el.hasChanged = 5;
+    await el.updateComplete;
+    assert.equal(el.hasChanged, 5);
+    assert.equal(el.updateCount, 4);
+    el.hasChanged = 15;
+    await el.updateComplete;
+    assert.equal(el.hasChanged, 15);
+    assert.equal(el.updateCount, 5);
+    el.setAttribute('all-attr', '5-attr');
+    await el.updateComplete;
+    assert.equal(el.all, 5);
+    assert.equal(el.updateCount, 5);
+    el.all = 15;
+    await el.updateComplete;
+    assert.equal(el.all, 15);
+    assert.equal(el.updateCount, 6);
+  });
+
+  test('superclass properties not affected by subclass', async () => {
+    class E extends ReactiveElement {
+      @property({attribute: 'zug', reflect: true})
+      accessor foo = 5;
+      @property({reflect: true})
+      accessor bar = 'bar';
+    }
+    customElements.define(generateElementName(), E);
+
+    class F extends E {
+      @property({attribute: false})
+      override accessor foo = 6;
+      override accessor bar = 'subbar';
+
+      @property()
+      accessor nug = 5;
+    }
+    customElements.define(generateElementName(), F);
+
+    const el = new E();
+    const sub = new F();
+    container.appendChild(el);
+    await el.updateComplete;
+    container.appendChild(sub);
+    await sub.updateComplete;
+
+    assert.equal(el.foo, 5);
+    assert.equal(el.getAttribute('zug'), '5');
+    assert.isFalse(el.hasAttribute('foo'));
+    assert.equal(el.bar, 'bar');
+    assert.equal(el.getAttribute('bar'), 'bar');
+    assert.isUndefined((el as any).nug);
+
+    assert.equal(sub.foo, 6);
+    assert.isFalse(sub.hasAttribute('zug'));
+    assert.isFalse(sub.hasAttribute('foo'));
+    assert.equal(sub.bar, 'subbar');
+    assert.equal(sub.getAttribute('bar'), 'subbar');
+    assert.equal(sub.nug, 5);
+  });
+
+  test('subclass contains super classes reactive properties', async () => {
+    class Base extends ReactiveElement {
+      @property() accessor first = 'first';
+    }
+
+    class SubClass extends Base {
+      @property() accessor second = 'second';
+    }
+
+    const elName = generateElementName();
+    customElements.define(elName, SubClass);
+    container.innerHTML = `<${elName} first="overrideFirst" second="overrideSecond"></${elName}>`;
+
+    // Check initialization
+    const el: SubClass = container.querySelector(elName)!;
+    assert.equal(el.first, 'overrideFirst');
+    assert.equal(el.second, 'overrideSecond');
+
+    // Property can be set from attribute
+    el.setAttribute('first', 'first updated');
+    el.setAttribute('second', 'second updated');
+
+    await el.updateComplete;
+
+    assert.equal(el.first, 'first updated');
+    assert.equal(el.second, 'second updated');
+  });
 });
