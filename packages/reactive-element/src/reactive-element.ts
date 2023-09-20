@@ -512,7 +512,7 @@ export abstract class ReactiveElement
    * @nocollapse
    */
   static addInitializer(initializer: Initializer) {
-    this.finalize();
+    this.__prepare();
     (this._initializers ??= []).push(initializer);
   }
 
@@ -686,7 +686,7 @@ export abstract class ReactiveElement
     }
     // Note, since this can be called by the `@property` decorator which
     // is called before `finalize`, we ensure finalization has been kicked off.
-    this.finalize();
+    this.__prepare();
     this.elementProperties.set(name, options);
     if (!options.noAccessor) {
       const key = DEV_MODE
@@ -818,6 +818,28 @@ export abstract class ReactiveElement
     }
   }
 
+  private static __prepare() {
+    if (this.hasOwnProperty('elementProperties')) {
+      // Already prepared
+      return;
+    }
+    // finalize any superclasses
+    const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
+    superCtor.finalize();
+    superCtor.__collectMetadata();
+
+    // Create own set of initializers for this class if any exist on the
+    // superclass and copy them down. Note, for a small perf boost, avoid
+    // creating initializers unless needed.
+    if (superCtor._initializers !== undefined) {
+      this._initializers = [...superCtor._initializers];
+    }
+    // Initialize elementProperties from the superclass
+    this.elementProperties = new Map(superCtor.elementProperties);
+    // Initialize Map populated in observedAttributes
+    this.__attributeToPropertyMap = new Map();
+  }
+
   /**
    * Creates property accessors for registered properties, sets up element
    * styling, and ensures any superclasses are also finalized. Returns true if
@@ -829,20 +851,8 @@ export abstract class ReactiveElement
       return false;
     }
     this[finalized] = true;
-    // finalize any superclasses
-    const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
-    superCtor.finalize();
-    superCtor.__collectMetadata();
-    // Create own set of initializers for this class if any exist on the
-    // superclass and copy them down. Note, for a small perf boost, avoid
-    // creating initializers unless needed.
-    if (superCtor._initializers !== undefined) {
-      this._initializers = [...superCtor._initializers];
-    }
-    this.elementProperties = new Map(superCtor.elementProperties);
-    // initialize Map populated in observedAttributes
-    this.__attributeToPropertyMap = new Map();
-    // make any properties
+    this.__prepare();
+    // Create properties from the static properties block
     // Note, only process "own" properties since this element will inherit
     // any properties defined on the superClass, and finalization ensures
     // the entire prototype chain is finalized.
