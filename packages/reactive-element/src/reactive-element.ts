@@ -1352,16 +1352,15 @@ export abstract class ReactiveElement
     debugLogEvent?.({kind: 'update'});
     if (!this.hasUpdated) {
       if (DEV_MODE) {
-        const shadowedProperties: string[] = [];
-        (this.constructor as typeof ReactiveElement).elementProperties.forEach(
-          (_, p) => {
-            if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
-              shadowedProperties.push(p as string);
-            }
-          }
+        // Produce warning if any reactive properties on the prototype are
+        // shadowed by class fields. Instance fields set before upgrade are
+        // deleted by this point, so any own property is caused by class field
+        // initialization in the constructor.
+        const ctor = this.constructor as typeof ReactiveElement;
+        const shadowedProperties = [...ctor.elementProperties.keys()].filter(
+          (p) => this.hasOwnProperty(p) && p in getPrototypeOf(this)
         );
         if (shadowedProperties.length) {
-          // Produce warning if any class properties are shadowed by class fields
           throw new Error(
             `The following properties on element ${this.localName} will not ` +
               `trigger updates as expected because they are set using class ` +
