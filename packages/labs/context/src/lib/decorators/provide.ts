@@ -62,14 +62,14 @@ export function provide<ValueType>({
         controllerMap.set(this, new ContextProvider(this, {context}));
       });
       return {
-        get(this: C) {
-          return protoOrTarget.get.call(this);
+        get(this: ReactiveElement) {
+          return protoOrTarget.get.call(this as unknown as C);
         },
-        set(this: C, value: V) {
+        set(this: ReactiveElement, value: V) {
           controllerMap.get(this)?.setValue(value);
-          return protoOrTarget.set.call(this, value);
+          return protoOrTarget.set.call(this as unknown as C, value);
         },
-        init(this: C, value: V) {
+        init(this: ReactiveElement, value: V) {
           controllerMap.get(this)?.setValue(value);
           return value;
         },
