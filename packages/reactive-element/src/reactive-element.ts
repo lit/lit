@@ -759,6 +759,7 @@ export abstract class ReactiveElement
    *
    * This method ensures the superclass is finalized so that inherited
    * property metadata can be copied down.
+   * @nocollapse
    */
   private static __prepare() {
     if (this.hasOwnProperty('elementProperties')) {
@@ -1397,7 +1398,6 @@ export abstract class ReactiveElement
             !this._$changedProperties.has(p) &&
             this[p as keyof this] !== undefined
           ) {
-            // console.log(this.constructor.name, 'reflect initial', p);
             this._$changeProperty(p, this[p as keyof this], options);
           }
         }
