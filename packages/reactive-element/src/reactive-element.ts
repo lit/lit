@@ -380,6 +380,8 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
  */
 const finalized = 'finalized';
 
+const metadataCollected = 'metadataCollected';
+
 /**
  * A string representing one of the supported dev mode warning categories.
  */
@@ -536,6 +538,8 @@ export abstract class ReactiveElement
    * from decorators.
    */
   protected static [finalized] = true;
+
+  protected static [metadataCollected] = true;
 
   /**
    * Memoized list of all element properties, including any superclass properties.
@@ -783,6 +787,14 @@ export abstract class ReactiveElement
   // because `finalize` can be called before a class has been fully initialized.
   // This method should only be called once per class, as late as possible.
   private static __collectMetadata() {
+    if (this.hasOwnProperty(metadataCollected)) {
+      return;
+    }
+    this[metadataCollected] = true;
+    // finalize any superclasses
+    const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
+    superCtor.__collectMetadata();
+
     const metadata = this[Symbol.metadata];
     if (metadata == null) {
       return;
@@ -820,6 +832,7 @@ export abstract class ReactiveElement
     // finalize any superclasses
     const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
     superCtor.finalize();
+    superCtor.__collectMetadata();
     // Create own set of initializers for this class if any exist on the
     // superclass and copy them down. Note, for a small perf boost, avoid
     // creating initializers unless needed.
@@ -967,7 +980,7 @@ export abstract class ReactiveElement
   /**
    * Map with keys of properties that should be reflected when updated.
    */
-  private __reflectingProperties?: Map<PropertyKey, PropertyDeclaration>;
+  private __reflectingProperties?: Set<PropertyKey>;
 
   /**
    * Name of currently reflecting property
@@ -1139,11 +1152,10 @@ export abstract class ReactiveElement
     this._$attributeToProperty(name, value);
   }
 
-  private __propertyToAttribute(
-    name: PropertyKey,
-    value: unknown,
-    options: PropertyDeclaration = defaultPropertyDeclaration
-  ) {
+  private __propertyToAttribute(name: PropertyKey, value: unknown) {
+    const options = (
+      this.constructor as typeof ReactiveElement
+    ).elementProperties.get(name)!;
     const attr = (
       this.constructor as typeof ReactiveElement
     ).__attributeNameForProperty(name, options);
@@ -1279,13 +1291,10 @@ export abstract class ReactiveElement
     }
     // Add to reflecting properties set.
     // Note, it's important that every change has a chance to add the
-    // property to `_reflectingProperties`. This ensures setting
+    // property to `__reflectingProperties`. This ensures setting
     // attribute + property reflects correctly.
     if (options.reflect === true && this.__reflectingProperty !== name) {
-      (this.__reflectingProperties ??= new Map<
-        PropertyKey,
-        PropertyDeclaration<unknown, unknown>
-      >()).set(name, options);
+      (this.__reflectingProperties ??= new Set<PropertyKey>()).add(name);
     }
   }
 
@@ -1418,6 +1427,7 @@ export abstract class ReactiveElement
             !this._$changedProperties.has(p) &&
             this[p as keyof this] !== undefined
           ) {
+            // console.log(this.constructor.name, 'reflect initial', p);
             this._$changeProperty(p, this[p as keyof this], options);
           }
         }
@@ -1575,8 +1585,8 @@ export abstract class ReactiveElement
     // The forEach() expression will only run when when __reflectingProperties is
     // defined, and it returns undefined, setting __reflectingProperties to
     // undefined
-    this.__reflectingProperties &&= this.__reflectingProperties.forEach(
-      (v, k) => this.__propertyToAttribute(k, this[k as keyof this], v)
+    this.__reflectingProperties &&= this.__reflectingProperties.forEach((p) =>
+      this.__propertyToAttribute(p, this[p as keyof this])
     ) as undefined;
     this.__markUpdated();
   }
