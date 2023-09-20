@@ -804,7 +804,7 @@ export abstract class ReactiveElement
    */
   protected static finalize() {
     if (this.hasOwnProperty(finalized)) {
-      return false;
+      return;
     }
     this[finalized] = true;
     this.__prepare();
@@ -878,7 +878,6 @@ export abstract class ReactiveElement
         );
       }
     }
-    return true;
   }
 
   /**
