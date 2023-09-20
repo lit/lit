@@ -37,6 +37,7 @@ const {
   getOwnPropertyDescriptor,
   getOwnPropertyNames,
   getOwnPropertySymbols,
+  getPrototypeOf,
 } = Object;
 
 const NODE_MODE = false;
@@ -781,8 +782,8 @@ export abstract class ReactiveElement
       // Already prepared
       return;
     }
-    // finalize any superclasses
-    const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
+    // Finalize any superclasses
+    const superCtor = getPrototypeOf(this) as typeof ReactiveElement;
     superCtor.finalize();
 
     // Create own set of initializers for this class if any exist on the
