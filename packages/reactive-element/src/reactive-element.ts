@@ -664,10 +664,6 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category properties
    */
-  // TODO (justinfagnani): if we remove createProperty in a future major
-  // version we should simplify finalization and how we track reactive
-  // properties. We should require and assume that finalize is only called
-  // once per class, for instance.
   static createProperty(
     name: PropertyKey,
     options: PropertyDeclaration = defaultPropertyDeclaration
@@ -678,8 +674,6 @@ export abstract class ReactiveElement
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (options as any).attribute = false;
     }
-    // Note, since this can be called by the `@property` decorator which
-    // is called before `finalize`, we ensure finalization has been kicked off.
     this.__prepare();
     this.elementProperties.set(name, options);
     if (!options.noAccessor) {
@@ -777,6 +771,16 @@ export abstract class ReactiveElement
     return this.elementProperties.get(name) ?? defaultPropertyDeclaration;
   }
 
+  /**
+   * Initializes static own properties of the class used in bookkeeping
+   * for element properties, initializers, etc.
+   *
+   * Can be called multiple times by code that needs to ensure these
+   * properties exist before using them.
+   *
+   * This method ensures the superclass is finalized so that inherited
+   * property metadata can be copied down.
+   */
   private static __prepare() {
     if (this.hasOwnProperty('elementProperties')) {
       // Already prepared
@@ -797,9 +801,14 @@ export abstract class ReactiveElement
   }
 
   /**
-   * Creates property accessors for registered properties, sets up element
-   * styling, and ensures any superclasses are also finalized. Returns true if
-   * the element was finalized.
+   * Finishes setting up the class so that it's ready to be registered
+   * as a custom element and instantiated.
+   *
+   * This method is called by the ReactiveElement.observedAttributes getter.
+   * If you override the observedAttributes getter, you must either call
+   * super.observedAttributes to trigger finalization, or call finalize()
+   * yourself.
+   *
    * @nocollapse
    */
   protected static finalize() {
@@ -810,20 +819,14 @@ export abstract class ReactiveElement
     this.__prepare();
 
     // Create properties from the static properties block:
-
-    // Note, only process "own" properties since this element will inherit
-    // any properties defined on the superClass, and finalization ensures
-    // the entire prototype chain is finalized.
     if (this.hasOwnProperty(JSCompiler_renameProperty('properties', this))) {
       const props = this.properties;
-      // support symbols in properties (IE11 does not support this)
       const propKeys = [
         ...getOwnPropertyNames(props),
         ...getOwnPropertySymbols(props),
       ];
-      // This for/of is ok because propKeys is an array
       for (const p of propKeys) {
-        // note, use of `any` is due to TypeScript lack of support for symbol in
+        // Use of `any` is due to TypeScript lack of support for symbol in
         // index types
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.createProperty(p, (props as any)[p]);
