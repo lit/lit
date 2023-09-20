@@ -786,7 +786,7 @@ export abstract class ReactiveElement
     return this.elementProperties.get(name) ?? defaultPropertyDeclaration;
   }
 
-  declare static [Symbol.metadata]: object;
+  declare static [Symbol.metadata]: object & Record<PropertyKey, unknown>;
 
   // This is a finalization step, but it needs to be separate from `finalize`
   // because `finalize` can be called before a class has been fully initialized.
