@@ -13,7 +13,11 @@ import {
   languages,
   setupAnalyzerForTest,
 } from '../utils.js';
-import {ClassDeclaration, LitElementDeclaration} from '../../lib/model.js';
+import {
+  ClassDeclaration,
+  LitElementDeclaration,
+  CustomElementDeclaration,
+} from '../../lib/model.js';
 import {DiagnosticCode} from '../../lib/diagnostic-code.js';
 
 for (const lang of languages) {
@@ -21,6 +25,27 @@ for (const lang of languages) {
 
   test.before((ctx) => {
     setupAnalyzerForTest(ctx, lang, 'mixins');
+  });
+
+  test('vanilla HTMLElement mixin declaration', ({getModule}) => {
+    const decl = getModule('mixins-vanilla').getDeclaration('MixinA');
+    assert.ok(decl.isMixinDeclaration());
+    assert.instance(decl.classDeclaration, ClassDeclaration);
+    assert.instance(decl.classDeclaration, CustomElementDeclaration);
+    const classDecl = decl.classDeclaration as CustomElementDeclaration;
+    assert.equal(classDecl.name, 'MixedElement');
+    assert.equal(decl.classDeclaration.heritage.superClass, undefined);
+    assert.equal(decl.classDeclaration.heritage.mixins.length, 0);
+  });
+
+  test('mixin with unknown base', ({getModule}) => {
+    const decl = getModule('mixins-unknown-base').getDeclaration('MixinA');
+    assert.ok(decl.isMixinDeclaration());
+    assert.instance(decl.classDeclaration, ClassDeclaration);
+    const classDecl = decl.classDeclaration;
+    assert.equal(classDecl.name, 'MixedClass');
+    assert.equal(decl.classDeclaration.heritage.superClass, undefined);
+    assert.equal(decl.classDeclaration.heritage.mixins.length, 0);
   });
 
   test('basic mixin declaration', ({getModule}) => {
@@ -31,6 +56,8 @@ for (const lang of languages) {
     const classDecl = decl.classDeclaration as LitElementDeclaration;
     assert.equal(classDecl.name, 'HighlightableElement');
     assert.ok(classDecl.reactiveProperties.get('highlight'));
+    assert.equal(decl.classDeclaration.heritage.superClass, undefined);
+    assert.equal(decl.classDeclaration.heritage.mixins.length, 0);
   });
 
   test('basic mixin usage', ({getModule}) => {
@@ -136,9 +163,8 @@ for (const lang of languages) {
     getModule,
     analyzer,
   }) => {
-    const decl = getModule(
-      'element-with-unsupported-mixin-syntax'
-    ).getDeclaration('ElementWithNonIdentBase');
+    const mod = getModule('element-with-unsupported-mixin-syntax');
+    const decl = mod.getDeclaration('ElementWithNonIdentBase');
     assert.ok(decl.isLitElementDeclaration());
     assert.equal(decl.heritage.superClass, undefined);
     assert.equal(decl.heritage.mixins.length, 0);

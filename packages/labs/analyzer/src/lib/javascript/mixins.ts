@@ -172,7 +172,6 @@ export const maybeGetMixinFromFunctionLike = (
     classDeclaration: getClassDeclaration(
       classDeclaration,
       classDeclarationName,
-      true,
       analyzer
     ),
   };

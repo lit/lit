@@ -67,7 +67,6 @@ const getVariableDeclaration = (
       return getClassDeclaration(
         initializer,
         name.getText(),
-        false,
         analyzer,
         statement
       );

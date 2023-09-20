@@ -55,7 +55,6 @@ export type TypeScript = typeof ts;
 export const getClassDeclaration = (
   declaration: ts.ClassLikeDeclaration,
   name: string,
-  isMixinClass: boolean,
   analyzer: AnalyzerInterface,
   docNode?: ts.Node
 ) => {
@@ -68,7 +67,7 @@ export const getClassDeclaration = (
   return new ClassDeclaration({
     name,
     node: declaration,
-    getHeritage: () => getHeritage(declaration, isMixinClass, analyzer),
+    getHeritage: () => getHeritage(declaration, analyzer),
     ...parseNodeJSDocInfo(docNode ?? declaration, analyzer),
     ...getClassMembers(declaration, analyzer),
   });
@@ -264,7 +263,7 @@ export const getClassDeclarationInfo = (
   return {
     name,
     node: declaration,
-    factory: () => getClassDeclaration(declaration, name, false, analyzer),
+    factory: () => getClassDeclaration(declaration, name, analyzer),
     isExport: hasExportModifier(analyzer.typescript, declaration),
   };
 };
@@ -274,7 +273,6 @@ export const getClassDeclarationInfo = (
  */
 export const getHeritage = (
   declaration: ts.ClassLikeDeclarationBase,
-  isMixinClass: boolean,
   analyzer: AnalyzerInterface
 ): ClassHeritage => {
   const extendsClause = declaration.heritageClauses?.find(
@@ -284,7 +282,6 @@ export const getHeritage = (
     if (extendsClause.types.length === 1) {
       return getHeritageFromExpression(
         extendsClause.types[0].expression,
-        isMixinClass,
         analyzer
       );
     }
@@ -306,13 +303,12 @@ export const getHeritage = (
 
 export const getHeritageFromExpression = (
   expression: ts.Expression,
-  isMixinClass: boolean,
   analyzer: AnalyzerInterface
 ): ClassHeritage => {
   const mixins: Reference[] = [];
   const superClass = getSuperClassAndMixins(expression, mixins, analyzer);
   return {
-    superClass: isMixinClass ? undefined : superClass,
+    superClass,
     mixins,
   };
 };
@@ -374,8 +370,20 @@ export const maybeGetAppliedMixin = (
   identifier: ts.Identifier,
   analyzer: AnalyzerInterface
 ): ClassDeclaration | undefined => {
-  if (analyzer.typescript.isCallExpression(expression)) {
-    const heritage = getHeritageFromExpression(expression, false, analyzer);
+  if (
+    analyzer.typescript.isCallExpression(expression) &&
+    analyzer.typescript.isIdentifier(expression.expression)
+  ) {
+    const mixinRef = getReferenceForIdentifier(expression.expression, analyzer);
+
+    try {
+      mixinRef?.dereference(MixinDeclaration);
+    } catch (_err) {
+      return undefined;
+    }
+
+    const heritage = getHeritageFromExpression(expression, analyzer);
+
     if (heritage.superClass) {
       return new ClassDeclaration({
         name: identifier.text,

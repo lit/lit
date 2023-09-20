@@ -40,7 +40,7 @@ export const getLitElementDeclaration = (
     node: declaration,
     reactiveProperties: getProperties(declaration, analyzer),
     ...getJSDocData(declaration, analyzer),
-    getHeritage: () => getHeritage(declaration, false, analyzer),
+    getHeritage: () => getHeritage(declaration, analyzer),
     ...getClassMembers(declaration, analyzer),
   });
 };
