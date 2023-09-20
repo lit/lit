@@ -69,9 +69,9 @@ export type QueryAsyncDecorator = {
  * @category Decorator
  */
 export function queryAsync(selector: string) {
-  return (<C extends Interface<ReactiveElement>>() => {
+  return (() => {
     return {
-      async get(this: C) {
+      async get(this: ReactiveElement) {
         await this.updateComplete;
         return this.renderRoot?.querySelector(selector) ?? null;
       },
