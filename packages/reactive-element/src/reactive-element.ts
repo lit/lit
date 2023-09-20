@@ -610,17 +610,6 @@ export abstract class ReactiveElement
   static styles?: CSSResultGroup;
 
   /**
-   * The set of properties defined by this class that caused an accessor to be
-   * added during `createProperty`.
-   *
-   * This field is only used in dev mode. It should be eliminated in prod
-   * builds.
-   *
-   * @nocollapse
-   */
-  private static __reactivePropertyKeys?: Set<PropertyKey>;
-
-  /**
    * Returns a list of attributes corresponding to the registered properties.
    * @nocollapse
    * @category attributes
@@ -685,16 +674,6 @@ export abstract class ReactiveElement
       const descriptor = this.getPropertyDescriptor(name, key, options);
       if (descriptor !== undefined) {
         defineProperty(this.prototype, name, descriptor);
-        if (DEV_MODE) {
-          // If this class doesn't have its own set, create one and initialize
-          // with the values in the set from the nearest ancestor class, if any.
-          if (!this.hasOwnProperty('__reactivePropertyKeys')) {
-            this.__reactivePropertyKeys = new Set(
-              this.__reactivePropertyKeys ?? []
-            );
-          }
-          this.__reactivePropertyKeys!.add(name);
-        }
       }
     }
   }
@@ -840,16 +819,6 @@ export abstract class ReactiveElement
       if (properties !== undefined) {
         for (const [p, options] of properties) {
           this.elementProperties.set(p, options);
-          if (DEV_MODE) {
-            // If this class doesn't have its own set, create one and initialize
-            // with the values in the set from the nearest ancestor class, if any.
-            if (!this.hasOwnProperty('__reactivePropertyKeys')) {
-              this.__reactivePropertyKeys = new Set(
-                this.__reactivePropertyKeys ?? []
-              );
-            }
-            this.__reactivePropertyKeys!.add(p);
-          }
         }
       }
     }
@@ -1384,13 +1353,13 @@ export abstract class ReactiveElement
     if (!this.hasUpdated) {
       if (DEV_MODE) {
         const shadowedProperties: string[] = [];
-        (
-          this.constructor as typeof ReactiveElement
-        ).__reactivePropertyKeys?.forEach((p) => {
-          if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
-            shadowedProperties.push(p as string);
+        (this.constructor as typeof ReactiveElement).elementProperties.forEach(
+          (_, p) => {
+            if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
+              shadowedProperties.push(p as string);
+            }
           }
-        });
+        );
         if (shadowedProperties.length) {
           // Produce warning if any class properties are shadowed by class fields
           throw new Error(
