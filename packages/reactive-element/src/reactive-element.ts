@@ -380,8 +380,6 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
  */
 const finalized = 'finalized';
 
-const metadataCollected = 'metadataCollected';
-
 /**
  * A string representing one of the supported dev mode warning categories.
  */
@@ -539,8 +537,6 @@ export abstract class ReactiveElement
    */
   protected static [finalized] = true;
 
-  protected static [metadataCollected] = true;
-
   /**
    * Memoized list of all element properties, including any superclass properties.
    * Created lazily on user subclasses when finalizing the class.
@@ -631,7 +627,6 @@ export abstract class ReactiveElement
   static get observedAttributes() {
     // note: piggy backing on this to ensure we're finalized.
     this.finalize();
-    this.__collectMetadata();
     const attributes: string[] = [];
     for (const [p, v] of this.elementProperties) {
       const attr = this.__attributeNameForProperty(p, v);
@@ -783,41 +778,6 @@ export abstract class ReactiveElement
     return this.elementProperties.get(name) ?? defaultPropertyDeclaration;
   }
 
-  // This is a finalization step, but it needs to be separate from `finalize`
-  // because `finalize` can be called before a class has been fully initialized.
-  // This method should only be called once per class, as late as possible.
-  private static __collectMetadata() {
-    if (this.hasOwnProperty(metadataCollected)) {
-      return;
-    }
-    this[metadataCollected] = true;
-    // finalize any superclasses
-    const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
-    superCtor.__collectMetadata();
-
-    const metadata = this[Symbol.metadata];
-    if (metadata == null) {
-      return;
-    }
-    const properties = litPropertyMetadata.get(metadata);
-    if (properties === undefined) {
-      return;
-    }
-    for (const [p, options] of properties) {
-      this.elementProperties.set(p, options);
-      if (DEV_MODE) {
-        // If this class doesn't have its own set, create one and initialize
-        // with the values in the set from the nearest ancestor class, if any.
-        if (!this.hasOwnProperty('__reactivePropertyKeys')) {
-          this.__reactivePropertyKeys = new Set(
-            this.__reactivePropertyKeys ?? []
-          );
-        }
-        this.__reactivePropertyKeys!.add(p);
-      }
-    }
-  }
-
   private static __prepare() {
     if (this.hasOwnProperty('elementProperties')) {
       // Already prepared
@@ -826,7 +786,6 @@ export abstract class ReactiveElement
     // finalize any superclasses
     const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
     superCtor.finalize();
-    superCtor.__collectMetadata();
 
     // Create own set of initializers for this class if any exist on the
     // superclass and copy them down. Note, for a small perf boost, avoid
@@ -852,7 +811,9 @@ export abstract class ReactiveElement
     }
     this[finalized] = true;
     this.__prepare();
-    // Create properties from the static properties block
+
+    // Create properties from the static properties block:
+
     // Note, only process "own" properties since this element will inherit
     // any properties defined on the superClass, and finalization ensures
     // the entire prototype chain is finalized.
@@ -871,6 +832,28 @@ export abstract class ReactiveElement
         this.createProperty(p, (props as any)[p]);
       }
     }
+
+    // Create properties from standard decorator metadata:
+    const metadata = this[Symbol.metadata];
+    if (metadata !== null) {
+      const properties = litPropertyMetadata.get(metadata);
+      if (properties !== undefined) {
+        for (const [p, options] of properties) {
+          this.elementProperties.set(p, options);
+          if (DEV_MODE) {
+            // If this class doesn't have its own set, create one and initialize
+            // with the values in the set from the nearest ancestor class, if any.
+            if (!this.hasOwnProperty('__reactivePropertyKeys')) {
+              this.__reactivePropertyKeys = new Set(
+                this.__reactivePropertyKeys ?? []
+              );
+            }
+            this.__reactivePropertyKeys!.add(p);
+          }
+        }
+      }
+    }
+
     this.elementStyles = this.finalizeStyles(this.styles);
     if (DEV_MODE) {
       if (this.hasOwnProperty('createProperty')) {
