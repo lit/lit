@@ -625,17 +625,15 @@ export abstract class ReactiveElement
    * @category attributes
    */
   static get observedAttributes() {
-    // note: piggy backing on this to ensure we're finalized.
+    // Ensure we've created all properties
     this.finalize();
-    const attributes: string[] = [];
-    for (const [p, v] of this.elementProperties) {
-      const attr = this.__attributeNameForProperty(p, v);
-      if (attr !== undefined) {
-        this.__attributeToPropertyMap.set(attr, p);
-        attributes.push(attr);
-      }
-    }
-    return attributes;
+    // this.__attributeToPropertyMap is only undefined after finalize() in
+    // ReactiveElement itself. ReactiveElement.observedAttributes is only
+    // accessed with ReactiveElement as the receiver when a subclass or mixin
+    // calls super.observedAttributes
+    return (
+      this.__attributeToPropertyMap && [...this.__attributeToPropertyMap.keys()]
+    );
   }
 
   private __instanceProperties?: PropertyValues = undefined;
@@ -795,8 +793,6 @@ export abstract class ReactiveElement
     }
     // Initialize elementProperties from the superclass
     this.elementProperties = new Map(superCtor.elementProperties);
-    // Initialize Map populated in observedAttributes
-    this.__attributeToPropertyMap = new Map();
   }
 
   /**
@@ -854,7 +850,17 @@ export abstract class ReactiveElement
       }
     }
 
+    // Create the attribute-to-property map
+    this.__attributeToPropertyMap = new Map();
+    for (const [p, options] of this.elementProperties) {
+      const attr = this.__attributeNameForProperty(p, options);
+      if (attr !== undefined) {
+        this.__attributeToPropertyMap.set(attr, p);
+      }
+    }
+
     this.elementStyles = this.finalizeStyles(this.styles);
+
     if (DEV_MODE) {
       if (this.hasOwnProperty('createProperty')) {
         issueWarning(
