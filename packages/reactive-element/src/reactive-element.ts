@@ -804,12 +804,9 @@ export abstract class ReactiveElement
       const propKeys = [
         ...getOwnPropertyNames(props),
         ...getOwnPropertySymbols(props),
-      ];
+      ] as Array<keyof typeof props>;
       for (const p of propKeys) {
-        // Use of `any` is due to TypeScript lack of support for symbol in
-        // index types
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.createProperty(p, (props as any)[p]);
+        this.createProperty(p, props[p]);
       }
     }
 
@@ -950,7 +947,7 @@ export abstract class ReactiveElement
   _$changedProperties!: PropertyValues;
 
   /**
-   * Map with keys of properties that should be reflected when updated.
+   * Properties that should be reflected when updated.
    */
   private __reflectingProperties?: Set<PropertyKey>;
 

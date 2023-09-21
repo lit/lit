@@ -565,7 +565,7 @@ suite('@property', () => {
     assert.equal(sub.nug, 5);
   });
 
-  test('subclass contains super classes reactive properties', async () => {
+  test(`subclass contains super classes' reactive properties`, async () => {
     class Base extends ReactiveElement {
       @property() accessor first = 'first';
     }
