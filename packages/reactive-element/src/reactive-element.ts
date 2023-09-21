@@ -37,6 +37,7 @@ const {
   getOwnPropertyDescriptor,
   getOwnPropertyNames,
   getOwnPropertySymbols,
+  getPrototypeOf,
 } = Object;
 
 const NODE_MODE = false;
@@ -517,7 +518,7 @@ export abstract class ReactiveElement
    * @nocollapse
    */
   static addInitializer(initializer: Initializer) {
-    this.finalize();
+    this.__prepare();
     (this._initializers ??= []).push(initializer);
   }
 
@@ -616,34 +617,20 @@ export abstract class ReactiveElement
   static styles?: CSSResultGroup;
 
   /**
-   * The set of properties defined by this class that caused an accessor to be
-   * added during `createProperty`.
-   *
-   * This field is only used in dev mode. It should be eliminated in prod
-   * builds.
-   *
-   * @nocollapse
-   */
-  private static __reactivePropertyKeys?: Set<PropertyKey>;
-
-  /**
    * Returns a list of attributes corresponding to the registered properties.
    * @nocollapse
    * @category attributes
    */
   static get observedAttributes() {
-    // note: piggy backing on this to ensure we're finalized.
+    // Ensure we've created all properties
     this.finalize();
-    this.__collectMetadata();
-    const attributes: string[] = [];
-    for (const [p, v] of this.elementProperties) {
-      const attr = this.__attributeNameForProperty(p, v);
-      if (attr !== undefined) {
-        this.__attributeToPropertyMap.set(attr, p);
-        attributes.push(attr);
-      }
-    }
-    return attributes;
+    // this.__attributeToPropertyMap is only undefined after finalize() in
+    // ReactiveElement itself. ReactiveElement.observedAttributes is only
+    // accessed with ReactiveElement as the receiver when a subclass or mixin
+    // calls super.observedAttributes
+    return (
+      this.__attributeToPropertyMap && [...this.__attributeToPropertyMap.keys()]
+    );
   }
 
   private __instanceProperties?: PropertyValues = undefined;
@@ -673,10 +660,6 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category properties
    */
-  // TODO (justinfagnani): if we remove createProperty in a future major
-  // version we should simplify finalization and how we track reactive
-  // properties. We should require and assume that finalize is only called
-  // once per class, for instance.
   static createProperty(
     name: PropertyKey,
     options: PropertyDeclaration = defaultPropertyDeclaration
@@ -687,9 +670,7 @@ export abstract class ReactiveElement
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (options as any).attribute = false;
     }
-    // Note, since this can be called by the `@property` decorator which
-    // is called before `finalize`, we ensure finalization has been kicked off.
-    this.finalize();
+    this.__prepare();
     this.elementProperties.set(name, options);
     if (!options.noAccessor) {
       const key = DEV_MODE
@@ -700,16 +681,6 @@ export abstract class ReactiveElement
       const descriptor = this.getPropertyDescriptor(name, key, options);
       if (descriptor !== undefined) {
         defineProperty(this.prototype, name, descriptor);
-        if (DEV_MODE) {
-          // If this class doesn't have its own set, create one and initialize
-          // with the values in the set from the nearest ancestor class, if any.
-          if (!this.hasOwnProperty('__reactivePropertyKeys')) {
-            this.__reactivePropertyKeys = new Set(
-              this.__reactivePropertyKeys ?? []
-            );
-          }
-          this.__reactivePropertyKeys!.add(name);
-        }
       }
     }
   }
@@ -786,79 +757,91 @@ export abstract class ReactiveElement
     return this.elementProperties.get(name) ?? defaultPropertyDeclaration;
   }
 
+  // Temporary, until google3 is on TypeScript 5.2
   declare static [Symbol.metadata]: object & Record<PropertyKey, unknown>;
 
-  // This is a finalization step, but it needs to be separate from `finalize`
-  // because `finalize` can be called before a class has been fully initialized.
-  // This method should only be called once per class, as late as possible.
-  /** @nocollapse */
-  private static __collectMetadata() {
-    const metadata = this[Symbol.metadata];
-    if (metadata == null) {
-      return;
-    }
-    const properties = litPropertyMetadata.get(metadata);
-    if (properties === undefined) {
-      return;
-    }
-    for (const [p, options] of properties) {
-      this.elementProperties.set(p, options);
-      if (DEV_MODE) {
-        // If this class doesn't have its own set, create one and initialize
-        // with the values in the set from the nearest ancestor class, if any.
-        if (!this.hasOwnProperty('__reactivePropertyKeys')) {
-          this.__reactivePropertyKeys = new Set(
-            this.__reactivePropertyKeys ?? []
-          );
-        }
-        this.__reactivePropertyKeys!.add(p);
-      }
-    }
-  }
-
   /**
-   * Creates property accessors for registered properties, sets up element
-   * styling, and ensures any superclasses are also finalized. Returns true if
-   * the element was finalized.
+   * Initializes static own properties of the class used in bookkeeping
+   * for element properties, initializers, etc.
+   *
+   * Can be called multiple times by code that needs to ensure these
+   * properties exist before using them.
+   *
+   * This method ensures the superclass is finalized so that inherited
+   * property metadata can be copied down.
    * @nocollapse
    */
-  protected static finalize() {
-    if (this.hasOwnProperty(finalized)) {
-      return false;
+  private static __prepare() {
+    if (this.hasOwnProperty('elementProperties')) {
+      // Already prepared
+      return;
     }
-    this[finalized] = true;
-    // finalize any superclasses
-    const superCtor = Object.getPrototypeOf(this) as typeof ReactiveElement;
+    // Finalize any superclasses
+    const superCtor = getPrototypeOf(this) as typeof ReactiveElement;
     superCtor.finalize();
+
     // Create own set of initializers for this class if any exist on the
     // superclass and copy them down. Note, for a small perf boost, avoid
     // creating initializers unless needed.
     if (superCtor._initializers !== undefined) {
       this._initializers = [...superCtor._initializers];
     }
+    // Initialize elementProperties from the superclass
     this.elementProperties = new Map(superCtor.elementProperties);
-    // initialize Map populated in observedAttributes
-    this.__attributeToPropertyMap = new Map();
-    // make any properties
-    // Note, only process "own" properties since this element will inherit
-    // any properties defined on the superClass, and finalization ensures
-    // the entire prototype chain is finalized.
+  }
+
+  /**
+   * Finishes setting up the class so that it's ready to be registered
+   * as a custom element and instantiated.
+   *
+   * This method is called by the ReactiveElement.observedAttributes getter.
+   * If you override the observedAttributes getter, you must either call
+   * super.observedAttributes to trigger finalization, or call finalize()
+   * yourself.
+   *
+   * @nocollapse
+   */
+  protected static finalize() {
+    if (this.hasOwnProperty(finalized)) {
+      return;
+    }
+    this[finalized] = true;
+    this.__prepare();
+
+    // Create properties from the static properties block:
     if (this.hasOwnProperty(JSCompiler_renameProperty('properties', this))) {
       const props = this.properties;
-      // support symbols in properties (IE11 does not support this)
       const propKeys = [
         ...getOwnPropertyNames(props),
         ...getOwnPropertySymbols(props),
-      ];
-      // This for/of is ok because propKeys is an array
+      ] as Array<keyof typeof props>;
       for (const p of propKeys) {
-        // note, use of `any` is due to TypeScript lack of support for symbol in
-        // index types
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.createProperty(p, (props as any)[p]);
+        this.createProperty(p, props[p]);
       }
     }
+
+    // Create properties from standard decorator metadata:
+    const metadata = this[Symbol.metadata];
+    if (metadata !== null) {
+      const properties = litPropertyMetadata.get(metadata);
+      if (properties !== undefined) {
+        for (const [p, options] of properties) {
+          this.elementProperties.set(p, options);
+        }
+      }
+    }
+
+    // Create the attribute-to-property map
+    this.__attributeToPropertyMap = new Map();
+    for (const [p, options] of this.elementProperties) {
+      const attr = this.__attributeNameForProperty(p, options);
+      if (attr !== undefined) {
+        this.__attributeToPropertyMap.set(attr, p);
+      }
+    }
+
     this.elementStyles = this.finalizeStyles(this.styles);
+
     if (DEV_MODE) {
       if (this.hasOwnProperty('createProperty')) {
         issueWarning(
@@ -875,7 +858,6 @@ export abstract class ReactiveElement
         );
       }
     }
-    return true;
   }
 
   /**
@@ -975,9 +957,9 @@ export abstract class ReactiveElement
   _$changedProperties!: PropertyValues;
 
   /**
-   * Map with keys of properties that should be reflected when updated.
+   * Properties that should be reflected when updated.
    */
-  private __reflectingProperties?: Map<PropertyKey, PropertyDeclaration>;
+  private __reflectingProperties?: Set<PropertyKey>;
 
   /**
    * Name of currently reflecting property
@@ -1149,11 +1131,10 @@ export abstract class ReactiveElement
     this._$attributeToProperty(name, value);
   }
 
-  private __propertyToAttribute(
-    name: PropertyKey,
-    value: unknown,
-    options: PropertyDeclaration = defaultPropertyDeclaration
-  ) {
+  private __propertyToAttribute(name: PropertyKey, value: unknown) {
+    const options = (
+      this.constructor as typeof ReactiveElement
+    ).elementProperties.get(name)!;
     const attr = (
       this.constructor as typeof ReactiveElement
     ).__attributeNameForProperty(name, options);
@@ -1289,13 +1270,10 @@ export abstract class ReactiveElement
     }
     // Add to reflecting properties set.
     // Note, it's important that every change has a chance to add the
-    // property to `_reflectingProperties`. This ensures setting
+    // property to `__reflectingProperties`. This ensures setting
     // attribute + property reflects correctly.
     if (options.reflect === true && this.__reflectingProperty !== name) {
-      (this.__reflectingProperties ??= new Map<
-        PropertyKey,
-        PropertyDeclaration<unknown, unknown>
-      >()).set(name, options);
+      (this.__reflectingProperties ??= new Set<PropertyKey>()).add(name);
     }
   }
 
@@ -1382,16 +1360,15 @@ export abstract class ReactiveElement
     debugLogEvent?.({kind: 'update'});
     if (!this.hasUpdated) {
       if (DEV_MODE) {
-        const shadowedProperties: string[] = [];
-        (
-          this.constructor as typeof ReactiveElement
-        ).__reactivePropertyKeys?.forEach((p) => {
-          if (this.hasOwnProperty(p) && !this.__instanceProperties?.has(p)) {
-            shadowedProperties.push(p as string);
-          }
-        });
+        // Produce warning if any reactive properties on the prototype are
+        // shadowed by class fields. Instance fields set before upgrade are
+        // deleted by this point, so any own property is caused by class field
+        // initialization in the constructor.
+        const ctor = this.constructor as typeof ReactiveElement;
+        const shadowedProperties = [...ctor.elementProperties.keys()].filter(
+          (p) => this.hasOwnProperty(p) && p in getPrototypeOf(this)
+        );
         if (shadowedProperties.length) {
-          // Produce warning if any class properties are shadowed by class fields
           throw new Error(
             `The following properties on element ${this.localName} will not ` +
               `trigger updates as expected because they are set using class ` +
@@ -1585,8 +1562,8 @@ export abstract class ReactiveElement
     // The forEach() expression will only run when when __reflectingProperties is
     // defined, and it returns undefined, setting __reflectingProperties to
     // undefined
-    this.__reflectingProperties &&= this.__reflectingProperties.forEach(
-      (v, k) => this.__propertyToAttribute(k, this[k as keyof this], v)
+    this.__reflectingProperties &&= this.__reflectingProperties.forEach((p) =>
+      this.__propertyToAttribute(p, this[p as keyof this])
     ) as undefined;
     this.__markUpdated();
   }
