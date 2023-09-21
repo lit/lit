@@ -22,16 +22,3 @@ export {ContextRoot} from './lib/context-root.js';
 
 export {provide} from './lib/decorators/provide.js';
 export {consume} from './lib/decorators/consume.js';
-
-import {provide} from './lib/decorators/provide.js';
-import {consume} from './lib/decorators/consume.js';
-
-/**
- * @deprecated use `provide` instead
- */
-export const contextProvider = provide;
-
-/**
- * @deprecated use `consume` instead
- */
-export const contextProvided = consume;
