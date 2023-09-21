@@ -71,11 +71,11 @@ export function queryAssignedNodes(
   options?: QueryAssignedNodesOptions
 ): QueryAssignedNodesDecorator {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (<C extends Interface<ReactiveElement>, V extends Array<Node>>() => {
+  return (<V extends Array<Node>>() => {
     const {slot} = options ?? {};
     const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
     return {
-      get(this: C): V {
+      get(this: ReactiveElement): V {
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
         return (slotEl?.assignedNodes(options) ?? []) as unknown as V;

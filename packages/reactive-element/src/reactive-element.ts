@@ -391,6 +391,13 @@ export type WarningKind =
 
 export type Initializer = (element: ReactiveElement) => void;
 
+// Temporary, until google3 is on TypeScript 5.2
+declare global {
+  interface SymbolConstructor {
+    readonly metadata: unique symbol;
+  }
+}
+
 // Ensure metadata is enabled. TypeScript does not polyfill
 // Symbol.metadata, so we must ensure that it exists.
 (Symbol as {metadata: symbol}).metadata ??= Symbol('metadata');
@@ -719,7 +726,7 @@ export abstract class ReactiveElement
       },
     };
     return {
-      get() {
+      get(this: ReactiveElement) {
         return get!.call(this);
       },
       set(this: ReactiveElement, value: unknown) {
@@ -749,6 +756,9 @@ export abstract class ReactiveElement
   static getPropertyOptions(name: PropertyKey) {
     return this.elementProperties.get(name) ?? defaultPropertyDeclaration;
   }
+
+  // Temporary, until google3 is on TypeScript 5.2
+  declare static [Symbol.metadata]: object & Record<PropertyKey, unknown>;
 
   /**
    * Initializes static own properties of the class used in bookkeeping
