@@ -35,6 +35,7 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit-labs/vue-utils': '_$N',
   '@lit-labs/preact-signals': '_$O',
   '@lit/task': '_$P',
+  '@lit/context': '_$Q',
 };
 
 // Validate prefix uniqueness
