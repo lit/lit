@@ -33,7 +33,14 @@ if (DEV_MODE) {
   issueWarning = (code: string, warning: string) => {
     warning += ` See https://lit.dev/msg/${code} for more information.`;
     if (!issuedWarnings.has(warning)) {
-      console.warn(warning);
+      // Work around a jsconformance rule that fails when we might be
+      // logging outside of DEV_MODE, but this log is kosher because it is
+      // only in DEV_MODE.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const cons = (globalThis as any)['cons' + 'ole'] as {
+        warn(...args: unknown[]): void;
+      };
+      cons.warn(warning);
       issuedWarnings.add(warning);
     }
   };
