@@ -49,16 +49,14 @@
         "build:ts",
         "build:ts:std-decorators-tests",
         "build:ts:types",
-        "../../lit:build",
-        "../../reactive-element:build",
+        "../../context:build",
         "../testing:build"
       ]
     },
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
-        "../../lit:build:ts:types",
-        "../../reactive-element:build:ts:types"
+        "../../context:build:ts:types"
       ],
       "clean": "if-file-deleted",
       "files": [
