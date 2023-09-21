@@ -79,6 +79,7 @@
         "../lit-element:build",
         "../lit-html:build",
         "../lit:build",
+        "../context:build",
         "../task:build",
         "../reactive-element:build"
       ]
