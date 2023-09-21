@@ -1,4 +1,4 @@
-# @lit-labs/context
+# @lit/context
 
 ## Overview
 
@@ -19,7 +19,7 @@ First lets define a context key we can use elsewhere in our examples:
 #### **`logger.ts`**:
 
 ```ts
-import {createContext} from '@lit-labs/context';
+import {createContext} from '@lit/context';
 
 export interface Logger {
   log: (msg: string) => void;
@@ -39,7 +39,7 @@ and update its value when the context changes:
 
 ```ts
 import {LitElement, property} from 'lit';
-import {consume} from '@lit-labs/context';
+import {consume} from '@lit/context';
 import {Logger, loggerContext} from './logger.js';
 
 export class MyElement extends LitElement {
@@ -59,7 +59,7 @@ Another way we can use a context in a component is via the `ContextConsumer` con
 
 ```ts
 import {LitElement, property} from 'lit';
-import {ContextConsumer} from '@lit-labs/context';
+import {ContextConsumer} from '@lit/context';
 import {Logger, loggerContext} from './logger.js';
 
 export class MyElement extends LitElement {
@@ -87,7 +87,7 @@ controller and update its value when the property value changes.
 
 ```ts
 import {LitElement, property, html} from 'lit';
-import {provide} from '@lit-labs/context';
+import {provide} from '@lit/context';
 import {loggerContext, Logger} from './logger.js';
 
 export class MyApp extends LitElement {
@@ -111,7 +111,7 @@ We can also use the `ContextProvider` controller directly:
 
 ```ts
 import {LitElement, html} from 'lit';
-import {ContextProvider} from '@lit-labs/context';
+import {ContextProvider} from '@lit/context';
 import {loggerContext, Logger} from './logger.js';
 
 export class MyApp extends LitElement {
@@ -146,7 +146,7 @@ Example usage:
 #### **`index.ts`**:
 
 ```ts
-import {ContextRoot} from '@lit-labs/context';
+import {ContextRoot} from '@lit/context';
 const root = new ContextRoot();
 root.attach(document.body);
 ```

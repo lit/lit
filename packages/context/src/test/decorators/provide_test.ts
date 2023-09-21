@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Context, consume, provide} from '@lit-labs/context';
+import {Context, consume, provide} from '@lit/context';
 import {assert} from '@esm-bundle/chai';
 import {LitElement, TemplateResult, html} from 'lit';
 

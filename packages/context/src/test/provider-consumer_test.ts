@@ -7,7 +7,7 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {ContextProvider, Context, ContextConsumer} from '@lit-labs/context';
+import {ContextProvider, Context, ContextConsumer} from '@lit/context';
 import {assert} from '@esm-bundle/chai';
 
 const simpleContext = 'simple-context' as Context<'simple-context', number>;
