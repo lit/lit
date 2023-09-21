@@ -26,7 +26,7 @@ import {Context} from '../create-context.js';
  * @example
  *
  * ```ts
- * import {consume} from '@lit-labs/context';
+ * import {consume} from '@lit/context';
  * import {loggerContext, Logger} from 'community-protocols/logger';
  *
  * class MyElement {

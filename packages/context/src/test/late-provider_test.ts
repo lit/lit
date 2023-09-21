@@ -15,7 +15,7 @@ import {
   ContextProvider,
   ContextConsumer,
   createContext,
-} from '@lit-labs/context';
+} from '@lit/context';
 import {assert} from '@esm-bundle/chai';
 
 const simpleContext = 'simple-context' as Context<'simple-context', number>;

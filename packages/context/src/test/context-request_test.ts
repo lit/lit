@@ -12,7 +12,7 @@ import {
   ContextProvider,
   createContext,
   consume,
-} from '@lit-labs/context';
+} from '@lit/context';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from '@lit-labs/testing';
 

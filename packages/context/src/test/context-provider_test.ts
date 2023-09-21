@@ -7,7 +7,7 @@
 import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators.js';
 
-import {createContext, consume, provide} from '@lit-labs/context';
+import {createContext, consume, provide} from '@lit/context';
 import {assert} from '@esm-bundle/chai';
 import {memorySuite} from './test_util.js';
 
