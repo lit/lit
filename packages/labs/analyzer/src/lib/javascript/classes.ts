@@ -56,18 +56,19 @@ export const getClassDeclaration = (
   declaration: ts.ClassLikeDeclaration,
   name: string,
   analyzer: AnalyzerInterface,
-  docNode?: ts.Node
+  docNode?: ts.Node,
+  isMixinClass?: boolean
 ) => {
   if (isLitElementSubclass(declaration, analyzer)) {
-    return getLitElementDeclaration(declaration, analyzer);
+    return getLitElementDeclaration(declaration, analyzer, isMixinClass);
   }
   if (isCustomElementSubclass(declaration, analyzer)) {
-    return getCustomElementDeclaration(declaration, analyzer);
+    return getCustomElementDeclaration(declaration, analyzer, isMixinClass);
   }
   return new ClassDeclaration({
     name,
     node: declaration,
-    getHeritage: () => getHeritage(declaration, analyzer),
+    getHeritage: () => getHeritage(declaration, analyzer, isMixinClass),
     ...parseNodeJSDocInfo(docNode ?? declaration, analyzer),
     ...getClassMembers(declaration, analyzer),
   });
@@ -273,7 +274,8 @@ export const getClassDeclarationInfo = (
  */
 export const getHeritage = (
   declaration: ts.ClassLikeDeclarationBase,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  isMixinClass?: boolean
 ): ClassHeritage => {
   const extendsClause = declaration.heritageClauses?.find(
     (c) => c.token === analyzer.typescript.SyntaxKind.ExtendsKeyword
@@ -282,7 +284,8 @@ export const getHeritage = (
     if (extendsClause.types.length === 1) {
       return getHeritageFromExpression(
         extendsClause.types[0].expression,
-        analyzer
+        analyzer,
+        isMixinClass
       );
     }
     analyzer.addDiagnostic(
@@ -303,12 +306,13 @@ export const getHeritage = (
 
 export const getHeritageFromExpression = (
   expression: ts.Expression,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  isMixinClass?: boolean
 ): ClassHeritage => {
   const mixins: Reference[] = [];
   const superClass = getSuperClassAndMixins(expression, mixins, analyzer);
   return {
-    superClass,
+    superClass: isMixinClass ? undefined : superClass,
     mixins,
   };
 };

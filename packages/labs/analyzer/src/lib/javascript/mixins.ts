@@ -172,7 +172,9 @@ export const maybeGetMixinFromFunctionLike = (
     classDeclaration: getClassDeclaration(
       classDeclaration,
       classDeclarationName,
-      analyzer
+      analyzer,
+      undefined,
+      true /* isMixinClass */
     ),
   };
 };

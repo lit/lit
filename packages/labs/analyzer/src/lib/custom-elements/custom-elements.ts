@@ -167,14 +167,15 @@ export const getJSDocData = (
 
 export const getCustomElementDeclaration = (
   node: CustomElementClassDeclaration,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  isMixinClass?: boolean
 ): CustomElementDeclaration => {
   return new CustomElementDeclaration({
     tagname: getTagName(node),
     name: node.name?.text ?? '',
     node,
     ...getJSDocData(node, analyzer),
-    getHeritage: () => getHeritage(node, analyzer),
+    getHeritage: () => getHeritage(node, analyzer, isMixinClass),
     ...getClassMembers(node, analyzer),
   });
 };

@@ -31,7 +31,8 @@ export type TypeScript = typeof ts;
  */
 export const getLitElementDeclaration = (
   declaration: LitClassDeclaration,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  isMixinClass?: boolean
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
     tagname: getTagName(analyzer.typescript, declaration),
@@ -40,7 +41,7 @@ export const getLitElementDeclaration = (
     node: declaration,
     reactiveProperties: getProperties(declaration, analyzer),
     ...getJSDocData(declaration, analyzer),
-    getHeritage: () => getHeritage(declaration, analyzer),
+    getHeritage: () => getHeritage(declaration, analyzer, isMixinClass),
     ...getClassMembers(declaration, analyzer),
   });
 };
