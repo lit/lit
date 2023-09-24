@@ -10,7 +10,8 @@
     "packages/*",
     "packages/labs/*",
     "packages/labs/test-projects/*",
-    "packages/localize/examples/*"
+    "packages/localize/examples/*",
+    "examples/*"
   ],
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
@@ -80,7 +81,8 @@
         "./packages/localize/examples/runtime-js:build",
         "./packages/localize/examples/runtime-ts:build",
         "./packages/localize/examples/transform-js:build",
-        "./packages/localize/examples/transform-ts:build"
+        "./packages/localize/examples/transform-ts:build",
+        "./packages/labs/test-projects/test-elements-react:build"
       ]
     },
     "build:ts": {
@@ -136,7 +138,11 @@
       "#comment": [
         "We run the starter kit tests separately because when running in our",
         "CI they require a longer browserStartTimeout, but we don't want to",
-        "change that default because it's a user template."
+        "change that default because it's a user template.",
+        "Also, note that context, motion, observers, router, ",
+        "scoped-registry-mixin, task, lit-element, lit-html, and ",
+        "reactive-element are all tested as part of ./packages/tests.",
+        "See ./packages/tests/src/web-test-runner.config.ts"
       ],
       "dependencies": [
         "./packages/localize:test",
@@ -145,18 +151,23 @@
         "./packages/ts-transformers:test",
         "./packages/labs/analyzer:test",
         "./packages/labs/cli:test",
+        "./packages/labs/cli-localize:test",
         "./packages/labs/compiler:test",
         "./packages/labs/eleventy-plugin-lit:test",
+        "./packages/labs/eslint-plugin:test",
+        "./packages/labs/gen-manifest:test",
         "./packages/labs/gen-utils:test",
         "./packages/labs/gen-wrapper-angular:test",
         "./packages/labs/gen-wrapper-react:test",
         "./packages/labs/gen-wrapper-vue:test",
+        "./packages/labs/nextjs:test",
         "./packages/labs/react:test",
         "./packages/labs/rollup-plugin-minify-html-literals:test",
         "./packages/labs/ssr:test",
         "./packages/labs/ssr-react:test",
         "./packages/labs/testing:test",
-        "./packages/labs/virtualizer:test"
+        "./packages/labs/virtualizer:test",
+        "./examples/preact:test"
       ]
     },
     "test:lit-starter-js": {
@@ -229,7 +240,7 @@
     "rollup-plugin-terser": "^7.0.2",
     "typescript": "~4.7.4",
     "uvu": "^0.5.6",
-    "wireit": "^0.9.5"
+    "wireit": "^0.12.0"
   },
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --write",

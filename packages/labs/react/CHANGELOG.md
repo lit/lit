@@ -1,5 +1,19 @@
 # Change Log
 
+## 2.0.3
+
+### Patch Changes
+
+- [#4172](https://github.com/lit/lit/pull/4172) [`dc1d323f`](https://github.com/lit/lit/commit/dc1d323f3306214c1dca75ff904a560deaf441fe) - Revert custom children type added in #4142 and instead use our copy of `PropsWithoutRef` type so that `preact/compat` typing will work.
+  Preact users facing type errors using wrapped components should configure `"paths"` in their `tsconfig.json` so that `react` types will instead resolve to `preact/compat` as described in [Preact's TypeScript documentation](https://preactjs.com/guide/v10/typescript/#typescript-preactcompat-configuration).
+  Going with `preact/compat` also solves compatibility issues arising from [TypeScript >= 5.1 changing JSX tag type check](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-1.html#decoupled-type-checking-between-jsx-elements-and-jsx-tag-types).
+
+## 2.0.2
+
+### Patch Changes
+
+- [#4142](https://github.com/lit/lit/pull/4142) [`170e9164`](https://github.com/lit/lit/commit/170e91648472d21ecee3fca9ac7a0a52787b6e98) - Fix type compatibility with Preact when adding children to wrapped components.
+
 ## 2.0.1
 
 ### Patch Changes

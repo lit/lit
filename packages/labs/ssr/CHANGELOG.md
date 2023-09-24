@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.1.6
+
+### Patch Changes
+
+- [#4188](https://github.com/lit/lit/pull/4188) [`4b1dc1b6`](https://github.com/lit/lit/commit/4b1dc1b66738ea976d30430532d4a963a78994cc) Thanks [@jimsimon](https://github.com/jimsimon)! - Improve "partIndex" error message to include the offending template, details about common causes, and a link to the docs.
+
+- [#4175](https://github.com/lit/lit/pull/4175) [`84bb0523`](https://github.com/lit/lit/commit/84bb052335605581c88a2071d00b6c2598952122) Thanks [@43081j](https://github.com/43081j)! - Update parse5/tools to simplify importing of node types from the default tree adapter
+
+- [#4168](https://github.com/lit/lit/pull/4168) [`444599eb`](https://github.com/lit/lit/commit/444599eb46d2fa0fa1b348921dfda317d860a327) Thanks [@43081j](https://github.com/43081j)! - Upgrade parse5 to 7.x in localize-tools and import from root of parse5 where possible
+
 ## 3.1.5
 
 ### Patch Changes

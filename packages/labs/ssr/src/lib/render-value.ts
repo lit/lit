@@ -759,10 +759,27 @@ function* renderTemplateResult(
   }
 
   if (partIndex !== result.values.length) {
-    throw new Error(
-      `unexpected final partIndex: ${partIndex} !== ${result.values.length}`
-    );
+    throwErrorForPartIndexMismatch(partIndex, result);
   }
+}
+
+function throwErrorForPartIndexMismatch(
+  partIndex: number,
+  result: TemplateResult
+) {
+  const errorMsg = `
+    Unexpected final partIndex: ${partIndex} !== ${
+    result.values.length
+  } while processing the following template:
+
+    ${result.strings.join('${...}')}
+
+    This could be because you're attempting to render an expression in an invalid location. See
+    https://lit.dev/docs/templates/expressions/#invalid-locations for more information about invalid expression
+    locations.
+  `;
+
+  throw new Error(errorMsg);
 }
 
 function* renderPropertyPart(

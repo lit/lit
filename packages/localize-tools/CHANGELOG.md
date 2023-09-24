@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.6.10
+
+### Patch Changes
+
+- [#4175](https://github.com/lit/lit/pull/4175) [`84bb0523`](https://github.com/lit/lit/commit/84bb052335605581c88a2071d00b6c2598952122) Thanks [@43081j](https://github.com/43081j)! - Update parse5/tools to simplify importing of node types from the default tree adapter
+
+- [#4168](https://github.com/lit/lit/pull/4168) [`444599eb`](https://github.com/lit/lit/commit/444599eb46d2fa0fa1b348921dfda317d860a327) Thanks [@43081j](https://github.com/43081j)! - Upgrade parse5 to 7.x in localize-tools and import from root of parse5 where possible
+
 ## 0.6.9
 
 ### Patch Changes

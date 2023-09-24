@@ -635,6 +635,18 @@ suite('Task', () => {
     };
   });
 
+  test('task functions can infer type of option param', () => {
+    return class MyElement extends ReactiveElement {
+      task = new Task(
+        this,
+        // Second param should get inferred to `TaskFunctionOptions` with an
+        // `AbortSignal`
+        ([a], {signal}) => (signal.throwIfAborted(), a),
+        () => [1]
+      );
+    };
+  });
+
   test('onComplete callback is called', async () => {
     let numOnCompleteInvocations = 0;
     let lastOnCompleteResult: string | undefined = undefined;

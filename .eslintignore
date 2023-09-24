@@ -385,5 +385,10 @@ packages/labs/test-projects/test-element-a/**/*.d.ts.map
 packages/labs/test-projects/test-element-a/**/*.js
 packages/labs/test-projects/test-element-a/**/*.js.map
 
+packages/labs/test-projects/test-elements-react/node_modules/
+packages/labs/test-projects/test-elements-react/element-a.*
+packages/labs/test-projects/test-elements-react/element-events.*
+packages/labs/test-projects/test-elements-react/element-props.*
+
 packages/localize/testdata/
 packages/localize/examples/

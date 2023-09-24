@@ -103,13 +103,13 @@
     }
   },
   "dependencies": {
-    "@parse5/tools": "^0.2.0",
+    "@parse5/tools": "^0.3.0",
     "lit-html": "^2.7.5",
     "parse5": "^7.1.2",
-    "typescript": "^5.1.6"
+    "typescript": "~5.2.0"
   },
   "devDependencies": {
-    "@rollup/plugin-typescript": "^11.1.2",
+    "@rollup/plugin-typescript": "11.1.2",
     "rollup": "^3.27.2",
     "source-map": "^0.7.4",
     "uvu": "^0.5.6"

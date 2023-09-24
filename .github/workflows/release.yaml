@@ -13,6 +13,8 @@ jobs:
     name: Release
     environment: Changesets
     runs-on: ubuntu-latest
+    env:
+      WIREIT_LOGGER: quiet-ci
     steps:
       - name: Use Lit Robot's name and email for all git actions
         run: |

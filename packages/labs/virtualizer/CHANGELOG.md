@@ -1,5 +1,11 @@
 # @lit-labs/virtualizer
 
+## 2.0.7
+
+### Patch Changes
+
+- [#4130](https://github.com/lit/lit/pull/4130) [`d7bd030b`](https://github.com/lit/lit/commit/d7bd030b5b2a285ae9443a4daadecf0029b50b18) Thanks [@graynorton](https://github.com/graynorton)! - Fix bug affecting position: fixed scrollers (#4125)
+
 ## 2.0.6
 
 ### Patch Changes

@@ -225,3 +225,49 @@ memorySuite('memory leak test', () => {
     );
   });
 });
+
+test('regression test for https://github.com/lit/lit/issues/4158', async () => {
+  const context = createContext<string>('my-context');
+
+  class Provider extends LitElement {
+    @provide({context})
+    name = 'b';
+
+    @provide({context})
+    n2 = 'a';
+
+    render() {
+      return html`<r-consumer></r-consumer><r-container></r-container>`;
+    }
+  }
+  customElements.define('r-provider', Provider);
+
+  class Consumer extends LitElement {
+    @consume({context, subscribe: true})
+    @property()
+    n1 = 'c';
+
+    render() {
+      return html`<p>${this.n1}</p>`;
+    }
+  }
+  customElements.define('r-consumer', Consumer);
+
+  class Container extends LitElement {
+    @provide({context})
+    n2 = 'd';
+
+    render() {
+      return html`<r-consumer></r-consumer>`;
+    }
+  }
+  customElements.define('r-container', Container);
+
+  const provider = new Provider();
+  document.body.appendChild(provider);
+  // Ensure that the elements have enough time to update.
+  await new Promise((r) => setTimeout(r, 0));
+  // This test passes if it doesn't get into an infinite loop of attempted
+  // repartenting of subscriptions.
+  document.body.removeChild(provider);
+});

@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/task",
-  "version": "3.0.1",
+  "version": "3.0.2",
   "description": "A controller for Lit that renders asynchronous tasks.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
