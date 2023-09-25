@@ -1,30 +1,29 @@
 import Head from 'next/head';
 import styles from '../styles/Home.module.css';
 import '../src/simple-greeter';
-import {SimpleGreeter as SimpleGreeterWC} from '../src/simple-greeter';
-import SimpleGreeter from '../src/simple-greeter-react';
+import type {SimpleGreeter as SimpleGreeterWC} from '../src/simple-greeter';
 
 import React from "react";
 import dynamic from "next/dynamic";
 
-const MySimpleGreeter = dynamic(() => import('../src/simple-greeter-react').then((el) => {
-  console.log('got el', el);
-  return el;
+const MySimpleGreeter = dynamic(() => import('../src/simple-greeter-react').then((module) => {
+  return module.SimpleGreeterReactLazy;
 }), {ssr: false});
 
-console.log(MySimpleGreeter);
-
 const Page = () => {
-  const ref = React.useRef();
+  const ref = React.useRef<SimpleGreeterWC>(null);
 
-  // The primary issue is this ref issue.
-  const focusEl = () => ref.current.focus();
+  const focusEl = () => {
+    const node = ref.current;
+
+    if (node) {
+      node.name = "clicked!";
+    }
+  }
 
   return (
     <>
-      {/* <input ref={ref} /> */}
-      <MySimpleGreeter ref={ref} />
-      {/* <SimpleGreeter ref={ref} /> */}
+      <MySimpleGreeter forwardRef={ref} />
       <button onClick={focusEl}>Click me</button>
     </>
   );
