@@ -12,7 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from './base.js';
+import {descriptorDefaults, extendedReflect, type Interface} from './base.js';
 
 export type QueryAsyncDecorator = {
   // legacy
@@ -69,12 +69,24 @@ export type QueryAsyncDecorator = {
  * @category Decorator
  */
 export function queryAsync(selector: string) {
-  return (() => {
-    return {
+  return ((
+    obj: object,
+    name: PropertyKey | ClassAccessorDecoratorContext<unknown, unknown>
+  ) => {
+    const descriptor = {
+      ...descriptorDefaults,
       async get(this: ReactiveElement) {
         await this.updateComplete;
         return this.renderRoot?.querySelector(selector) ?? null;
       },
     };
+    if (typeof name !== 'object' && extendedReflect.decorate) {
+      // If we're called as a legacy decorator, and Reflect.decorate is present
+      // then we have no guarantees that the returned descriptor will be
+      // defined on the class, so we must apply it directly ourselves.
+      Object.defineProperty(obj, name, descriptor);
+      return;
+    }
+    return descriptor;
   }) as QueryAsyncDecorator;
 }

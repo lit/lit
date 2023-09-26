@@ -41,6 +41,7 @@ export type InternalPropertyDeclaration<Type = unknown> =
 export function state(options?: StateDeclaration) {
   return property({
     ...options,
+    state: true,
     attribute: false,
   });
 }

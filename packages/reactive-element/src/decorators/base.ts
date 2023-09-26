@@ -17,3 +17,10 @@ export type Constructor<T> = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   new (...args: any[]): T;
 };
+
+export const descriptorDefaults = {
+  enumerable: true,
+  configurable: true,
+} as const;
+
+export const extendedReflect: typeof Reflect & {decorate?: unknown} = Reflect;
