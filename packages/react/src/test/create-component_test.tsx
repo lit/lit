@@ -4,11 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {
-  EventName,
-  ReactWebComponent,
-  WebComponentProps,
-} from '@lit-labs/react';
+import type {EventName, ReactWebComponent, WebComponentProps} from '@lit/react';
 
 import {ReactiveElement} from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
@@ -19,7 +15,7 @@ import {createRoot, Root} from 'react-dom/client';
 // eslint-disable-next-line import/extensions
 import {act} from 'react-dom/test-utils';
 
-import {createComponent} from '@lit-labs/react';
+import {createComponent} from '@lit/react';
 import {assert} from '@esm-bundle/chai';
 
 const DEV_MODE = !!ReactiveElement.enableWarning;

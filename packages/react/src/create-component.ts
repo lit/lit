@@ -297,7 +297,7 @@ export const createComponent = <
     }
 
     if (NODE_MODE) {
-      // If component is to be server rendered with `@lit-labs/ssr-react`, pass
+      // If component is to be server rendered with `@lit/ssr-react`, pass
       // element properties in a special bag to be set by the server-side
       // element renderer.
       if (
