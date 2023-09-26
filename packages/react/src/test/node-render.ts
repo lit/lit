@@ -7,7 +7,7 @@
 // This file will be loaded by Node from the node:test script to verify that
 // wrapped components can be server rendered by React without throwing.
 
-import {createComponent} from '@lit-labs/react';
+import {createComponent} from '@lit/react';
 import {ReactiveElement} from '@lit/reactive-element';
 import {customElement} from '@lit/reactive-element/decorators.js';
 import React from 'react';

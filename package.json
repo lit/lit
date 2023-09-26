@@ -52,6 +52,9 @@
         "./packages/localize:build",
         "./packages/localize-tools:build",
         "./packages/reactive-element:build",
+        "./packages/context:build",
+        "./packages/react:build",
+        "./packages/task:build",
         "./packages/tests:build",
         "./packages/ts-transformers:build",
         "./packages/labs/analyzer:build",
@@ -150,6 +153,7 @@
       "dependencies": [
         "./packages/localize:test",
         "./packages/localize-tools:test",
+        "./packages/react:test",
         "./packages/tests:test",
         "./packages/ts-transformers:test",
         "./packages/labs/analyzer:test",
@@ -234,6 +238,11 @@
       ],
       "output": [],
       "command": "eslint --ignore-pattern=examples/ \"**/*.{js,ts}\""
+    },
+    "rollup-config": {
+      "files": [
+        "rollup-common.js"
+      ]
     }
   },
   "devDependencies": {

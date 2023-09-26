@@ -1,4 +1,4 @@
-# @lit-labs/react
+# @lit/react
 
 React integration for Web Components and Reactive Controllers.
 
@@ -31,7 +31,7 @@ Import `React`, a custom element class, and `createComponent`.
 
 ```js
 import * as React from 'react';
-import {createComponent} from '@lit-labs/react';
+import {createComponent} from '@lit/react';
 import {MyElement} from './my-element.js';
 
 export const MyElementComponent = createComponent({
@@ -64,10 +64,10 @@ the event property map.
 Non-casted event names will fallback to an event type of `Event`.
 
 ```ts
-import type {EventName} from '@lit-labs/react';
+import type {EventName} from '@lit/react';
 
 import * as React from 'react';
-import {createComponent} from '@lit-labs/react';
+import {createComponent} from '@lit/react';
 import {MyElement} from './my-element.js';
 
 export const MyElementComponent = createComponent({
@@ -131,7 +131,7 @@ Controller timings are implemented as follows:
 
 ```jsx
 import * as React from 'react';
-import {useController} from '@lit-labs/react/use-controller.js';
+import {useController} from '@lit/react/use-controller.js';
 import {MouseController} from '@example/mouse-controller';
 
 // Write a React hook function:
@@ -160,7 +160,7 @@ const Component = (props) => {
 From inside your project folder, run:
 
 ```bash
-$ npm install @lit-labs/react
+$ npm install @lit/react
 ```
 
 ## Contributing

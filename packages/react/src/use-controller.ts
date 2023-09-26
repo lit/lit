@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {
+import type {
   ReactiveController,
   ReactiveControllerHost,
 } from '@lit/reactive-element/reactive-controller.js';
