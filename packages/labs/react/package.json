@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/react",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A React component wrapper for web components.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -80,7 +80,7 @@
       ]
     },
     "build:ts:types": {
-      "command": "treemirror development . \"**/*.d.ts{,.map}\" \"!development/test\"",
+      "command": "treemirror development . \"**/*.d.ts{,.map}\" \"!test\"",
       "dependencies": [
         "../../internal-scripts:build",
         "build:ts"

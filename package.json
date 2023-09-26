@@ -141,7 +141,11 @@
       "#comment": [
         "We run the starter kit tests separately because when running in our",
         "CI they require a longer browserStartTimeout, but we don't want to",
-        "change that default because it's a user template."
+        "change that default because it's a user template.",
+        "Also, note that context, motion, observers, router, ",
+        "scoped-registry-mixin, task, lit-element, lit-html, and ",
+        "reactive-element are all tested as part of ./packages/tests.",
+        "See ./packages/tests/src/web-test-runner.config.ts"
       ],
       "dependencies": [
         "./packages/localize:test",
@@ -150,12 +154,16 @@
         "./packages/ts-transformers:test",
         "./packages/labs/analyzer:test",
         "./packages/labs/cli:test",
+        "./packages/labs/cli-localize:test",
         "./packages/labs/compiler:test",
         "./packages/labs/eleventy-plugin-lit:test",
+        "./packages/labs/eslint-plugin:test",
+        "./packages/labs/gen-manifest:test",
         "./packages/labs/gen-utils:test",
         "./packages/labs/gen-wrapper-angular:test",
         "./packages/labs/gen-wrapper-react:test",
         "./packages/labs/gen-wrapper-vue:test",
+        "./packages/labs/nextjs:test",
         "./packages/labs/preact-signals:test",
         "./packages/labs/react:test",
         "./packages/labs/rollup-plugin-minify-html-literals:test",

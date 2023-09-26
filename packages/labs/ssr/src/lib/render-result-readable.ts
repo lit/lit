@@ -23,6 +23,7 @@ export class RenderResultReadable extends Readable {
    * completion in any one loop.
    */
   private _iterators: Array<RenderResultIterator>;
+  private _currentIterator?: RenderResultIterator;
 
   constructor(result: RenderResult) {
     super();
@@ -56,14 +57,15 @@ export class RenderResultReadable extends Readable {
     // result, because we must be able to return in the middle of the loop
     // and resume on the next call to _read().
 
-    // Get the current iterator
-    let iterator = this._iterators.pop();
+    // Get the current iterator, only if we don't already have one from the
+    // previous call to _read()
+    this._currentIterator ??= this._iterators.pop();
 
-    while (iterator !== undefined) {
-      const next = iterator.next();
+    while (this._currentIterator !== undefined) {
+      const next = this._currentIterator.next();
       if (next.done === true) {
         // Restore the outer iterator
-        iterator = this._iterators.pop();
+        this._currentIterator = this._iterators.pop();
         continue;
       }
 
@@ -77,8 +79,10 @@ export class RenderResultReadable extends Readable {
         }
       } else {
         // Must be a Promise
-        this._iterators.push(iterator);
-        iterator = (await value)[Symbol.iterator]() as RenderResultIterator;
+        this._iterators.push(this._currentIterator);
+        this._currentIterator = (await value)[
+          Symbol.iterator
+        ]() as RenderResultIterator;
       }
     }
     // Pushing `null` ends the stream
