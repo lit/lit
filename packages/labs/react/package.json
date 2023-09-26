@@ -66,7 +66,7 @@
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
-        "../../reactive-element:build:ts:types"
+        "../../react:build:ts:types"
       ],
       "clean": "if-file-deleted",
       "files": [
@@ -175,17 +175,16 @@
     }
   },
   "author": "Google LLC",
+  "dependencies": {
+    "@lit/react": "<2.0.0"
+  },
   "devDependencies": {
-    "@lit/reactive-element": "^2.0.0-pre.0",
     "@lit-internal/scripts": "^1.0.1-pre.0",
     "@types/react-dom": "^18.2.6",
     "@types/trusted-types": "^2.0.2",
     "@web/dev-server-rollup": "^0.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-  },
-  "peerDependencies": {
-    "@types/react": "17 || 18"
   },
   "publishConfig": {
     "access": "public"
