@@ -126,6 +126,14 @@ packages/localize-tools/lib/
 packages/localize-tools/node_modules/
 packages/localize-tools/testdata/*/output/
 
+packages/react/development/
+packages/react/node/
+packages/react/test/
+packages/react/node_modules/
+packages/react/index.*
+packages/react/create-component.*
+packages/react/use-controller.*
+
 packages/reactive-element/decorators/
 packages/reactive-element/development/
 packages/reactive-element/legacy-decorators/
