@@ -331,11 +331,12 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    this._scrollerController?.detach(this);
-    this._scrollerController = null;
     this._mutationObserver?.disconnect();
     this._hostElementRO?.disconnect();
     this._childrenRO?.disconnect();
+    // Detach last to help prevent a null controller in a running callback
+    this._scrollerController?.detach(this);
+    this._scrollerController = null;
     this._rejectLayoutCompletePromise('disconnected');
   }
 
