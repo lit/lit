@@ -1,5 +1,11 @@
 # @lit/lit-starter-ts
 
+## 1.0.6
+
+### Patch Changes
+
+- [#4157](https://github.com/lit/lit/pull/4157) [`da32db2e`](https://github.com/lit/lit/commit/da32db2e67547e0f17b7132065559eba2b1d3513) Thanks [@welingtonms](https://github.com/welingtonms)! - Improve bundling and minification recommendations.
+
 ## 1.0.5
 
 ### Patch Changes

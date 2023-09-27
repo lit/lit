@@ -1,5 +1,11 @@
 # Change Log
 
+## 2.1.0
+
+### Minor Changes
+
+- [#4221](https://github.com/lit/lit/pull/4221) [`5a60fbc6`](https://github.com/lit/lit/commit/5a60fbc64c45c4b99f0eb7454fec06de4fcd8e27) Thanks [@rivajunior](https://github.com/rivajunior)! - export Options interface
+
 ## 2.0.3
 
 ### Patch Changes
