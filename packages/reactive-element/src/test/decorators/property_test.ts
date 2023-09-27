@@ -512,33 +512,20 @@ suite('@property', () => {
           2
         )}`
       );
-      globalThis.litIssuedWarnings.clear();
     }
 
-    class PropertyOnMethodForSomeReason extends ReactiveElement {
-      @property()
-      someMethod() {}
-    }
-    customElements.define(generateElementName(), PropertyOnMethodForSomeReason);
-
-    const el = new PropertyOnMethodForSomeReason();
-    container.appendChild(el);
-    await el.updateComplete;
-    assert.isFunction(el.someMethod);
-    if (globalThis.litIssuedWarnings != null) {
-      assert(
-        [...globalThis.litIssuedWarnings].find((w) =>
-          /Field "someMethod" on PropertyOnMethodForSomeReason was declared as a reactive property but it's actually declared as a value on the prototype \(e\.g\. as a method\)\./.test(
-            w ?? ''
-          )
-        ),
-        `Expected warning to be issued. Warnings found: ${JSON.stringify(
-          [...globalThis.litIssuedWarnings],
-          null,
-          2
-        )}`
-      );
-      globalThis.litIssuedWarnings.clear();
+    if (globalThis.litIssuedWarnings) {
+      // Only run this test in dev mode. In prod mode we don't throw
+      // immediately, instead the method is effectively overridden with
+      // undefined.
+      assert.throws(() => {
+        class PropertyOnMethodForSomeReason extends ReactiveElement {
+          @property()
+          someMethod() {}
+        }
+        function markAsUsed(_: unknown) {}
+        markAsUsed(PropertyOnMethodForSomeReason);
+      }, /Field "someMethod" on PropertyOnMethodForSomeReason was declared as a reactive property but it's actually declared as a value on the prototype\./);
     }
   });
 });

@@ -717,11 +717,7 @@ export abstract class ReactiveElement
     key: string | symbol,
     options: PropertyDeclaration
   ): PropertyDescriptor | undefined {
-    const {
-      get,
-      set,
-      value: staticValue,
-    } = getOwnPropertyDescriptor(this.prototype, name) ?? {
+    const {get, set} = getOwnPropertyDescriptor(this.prototype, name) ?? {
       get(this: ReactiveElement) {
         return this[key as keyof typeof this];
       },
@@ -731,38 +727,27 @@ export abstract class ReactiveElement
     };
     if (DEV_MODE && get == null) {
       if ('value' in (getOwnPropertyDescriptor(this.prototype, name) ?? {})) {
-        issueWarning(
-          'reactive-property-without-getter',
+        throw new Error(
           `Field ${JSON.stringify(String(name))} on ` +
             `${this.name} was declared as a reactive property ` +
-            `but it's actually declared as a value on the prototype ` +
-            `(e.g. as a method). This will be an error in a future version ` +
-            `of Lit.`
-        );
-      } else {
-        issueWarning(
-          'reactive-property-without-getter',
-          `Field ${JSON.stringify(String(name))} on ` +
-            `${this.name} was declared as a reactive property ` +
-            `but it does not have a getter. This will be an error in a ` +
-            `future version of Lit.`
+            `but it's actually declared as a value on the prototype. ` +
+            `Usually this is due to using @property or @state on a method.`
         );
       }
+      issueWarning(
+        'reactive-property-without-getter',
+        `Field ${JSON.stringify(String(name))} on ` +
+          `${this.name} was declared as a reactive property ` +
+          `but it does not have a getter. This will be an error in a ` +
+          `future version of Lit.`
+      );
     }
     return {
       get(this: ReactiveElement) {
-        if (get !== undefined) {
-          return get.call(this);
-        }
-        return staticValue;
+        return get?.call(this);
       },
       set(this: ReactiveElement, value: unknown) {
-        let oldValue;
-        if (get !== undefined) {
-          oldValue = get.call(this);
-        } else {
-          oldValue = staticValue;
-        }
+        const oldValue = get?.call(this);
         set!.call(this, value);
         this.requestUpdate(name, oldValue, options);
       },
