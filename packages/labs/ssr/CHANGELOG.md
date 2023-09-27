@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.1.7
+
+### Patch Changes
+
+- [#4196](https://github.com/lit/lit/pull/4196) [`fb9147b0`](https://github.com/lit/lit/commit/fb9147b032d79997fc09f64cf364257bff73e940) Thanks [@robak86](https://github.com/robak86)! - Fix SSR returning a truncated response
+
 ## 3.1.6
 
 ### Patch Changes
