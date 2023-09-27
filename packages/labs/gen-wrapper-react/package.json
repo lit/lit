@@ -39,7 +39,7 @@
     "test:gen": {
       "dependencies": [
         "build",
-        "../react:build",
+        "../../react:build",
         "../test-projects/test-element-a:pack"
       ],
       "files": [

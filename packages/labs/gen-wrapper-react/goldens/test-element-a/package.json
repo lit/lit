@@ -8,7 +8,7 @@
   "version": "1.0.1-pre.0",
   "dependencies": {
     "@lit-internal/test-element-a": "^1.0.1-pre.0",
-    "@lit-labs/react": "^1.0.4"
+    "@lit/react": "<2.0.0"
   },
   "peerDependencies": {
     "react": "^17 || ^18",
