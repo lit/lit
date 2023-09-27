@@ -5,7 +5,7 @@
  */
 
 import * as React from 'react';
-import {createComponent, EventName} from '@lit-labs/react';
+import {createComponent, EventName} from '@lit/react';
 
 import {ElementProps as ElementPropsElement} from '@lit-internal/test-element-a/element-props.js';
 

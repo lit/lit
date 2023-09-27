@@ -2,14 +2,14 @@
   "name": "@lit-internal/test-elements-react",
   "version": "1.0.0",
   "private": true,
-  "description": "React components made by wrapping @lit-internal/test-element-a with @lit-labs/react used for testing.",
+  "description": "React components made by wrapping @lit-internal/test-element-a with @lit/react used for testing.",
   "type": "module",
   "scripts": {
     "build": "wireit"
   },
   "dependencies": {
     "@lit-internal/test-element-a": "*",
-    "@lit-labs/react": "*"
+    "@lit/react": "*"
   },
   "peerDependencies": {
     "react": "^17 || ^18",

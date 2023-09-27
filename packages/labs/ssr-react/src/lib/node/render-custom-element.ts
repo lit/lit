@@ -50,13 +50,13 @@ export const renderCustomElement = (tagName: string, props: {} | null) => {
         continue;
       }
 
-      // This prop is created by `@lit-labs/react` createComponent containing
+      // This prop is created by `@lit/react` createComponent containing
       // items to be set as properties
       if (k === '_$litProps$') {
         for (const [pk, pv] of Object.entries(v as object)) {
           renderer.setProperty(pk, pv);
         }
-        // Defer hydration so `@lit-labs/react` createComponent can set
+        // Defer hydration so `@lit/react` createComponent can set
         // properties on element before hydration
         elementAttributes['defer-hydration'] = '';
         delete (props as {_$litProps$?: object})['_$litProps$'];
