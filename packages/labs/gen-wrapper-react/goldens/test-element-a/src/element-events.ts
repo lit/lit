@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {createComponent, EventName} from '@lit-labs/react';
+import {createComponent, EventName} from '@lit/react';
 
 import {ElementEvents as ElementEventsElement} from '@lit-internal/test-element-a/element-events.js';
 import {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
