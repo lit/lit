@@ -79,8 +79,6 @@ const legacyProperty = (
   // define in createProperty() with the original descriptor. We don't do this
   // for fields, which don't have a descriptor, because this could overwrite
   // descriptor defined by other decorators.
-  // for fields, which don't have a descriptor, because this could overwrite
-  // descriptor defined by other decorators.
   return hasOwnProperty
     ? Object.getOwnPropertyDescriptor(proto, name)
     : undefined;
