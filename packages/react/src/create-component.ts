@@ -76,7 +76,7 @@ type ComponentProps<I, E extends EventNames = {}> = Omit<
  * Example:
  *
  * ```ts
- * const FooComponent = createCompoennt({
+ * const FooComponent = createComponent({
  *   ...
  *   events: {
  *     onfoo: 'foo' as EventName<FooEvent>,
@@ -100,7 +100,7 @@ type EventListeners<R extends EventNames> = {
     : (e: Event) => void;
 };
 
-interface Options<I extends HTMLElement, E extends EventNames = {}> {
+export interface Options<I extends HTMLElement, E extends EventNames = {}> {
   react: typeof React;
   tagName: string;
   elementClass: Constructor<I>;
