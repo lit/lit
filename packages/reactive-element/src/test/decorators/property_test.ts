@@ -487,4 +487,58 @@ suite('@property', () => {
     assert.deepEqual(el._observedZot, {value: 'zot', oldValue: ''});
     assert.deepEqual(el._observedZot2, {value: 'zot', oldValue: ''});
   });
+
+  test('can handle some unreasonable property declarations', async () => {
+    class PropertyOnSetterOnly extends ReactiveElement {
+      @property()
+      set foo(_value: string) {}
+    }
+    customElements.define(generateElementName(), PropertyOnSetterOnly);
+
+    const el2 = new PropertyOnSetterOnly();
+    container.appendChild(el2);
+    await el2.updateComplete;
+    assert.isUndefined(el2.foo);
+    if (globalThis.litIssuedWarnings != null) {
+      assert(
+        [...globalThis.litIssuedWarnings].find((w) =>
+          /Field "foo" on PropertyOnSetterOnly was declared as a reactive property but it does not have a getter/.test(
+            w ?? ''
+          )
+        ),
+        `Expected warning to be issued. Warnings found: ${JSON.stringify(
+          [...globalThis.litIssuedWarnings],
+          null,
+          2
+        )}`
+      );
+      globalThis.litIssuedWarnings.clear();
+    }
+
+    class PropertyOnMethodForSomeReason extends ReactiveElement {
+      @property()
+      someMethod() {}
+    }
+    customElements.define(generateElementName(), PropertyOnMethodForSomeReason);
+
+    const el = new PropertyOnMethodForSomeReason();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.isFunction(el.someMethod);
+    if (globalThis.litIssuedWarnings != null) {
+      assert(
+        [...globalThis.litIssuedWarnings].find((w) =>
+          /Field "someMethod" on PropertyOnMethodForSomeReason was declared as a reactive property but it's actually declared as a value on the prototype \(e\.g\. as a method\)\./.test(
+            w ?? ''
+          )
+        ),
+        `Expected warning to be issued. Warnings found: ${JSON.stringify(
+          [...globalThis.litIssuedWarnings],
+          null,
+          2
+        )}`
+      );
+      globalThis.litIssuedWarnings.clear();
+    }
+  });
 });

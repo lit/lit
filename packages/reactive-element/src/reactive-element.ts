@@ -717,7 +717,11 @@ export abstract class ReactiveElement
     key: string | symbol,
     options: PropertyDeclaration
   ): PropertyDescriptor | undefined {
-    const {get, set} = getOwnPropertyDescriptor(this.prototype, name) ?? {
+    const {
+      get,
+      set,
+      value: staticValue,
+    } = getOwnPropertyDescriptor(this.prototype, name) ?? {
       get(this: ReactiveElement) {
         return this[key as keyof typeof this];
       },
@@ -725,12 +729,40 @@ export abstract class ReactiveElement
         (this as unknown as Record<string | symbol, unknown>)[key] = v;
       },
     };
+    if (DEV_MODE && get == null) {
+      if ('value' in (getOwnPropertyDescriptor(this.prototype, name) ?? {})) {
+        issueWarning(
+          'reactive-property-without-getter',
+          `Field ${JSON.stringify(String(name))} on ` +
+            `${this.name} was declared as a reactive property ` +
+            `but it's actually declared as a value on the prototype ` +
+            `(e.g. as a method). This will be an error in a future version ` +
+            `of Lit.`
+        );
+      } else {
+        issueWarning(
+          'reactive-property-without-getter',
+          `Field ${JSON.stringify(String(name))} on ` +
+            `${this.name} was declared as a reactive property ` +
+            `but it does not have a getter. This will be an error in a ` +
+            `future version of Lit.`
+        );
+      }
+    }
     return {
       get(this: ReactiveElement) {
-        return get!.call(this);
+        if (get !== undefined) {
+          return get.call(this);
+        }
+        return staticValue;
       },
       set(this: ReactiveElement, value: unknown) {
-        const oldValue = get!.call(this);
+        let oldValue;
+        if (get !== undefined) {
+          oldValue = get.call(this);
+        } else {
+          oldValue = staticValue;
+        }
         set!.call(this, value);
         this.requestUpdate(name, oldValue, options);
       },
