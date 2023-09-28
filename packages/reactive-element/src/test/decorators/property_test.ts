@@ -487,4 +487,84 @@ suite('@property', () => {
     assert.deepEqual(el._observedZot, {value: 'zot', oldValue: ''});
     assert.deepEqual(el._observedZot2, {value: 'zot', oldValue: ''});
   });
+
+  test('can handle some unreasonable property declarations', async () => {
+    class PropertyOnSetterOnly extends ReactiveElement {
+      @property()
+      set foo(_value: string) {}
+    }
+    customElements.define(generateElementName(), PropertyOnSetterOnly);
+
+    const el2 = new PropertyOnSetterOnly();
+    container.appendChild(el2);
+    await el2.updateComplete;
+    assert.isUndefined(el2.foo);
+    if (globalThis.litIssuedWarnings != null) {
+      assert(
+        [...globalThis.litIssuedWarnings].find((w) =>
+          /Field "foo" on PropertyOnSetterOnly was declared as a reactive property but it does not have a getter/.test(
+            w ?? ''
+          )
+        ),
+        `Expected warning to be issued. Warnings found: ${JSON.stringify(
+          [...globalThis.litIssuedWarnings],
+          null,
+          2
+        )}`
+      );
+    }
+
+    if (globalThis.litIssuedWarnings) {
+      // Only run this test in dev mode. In prod mode we don't throw
+      // immediately, instead the method is effectively overridden with
+      // undefined.
+      assert.throws(() => {
+        class PropertyOnMethodForSomeReason extends ReactiveElement {
+          @property()
+          someMethod() {}
+        }
+        function markAsUsed(_: unknown) {}
+        markAsUsed(PropertyOnMethodForSomeReason);
+      }, /Field "someMethod" on PropertyOnMethodForSomeReason was declared as a reactive property but it's actually declared as a value on the prototype\./);
+    }
+  });
+
+  test('works with an old and busted Reflect.decorate', async () => {
+    const extendedReflect: typeof Reflect & {decorate?: unknown} = Reflect;
+    assert.isUndefined(extendedReflect.decorate);
+    extendedReflect.decorate = (
+      decorators: Function[],
+      proto: object,
+      name: string,
+      ...args: unknown[]
+    ) => {
+      for (const decorator of decorators) {
+        decorator(proto, name, ...args);
+      }
+    };
+
+    class E extends ReactiveElement {
+      @property() foo = 'foo';
+      updates = 0;
+
+      override update(changedProperties: PropertyValues<E>) {
+        this.updates++;
+        return super.update(changedProperties);
+      }
+    }
+    customElements.define(generateElementName(), E);
+
+    const elem = new E();
+    assert.equal(elem.foo, 'foo');
+    assert.equal(elem.updates, 0);
+    document.body.appendChild(elem);
+    await elem.updateComplete;
+    assert.equal(elem.updates, 1);
+
+    elem.foo = 'bar';
+    await elem.updateComplete;
+    assert.equal(elem.updates, 2);
+
+    delete extendedReflect.decorate;
+  });
 });

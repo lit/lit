@@ -13,7 +13,7 @@
 
 import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
-import type {Interface} from './base.js';
+import {desc, type Interface} from './base.js';
 
 export type QueryAssignedElementsDecorator = {
   // legacy
@@ -78,10 +78,13 @@ export interface QueryAssignedElementsOptions
 export function queryAssignedElements(
   options?: QueryAssignedElementsOptions
 ): QueryAssignedElementsDecorator {
-  return (<V extends Array<Element>>() => {
+  return (<V extends Array<Element>>(
+    obj: object,
+    name: PropertyKey | ClassAccessorDecoratorContext<unknown, unknown>
+  ) => {
     const {slot, selector} = options ?? {};
     const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
-    return {
+    return desc(obj, name, {
       get(this: ReactiveElement): V {
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
@@ -92,6 +95,6 @@ export function queryAssignedElements(
             : elements.filter((node) => node.matches(selector))
         ) as V;
       },
-    };
+    });
   }) as QueryAssignedElementsDecorator;
 }

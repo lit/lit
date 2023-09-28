@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from './base.js';
+import {desc, type Interface} from './base.js';
 
 /**
  * Options for the {@linkcode queryAssignedNodes} decorator. Extends the options
@@ -71,15 +71,18 @@ export function queryAssignedNodes(
   options?: QueryAssignedNodesOptions
 ): QueryAssignedNodesDecorator {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (<V extends Array<Node>>() => {
+  return (<V extends Array<Node>>(
+    obj: object,
+    name: PropertyKey | ClassAccessorDecoratorContext<unknown, unknown>
+  ) => {
     const {slot} = options ?? {};
     const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
-    return {
+    return desc(obj, name, {
       get(this: ReactiveElement): V {
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
         return (slotEl?.assignedNodes(options) ?? []) as unknown as V;
       },
-    };
+    });
   }) as QueryAssignedNodesDecorator;
 }

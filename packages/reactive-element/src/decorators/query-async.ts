@@ -12,7 +12,7 @@
  */
 
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from './base.js';
+import {desc, type Interface} from './base.js';
 
 export type QueryAsyncDecorator = {
   // legacy
@@ -69,12 +69,15 @@ export type QueryAsyncDecorator = {
  * @category Decorator
  */
 export function queryAsync(selector: string) {
-  return (() => {
-    return {
+  return ((
+    obj: object,
+    name: PropertyKey | ClassAccessorDecoratorContext<unknown, unknown>
+  ) => {
+    return desc(obj, name, {
       async get(this: ReactiveElement) {
         await this.updateComplete;
         return this.renderRoot?.querySelector(selector) ?? null;
       },
-    };
+    });
   }) as QueryAsyncDecorator;
 }

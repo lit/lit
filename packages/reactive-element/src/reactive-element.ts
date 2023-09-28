@@ -725,12 +725,29 @@ export abstract class ReactiveElement
         (this as unknown as Record<string | symbol, unknown>)[key] = v;
       },
     };
+    if (DEV_MODE && get == null) {
+      if ('value' in (getOwnPropertyDescriptor(this.prototype, name) ?? {})) {
+        throw new Error(
+          `Field ${JSON.stringify(String(name))} on ` +
+            `${this.name} was declared as a reactive property ` +
+            `but it's actually declared as a value on the prototype. ` +
+            `Usually this is due to using @property or @state on a method.`
+        );
+      }
+      issueWarning(
+        'reactive-property-without-getter',
+        `Field ${JSON.stringify(String(name))} on ` +
+          `${this.name} was declared as a reactive property ` +
+          `but it does not have a getter. This will be an error in a ` +
+          `future version of Lit.`
+      );
+    }
     return {
       get(this: ReactiveElement) {
-        return get!.call(this);
+        return get?.call(this);
       },
       set(this: ReactiveElement, value: unknown) {
-        const oldValue = get!.call(this);
+        const oldValue = get?.call(this);
         set!.call(this, value);
         this.requestUpdate(name, oldValue, options);
       },

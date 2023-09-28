@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import type {Interface} from './base.js';
+import {desc, type Interface} from './base.js';
 
 const DEV_MODE = true;
 
@@ -96,7 +96,7 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
                 },
               };
             })();
-      return {
+      return desc(protoOrTarget, nameOrContext, {
         get(this: ReactiveElement): V {
           if (cache) {
             let result: V = get!.call(this);
@@ -108,15 +108,15 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
           }
           return doQuery(this);
         },
-      };
+      });
     } else {
       // This object works as the return type for both standard and
       // experimental decorators.
-      return {
+      return desc(protoOrTarget, nameOrContext, {
         get(this: ReactiveElement) {
           return doQuery(this);
         },
-      };
+      });
     }
   }) as QueryDecorator;
 }
