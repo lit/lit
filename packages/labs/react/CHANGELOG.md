@@ -1,5 +1,16 @@
 # Change Log
 
+## 2.1.1-pre.0
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- [#4224](https://github.com/lit/lit/pull/4224) [`71526898`](https://github.com/lit/lit/commit/71526898cc33ff8a466b9dcabb89d601ec862b9a) - Graduate @lit-labs/react to @lit/react, its permanent location. @lit-labs/react is now just a proxy for @lit/react, so code need not be duplicated in projects that depend on both.
+
+- Updated dependencies [[`71526898`](https://github.com/lit/lit/commit/71526898cc33ff8a466b9dcabb89d601ec862b9a)]:
+  - @lit/react@1.0.0-pre.0
+
 ## 2.1.0
 
 ### Minor Changes
