@@ -22,7 +22,7 @@ The directive supports a number of options:
 
 | Option          | Usage                                                                                                          |
 | --------------- | -------------------------------------------------------------------------------------------------------------- |
-| keyframeOptions | configure animation via standard KeyframeAnimationOptions                                                      |
+| keyframeOptions | configure animation via the [KeyframeEffect Options](https://developer.mozilla.org/en-US/docs/Web/API/KeyframeEffect/KeyframeEffect#parameters) from the Web Animation API.  |
 | properties      | list of properties to animate, defaults to ['left', 'top','width', 'height', 'opacity', 'color', 'background'] |
 | disabled        | disables animation                                                                                             |
 | guard           | function producing values that must change for the `animate` to run                                            |
