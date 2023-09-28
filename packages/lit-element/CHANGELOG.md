@@ -1,5 +1,31 @@
 # Change Log
 
+## 4.0.0-pre.1
+
+### Major Changes
+
+- [#4146](https://github.com/lit/lit/pull/4146) [`0f6878dc`](https://github.com/lit/lit/commit/0f6878dc45fd95bbeb8750f277349c1392e2b3ad) - Generated accessor for reactive properties now wrap user accessors and automatically call `this.requestUpdate()` in the setter. As in previous versions, users can still specify `noAccessor: true`, in which case they should call `this.requestUpdate()` themselves in the setter if they want to trigger a reactive update.
+
+- [#3896](https://github.com/lit/lit/pull/3896) [`2eba6997`](https://github.com/lit/lit/commit/2eba69974c9e130e7483f44f9daca308345497d5) - Warn on async overrides of performUpdate()
+
+### Minor Changes
+
+- [#4081](https://github.com/lit/lit/pull/4081) [`d27a77ec`](https://github.com/lit/lit/commit/d27a77ec3d3999e872df9218a2b07f90f22eb417) - Sync from last stable release
+
+- [#4183](https://github.com/lit/lit/pull/4183) [`6470807f`](https://github.com/lit/lit/commit/6470807f3a0981f9d418cb26f05969912455d148) - Make the decorators work with the `accessor` keyword when `experimentalDecorators` is true.
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- [#3918](https://github.com/lit/lit/pull/3918) [`2a01471a`](https://github.com/lit/lit/commit/2a01471a5f65fe34bad11e1099281811b8d0f79b) - Some code golf on ReactiveElement
+
+- [#3710](https://github.com/lit/lit/pull/3710) [`09949234`](https://github.com/lit/lit/commit/09949234445388d51bfb4ee24ff28a4c9f82fe17) - Add `undefined` to the return type of PropertyValues.get()
+
+- Updated dependencies [[`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5), [`0f6878dc`](https://github.com/lit/lit/commit/0f6878dc45fd95bbeb8750f277349c1392e2b3ad), [`2a01471a`](https://github.com/lit/lit/commit/2a01471a5f65fe34bad11e1099281811b8d0f79b), [`2eba6997`](https://github.com/lit/lit/commit/2eba69974c9e130e7483f44f9daca308345497d5), [`d27a77ec`](https://github.com/lit/lit/commit/d27a77ec3d3999e872df9218a2b07f90f22eb417), [`6470807f`](https://github.com/lit/lit/commit/6470807f3a0981f9d418cb26f05969912455d148), [`09949234`](https://github.com/lit/lit/commit/09949234445388d51bfb4ee24ff28a4c9f82fe17)]:
+  - @lit/reactive-element@2.0.0-pre.1
+  - lit-html@3.0.0-pre.1
+
 ## 4.0.0-pre.0
 
 ### Major Changes
