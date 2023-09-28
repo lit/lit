@@ -1,6 +1,6 @@
 # @lit-labs/preact-signals
 
-## 0.0.1-pre.0
+## 1.0.0-pre.0
 
 ### Patch Changes
 
