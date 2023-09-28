@@ -412,7 +412,9 @@ declare global {
 }
 
 // Map from a class's metadata object to property options
-global.litPropertyMetadata = new WeakMap<
+// Note that we must use nullish-coalescing assignment so that we only use one
+// map even if we load multiple version of this module.
+global.litPropertyMetadata ??= new WeakMap<
   object,
   Map<PropertyKey, PropertyDeclaration>
 >();
