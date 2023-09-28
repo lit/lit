@@ -13,6 +13,8 @@ import {property} from '@lit/reactive-element/decorators/property.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
+const extendedReflect: typeof Reflect & {decorate?: unknown} = Reflect;
+
 suite('@property', () => {
   let container: HTMLElement;
 
@@ -527,5 +529,43 @@ suite('@property', () => {
         markAsUsed(PropertyOnMethodForSomeReason);
       }, /Field "someMethod" on PropertyOnMethodForSomeReason was declared as a reactive property but it's actually declared as a value on the prototype\./);
     }
+  });
+
+  test('works with an old and busted Reflect.decorate', async () => {
+    assert.isUndefined(extendedReflect.decorate);
+    extendedReflect.decorate = (
+      decorators: Function[],
+      proto: object,
+      name: string,
+      ...args: unknown[]
+    ) => {
+      for (const decorator of decorators) {
+        decorator(proto, name, ...args);
+      }
+    };
+
+    class E extends ReactiveElement {
+      @property() foo = 'foo';
+      updates = 0;
+
+      override update(changedProperties: PropertyValues<E>) {
+        this.updates++;
+        return super.update(changedProperties);
+      }
+    }
+    customElements.define(generateElementName(), E);
+
+    const elem = new E();
+    assert.equal(elem.foo, 'foo');
+    assert.equal(elem.updates, 0);
+    document.body.appendChild(elem);
+    await elem.updateComplete;
+    assert.equal(elem.updates, 1);
+
+    elem.foo = 'bar';
+    await elem.updateComplete;
+    assert.equal(elem.updates, 2);
+
+    delete extendedReflect.decorate;
   });
 });
