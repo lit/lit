@@ -15,6 +15,7 @@ import {parseNamedTypedJSDocInfo} from '../javascript/jsdoc.js';
 import {Attribute, CustomElementField} from '../model.js';
 import {AnalyzerInterface} from '../model.js';
 import {getTypeForTypeString} from '../types.js';
+import {createDiagnostic} from '../errors.js';
 
 const getAttributePropsFromField = (
   customElementFieldMap: Map<string, CustomElementField>,
@@ -25,13 +26,16 @@ const getAttributePropsFromField = (
   );
   if (found && !found.static) {
     const {
-      attribute: _,
-      name: fieldName,
+      // because we're excluding properties from `rest`
+      /* eslint-disable @typescript-eslint/no-unused-vars */
+      attribute,
       reflects,
-      static: isStatic,
+      static: _,
       privacy,
       source,
       readonly,
+      /* eslint-enable @typescript-eslint/no-unused-vars */
+      name: fieldName,
       ...rest
     } = found;
     return {...rest, fieldName};
@@ -58,6 +62,17 @@ export const addJSDocAttributeToMap = (
     customElementFieldMap,
     name
   );
+  if (attributes.has(name))
+    // TODO(bennypowers): merge? retain? make configurable?
+    // decide on an approach in cases when jsDoc attr overrides existing attr
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        category: analyzer.typescript.DiagnosticCategory.Warning,
+        typescript: analyzer.typescript,
+        node: tag,
+        message: `attribute ${name} already exists, overwriting with JSDoc`,
+      })
+    );
   attributes.set(name, {
     ...existingMember,
     name,

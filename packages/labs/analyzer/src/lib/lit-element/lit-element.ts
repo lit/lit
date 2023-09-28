@@ -41,6 +41,7 @@ export const getLitElementDeclaration = (
   analyzer: AnalyzerInterface
 ): LitElementDeclaration => {
   const reactiveProperties = getProperties(declaration, analyzer);
+  // NB(bennypowers): OOO is important for now. See TODO in addJSDocAttributeToMap
   const members = getLitElementClassMembers(
     declaration,
     analyzer,
