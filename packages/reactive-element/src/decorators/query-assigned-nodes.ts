@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import {descriptorDefaults, extendedReflect, type Interface} from './base.js';
+import {desc, type Interface} from './base.js';
 
 /**
  * Options for the {@linkcode queryAssignedNodes} decorator. Extends the options
@@ -77,21 +77,12 @@ export function queryAssignedNodes(
   ) => {
     const {slot} = options ?? {};
     const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
-    const descriptor = {
-      ...descriptorDefaults,
+    return desc(obj, name, {
       get(this: ReactiveElement): V {
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
         return (slotEl?.assignedNodes(options) ?? []) as unknown as V;
       },
-    };
-    if (typeof name !== 'object' && extendedReflect.decorate) {
-      // If we're called as a legacy decorator, and Reflect.decorate is present
-      // then we have no guarantees that the returned descriptor will be
-      // defined on the class, so we must apply it directly ourselves.
-      Object.defineProperty(obj, name, descriptor);
-      return;
-    }
-    return descriptor;
+    });
   }) as QueryAssignedNodesDecorator;
 }

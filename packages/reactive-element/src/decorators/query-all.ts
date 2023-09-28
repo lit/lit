@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import {descriptorDefaults, extendedReflect, type Interface} from './base.js';
+import {desc, type Interface} from './base.js';
 
 export type QueryAllDecorator = {
   // legacy
@@ -63,21 +63,12 @@ export function queryAll(selector: string): QueryAllDecorator {
     obj: object,
     name: PropertyKey | ClassAccessorDecoratorContext<unknown, unknown>
   ) => {
-    const descriptor = {
-      ...descriptorDefaults,
+    return desc(obj, name, {
       get(this: ReactiveElement) {
         const container =
           this.renderRoot ?? (fragment ??= document.createDocumentFragment());
         return container.querySelectorAll(selector);
       },
-    };
-    if (typeof name !== 'object' && extendedReflect.decorate) {
-      // If we're called as a legacy decorator, and Reflect.decorate is present
-      // then we have no guarantees that the returned descriptor will be
-      // defined on the class, so we must apply it directly ourselves.
-      Object.defineProperty(obj, name, descriptor);
-      return;
-    }
-    return descriptor;
+    });
   }) as QueryAllDecorator;
 }

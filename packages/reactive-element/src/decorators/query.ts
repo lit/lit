@@ -11,7 +11,7 @@
  * not an arrow function.
  */
 import type {ReactiveElement} from '../reactive-element.js';
-import {descriptorDefaults, extendedReflect, type Interface} from './base.js';
+import {desc, type Interface} from './base.js';
 
 const DEV_MODE = true;
 
@@ -69,7 +69,6 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
       // is null.
       return (el.renderRoot?.querySelector(selector) ?? null) as V;
     };
-    let resultDescriptor: PropertyDescriptor;
     if (cache) {
       // Accessors to wrap from either:
       //   1. The decorator target, in the case of standard decorators
@@ -97,8 +96,7 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
                 },
               };
             })();
-      resultDescriptor = {
-        ...descriptorDefaults,
+      return desc(protoOrTarget, nameOrContext, {
         get(this: ReactiveElement): V {
           if (cache) {
             let result: V = get!.call(this);
@@ -110,28 +108,15 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
           }
           return doQuery(this);
         },
-      };
+      });
     } else {
       // This object works as the return type for both standard and
       // experimental decorators.
-      resultDescriptor = {
-        ...descriptorDefaults,
+      return desc(protoOrTarget, nameOrContext, {
         get(this: ReactiveElement) {
           return doQuery(this);
         },
-      };
+      });
     }
-    if (typeof nameOrContext !== 'object' && extendedReflect.decorate) {
-      // If we're called as a legacy decorator, and Reflect.decorate is present
-      // then we have no guarantees that the returned descriptor will be
-      // defined on the class, so we must apply it directly ourselves.
-      Object.defineProperty(
-        protoOrTarget as object,
-        nameOrContext as PropertyKey,
-        resultDescriptor
-      );
-      return;
-    }
-    return resultDescriptor;
   }) as QueryDecorator;
 }

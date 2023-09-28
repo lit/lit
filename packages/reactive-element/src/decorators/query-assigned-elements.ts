@@ -13,7 +13,7 @@
 
 import type {ReactiveElement} from '../reactive-element.js';
 import type {QueryAssignedNodesOptions} from './query-assigned-nodes.js';
-import {descriptorDefaults, extendedReflect, type Interface} from './base.js';
+import {desc, type Interface} from './base.js';
 
 export type QueryAssignedElementsDecorator = {
   // legacy
@@ -84,8 +84,7 @@ export function queryAssignedElements(
   ) => {
     const {slot, selector} = options ?? {};
     const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
-    const descriptor = {
-      ...descriptorDefaults,
+    return desc(obj, name, {
       get(this: ReactiveElement): V {
         const slotEl =
           this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
@@ -96,14 +95,6 @@ export function queryAssignedElements(
             : elements.filter((node) => node.matches(selector))
         ) as V;
       },
-    };
-    if (typeof name !== 'object' && extendedReflect.decorate) {
-      // If we're called as a legacy decorator, and Reflect.decorate is present
-      // then we have no guarantees that the returned descriptor will be
-      // defined on the class, so we must apply it directly ourselves.
-      Object.defineProperty(obj, name, descriptor);
-      return;
-    }
-    return descriptor;
+    });
   }) as QueryAssignedElementsDecorator;
 }

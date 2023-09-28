@@ -13,8 +13,6 @@ import {property} from '@lit/reactive-element/decorators/property.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
-const extendedReflect: typeof Reflect & {decorate?: unknown} = Reflect;
-
 suite('@property', () => {
   let container: HTMLElement;
 
@@ -532,6 +530,7 @@ suite('@property', () => {
   });
 
   test('works with an old and busted Reflect.decorate', async () => {
+    const extendedReflect: typeof Reflect & {decorate?: unknown} = Reflect;
     assert.isUndefined(extendedReflect.decorate);
     extendedReflect.decorate = (
       decorators: Function[],
