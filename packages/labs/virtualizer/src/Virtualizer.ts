@@ -822,12 +822,12 @@ export class Virtualizer {
         this._layoutCompleteRejecter = reject;
       });
     }
-    return this._layoutCompletePromise!;
+    return this._layoutCompletePromise;
   }
 
   private _rejectLayoutCompletePromise(reason: string) {
     if (this._layoutCompleteRejecter !== null) {
-      this._layoutCompleteRejecter!(reason);
+      this._layoutCompleteRejecter(reason);
     }
     this._resetLayoutCompleteState();
   }
