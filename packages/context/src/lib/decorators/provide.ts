@@ -58,7 +58,7 @@ export function provide<ValueType>({
     >();
     if (typeof nameOrContext === 'object') {
       // Standard decorators branch
-      nameOrContext.addInitializer(function (this: C) {
+      nameOrContext.addInitializer(function (this: ReactiveElement) {
         controllerMap.set(this, new ContextProvider(this, {context}));
       });
       return {

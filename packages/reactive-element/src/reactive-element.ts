@@ -791,7 +791,9 @@ export abstract class ReactiveElement
    * @nocollapse
    */
   private static __prepare() {
-    if (this.hasOwnProperty('elementProperties')) {
+    if (
+      this.hasOwnProperty(JSCompiler_renameProperty('elementProperties', this))
+    ) {
       // Already prepared
       return;
     }
@@ -1004,7 +1006,7 @@ export abstract class ReactiveElement
       (res) => (this.enableUpdating = res)
     );
     this._$changedProperties = new Map();
-    // This enqueues a microtask that ust run before the first udpate, so it
+    // This enqueues a microtask that ust run before the first update, so it
     // must be called before requestUpdate()
     this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
