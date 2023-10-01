@@ -331,9 +331,13 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
+    // Stop and nullify observers to prevent re-observing during an update
     this._mutationObserver?.disconnect();
+    this._mutationObserver = null;
     this._hostElementRO?.disconnect();
+    this._hostElementRO = null;
     this._childrenRO?.disconnect();
+    this._childrenRO = null;
     // Detach last to help prevent a null controller in a running callback
     this._scrollerController?.detach(this);
     this._scrollerController = null;
