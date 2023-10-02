@@ -119,6 +119,7 @@ export const getFunctionLikeInfo = (
         name: info.name,
         parameters: info.parameters,
         return: info.return,
+        node: overload,
       });
     });
   }
@@ -128,6 +129,7 @@ export const getFunctionLikeInfo = (
     parameters: node.parameters.map((p) => getParameter(p, analyzer)),
     return: getReturn(node, analyzer),
     overloads,
+    node,
   };
 };
 
