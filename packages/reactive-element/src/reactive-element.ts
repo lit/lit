@@ -1153,9 +1153,10 @@ export abstract class ReactiveElement
   }
 
   private __propertyToAttribute(name: PropertyKey, value: unknown) {
-    const options = (
+    const elemProperties: PropertyDeclarationMap = (
       this.constructor as typeof ReactiveElement
-    ).elementProperties.get(name)!;
+    ).elementProperties;
+    const options = elemProperties.get(name)!;
     const attr = (
       this.constructor as typeof ReactiveElement
     ).__attributeNameForProperty(name, options);
