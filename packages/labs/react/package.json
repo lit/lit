@@ -128,6 +128,7 @@
       "#comment": "Test files must also be specified in web-test-runner.config.js rollup config",
       "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config web-test-runner.config.js",
       "dependencies": [
+        "../../react:build",
         "build:ts",
         "../../reactive-element:build",
         "../../tests:build"
@@ -147,6 +148,7 @@
       "#comment": "Test files must also be specified in web-test-runner.config.js rollup config",
       "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config web-test-runner.config.js",
       "dependencies": [
+        "../../react:build",
         "build:ts",
         "build:rollup",
         "../../reactive-element:build",
@@ -166,6 +168,7 @@
     "test:node": {
       "command": "node development/test/node-render.js",
       "dependencies": [
+        "../../react:build",
         "build:ts",
         "build:rollup",
         "../../reactive-element:build"
