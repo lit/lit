@@ -331,16 +331,14 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    // Stop and nullify observers to prevent re-observing during an update
+    this._scrollerController?.detach(this);
+    this._scrollerController = null;
     this._mutationObserver?.disconnect();
     this._mutationObserver = null;
     this._hostElementRO?.disconnect();
     this._hostElementRO = null;
     this._childrenRO?.disconnect();
     this._childrenRO = null;
-    // Detach last to help prevent a null controller in a running callback
-    this._scrollerController?.detach(this);
-    this._scrollerController = null;
     this._rejectLayoutCompletePromise('disconnected');
   }
 
@@ -544,8 +542,7 @@ export class Virtualizer {
   }
 
   _finishDOMUpdate() {
-    // If we are async here, RO may be null due to disconnect, so do not re-observe
-    this._children.forEach((child) => this._childrenRO?.observe(child));
+    this._children.forEach((child) => this._childrenRO!.observe(child));
     this._checkScrollIntoViewTarget(this._childrenPos);
     this._positionChildren(this._childrenPos);
     this._sizeHostElement(this._scrollSize);
@@ -743,11 +740,11 @@ export class Virtualizer {
   }
 
   private _correctScrollError() {
-    if (this._scrollerController && this._scrollError) {
-      const {scrollTop, scrollLeft} = this._scrollerController;
+    if (this._scrollError) {
+      const {scrollTop, scrollLeft} = this._scrollerController!;
       const {top, left} = this._scrollError;
       this._scrollError = null;
-      this._scrollerController.correctScrollError({
+      this._scrollerController!.correctScrollError({
         top: scrollTop - top,
         left: scrollLeft - left,
       });
