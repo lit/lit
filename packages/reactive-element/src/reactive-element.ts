@@ -30,8 +30,15 @@ export type {
   ReactiveControllerHost,
 } from './reactive-controller.js';
 
-type Mutable<T, K extends PropertyKey> = Omit<T, K> & {
-  -readonly [P in keyof T]: P extends K ? T[P] : never;
+/**
+ * Removes the `readonly` modifier from properties in the union K.
+ *
+ * This is a safer way to cast a value to a type with a mutable version of a
+ * readonly field, than casting to an interface with the field re-declared
+ * because it preserves the type of all the fields and warns on typos.
+ */
+type Mutable<T, K extends keyof T> = Omit<T, K> & {
+  -readonly [P in keyof Pick<T, K>]: P extends K ? T[P] : never;
 };
 
 // TODO (justinfagnani): Add `hasOwn` here when we ship ES2022
