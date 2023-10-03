@@ -4,4 +4,4 @@
 'lit': major
 ---
 
-Change the type of ReactiveElement.renderRoot to include Element
+Change the type of `ReactiveElement.renderRoot` and return type of `ReactiveElement.createRenderRoot()` to be `HTMLElement | DocumentFragment` to match each other and lit-html's `render()` method.

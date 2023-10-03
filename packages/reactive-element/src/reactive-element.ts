@@ -940,7 +940,7 @@ export abstract class ReactiveElement
    * to an open shadowRoot.
    * @category rendering
    */
-  readonly renderRoot!: Element | ShadowRoot;
+  readonly renderRoot!: HTMLElement | DocumentFragment;
 
   /**
    * Returns the property name for the given attribute `name`.
@@ -1092,7 +1092,7 @@ export abstract class ReactiveElement
    * @return Returns a node into which to render.
    * @category rendering
    */
-  protected createRenderRoot(): Element | ShadowRoot {
+  protected createRenderRoot(): HTMLElement | DocumentFragment {
     const renderRoot =
       this.shadowRoot ??
       this.attachShadow(
