@@ -98,15 +98,14 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
             })();
       return desc(protoOrTarget, nameOrContext, {
         get(this: ReactiveElement): V {
-          if (cache) {
-            let result: V = get!.call(this);
-            if (result === undefined) {
-              result = doQuery(this);
+          let result: V = get!.call(this);
+          if (result === undefined) {
+            result = doQuery(this);
+            if (result || this.hasUpdated) {
               set!.call(this, result);
             }
-            return result;
           }
-          return doQuery(this);
+          return result;
         },
       });
     } else {
