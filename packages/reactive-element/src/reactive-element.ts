@@ -374,15 +374,6 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 };
 
 /**
- * The Closure JS Compiler doesn't currently have good support for static
- * property semantics where "this" is dynamic (e.g.
- * https://github.com/google/closure-compiler/issues/3177 and others) so we use
- * this hack to bypass any rewriting by the compiler.
- */
-const finalized = 'finalized';
-const elementProperties = 'elementProperties';
-
-/**
  * A string representing one of the supported dev mode warning categories.
  */
 export type WarningKind =
@@ -546,7 +537,7 @@ export abstract class ReactiveElement
    * from `static properties`, but does *not* include all properties created
    * from decorators.
    */
-  protected static [finalized] = true;
+  protected static finalized: true | undefined;
 
   /**
    * Memoized list of all element properties, including any superclass properties.
@@ -554,7 +545,7 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category properties
    */
-  static [elementProperties]: PropertyDeclarationMap = new Map();
+  static elementProperties: PropertyDeclarationMap;
 
   /**
    * User-supplied object that maps property names to `PropertyDeclaration`
@@ -674,7 +665,7 @@ export abstract class ReactiveElement
       (options as any).attribute = false;
     }
     this.__prepare();
-    this[elementProperties].set(name, options);
+    this.elementProperties.set(name, options);
     if (!options.noAccessor) {
       const key = DEV_MODE
         ? // Use Symbol.for in dev mode to make it easier to maintain state
@@ -774,7 +765,7 @@ export abstract class ReactiveElement
    * @category properties
    */
   static getPropertyOptions(name: PropertyKey) {
-    return this[elementProperties].get(name) ?? defaultPropertyDeclaration;
+    return this.elementProperties.get(name) ?? defaultPropertyDeclaration;
   }
 
   // Temporary, until google3 is on TypeScript 5.2
@@ -792,7 +783,9 @@ export abstract class ReactiveElement
    * @nocollapse
    */
   private static __prepare() {
-    if (this.hasOwnProperty(elementProperties)) {
+    if (
+      this.hasOwnProperty(JSCompiler_renameProperty('elementProperties', this))
+    ) {
       // Already prepared
       return;
     }
@@ -807,7 +800,7 @@ export abstract class ReactiveElement
       this._initializers = [...superCtor._initializers];
     }
     // Initialize elementProperties from the superclass
-    this[elementProperties] = new Map(superCtor[elementProperties]);
+    this.elementProperties = new Map(superCtor.elementProperties);
   }
 
   /**
@@ -822,10 +815,10 @@ export abstract class ReactiveElement
    * @nocollapse
    */
   protected static finalize() {
-    if (this.hasOwnProperty(finalized)) {
+    if (this.hasOwnProperty(JSCompiler_renameProperty('finalized', this))) {
       return;
     }
-    this[finalized] = true;
+    this.finalized = true;
     this.__prepare();
 
     // Create properties from the static properties block:
@@ -846,14 +839,14 @@ export abstract class ReactiveElement
       const properties = litPropertyMetadata.get(metadata);
       if (properties !== undefined) {
         for (const [p, options] of properties) {
-          this[elementProperties].set(p, options);
+          this.elementProperties.set(p, options);
         }
       }
     }
 
     // Create the attribute-to-property map
     this.__attributeToPropertyMap = new Map();
-    for (const [p, options] of this[elementProperties]) {
+    for (const [p, options] of this.elementProperties) {
       const attr = this.__attributeNameForProperty(p, options);
       if (attr !== undefined) {
         this.__attributeToPropertyMap.set(attr, p);
@@ -1060,10 +1053,9 @@ export abstract class ReactiveElement
    */
   private __saveInstanceProperties() {
     const instanceProperties = new Map<PropertyKey, unknown>();
-    const elemProperties = (this.constructor as typeof ReactiveElement)[
-      elementProperties
-    ];
-    for (const p of elemProperties.keys() as IterableIterator<keyof this>) {
+    const elementProperties = (this.constructor as typeof ReactiveElement)
+      .elementProperties;
+    for (const p of elementProperties.keys() as IterableIterator<keyof this>) {
       if (this.hasOwnProperty(p)) {
         instanceProperties.set(p, this[p]);
         delete this[p];
@@ -1155,7 +1147,7 @@ export abstract class ReactiveElement
   private __propertyToAttribute(name: PropertyKey, value: unknown) {
     const elemProperties: PropertyDeclarationMap = (
       this.constructor as typeof ReactiveElement
-    )[elementProperties];
+    ).elementProperties;
     const options = elemProperties.get(name)!;
     const attr = (
       this.constructor as typeof ReactiveElement
@@ -1387,7 +1379,7 @@ export abstract class ReactiveElement
         // deleted by this point, so any own property is caused by class field
         // initialization in the constructor.
         const ctor = this.constructor as typeof ReactiveElement;
-        const shadowedProperties = [...ctor[elementProperties].keys()].filter(
+        const shadowedProperties = [...ctor.elementProperties.keys()].filter(
           (p) => this.hasOwnProperty(p) && p in getPrototypeOf(this)
         );
         if (shadowedProperties.length) {
@@ -1418,11 +1410,10 @@ export abstract class ReactiveElement
       // initializers, so we just set them anyway - a difference from
       // experimental decorators on fields and standard decorators on
       // auto-accessors.
-      const elemProperties = (this.constructor as typeof ReactiveElement)[
-        elementProperties
-      ];
-      if (elemProperties.size > 0) {
-        for (const [p, options] of elemProperties) {
+      const elementProperties = (this.constructor as typeof ReactiveElement)
+        .elementProperties;
+      if (elementProperties.size > 0) {
+        for (const [p, options] of elementProperties) {
           if (
             options.wrapped === true &&
             !this._$changedProperties.has(p) &&
@@ -1621,6 +1612,15 @@ export abstract class ReactiveElement
    */
   protected firstUpdated(_changedProperties: PropertyValues) {}
 }
+// Assigned here to work around a jscompiler bug with static fields
+// when compiling to ES5.
+// https://github.com/google/closure-compiler/issues/3177
+(ReactiveElement as unknown as Record<string, unknown>)[
+  JSCompiler_renameProperty('elementProperties', ReactiveElement)
+] = new Map();
+(ReactiveElement as unknown as Record<string, unknown>)[
+  JSCompiler_renameProperty('finalized', ReactiveElement)
+] = new Map();
 
 // Apply polyfills if available
 polyfillSupport?.({ReactiveElement});
