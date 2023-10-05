@@ -374,14 +374,6 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 };
 
 /**
- * The Closure JS Compiler doesn't currently have good support for static
- * property semantics where "this" is dynamic (e.g.
- * https://github.com/google/closure-compiler/issues/3177 and others) so we use
- * this hack to bypass any rewriting by the compiler.
- */
-const finalized = 'finalized';
-
-/**
  * A string representing one of the supported dev mode warning categories.
  */
 export type WarningKind =
@@ -545,7 +537,7 @@ export abstract class ReactiveElement
    * from `static properties`, but does *not* include all properties created
    * from decorators.
    */
-  protected static [finalized] = true;
+  protected static finalized: true | undefined;
 
   /**
    * Memoized list of all element properties, including any superclass properties.
@@ -553,7 +545,7 @@ export abstract class ReactiveElement
    * @nocollapse
    * @category properties
    */
-  static elementProperties: PropertyDeclarationMap = new Map();
+  static elementProperties: PropertyDeclarationMap;
 
   /**
    * User-supplied object that maps property names to `PropertyDeclaration`
@@ -823,10 +815,10 @@ export abstract class ReactiveElement
    * @nocollapse
    */
   protected static finalize() {
-    if (this.hasOwnProperty(finalized)) {
+    if (this.hasOwnProperty(JSCompiler_renameProperty('finalized', this))) {
       return;
     }
-    this[finalized] = true;
+    this.finalized = true;
     this.__prepare();
 
     // Create properties from the static properties block:
@@ -1620,6 +1612,15 @@ export abstract class ReactiveElement
    */
   protected firstUpdated(_changedProperties: PropertyValues) {}
 }
+// Assigned here to work around a jscompiler bug with static fields
+// when compiling to ES5.
+// https://github.com/google/closure-compiler/issues/3177
+(ReactiveElement as unknown as Record<string, unknown>)[
+  JSCompiler_renameProperty('elementProperties', ReactiveElement)
+] = new Map();
+(ReactiveElement as unknown as Record<string, unknown>)[
+  JSCompiler_renameProperty('finalized', ReactiveElement)
+] = new Map();
 
 // Apply polyfills if available
 polyfillSupport?.({ReactiveElement});
