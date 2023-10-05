@@ -536,12 +536,14 @@ export abstract class ReactiveElement
    * Marks class as having been finalized, which includes creating properties
    * from `static properties`, but does *not* include all properties created
    * from decorators.
+   * @nocollapse
    */
   protected static finalized: true | undefined;
 
   /**
-   * Memoized list of all element properties, including any superclass properties.
-   * Created lazily on user subclasses when finalizing the class.
+   * Memoized list of all element properties, including any superclass
+   * properties. Created lazily on user subclasses when finalizing the class.
+   *
    * @nocollapse
    * @category properties
    */
