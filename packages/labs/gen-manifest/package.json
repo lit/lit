@@ -19,7 +19,8 @@
       "dependencies": [
         "../../tests:build",
         "../analyzer:build",
-        "../gen-utils:build"
+        "../gen-utils:build",
+        "../../lit-element:build"
       ],
       "files": [
         "src/**/*",
