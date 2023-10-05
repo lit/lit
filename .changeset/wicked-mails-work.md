@@ -2,4 +2,4 @@
 '@lit-labs/virtualizer': patch
 ---
 
-Check for null controller when correcting scroll error
+Guard against layout updates or re-observing when disconnected
