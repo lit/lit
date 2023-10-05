@@ -15,6 +15,24 @@ import {desc, type Interface} from './base.js';
 
 const DEV_MODE = true;
 
+let issueWarning: (code: string, warning: string) => void;
+
+if (DEV_MODE) {
+  // Ensure warnings are issued only 1x, even if multiple versions of Lit
+  // are loaded.
+  const issuedWarnings: Set<string | undefined> =
+    (globalThis.litIssuedWarnings ??= new Set());
+
+  // Issue a warning, if we haven't already.
+  issueWarning = (code: string, warning: string) => {
+    warning += ` See https://lit.dev/msg/${code} for more information.`;
+    if (!issuedWarnings.has(warning)) {
+      console.warn(warning);
+      issuedWarnings.add(warning);
+    }
+  };
+}
+
 export type QueryDecorator = {
   // legacy
   (
@@ -64,6 +82,19 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
     descriptor?: PropertyDescriptor
   ) => {
     const doQuery = (el: Interface<ReactiveElement>): V => {
+      if (DEV_MODE && !el.hasUpdated) {
+        const name =
+          typeof nameOrContext === 'object'
+            ? nameOrContext.name
+            : nameOrContext;
+        issueWarning(
+          'early-query-field-access',
+          `@query'd field ${JSON.stringify(String(name))} for selector ` +
+            `'${selector}' has been accessed before the first update. This ` +
+            `yields a certain null result if the renderRoot tree has not ` +
+            `been provided beforehand (e.g. via Declarative Shadow DOM).`
+        );
+      }
       // TODO: if we want to allow users to assert that the query will never
       // return null, we need a new option and to throw here if the result
       // is null.
