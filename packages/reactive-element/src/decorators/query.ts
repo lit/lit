@@ -101,7 +101,7 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
           let result: V = get!.call(this);
           if (result === undefined) {
             result = doQuery(this);
-            if (result || this.hasUpdated) {
+            if (result !== null || this.hasUpdated) {
               set!.call(this, result);
             }
           }
