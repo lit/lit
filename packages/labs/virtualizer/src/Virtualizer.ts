@@ -553,7 +553,15 @@ export class Virtualizer {
   }
 
   _updateLayout() {
-    if (this._layout) {
+    // Only update the layout and trigger a re-render if we have:
+    //   a) A layout
+    //   b) A scrollerController, which means we're connected
+    //   c) An offsetParent, which means we're not hidden
+    if (
+      this._layout &&
+      this._scrollerController &&
+      this._hostElement?.offsetParent
+    ) {
       this._layout.items = this._items;
       this._updateView();
       if (this._childMeasurements !== null) {
