@@ -252,6 +252,8 @@ class CompiledTemplatePass {
    *
    * Because the prepared HTML will contribute to file size, markers have been
    * stripped out, and comment nodes always use the 3 byte `<?>` format.
+   *
+   * TODO (justinfagnani): Replace with template parser from @lit-labs/analyzer
    */
   private litHtmlPrepareRenderPhase(templateExpression: ts.TemplateLiteral):
     | {
