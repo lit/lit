@@ -92,7 +92,7 @@ const packageJsonTemplate = (
         // TODO(kschaaf): make component version range configurable?
         [pkgJson.name!]: '^' + pkgJson.version!,
         // TODO(kschaaf): make @lit/react version configurable?
-        '@lit/react': '<2.0.0',
+        '@lit/react': '^1.0.0 || 1.0.0-pre.0',
       },
       peerDependencies: {
         // TODO(kschaaf): make react version(s) configurable?
