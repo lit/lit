@@ -64,7 +64,7 @@ test('basic wrapper generation', async () => {
   // Pack the generated package here, as `test-output` package.json will
   // reference the generated tarball here by filename; `test-output:installSelf`
   // depends on these tests run by `test:gen`.
-  console.log(await packPackage(outputPackage));
+  await packPackage(outputPackage);
 
   // This verifies the package installation and build nominally succeeded. Note
   // that runtime tests of this generated package are run as a separate `npm run
