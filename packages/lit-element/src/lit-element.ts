@@ -78,6 +78,17 @@ export namespace Unstable {
       | ReactiveUnstable.DebugLog.Entry;
   }
 }
+/*
+ * When using Closure Compiler, JSCompiler_renameProperty(property, object) is
+ * replaced at compile time by the munged name for object[property]. We cannot
+ * alias this function, so we have to use a small shim that has the same
+ * behavior when not compiling.
+ */
+/*@__INLINE__*/
+const JSCompiler_renameProperty = <P extends PropertyKey>(
+  prop: P,
+  _obj: unknown
+): P => prop;
 
 const DEV_MODE = true;
 
@@ -109,15 +120,6 @@ if (DEV_MODE) {
  * {@linkcode property} decorator.
  */
 export class LitElement extends ReactiveElement {
-  /**
-   * Ensure this class is marked as `finalized` as an optimization ensuring
-   * it will not needlessly try to `finalize`.
-   *
-   * Note this property name is a string to prevent breaking Closure JS Compiler
-   * optimizations. See @lit/reactive-element for more information.
-   */
-  protected static override ['finalized'] = true;
-
   // This property needs to remain unminified.
   static ['_$litElement$'] = true;
 
@@ -221,6 +223,17 @@ export class LitElement extends ReactiveElement {
     return noChange;
   }
 }
+
+/**
+ * Ensure this class is marked as `finalized` as an optimization ensuring
+ * it will not needlessly try to `finalize`.
+ *
+ * Note this property name is a string to prevent breaking Closure JS Compiler
+ * optimizations. See @lit/reactive-element for more information.
+ */
+(LitElement as unknown as Record<string, unknown>)[
+  JSCompiler_renameProperty('finalized', LitElement)
+] = true;
 
 // Install hydration if available
 globalThis.litElementHydrateSupport?.({LitElement});
