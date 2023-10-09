@@ -126,7 +126,7 @@ type Interface<T> = {
 
 type ProvideDecorator<ContextType> = {
   // legacy
-  <K extends PropertyKey, Proto extends ReactiveElement>(
+  <K extends PropertyKey, Proto extends Interface<ReactiveElement>>(
     protoOrDescriptor: Proto,
     name?: K
   ): FieldMustMatchContextType<Proto, K, ContextType>;
