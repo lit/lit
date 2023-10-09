@@ -75,7 +75,7 @@ export function preserveBlankLinesTransformer(): ts.TransformerFactory<ts.Source
         transformer.addComments(node);
         return ts.visitEachChild(node, visit, context);
       };
-      return ts.visitNode(file, visit);
+      return ts.visitNode(file, visit) as ts.SourceFile;
     };
   };
 }

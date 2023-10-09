@@ -32,7 +32,6 @@ import 'lit-html/directive.js';
 import 'lit-html/directive-helpers.js';
 import 'lit-html/async-directive.js';
 import 'lit-html/static.js';
-import 'lit-html/experimental-hydrate.js';
 import 'lit-html/private-ssr-support.js';
 import 'lit-html/polyfill-support.js';
 

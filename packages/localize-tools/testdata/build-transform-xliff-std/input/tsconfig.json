@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "es2018",
+    "strict": true,
+    "moduleResolution": "node",
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "preserveConstEnums": true,
+    "forceConsistentCasingInFileNames": true,
+    "rootDir": "./",
+    "outDir": "tsout",
+    "types": []
+  },
+  "include": ["**/*.ts"]
+}

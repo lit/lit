@@ -1,18 +1,19 @@
 {
   "name": "@lit-internal/tests",
-  "version": "0.0.0",
+  "version": "0.0.1-pre.1",
   "private": true,
   "type": "module",
   "scripts": {
     "build": "wireit",
     "test": "wireit",
-    "test:common": "wireit"
+    "test:common": "wireit",
+    "test:common:prod": "wireit"
   },
   "devDependencies": {
-    "@types/prettier": "^2.0.1",
     "@types/diff": "^5.0.0",
     "@types/fs-extra": "^9.0.1",
-    "@webcomponents/webcomponentsjs": "^2.6.0",
+    "@types/prettier": "^2.0.1",
+    "@webcomponents/webcomponentsjs": "^2.8.0",
     "diff": "^5.0.0",
     "dir-compare": "^4.0.0",
     "prettier": "^2.3.2"
@@ -33,10 +34,40 @@
       "clean": "if-file-deleted"
     },
     "test": {
-      "command": "npm run test:common && MODE=prod npm run test:common"
+      "dependencies": [
+        "test:common",
+        "test:common:prod"
+      ]
     },
     "test:common": {
       "command": "node ./run-web-tests.js",
+      "dependencies": [
+        "build:deps"
+      ],
+      "files": [],
+      "output": [],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
+      "MODE": "dev"
+    },
+    "test:common:prod": {
+      "command": "node ./run-web-tests.js",
+      "dependencies": [
+        "build:deps"
+      ],
+      "files": [],
+      "output": [],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        },
+        "MODE": "prod"
+      }
+    },
+    "build:deps": {
       "dependencies": [
         "build",
         "../labs/context:build",
@@ -48,18 +79,10 @@
         "../lit-element:build",
         "../lit-html:build",
         "../lit:build",
+        "../context:build",
+        "../task:build",
         "../reactive-element:build"
-      ],
-      "files": [],
-      "output": [],
-      "env": {
-        "BROWSERS": {
-          "external": true
-        },
-        "MODE": {
-          "external": true
-        }
-      }
+      ]
     }
   }
 }

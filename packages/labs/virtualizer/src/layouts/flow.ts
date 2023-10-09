@@ -64,10 +64,10 @@ function collapseMargins(a: number, b: number): number {
 class MetricsCache {
   private _childSizeCache = new SizeCache();
   private _marginSizeCache = new SizeCache();
-  private _metricsCache: Map<number, Size & Margins> = new Map();
+  private _metricsCache = new Map<number, Size & Margins>();
 
   update(metrics: {[key: number]: Size & Margins}, direction: ScrollDirection) {
-    const marginsToUpdate: Set<number> = new Set();
+    const marginsToUpdate = new Set<number>();
     Object.keys(metrics).forEach((key) => {
       const k = Number(key);
       this._metricsCache.set(k, metrics[k]);
@@ -127,13 +127,13 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
    * Indices of children mapped to their (position and length) in the scrolling
    * direction. Used to keep track of children that are in range.
    */
-  _physicalItems: Map<number, ItemBounds> = new Map();
+  _physicalItems = new Map<number, ItemBounds>();
 
   /**
    * Used in tandem with _physicalItems to track children in range across
    * reflows.
    */
-  _newPhysicalItems: Map<number, ItemBounds> = new Map();
+  _newPhysicalItems = new Map<number, ItemBounds>();
 
   /**
    * Width and height of children by their index.

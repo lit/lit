@@ -22,7 +22,7 @@ abstract class TestElement extends LitElement {
   `;
 
   @property({type: Object, attribute: false})
-  public selected: Set<number> = new Set();
+  public selected = new Set<number>();
 
   @property({type: Array, attribute: false})
   public items: Array<number> = [];

@@ -1215,96 +1215,11 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       // listItems comment
       get listItems() {
         return this.renderRoot
-        ?.querySelector('slot:not([name])')
+        ?.querySelector(\`slot:not([name])\`)
         ?.assignedNodes() ?? [];
       }
 
       unrelated2() {}
-    }
-    `;
-    checkTransform(input, expected, options);
-  });
-
-  test('deprecated @queryAssignedNodes (with slot name)', () => {
-    const input = `
-    import {LitElement} from 'lit';
-    import {queryAssignedNodes} from 'lit/decorators.js';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      @queryAssignedNodes('list')
-      listItems: NodeListOf<HTMLElement>;
-    }
-    `;
-
-    const expected = `
-    import {LitElement} from 'lit';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      get listItems() {
-        return this.renderRoot
-          ?.querySelector('slot[name=list]')
-          ?.assignedNodes() ?? [];
-      }
-    }
-    `;
-    checkTransform(input, expected, options);
-  });
-
-  test('deprecated @queryAssignedNodes (with flatten)', () => {
-    const input = `
-    import {LitElement} from 'lit';
-    import {queryAssignedNodes} from 'lit/decorators.js';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      @queryAssignedNodes('list', true)
-      listItems: NodeListOf<HTMLElement>;
-    }
-    `;
-
-    const expected = `
-    import {LitElement} from 'lit';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      get listItems() {
-        return this.renderRoot
-          ?.querySelector('slot[name=list]')
-          ?.assignedNodes({flatten: true}) ?? [];
-      }
-    }
-    `;
-    checkTransform(input, expected, options);
-  });
-
-  test('deprecated @queryAssignedNodes (with selector)', () => {
-    const input = `
-    import {LitElement} from 'lit';
-    import {queryAssignedNodes} from 'lit/decorators.js';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      @queryAssignedNodes('list', false, '.item')
-      listItems: NodeListOf<HTMLElement>;
-    }
-    `;
-
-    const expected = `
-    import {LitElement} from 'lit';
-
-    class MyElement extends LitElement {
-      // listItems comment
-      get listItems() {
-        return this.renderRoot
-          ?.querySelector('slot[name=list]')
-          ?.assignedNodes()
-          ?.filter((node) =>
-            node.nodeType === Node.ELEMENT_NODE &&
-              node.matches('.item')
-          ) ?? [];
-      }
     }
     `;
     checkTransform(input, expected, options);
@@ -1644,8 +1559,6 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     'lit/decorators/custom-element.js',
     '@lit/reactive-element/decorators.js',
     '@lit/reactive-element/decorators/custom-element.js',
-    'lit-element',
-    'lit-element/index.js',
     'lit-element/decorators.js',
   ]) {
     test(`various valid import specifiers [${specifier}]`, () => {
@@ -1674,7 +1587,6 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     'lit/decorators/custom-element',
     '@lit/reactive-element/decorators',
     '@lit/reactive-element/decorators/custom-element',
-    'lit-element/index',
     'lit-element/decorators',
   ]) {
     test(`various invalid import specifiers [${specifier}]`, () => {
@@ -1695,7 +1607,8 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
   test('only remove imports that will be transformed', () => {
     const input = `
-    import {LitElement, customElement} from 'lit-element';
+    import {LitElement} from 'lit-element';
+    import {customElement} from 'lit-element/decorators.js';
 
     @customElement('my-element')
     class MyElement extends LitElement {
@@ -1714,7 +1627,8 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
   test("don't remove existing no-binding import", () => {
     const input = `
-    import {LitElement, customElement} from 'lit-element';
+    import {LitElement} from 'lit-element';
+    import {customElement} from 'lit-element/decorators.js';
     import './my-custom-element.js';
 
     @customElement('my-element')

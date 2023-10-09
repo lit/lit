@@ -11,6 +11,7 @@ node_modules/
 .wireit
 /temp
 .idea
+/scripts/check-size-out.md
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
@@ -23,6 +24,12 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
+packages/context/development/
+packages/context/test/
+packages/context/node_modules/
+packages/context/lib/
+packages/context/index.*
+
 packages/internal-scripts/node_modules/
 packages/internal-scripts/lib/
 
@@ -32,13 +39,11 @@ packages/lit/directives/
 packages/lit/node_modules/
 packages/lit/test/
 
+packages/lit/async-directive.*
 packages/lit/decorators.*
 packages/lit/directive-helpers.*
 packages/lit/directive.*
-packages/lit/async-directive.*
 packages/lit/html.*
-packages/lit/experimental-hydrate-support.*
-packages/lit/experimental-hydrate.*
 packages/lit/index.*
 packages/lit/static-html.*
 
@@ -47,15 +52,16 @@ packages/lit/lit-core.min.*
 packages/lit/polyfill-support.*
 
 packages/lit-element/decorators/
+packages/lit-element/development/
+packages/lit-element/node_modules/
+packages/lit-element/test/
+
 packages/lit-element/demo/**/*.d.ts
 packages/lit-element/demo/**/*.d.ts.map
 packages/lit-element/demo/**/*.js
 packages/lit-element/demo/**/*.js.map
-packages/lit-element/development/
-packages/lit-element/node_modules/
-packages/lit-element/test/
+
 packages/lit-element/decorators.*
-packages/lit-element/experimental-hydrate-support.*
 packages/lit-element/index.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
@@ -68,7 +74,6 @@ packages/lit-html/version-stability-build/
 packages/lit-html/directives/
 packages/lit-html/node_modules/
 packages/lit-html/test/
-packages/lit-html/experimental-hydrate.*
 packages/lit-html/lit-html.*
 packages/lit-html/directive.*
 packages/lit-html/directive-helpers.*
@@ -95,7 +100,9 @@ packages/lit-starter-ts/**/my-element.d.ts.map
 packages/lit-starter-ts/**/my-element.bundled.js
 packages/localize/node_modules/
 packages/localize/tests/
+packages/localize/tests-std-decorators/
 packages/localize/.tsbuildinfo
+packages/localize/tsconfig.std-decorators-tests.tsbuildinfo
 packages/localize/lit-localize.*
 packages/localize/examples/*/node_modules/
 packages/localize/internal/
@@ -105,15 +112,35 @@ packages/localize-tools/lib/
 packages/localize-tools/node_modules/
 packages/localize-tools/testdata/*/output/
 
+packages/react/development/
+packages/react/node/
+packages/react/test/
+packages/react/node_modules/
+packages/react/index.*
+packages/react/create-component.*
+packages/react/use-controller.*
+
 packages/reactive-element/decorators/
 packages/reactive-element/development/
+packages/reactive-element/legacy-decorators/
 packages/reactive-element/node/
+packages/reactive-element/std-decorators/
 packages/reactive-element/test/
+
 packages/reactive-element/css-tag.*
 packages/reactive-element/decorators.*
+packages/reactive-element/legacy-decorators.*
 packages/reactive-element/polyfill-support.*
+packages/reactive-element/std-decorators.*
 packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
+
+packages/task/development/
+packages/task/test/
+packages/task/node_modules/
+packages/task/deep-equals.*
+packages/task/index.*
+packages/task/task.*
 
 packages/tests/node_modules/
 packages/tests/utils/
@@ -252,6 +279,12 @@ packages/labs/observers/mutation-controller.*
 packages/labs/observers/performance-controller.*
 packages/labs/observers/resize-controller.*
 packages/labs/observers/intersection-controller.*
+
+packages/labs/preact-signals/development/
+packages/labs/preact-signals/lib/
+packages/labs/preact-signals/node_modules/
+packages/labs/preact-signals/test/
+packages/labs/preact-signals/index.*
 
 packages/labs/react/development/
 packages/labs/react/node/

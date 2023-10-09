@@ -126,7 +126,7 @@ export class Virtualizer {
   // TODO: (graynorton): type
   private _childMeasurements: ChildMeasurements | null = null;
 
-  private _toBeMeasured: Map<HTMLElement, unknown> = new Map();
+  private _toBeMeasured = new Map<HTMLElement, unknown>();
 
   private _rangeChanged = true;
 
@@ -203,7 +203,7 @@ export class Virtualizer {
    */
   private _lastVisible = -1;
 
-  protected _scheduled = new WeakSet();
+  protected _scheduled = new WeakSet<Function>();
 
   /**
    * Invoked at the end of each render cycle: children in the range are

@@ -62,7 +62,6 @@ export class QueryAsyncVisitor implements MemberDecoratorVisitor {
     const factory = this._factory;
     return factory.createGetAccessorDeclaration(
       undefined,
-      undefined,
       factory.createIdentifier(name),
       [],
       undefined,

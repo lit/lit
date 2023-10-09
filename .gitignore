@@ -6,3 +6,5 @@ node_modules/
 .wireit
 /temp
 .idea
+/scripts/check-size-out.md
+

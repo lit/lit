@@ -72,7 +72,7 @@ export function idiomaticDecoratorsTransformer(
       new LocalizedVisitor(context),
     ]);
     return (file) => {
-      return ts.visitNode(file, transformer.visitFile);
+      return ts.visitNode(file, transformer.visitFile) as ts.SourceFile;
     };
   };
 }

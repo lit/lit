@@ -33,10 +33,10 @@ interface RefInternal {
 // has already been rendered to a new spot. It is double-keyed on both the
 // context (`options.host`) and the callback, since we auto-bind class methods
 // to `options.host`.
-const lastElementForContextAndCallback: WeakMap<
+const lastElementForContextAndCallback = new WeakMap<
   object,
   WeakMap<Function, Element | undefined>
-> = new WeakMap();
+>();
 
 export type RefOrCallback<T = Element> = Ref<T> | ((el: T | undefined) => void);
 

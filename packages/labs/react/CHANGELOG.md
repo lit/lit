@@ -1,5 +1,16 @@
 # Change Log
 
+## 2.1.1-pre.0
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- [#4224](https://github.com/lit/lit/pull/4224) [`71526898`](https://github.com/lit/lit/commit/71526898cc33ff8a466b9dcabb89d601ec862b9a) - Graduate @lit-labs/react to @lit/react, its permanent location. @lit-labs/react is now just a proxy for @lit/react, so code need not be duplicated in projects that depend on both.
+
+- Updated dependencies [[`71526898`](https://github.com/lit/lit/commit/71526898cc33ff8a466b9dcabb89d601ec862b9a)]:
+  - @lit/react@1.0.0-pre.0
+
 ## 2.1.0
 
 ### Minor Changes
@@ -68,6 +79,12 @@
   - `@lit-labs/react` now has a Node build and export condition to do special prop handling during server rendering. It detects the presence of `React.createElement` monkey patch by `@lit-labs/ssr-react` and provides props to be set as properties to the `createElement()` call.
   - `@lit-labs/ssr-react` will add the `defer-hydration` attribute to custom elements that had properties set so that `@lit-labs/react` wrapped elements have a chance to set properties on the element before Lit element hydration is triggered.
   - `@lit-labs/react` wrapped components will suppress hydration warnings raised by React due to server rendered attributes.
+
+## 1.1.2-pre.0
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
 
 ## 1.1.1
 

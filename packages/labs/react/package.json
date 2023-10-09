@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/react",
-  "version": "2.1.0",
+  "version": "2.1.1-pre.0",
   "description": "A React component wrapper for web components.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -60,13 +60,14 @@
       "dependencies": [
         "build:rollup",
         "build:ts",
-        "build:ts:types"
+        "build:ts:types",
+        "../../react:build"
       ]
     },
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
-        "../../reactive-element:build:ts:types"
+        "../../react:build:ts:types"
       ],
       "clean": "if-file-deleted",
       "files": [
@@ -128,7 +129,7 @@
       "#comment": "Test files must also be specified in web-test-runner.config.js rollup config",
       "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config web-test-runner.config.js",
       "dependencies": [
-        "build:ts",
+        "build",
         "../../reactive-element:build",
         "../../tests:build"
       ],
@@ -147,8 +148,7 @@
       "#comment": "Test files must also be specified in web-test-runner.config.js rollup config",
       "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config web-test-runner.config.js",
       "dependencies": [
-        "build:ts",
-        "build:rollup",
+        "build",
         "../../reactive-element:build",
         "../../tests:build"
       ],
@@ -166,8 +166,7 @@
     "test:node": {
       "command": "node development/test/node-render.js",
       "dependencies": [
-        "build:ts",
-        "build:rollup",
+        "build",
         "../../reactive-element:build"
       ],
       "files": [],
@@ -175,17 +174,16 @@
     }
   },
   "author": "Google LLC",
+  "dependencies": {
+    "@lit/react": "1.0.0-pre.0"
+  },
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.0",
-    "@lit/reactive-element": "^1.5.0",
+    "@lit-internal/scripts": "^1.0.1-pre.0",
     "@types/react-dom": "^18.2.6",
     "@types/trusted-types": "^2.0.2",
     "@web/dev-server-rollup": "^0.5.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
-  },
-  "peerDependencies": {
-    "@types/react": "17 || 18"
   },
   "publishConfig": {
     "access": "public"

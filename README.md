@@ -50,15 +50,15 @@ lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/lit/
 - Additional libraries
   - [`@lit/localize`](./packages/localize) - A library and command-line tool for localizing web applications built using Lit.
   - [`@lit/localize-tools`](./packages/localize-tools) - Localization tooling for use with `@lit/localize`.
+  - [`@lit/react`](./packages/react) - A React component wrapper for web components.
+  - [`@lit/task`](./packages/task) - A controller for Lit that renders asynchronous tasks.
+  - [`@lit/context`](./packages/context) - A system for passing data through a tree of elements using browser events, avoiding the need to pass properties down every layer of the tree using [a community defined protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md).
 - Labs
   - [`@lit-labs/ssr`](./packages/labs/ssr) - A server package for rendering Lit templates and components on the server.
-  - [`@lit-labs/context`](./packages/labs/context) - A system for passing data through a tree of elements using browser events, avoiding the need to pass properties down every layer of the tree using [a community defined protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md).
   - [`@lit-labs/ssr-client`](./packages/labs/ssr-client) - A set of client-side support modules for rendering Lit components and templates on the server using `@lit-labs/ssr`.
   - [`@lit-labs/eleventy-plugin-lit`](./packages/labs/eleventy-plugin-lit) - A plugin for Eleventy that pre-renders
     Lit components using `@lit-labs/ssr` with optional hydration.
-  - [`@lit-labs/react`](./packages/labs/react) - A React component wrapper for web components.
   - [`@lit-labs/router`](./packages/labs/router) - A router for Lit.
-  - [`@lit-labs/task`](./packages/labs/task) - A controller for Lit that renders asynchronous tasks.
   - [`@lit-labs/motion`](./packages/labs/motion) - Lit directives for making things move
   - [`@lit-labs/scoped-registry-mixin`](./packages/labs/scoped-registry-mixin) - A mixin for LitElement that integrates with the speculative Scoped CustomElementRegistry polyfill.
 - Starter kits (not published to npm)

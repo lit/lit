@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/gen-manifest",
   "description": "Code generator for generating Custom Elements Manifests for Lit components",
-  "version": "0.2.5",
+  "version": "0.3.0-pre.0",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
@@ -19,7 +19,8 @@
       "dependencies": [
         "../../tests:build",
         "../analyzer:build",
-        "../gen-utils:build"
+        "../gen-utils:build",
+        "../../lit:build"
       ],
       "files": [
         "src/**/*",
@@ -47,13 +48,14 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.9.0",
-    "@lit-labs/gen-utils": "^0.2.0",
+    "@lit-labs/analyzer": "^0.10.0-pre.0",
+    "@lit-labs/gen-utils": "^0.3.0-pre.0",
     "custom-elements-manifest": "^2.0.0"
   },
   "devDependencies": {
+    "@lit-internal/tests": "^0.0.1-pre.0",
     "@types/node": "^17.0.31",
-    "@lit-internal/tests": "^0.0.0",
+    "lit": "^3.0.0-pre.1",
     "uvu": "^0.5.3"
   },
   "engines": {
