@@ -1,5 +1,19 @@
 # @lit-labs/context
 
+## 0.5.0
+
+### Minor Changes
+
+- [#4151](https://github.com/lit/lit/pull/4151) [`5680d483`](https://github.com/lit/lit/commit/5680d48398f2197b8943ed6adf0c1dd529158d2e) - Make context decorators work with standard decorators
+
+### Patch Changes
+
+- [#4210](https://github.com/lit/lit/pull/4210) [`cf7d96d4`](https://github.com/lit/lit/commit/cf7d96d48c7a7d1f18d82b999a31f7d62d10d7b3) - Graduate @lit-labs/context to @lit/context, its permanent location. @lit-labs/context is now just a proxy for @lit/context, so code need not be duplicated in projects that depend on both.
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- [#4200](https://github.com/lit/lit/pull/4200) [`8e737fbd`](https://github.com/lit/lit/commit/8e737fbdea832cafd0d038448b926269c7f686b3) - Support @provide with experimental decorators on a property. Previously we only supported it on an accessor, which happened automatically if used with @state or @property.
+
 ## 0.5.0-pre.0
 
 ### Minor Changes

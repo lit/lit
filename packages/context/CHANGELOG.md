@@ -1,5 +1,11 @@
 # @lit-labs/context
 
+## 1.0.0
+
+### Major Changes
+
+- [#4210](https://github.com/lit/lit/pull/4210) [`cf7d96d4`](https://github.com/lit/lit/commit/cf7d96d48c7a7d1f18d82b999a31f7d62d10d7b3) - Graduate @lit-labs/context to @lit/context, its permanent location. @lit-labs/context is now just a proxy for @lit/context, so code need not be duplicated in projects that depend on both.
+
 ## 1.0.0-pre.0
 
 ### Major Changes

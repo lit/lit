@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize",
-  "version": "0.12.0-pre.1",
+  "version": "0.12.0",
   "publishConfig": {
     "access": "public"
   },
@@ -89,7 +89,7 @@
     "/init/"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^2.0.0-pre.1",
-    "lit": "^3.0.0-pre.1"
+    "@lit/reactive-element": "^2.0.0",
+    "lit": "^3.0.0"
   }
 }

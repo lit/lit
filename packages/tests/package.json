@@ -1,6 +1,6 @@
 {
   "name": "@lit-internal/tests",
-  "version": "0.0.1-pre.1",
+  "version": "0.0.1",
   "private": true,
   "type": "module",
   "scripts": {

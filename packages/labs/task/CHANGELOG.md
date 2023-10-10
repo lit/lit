@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.1.0
+
+### Minor Changes
+
+- [#4170](https://github.com/lit/lit/pull/4170) [`04c8d65a`](https://github.com/lit/lit/commit/04c8d65ad8dd82c239fc04c478e36eed4d8694c4) - Graduate @lit-labs/task to @lit/task, its permanent location. @lit-labs/task is now just a proxy for @lit/task, so code need not be duplicated in projects that depend on both.
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
 ## 3.1.0-pre.0
 
 ### Minor Changes

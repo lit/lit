@@ -1,5 +1,17 @@
 # @lit-labs/analyzer
 
+## 0.10.0
+
+### Minor Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+### Patch Changes
+
+- [#4252](https://github.com/lit/lit/pull/4252) [`c0195cba`](https://github.com/lit/lit/commit/c0195cbac61e51ee89ca141ce90381befe165f14) Thanks [@43081j](https://github.com/43081j)! - Always use consumer's typescript rather than analyzer's dependency to avoid version mismatches
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
 ## 0.10.0-pre.0
 
 ### Minor Changes

@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/cli",
   "description": "Tooling for Lit development",
-  "version": "0.6.1-pre.0",
+  "version": "0.6.1",
   "publishConfig": {
     "access": "public"
   },
@@ -79,9 +79,9 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.10.0-pre.0",
-    "@lit-labs/gen-utils": "^0.3.0-pre.0",
-    "@lit/localize-tools": "^0.7.0-pre.1",
+    "@lit-labs/analyzer": "^0.10.0",
+    "@lit-labs/gen-utils": "^0.3.0",
+    "@lit/localize-tools": "^0.7.0",
     "chalk": "^5.0.1",
     "command-line-args": "^5.2.1",
     "command-line-commands": "^3.0.2",

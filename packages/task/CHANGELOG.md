@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.0
+
+### Major Changes
+
+- [#4170](https://github.com/lit/lit/pull/4170) [`04c8d65a`](https://github.com/lit/lit/commit/04c8d65ad8dd82c239fc04c478e36eed4d8694c4) - Graduate @lit-labs/task to @lit/task, its permanent location. @lit-labs/task is now just a proxy for @lit/task, so code need not be duplicated in projects that depend on both.
+
 ## 1.0.0-pre.0
 
 ### Major Changes
