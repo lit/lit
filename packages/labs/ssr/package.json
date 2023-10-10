@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "3.1.8-pre.0",
+  "version": "3.1.8",
   "publishConfig": {
     "access": "public"
   },
@@ -208,13 +208,13 @@
   "dependencies": {
     "@lit-labs/ssr-client": "^1.1.4-pre.0",
     "@lit-labs/ssr-dom-shim": "^1.1.2-pre.0",
-    "@lit/reactive-element": "^2.0.0-pre.1",
+    "@lit/reactive-element": "^2.0.0",
     "@parse5/tools": "^0.3.0",
     "@types/node": "^16.0.0",
     "enhanced-resolve": "^5.10.0",
-    "lit": "^3.0.0-pre.1",
-    "lit-element": "^4.0.0-pre.1",
-    "lit-html": "^3.0.0-pre.1",
+    "lit": "^3.0.0",
+    "lit-element": "^4.0.0",
+    "lit-html": "^3.0.0",
     "node-fetch": "^3.2.8",
     "parse5": "^7.1.1"
   },

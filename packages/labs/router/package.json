@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/router",
-  "version": "0.1.2-pre.1",
+  "version": "0.1.2",
   "description": "A router for Lit.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -164,6 +164,6 @@
     "urlpattern-polyfill": "^5.0.5"
   },
   "dependencies": {
-    "lit": "^3.0.0-pre.1"
+    "lit": "^3.0.0"
   }
 }

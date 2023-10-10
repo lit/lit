@@ -277,7 +277,7 @@ export const _$LE = {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
-(globalThis.litElementVersions ??= []).push('4.0.0-pre.1');
+(globalThis.litElementVersions ??= []).push('4.0.0');
 if (DEV_MODE && globalThis.litElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

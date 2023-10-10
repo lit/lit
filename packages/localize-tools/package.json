@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize-tools",
-  "version": "0.7.0-pre.1",
+  "version": "0.7.0",
   "publishConfig": {
     "access": "public"
   },
@@ -130,12 +130,12 @@
     "/config.schema.json"
   ],
   "dependencies": {
-    "@lit/localize": "^0.12.0-pre.1",
+    "@lit/localize": "^0.12.0",
     "@xmldom/xmldom": "^0.8.2",
     "fast-glob": "^3.2.7",
     "fs-extra": "^10.0.0",
     "jsonschema": "^1.4.0",
-    "lit": "^3.0.0-pre.1",
+    "lit": "^3.0.0",
     "minimist": "^1.2.5",
     "@parse5/tools": "^0.3.0",
     "parse5": "^7.1.1",
@@ -143,9 +143,9 @@
     "typescript": "~5.2.0"
   },
   "devDependencies": {
-    "@lit-internal/tests": "0.0.1-pre.1",
+    "@lit-internal/tests": "0.0.1",
     "@lit-labs/ssr": "^3.1.8-pre.0",
-    "@lit/ts-transformers": "^2.0.0-pre.1",
+    "@lit/ts-transformers": "^2.0.0",
     "@types/fs-extra": "^9.0.1",
     "@types/minimist": "^1.2.0",
     "@types/prettier": "^2.0.1",
