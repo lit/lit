@@ -368,7 +368,7 @@ export const resolveSpecifier = async (
       mainFields: ['module', 'jsnext:main', 'main'],
       conditionNames: ['node', 'module', 'import'],
     });
-    return pathToFileURL(modulePath);
+    return pathToFileURL(modulePath) as URL;
   }
 };
 
@@ -386,12 +386,20 @@ const resolve = async (
 ): Promise<string> => {
   const resolver = enhancedResolve.create(opts);
   return new Promise((res, rej) => {
-    resolver({}, path, id, {}, (err: unknown, resolved?: string) => {
-      if (err != null) {
-        rej(err);
-      } else {
-        res(resolved!);
+    resolver(
+      {},
+      path,
+      id,
+      {},
+      (err: unknown, resolved?: string | false | undefined) => {
+        if (err != null) {
+          rej(err);
+        } else if (resolved === false || resolve === undefined) {
+          rej(`could not resolve ${id}`);
+        } else {
+          res(resolved!);
+        }
       }
-    });
+    );
   });
 };

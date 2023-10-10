@@ -11,10 +11,10 @@ export {
   HYDRATE_INTERNALS_ATTR_PREFIX,
 } from './lib/element-internals.js';
 
-const attributes: WeakMap<
+const attributes = new WeakMap<
   InstanceType<typeof HTMLElementShim>,
   Map<string, string>
-> = new WeakMap();
+>();
 const attributesForElement = (
   element: InstanceType<typeof HTMLElementShim>
 ) => {

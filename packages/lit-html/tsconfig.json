@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2019",
+    "target": "es2021",
     "module": "NodeNext",
-    "lib": ["es2020", "DOM", "DOM.Iterable"],
+    "lib": ["es2021", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -21,7 +21,10 @@
     "allowSyntheticDefaultImports": true,
     "stripInternal": true,
     "noImplicitOverride": true,
-    "types": ["mocha", "node", "trusted-types", "web-ie11"]
+    "paths": {
+      "@esm-bundle/chai": ["../../local-types/@esm-bundle/chai/index.d.ts"]
+    },
+    "types": ["mocha", "node", "trusted-types"]
   },
   "include": [
     "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",

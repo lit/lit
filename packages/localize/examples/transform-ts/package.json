@@ -1,7 +1,7 @@
 {
   "name": "@lit-internal/localize-examples-transform-ts",
   "description": "Example of using lit-localize in transform mode with TypeScript",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -39,6 +39,7 @@
       "command": "rollup -c",
       "dependencies": [
         "build:localize",
+        "../../../lit:build",
         "../../../localize:build"
       ],
       "files": [
@@ -52,17 +53,17 @@
     }
   },
   "dependencies": {
-    "@lit/localize": "^0.11.0",
-    "lit": "^2.0.0"
+    "@lit/localize": "^0.12.0",
+    "lit": "^3.0.0"
   },
   "devDependencies": {
-    "@lit/localize-tools": "^0.6.0",
+    "@lit/localize-tools": "^0.7.0",
     "@rollup/plugin-node-resolve": "^13.0.4",
     "@rollup/plugin-typescript": "^8.2.0",
     "@web/dev-server": "^0.1.22",
     "rollup": "^2.70.2",
     "rollup-plugin-summary": "^1.4.3",
     "rollup-plugin-terser": "^7.0.2",
-    "typescript": "~4.7.4"
+    "typescript": "~5.2.0"
   }
 }

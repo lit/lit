@@ -122,12 +122,13 @@ export const run = async (
       const results = await Promise.allSettled(
         generators.map(async (generator) => {
           // TODO(kschaaf): Add try/catches around each of these operations and
-          // throw more contextural errors
+          // throw more contextual errors
           await writeFileTree(out, await generator.generate(options, console));
         })
       );
       // Log any diagnostics collected while running the generators.
-      logDiagnostics([...analyzer.getDiagnostics()]);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      logDiagnostics([...analyzer.getDiagnostics()] as any);
       // `allSettled` will swallow errors, so we need to filter them out of
       // the results and throw a new error up the stack describing all the errors
       // that happened

@@ -16,6 +16,7 @@ declare var reactiveElementPolyfillSupportDevMode: typeof reactiveElementPolyfil
 
 // eslint-disable-next-line no-var
 declare var reactiveElementVersions: undefined | Array<string>;
+
 // eslint-disable-next-line no-var
 declare var litIssuedWarnings: undefined | Set<string | undefined>;
 

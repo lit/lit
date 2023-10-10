@@ -1,0 +1,32 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "target": "es2021",
+    "module": "NodeNext",
+    "lib": ["es2021", "DOM", "DOM.Iterable", "esnext.decorators"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "outDir": "./development/",
+    "rootDir": "./src",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "moduleResolution": "NodeNext",
+    "allowSyntheticDefaultImports": true,
+    "stripInternal": true,
+    "noImplicitOverride": true,
+    "paths": {
+      "@esm-bundle/chai": ["../../local-types/@esm-bundle/chai/index.d.ts"]
+    },
+    "types": ["mocha"]
+  },
+  "include": ["src/test/std-decorators/**/*.ts"],
+  "exclude": [],
+  "references": [{"path": "./tsconfig.json"}]
+}

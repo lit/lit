@@ -80,10 +80,10 @@ interface PatchableTemplateInstance {
 
 // Scopes that have had styling prepared. Note, must only be done once per
 // scope.
-const styledScopes: Set<string> = new Set();
+const styledScopes = new Set<string>();
 // Map of css per scope. This is collected during first scope render, used when
 // styling is prepared, and then discarded.
-const scopeCssStore: Map<string, string[]> = new Map();
+const scopeCssStore = new Map<string, string[]>();
 
 const ENABLE_SHADYDOM_NOPATCH = true;
 

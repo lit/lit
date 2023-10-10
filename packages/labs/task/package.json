@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/task",
-  "version": "3.0.2",
+  "version": "3.1.0",
   "description": "A controller for Lit that renders asynchronous tasks.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -47,8 +47,7 @@
     "build:rollup": "wireit",
     "test": "wireit",
     "test:dev": "wireit",
-    "test:prod": "wireit",
-    "checksize": "wireit"
+    "test:prod": "wireit"
   },
   "wireit": {
     "build": {
@@ -57,12 +56,13 @@
         "build:ts:types",
         "build:rollup",
         "../../lit:build",
-        "../../reactive-element:build"
+        "../../task:build"
       ]
     },
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
+        "../../task:build:ts:types",
         "../../lit:build:ts:types",
         "../../reactive-element:build:ts:types"
       ],
@@ -104,17 +104,6 @@
         "test/**/*.js{,.map}"
       ]
     },
-    "checksize": {
-      "command": "rollup -c --environment=CHECKSIZE",
-      "dependencies": [
-        "build:ts"
-      ],
-      "files": [
-        "rollup.config.js",
-        "../../../rollup-common.js"
-      ],
-      "output": []
-    },
     "test": {
       "dependencies": [
         "test:dev",
@@ -153,11 +142,11 @@
   "author": "Google LLC",
   "devDependencies": {
     "@types/trusted-types": "^2.0.2",
-    "@lit-internal/scripts": "^1.0.0",
-    "lit": "^2.8.0"
+    "@lit-internal/scripts": "^1.0.1-pre.0",
+    "lit": "^3.0.0"
   },
   "dependencies": {
-    "@lit/reactive-element": "^1.1.0"
+    "@lit/task": "^1.0.0"
   },
   "publishConfig": {
     "access": "public"

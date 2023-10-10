@@ -1,8 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es2019",
-    "module": "esnext",
-    "moduleResolution": "node",
+    "composite": true,
+    "target": "es2021",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
     "lib": ["es2018", "DOM"],
     "strict": true,
     "noUnusedLocals": true,
@@ -19,7 +20,8 @@
     "tsBuildInfoFile": ".tsbuildinfo",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "types": ["mocha"]
+    "types": ["mocha"],
+    "skipLibCheck": true
   },
   "include": ["src/**/*"],
   "exclude": []

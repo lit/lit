@@ -224,11 +224,7 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
                 factory.createParameterDeclaration(
                   undefined,
                   undefined,
-                  undefined,
-                  factory.createIdentifier('node'),
-                  undefined,
-                  undefined,
-                  undefined
+                  factory.createIdentifier('node')
                 ),
               ],
               undefined,
@@ -253,7 +249,6 @@ export class QueryAssignedElementsVisitor implements MemberDecoratorVisitor {
     );
 
     return factory.createGetAccessorDeclaration(
-      undefined,
       undefined,
       factory.createIdentifier(name),
       [],

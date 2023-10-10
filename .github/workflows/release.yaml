@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+      # Temporary for pre-release.
+      - '3.0'
 
 jobs:
   release:
@@ -29,10 +31,10 @@ jobs:
           # generate changelogs with the correct commits
           fetch-depth: 0
 
-      - name: Setup Node.js 16
+      - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
           cache: 'npm'
           cache-dependency-path: lit/package-lock.json
 

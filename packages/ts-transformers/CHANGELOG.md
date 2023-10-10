@@ -1,5 +1,31 @@
 # Changelog
 
+## 2.0.0
+
+### Major Changes
+
+- [#3850](https://github.com/lit/lit/pull/3850) [`7e8491d4`](https://github.com/lit/lit/commit/7e8491d4ed9f0c39d974616c4678552ef50b81df) - Remove transform for deprecated usage of queryAssignedNodes.
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0, which includes breaking changes to the TypeScript compiler APIs
+
+## 2.0.0-pre.1
+
+### Major Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+## 2.0.0-pre.0
+
+### Major Changes
+
+- [#3850](https://github.com/lit/lit/pull/3850) [`7e8491d4`](https://github.com/lit/lit/commit/7e8491d4ed9f0c39d974616c4678552ef50b81df) - Remove transform for deprecated usage of queryAssignedNodes.
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript 5.0, which includes breaking changes to the TypeScript compiler APIs.
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
 ## 1.1.3
 
 ### Patch Changes

@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/cli-localize",
   "description": "Implements the `lit localize` command. Use from @lit-labs/cli",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -62,10 +62,10 @@
     }
   },
   "dependencies": {
-    "@lit/localize-tools": "^0.6.3"
+    "@lit/localize-tools": "^0.7.0"
   },
   "devDependencies": {
-    "typescript": "~4.6.2"
+    "typescript": "~5.2.0"
   },
   "engines": {
     "node": ">=14.8.0"

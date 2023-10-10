@@ -6,7 +6,7 @@
 
 import {isStrTagged, joinStringsAndValues} from './str-tag.js';
 
-import type {MsgFn, TemplateLike} from './types';
+import type {MsgFn, TemplateLike} from './types.js';
 
 /**
  * Default identity msg implementation. Simply returns the input template with

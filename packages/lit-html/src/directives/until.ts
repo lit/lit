@@ -21,7 +21,7 @@ export class UntilDirective extends AsyncDirective {
   private __weakThis = new PseudoWeakRef(this);
   private __pauser = new Pauser();
 
-  render(...args: Array<unknown>) {
+  render(...args: Array<unknown>): unknown {
     return args.find((x) => !isPromise(x)) ?? noChange;
   }
 

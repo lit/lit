@@ -553,7 +553,7 @@ modes.forEach((mode) => {
     });
 
     const {kill, done} = rig.exec(baseCommandToExec);
-    const timeout = 10_000;
+    const timeout = 30_000;
     await Promise.race([
       done.then(({code}) => assert.equal(code, 0)),
       sleep(timeout).then(() => {
