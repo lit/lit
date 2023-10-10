@@ -30,6 +30,17 @@ export type {
   ReactiveControllerHost,
 } from './reactive-controller.js';
 
+/**
+ * Removes the `readonly` modifier from properties in the union K.
+ *
+ * This is a safer way to cast a value to a type with a mutable version of a
+ * readonly field, than casting to an interface with the field re-declared
+ * because it preserves the type of all the fields and warns on typos.
+ */
+type Mutable<T, K extends keyof T> = Omit<T, K> & {
+  -readonly [P in keyof Pick<T, K>]: P extends K ? T[P] : never;
+};
+
 // TODO (justinfagnani): Add `hasOwn` here when we ship ES2022
 const {
   is,
@@ -660,11 +671,9 @@ export abstract class ReactiveElement
     name: PropertyKey,
     options: PropertyDeclaration = defaultPropertyDeclaration
   ) {
-    // if this is a state property, force the attribute to false.
+    // If this is a state property, force the attribute to false.
     if (options.state) {
-      // Cast as any since this is readonly.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (options as any).attribute = false;
+      (options as Mutable<PropertyDeclaration, 'attribute'>).attribute = false;
     }
     this.__prepare();
     this.elementProperties.set(name, options);
@@ -925,7 +934,7 @@ export abstract class ReactiveElement
    * to an open shadowRoot.
    * @category rendering
    */
-  readonly renderRoot!: HTMLElement | ShadowRoot;
+  readonly renderRoot!: HTMLElement | DocumentFragment;
 
   /**
    * Returns the property name for the given attribute `name`.
@@ -1077,7 +1086,7 @@ export abstract class ReactiveElement
    * @return Returns a node into which to render.
    * @category rendering
    */
-  protected createRenderRoot(): Element | ShadowRoot {
+  protected createRenderRoot(): HTMLElement | DocumentFragment {
     const renderRoot =
       this.shadowRoot ??
       this.attachShadow(
@@ -1096,14 +1105,9 @@ export abstract class ReactiveElement
    * @category lifecycle
    */
   connectedCallback() {
-    // create renderRoot before first update.
-    if (this.renderRoot === undefined) {
-      (
-        this as {
-          renderRoot: Element | DocumentFragment;
-        }
-      ).renderRoot = this.createRenderRoot();
-    }
+    // Create renderRoot before first update.
+    (this as Mutable<typeof this, 'renderRoot'>).renderRoot ??=
+      this.createRenderRoot();
     this.enableUpdating(true);
     this.__controllers?.forEach((c) => c.hostConnected?.());
   }
