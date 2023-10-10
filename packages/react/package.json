@@ -131,6 +131,7 @@
       "command": "node ../tests/run-web-tests.js \"development/**/*_test.js\" --config web-test-runner.config.js",
       "dependencies": [
         "build:ts",
+        "build:rollup",
         "../reactive-element:build",
         "../tests:build"
       ],

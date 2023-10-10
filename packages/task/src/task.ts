@@ -404,10 +404,21 @@ export class Task<
     }
   }
 
+  /**
+   * The result of the previous task run, if it resolved.
+   *
+   * Is `undefined` if the task has not run yet, or if the previous run errored.
+   */
   get value() {
     return this._value;
   }
 
+  /**
+   * The error from the previous task run, if it rejected.
+   *
+   * Is `undefined` if the task has not run yet, or if the previous run
+   * completed successfully.
+   */
   get error() {
     return this._error;
   }

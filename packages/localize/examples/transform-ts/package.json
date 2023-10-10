@@ -39,6 +39,7 @@
       "command": "rollup -c",
       "dependencies": [
         "build:localize",
+        "../../../lit:build",
         "../../../localize:build"
       ],
       "files": [
