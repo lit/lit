@@ -90,12 +90,12 @@ import {assert} from '@esm-bundle/chai';
     assert.notEqual(el.span, el.renderRoot.querySelector('span'));
   });
 
-  test('returns cached value when accessed before first update', async () => {
+  test('does not cache null values when accessed before first update', async () => {
     const notYetUpdatedEl = new C();
     assert.equal(notYetUpdatedEl.divCached, null);
     container.appendChild(notYetUpdatedEl);
     await notYetUpdatedEl.updateComplete;
-    assert.equal(notYetUpdatedEl.divCached, null);
+    assert.instanceOf(notYetUpdatedEl.divCached, HTMLDivElement);
   });
 
   test('works with an old and busted Reflect.decorate', async () => {
