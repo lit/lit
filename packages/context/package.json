@@ -164,8 +164,8 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/reactive-element": "^2.0.0",
-    "lit": "^3.0.0"
+    "@lit/reactive-element": "^1.6.2 || ^2.0.0",
+    "lit": "^2.7.5 || ^3.0.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",
