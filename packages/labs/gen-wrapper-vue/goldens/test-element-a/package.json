@@ -8,9 +8,9 @@
     "build:declarations": "vue-tsc --declaration --emitDeclarationOnly && node ./scripts/rename.js",
     "preview": "vite preview"
   },
-  "version": "1.0.1-pre.1",
+  "version": "1.0.1",
   "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.1-pre.1",
+    "@lit-internal/test-element-a": "^1.0.1",
     "vue": "^3.2.41",
     "@lit-labs/vue-utils": "^0.1.0"
   },

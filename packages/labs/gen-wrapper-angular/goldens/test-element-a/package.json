@@ -5,9 +5,9 @@
     "build": "tsc",
     "build:watch": "tsc --watch"
   },
-  "version": "1.0.1-pre.1",
+  "version": "1.0.1",
   "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.1-pre.1"
+    "@lit-internal/test-element-a": "^1.0.1"
   },
   "peerDependencies": {
     "@angular/common": "^13.3.0",
