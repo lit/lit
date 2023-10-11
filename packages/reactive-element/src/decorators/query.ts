@@ -58,7 +58,7 @@ export type QueryDecorator = {
  * @category Decorator
  */
 export function query(selector: string, cache?: boolean): QueryDecorator {
-  return (<C extends Interface<ReactiveElement>, V extends Element>(
+  return (<C extends Interface<ReactiveElement>, V extends Element | null>(
     protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
     nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>,
     descriptor?: PropertyDescriptor
