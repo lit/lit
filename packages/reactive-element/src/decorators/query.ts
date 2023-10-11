@@ -26,7 +26,7 @@ export type QueryDecorator = {
   ): void | any;
 
   // standard
-  <C extends Interface<ReactiveElement>, V extends Element>(
+  <C extends Interface<ReactiveElement>, V extends Element | null>(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V>;
