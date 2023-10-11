@@ -47,7 +47,7 @@ test('basic wrapper generation', async () => {
 
   await installPackage(outputPackage, {
     [`@lit-internal/${project}`]: inputPackage,
-    '@lit-labs/react': '../react',
+    '@lit/react': '../../react',
   });
 
   // The version of @types/react might conflict with the one installed to the

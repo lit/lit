@@ -12,7 +12,7 @@ import {
   configureTransformLocalization,
 } from '../lit-localize.js';
 import {html, render} from 'lit';
-import {LocaleModule} from '../internal/types.js';
+import type {LocaleModule} from '../internal/types.js';
 
 const removeHtmlComments = (htmlStr: string) =>
   htmlStr.replace(/<!--.*?-->/g, '');

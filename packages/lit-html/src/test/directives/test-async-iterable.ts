@@ -16,7 +16,7 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
    * A Promise that resolves with the next value to be returned by the
    * async iterable returned from iterable()
    */
-  private _nextValue: Promise<T> = new Promise(
+  private _nextValue = new Promise<T>(
     (resolve) => (this._resolveNextValue = resolve)
   );
   private _resolveNextValue!: (value: T) => void;

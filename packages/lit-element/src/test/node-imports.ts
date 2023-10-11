@@ -8,7 +8,6 @@
 // exports of this package can be imported without crashing in Node.
 
 import 'lit-element';
-import 'lit-element/experimental-hydrate-support.js';
 import 'lit-element/private-ssr-support.js';
 import 'lit-element/decorators.js';
 import 'lit-element/decorators/custom-element.js';

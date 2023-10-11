@@ -4,20 +4,20 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@esm-bundle/chai": "^4.1.5",
+    "@esm-bundle/chai": "^4.3.4-fix.0",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^9.0.0",
     "@types/react": "file:../../../../node_modules/@types/react",
     "@types/react-dom": "file:../../../../node_modules/@types/react-dom",
     "react": "file:../../../../node_modules/react",
     "react-dom": "file:../../../../node_modules/react-dom",
-    "@lit-labs/react": "file:../../react",
+    "@lit/react": "file:../../../react",
     "lit": "file:../../../lit",
     "lit-html": "file:../../../lit-html",
     "lit-element": "file:../../../lit-element",
     "@lit/reactive-element": "file:../../../reactive-element",
-    "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.0.tgz",
-    "@lit-internal/test-element-a-react": "file:../gen-output/test-element-a-react/lit-internal-test-element-a-react-1.0.0.tgz"
+    "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.1.tgz",
+    "@lit-internal/test-element-a-react": "file:../gen-output/test-element-a-react/lit-internal-test-element-a-react-1.0.1.tgz"
   },
   "scripts": {
     "installSelf": "wireit",

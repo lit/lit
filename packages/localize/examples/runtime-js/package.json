@@ -1,7 +1,7 @@
 {
   "name": "@lit-internal/localize-examples-runtime-js",
   "description": "Example of using lit-localize in runtime mode with JavaScript",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "private": true,
   "type": "module",
   "scripts": {
@@ -27,12 +27,12 @@
     }
   },
   "dependencies": {
-    "@lit/localize": "^0.11.0",
+    "@lit/localize": "^0.12.0",
     "@material/mwc-circular-progress": "^0.26.1",
-    "lit": "^2.0.0"
+    "lit": "^3.0.0"
   },
   "devDependencies": {
-    "@lit/localize-tools": "^0.6.0",
+    "@lit/localize-tools": "^0.7.0",
     "@web/dev-server": "^0.1.22"
   }
 }

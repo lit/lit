@@ -31,7 +31,7 @@ const importantFlag = ' !' + important;
 const flagTrim = 0 - importantFlag.length;
 
 class StyleMapDirective extends Directive {
-  _previousStyleProperties?: Set<string>;
+  private _previousStyleProperties?: Set<string>;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -73,30 +73,23 @@ class StyleMapDirective extends Directive {
     const {style} = part.element as HTMLElement;
 
     if (this._previousStyleProperties === undefined) {
-      this._previousStyleProperties = new Set();
-      for (const name in styleInfo) {
-        this._previousStyleProperties.add(name);
-      }
+      this._previousStyleProperties = new Set(Object.keys(styleInfo));
       return this.render(styleInfo);
     }
 
     // Remove old properties that no longer exist in styleInfo
-    // We use forEach() instead of for-of so that re don't require down-level
-    // iteration.
-    this._previousStyleProperties!.forEach((name) => {
+    for (const name of this._previousStyleProperties) {
       // If the name isn't in styleInfo or it's null/undefined
       if (styleInfo[name] == null) {
         this._previousStyleProperties!.delete(name);
         if (name.includes('-')) {
           style.removeProperty(name);
         } else {
-          // Note reset using empty string (vs null) as IE11 does not always
-          // reset via null (https://developer.mozilla.org/en-US/docs/Web/API/ElementCSSInlineStyle/style#setting_styles)
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (style as any)[name] = '';
+          (style as any)[name] = null;
         }
       }
-    });
+    }
 
     // Add or update properties
     for (const name in styleInfo) {

@@ -4,9 +4,9 @@ A compiler for optimizing Lit templates.
 
 > **Warning** `@lit-labs/compiler` is part of the Lit Labs set of packages – it is published
 > in order to get feedback on the design and may receive breaking changes.
-> Tracking RFC: https://github.com/lit/rfcs/pull/21
-
-> **Warning** `@lit-labs/compiler` is not yet published so it cannot be installed from npm.
+> RFC: https://github.com/lit/rfcs/pull/21
+>
+> Give feedback: https://github.com/lit/lit/discussions/4117
 
 ## Overview
 

@@ -10,9 +10,27 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
+import type {ReactiveElement} from '../reactive-element.js';
+import {desc, type Interface} from './base.js';
 
-import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
+const DEV_MODE = true;
+
+export type QueryDecorator = {
+  // legacy
+  (
+    proto: Interface<ReactiveElement>,
+    name: PropertyKey,
+    descriptor?: PropertyDescriptor
+    // Note TypeScript requires the return type to be `void|any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+
+  // standard
+  <C extends Interface<ReactiveElement>, V extends Element>(
+    value: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V>;
+};
 
 /**
  * A property decorator that converts a class property into a getter that
@@ -39,34 +57,66 @@ import {decorateProperty} from './base.js';
  * ```
  * @category Decorator
  */
-export function query(selector: string, cache?: boolean) {
-  return decorateProperty({
-    descriptor: (name: PropertyKey) => {
-      const descriptor = {
-        get(this: ReactiveElement) {
-          return this.renderRoot?.querySelector(selector) ?? null;
-        },
-        enumerable: true,
-        configurable: true,
-      };
-      if (cache) {
-        const key = typeof name === 'symbol' ? Symbol() : `__${name}`;
-        descriptor.get = function (this: ReactiveElement) {
-          if (
-            (this as unknown as {[key: string]: Element | null})[
-              key as string
-            ] === undefined
-          ) {
-            (this as unknown as {[key: string]: Element | null})[
-              key as string
-            ] = this.renderRoot?.querySelector(selector) ?? null;
+export function query(selector: string, cache?: boolean): QueryDecorator {
+  return (<C extends Interface<ReactiveElement>, V extends Element>(
+    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
+    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>,
+    descriptor?: PropertyDescriptor
+  ) => {
+    const doQuery = (el: Interface<ReactiveElement>): V => {
+      // TODO: if we want to allow users to assert that the query will never
+      // return null, we need a new option and to throw here if the result
+      // is null.
+      return (el.renderRoot?.querySelector(selector) ?? null) as V;
+    };
+    if (cache) {
+      // Accessors to wrap from either:
+      //   1. The decorator target, in the case of standard decorators
+      //   2. The property descriptor, in the case of experimental decorators
+      //      on auto-accessors.
+      //   3. Functions that access our own cache-key property on the instance,
+      //      in the case of experimental decorators on fields.
+      const {get, set} =
+        typeof nameOrContext === 'object'
+          ? protoOrTarget
+          : descriptor ??
+            (() => {
+              const key = DEV_MODE
+                ? Symbol(`${String(nameOrContext)} (@query() cache)`)
+                : Symbol();
+              type WithCache = ReactiveElement & {
+                [key: symbol]: Element | null;
+              };
+              return {
+                get() {
+                  return (this as WithCache)[key];
+                },
+                set(v) {
+                  (this as WithCache)[key] = v;
+                },
+              };
+            })();
+      return desc(protoOrTarget, nameOrContext, {
+        get(this: ReactiveElement): V {
+          if (cache) {
+            let result: V = get!.call(this);
+            if (result === undefined) {
+              result = doQuery(this);
+              set!.call(this, result);
+            }
+            return result;
           }
-          return (this as unknown as {[key: string]: Element | null})[
-            key as string
-          ];
-        };
-      }
-      return descriptor;
-    },
-  });
+          return doQuery(this);
+        },
+      });
+    } else {
+      // This object works as the return type for both standard and
+      // experimental decorators.
+      return desc(protoOrTarget, nameOrContext, {
+        get(this: ReactiveElement) {
+          return doQuery(this);
+        },
+      });
+    }
+  }) as QueryDecorator;
 }

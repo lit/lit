@@ -1,7 +1,8 @@
 {
   "plugins":[
     ["@babel/plugin-transform-typescript", {"allowDeclareFields": true}],
-    ["@babel/plugin-proposal-decorators", {"decoratorsBeforeExport": true}],
-    ["@babel/plugin-proposal-class-properties", {"loose": true}],
+    "@babel/plugin-transform-class-static-block",
+    ["@babel/plugin-proposal-decorators", {"version": "2023-05", "decoratorsBeforeExport": true}],
+    ["@babel/plugin-proposal-class-properties"]
   ]
 }

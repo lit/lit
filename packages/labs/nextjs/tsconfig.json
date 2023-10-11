@@ -2,10 +2,9 @@
   "compilerOptions": {
     "composite": true,
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-    "target": "es2020",
+    "target": "es2021",
     "module": "CommonJS",
-    "moduleResolution": "NodeNext",
-    "lib": ["es2020"],
+    "lib": ["es2021"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

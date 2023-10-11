@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "2.8.0",
+  "version": "3.0.0",
   "description": "HTML templates literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": {
@@ -229,15 +229,6 @@
       "development": "./development/directives/when.js",
       "default": "./directives/when.js"
     },
-    "./experimental-hydrate.js": {
-      "types": "./development/experimental-hydrate.d.ts",
-      "node": {
-        "development": "./node/development/experimental-hydrate.js",
-        "default": "./node/experimental-hydrate.js"
-      },
-      "development": "./development/experimental-hydrate.js",
-      "default": "./experimental-hydrate.js"
-    },
     "./polyfill-support.js": {
       "types": "./development/polyfill-support.d.ts",
       "node": {
@@ -296,7 +287,6 @@
     "/async-directive.{d.ts,d.ts.map,js,js.map}",
     "/directive-helpers.{d.ts,d.ts.map,js,js.map}",
     "/directive.{d.ts,d.ts.map,js,js.map}",
-    "/experimental-hydrate.{d.ts,d.ts.map,js,js.map}",
     "/lit-html.{d.ts,d.ts.map,js,js.map}",
     "/polyfill-support.{d.ts,d.ts.map,js,js.map}",
     "/private-ssr-support.{d.ts,d.ts.map,js,js.map}",
@@ -378,7 +368,6 @@
         "async-directive.js{,.map}",
         "directive-helpers.js{,.map}",
         "directive.js{,.map}",
-        "experimental-hydrate.js{,.map}",
         "lit-html.js{,.map}",
         "polyfill-support.js{,.map}",
         "private-ssr-support.js{,.map}",
@@ -504,12 +493,11 @@
     "@types/trusted-types": "^2.0.2"
   },
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.0",
-    "@lit-labs/testing": "^0.2.0",
-    "@types/web-ie11": "^0.0.0",
+    "@lit-internal/scripts": "^1.0.1-pre.0",
+    "@lit-labs/testing": "^0.2.2-pre.0",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.6.0"
+    "@webcomponents/webcomponentsjs": "^2.8.0"
   },
   "typings": "lit-html.d.ts",
   "directories": {

@@ -12,15 +12,15 @@ body:
       description: Note you can select more than one.
       options:
         - Lit Core (lit / lit-html / lit-element / reactive-element)
-        - Context (@lit-labs/context)
+        - Context (@lit/context)
         - Eleventy Plugin (@lit-labs/eleventy-plugin-lit)
         - Localize (@lit/localize)
         - Motion (@lit-labs/motion)
         - Observers (@lit-labs/observers)
-        - React (@lit-labs/react)
+        - React (@lit/react)
         - SSR (@lit-labs/ssr)
         - Starter Kits (@lit/lit-starter-js / @lit/lit-starter-ts)
-        - Task (@lit-labs/task)
+        - Task (@lit/task)
         - Virtualizer (@lit-labs/virtualizer)
         - Analyzer (@lit-labs/analyzer)
         - Other/unknown (please mention in description)

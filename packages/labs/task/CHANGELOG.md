@@ -1,5 +1,28 @@
 # Change Log
 
+## 3.1.0
+
+### Minor Changes
+
+- [#4170](https://github.com/lit/lit/pull/4170) [`04c8d65a`](https://github.com/lit/lit/commit/04c8d65ad8dd82c239fc04c478e36eed4d8694c4) - Graduate @lit-labs/task to @lit/task, its permanent location. @lit-labs/task is now just a proxy for @lit/task, so code need not be duplicated in projects that depend on both.
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+## 3.1.0-pre.0
+
+### Minor Changes
+
+- [#4170](https://github.com/lit/lit/pull/4170) [`04c8d65a`](https://github.com/lit/lit/commit/04c8d65ad8dd82c239fc04c478e36eed4d8694c4) - Graduate @lit-labs/task to @lit/task, its permanent location. @lit-labs/task is now just a proxy for @lit/task, so code need not be duplicated in projects that depend on both.
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- Updated dependencies [[`04c8d65a`](https://github.com/lit/lit/commit/04c8d65ad8dd82c239fc04c478e36eed4d8694c4)]:
+  - @lit/task@1.0.0-pre.0
+
 ## 3.0.2
 
 ### Patch Changes
@@ -39,6 +62,15 @@
 - [#3953](https://github.com/lit/lit/pull/3953) [`2407c808`](https://github.com/lit/lit/commit/2407c808007268c1f96f14e311eb36d525080968) - Fix taskComplete not rejecting if after an error state
 
 - [#3947](https://github.com/lit/lit/pull/3947) [`0480e006`](https://github.com/lit/lit/commit/0480e00633e15740640f9ce937573085e91848b2) - Task will not throw errors unless user requests taskComplete
+
+## 2.1.1-pre.0
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+- Updated dependencies [[`be72f66b`](https://github.com/lit/lit/commit/be72f66bd9aab5d0586729fb5be4bac4aa27cb7f), [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2), [`6f2833fd`](https://github.com/lit/lit/commit/6f2833fd05f2ecde5386f72d291dafc9dbae0cf7), [`7e8491d4`](https://github.com/lit/lit/commit/7e8491d4ed9f0c39d974616c4678552ef50b81df), [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa), [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4)]:
+  - @lit/reactive-element@2.0.0-pre.0
 
 ## 2.1.1
 

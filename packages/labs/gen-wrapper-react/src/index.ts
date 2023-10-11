@@ -91,8 +91,8 @@ const packageJsonTemplate = (
       dependencies: {
         // TODO(kschaaf): make component version range configurable?
         [pkgJson.name!]: '^' + pkgJson.version!,
-        // TODO(kschaaf): make @lit-labs/react version configurable?
-        '@lit-labs/react': '^1.0.4',
+        // TODO(kschaaf): make @lit/react version configurable?
+        '@lit/react': '^1.0.0 || 1.0.0-pre.0',
       },
       peerDependencies: {
         // TODO(kschaaf): make react version(s) configurable?
@@ -126,9 +126,9 @@ const tsconfigTemplate = () => {
   return JSON.stringify(
     {
       compilerOptions: {
-        target: 'es2019',
+        target: 'es2021',
         module: 'es2015',
-        lib: ['es2020', 'DOM', 'DOM.Iterable'],
+        lib: ['es2021', 'DOM', 'DOM.Iterable'],
         declaration: true,
         declarationMap: true,
         sourceMap: true,
@@ -178,9 +178,7 @@ const wrapperModuleTemplate = (
   moduleJsPath = moduleJsPath.replace(/\\/g, '/');
   return javascript`
  import * as React from 'react';
- import {createComponent${
-   hasEvents ? `, EventName` : ``
- }} from '@lit-labs/react';
+ import {createComponent${hasEvents ? `, EventName` : ``}} from '@lit/react';
  ${elements.map(
    (element) => javascript`
  import {${element.name} as ${element.name}Element} from '${packageJson.name}/${moduleJsPath}';

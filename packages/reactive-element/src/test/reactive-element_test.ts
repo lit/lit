@@ -1160,9 +1160,7 @@ suite('ReactiveElement', () => {
       }
 
       set bar(value) {
-        const old = this.bar;
         this.__bar = Number(value);
-        this.requestUpdate('bar', old);
       }
 
       override updated() {
@@ -1213,9 +1211,7 @@ suite('ReactiveElement', () => {
       }
 
       set bar(value) {
-        const old = this.bar;
         this.__bar = Number(value);
-        this.requestUpdate('bar', old);
       }
     }
     customElements.define(generateElementName(), E);
@@ -1255,9 +1251,7 @@ suite('ReactiveElement', () => {
       }
 
       set foo(value) {
-        const old = this.foo;
         this.__foo = Number(value);
-        this.requestUpdate('foo', old);
       }
     }
     class F extends E {
@@ -1272,9 +1266,7 @@ suite('ReactiveElement', () => {
       }
 
       set bar(value) {
-        const old = this.foo;
         this.__bar = value;
-        this.requestUpdate('bar', old);
       }
     }
 
@@ -1298,14 +1290,45 @@ suite('ReactiveElement', () => {
     await el.updateComplete;
     assert.equal(changed, 1);
     assert.equal(el.foo, 20);
-    assert.equal(el.__foo, 20);
     assert.isFalse(el.hasAttribute('foo'));
     el.bar = 'hi';
     await el.updateComplete;
     assert.equal(changed, 2);
     assert.equal(el.bar, 'hi');
-    assert.equal(el.__bar, 'hi');
     assert.isTrue(el.hasAttribute('bar'));
+  });
+
+  test('Internal storage for `@property` does not collide with other properties', async () => {
+    let changed = 0;
+
+    const hasChanged = () => {
+      changed++;
+      return true;
+    };
+
+    class E extends ReactiveElement {
+      static override get properties(): PropertyDeclarations {
+        return {foo: {hasChanged}};
+      }
+
+      foo: number;
+      __foo: number;
+
+      constructor() {
+        super();
+        this.foo = 111;
+        this.__foo = 222;
+      }
+    }
+
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    el.foo = 333;
+    await el.updateComplete;
+    assert.equal(changed, 2);
+    assert.equal(el.foo, 333);
+    assert.equal(el.__foo, 222);
   });
 
   test('`firstUpdated` called when element first updates', async () => {
@@ -1331,7 +1354,7 @@ suite('ReactiveElement', () => {
     const el = new E();
     container.appendChild(el);
     await el.updateComplete;
-    const testMap = new Map();
+    const testMap = new Map<string, unknown>();
     testMap.set('foo', undefined);
     assert.deepEqual(el.changedProperties, testMap);
     assert.equal(el.wasUpdatedCount, 1);
@@ -1381,7 +1404,7 @@ suite('ReactiveElement', () => {
     assert.equal(el.wasFirstUpdated, 0);
     el.requestUpdate();
     await el.updateComplete;
-    const testMap = new Map();
+    const testMap = new Map<never, never>();
     assert.deepEqual(el.changedProperties, testMap);
     assert.equal(el.triedToUpdatedCount, 2);
     assert.equal(el.wasUpdatedCount, 1);
@@ -1524,7 +1547,7 @@ suite('ReactiveElement', () => {
     const el = new E() as any;
     container.appendChild(el);
     await el.updateComplete;
-    const testMap = new Map();
+    const testMap = new Map<string, unknown>();
     testMap.set('zot', undefined);
     assert.deepEqual(el.changedProperties, testMap);
     assert.isNaN(el.zot);
@@ -2398,27 +2421,54 @@ suite('ReactiveElement', () => {
   });
 
   test('properties set before upgrade are applied', async () => {
-    const name = generateElementName();
-    const el = document.createElement(name);
-    container.appendChild(el);
-    (el as any).foo = 'hi';
-    (el as any).bar = false;
-    const objectValue = {};
-    (el as any).zug = objectValue;
+    let changedProperties: PropertyValues<E> | undefined = undefined;
+
     class E extends ReactiveElement {
       static override get properties() {
         return {foo: {}, bar: {}, zug: {}};
       }
 
-      foo = '';
-      bar = true;
-      zug = null;
+      declare foo: string;
+      declare bar: boolean;
+      declare zug: object | null;
+
+      constructor() {
+        super();
+        this.foo = '';
+        this.bar = true;
+        this.zug = null;
+      }
+
+      override update(properties: PropertyValues<this>) {
+        super.update(properties);
+        changedProperties = properties;
+      }
     }
+
+    const name = generateElementName();
+    const el = document.createElement(name) as E;
+    container.appendChild(el);
+
+    // Set properties before the element is defined
+    const objectValue = {};
+    el.foo = 'hi';
+    el.bar = false;
+    el.zug = objectValue;
+
     customElements.define(name, E);
-    await (el as ReactiveElement).updateComplete;
-    assert.equal((el as any).foo, 'hi');
-    assert.equal((el as any).bar, false);
-    assert.equal((el as any).zug, objectValue);
+    await el.updateComplete;
+
+    // Properties should have the pre-upgraded values
+    assert.equal(el.foo, 'hi');
+    assert.equal(el.bar, false);
+    assert.equal(el.zug, objectValue);
+    assert.isTrue(changedProperties!.has('foo'));
+
+    // Check that the element is still reactive
+    changedProperties = undefined;
+    el.foo = 'bye';
+    await el.updateComplete;
+    assert.isTrue(changedProperties!.has('foo'));
   });
 
   test('can override scheduleUpdate()', async () => {
@@ -2816,7 +2866,7 @@ suite('ReactiveElement', () => {
       await a.updateComplete;
       assert.equal(a.updatedFoo, 5);
       shouldThrow = true;
-      a.changedProps = new Map();
+      a.changedProps = new Map<never, never>();
       a.foo = 10;
       let threw = false;
       try {
@@ -3214,7 +3264,7 @@ suite('ReactiveElement', () => {
           changedProperties.set('foo', 'hi');
 
           // This should type-check without a cast:
-          const x: number = changedProperties.get('foo');
+          const x: number | undefined = changedProperties.get('foo');
           changedProperties.set('foo', 2);
 
           // This should type-check without a cast:
@@ -3276,7 +3326,7 @@ suite('ReactiveElement', () => {
     class A extends ReactiveElement {
       foo!: number;
       override update(changedProperties: PropertyValues<A>) {
-        const n: number = changedProperties.get('foo');
+        const n: number | undefined = changedProperties.get('foo');
         if (n) {
           //Suppress no-unused-vars warnings
         }
@@ -3285,7 +3335,7 @@ suite('ReactiveElement', () => {
     class B extends A {
       bar!: string;
       override update(changedProperties: PropertyValues<B>) {
-        const s: string = changedProperties.get('bar');
+        const s: string | undefined = changedProperties.get('bar');
         if (s) {
           //Suppress no-unused-vars warnings
         }

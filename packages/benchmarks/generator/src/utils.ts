@@ -48,7 +48,16 @@ export const nextLevel = (level: string, n: number): string => {
   return level ? `${level}_${n}` : String(n);
 };
 
-const rendererInfoMap = new Map();
+interface Info {
+  base: string;
+  query: string;
+  packageVersions: null | {
+    label: string;
+    dependencies: Record<string, string>;
+  };
+}
+
+const rendererInfoMap = new Map<string, Info>();
 export const parseRenderer = (renderer: string) => {
   if (rendererInfoMap.has(renderer)) {
     return rendererInfoMap.get(renderer);
@@ -77,7 +86,7 @@ export const parseRenderer = (renderer: string) => {
       };
     }
   }
-  const info = {
+  const info: Info = {
     base: parts[1],
     query: parts[2],
     packageVersions,

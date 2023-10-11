@@ -19,8 +19,8 @@ export type CSSPropertiesList = string[];
 // zIndex for "in" animations
 let z = 0;
 
-const disconnectedProps: Map<unknown, CSSValues> = new Map();
-const renderedHosts: WeakSet<ReactiveControllerHost> = new WeakSet();
+const disconnectedProps = new Map<unknown, CSSValues>();
+const renderedHosts = new WeakSet<ReactiveControllerHost>();
 
 export type Options = {
   // Options used for the animation
@@ -165,7 +165,7 @@ const isDirty = (value: unknown, previous: unknown) => {
 // Mapping of node on which the `animate` directive is used to the `animate` directive.
 // Used to get the ancestor `animate` animations (which are used to modify
 // `animate` transforms), done by ascending the DOM.
-const nodeToAnimateMap: WeakMap<Node, Animate> = new WeakMap();
+const nodeToAnimateMap = new WeakMap<Node, Animate>();
 
 /**
  * `animate` directive class. Animates a node's position between renders.

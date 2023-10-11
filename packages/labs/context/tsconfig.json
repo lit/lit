@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2019",
+    "target": "es2021",
     "module": "NodeNext",
     "lib": ["es2021", "DOM", "DOM.Iterable"],
     "declaration": true,
@@ -20,8 +20,11 @@
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
+    "paths": {
+      "@esm-bundle/chai": ["../../../local-types/@esm-bundle/chai/index.d.ts"]
+    },
     "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": []
+  "exclude": ["src/test/std-decorators/**/*"]
 }

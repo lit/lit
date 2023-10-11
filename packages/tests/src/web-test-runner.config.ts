@@ -39,9 +39,7 @@ const browserPresets = {
     'sauce:Windows 10/Firefox@102', // Current ESR. See: https://wiki.mozilla.org/Release_Management/Calendar
     'sauce:Windows 10/Chrome@latest-2',
     'sauce:macOS 11/Safari@latest',
-    // 'sauce:Windows 10/MicrosoftEdge@18', // needs globalThis polyfill
   ],
-  'sauce-ie11': ['sauce:Windows 10/Internet Explorer@11'],
 };
 
 let sauceLauncher: ReturnType<typeof createSauceLabsLauncher>;
@@ -171,6 +169,8 @@ const config: TestRunnerConfig = {
     '../labs/router/development/**/*_test.js',
     '../labs/scoped-registry-mixin/development/**/*_test.(js|html)',
     '../labs/task/development/**/*_test.(js|html)',
+    '../context/development/**/*_test.(js|html)',
+    '../task/development/**/*_test.(js|html)',
     '../lit-element/development/**/*_test.(js|html)',
     '../lit-html/development/**/*_test.(js|html)',
     '../reactive-element/development/**/*_test.(js|html)',
@@ -271,10 +271,6 @@ const config: TestRunnerConfig = {
     },
   ],
   browserStartTimeout: 60000, // default 30000
-  // For ie11 where tests run more slowly, this timeout needs to be long
-  // enough so that blocked tests have time to wait for all previous test files
-  // to run to completion.
-  testsStartTimeout: 60000 * 10, // default 120000
   testsFinishTimeout: 600000, // default 20000
   testFramework: {
     // https://mochajs.org/api/mocha

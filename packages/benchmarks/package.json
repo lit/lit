@@ -1,6 +1,6 @@
 {
   "name": "@lit-internal/benchmarks",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "private": true,
   "description": "Benchmarks for lit",
   "license": "BSD-3-Clause",
@@ -62,12 +62,13 @@
     }
   },
   "dependencies": {
-    "@lit/reactive-element": "^1.1.0",
-    "lit-element": "^3.1.0",
-    "lit-html": "^2.1.0",
+    "@lit/reactive-element": "^2.0.0",
+    "lit-element": "^4.0.0",
+    "lit-html": "^3.0.0",
     "tachometer": "^0.7.0"
   },
+  "#comment": "Unusually, we don't want to track a specific version of chromedriver, because we end up using the version of chrome that we get in the benchmark runner, which is usually just the latest version. Specifying it as * means that updating the package-lock.json file will always get the latest version.",
   "devDependencies": {
-    "chromedriver": "^115.0.0"
+    "chromedriver": "*"
   }
 }
