@@ -4,4 +4,4 @@
 'lit': patch
 ---
 
-Allow null to be in the type of @query() decorated fields
+Allow `null` to be in the type of `@query()` decorated fields
