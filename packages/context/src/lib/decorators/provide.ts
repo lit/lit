@@ -16,14 +16,10 @@ import {ContextProvider} from '../controllers/context-provider.js';
  */
 
 /**
- * A property decorator that adds a ContextConsumer controller to the component
- * which will try and retrieve a value for the property via the Context API.
+ * A property decorator that adds a ContextProvider controller to the component
+ * making it respond to any `context-request` events from its children consumer.
  *
  * @param context A Context identifier value created via `createContext`
- * @param multiple An optional boolean which when true allows the value to be updated
- *   multiple times.
- *
- * See: https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
  *
  * @example
  *
