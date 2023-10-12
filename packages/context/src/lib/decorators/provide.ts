@@ -24,7 +24,7 @@ import {ContextProvider} from '../controllers/context-provider.js';
  * @example
  *
  * ```ts
- * import {consume} from '@lit/context';
+ * import {provide} from '@lit/context';
  * import {loggerContext} from 'community-protocols/logger';
  *
  * class MyElement {
