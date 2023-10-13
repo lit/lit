@@ -1,37 +1,17 @@
 {
+  "extends": "./tsconfig.json",
   "compilerOptions": {
-    "noEmit": true,
-    "composite": true,
-    "target": "es2021",
-    "module": "NodeNext",
-    "lib": ["es2021", "DOM", "DOM.Iterable"],
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
-    "inlineSources": true,
-    "outDir": "./development/",
-    "rootDir": "./src",
-    "strict": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noImplicitReturns": true,
-    "noFallthroughCasesInSwitch": true,
-    "noImplicitAny": true,
-    "noImplicitThis": true,
-    "moduleResolution": "NodeNext",
-    "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
+    "outDir": "./lit2/lit2-scope/context",
     "paths": {
       "@esm-bundle/chai": ["../../local-types/@esm-bundle/chai/index.d.ts"],
-      "lit": ["../../node_modules/lit2/index.d.ts"],
-      "lit/*": ["../../node_modules/lit2/*"],
+      "lit": ["./lit2/node_modules/lit2/index.d.ts"],
+      "lit/*": ["./lit2/node_modules/lit2/*"],
       "@lit/reactive-element": [
-        "../../node_modules/reactive-element/index.d.ts"
+        "./lit2/node_modules/reactive-element2/index.d.ts"
       ],
-      "@lit/reactive-element/*": ["../../node_modules/reactive-element/*"]
-    },
-    "types": ["mocha"]
+      "@lit/reactive-element/*": ["./lit2/node_modules/reactive-element2/*"]
+    }
   },
-  "include": ["src/test/**/*.ts"],
-  "exclude": ["src/test/std-decorators/**/*"]
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/test/**/*.ts", "src/test/std-decorators/**/*"]
 }
