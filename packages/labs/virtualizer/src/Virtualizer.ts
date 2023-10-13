@@ -331,11 +331,14 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    this._scrollerController!.detach(this);
+    this._scrollerController?.detach(this);
     this._scrollerController = null;
-    this._mutationObserver!.disconnect();
-    this._hostElementRO!.disconnect();
-    this._childrenRO!.disconnect();
+    this._mutationObserver?.disconnect();
+    this._mutationObserver = null;
+    this._hostElementRO?.disconnect();
+    this._hostElementRO = null;
+    this._childrenRO?.disconnect();
+    this._childrenRO = null;
     this._rejectLayoutCompletePromise('disconnected');
   }
 
@@ -550,8 +553,16 @@ export class Virtualizer {
   }
 
   _updateLayout() {
-    if (this._layout) {
-      this._layout!.items = this._items;
+    // Only update the layout and trigger a re-render if we have:
+    //   a) A layout
+    //   b) A scrollerController, which means we're connected
+    //   c) An offsetParent, which means we're not hidden
+    if (
+      this._layout &&
+      this._scrollerController &&
+      this._hostElement?.offsetParent
+    ) {
+      this._layout.items = this._items;
       this._updateView();
       if (this._childMeasurements !== null) {
         // If the layout has been changed, we may have measurements but no callback
@@ -560,7 +571,7 @@ export class Virtualizer {
         }
         this._childMeasurements = null;
       }
-      this._layout!.reflowIfNeeded();
+      this._layout.reflowIfNeeded();
       if (this._benchmarkStart && 'mark' in window.performance) {
         window.performance.mark('uv-end');
       }
@@ -821,12 +832,12 @@ export class Virtualizer {
         this._layoutCompleteRejecter = reject;
       });
     }
-    return this._layoutCompletePromise!;
+    return this._layoutCompletePromise;
   }
 
   private _rejectLayoutCompletePromise(reason: string) {
     if (this._layoutCompleteRejecter !== null) {
-      this._layoutCompleteRejecter!(reason);
+      this._layoutCompleteRejecter(reason);
     }
     this._resetLayoutCompleteState();
   }
