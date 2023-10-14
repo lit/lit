@@ -120,10 +120,15 @@ const wrapperTemplate = (
 
       const defaults = reactive({} as Props);
       const vDefaults = {
+        ${
+          reactiveProperties.size
+            ? javascript`
         created(el: any) {
           for (const p in vueProps) {
             defaults[p as keyof Props] = el[p];
           }
+        }`
+            : ''
         }
       };
 
