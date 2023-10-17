@@ -297,6 +297,8 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div', 'span'],
   },
 
+  // Regression test for https://github.com/lit/lit/issues/4265
+  // Ensures we do not get extra svg tags around `svg` tagged templates.
   'ChildPart accepts TemplateResult with SVG type': {
     render(x: unknown) {
       return html` <svg>${svg`<circle r="${x}" />`}</svg> `;
