@@ -125,7 +125,7 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.1-pre.0"
+    "@lit-internal/scripts": "^1.0.1"
   },
   "dependencies": {
     "@lit/reactive-element": "^2.0.0",
