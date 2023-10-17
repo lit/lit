@@ -25,15 +25,12 @@ import {ContextProvider} from '../controllers/context-provider.js';
  *
  * ```ts
  * import {provide} from '@lit/context';
- * import {loggerContext} from 'community-protocols/logger';
+ * import {Logger} from 'my-logging-library';
+ * import {loggerContext} from './logger-context.js';
  *
  * class MyElement {
  *   @provide({context: loggerContext})
- *   logger;
- *
- *   doThing() {
- *     this.logger.log('thing was done');
- *   }
+ *   logger = new Logger();
  * }
  * ```
  * @category Decorator
