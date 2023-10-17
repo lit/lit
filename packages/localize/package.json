@@ -90,6 +90,6 @@
   ],
   "dependencies": {
     "@lit/reactive-element": "^2.0.0",
-    "lit": "^3.0.0"
+    "lit": "^2.0.0 || ^3.0.0"
   }
 }
