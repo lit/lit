@@ -381,7 +381,7 @@
     "/node/"
   ],
   "dependencies": {
-    "@lit-labs/ssr-dom-shim": "^1.1.2-pre.0"
+    "@lit-labs/ssr-dom-shim": "^1.1.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.10",
