@@ -493,8 +493,8 @@
     "@types/trusted-types": "^2.0.2"
   },
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.1-pre.0",
-    "@lit-labs/testing": "^0.2.2-pre.0",
+    "@lit-internal/scripts": "^1.0.1",
+    "@lit-labs/testing": "^0.2.2",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
     "@webcomponents/webcomponentsjs": "^2.8.0"
