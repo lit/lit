@@ -178,7 +178,7 @@
     "@lit/react": "1.0.0"
   },
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.1-pre.0",
+    "@lit-internal/scripts": "^1.0.1",
     "@types/react-dom": "^18.2.6",
     "@types/trusted-types": "^2.0.2",
     "@web/dev-server-rollup": "^0.5.2",
