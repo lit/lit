@@ -6,7 +6,7 @@
 
 import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
 
-import {html, noChange, nothing, Part} from 'lit';
+import {html, svg, noChange, nothing, Part} from 'lit';
 import {html as staticHtml, literal} from 'lit/static-html.js';
 import {
   directive,
@@ -295,6 +295,28 @@ export const tests: {[name: string]: SSRTest} = {
       },
     ],
     stableSelectors: ['div', 'span'],
+  },
+
+  // Regression test for https://github.com/lit/lit/issues/4265
+  // Ensures we do not get extra svg tags around `svg` tagged templates.
+  'ChildPart accepts TemplateResult with SVG type': {
+    render(x: unknown) {
+      return html` <svg>${svg`<circle r="${x}" />`}</svg> `;
+    },
+    expectations: [
+      {
+        args: [11],
+        html: '<svg><circle r="11" /></svg>',
+        check(assert: Chai.Assert, dom: HTMLElement) {
+          // semantic dom diff ignores svg elements, which means we can only
+          // test SVG imperatively.
+          const svgElements = dom.querySelectorAll('svg');
+          // Expect only a single svg element to have been rendered.
+          assert.lengthOf(svgElements, 1);
+        },
+      },
+    ],
+    stableSelectors: ['svg', 'circle'],
   },
 
   'multiple ChildParts, adjacent primitive values': {
