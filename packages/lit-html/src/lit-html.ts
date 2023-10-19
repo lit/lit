@@ -455,7 +455,7 @@ const COMMENT_PART = 7;
 
 /**
  * The return type of the template tag functions, {@linkcode html} and
- * {@linkcode svg}.
+ * {@linkcode svg} when it hasn't been compiled by @lit-labs/compiler.
  *
  * A `TemplateResult` object holds all the information about a template
  * expression required to render it: the template strings, expression values,
@@ -466,12 +466,37 @@ const COMMENT_PART = 7;
  * [Rendering](https://lit.dev/docs/components/rendering) for more information.
  *
  */
-export type TemplateResult<T extends ResultType = ResultType> = {
+export type UncompiledTemplateResult<T extends ResultType = ResultType> = {
   // This property needs to remain unminified.
   ['_$litType$']: T;
   strings: TemplateStringsArray;
   values: unknown[];
 };
+
+export type MaybeCompiledTemplateResult<T extends ResultType = ResultType> =
+  | UncompiledTemplateResult<T>
+  | CompiledTemplateResult;
+
+/**
+ * The return type of the template tag functions, {@linkcode html} and
+ * {@linkcode svg}.
+ *
+ * A `TemplateResult` object holds all the information about a template
+ * expression required to render it: the template strings, expression values,
+ * and type of template (html or svg).
+ *
+ * `TemplateResult` objects do not create any DOM on their own. To create or
+ * update DOM you need to render the `TemplateResult`. See
+ * [Rendering](https://lit.dev/docs/components/rendering) for more information.
+ *
+ * In Lit 4, this type will be an alias of
+ * MaybeCompiledTemplateResult, so that code will get type errors if it assumes
+ * that Lit templates are not compiled. When deliberately working with only
+ * one, use either CompiledTemplateResult or UncompiledTemplateResult
+ * explicitly.
+ */
+export type TemplateResult<T extends ResultType = ResultType> =
+  UncompiledTemplateResult<T>;
 
 export type HTMLTemplateResult = TemplateResult<typeof HTML_RESULT>;
 
@@ -876,7 +901,7 @@ class Template {
 
   constructor(
     // This property needs to remain unminified.
-    {strings, ['_$litType$']: type}: TemplateResult,
+    {strings, ['_$litType$']: type}: UncompiledTemplateResult,
     options?: RenderOptions
   ) {
     let node: Node | null;
@@ -1515,7 +1540,7 @@ class ChildPart implements Disconnectable {
     // to create the <template> element the first time we see it.
     const template: Template | CompiledTemplate =
       typeof type === 'number'
-        ? this._$getTemplate(result as TemplateResult)
+        ? this._$getTemplate(result as UncompiledTemplateResult)
         : (type.el === undefined &&
             (type.el = Template.createElement(
               trustFromTemplateString(type.h, type.h[0]),
@@ -1565,7 +1590,7 @@ class ChildPart implements Disconnectable {
 
   // Overridden via `litHtmlPolyfillSupport` to provide platform support.
   /** @internal */
-  _$getTemplate(result: TemplateResult) {
+  _$getTemplate(result: UncompiledTemplateResult) {
     let template = templateCache.get(result.strings);
     if (template === undefined) {
       templateCache.set(result.strings, (template = new Template(result)));
