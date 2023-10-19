@@ -1,6 +1,6 @@
 ---
-"lit-html": patch
-"lit": patch
+'lit-html': patch
+'lit': patch
 ---
 
-feat(lit-html/directives/when.ts): improve typing
+Improve typing for the `when` directive.
