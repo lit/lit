@@ -163,7 +163,7 @@ export const hydrate = (
       }
       // Create a new ChildPart and push it onto the stack
       currentChildPart = openChildPart(rootValue, marker, stack, options);
-      // Using nullish logical assignment below can cause some minifier to move
+      // Using nullish logical assignment below can cause next.js's swc to move
       // the `openChildPart()` call above behind the nullish check.
       // See https://github.com/lit/lit/issues/4289
       if (rootPart === undefined) {
