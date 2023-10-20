@@ -163,7 +163,12 @@ export const hydrate = (
       }
       // Create a new ChildPart and push it onto the stack
       currentChildPart = openChildPart(rootValue, marker, stack, options);
-      rootPart ??= currentChildPart;
+      // Using nullish logical assignment below can cause next.js's swc to move
+      // the `openChildPart()` call above behind the nullish check.
+      // See https://github.com/lit/lit/issues/4289
+      if (rootPart === undefined) {
+        rootPart = currentChildPart;
+      }
       rootPartMarker ??= marker;
     } else if (markerText.startsWith('lit-node')) {
       // Create and hydrate attribute parts into the current ChildPart on the
