@@ -247,6 +247,19 @@ export class ModuleLoader {
     };
     this.cache.set(modulePath, moduleRecord);
     const module = await modulePromise;
+    // Modules must be fully loaded before linking. Therefore `_loadModule` must
+    // also load its dependencies.
+    // Reference: https://tc39.es/ecma262/#table-abstract-methods-of-module-records
+    const {identifier} = module;
+    if (!/:\d+$/.test(identifier)) {
+      throw new Error('Unexpected file:// URL identifier without context ID');
+    }
+    const moduleReferrerPath = identifier.split(/:\d+$/)[0];
+    await Promise.all(
+      module.dependencySpecifiers.map((s) =>
+        this._loadModule(s, moduleReferrerPath)
+      )
+    );
     return {
       path: modulePath,
       module,
