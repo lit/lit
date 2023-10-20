@@ -17,6 +17,20 @@ const specifierMatches = (specifier: string, match: string) =>
   specifier === match || specifier.startsWith(match + '/');
 
 /**
+ * `getModuleReferrerPath` returns the file path for a provided module.
+ */
+const getModuleReferrerPath = (module: vm.Module): string => {
+  const {identifier} = module;
+  if (!/:\d+$/.test(identifier)) {
+    throw new Error(
+      'Internal error: Unexpected file:// URL identifier without context ID. ' +
+        'Expected identifier in form: "/packages/lit-element.js:8".'
+    );
+  }
+  return identifier.split(/:\d+$/)[0];
+};
+
+/**
  * Creates a new object that provides a basic set of globals suitable for use as
  * the default context object for a VM module.
  *
@@ -199,8 +213,9 @@ export class ModuleLoader {
   }
 
   /**
-   * Performs the actual loading of module source from disk, creates the
-   * Module instance, and maintains the module cache.
+   * Performs the actual loading of module source from disk, creates the Module
+   * instance, and maintains the module cache. Also loads all dependencies of
+   * the module.
    *
    * Used directly by `importModule` and by the linker and dynamic import()
    * support function.
@@ -250,11 +265,7 @@ export class ModuleLoader {
     // Modules must be fully loaded before linking. Therefore `_loadModule` must
     // also load its dependencies.
     // Reference: https://tc39.es/ecma262/#table-abstract-methods-of-module-records
-    const {identifier} = module;
-    if (!/:\d+$/.test(identifier)) {
-      throw new Error('Unexpected file:// URL identifier without context ID');
-    }
-    const moduleReferrerPath = identifier.split(/:\d+$/)[0];
+    const moduleReferrerPath = getModuleReferrerPath(module);
     await Promise.all(
       module.dependencySpecifiers.map((s) =>
         this._loadModule(s, moduleReferrerPath)
@@ -319,11 +330,7 @@ export class ModuleLoader {
     specifier: string,
     referencingModule: vm.Module
   ): Promise<vm.Module> => {
-    const {identifier} = referencingModule;
-    if (!/:\d+$/.test(identifier)) {
-      throw new Error('Unexpected file:// URL identifier without context ID');
-    }
-    const referrerPath = identifier.split(/:\d+$/)[0];
+    const referrerPath = getModuleReferrerPath(referencingModule);
     const result = await this._loadModule(specifier, referrerPath);
     const referrerModule = this.cache.get(referrerPath);
     if (referrerModule !== undefined) {
