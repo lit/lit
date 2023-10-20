@@ -17,18 +17,10 @@ const specifierMatches = (specifier: string, match: string) =>
   specifier === match || specifier.startsWith(match + '/');
 
 /**
- * `getModuleReferrerPath` returns the file path for a provided module.
+ * We store Module identifiers as `${modulePath}:${this._vmContextId}`.
+ * This regex matches the vm context id.
  */
-const getModuleReferrerPath = (module: vm.Module): string => {
-  const {identifier} = module;
-  if (!/:\d+$/.test(identifier)) {
-    throw new Error(
-      'Internal error: Unexpected file:// URL identifier without context ID. ' +
-        'Expected identifier in form: "/packages/lit-element.js:8".'
-    );
-  }
-  return identifier.split(/:\d+$/)[0];
-};
+const CONTEXT_ID = /:\d+$/;
 
 /**
  * Creates a new object that provides a basic set of globals suitable for use as
@@ -265,7 +257,7 @@ export class ModuleLoader {
     // Modules must be fully loaded before linking. Therefore `_loadModule` must
     // also load its dependencies.
     // Reference: https://tc39.es/ecma262/#table-abstract-methods-of-module-records
-    const moduleReferrerPath = getModuleReferrerPath(module);
+    const moduleReferrerPath = this.getModulePath(module);
     await Promise.all(
       module.dependencySpecifiers.map((s) =>
         this._loadModule(s, moduleReferrerPath)
@@ -330,7 +322,7 @@ export class ModuleLoader {
     specifier: string,
     referencingModule: vm.Module
   ): Promise<vm.Module> => {
-    const referrerPath = getModuleReferrerPath(referencingModule);
+    const referrerPath = this.getModulePath(referencingModule);
     const result = await this._loadModule(specifier, referrerPath);
     const referrerModule = this.cache.get(referrerPath);
     if (referrerModule !== undefined) {
@@ -345,6 +337,20 @@ export class ModuleLoader {
 
   private _getBuiltInIdentifier(specifier: string) {
     return `${specifier}:${this._vmContextId}`;
+  }
+
+  /**
+   * `getModulePath` returns the file path for a provided module.
+   */
+  private getModulePath(module: vm.Module): string {
+    const {identifier} = module;
+    if (!CONTEXT_ID.test(identifier)) {
+      throw new Error(
+        'Internal error: Unexpected file:// URL identifier without context ID. ' +
+          'Expected identifier in form: "/packages/lit-element.js:8".'
+      );
+    }
+    return identifier.split(CONTEXT_ID)[0];
   }
 }
 
