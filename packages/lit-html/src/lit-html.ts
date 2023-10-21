@@ -47,7 +47,7 @@ export namespace LitUnstable {
       kind: 'template prep';
       template: Template;
       strings: TemplateStringsArray;
-      clonableTemplate: HTMLTemplateElement;
+      clonableTemplate: DocumentFragment;
       parts: TemplatePart[];
     }
     export interface BeginRender {
@@ -487,7 +487,7 @@ export interface CompiledTemplateResult {
 
 export interface CompiledTemplate extends Omit<Template, 'el'> {
   // el is overridden to be optional. We initialize it on first render
-  el?: HTMLTemplateElement;
+  el?: DocumentFragment;
 
   // The prepared HTML string to create a template element from.
   // The type is a TemplateStringsArray to guarantee that the value came from
@@ -856,7 +856,10 @@ const getTemplateHtml = (
 export type {Template};
 class Template {
   /** @internal */
-  el!: HTMLTemplateElement;
+  static parser = new DOMParser();
+
+  /** @internal */
+  el!: DocumentFragment;
 
   parts: Array<TemplatePart> = [];
 
@@ -873,14 +876,8 @@ class Template {
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
-    this.el = Template.createElement(html, options);
-    walker.currentNode = this.el.content;
-
-    // Re-parent SVG nodes into template root
-    if (type === SVG_RESULT) {
-      const svgElement = this.el.content.firstChild!;
-      svgElement.replaceWith(...svgElement.childNodes);
-    }
+    this.el = Template.createElement(html, options, type);
+    walker.currentNode = this.el;
 
     // Walk the template to find binding markers and create TemplateParts
     while ((node = walker.nextNode()) !== null && parts.length < partCount) {
@@ -999,10 +996,24 @@ class Template {
 
   // Overridden via `litHtmlPolyfillSupport` to provide platform support.
   /** @nocollapse */
-  static createElement(html: TrustedHTML, _options?: RenderOptions) {
-    const el = d.createElement('template');
-    el.innerHTML = html as unknown as string;
-    return el;
+  static createElement(
+    html: TrustedHTML,
+    _options?: RenderOptions | undefined,
+    type?: ResultType
+  ) {
+    const doc = this.parser.parseFromString(
+      '<body>' + (html as unknown as string) + '</body>',
+      'text/html'
+    );
+
+    const fragment = d.createDocumentFragment();
+    fragment.replaceChildren(
+      ...(type === SVG_RESULT
+        ? doc.body.firstChild!.childNodes
+        : doc.body.childNodes)
+    );
+
+    return fragment;
   }
 }
 
@@ -1097,11 +1108,8 @@ class TemplateInstance implements Disconnectable {
   // This method is separate from the constructor because we need to return a
   // DocumentFragment and we don't want to hold onto it with an instance field.
   _clone(options: RenderOptions | undefined) {
-    const {
-      el: {content},
-      parts: parts,
-    } = this._$template;
-    const fragment = (options?.creationScope ?? d).importNode(content, true);
+    const {el, parts: parts} = this._$template;
+    const fragment = (options?.creationScope ?? d).importNode(el, true);
     walker.currentNode = fragment;
 
     let node = walker.nextNode()!;
