@@ -61,17 +61,21 @@ interface PatchableChildPart {
   _$endNode: ChildNode | null;
   options: RenderOptions;
   _$setValue(value: unknown, directiveParent: DirectiveParent): void;
-  _$getTemplate(result: ShadyTemplateResult): HTMLTemplateElement;
+  _$getTemplate(result: ShadyTemplateResult): DocumentFragment;
 }
 
 interface PatchableTemplate {
-  el: HTMLTemplateElement;
+  el: DocumentFragment;
 }
 
 interface PatchableTemplateConstructor {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableTemplate;
-  createElement(html: string, options?: RenderOptions): HTMLTemplateElement;
+  createElement(
+    html: string,
+    options?: RenderOptions,
+    type?: number
+  ): DocumentFragment;
 }
 
 interface PatchableTemplateInstance {
@@ -176,8 +180,14 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
    * Note, it's ok to patch Template since it's only used via ChildPart.
    */
   const originalCreateElement = Template.createElement;
-  Template.createElement = function (html: string, options?: RenderOptions) {
-    const element = originalCreateElement.call(Template, html, options);
+  Template.createElement = function (
+    html: string,
+    options?: RenderOptions,
+    type?: number
+  ) {
+    const fragment = originalCreateElement.call(Template, html, options, type);
+    const element = document.createElement('template');
+    element.content.replaceChildren(...Array.from(fragment.childNodes));
     const scope = options?.scope;
     if (scope !== undefined) {
       if (!window.ShadyCSS!.nativeShadow) {
@@ -201,7 +211,7 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
         );
       }
     }
-    return element;
+    return element.content;
   };
 
   const renderContainer = document.createDocumentFragment();
@@ -245,14 +255,17 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
       // This property needs to remain unminified.
       const template = (value as ShadyTemplateResult)?.['_$litType$']
         ? (this._$committedValue as PatchableTemplateInstance)._$template.el
-        : document.createElement('template');
-      prepareStyles(scope!, template);
+        : document.createDocumentFragment();
+      const element = document.createElement('template');
+      element.content.replaceChildren(...Array.from(template.childNodes));
+      prepareStyles(scope!, element);
+      template.replaceChildren(...Array.from(element.content.childNodes));
 
       // Note, this is the temporary startNode.
       renderContainer.removeChild(renderContainerMarker);
       // When using native Shadow DOM, include prepared style in shadowRoot.
       if (window.ShadyCSS?.nativeShadow) {
-        const style = template.content.querySelector('style');
+        const style = template.querySelector('style');
         if (style !== null) {
           renderContainer.appendChild(style.cloneNode(true));
         }
