@@ -76,10 +76,7 @@ for (const lang of languages) {
     assert.instance(decl.classDeclaration, LitElementDeclaration);
     const classDecl = decl.classDeclaration as LitElementDeclaration;
     assert.equal(classDecl.name, 'A');
-    if (lang === 'ts') {
-      //TODO(kschaaf): Add detection of constructor-defined fields to ClassField
-      assert.ok(classDecl.getField('a'));
-    }
+    assert.ok(classDecl.getField('a'));
     assert.ok(classDecl.reactiveProperties.get('a'));
   });
 
@@ -90,10 +87,7 @@ for (const lang of languages) {
     assert.instance(decl.classDeclaration, LitElementDeclaration);
     const classDecl = decl.classDeclaration as LitElementDeclaration;
     assert.equal(classDecl.name, 'B');
-    if (lang === 'ts') {
-      //TODO(kschaaf): Add detection of constructor-defined fields to ClassField
-      assert.ok(classDecl.getField('b'));
-    }
+    assert.ok(classDecl.getField('b'));
     assert.ok(classDecl.reactiveProperties.get('b'));
   });
 
@@ -104,10 +98,7 @@ for (const lang of languages) {
     assert.instance(decl.classDeclaration, LitElementDeclaration);
     const classDecl = decl.classDeclaration as LitElementDeclaration;
     assert.equal(classDecl.name, 'C');
-    if (lang === 'ts') {
-      //TODO(kschaaf): Add detection of constructor-defined fields to ClassField
-      assert.ok(classDecl.getField('c'));
-    }
+    assert.ok(classDecl.getField('c'));
     assert.ok(classDecl.reactiveProperties.get('c'));
   });
 
@@ -120,28 +111,19 @@ for (const lang of languages) {
     assert.equal(decl.heritage.mixins[0].name, 'A');
     const a = decl.heritage.mixins[0].dereference();
     assert.ok(a.isMixinDeclaration());
-    if (lang === 'ts') {
-      //TODO(kschaaf): Add detection of constructor-defined fields to ClassField
-      assert.ok(a.classDeclaration.getField('a'));
-    }
+    assert.ok(a.classDeclaration.getField('a'));
     assert.ok(a.classDeclaration.isLitElementDeclaration());
     assert.ok(a.classDeclaration.reactiveProperties.get('a'));
     assert.equal(decl.heritage.mixins[1].name, 'B');
     const b = decl.heritage.mixins[1].dereference();
     assert.ok(b.isMixinDeclaration());
-    if (lang === 'ts') {
-      //TODO(kschaaf): Add detection of constructor-defined fields to ClassField
-      assert.ok(b.classDeclaration.getField('b'));
-    }
+    assert.ok(b.classDeclaration.getField('b'));
     assert.ok(b.classDeclaration.isLitElementDeclaration());
     assert.ok(b.classDeclaration.reactiveProperties.get('b'));
     assert.equal(decl.heritage.mixins[2].name, 'C');
     const c = decl.heritage.mixins[2].dereference();
     assert.ok(c.isMixinDeclaration());
-    if (lang === 'ts') {
-      //TODO(kschaaf): Add detection of constructor-defined fields to ClassField
-      assert.ok(c.classDeclaration.getField('c'));
-    }
+    assert.ok(c.classDeclaration.getField('c'));
     assert.ok(c.classDeclaration.isLitElementDeclaration());
     assert.ok(c.classDeclaration.reactiveProperties.get('c'));
   });
