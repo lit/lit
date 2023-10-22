@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {createComponent} from '@lit-labs/react';
+import {createComponent} from '@lit/react';
 
 import {ElementMixins as ElementMixinsElement} from '@lit-internal/test-element-a/element-mixins.js';
 
