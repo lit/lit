@@ -63,10 +63,10 @@
   "dependencies": {
     "@lit-labs/analyzer": "^0.10.0",
     "@lit-labs/gen-utils": "^0.3.0",
-    "@lit-labs/vue-utils": "^0.1.1-pre.0"
+    "@lit-labs/vue-utils": "^0.1.1"
   },
   "devDependencies": {
-    "@lit-internal/tests": "^0.0.1-pre.0"
+    "@lit-internal/tests": "^0.0.1"
   },
   "engines": {
     "node": ">=14.8.0"
