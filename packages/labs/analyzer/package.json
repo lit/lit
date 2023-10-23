@@ -18,7 +18,8 @@
   "scripts": {
     "build": "wireit",
     "test": "wireit",
-    "test:server": "wireit"
+    "test:server": "wireit",
+    "test:browser": "wireit"
   },
   "wireit": {
     "build": {
@@ -36,9 +37,20 @@
       ],
       "clean": "if-file-deleted"
     },
+    "build:typescript": {
+      "#comment": "This builds a JS module of typescript for use in browser tests",
+      "command": "FORCE_COLOR=1 rollup -c rollup.config.typescript.js",
+      "files": [
+        "rollup.config.typescript.js"
+      ],
+      "output": [
+        "test/browser/typescript.js"
+      ]
+    },
     "test": {
       "dependencies": [
-        "test:server"
+        "test:server",
+        "test:browser"
       ]
     },
     "test:server": {
@@ -51,6 +63,21 @@
       "files": [
         "test-files/"
       ],
+      "output": []
+    },
+    "test:browser": {
+      "command": "MODE=dev node ../../tests/run-web-tests.js \"test/browser/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build",
+        "build:typescript",
+        "../../tests:build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
+      "files": [],
       "output": []
     }
   },
@@ -67,5 +94,9 @@
   "dependencies": {
     "package-json-type": "^1.0.3",
     "typescript": "~5.2.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "path-module": "^0.1.2"
   }
 }
