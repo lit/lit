@@ -856,7 +856,7 @@ const getTemplateHtml = (
 export type {Template};
 class Template {
   /** @internal */
-  static parser = new DOMParser();
+  static parser: DOMParser;
 
   /** @internal */
   el!: DocumentFragment;
@@ -1001,6 +1001,9 @@ class Template {
     _options?: RenderOptions | undefined,
     type?: ResultType
   ) {
+    if (this.parser === undefined) {
+      this.parser = new DOMParser();
+    }
     const doc = this.parser.parseFromString(
       '<body>' + (html as unknown as string) + '</body>',
       'text/html'
