@@ -159,7 +159,9 @@
     "tachometer": "^0.7.0"
   },
   "dependencies": {
-    "lit": "^2 || ^3",
     "tslib": "^2.0.3"
+  },
+  "peerDependencies": {
+    "lit": "^2 || ^3"
   }
 }
