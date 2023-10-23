@@ -15,7 +15,7 @@ import {
 
 // Get actual constructor to test internal ability to assert the type
 // of a dereferenced Declaration
-import {ClassDeclaration, LitElementDeclaration} from '../../lib/model.js';
+import {ClassDeclaration, LitElementDeclaration} from '../../../lib/model.js';
 
 for (const lang of languages) {
   const test = suite<AnalyzerTestContext>(`LitElement tests (${lang})`);

@@ -7,9 +7,9 @@
 import * as path from 'path';
 import * as fs from 'fs';
 import ts from 'typescript';
-import {AbsolutePath, Analyzer, Module} from '../index.js';
+import {AbsolutePath, Analyzer, Module} from '../../index.js';
 import {fileURLToPath} from 'url';
-import {createPackageAnalyzer} from '../package-analyzer.js';
+import {createPackageAnalyzer} from '../../package-analyzer.js';
 
 type Language = 'ts' | 'js';
 
@@ -217,7 +217,7 @@ export const setupAnalyzerForTest = (
 ) => {
   try {
     const packagePath = fileURLToPath(
-      new URL(`../test-files/${lang}/${pkg}`, import.meta.url).href
+      new URL(`../../test-files/${lang}/${pkg}`, import.meta.url).href
     ) as AbsolutePath;
     const analyzer = createPackageAnalyzer(packagePath);
     const diagnostics = [...analyzer.getDiagnostics()];
