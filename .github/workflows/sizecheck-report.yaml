@@ -1,0 +1,40 @@
+name: Report Sizecheck Results
+
+on:
+  workflow_run:
+    workflows: [Sizecheck]
+    branches: ['**']
+    types: [completed]
+
+jobs:
+  on-success:
+    name: Report sizecheck success
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Comment on size report empty
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: 'The size of lit-html.js and lit-core.min.js are as expected.'
+          comment_tag: check-size # ensures we overwrite old failure comment if present
+
+  on-failure:
+    name: Report sizecheck failure
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+    steps:
+      # Download the artifact from the triggering workflow that contains the
+      # size check results to report
+      - name: Download artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: ${{ github.event.workflow.id }}
+          run_id: ${{ github.event.workflow_run.id }}
+          name: sizecheck
+          path: scripts
+
+      - name: Comment about failing size report
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: scripts/check-size-out.md
+          comment_tag: check-size # ensures we create or update one size comment
