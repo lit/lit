@@ -40,6 +40,17 @@ export interface Options<C extends Context<unknown, unknown>> {
 }
 
 /**
+ * Generates a public interface type that removes private and protected fields.
+ * This allows accepting otherwise compatible versions of the type (e.g. from
+ * multiple copies of the same package in `node_modules`).
+ */
+type Interface<T> = {
+  [K in keyof T]: T[K];
+};
+
+type ReactiveElementHost = Interface<Omit<ReactiveElement, 'renderRoot'>>;
+
+/**
  * A ReactiveController which adds context provider behavior to a
  * custom element.
  *
@@ -49,7 +60,7 @@ export interface Options<C extends Context<unknown, unknown>> {
  */
 export class ContextProvider<
     T extends Context<unknown, unknown>,
-    HostElement extends ReactiveElement = ReactiveElement
+    HostElement extends ReactiveElementHost = ReactiveElementHost
   >
   extends ValueNotifier<ContextType<T>>
   implements ReactiveController
