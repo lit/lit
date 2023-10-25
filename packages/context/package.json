@@ -92,7 +92,7 @@
       ]
     },
     "build:ts:lit2-tests": {
-      "#comment": "This is a separate script from build:ts because it needs a tsconfig that maps in lit@2.",
+      "#comment": "Run this to install and build additional cross-version type tests.",
       "command": "tsc --pretty --project tsconfig.lit2-tests.json",
       "clean": "if-file-deleted",
       "dependencies": [
@@ -183,7 +183,6 @@
       "command": "MODE=dev node ../tests/run-web-tests.js \"development/**/*_test.js\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
-        "build:ts:std-decorators-tests",
         "../tests:build"
       ],
       "env": {
@@ -198,7 +197,6 @@
       "command": "MODE=prod node ../tests/run-web-tests.js \"development/**/*_test.js\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build",
-        "build:ts:std-decorators-tests",
         "../tests:build"
       ],
       "env": {
