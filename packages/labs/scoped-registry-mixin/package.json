@@ -145,13 +145,13 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/reactive-element": "^2.0.0",
-    "lit": "^3.0.0"
+    "@lit/reactive-element": "^1.0.0 || ^2.0.0",
+    "lit": "^2.0.0 || ^3.0.0"
   },
   "devDependencies": {
+    "@lit-internal/scripts": "^1.0.1",
     "@types/trusted-types": "^2.0.2",
-    "@webcomponents/scoped-custom-element-registry": "^0.0.5",
-    "@lit-internal/scripts": "^1.0.1-pre.0"
+    "@webcomponents/scoped-custom-element-registry": "^0.0.5"
   },
   "publishConfig": {
     "access": "public"

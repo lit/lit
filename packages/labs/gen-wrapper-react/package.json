@@ -64,7 +64,7 @@
     "@lit-labs/gen-utils": "^0.3.0"
   },
   "devDependencies": {
-    "@lit-internal/tests": "^0.0.1-pre.0"
+    "@lit-internal/tests": "^0.0.1"
   },
   "engines": {
     "node": ">=14.8.0"

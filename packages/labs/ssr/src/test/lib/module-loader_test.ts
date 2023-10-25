@@ -96,4 +96,18 @@ test('prefers "module" condition over "import"', async () => {
   assert.ok(loader.cache.has(packagePath));
 });
 
+test('concurrently load modules with a shared dependency without crashing', async () => {
+  const loader = new ModuleLoader();
+  // Both of these dependencies import LitElement from `lit`.
+  const [rootResult, result] = await Promise.all([
+    loader.importModule('./lit-import-from-root.js', testIndex),
+    loader.importModule('./lit-import.js', testIndex),
+  ]);
+  const {module: rootModule} = rootResult;
+  const {module} = result;
+
+  assert.ok(rootModule.namespace.litElement);
+  assert.is(rootModule.namespace.litElement, module.namespace.litElement);
+});
+
 test.run();

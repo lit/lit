@@ -369,6 +369,24 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('svg fragment template', async () => {
+    const {render, svgTemplate} = await setup();
+    const result = await render(svgTemplate(0, 0, 10));
+    assert.is(
+      result,
+      `<!--lit-part qyEc9rpeBZw=--><!--lit-node 0--><circle cx="0" cy="0" r="10" /><!--/lit-part-->`
+    );
+  });
+
+  test('html template type with svg template type ChildPart', async () => {
+    const {render, templateWithSvgTemplate} = await setup();
+    const result = await render(templateWithSvgTemplate(0, 0, 10));
+    assert.is(
+      result,
+      `<!--lit-part eTJe7bZHqAs=--><svg><!--lit-part qyEc9rpeBZw=--><!--lit-node 0--><circle cx="0" cy="0" r="10" /><!--/lit-part--></svg><!--/lit-part-->`
+    );
+  });
+
   test('element with reflected properties', async () => {
     const {render, elementWithReflectedProperties} = await setup();
     const result = await render(elementWithReflectedProperties);

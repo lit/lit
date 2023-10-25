@@ -153,11 +153,11 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@types/trusted-types": "^2.0.2",
-    "@lit-internal/scripts": "^1.0.1-pre.0"
+    "@lit-internal/scripts": "^1.0.1",
+    "@types/trusted-types": "^2.0.2"
   },
   "dependencies": {
-    "lit": "^3.0.0"
+    "lit": "^2.0.0 || ^3.0.0"
   },
   "publishConfig": {
     "access": "public"

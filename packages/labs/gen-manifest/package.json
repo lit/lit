@@ -53,7 +53,7 @@
     "custom-elements-manifest": "^2.0.0"
   },
   "devDependencies": {
-    "@lit-internal/tests": "^0.0.1-pre.0",
+    "@lit-internal/tests": "^0.0.1",
     "@types/node": "^17.0.31",
     "lit": "^3.0.0",
     "uvu": "^0.5.3"

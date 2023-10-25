@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html, nothing} from 'lit';
+import {html, svg, nothing} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {LitElement, css, PropertyValues} from 'lit';
@@ -47,6 +47,10 @@ export const inputTemplateWithAttributeExpressionAndChildElement = (x: string) =
   html`<input x=${x}><p>hi</p></input>`;
 // prettier-ignore
 export const templateWithMixedCaseAttrs = (str: string) => html`<svg dynamicCamel=${str} staticCamel="static"></svg>`;
+// prettier-ignore
+export const svgTemplate = (x: number, y: number, r: number) => svg`<circle cx="${x}" cy="${y}" r="${r}" />`;
+// prettier-ignore
+export const templateWithSvgTemplate = (x: number, y: number, r: number) => html`<svg>${svgTemplate(x, y, r)}</svg>`;
 
 /* Reflected Property Expressions */
 

@@ -90,7 +90,7 @@
     "typescript": "~5.2.0"
   },
   "devDependencies": {
-    "@lit-internal/tests": "^0.0.1-pre.0",
+    "@lit-internal/tests": "^0.0.1",
     "@types/command-line-args": "^5.2.0",
     "@types/command-line-commands": "^2.0.1",
     "@types/command-line-usage": "^5.0.2"
