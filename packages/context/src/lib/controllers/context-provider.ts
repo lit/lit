@@ -7,7 +7,10 @@
 import {ContextRequestEvent} from '../context-request-event.js';
 import {ValueNotifier} from '../value-notifier.js';
 import type {Context, ContextType} from '../create-context.js';
-import type {ReactiveController, ReactiveControllerHost} from 'lit';
+import type {
+  ReactiveController,
+  ReactiveControllerHost,
+} from '@lit/reactive-element';
 
 declare global {
   interface HTMLElementEventMap {
