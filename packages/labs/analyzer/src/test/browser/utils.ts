@@ -17,14 +17,6 @@ export interface Files {
   [index: string]: string;
 }
 
-// Note that because some paths come into the language host filesystem
-// abstractions in posix format and others may come in in OS-native
-// format, we normalize all paths going in/out of the in-memory cache to
-// posix format. There is apparently no path lib method to do this.
-// https://stackoverflow.com/questions/53799385/how-can-i-convert-a-windows-path-to-posix-path-using-node-path
-// const normalize = (p: string) => p.split(path.sep).join(path.posix.sep);
-const normalize = (p: string) => p;
-
 type Language = 'ts' | 'js';
 
 export type TypeScript = typeof ts;
@@ -48,7 +40,7 @@ export class InMemoryAnalyzer extends Analyzer {
     const ts = typescript;
     const cache: Cache = Object.fromEntries(
       Object.entries(files).map(([name, content]) => [
-        normalize(name),
+        name,
         {content, version: 0},
       ])
     );
@@ -75,7 +67,7 @@ export class InMemoryAnalyzer extends Analyzer {
   }
 
   setFile(name: string, content: string) {
-    const fileName = normalize(getSourceFilename(name, this._lang));
+    const fileName = getSourceFilename(name, this._lang);
     const prev = this._cache[fileName] ?? {version: -1};
     this._cache[fileName] = {content, version: prev.version + 1};
     this._dirty = true;
@@ -109,22 +101,13 @@ const createHost = (typescript: TypeScript, cache: Cache, lang: Language) => {
   return {
     getScriptFileNames: () =>
       Object.keys(cache).filter((s) => s.endsWith('.ts') || s.endsWith('.js')),
-    getScriptVersion: (fileName: string) =>
-      cache[normalize(fileName)].version.toString(),
+    getScriptVersion: (fileName: string) => cache[fileName].version.toString(),
     getScriptSnapshot: (fileName: string) => {
       if (isLib(fileName)) {
-        console.log('requested lib', fileName);
         return undefined;
-        // return fs.existsSync(fileName)
-        //   ? ts.ScriptSnapshot.fromString(
-        //       fs.readFileSync(path.normalize(fileName), 'utf-8')
-        //     )
-        //   : undefined;
       } else {
         return fileName in cache
-          ? typescript.ScriptSnapshot.fromString(
-              cache[normalize(fileName)].content
-            )
+          ? typescript.ScriptSnapshot.fromString(cache[fileName].content)
           : undefined;
       }
     },
@@ -142,13 +125,13 @@ const createHost = (typescript: TypeScript, cache: Cache, lang: Language) => {
       // console.log('fileExists', fileName);
       return isLib(fileName)
         ? typescript.sys.fileExists(path.normalize(fileName))
-        : normalize(fileName) in cache;
+        : fileName in cache;
     },
-    readFile: (fileName: string) => cache[normalize(fileName)].content,
+    readFile: (fileName: string) => cache[fileName].content,
     readDirectory: (fileName: string) =>
-      readDirectory(cache, normalize(fileName) as AbsolutePath),
+      readDirectory(cache, fileName as AbsolutePath),
     directoryExists: (dir: string) =>
-      readDirectory(cache, normalize(dir) as AbsolutePath).length > 0,
+      readDirectory(cache, dir as AbsolutePath).length > 0,
     getDirectories: () => [],
   } satisfies ts.LanguageServiceHost;
 };
@@ -212,4 +195,4 @@ const readDirectory = (cache: Cache, dir: AbsolutePath) => {
  * files we read off of disk; everything else comes from the in-memory cache.
  */
 const isLib = (fileName: string) =>
-  normalize(fileName).includes('node_modules/typescript/lib');
+  fileName.includes('node_modules/typescript/lib');
