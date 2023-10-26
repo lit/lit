@@ -5,9 +5,9 @@
  */
 
 import {ContextRequestEvent} from '../context-request-event.js';
-import {Context, ContextType} from '../create-context.js';
 import {ValueNotifier} from '../value-notifier.js';
-import {ReactiveController, ReactiveElement} from 'lit';
+import type {Context, ContextType} from '../create-context.js';
+import type {ReactiveController, ReactiveControllerHost} from 'lit';
 
 declare global {
   interface HTMLElementEventMap {
@@ -39,16 +39,7 @@ export interface Options<C extends Context<unknown, unknown>> {
   initialValue?: ContextType<C>;
 }
 
-/**
- * Generates a public interface type that removes private and protected fields.
- * This allows accepting otherwise compatible versions of the type (e.g. from
- * multiple copies of the same package in `node_modules`).
- */
-type Interface<T> = {
-  [K in keyof T]: T[K];
-};
-
-type ReactiveElementHost = Interface<Omit<ReactiveElement, 'renderRoot'>>;
+type ReactiveElementHost = ReactiveControllerHost & HTMLElement;
 
 /**
  * A ReactiveController which adds context provider behavior to a
