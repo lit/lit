@@ -5,9 +5,9 @@
  */
 
 import {ContextRequestEvent} from '../context-request-event.js';
-import {Context, ContextType} from '../create-context.js';
 import {ValueNotifier} from '../value-notifier.js';
-import {ReactiveController, ReactiveElement} from 'lit';
+import type {Context, ContextType} from '../create-context.js';
+import type {ReactiveController, ReactiveControllerHost} from 'lit';
 
 declare global {
   interface HTMLElementEventMap {
@@ -39,6 +39,8 @@ export interface Options<C extends Context<unknown, unknown>> {
   initialValue?: ContextType<C>;
 }
 
+type ReactiveElementHost = ReactiveControllerHost & HTMLElement;
+
 /**
  * A ReactiveController which adds context provider behavior to a
  * custom element.
@@ -47,18 +49,21 @@ export interface Options<C extends Context<unknown, unknown>> {
  * the host is connected to the DOM and registers the received callbacks
  * against its observable Context implementation.
  */
-export class ContextProvider<T extends Context<unknown, unknown>>
+export class ContextProvider<
+    T extends Context<unknown, unknown>,
+    HostElement extends ReactiveElementHost = ReactiveElementHost
+  >
   extends ValueNotifier<ContextType<T>>
   implements ReactiveController
 {
-  protected readonly host: ReactiveElement;
+  protected readonly host: HostElement;
   private readonly context: T;
 
-  constructor(host: ReactiveElement, options: Options<T>);
+  constructor(host: HostElement, options: Options<T>);
   /** @deprecated Use new ContextProvider(host, options) */
-  constructor(host: ReactiveElement, context: T, initialValue?: ContextType<T>);
+  constructor(host: HostElement, context: T, initialValue?: ContextType<T>);
   constructor(
-    host: ReactiveElement,
+    host: HostElement,
     contextOrOptions: T | Options<T>,
     initialValue?: ContextType<T>
   ) {
