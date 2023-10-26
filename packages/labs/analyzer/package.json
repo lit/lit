@@ -39,7 +39,7 @@
     },
     "build:ts-bundle": {
       "#comment": "This builds a JS module of typescript for use in browser tests",
-      "command": "FORCE_COLOR=1 rollup -c rollup.config.typescript.js",
+      "command": "rollup -c rollup.config.typescript.js",
       "files": [
         "rollup.config.typescript.js"
       ],
