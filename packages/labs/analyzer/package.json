@@ -37,7 +37,7 @@
       ],
       "clean": "if-file-deleted"
     },
-    "build:typescript": {
+    "build:ts-bundle": {
       "#comment": "This builds a JS module of typescript for use in browser tests",
       "command": "FORCE_COLOR=1 rollup -c rollup.config.typescript.js",
       "files": [
@@ -69,7 +69,7 @@
       "command": "MODE=dev node ../../tests/run-web-tests.js \"test/browser/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
         "build",
-        "build:typescript",
+        "build:ts-bundle",
         "../../tests:build"
       ],
       "env": {
