@@ -162,7 +162,7 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/context": "1.0.0"
+    "@lit/context": "^1.0.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",
