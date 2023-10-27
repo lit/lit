@@ -1416,6 +1416,9 @@ export abstract class ReactiveElement
       // initializers, so we just set them anyway - a difference from
       // experimental decorators on fields and standard decorators on
       // auto-accessors.
+      // For context why experimentalDecorators with auto accessors are handled
+      // specifically also see:
+      // https://github.com/lit/lit/pull/4183#issuecomment-1711959635
       const elementProperties = (this.constructor as typeof ReactiveElement)
         .elementProperties;
       if (elementProperties.size > 0) {
