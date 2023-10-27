@@ -47,7 +47,7 @@ suite('choose', () => {
   });
 
   // Type-only regression test of https://github.com/lit/lit/issues/4220
-  test.skip('type-only: correctly infers typ eof possible cases from value', () => {
+  test.skip('type-only: correctly infers type of possible cases from value', () => {
     type CheckoutStep = 'register' | 'delivery' | 'payment';
     const step = 'register' as CheckoutStep;
     return choose(step, [
