@@ -15,7 +15,7 @@ import {
   languages,
   setupAnalyzerForTest,
 } from './utils.js';
-import {DiagnosticCode} from '../lib/diagnostic-code.js';
+import {DiagnosticCode} from '../../lib/diagnostic-code.js';
 
 for (const lang of languages) {
   const test = suite<AnalyzerTestContext>(`Basic Analyzer tests (${lang})`);

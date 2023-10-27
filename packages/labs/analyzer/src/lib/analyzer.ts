@@ -103,7 +103,7 @@ export class Analyzer implements AnalyzerInterface {
 export const getCommandLineFromProgram = (
   analyzer: Analyzer
 ): ts.ParsedCommandLine => {
-  const {program, typescript, path} = analyzer;
+  const {program, typescript, path, fs} = analyzer;
   const compilerOptions = program.getCompilerOptions();
   const files = program.getRootFileNames();
   const json = {
@@ -115,7 +115,7 @@ export const getCommandLineFromProgram = (
     const packageRoot = path.basename(compilerOptions.configFilePath as string);
     return typescript.parseJsonConfigFileContent(
       json,
-      typescript.sys,
+      fs,
       packageRoot,
       undefined,
       compilerOptions.configFilePath as string
@@ -131,10 +131,6 @@ export const getCommandLineFromProgram = (
       // means we can't use ts.getOutputFileNames(), which we isn't needed in
       // JS program
     );
-    return typescript.parseJsonConfigFileContent(
-      json,
-      typescript.sys,
-      packageRoot
-    );
+    return typescript.parseJsonConfigFileContent(json, fs, packageRoot);
   }
 };

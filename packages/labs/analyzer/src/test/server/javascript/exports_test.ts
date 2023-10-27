@@ -7,7 +7,7 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {AbsolutePath} from '../../lib/paths.js';
+import {AbsolutePath} from '../../../lib/paths.js';
 import {getSourceFilename, InMemoryAnalyzer, languages} from '../utils.js';
 
 for (const lang of languages) {

@@ -25,7 +25,7 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
     "skipLibCheck": true,
-    "types": ["node"]
+    "types": ["node", "mocha"]
   },
   "include": ["src/**/*.ts"],
   "exclude": []

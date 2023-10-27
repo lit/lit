@@ -18,7 +18,7 @@ import {
   setupAnalyzerForTestWithModule,
 } from '../utils.js';
 
-import {AbsolutePath} from '../../index.js';
+import {AbsolutePath} from '../../../index.js';
 import {fileURLToPath} from 'url';
 
 for (const lang of languages) {
@@ -233,7 +233,7 @@ for (const lang of languages) {
           path.join(
             fileURLToPath(
               new URL(
-                `../../test-files/${lang}/circular-modules/`,
+                `../../../test-files/${lang}/circular-modules/`,
                 import.meta.url
               )
             ),
