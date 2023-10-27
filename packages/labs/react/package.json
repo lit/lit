@@ -175,7 +175,7 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/react": "1.0.0"
+    "@lit/react": "^1.0.0"
   },
   "devDependencies": {
     "@lit-internal/scripts": "^1.0.1",
