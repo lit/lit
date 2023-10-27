@@ -63,11 +63,12 @@ export const getModuleInfo = (
   );
   const jsPath =
     absJsPath !== undefined
-      ? absoluteToPackage(absJsPath, rootDir)
+      ? absoluteToPackage(absJsPath, rootDir, analyzer.path.sep)
       : ('not/implemented' as PackagePath);
   const sourcePath = absoluteToPackage(
     analyzer.path.normalize(modulePath) as AbsolutePath,
-    rootDir
+    rootDir,
+    analyzer.path.sep
   );
   return {
     jsPath,

@@ -1,5 +1,17 @@
 # @lit-labs/gen-wrapper-vue
 
+## 0.3.0
+
+### Minor Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+### Patch Changes
+
+- Updated dependencies:
+  - @lit-labs/gen-utils@0.3.0
+  - @lit-labs/analyzer@0.10.0
+
 ## 0.3.0-pre.0
 
 ### Minor Changes

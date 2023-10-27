@@ -9,8 +9,8 @@
     "@types/mocha": "^9.0.0",
     "vue": "^3.2.25",
     "@lit-labs/vue-utils": "../../vue-utils",
-    "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.1-pre.0.tgz",
-    "@lit-internal/test-element-a-vue": "file:../gen-output/test-element-a-vue/lit-internal-test-element-a-vue-1.0.1-pre.0.tgz"
+    "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.1.tgz",
+    "@lit-internal/test-element-a-vue": "file:../gen-output/test-element-a-vue/lit-internal-test-element-a-vue-1.0.1.tgz"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.1",

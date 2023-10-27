@@ -30,6 +30,17 @@ export type {
   ReactiveControllerHost,
 } from './reactive-controller.js';
 
+/**
+ * Removes the `readonly` modifier from properties in the union K.
+ *
+ * This is a safer way to cast a value to a type with a mutable version of a
+ * readonly field, than casting to an interface with the field re-declared
+ * because it preserves the type of all the fields and warns on typos.
+ */
+type Mutable<T, K extends keyof T> = Omit<T, K> & {
+  -readonly [P in keyof Pick<T, K>]: P extends K ? T[P] : never;
+};
+
 // TODO (justinfagnani): Add `hasOwn` here when we ship ES2022
 const {
   is,
@@ -374,14 +385,6 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 };
 
 /**
- * The Closure JS Compiler doesn't currently have good support for static
- * property semantics where "this" is dynamic (e.g.
- * https://github.com/google/closure-compiler/issues/3177 and others) so we use
- * this hack to bypass any rewriting by the compiler.
- */
-const finalized = 'finalized';
-
-/**
  * A string representing one of the supported dev mode warning categories.
  */
 export type WarningKind =
@@ -544,16 +547,18 @@ export abstract class ReactiveElement
    * Marks class as having been finalized, which includes creating properties
    * from `static properties`, but does *not* include all properties created
    * from decorators.
+   * @nocollapse
    */
-  protected static [finalized] = true;
+  protected static finalized: true | undefined;
 
   /**
-   * Memoized list of all element properties, including any superclass properties.
-   * Created lazily on user subclasses when finalizing the class.
+   * Memoized list of all element properties, including any superclass
+   * properties. Created lazily on user subclasses when finalizing the class.
+   *
    * @nocollapse
    * @category properties
    */
-  static elementProperties: PropertyDeclarationMap = new Map();
+  static elementProperties: PropertyDeclarationMap;
 
   /**
    * User-supplied object that maps property names to `PropertyDeclaration`
@@ -666,11 +671,9 @@ export abstract class ReactiveElement
     name: PropertyKey,
     options: PropertyDeclaration = defaultPropertyDeclaration
   ) {
-    // if this is a state property, force the attribute to false.
+    // If this is a state property, force the attribute to false.
     if (options.state) {
-      // Cast as any since this is readonly.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      (options as any).attribute = false;
+      (options as Mutable<PropertyDeclaration, 'attribute'>).attribute = false;
     }
     this.__prepare();
     this.elementProperties.set(name, options);
@@ -823,10 +826,10 @@ export abstract class ReactiveElement
    * @nocollapse
    */
   protected static finalize() {
-    if (this.hasOwnProperty(finalized)) {
+    if (this.hasOwnProperty(JSCompiler_renameProperty('finalized', this))) {
       return;
     }
-    this[finalized] = true;
+    this.finalized = true;
     this.__prepare();
 
     // Create properties from the static properties block:
@@ -931,7 +934,7 @@ export abstract class ReactiveElement
    * to an open shadowRoot.
    * @category rendering
    */
-  readonly renderRoot!: HTMLElement | ShadowRoot;
+  readonly renderRoot!: HTMLElement | DocumentFragment;
 
   /**
    * Returns the property name for the given attribute `name`.
@@ -1083,7 +1086,7 @@ export abstract class ReactiveElement
    * @return Returns a node into which to render.
    * @category rendering
    */
-  protected createRenderRoot(): Element | ShadowRoot {
+  protected createRenderRoot(): HTMLElement | DocumentFragment {
     const renderRoot =
       this.shadowRoot ??
       this.attachShadow(
@@ -1102,14 +1105,9 @@ export abstract class ReactiveElement
    * @category lifecycle
    */
   connectedCallback() {
-    // create renderRoot before first update.
-    if (this.renderRoot === undefined) {
-      (
-        this as {
-          renderRoot: Element | DocumentFragment;
-        }
-      ).renderRoot = this.createRenderRoot();
-    }
+    // Create renderRoot before first update.
+    (this as Mutable<typeof this, 'renderRoot'>).renderRoot ??=
+      this.createRenderRoot();
     this.enableUpdating(true);
     this.__controllers?.forEach((c) => c.hostConnected?.());
   }
@@ -1418,6 +1416,9 @@ export abstract class ReactiveElement
       // initializers, so we just set them anyway - a difference from
       // experimental decorators on fields and standard decorators on
       // auto-accessors.
+      // For context why experimentalDecorators with auto accessors are handled
+      // specifically also see:
+      // https://github.com/lit/lit/pull/4183#issuecomment-1711959635
       const elementProperties = (this.constructor as typeof ReactiveElement)
         .elementProperties;
       if (elementProperties.size > 0) {
@@ -1620,6 +1621,15 @@ export abstract class ReactiveElement
    */
   protected firstUpdated(_changedProperties: PropertyValues) {}
 }
+// Assigned here to work around a jscompiler bug with static fields
+// when compiling to ES5.
+// https://github.com/google/closure-compiler/issues/3177
+(ReactiveElement as unknown as Record<string, unknown>)[
+  JSCompiler_renameProperty('elementProperties', ReactiveElement)
+] = new Map();
+(ReactiveElement as unknown as Record<string, unknown>)[
+  JSCompiler_renameProperty('finalized', ReactiveElement)
+] = new Map();
 
 // Apply polyfills if available
 polyfillSupport?.({ReactiveElement});
@@ -1661,7 +1671,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(global.reactiveElementVersions ??= []).push('2.0.0-pre.1');
+(global.reactiveElementVersions ??= []).push('2.0.0');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

@@ -9,8 +9,8 @@ import * as fs from 'fs';
 // it's likely that we'll ask you to investigate ways to reduce the size.
 //
 // In either case, update the size here and push a new commit to your PR.
-const expectedLitCoreSize = 15425;
-const expectedLitHtmlSize = 7256;
+const expectedLitCoreSize = 15423;
+const expectedLitHtmlSize = 7250;
 
 const litCoreSrc = fs.readFileSync('packages/lit/lit-core.min.js', 'utf8');
 const litCoreSize = fs.readFileSync('packages/lit/lit-core.min.js').byteLength;

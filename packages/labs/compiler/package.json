@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/compiler",
   "description": "Compiler to prepare Lit templates at build time",
-  "version": "1.0.0-pre.0",
+  "version": "1.0.0",
   "author": "Google LLC",
   "homepage": "https://github.com/Lit/Lit/tree/main/packages/labs/compiler",
   "license": "BSD-3-Clause",
@@ -103,7 +103,7 @@
   },
   "dependencies": {
     "@parse5/tools": "^0.3.0",
-    "lit-html": "^3.0.0-pre.1",
+    "lit-html": "^3.0.0",
     "parse5": "^7.1.2",
     "typescript": "~5.2.0"
   },

@@ -16,28 +16,21 @@ import {ContextProvider} from '../controllers/context-provider.js';
  */
 
 /**
- * A property decorator that adds a ContextConsumer controller to the component
- * which will try and retrieve a value for the property via the Context API.
+ * A property decorator that adds a ContextProvider controller to the component
+ * making it respond to any `context-request` events from its children consumer.
  *
  * @param context A Context identifier value created via `createContext`
- * @param multiple An optional boolean which when true allows the value to be updated
- *   multiple times.
- *
- * See: https://developer.mozilla.org/en-US/docs/Web/API/Document/querySelector
  *
  * @example
  *
  * ```ts
- * import {consume} from '@lit/context';
- * import {loggerContext} from 'community-protocols/logger';
+ * import {provide} from '@lit/context';
+ * import {Logger} from 'my-logging-library';
+ * import {loggerContext} from './logger-context.js';
  *
  * class MyElement {
  *   @provide({context: loggerContext})
- *   logger;
- *
- *   doThing() {
- *     this.logger.log('thing was done');
- *   }
+ *   logger = new Logger();
  * }
  * ```
  * @category Decorator
@@ -126,13 +119,19 @@ type Interface<T> = {
 
 type ProvideDecorator<ContextType> = {
   // legacy
-  <K extends PropertyKey, Proto extends ReactiveElement>(
+  <
+    K extends PropertyKey,
+    Proto extends Interface<Omit<ReactiveElement, 'renderRoot'>>
+  >(
     protoOrDescriptor: Proto,
     name?: K
   ): FieldMustMatchContextType<Proto, K, ContextType>;
 
   // standard
-  <C extends Interface<ReactiveElement>, V extends ContextType>(
+  <
+    C extends Interface<Omit<ReactiveElement, 'renderRoot'>>,
+    V extends ContextType
+  >(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): void;

@@ -127,7 +127,7 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     const {layout, scroller, items} = config;
     this._virtualizer = new Virtualizer({hostElement, layout, scroller});
     this._virtualizer.items = items;
-    this._virtualizer!.connected();
+    this._virtualizer.connected();
   }
 
   private _initialize(part: ChildPart, config: VirtualizeDirectiveConfig<T>) {

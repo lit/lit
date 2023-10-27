@@ -11,7 +11,7 @@
  * subclasses.
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {getClassMembers, getHeritage} from '../javascript/classes.js';
 import {
   AnalyzerInterface,
@@ -33,7 +33,7 @@ const _isCustomElementClassDeclaration = (
   return (
     declarations?.some(
       (declaration) =>
-        (ts.isInterfaceDeclaration(declaration) &&
+        (analyzer.typescript.isInterfaceDeclaration(declaration) &&
           declaration.name?.text === 'HTMLElement') ||
         isCustomElementSubclass(declaration, analyzer)
     ) === true
@@ -48,10 +48,10 @@ export const isCustomElementSubclass = (
   node: ts.Node,
   analyzer: AnalyzerInterface
 ): node is CustomElementClassDeclaration => {
-  if (!ts.isClassLike(node)) {
+  if (!analyzer.typescript.isClassLike(node)) {
     return false;
   }
-  if (getTagName(node) !== undefined) {
+  if (getTagName(node, analyzer) !== undefined) {
     return true;
   }
   const checker = analyzer.program.getTypeChecker();
@@ -66,9 +66,10 @@ export const isCustomElementSubclass = (
 };
 
 export const getTagName = (
-  node: ts.ClassDeclaration | ts.ClassExpression
+  node: ts.ClassDeclaration | ts.ClassExpression,
+  analyzer: AnalyzerInterface
 ): string | undefined => {
-  const jsdocTag = ts
+  const jsdocTag = analyzer.typescript
     .getJSDocTags(node)
     .find((tag) => tag.tagName.text.toLowerCase() === 'customelement');
 
@@ -82,20 +83,22 @@ export const getTagName = (
   // `customElements.define('x-foo', XFoo);`
   node.parent.forEachChild((child) => {
     if (
-      ts.isExpressionStatement(child) &&
-      ts.isCallExpression(child.expression) &&
-      ts.isPropertyAccessExpression(child.expression.expression) &&
+      analyzer.typescript.isExpressionStatement(child) &&
+      analyzer.typescript.isCallExpression(child.expression) &&
+      analyzer.typescript.isPropertyAccessExpression(
+        child.expression.expression
+      ) &&
       child.expression.arguments.length >= 2
     ) {
       const [tagNameArg, ctorArg] = child.expression.arguments;
       const {expression, name} = child.expression.expression;
       if (
-        ts.isIdentifier(expression) &&
+        analyzer.typescript.isIdentifier(expression) &&
         expression.text === 'customElements' &&
-        ts.isIdentifier(name) &&
+        analyzer.typescript.isIdentifier(name) &&
         name.text === 'define' &&
-        ts.isStringLiteralLike(tagNameArg) &&
-        ts.isIdentifier(ctorArg) &&
+        analyzer.typescript.isStringLiteralLike(tagNameArg) &&
+        analyzer.typescript.isIdentifier(ctorArg) &&
         ctorArg.text === node.name?.text
       ) {
         tagName = tagNameArg.text;
@@ -133,7 +136,7 @@ export const getJSDocData = (
   const slots = new Map<string, NamedDescribed>();
   const cssProperties = new Map<string, NamedDescribed>();
   const cssParts = new Map<string, NamedDescribed>();
-  const jsDocTags = ts.getJSDocTags(node);
+  const jsDocTags = analyzer.typescript.getJSDocTags(node);
   if (jsDocTags !== undefined) {
     for (const tag of jsDocTags) {
       switch (tag.tagName.text) {
@@ -170,7 +173,7 @@ export const getCustomElementDeclaration = (
   analyzer: AnalyzerInterface
 ): CustomElementDeclaration => {
   return new CustomElementDeclaration({
-    tagname: getTagName(node),
+    tagname: getTagName(node, analyzer),
     name: node.name?.text ?? '',
     node,
     ...getJSDocData(node, analyzer),

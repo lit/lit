@@ -1,6 +1,6 @@
 {
   "name": "@lit/context",
-  "version": "1.0.0-pre.0",
+  "version": "1.0.0",
   "description": "Helpers and controllers for using Context protocol",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -35,6 +35,8 @@
     "build": "wireit",
     "build:ts": "wireit",
     "build:ts:std-decorators-tests": "wireit",
+    "build:ts:lit2-tests": "wireit",
+    "build:ts:lit2": "wireit",
     "build:ts:types": "wireit",
     "build:rollup": "wireit",
     "test": "wireit",
@@ -48,6 +50,7 @@
         "build:rollup",
         "build:ts",
         "build:ts:std-decorators-tests",
+        "build:ts:lit2-tests",
         "build:ts:types",
         "../lit:build",
         "../reactive-element:build",
@@ -86,6 +89,51 @@
       "output": [
         "development/test/std-decorators",
         "tsconfig.std-decorators-tests.tsbuildinfo"
+      ]
+    },
+    "build:ts:lit2-tests": {
+      "#comment": "Run this to install and build additional cross-version type tests.",
+      "command": "tsc --pretty --project tsconfig.lit2-tests.json",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:ts:lit2",
+        "install:lit2"
+      ],
+      "files": [
+        "src/test/**/*.ts",
+        "!src/test/std-decorators/**/*.ts",
+        "tsconfig.lit2-tests.json"
+      ],
+      "output": [
+        "lit2/context/test",
+        "tsconfig.lit2-tests.tsbuildinfo"
+      ]
+    },
+    "install:lit2": {
+      "command": "cd lit2/lit2-scope && npm ci",
+      "clean": "if-file-deleted",
+      "dependencies": [],
+      "files": [
+        "lit2/lit2-scope/package.json",
+        "lit2/lit2-scope/package-lock.json"
+      ],
+      "output": []
+    },
+    "build:ts:lit2": {
+      "#comment": "This is a separate script from build:ts because it needs a tsconfig that maps in lit@2.",
+      "command": "tsc --pretty --project tsconfig.lit2.json",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "!src/test/**/*.ts",
+        "tsconfig.lit2.json"
+      ],
+      "output": [
+        "lit2/lit2-scope/context",
+        "lit2/lit2-scope/tsconfig.lit2.tsbuildinfo"
       ]
     },
     "build:ts:types": {
@@ -135,7 +183,6 @@
       "command": "MODE=dev node ../tests/run-web-tests.js \"development/**/*_test.js\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
-        "build:ts:std-decorators-tests",
         "../tests:build"
       ],
       "env": {
@@ -150,7 +197,6 @@
       "command": "MODE=prod node ../tests/run-web-tests.js \"development/**/*_test.js\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build",
-        "build:ts:std-decorators-tests",
         "../tests:build"
       ],
       "env": {
@@ -164,14 +210,14 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/reactive-element": "^2.0.0-pre.1",
-    "lit": "^3.0.0-pre.1"
+    "@lit/reactive-element": "^1.6.2 || ^2.0.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",
-    "@lit-internal/scripts": "^1.0.1-pre.0",
-    "@lit-labs/testing": "^0.2.2-pre.0",
-    "@types/trusted-types": "^2.0.2"
+    "@lit-internal/scripts": "^1.0.1",
+    "@lit-labs/testing": "^0.2.2",
+    "@types/trusted-types": "^2.0.2",
+    "lit": "^3.0.0"
   },
   "publishConfig": {
     "access": "public"

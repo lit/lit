@@ -1,5 +1,14 @@
 # @lit-labs/ssr-react
 
+## 0.2.1
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- Updated dependencies:
+  - lit@3.0.0
+
 ## 0.2.1-pre.0
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @lit-labs/compiler
 
+## 1.0.0
+
+### Major Changes
+
+- [#4128](https://github.com/lit/lit/pull/4128) [`190ee965`](https://github.com/lit/lit/commit/190ee965df6d13ab9125f17034219478b5732a28) - Initial release of `@lit-labs/compiler`, vending a Lit template TypeScript transformer.
+
 ## 1.0.0-pre.0
 
 ### Major Changes

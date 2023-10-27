@@ -1,5 +1,19 @@
 # Changelog
 
+## 0.12.0
+
+### Minor Changes
+
+- [#4159](https://github.com/lit/lit/pull/4159) [`d1e126c4`](https://github.com/lit/lit/commit/d1e126c4a75967ad2cf0c0155b3b2e415e0bc906) - Add support for standard decorators to the `@localize` decorator.
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- Updated dependencies:
+  - @lit/reactive-element@2.0.0
+  - lit@3.0.0
+
 ## 0.12.0-pre.1
 
 ### Minor Changes

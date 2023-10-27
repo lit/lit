@@ -24,8 +24,9 @@ import {assert} from '@esm-bundle/chai';
     @query('#blah', true)
     accessor divCached!: HTMLDivElement;
 
+    // The span is conditional, so this query could return null
     @query('span', true)
-    accessor span!: HTMLSpanElement;
+    accessor span!: HTMLSpanElement | null;
 
     static override properties = {condition: {}};
 

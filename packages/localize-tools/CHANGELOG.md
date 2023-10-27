@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.7.0
+
+### Minor Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0, which includes breaking changes to the TypeScript compiler APIs
+
+### Patch Changes
+
+- Updated dependencies:
+  - lit@3.0.0
+  - @lit/localize@0.12.0
+
 ## 0.7.0-pre.1
 
 ### Minor Changes

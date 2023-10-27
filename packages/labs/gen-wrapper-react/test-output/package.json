@@ -16,8 +16,8 @@
     "lit-html": "file:../../../lit-html",
     "lit-element": "file:../../../lit-element",
     "@lit/reactive-element": "file:../../../reactive-element",
-    "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.1-pre.0.tgz",
-    "@lit-internal/test-element-a-react": "file:../gen-output/test-element-a-react/lit-internal-test-element-a-react-1.0.1-pre.0.tgz"
+    "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.1.tgz",
+    "@lit-internal/test-element-a-react": "file:../gen-output/test-element-a-react/lit-internal-test-element-a-react-1.0.1.tgz"
   },
   "scripts": {
     "installSelf": "wireit",

@@ -808,6 +808,7 @@ export interface AnalyzerInterface {
     | 'parse'
     | 'normalize'
     | 'isAbsolute'
+    | 'sep'
   >;
 
   addDiagnostic(diagnostic: ts.Diagnostic): void;

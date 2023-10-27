@@ -19,6 +19,7 @@ import {
   isPrimitive,
   isTemplateResult,
   getDirectiveClass,
+  TemplateResultType,
 } from 'lit/directive-helpers.js';
 import {_$LH} from 'lit-html/private-ssr-support.js';
 
@@ -282,7 +283,10 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   // The property '_$litType$' needs to remain unminified.
   const [html, attrNames] = getTemplateHtml(
     result.strings,
-    result['_$litType$']
+    // SVG TemplateResultType functionality is only required on the client,
+    // which instantiates SVG elements within a svg namespace. Using SVG
+    // on the server results in unneccesary svg containers being emitted.
+    TemplateResultType.HTML
   );
 
   /**

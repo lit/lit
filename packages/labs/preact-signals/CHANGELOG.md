@@ -1,5 +1,11 @@
 # @lit-labs/preact-signals
 
+## 1.0.0
+
+### Major Changes
+
+- [#4129](https://github.com/lit/lit/pull/4129) [`73ac3b06`](https://github.com/lit/lit/commit/73ac3b0686b3b1c3dea2990432eacd73111b4386) - Initial release of @lit-labs/preact-signals
+
 ## 1.0.0-pre.0
 
 ### Major Changes
