@@ -1,5 +1,14 @@
 # @lit-labs/gen-wrapper-vue
 
+## 0.3.1
+
+### Patch Changes
+
+- [#4306](https://github.com/lit/lit/pull/4306) [`c28ebba1`](https://github.com/lit/lit/commit/c28ebba15669042144db48563611b2c9bb7a2e47) - Update dependency version to refer to stable versions, rather than pre-release versions of our own packages.
+
+- Updated dependencies [[`2896209b`](https://github.com/lit/lit/commit/2896209b925169793898b10dc3409de4056c93f7), [`7a9804ad`](https://github.com/lit/lit/commit/7a9804adc676eb2e84252d31d600e59032b0482a)]:
+  - @lit-labs/analyzer@0.11.0
+
 ## 0.3.0
 
 ### Minor Changes

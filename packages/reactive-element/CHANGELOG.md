@@ -1,5 +1,13 @@
 # Change Log
 
+## 2.0.1
+
+### Patch Changes
+
+- [#4284](https://github.com/lit/lit/pull/4284) [`89a5b088`](https://github.com/lit/lit/commit/89a5b0882b3048e3e95a22eb739c649adc9de055) - Allow `null` to be in the type of `@query()` decorated fields
+
+- [#4306](https://github.com/lit/lit/pull/4306) [`c28ebba1`](https://github.com/lit/lit/commit/c28ebba15669042144db48563611b2c9bb7a2e47) - Update dependency version to refer to stable versions, rather than pre-release versions of our own packages.
+
 ## 2.0.0
 
 ### Major Changes

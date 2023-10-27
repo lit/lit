@@ -1,5 +1,13 @@
 # @lit-examples/nextjs
 
+## 0.1.2
+
+### Patch Changes
+
+- Updated dependencies [[`edf998c9`](https://github.com/lit/lit/commit/edf998c9fe34183888ffc781dd330dc8a962dd7a), [`8f674ab3`](https://github.com/lit/lit/commit/8f674ab319e4eadbf5b028f1c0bd15d276c02d0e), [`89a5b088`](https://github.com/lit/lit/commit/89a5b0882b3048e3e95a22eb739c649adc9de055), [`c28ebba1`](https://github.com/lit/lit/commit/c28ebba15669042144db48563611b2c9bb7a2e47)]:
+  - lit@3.0.1
+  - @lit-labs/nextjs@0.1.3
+
 ## 0.1.1
 
 ### Patch Changes

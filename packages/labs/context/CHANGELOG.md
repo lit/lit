@@ -1,5 +1,12 @@
 # @lit-labs/context
 
+## 0.5.1
+
+### Patch Changes
+
+- Updated dependencies [[`df1980fe`](https://github.com/lit/lit/commit/df1980feaba3171be078ffce4b3c8c538758c599), [`1fb7a108`](https://github.com/lit/lit/commit/1fb7a108ef4d247517da31551fe34a91d3c6f8e7), [`4edf9bc8`](https://github.com/lit/lit/commit/4edf9bc8b800f17aef48853cdd1893b33f656f4d)]:
+  - @lit/context@1.0.1
+
 ## 0.5.0
 
 ### Minor Changes
