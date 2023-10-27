@@ -315,14 +315,17 @@ export const createComponent = <
 
     return React.createElement(tagName, {
       ...reactProps,
-      ref: (node: I) => {
-        elementRef.current = node;
-        if (typeof ref === 'function') {
-          ref(node);
-        } else if (ref !== null) {
-          ref.current = node;
-        }
-      },
+      ref: React.useCallback(
+        (node: I) => {
+          elementRef.current = node;
+          if (typeof ref === 'function') {
+            ref(node);
+          } else if (ref !== null) {
+            ref.current = node;
+          }
+        },
+        [ref]
+      ),
     });
   });
 
