@@ -46,8 +46,8 @@ suite('choose', () => {
     );
   });
 
-  if (false as boolean) {
-    // Type-only regression test of https://github.com/lit/lit/issues/4220
+  // Type-only regression test of https://github.com/lit/lit/issues/4220
+  test.skip('type-only: correctly infers typ eof possible cases from value', () => {
     type CheckoutStep = 'register' | 'delivery' | 'payment';
     const step = 'register' as CheckoutStep;
     return choose(step, [
@@ -58,5 +58,5 @@ suite('choose', () => {
       // This should compile fine
       ['register', () => 3],
     ]);
-  }
+  });
 });
