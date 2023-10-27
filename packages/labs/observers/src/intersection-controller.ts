@@ -62,7 +62,7 @@ export interface IntersectionControllerConfig<T = unknown> {
  */
 export class IntersectionController<T = unknown> implements ReactiveController {
   private _host: ReactiveControllerHost;
-  private _targets: Set<Element> = new Set();
+  private _targets = new Set<Element>();
   private _observer!: IntersectionObserver;
   private _skipInitial = false;
   /**

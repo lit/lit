@@ -97,4 +97,34 @@ import {assert} from '@esm-bundle/chai';
     await notYetUpdatedEl.updateComplete;
     assert.equal(notYetUpdatedEl.divCached, null);
   });
+
+  test('works with an old and busted Reflect.decorate', async () => {
+    const extendedReflect: typeof Reflect & {decorate?: unknown} = Reflect;
+    assert.isUndefined(extendedReflect.decorate);
+    extendedReflect.decorate = (
+      decorators: Function[],
+      proto: object,
+      name: string,
+      ...args: unknown[]
+    ) => {
+      for (const decorator of decorators) {
+        decorator(proto, name, ...args);
+      }
+    };
+
+    class C extends RenderingElement {
+      @query('#blah') div?: HTMLDivElement;
+
+      override render() {
+        return html` <div id="blah">This one</div> `;
+      }
+    }
+    customElements.define(generateElementName(), C);
+
+    const elem = new C();
+    document.body.appendChild(elem);
+    await elem.updateComplete;
+    assert(elem.div instanceof HTMLDivElement);
+    delete extendedReflect.decorate;
+  });
 });

@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "es2020",
-    "lib": ["es2020", "DOM"],
+    "target": "es2021",
+    "lib": ["es2021", "DOM"],
     "module": "ES2020",
     "rootDir": "./src",
     "outDir": "./out",

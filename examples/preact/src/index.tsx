@@ -6,7 +6,7 @@
 
 /**
  * @fileoverview This file serves to test that React components made with
- * `@lit-labs/react` can be used in Preact projects without any type errors.
+ * `@lit/react` can be used in Preact projects without any type errors.
  */
 
 import {render} from 'preact';

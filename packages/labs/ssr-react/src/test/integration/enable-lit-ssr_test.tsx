@@ -8,7 +8,7 @@ import '@lit-labs/ssr-react/enable-lit-ssr.js';
 import React from 'react';
 // eslint-disable-next-line import/extensions
 import ReactDOMServer from 'react-dom/server';
-import {createComponent} from '@lit-labs/react';
+import {createComponent} from '@lit/react';
 
 import {TestElement} from '../test-element.js';
 import '../test-element.js';
@@ -216,7 +216,7 @@ bareCEtest('nested element', () => {
 
 bareCEtest.run();
 
-const wrappedCEtest = suite('@lit-labs/react wrapped custom elements');
+const wrappedCEtest = suite('@lit/react wrapped custom elements');
 
 const ReactTestElement = createComponent({
   react: React,

@@ -34,7 +34,7 @@ export const getLitElementDeclaration = (
   analyzer: AnalyzerInterface
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
-    tagname: getTagName(analyzer.typescript, declaration),
+    tagname: getTagName(declaration, analyzer),
     // TODO(kschaaf): support anonymous class expressions when assigned to a const
     name: declaration.name?.text ?? '',
     node: declaration,
@@ -127,19 +127,23 @@ export const isLitElementSubclass = (
  * @returns
  */
 export const getTagName = (
-  ts: TypeScript,
-  declaration: LitClassDeclaration
+  declaration: LitClassDeclaration,
+  analyzer: AnalyzerInterface
 ) => {
-  const customElementDecorator = ts
+  const customElementDecorator = analyzer.typescript
     .getDecorators(declaration)
-    ?.find((d): d is CustomElementDecorator => isCustomElementDecorator(ts, d));
+    ?.find((d): d is CustomElementDecorator =>
+      isCustomElementDecorator(analyzer.typescript, d)
+    );
   if (
     customElementDecorator !== undefined &&
     customElementDecorator.expression.arguments.length === 1 &&
-    ts.isStringLiteral(customElementDecorator.expression.arguments[0])
+    analyzer.typescript.isStringLiteral(
+      customElementDecorator.expression.arguments[0]
+    )
   ) {
     // Get tag from decorator: `@customElement('x-foo')`
     return customElementDecorator.expression.arguments[0].text;
   }
-  return getCustomElementTagName(declaration);
+  return getCustomElementTagName(declaration, analyzer);
 };

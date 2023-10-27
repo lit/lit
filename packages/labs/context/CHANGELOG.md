@@ -1,5 +1,36 @@
 # @lit-labs/context
 
+## 0.5.0
+
+### Minor Changes
+
+- [#4151](https://github.com/lit/lit/pull/4151) [`5680d483`](https://github.com/lit/lit/commit/5680d48398f2197b8943ed6adf0c1dd529158d2e) - Make context decorators work with standard decorators
+
+### Patch Changes
+
+- [#4210](https://github.com/lit/lit/pull/4210) [`cf7d96d4`](https://github.com/lit/lit/commit/cf7d96d48c7a7d1f18d82b999a31f7d62d10d7b3) - Graduate @lit-labs/context to @lit/context, its permanent location. @lit-labs/context is now just a proxy for @lit/context, so code need not be duplicated in projects that depend on both.
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- [#4200](https://github.com/lit/lit/pull/4200) [`8e737fbd`](https://github.com/lit/lit/commit/8e737fbdea832cafd0d038448b926269c7f686b3) - Support @provide with experimental decorators on a property. Previously we only supported it on an accessor, which happened automatically if used with @state or @property.
+
+## 0.5.0-pre.0
+
+### Minor Changes
+
+- [#4151](https://github.com/lit/lit/pull/4151) [`5680d483`](https://github.com/lit/lit/commit/5680d48398f2197b8943ed6adf0c1dd529158d2e) - Make context decorators work with standard decorators
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- [#4210](https://github.com/lit/lit/pull/4210) [`cf7d96d4`](https://github.com/lit/lit/commit/cf7d96d48c7a7d1f18d82b999a31f7d62d10d7b3) - Graduate @lit-labs/context to @lit/context, its permanent location. @lit-labs/context is now just a proxy for @lit/context, so code need not be duplicated in projects that depend on both.
+
+- [#4200](https://github.com/lit/lit/pull/4200) [`8e737fbd`](https://github.com/lit/lit/commit/8e737fbdea832cafd0d038448b926269c7f686b3) - Support @provide with experimental decorators on a property. Previously we only supported it on an accessor, which happened automatically if used with @state or @property.
+
+- Updated dependencies [[`cf7d96d4`](https://github.com/lit/lit/commit/cf7d96d48c7a7d1f18d82b999a31f7d62d10d7b3)]:
+  - @lit/context@1.0.0-pre.0
+
 ## 0.4.1
 
 ### Patch Changes
@@ -19,6 +50,16 @@
 ### Patch Changes
 
 - [#3956](https://github.com/lit/lit/pull/3956) [`d1cc410e`](https://github.com/lit/lit/commit/d1cc410ed9c9b36422e088c3dc66dffde1a9dee1) - Fix a memory leak when a context consumer sets `subscribe: true`.
+
+## 0.3.2-pre.0
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+- Updated dependencies [[`be72f66b`](https://github.com/lit/lit/commit/be72f66bd9aab5d0586729fb5be4bac4aa27cb7f), [`dfd747cf`](https://github.com/lit/lit/commit/dfd747cf4f7239e0c3bb7134f8acb967d0157654), [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2), [`1db01376`](https://github.com/lit/lit/commit/1db0137699b35d7e7bfac9b2ab274af4100fd7cf), [`6f2833fd`](https://github.com/lit/lit/commit/6f2833fd05f2ecde5386f72d291dafc9dbae0cf7), [`c3e473b4`](https://github.com/lit/lit/commit/c3e473b499ff029b5e1aff01ca8799daf1ca1bbe), [`92cedaa2`](https://github.com/lit/lit/commit/92cedaa2c8cd8a306be3fe25d52e0e47bb044020), [`7e8491d4`](https://github.com/lit/lit/commit/7e8491d4ed9f0c39d974616c4678552ef50b81df), [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa), [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4)]:
+  - @lit/reactive-element@2.0.0-pre.0
+  - lit@3.0.0-pre.0
 
 ## 0.3.2
 

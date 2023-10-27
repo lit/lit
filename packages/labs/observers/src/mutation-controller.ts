@@ -61,7 +61,7 @@ export interface MutationControllerConfig<T = unknown> {
  */
 export class MutationController<T = unknown> implements ReactiveController {
   private _host: ReactiveControllerHost;
-  private _targets: Set<Element> = new Set();
+  private _targets = new Set<Element>();
   private _config: MutationObserverInit;
   private _observer!: MutationObserver;
   private _skipInitial = false;

@@ -56,8 +56,8 @@ export const createPackageAnalyzer = (
       {
         compilerOptions: {
           // TODO(kschaaf): probably want to make this configurable
-          module: 'ES2020',
-          lib: ['es2020', 'DOM'],
+          module: 'es2021',
+          lib: ['es2021', 'DOM'],
           allowJs: true,
           skipLibCheck: true,
           skipDefaultLibCheck: true,

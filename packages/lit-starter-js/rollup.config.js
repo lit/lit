@@ -28,7 +28,7 @@ export default {
      * For bundling and minification, check the README.md file.
      */
     terser({
-      ecma: 2017,
+      ecma: 2021,
       module: true,
       warnings: true,
       mangle: {

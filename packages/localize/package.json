@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize",
-  "version": "0.11.4",
+  "version": "0.12.0",
   "publishConfig": {
     "access": "public"
   },
@@ -18,6 +18,7 @@
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
+    "build:ts:std-decorators-tests": "wireit",
     "test": "wireit"
   },
   "wireit": {
@@ -47,6 +48,21 @@
         ".tsbuildinfo"
       ]
     },
+    "build:ts:std-decorators-tests": {
+      "command": "tsc --pretty --project tsconfig.std-decorators-tests.json",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "src/tests/**/*.ts",
+        "tsconfig.std-decorators-tests.json"
+      ],
+      "output": [
+        "tests-std-decorators",
+        "tsconfig.std-decorators-tests.tsbuildinfo"
+      ]
+    },
     "test": {
       "command": "node ../tests/run-web-tests.js",
       "dependencies": [
@@ -73,7 +89,6 @@
     "/init/"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.4.0",
-    "lit": "^2.3.0"
+    "lit": "^2.0.0 || ^3.0.0"
   }
 }

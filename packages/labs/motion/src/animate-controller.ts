@@ -6,8 +6,10 @@
 import {ReactiveControllerHost} from 'lit';
 import {Animate, Options} from './animate.js';
 
-export const controllerMap: WeakMap<ReactiveControllerHost, AnimateController> =
-  new WeakMap();
+export const controllerMap = new WeakMap<
+  ReactiveControllerHost,
+  AnimateController
+>();
 
 /**
  * AnimateController can be used to provide default configuration options to all
@@ -43,7 +45,7 @@ export class AnimateController {
   /**
    * Set of active `animate()` directives in the host component
    */
-  clients: Set<Animate> = new Set();
+  clients = new Set<Animate>();
 
   protected pendingComplete = false;
 

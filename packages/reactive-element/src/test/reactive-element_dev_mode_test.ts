@@ -62,54 +62,6 @@ if (DEV_MODE) {
       );
     });
 
-    test('warns when `initialize` is implemented', () => {
-      class WarnInitialize extends ReactiveElement {
-        initialize() {}
-      }
-      customElements.define(generateElementName(), WarnInitialize);
-      new WarnInitialize();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], WarnInitialize.name);
-      assert.include(warnings[0], 'initialize');
-    });
-
-    test('warns on first instance only', () => {
-      class WarnFirstInstance extends ReactiveElement {
-        initialize() {}
-      }
-      customElements.define(generateElementName(), WarnFirstInstance);
-      new WarnFirstInstance();
-      new WarnFirstInstance();
-      new WarnFirstInstance();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], WarnFirstInstance.name);
-      assert.include(warnings[0], 'initialize');
-    });
-
-    test('warns once per implementation (does not spam)', () => {
-      class WarnPerImplBase extends ReactiveElement {
-        initialize() {}
-      }
-      customElements.define(generateElementName(), WarnPerImplBase);
-      class WarnPerImplSub extends WarnPerImplBase {}
-      customElements.define(generateElementName(), WarnPerImplSub);
-      new WarnPerImplBase();
-      new WarnPerImplSub();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], WarnPerImplBase.name);
-      assert.include(warnings[0], 'initialize');
-    });
-
-    test('warns when `requestUpdateInternal` is implemented', () => {
-      class WarnRequestUpdateInternal extends ReactiveElement {
-        requestUpdateInternal() {}
-      }
-      customElements.define(generateElementName(), WarnRequestUpdateInternal);
-      new WarnRequestUpdateInternal();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'requestUpdateInternal');
-    });
-
     suite('shadowed reactive properties', () => {
       test('throws when reactive properties defined by the current class are shadowed by class fields', async () => {
         class ShadowedProps extends ReactiveElement {
@@ -271,20 +223,6 @@ if (DEV_MODE) {
       });
     });
 
-    test('warns when awaiting `requestUpdate`', async () => {
-      class WarnAwaitRequestUpdate extends ReactiveElement {}
-      customElements.define(generateElementName(), WarnAwaitRequestUpdate);
-      const a = new WarnAwaitRequestUpdate();
-      container.appendChild(a);
-      await a.requestUpdate();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'requestUpdate');
-      assert.include(warnings[0], 'Promise');
-      // warns once, does not spam.
-      await a.requestUpdate();
-      assert.equal(warnings.length, 1);
-    });
-
     suite('conditional warnings', () => {
       test('warns when `toAttribute` returns undefined with migration warnings on', async () => {
         class WarnAttribute extends ReactiveElement {
@@ -384,6 +322,27 @@ if (DEV_MODE) {
         await triggerChangeInUpdate();
         assert.equal(warnings.length, 1);
       });
+    });
+
+    test('Warns on async performUpdate', async () => {
+      class C extends ReactiveElement {
+        // It would be nice if we could get TypeScript to warn here, but
+        // unfortunately anything is assignable to `void`. A return type of
+        // `undefined` is not possible in the superclass because `void` is not
+        // assignable to `undefined`.
+        override async performUpdate() {
+          super.performUpdate();
+        }
+      }
+      customElements.define(generateElementName(), C);
+      const el = new C();
+      container.append(el);
+
+      assert.equal(warnings.length, 0);
+      await el.updateComplete;
+
+      assert.equal(warnings.length, 1);
+      assert.include(warnings[0], 'async-perform-update');
     });
   });
 }

@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/cli",
   "description": "Tooling for Lit development",
-  "version": "0.6.0",
+  "version": "0.6.1",
   "publishConfig": {
     "access": "public"
   },
@@ -79,18 +79,18 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.9.0",
-    "@lit-labs/gen-utils": "^0.2.0",
-    "@lit/localize-tools": "^0.6.1",
+    "@lit-labs/analyzer": "^0.10.0",
+    "@lit-labs/gen-utils": "^0.3.0",
+    "@lit/localize-tools": "^0.7.0",
     "chalk": "^5.0.1",
     "command-line-args": "^5.2.1",
     "command-line-commands": "^3.0.2",
     "command-line-usage": "^6.1.1",
     "tslib": "^2.0.3",
-    "typescript": "~5.0.0"
+    "typescript": "~5.2.0"
   },
   "devDependencies": {
-    "@lit-internal/tests": "^0.0.0",
+    "@lit-internal/tests": "^0.0.1",
     "@types/command-line-args": "^5.2.0",
     "@types/command-line-commands": "^2.0.1",
     "@types/command-line-usage": "^5.0.2"

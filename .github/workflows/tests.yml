@@ -24,7 +24,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
@@ -49,17 +49,18 @@ jobs:
     runs-on: ubuntu-latest
     env:
       WIREIT_LOGGER: quiet-ci
+      WIREIT_PARALLEL: 1
 
     steps:
       - uses: actions/checkout@v3
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - uses: google/wireit@setup-github-actions-caching/v1
+      # - uses: google/wireit@setup-github-actions-caching/v1
 
       - name: Install playwright deps
         run: npx playwright install-deps
@@ -86,11 +87,11 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 16
+          node-version: 20
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - uses: google/wireit@setup-github-actions-caching/v1
+      # - uses: google/wireit@setup-github-actions-caching/v1
 
       - name: NPM install
         run: npm ci

@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/virtualizer",
-  "version": "2.0.7",
+  "version": "2.0.8",
   "description": "Viewport-based virtualization (virtual scrolling) for Lit",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
@@ -159,7 +159,7 @@
     "tachometer": "^0.7.0"
   },
   "dependencies": {
-    "lit": "^2.8.0",
+    "lit": "^2 || ^3",
     "tslib": "^2.0.3"
   }
 }

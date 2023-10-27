@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import summary from 'rollup-plugin-summary';
+import {summary} from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import nodeResolve from '@rollup/plugin-node-resolve';
@@ -33,6 +33,10 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit-labs/observers': '_$L',
   '@lit-labs/context': '_$M',
   '@lit-labs/vue-utils': '_$N',
+  '@lit-labs/preact-signals': '_$O',
+  '@lit/task': '_$P',
+  '@lit/context': '_$Q',
+  '@lit/react': '_$R',
 };
 
 // Validate prefix uniqueness
@@ -220,7 +224,7 @@ const generateTerserOptions = (
   testPropertyPrefix = ''
 ) => ({
   warnings: true,
-  ecma: 2017,
+  ecma: 2021,
   compress: {
     unsafe: true,
     // An extra pass can squeeze out an extra byte or two.

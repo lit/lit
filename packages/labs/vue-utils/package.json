@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/vue-utils",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -50,6 +50,7 @@
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
+        "../../lit-html:build:ts:types",
         "../../reactive-element:build:ts:types"
       ],
       "clean": "if-file-deleted",
@@ -106,6 +107,6 @@
   },
   "devDependencies": {
     "@types/trusted-types": "^2.0.2",
-    "@lit-internal/scripts": "^1.0.0"
+    "@lit-internal/scripts": "^1.0.1"
   }
 }

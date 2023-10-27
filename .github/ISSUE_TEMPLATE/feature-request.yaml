@@ -8,8 +8,8 @@ body:
       description: |
         Lit uses the [Lit RFC Process](https://github.com/lit/rfcs) to propose and discuss substantial changes. Significant changes should not be opened as feature request issues here, but follow the RFC process at https://github.com/lit/rfcs.
       options:
-      - label: This is not a substantial change
-        required: true
+        - label: This is not a substantial change
+          required: true
   - type: dropdown
     id: affected
     validations:
@@ -20,15 +20,15 @@ body:
       description: Note you can select more than one.
       options:
         - Lit Core (lit / lit-html / lit-element / reactive-element)
-        - Context (@lit-labs/context)
+        - Context (@lit/context)
         - Eleventy Plugin (@lit-labs/eleventy-plugin-lit)
         - Localize (@lit/localize)
         - Motion (@lit-labs/motion)
         - Observers (@lit-labs/observers)
-        - React (@lit-labs/react)
+        - React (@lit/react)
         - SSR (@lit-labs/ssr)
         - Starter Kits (@lit/lit-starter-js / @lit/lit-starter-ts)
-        - Task (@lit-labs/task)
+        - Task (@lit/task)
         - Virtualizer (@lit-labs/virtualizer)
         - Analyzer (@lit-labs/analyzer)
         - Other/unknown (please mention in description)

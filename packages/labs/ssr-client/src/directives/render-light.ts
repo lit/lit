@@ -22,6 +22,7 @@ class RenderLightDirective extends Directive {
     if (typeof instance.renderLight === 'function') {
       return instance.renderLight();
     }
+    return;
   }
 }
 
