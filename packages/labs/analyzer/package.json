@@ -55,7 +55,10 @@
     },
     "test:server": {
       "#comment": "The quotes around the file regex must be double quotes on windows!",
-      "command": "cross-env NODE_OPTIONS=--enable-source-maps uvu test/server \"_test\\.js$\"",
+      "command": "uvu test/server \"_test\\.js$\"",
+      "env": {
+        "NODE_OPTIONS": "--enable-souce-maps"
+      },
       "dependencies": [
         "build",
         "../../lit:build"
@@ -66,7 +69,7 @@
       "output": []
     },
     "test:browser": {
-      "command": "MODE=dev node ../../tests/run-web-tests.js \"test/browser/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "command": "node ../../tests/run-web-tests.js \"test/browser/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
         "build",
         "build:ts-bundle",
@@ -75,7 +78,8 @@
       "env": {
         "BROWSERS": {
           "external": true
-        }
+        },
+        "MODE": "dev"
       },
       "files": [],
       "output": []
