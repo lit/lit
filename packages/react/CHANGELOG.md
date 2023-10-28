@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.1
+
+### Patch Changes
+
+- [#4335](https://github.com/lit/lit/pull/4335) [`7fc72f7b`](https://github.com/lit/lit/commit/7fc72f7b1769d80961229537606083371a7dc1e8) Thanks [@stefanpearson](https://github.com/stefanpearson)! - When passing a `ref` callback to the Component, `createComponent` was previously intercepting it and wrapping it in an unbound function. This change memoizes the consumer `ref` with `useCallback`, to keep the reference stable and ensure it isn't invoked repeatedly on subsequent renders.
+
 ## 1.0.0
 
 ### Major Changes

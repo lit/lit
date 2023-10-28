@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.0.1
+
+### Patch Changes
+
+- [#4240](https://github.com/lit/lit/pull/4240) [`edf998c9`](https://github.com/lit/lit/commit/edf998c9fe34183888ffc781dd330dc8a962dd7a) Thanks [@remziatay](https://github.com/remziatay)! - Improved the type inferece of the `choose()` directive to properly restrict the case type inferred from provided value. **Note**: If this change creates a type error in your code, there must have been an unreachable case that can be removed, or the type of your `value` might be missing a valid case in the union.
+
+- [#4310](https://github.com/lit/lit/pull/4310) [`8f674ab3`](https://github.com/lit/lit/commit/8f674ab319e4eadbf5b028f1c0bd15d276c02d0e) Thanks [@megheaiulian](https://github.com/megheaiulian)! - The `when()` directive now calls the case functions with the provided condition value as an argument. This allows the narrowing of types for the condition value based on its truthiness when used as a parameter for the case function.
+
+- [#4284](https://github.com/lit/lit/pull/4284) [`89a5b088`](https://github.com/lit/lit/commit/89a5b0882b3048e3e95a22eb739c649adc9de055) - Allow `null` to be in the type of `@query()` decorated fields
+
 ## 3.0.0
 
 ### Major Changes

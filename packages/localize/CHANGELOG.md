@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.12.1
+
+### Patch Changes
+
+- [#4326](https://github.com/lit/lit/pull/4326) [`75943d95`](https://github.com/lit/lit/commit/75943d957b0e3a4850d87fc3a67d28fbf665dc9f) - Loosen type for the `@localized()` decorator to be able to decorate any `ReactiveControllerHost` which also alleviates type errors that could arise with multiple copies of `@lit/reactive-element` present in the project. Also remove dependency on `@lit/reactive-element` as it is already covered by the `lit` dependency.
+
+- [#4299](https://github.com/lit/lit/pull/4299) [`fffa4406`](https://github.com/lit/lit/commit/fffa44066e06bdbec2d2e28166b7c81b11a8c213) - Update version range for `lit` dependency to include v2 (and/or `@lit/reactive-element` v1). This allows projects still on lit v2 to use this package without being forced to install lit v3.
+
 ## 0.12.0
 
 ### Minor Changes
