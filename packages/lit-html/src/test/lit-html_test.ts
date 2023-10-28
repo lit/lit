@@ -3256,10 +3256,13 @@ suite('lit-html', () => {
     skipTestIfCompiled(
       'Static values warn if detected without static html tag',
       () => {
-        render(html`${literal`<p>Hello</p>`}`, container);
+        html`${literal`<p>Hello</p>`}`;
         assertWarning('static');
 
-        render(html`<div>${unsafeStatic('<p>Hello</p>')}</div>`, container);
+        html`<div>${unsafeStatic('<p>Hello</p>')}</div>`;
+        assertWarning('static');
+
+        html`<h1 attribute="${unsafeStatic('test')}"></h1>`;
         assertWarning('static');
       }
     );
