@@ -511,6 +511,19 @@ const tag =
           'This is probably caused by illegal octal escape sequences.'
       );
     }
+    if (DEV_MODE) {
+      // Import static-html.js results in a circular dependency which g3 doesn't
+      // handle. Instead we know that static values must have the field
+      // `_$litStatic$`.
+      if (
+        values.some((val) => (val as {_$litStatic$: unknown})?.['_$litStatic$'])
+      ) {
+        console.warn(
+          `Static values 'literal' or 'unsafeStatic' imported from 'lit/static-html.js' cannot be used as values to non-static templates.\n` +
+            `Please use the static html template. See: See https://lit.dev/docs/templates/expressions/#static-expressions`
+        );
+      }
+    }
     return {
       // This property needs to remain unminified.
       ['_$litType$']: type,
