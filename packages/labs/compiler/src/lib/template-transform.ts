@@ -320,7 +320,7 @@ class CompiledTemplatePass {
                 attributesToRemove.add(attr);
                 if (isAttributePart) {
                   const realName = attrNames[attrNameIndex++];
-                  if (!realName) {
+                  if (realName === undefined) {
                     throw new Error(
                       `Internal Error: realName is not defined. Please file an issue at https://github.com/lit/lit/issues/new/choose`
                     );
