@@ -518,9 +518,10 @@ const tag =
       if (
         values.some((val) => (val as {_$litStatic$: unknown})?.['_$litStatic$'])
       ) {
-        console.warn(
+        issueWarning(
+          '',
           `Static values 'literal' or 'unsafeStatic' cannot be used as values to non-static templates.\n` +
-            `Please use the static 'html' template. See https://lit.dev/docs/templates/expressions/#static-expressions`
+            `Please use the static 'html' tag function. See https://lit.dev/docs/templates/expressions/#static-expressions`
         );
       }
     }
