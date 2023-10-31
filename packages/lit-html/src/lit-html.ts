@@ -473,6 +473,15 @@ export type UncompiledTemplateResult<T extends ResultType = ResultType> = {
   values: unknown[];
 };
 
+/**
+ * This is a template result that may be either uncompiled or compiled.
+ *
+ * In the future, TemplateResult will be this type. If you want to explicitly
+ * note that a template result is potentially compiled, you can reference this
+ * type and it will continue to behave the same through the next major version
+ * of Lit. This can be useful for code that wants to prepare for the next
+ * major version of Lit.
+ */
 export type MaybeCompiledTemplateResult<T extends ResultType = ResultType> =
   | UncompiledTemplateResult<T>
   | CompiledTemplateResult;
@@ -492,8 +501,8 @@ export type MaybeCompiledTemplateResult<T extends ResultType = ResultType> =
  * In Lit 4, this type will be an alias of
  * MaybeCompiledTemplateResult, so that code will get type errors if it assumes
  * that Lit templates are not compiled. When deliberately working with only
- * one, use either CompiledTemplateResult or UncompiledTemplateResult
- * explicitly.
+ * one, use either {@linkcode CompiledTemplateResult} or
+ * {@linkcode UncompiledTemplateResult} explicitly.
  */
 export type TemplateResult<T extends ResultType = ResultType> =
   UncompiledTemplateResult<T>;
@@ -502,6 +511,10 @@ export type HTMLTemplateResult = TemplateResult<typeof HTML_RESULT>;
 
 export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
 
+/**
+ * A TemplateResult that has been compiled by @lit-labs/compiler, skipping the
+ * prepare step.
+ */
 export interface CompiledTemplateResult {
   // This is a factory in order to make template initialization lazy
   // and allow ShadyRenderOptions scope to be passed in.
