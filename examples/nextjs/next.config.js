@@ -1,4 +1,4 @@
-const withLitSSR = require('@lit-labs/nextjs')();
+const withLitSSR = require('@lit-labs/nextjs')({includeDSDPolyfill: true});
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
