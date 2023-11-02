@@ -1,6 +1,6 @@
 {
   "name": "@lit/reactive-element",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -381,7 +381,7 @@
     "/node/"
   ],
   "dependencies": {
-    "@lit-labs/ssr-dom-shim": "^1.1.2-pre.0"
+    "@lit-labs/ssr-dom-shim": "^1.1.2"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.10",
@@ -390,7 +390,7 @@
     "@babel/plugin-proposal-decorators": "^7.22.10",
     "@babel/plugin-transform-class-static-block": "^7.22.11",
     "@babel/plugin-transform-typescript": "^7.22.11",
-    "@lit-internal/scripts": "^1.0.1-pre.0",
+    "@lit-internal/scripts": "^1.0.1",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
     "@webcomponents/webcomponentsjs": "^2.8.0"

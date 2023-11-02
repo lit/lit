@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "HTML templates literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": {
@@ -493,8 +493,8 @@
     "@types/trusted-types": "^2.0.2"
   },
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.1-pre.0",
-    "@lit-labs/testing": "^0.2.2-pre.0",
+    "@lit-internal/scripts": "^1.0.1",
+    "@lit-labs/testing": "^0.2.2",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
     "@webcomponents/webcomponentsjs": "^2.8.0"

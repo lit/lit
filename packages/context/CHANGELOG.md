@@ -1,5 +1,15 @@
 # @lit-labs/context
 
+## 1.0.1
+
+### Patch Changes
+
+- [#4329](https://github.com/lit/lit/pull/4329) [`df1980fe`](https://github.com/lit/lit/commit/df1980feaba3171be078ffce4b3c8c538758c599) - Remove dependency on `lit` package. All implementation code only uses `@lit/reactive-element`. `lit` is moved to dev dependencies as it is still used for tests.
+
+- [#4286](https://github.com/lit/lit/pull/4286) [`1fb7a108`](https://github.com/lit/lit/commit/1fb7a108ef4d247517da31551fe34a91d3c6f8e7) - Fix erroneous description for the JSDoc on the `@provide()` decorator.
+
+- [#4287](https://github.com/lit/lit/pull/4287) [`4edf9bc8`](https://github.com/lit/lit/commit/4edf9bc8b800f17aef48853cdd1893b33f656f4d) - Broaden the host type of context controllers and decorators to be compatible with Lit 2
+
 ## 1.0.0
 
 ### Major Changes

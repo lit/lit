@@ -1,5 +1,11 @@
 # @lit-labs/ssr-react
 
+## 0.2.2
+
+### Patch Changes
+
+- [#4311](https://github.com/lit/lit/pull/4311) [`cabe72a8`](https://github.com/lit/lit/commit/cabe72a863a5de14a4bbca384374db748dd9b4c5) - Removed `lit` package from dependency. It is now listed as a dev dependency since it is only used for testing.
+
 ## 0.2.1
 
 ### Patch Changes

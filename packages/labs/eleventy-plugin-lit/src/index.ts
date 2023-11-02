@@ -157,11 +157,11 @@ ${reset}`
     )) as typeof import('@lit-labs/ssr/lib/module-loader.js');
     const window = getWindow({includeJSBuiltIns: true});
     const loader = new ModuleLoader({global: window});
-    // TODO(aomarks) Replace with concurrent Promise.all version once
-    // https://github.com/lit/lit/issues/2549 has been addressed.
-    for (const module of resolvedComponentModules) {
-      await loader.importModule(module, renderModulePath);
-    }
+    await Promise.all(
+      resolvedComponentModules.map((module) =>
+        loader.importModule(module, renderModulePath)
+      )
+    );
     contextifiedRender = (
       await loader.importModule(
         '@lit-labs/ssr/lib/render-lit-html.js',

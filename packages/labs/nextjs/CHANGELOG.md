@@ -1,5 +1,11 @@
 # @lit-labs/nextjs
 
+## 0.1.3
+
+### Patch Changes
+
+- [#4306](https://github.com/lit/lit/pull/4306) [`c28ebba1`](https://github.com/lit/lit/commit/c28ebba15669042144db48563611b2c9bb7a2e47) - Update dependency version to refer to stable versions, rather than pre-release versions of our own packages.
+
 ## 0.1.2
 
 ### Patch Changes

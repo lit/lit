@@ -1,6 +1,6 @@
 {
   "name": "lit-element",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -248,13 +248,13 @@
     "!/development/test/"
   ],
   "dependencies": {
-    "@lit-labs/ssr-dom-shim": "^1.1.2-pre.0",
+    "@lit-labs/ssr-dom-shim": "^1.1.2",
     "@lit/reactive-element": "^2.0.0",
     "lit-html": "^3.0.0"
   },
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.1-pre.0",
-    "@lit-labs/testing": "^0.2.2-pre.0",
+    "@lit-internal/scripts": "^1.0.1",
+    "@lit-labs/testing": "^0.2.2",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
     "@webcomponents/webcomponentsjs": "^2.8.0",

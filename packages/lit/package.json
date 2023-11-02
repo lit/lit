@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -345,7 +345,7 @@
     "lit-html": "^3.0.0"
   },
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.1-pre.0",
+    "@lit-internal/scripts": "^1.0.1",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
     "@webcomponents/webcomponentsjs": "^2.8.0",

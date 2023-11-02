@@ -13,8 +13,8 @@ import {
   setupAnalyzerForTestWithModule,
 } from '../utils.js';
 
-import {LitElementDeclaration} from '../../index.js';
-import {DiagnosticCode} from '../../lib/diagnostic-code.js';
+import {LitElementDeclaration} from '../../../index.js';
+import {DiagnosticCode} from '../../../lib/diagnostic-code.js';
 
 interface TestContext extends AnalyzerModuleTestContext {
   element: LitElementDeclaration;

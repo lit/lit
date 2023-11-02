@@ -45,4 +45,18 @@ suite('choose', () => {
       'C'
     );
   });
+
+  // Type-only regression test of https://github.com/lit/lit/issues/4220
+  test.skip('type-only: correctly infers type of possible cases from value', () => {
+    type CheckoutStep = 'register' | 'delivery' | 'payment';
+    const step = 'register' as CheckoutStep;
+    return choose(step, [
+      // @ts-expect-error 'test' is not assignable to 'CheckoutStep'
+      ['test', () => 1],
+      // @ts-expect-error 'random' is not assignable to 'CheckoutStep'
+      ['random', () => 2],
+      // This should compile fine
+      ['register', () => 3],
+    ]);
+  });
 });

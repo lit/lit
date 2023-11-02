@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/ssr-client",
-  "version": "1.1.4",
+  "version": "1.1.5",
   "description": "Client package for @lit-labs/ssr.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -125,12 +125,12 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.1-pre.0"
+    "@lit-internal/scripts": "^1.0.1"
   },
   "dependencies": {
-    "@lit/reactive-element": "^2.0.0",
-    "lit": "^3.0.0",
-    "lit-html": "^3.0.0"
+    "@lit/reactive-element": "^1.6.1 || ^2.0.0",
+    "lit": "^2.7.0 || ^3.0.0",
+    "lit-html": "^2.7.0 || ^3.0.0"
   },
   "publishConfig": {
     "access": "public"

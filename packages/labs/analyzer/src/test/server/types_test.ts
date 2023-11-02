@@ -8,9 +8,9 @@ import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
 
-import {Module, getImportsStringForReferences} from '../index.js';
+import {Module, getImportsStringForReferences} from '../../index.js';
 
-import {Reference} from '../lib/model.js';
+import {Reference} from '../../lib/model.js';
 import {
   AnalyzerModuleTestContext,
   languages,

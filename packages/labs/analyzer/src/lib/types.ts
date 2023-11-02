@@ -207,7 +207,11 @@ const getSpecifierFromTypeImport = (
       name,
       packageJson: {main, module},
     } = getPackageInfo(specifier as AbsolutePath, analyzer);
-    let modulePath = absoluteToPackage(specifier as AbsolutePath, rootDir);
+    let modulePath = absoluteToPackage(
+      specifier as AbsolutePath,
+      rootDir,
+      analyzer.path.sep
+    );
     const packageMain = module ?? main;
     if (packageMain !== undefined && modulePath === packageMain) {
       modulePath = '' as PackagePath;
