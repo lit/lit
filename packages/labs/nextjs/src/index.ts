@@ -6,22 +6,30 @@
 
 import type {NextConfig} from 'next';
 
+/**
+ * Options for the Lit SSR plugin
+ */
 interface LitSsrPluginOptions {
-  includeDSDPolyfill?: boolean;
+  /**
+   * Whether to include the polyfill for Declarative Shadow DOM. Defaults to true.
+   */
+  addDeclarativeShadowDomPolyfill?: boolean;
 }
 
-export = ({includeDSDPolyfill}: LitSsrPluginOptions = {}) =>
+export = (pluginOptions: LitSsrPluginOptions = {}): NextConfig =>
   (nextConfig: NextConfig = {}) => {
     return Object.assign({}, nextConfig, {
       webpack: (config, options) => {
         const {isServer, nextRuntime, webpack} = options;
+
+        const {addDeclarativeShadowDomPolyfill = true} = pluginOptions;
 
         // This adds a side-effectful import which monkey patches
         // `React.createElement` in the server and imports
         // `@lit-labs/ssr-client/lit-element-hydrate-support.js` in the client.
         const imports = ['side-effects @lit-labs/ssr-react/enable-lit-ssr.js'];
 
-        if (!isServer && includeDSDPolyfill) {
+        if (!isServer && addDeclarativeShadowDomPolyfill) {
           // Add script that applies @webcomponents/template-shadowroot ponyfill
           // on document.body
           imports.push(
