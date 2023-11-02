@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.0.2
+
+### Patch Changes
+
+- [#4345](https://github.com/lit/lit/pull/4345) [`02b8d620`](https://github.com/lit/lit/commit/02b8d62003a16075ce3873ac3e40db43c0254ecf) - Add a dev mode warning if a static value such as `literal` or `unsafeStatic` is detected within the non-static `html` tag function. These should only be used with the static `html` tag function imported from `lit-html/static.js` or `lit/static-html.js`.
+
 ## 3.0.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @lit-labs/virtualizer
 
+## 2.0.10
+
+### Patch Changes
+
+- [#4355](https://github.com/lit/lit/pull/4355) [`21c9faf5`](https://github.com/lit/lit/commit/21c9faf5af69a9871b53328466ea64cfa63768b5) Thanks [@graynorton](https://github.com/graynorton)! - Fix masonry layout bug (new failure case for #3815)
+
 ## 2.0.9
 
 ### Patch Changes
