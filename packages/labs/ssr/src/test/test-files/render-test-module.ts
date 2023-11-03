@@ -4,11 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult, html, svg, nothing} from 'lit';
+import {html, svg, nothing} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
+import {documenthtml, serverhtml} from '../../lib/server-template.js';
 export {digestForTemplateResult} from '@lit-labs/ssr-client';
 
 export {render} from '../../lib/render-lit-html.js';
@@ -288,63 +289,18 @@ export const templateUsingAnInvalidExpressLocation = () => {
   return html`<template><div>${value}</div></template>`;
 };
 
-// DO NOT SUBMIT without finding a better place for this stuff.
+export const trivialServerOnly = serverhtml`<div>Server only</div>`;
 
-export const SERVER_ONLY = 1;
-export const SERVER_DOCUMENT_ONLY = 2;
+export const serverOnlyWithBinding = serverhtml`<div>${'Server only'}</div>`;
 
-export type ServerOnlyRenderMode =
-  | typeof SERVER_ONLY
-  | typeof SERVER_DOCUMENT_ONLY;
+export const serverOnlyInsideServerOnly = serverhtml`<div>${serverhtml`Server only`}</div>`;
 
-export interface ServerRenderedTemplate extends TemplateResult {
-  $_litServerRenderMode: ServerOnlyRenderMode;
-}
-
-/**
- * Returns a variant of the given TemplateResult that, when rendered
- * server-side, will not be rendered for client-side hydration.
- *
- * This is a performance optimization, causing the server not to emit comment
- * markers for updating the dynamic parts of the server-rendered DOM.
- * This results in fewer DOM nodes on the client. In most cases the difference
- * will be small.
- */
-export function serverOnly(value: TemplateResult): ServerRenderedTemplate {
-  return {
-    ...value,
-    $_litServerRenderMode: SERVER_ONLY,
-  };
-}
-
-export function serverDocumentOnly(
-  value: TemplateResult
-): ServerRenderedTemplate {
-  return {
-    ...value,
-    $_litServerRenderMode: SERVER_DOCUMENT_ONLY,
-  };
-}
-
-export const trivialServerOnly = serverOnly(html`<div>Server only</div>`);
-
-export const serverOnlyWithBinding = serverOnly(
-  html`<div>${'Server only'}</div>`
-);
-
-export const serverOnlyInsideServerOnly = serverOnly(
-  serverOnly(html`<div>${serverOnly(html`Server only`)}</div>`)
-);
-
-export const serverOnlyRawElementTemplate = serverOnly(
-  html`
+export const serverOnlyRawElementTemplate = serverhtml`
     <title>${'No'} comments ${'inside'}</title>
     <textarea>${'This also'} works ${'(kinda).'}</textarea>
-  `
-);
+  `;
 
-export const serverOnlyDocumentTemplate = serverDocumentOnly(
-  html`
+export const serverOnlyDocumentTemplate = documenthtml`
     <!DOCTYPE html>
     <html>
       <head>
@@ -354,29 +310,25 @@ export const serverOnlyDocumentTemplate = serverDocumentOnly(
         <textarea>${'This also'} works ${'(kinda).'}</textarea>
       </body>
     </html>
-  `
-);
+  `;
 
-export const serverOnlyArray = serverOnly(
-  html`<div>${['one', 'two', 'three']}</div>`
-);
+export const serverOnlyArray = serverhtml`<div>${[
+  'one',
+  'two',
+  'three',
+]}</div>`;
 
-export const serverOnlyRenderHydratable = serverOnly(
-  html`
+export const serverOnlyRenderHydratable = serverhtml`
     <div>${'server only'}</div>
     ${html`<div>${'hydratable'}</div>`}
-  `
-);
+  `;
 
 export const hydratableRenderServerOnly = html`
   <div>${'dynamic!'}</div>
-  ${serverOnly(html`<div>${'one time'}</div>`)}
+  ${serverhtml`<div>${'one time'}</div>`}
 `;
 
-export const serverOnlyRenderPropertyBinding = serverOnly(
-  html`<div .foo=${'server only'}></div>`
-);
+export const serverOnlyRenderPropertyBinding = serverhtml`<div .foo=${'server only'}></div>`;
 
-export const serverOnlyRenderEventBinding = serverOnly(
-  html`<div @click=${() => console.log('clicked!')}></div>`
-);
+export const serverOnlyRenderEventBinding = serverhtml`<div @click=${() =>
+  console.log('clicked!')}></div>`;

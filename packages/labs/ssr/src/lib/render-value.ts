@@ -64,10 +64,10 @@ import {reflectedAttributeName} from './reflected-attributes.js';
 
 import type {RenderResult} from './render-result.js';
 import {
-  SERVER_DOCUMENT_ONLY,
   getServerTemplateType,
   isHydratable,
-} from './util/is-server-template.js';
+  SERVER_DOCUMENT_ONLY,
+} from './server-template.js';
 
 declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {

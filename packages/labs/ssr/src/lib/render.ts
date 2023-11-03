@@ -11,7 +11,7 @@ import type {RenderInfo} from './render-value.js';
 export type {RenderInfo} from './render-value.js';
 import type {RenderResult} from './render-result.js';
 import {isTemplateResult} from 'lit-html/directive-helpers.js';
-import {isHydratable} from './util/is-server-template.js';
+import {isHydratable} from './server-template.js';
 export type {RenderResult} from './render-result.js';
 
 /**
