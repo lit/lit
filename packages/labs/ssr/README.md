@@ -77,6 +77,7 @@ iterable that incrementally emits the serialized strings of the given template.
 // Example: render-template.js
 
 import {render} from '@lit-labs/ssr';
+import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import {myTemplate} from './my-template.js';
 export const renderTemplate = (someData) => {
   return render(myTemplate(someData));
@@ -98,7 +99,8 @@ const ssrResult = await (renderModule(
 
 // ...
 
-context.body = Readable.from(ssrResult);
+// Assume `context` is a Koa.Context, or other API that accepts a Readable.
+context.body = new RenderResultReadable(ssrResult);
 ```
 
 ## Client usage
