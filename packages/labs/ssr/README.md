@@ -12,21 +12,52 @@ A package for server-side rendering Lit templates and components.
 
 The easiest way to get started is to import your Lit template modules (and any
 `LitElement` definitions they may use) into the node global scope and render
-them to a stream (or string) using the `render(value: unknown): Iterable<string>` function provided by the `render-lit-html.js` module. When
+them to a stream (or string) using the `render(value: unknown, renderInfo?: Partial<RenderInfo>): Iterable<string>` function provided by `@lit-labs/ssr`. When
 running in Node, Lit automatically depends on Node-compatible implementations of
 a minimal set of DOM APIs provided by the `@lit-labs/ssr-dom-shim` package,
 including defining `customElements` on the global object.
 
+#### Rendering to a stream
+
+Web servers should prefer rendering to a stream, as they have a lower memory
+footprint and allow sending data in chunks as they are being processed. For this
+case use `RenderResultReadable`, which is a Node `Readable` stream
+implementation that provides values from `RenderResult`. This can be piped
+into a `Writable` stream, or passed to web server frameworks like [Koa](https://koajs.com/).
+
 ```js
 // Example: server.js:
 
-import {render} from '@lit-labs/ssr/lib/render-lit-html.js';
+import {render} from '@lit-labs/ssr';
+import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import {myTemplate} from './my-template.js';
 
 //...
 
 const ssrResult = render(myTemplate(data));
-context.body = Readable.from(ssrResult);
+// Assume `context` is a Koa.Context.
+context.body = new RenderResultReadable(ssrResult);
+```
+
+#### Rendering to a string
+
+To render to a string, you can use the `collectResult` or `collectResultSync` helper functions.
+
+```js
+import {render} from '@lit-labs/ssr';
+import {
+  collectResult,
+  collectResultSync,
+} from '@lit-labs/ssr/lib/render-result.js';
+import {html} from 'lit';
+
+const myServerTemplate = (name) => html`<p>Hello ${name}</p>`;
+const ssrResult = render(myServerTemplate('SSR with Lit!'));
+
+// Will throw if a Promise is encountered
+console.log(collectResultSync(ssrResult));
+// Awaits promises
+console.log(await collectResult(ssrResult));
 ```
 
 ### Rendering in a separate VM context
@@ -45,7 +76,7 @@ iterable that incrementally emits the serialized strings of the given template.
 ```js
 // Example: render-template.js
 
-import {render} from '@lit-labs/ssr/lib/render-lit-html.js';
+import {render} from '@lit-labs/ssr';
 import {myTemplate} from './my-template.js';
 export const renderTemplate = (someData) => {
   return render(myTemplate(someData));
