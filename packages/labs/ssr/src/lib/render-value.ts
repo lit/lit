@@ -461,6 +461,10 @@ const getTemplateOpcodes = (result: TemplateResult) => {
                   throw new Error(
                     `Server-only templates can't bind to properties.`
                   );
+                } else if (prefix === '@') {
+                  throw new Error(
+                    `Server-only templates can't bind to events.`
+                  );
                 }
               }
               ops.push({

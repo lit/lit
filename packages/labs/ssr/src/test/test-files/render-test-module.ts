@@ -372,3 +372,7 @@ export const hydratableRenderServerOnly = html`
 export const serverOnlyRenderPropertyBinding = serverOnly(
   html`<div .foo=${'server only'}></div>`
 );
+
+export const serverOnlyRenderEventBinding = serverOnly(
+  html`<div @click=${() => console.log('clicked!')}></div>`
+);
