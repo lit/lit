@@ -459,11 +459,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               if (!hydratable) {
                 if (prefix === '.') {
                   throw new Error(
-                    `Server-only templates can't bind to properties.`
+                    `Server-only templates can't bind to properties. Bind to attributes instead, as they can be serialized when the template is rendered and sent to the browser.`
                   );
                 } else if (prefix === '@') {
                   throw new Error(
-                    `Server-only templates can't bind to events.`
+                    `Server-only templates can't bind to events. There's no way to serialize an event listener when generating HTML and sending it to the browser.`
                   );
                 }
               }
