@@ -12,7 +12,7 @@ A package for server-side rendering Lit templates and components.
 
 The easiest way to get started is to import your Lit template modules (and any
 `LitElement` definitions they may use) into the node global scope and render
-them to a stream (or string) using the `render(value: unknown, renderInfo?: Partial<RenderInfo>): Iterable<string>` function provided by `@lit-labs/ssr`. When
+them to a stream (or string) using the `render(value: unknown, renderInfo?: Partial<RenderInfo>): RenderResult` function provided by `@lit-labs/ssr`. When
 running in Node, Lit automatically depends on Node-compatible implementations of
 a minimal set of DOM APIs provided by the `@lit-labs/ssr-dom-shim` package,
 including defining `customElements` on the global object.
