@@ -16,10 +16,12 @@
   "main": "index.js",
   "typings": "index.d.ts",
   "files": [
-    "/index.{d.ts,d.ts.map,js,js.map}"
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/lib/"
   ],
   "dependencies": {
     "@lit-labs/ssr-react": "^0.2.1",
+    "@webcomponents/template-shadowroot": "^0.2.1",
     "imports-loader": "^4.0.1"
   },
   "peerDependencies": {
@@ -48,6 +50,7 @@
       ],
       "output": [
         "index.{d.ts,d.ts.map,js,js.map}",
+        "lib/",
         "tsconfig.tsbuildinfo"
       ]
     },
