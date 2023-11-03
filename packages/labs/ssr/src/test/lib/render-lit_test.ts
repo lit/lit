@@ -564,28 +564,25 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     assert.is(result, `<div>onetwothree</div>`);
   });
 
-  test('server-only template rendering normal', async () => {
+  test('server-only template inside server-only template', async () => {
+    const {render, serverOnlyInsideServerOnly} = await setup();
+    const result = await render(serverOnlyInsideServerOnly);
+    assert.is(result, `<div>Server only</div>`);
+  });
+
+  test(`server-only template can't render a normal template`, async () => {
     const {render, serverOnlyRenderHydratable} = await setup();
-    const result = await render(serverOnlyRenderHydratable);
-    assert.is(
-      result,
-      //
-      `
-    <div>server only</div>
-    <!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->hydratable<!--/lit-part--></div><!--/lit-part-->
-  `
+    assert.throws(
+      () => render(serverOnlyRenderHydratable),
+      /Tried to render a normal Lit template inside a server-only template./
     );
   });
 
-  test('normal template renders server-only', async () => {
+  test(`normal template can't render a server-only template`, async () => {
     const {render, hydratableRenderServerOnly} = await setup();
-    const result = await render(hydratableRenderServerOnly);
-    assert.is(
-      result,
-      `<!--lit-part 83RBsBZZa48=-->
-  <div><!--lit-part-->dynamic!<!--/lit-part--></div>
-  <!--lit-part AEmR7W+R0Ak=--><div>one time</div><!--/lit-part-->
-<!--/lit-part-->`
+    assert.throws(
+      () => render(hydratableRenderServerOnly),
+      /Tried to render a server-only template inside a normal Lit template./
     );
   });
 

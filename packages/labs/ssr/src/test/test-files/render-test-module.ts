@@ -332,6 +332,10 @@ export const serverOnlyWithBinding = serverOnly(
   html`<div>${'Server only'}</div>`
 );
 
+export const serverOnlyInsideServerOnly = serverOnly(
+  serverOnly(html`<div>${serverOnly(html`Server only`)}</div>`)
+);
+
 export const serverOnlyRawElementTemplate = serverOnly(
   html`
     <title>${'No'} comments ${'inside'}</title>

@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {TemplateResult, ChildPart} from 'lit';
+import type {TemplateResult, ChildPart, CompiledTemplateResult} from 'lit';
 import type {
   Directive,
   DirectiveClass,
@@ -20,6 +20,7 @@ import {
   isTemplateResult,
   getDirectiveClass,
   TemplateResultType,
+  isCompiledTemplateResult,
 } from 'lit/directive-helpers.js';
 import {_$LH} from 'lit-html/private-ssr-support.js';
 
@@ -684,15 +685,24 @@ function* renderTemplateResult(
         break;
       case 'child-part': {
         const value = result.values[partIndex++];
-        let renderAsHydratable = hydratable;
-        if (!hydratable && isTemplateResult(value)) {
-          // When we're rendering a a hydratable template inside a
-          // non-hydratable template, then we need to
-          // wrap it with parts so that the hydratable template can be
-          // updated.
-          renderAsHydratable ||= isHydratable(value);
+        if (isTemplateResult(value)) {
+          const isValueHydratable = isHydratable(value);
+          if (isValueHydratable !== hydratable) {
+            throw new Error(
+              `Currently, a server-only template can't be rendered inside an ordinary, hydratable template, or vice versa. Tried to render a ${
+                isValueHydratable ? 'normal Lit' : 'server-only'
+              } template inside a ${
+                hydratable ? 'normal Lit' : 'server-only'
+              } template. The outer template was:
+    ${displayTemplateResult(result)}
+
+And the inner template was:
+    ${displayTemplateResult(value)}
+              `
+            );
+          }
         }
-        yield* renderValue(value, renderInfo, renderAsHydratable);
+        yield* renderValue(value, renderInfo, hydratable);
         break;
       }
       case 'attribute-part': {
@@ -849,7 +859,7 @@ function throwErrorForPartIndexMismatch(
     result.values.length
   } while processing the following template:
 
-    ${result.strings.join('${...}')}
+    ${displayTemplateResult(result)}
 
     This could be because you're attempting to render an expression in an invalid location. See
     https://lit.dev/docs/templates/expressions/#invalid-locations for more information about invalid expression
@@ -901,6 +911,19 @@ function* renderAttributePart(
       yield `${op.name}="${escapeHtml(String(value ?? ''))}"`;
     }
   }
+}
+
+/**
+ * Returns a debug string suitable for an error message describing a
+ * TemplateResult.
+ */
+function displayTemplateResult(
+  result: TemplateResult | CompiledTemplateResult
+) {
+  if (isCompiledTemplateResult(result)) {
+    return result._$litType$.h.join('${...}');
+  }
+  return result.strings.join('${...}');
 }
 
 const getLast = <T>(a: Array<T>) => a[a.length - 1];
