@@ -619,6 +619,14 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
   `
     );
   });
+
+  test('server-only template throws on property bindings', async () => {
+    const {render, serverOnlyRenderPropertyBinding} = await setup();
+    assert.throws(
+      () => render(serverOnlyRenderPropertyBinding),
+      /Server-only templates can't bind to properties./
+    );
+  });
 }
 
 test.run();

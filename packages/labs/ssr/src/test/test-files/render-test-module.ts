@@ -368,3 +368,7 @@ export const hydratableRenderServerOnly = html`
   <div>${'dynamic!'}</div>
   ${serverOnly(html`<div>${'one time'}</div>`)}
 `;
+
+export const serverOnlyRenderPropertyBinding = serverOnly(
+  html`<div .foo=${'server only'}></div>`
+);

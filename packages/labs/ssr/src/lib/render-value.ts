@@ -456,6 +456,13 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
                 name as string
               )!;
+              if (!hydratable) {
+                if (prefix === '.') {
+                  throw new Error(
+                    `Server-only templates can't bind to properties.`
+                  );
+                }
+              }
               ops.push({
                 type: 'attribute-part',
                 index: nodeIndex,
