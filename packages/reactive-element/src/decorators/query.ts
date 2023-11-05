@@ -25,7 +25,9 @@ if (DEV_MODE) {
 
   // Issue a warning, if we haven't already.
   issueWarning = (code: string, warning: string) => {
-    warning += ` See https://lit.dev/msg/${code} for more information.`;
+    warning += code
+      ? ` See https://lit.dev/msg/${code} for more information.`
+      : '';
     if (!issuedWarnings.has(warning)) {
       console.warn(warning);
       issuedWarnings.add(warning);
@@ -88,7 +90,7 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
             ? nameOrContext.name
             : nameOrContext;
         issueWarning(
-          'early-query-field-access',
+          '',
           `@query'd field ${JSON.stringify(String(name))} for selector ` +
             `'${selector}' has been accessed before the first update. This ` +
             `yields a certain null result if the renderRoot tree has not ` +
