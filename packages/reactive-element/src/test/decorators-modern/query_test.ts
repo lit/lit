@@ -99,6 +99,22 @@ import {assert} from '@esm-bundle/chai';
   test('does not cache null values when accessed before first update', async () => {
     const notYetUpdatedEl = new C();
     assert.equal(notYetUpdatedEl.divCached, null);
+
+    if (globalThis.litIssuedWarnings != null) {
+      assert(
+        [...globalThis.litIssuedWarnings].find((w) =>
+          /@query'd field "divCached" for selector '#blah' has been accessed before the first update\. This yields a certain null result if the renderRoot tree has not been provided beforehand \(e\.g\. via Declarative Shadow DOM\)\./.test(
+            w ?? ''
+          )
+        ),
+        `Expected warning to be issued. Warnings found: ${JSON.stringify(
+          [...globalThis.litIssuedWarnings],
+          null,
+          2
+        )}`
+      );
+    }
+
     container.appendChild(notYetUpdatedEl);
     await notYetUpdatedEl.updateComplete;
     assert.instanceOf(notYetUpdatedEl.divCached, HTMLDivElement);
