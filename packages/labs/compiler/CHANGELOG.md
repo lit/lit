@@ -1,5 +1,12 @@
 # @lit-labs/compiler
 
+## 1.0.1
+
+### Patch Changes
+
+- [#4348](https://github.com/lit/lit/pull/4348) [`8f3dd603`](https://github.com/lit/lit/commit/8f3dd6039f867baf41b75b1b40bbac75f3fabe95) - Fix bug where adjacent attribute and element parts would mix-up their values
+  during compilation.
+
 ## 1.0.0
 
 ### Major Changes
