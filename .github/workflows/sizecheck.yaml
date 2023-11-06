@@ -21,12 +21,21 @@ jobs:
       - name: NPM install
         run: npm ci
 
+      # This is needed to be able to read it from sizecheck-report.yaml to
+      # comment on the correct PR
+      - name: Save PR number
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: echo $PR_NUMBER > ./scripts/pr_number.txt
+
       - name: Generate size report
         run: npm run benchmark:size
 
-      - name: Upload failure artifact
-        if: ${{ failure() }}
+      - name: Upload artifacts
+        if: ${{ success() || failure() }}
         uses: actions/upload-artifact@v3
         with:
           name: sizecheck
-          path: scripts/check-size-out.md
+          path: |
+            scripts/check-size-out.md
+            sdripts/pr_number.txt
