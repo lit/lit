@@ -50,7 +50,6 @@
         "build:rollup",
         "build:ts",
         "build:ts:std-decorators-tests",
-        "build:ts:lit2-tests",
         "build:ts:types",
         "../lit:build",
         "../reactive-element:build",
