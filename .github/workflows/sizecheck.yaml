@@ -38,4 +38,4 @@ jobs:
           name: sizecheck
           path: |
             scripts/check-size-out.md
-            sdripts/pr_number.txt
+            scripts/pr_number.txt
