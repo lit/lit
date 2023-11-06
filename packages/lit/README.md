@@ -22,8 +22,6 @@ At Lit's core is a boilerplate-killing component base class that provides reacti
 
 ## About this release
 
-This is a release of Lit 3.0, the next major version of Lit.
-
 Lit 3.0 has very few breaking changes from Lit 2.0:
 
 - Drops support for IE11
