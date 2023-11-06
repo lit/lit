@@ -187,7 +187,7 @@ test('single element with dynamic children via props', () => {
   );
 });
 
-test('nested element', () => {
+test('custom element child', () => {
   assert.equal(
     ReactDOMServer.renderToString(
       <test-element>
@@ -205,6 +205,16 @@ test('nested element', () => {
     }
   </style><!--lit-part aHUgh01By8I=--><p>Hello, <!--lit-part-->Somebody<!--/lit-part-->!</p>
       <slot></slot><!--/lit-part--></template></test-element></test-element>`
+  );
+});
+
+test('nested custom element', () => {
+  // Note: <child-element> should have defer-hydration attribute to ensure
+  // proper hydration order from parent to child
+  assert.equal(
+    ReactDOMServer.renderToString(<parent-element />),
+    `<parent-element><template shadowroot="open" shadowrootmode="open"><!--lit-part VWvXc8PRUIg=--><p>Parent</p>
+      <!--lit-node 1--><child-element defer-hydration><template shadowroot="open" shadowrootmode="open"><!--lit-part z0Ym6Oo3MXM=--><p>Child</p><!--/lit-part--></template></child-element><!--/lit-part--></template></parent-element>`
   );
 });
 

@@ -14,6 +14,7 @@ import {TestElement} from '../test-element.js';
 import '../test-element.js';
 import {ObjectTestElement} from '../object-test-element.js';
 import '../object-test-element.js';
+import '../parent-element.js';
 
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
@@ -193,7 +194,7 @@ bareCEtest('single element with dynamic children via props', () => {
   );
 });
 
-bareCEtest('nested element', () => {
+bareCEtest('child custom element', () => {
   assert.equal(
     ReactDOMServer.renderToString(
       <test-element>
@@ -211,6 +212,16 @@ bareCEtest('nested element', () => {
     }
   </style><!--lit-part aHUgh01By8I=--><p>Hello, <!--lit-part-->Somebody<!--/lit-part-->!</p>
       <slot></slot><!--/lit-part--></template></test-element></test-element>`
+  );
+});
+
+bareCEtest('nested custom element', () => {
+  // Note: <child-element> should have defer-hydration attribute to ensure
+  // proper hydration order from parent to child
+  assert.equal(
+    ReactDOMServer.renderToString(<parent-element />),
+    `<parent-element><template shadowroot="open" shadowrootmode="open"><!--lit-part VWvXc8PRUIg=--><p>Parent</p>
+      <!--lit-node 1--><child-element defer-hydration><template shadowroot="open" shadowrootmode="open"><!--lit-part z0Ym6Oo3MXM=--><p>Child</p><!--/lit-part--></template></child-element><!--/lit-part--></template></parent-element>`
   );
 });
 
