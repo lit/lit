@@ -82,7 +82,12 @@ export class ContextProvider<
       this.context = contextOrOptions as T;
     }
     this.attachListeners();
-    this.host.addController(this);
+    // We may be constructed with a plain DOM element to provide context to a
+    // whole DOM tree of elements, in this case the host DOM element doesn't
+    // need know about this controller.
+    if ((host as ReactiveControllerHost).addController !== undefined) {
+      this.host.addController(this);
+    }
   }
 
   onContextRequest = (
