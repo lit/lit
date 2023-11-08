@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "preact": "^10.15.1",
-    "@lit-internal/test-elements-react": "1.0.1"
+    "@lit-internal/test-elements-react": "^1.0.1"
   },
   "devDependencies": {
     "@preact/preset-vite": "^2.5.0",

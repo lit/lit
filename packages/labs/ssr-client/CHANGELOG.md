@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.1.5
+
+### Patch Changes
+
+- [#4311](https://github.com/lit/lit/pull/4311) [`cabe72a8`](https://github.com/lit/lit/commit/cabe72a863a5de14a4bbca384374db748dd9b4c5) - Update version range for `lit` dependency to include v2. This allows projects still on lit v2 to use this package without being forced to install lit v3.
+
+- [#4312](https://github.com/lit/lit/pull/4312) [`26182733`](https://github.com/lit/lit/commit/26182733046e347670db01ebf9cec5b0b3611523) - Avoid nullish logical assignment in hydrate-lit-html which some minification process would not handle correctly. Fixes hydration errors in Next.js production bundles.
+
 ## 1.1.4
 
 ### Patch Changes

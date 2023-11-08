@@ -119,13 +119,19 @@ type Interface<T> = {
 
 type ProvideDecorator<ContextType> = {
   // legacy
-  <K extends PropertyKey, Proto extends Interface<ReactiveElement>>(
+  <
+    K extends PropertyKey,
+    Proto extends Interface<Omit<ReactiveElement, 'renderRoot'>>
+  >(
     protoOrDescriptor: Proto,
     name?: K
   ): FieldMustMatchContextType<Proto, K, ContextType>;
 
   // standard
-  <C extends Interface<ReactiveElement>, V extends ContextType>(
+  <
+    C extends Interface<Omit<ReactiveElement, 'renderRoot'>>,
+    V extends ContextType
+  >(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): void;

@@ -8,8 +8,11 @@ import {
   ContextCallback,
   ContextRequestEvent,
 } from '../context-request-event.js';
-import {Context, ContextType} from '../create-context.js';
-import {ReactiveController, ReactiveElement} from 'lit';
+import type {Context, ContextType} from '../create-context.js';
+import type {
+  ReactiveController,
+  ReactiveControllerHost,
+} from '@lit/reactive-element';
 
 export interface Options<C extends Context<unknown, unknown>> {
   context: C;
@@ -31,7 +34,7 @@ export interface Options<C extends Context<unknown, unknown>> {
  */
 export class ContextConsumer<
   C extends Context<unknown, unknown>,
-  HostElement extends ReactiveElement
+  HostElement extends ReactiveControllerHost & HTMLElement
 > implements ReactiveController
 {
   protected host: HostElement;

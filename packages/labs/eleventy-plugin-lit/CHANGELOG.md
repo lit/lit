@@ -1,5 +1,13 @@
 # @lit-labs/eleventy-plugin-lit
 
+## 1.0.3
+
+### Patch Changes
+
+- [#4311](https://github.com/lit/lit/pull/4311) [`cabe72a8`](https://github.com/lit/lit/commit/cabe72a863a5de14a4bbca384374db748dd9b4c5) - Update version range for `lit` dependency to include v2. This allows projects still on lit v2 to use this package without being forced to install lit v3.
+
+- [#4314](https://github.com/lit/lit/pull/4314) [`f9c3659f`](https://github.com/lit/lit/commit/f9c3659f28ba2fc0bc6325ba569c2107ee0afb19) - Fix ModuleLoader so it can load modules concurrently.
+
 ## 1.0.2
 
 ### Patch Changes

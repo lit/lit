@@ -17,8 +17,8 @@ import {
   ClassDeclaration,
   LitElementDeclaration,
   CustomElementDeclaration,
-} from '../../lib/model.js';
-import {DiagnosticCode} from '../../lib/diagnostic-code.js';
+} from '../../../lib/model.js';
+import {DiagnosticCode} from '../../../lib/diagnostic-code.js';
 
 for (const lang of languages) {
   const test = suite<AnalyzerTestContext>(`Mixin tests (${lang})`);

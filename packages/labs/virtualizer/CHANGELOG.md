@@ -1,5 +1,19 @@
 # @lit-labs/virtualizer
 
+## 2.0.10
+
+### Patch Changes
+
+- [#4355](https://github.com/lit/lit/pull/4355) [`21c9faf5`](https://github.com/lit/lit/commit/21c9faf5af69a9871b53328466ea64cfa63768b5) Thanks [@graynorton](https://github.com/graynorton)! - Fix masonry layout bug (new failure case for #3815)
+
+## 2.0.9
+
+### Patch Changes
+
+- [#4291](https://github.com/lit/lit/pull/4291) [`81806d4c`](https://github.com/lit/lit/commit/81806d4cf7052f90473ce4af58e8c7cbc487a900) Thanks [@graynorton](https://github.com/graynorton)! - Update version range for lit dependency to include Lit 2 and 3
+
+- [#4233](https://github.com/lit/lit/pull/4233) [`f84963d8`](https://github.com/lit/lit/commit/f84963d80f890f6ddaa46720622dcc366663cb6a) Thanks [@steverep](https://github.com/steverep)! - Guard against layout updates or re-observing when disconnected (fixes #4182, #3831)
+
 ## 2.0.8
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.3
+
+### Patch Changes
+
+- [#4299](https://github.com/lit/lit/pull/4299) [`fffa4406`](https://github.com/lit/lit/commit/fffa44066e06bdbec2d2e28166b7c81b11a8c213) - Update version range for `lit` dependency to include v2 (and/or `@lit/reactive-element` v1). This allows projects still on lit v2 to use this package without being forced to install lit v3.
+
 ## 1.0.2
 
 ### Patch Changes

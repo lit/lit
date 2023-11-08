@@ -274,6 +274,7 @@ export class Module {
 
 interface DeclarationInit extends DeprecatableDescribed {
   name: string;
+  node: ts.Node;
 }
 
 export abstract class Declaration {
@@ -281,33 +282,44 @@ export abstract class Declaration {
   readonly description?: string | undefined;
   readonly summary?: string | undefined;
   readonly deprecated?: string | boolean | undefined;
+  readonly node: ts.Node;
+
   constructor(init: DeclarationInit) {
     this.name = init.name;
     this.description = init.description;
     this.summary = init.summary;
     this.deprecated = init.deprecated;
+    this.node = init.node;
   }
+
   isVariableDeclaration(): this is VariableDeclaration {
     return this instanceof VariableDeclaration;
   }
+
   isClassDeclaration(): this is ClassDeclaration {
     return this instanceof ClassDeclaration;
   }
+
   isLitElementDeclaration(): this is LitElementDeclaration {
     return this instanceof LitElementDeclaration;
   }
+
   isFunctionDeclaration(): this is FunctionDeclaration {
     return this instanceof FunctionDeclaration;
   }
+
   isMixinDeclaration(): this is MixinDeclaration {
     return this instanceof MixinDeclaration;
   }
+
   isClassField(): this is ClassField {
     return this instanceof ClassField;
   }
+
   isClassMethod(): this is ClassMethod {
     return this instanceof ClassMethod;
   }
+
   isCustomElementDeclaration(): this is CustomElementDeclaration {
     return this instanceof CustomElementDeclaration;
   }
@@ -319,29 +331,32 @@ export interface VariableDeclarationInit extends DeclarationInit {
 }
 
 export class VariableDeclaration extends Declaration {
-  readonly node:
+  readonly type: Type | undefined;
+  declare readonly node:
     | ts.VariableDeclaration
     | ts.ExportAssignment
     | ts.EnumDeclaration;
-  readonly type: Type | undefined;
+
   constructor(init: VariableDeclarationInit) {
     super(init);
-    this.node = init.node;
     this.type = init.type;
   }
 }
 
-export interface FunctionLikeInit extends DeprecatableDescribed {
+export interface FunctionLikeInit extends DeclarationInit {
   name: string;
   parameters?: Parameter[] | undefined;
   return?: Return | undefined;
   overloads?: FunctionOverloadDeclaration[] | undefined;
+  node: ts.FunctionLikeDeclaration;
 }
 
 export class FunctionDeclaration extends Declaration {
   parameters?: Parameter[] | undefined;
   return?: Return | undefined;
   overloads?: FunctionOverloadDeclaration[] | undefined;
+  declare readonly node: ts.FunctionLikeDeclaration;
+
   constructor(init: FunctionLikeInit) {
     super(init);
     this.parameters = init.parameters;
@@ -372,6 +387,7 @@ export interface ClassMethodInit extends FunctionLikeInit {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  node: ts.MethodDeclaration;
 }
 
 export class ClassMethod extends FunctionDeclaration {
@@ -379,21 +395,28 @@ export class ClassMethod extends FunctionDeclaration {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  override readonly node: ts.MethodDeclaration;
+
   constructor(init: ClassMethodInit) {
     super(init);
     this.static = init.static;
     this.privacy = init.privacy;
     this.inheritedFrom = init.inheritedFrom;
     this.source = init.source;
+    this.node = init.node;
   }
 }
 
-export interface ClassFieldInit extends PropertyLike {
+export interface ClassFieldInit extends DeclarationInit, PropertyLike {
   static?: boolean | undefined;
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
   readonly?: boolean | undefined;
+  node:
+    | ts.PropertyDeclaration
+    | ts.AssignmentExpression<ts.EqualsToken>
+    | ts.AccessorDeclaration;
 }
 
 export class ClassField extends Declaration {
@@ -404,6 +427,11 @@ export class ClassField extends Declaration {
   readonly?: boolean | undefined;
   type?: Type | undefined;
   default?: string | undefined;
+  declare node:
+    | ts.PropertyDeclaration
+    | ts.AssignmentExpression<ts.EqualsToken>
+    | ts.AccessorDeclaration;
+
   constructor(init: ClassFieldInit) {
     super(init);
     this.static = init.static;
@@ -431,16 +459,13 @@ export interface ClassDeclarationInit extends DeclarationInit {
 }
 
 export class ClassDeclaration extends Declaration {
-  readonly node:
-    | ts.ClassDeclaration
-    | ts.ClassLikeDeclaration
-    | ts.CallExpression;
   private _getHeritage: () => ClassHeritage;
   private _heritage: ClassHeritage | undefined = undefined;
   readonly _fieldMap: Map<string, ClassField>;
   readonly _staticFieldMap: Map<string, ClassField>;
   readonly _methodMap: Map<string, ClassMethod>;
   readonly _staticMethodMap: Map<string, ClassMethod>;
+  override readonly node: ts.ClassLikeDeclaration | ts.CallExpression;
 
   constructor(init: ClassDeclarationInit) {
     super(init);
@@ -803,6 +828,7 @@ export interface AnalyzerInterface {
     | 'parse'
     | 'normalize'
     | 'isAbsolute'
+    | 'sep'
   >;
 
   addDiagnostic(diagnostic: ts.Diagnostic): void;

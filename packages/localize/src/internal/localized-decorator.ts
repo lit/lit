@@ -6,7 +6,7 @@
 
 import {updateWhenLocaleChanges} from './localized-controller.js';
 
-import type {ReactiveElement} from '@lit/reactive-element';
+import type {ReactiveControllerHost} from 'lit';
 
 /**
  * Generates a public interface type that removes private and protected fields.
@@ -17,9 +17,10 @@ export type Interface<T> = {
   [K in keyof T]: T[K];
 };
 
-type ReactiveElementClass = Interface<typeof ReactiveElement> & {
+type ReactiveElementClass = {
+  addInitializer(initializer: (element: ReactiveControllerHost) => void): void;
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  new (...args: any[]): Interface<ReactiveElement>;
+  new (...args: any[]): ReactiveControllerHost;
 };
 
 export type LocalizedDecorator = {

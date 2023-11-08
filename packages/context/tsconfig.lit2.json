@@ -1,0 +1,17 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "./lit2/lit2-scope/context",
+    "paths": {
+      "@esm-bundle/chai": ["../../local-types/@esm-bundle/chai/index.d.ts"],
+      "lit": ["./lit2/node_modules/lit2/index.d.ts"],
+      "lit/*": ["./lit2/node_modules/lit2/*"],
+      "@lit/reactive-element": [
+        "./lit2/node_modules/reactive-element2/index.d.ts"
+      ],
+      "@lit/reactive-element/*": ["./lit2/node_modules/reactive-element2/*"]
+    }
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": ["src/test/**/*.ts", "src/test/std-decorators/**/*"]
+}

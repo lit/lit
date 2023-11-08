@@ -1,5 +1,11 @@
 # @lit-labs/context
 
+## 0.5.1
+
+### Patch Changes
+
+- [#4340](https://github.com/lit/lit/pull/4340) [`18305b43`](https://github.com/lit/lit/commit/18305b43f02f2265eaa6570947517d454bb9db4c) - Update dependency version range on graduated package to `^1.0.0` so this package can receive updates.
+
 ## 0.5.0
 
 ### Minor Changes

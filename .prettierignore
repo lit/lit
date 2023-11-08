@@ -29,6 +29,8 @@ packages/context/test/
 packages/context/node_modules/
 packages/context/lib/
 packages/context/index.*
+packages/context/lit2/test/
+packages/context/lit2/lit2-scope/context/
 
 packages/internal-scripts/node_modules/
 packages/internal-scripts/lib/
@@ -270,6 +272,7 @@ packages/labs/motion/animate.*
 packages/labs/motion/position.*
 packages/labs/motion/animate-controller.*
 packages/labs/nextjs/index.*
+packages/labs/nextjs/lib/
 
 packages/labs/observers/development/
 packages/labs/observers/test/

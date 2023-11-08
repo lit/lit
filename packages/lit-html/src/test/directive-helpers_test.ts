@@ -11,6 +11,7 @@ import {
   TemplateResult,
   CompiledTemplateResult,
   CompiledTemplate,
+  UncompiledTemplateResult,
 } from 'lit-html';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from '@lit-labs/testing';
@@ -119,7 +120,8 @@ suite('directive-helpers', () => {
   test('isTemplateResult type only test', () => {
     // This test has no runtime checks, and fails at build time if there are
     // type issues.
-    function acceptTemplateResult(_v: TemplateResult) {}
+    function acceptUncompiledTemplateResult(_v: UncompiledTemplateResult) {}
+
     function acceptTemplateOrCompiledTemplateResult(
       _v: TemplateResult | CompiledTemplateResult
     ) {}
@@ -135,16 +137,16 @@ suite('directive-helpers', () => {
       acceptTemplateOrCompiledTemplateResult(v);
 
       // @ts-expect-error v could be a CompiledTemplateResult
-      acceptTemplateResult(v);
+      acceptUncompiledTemplateResult(v);
     }
     if (isTemplateResult(v, TemplateResultType.HTML)) {
-      acceptTemplateResult(v);
+      acceptUncompiledTemplateResult(v);
       acceptTemplateResultHtml(v);
       // @ts-expect-error v is an html template result
       acceptTemplateResultSvg(v);
     }
     if (isTemplateResult(v, TemplateResultType.SVG)) {
-      acceptTemplateResult(v);
+      acceptUncompiledTemplateResult(v);
       acceptTemplateResultSvg(v);
       // @ts-expect-error v is an svg template result
       acceptTemplateResultHtml(v);

@@ -6,16 +6,37 @@
 
 import type {NextConfig} from 'next';
 
-// TODO(augustjk) Consider adding option for adding template shadowroot polyfill
-// automatically
-// eslint-disable-next-line @typescript-eslint/no-empty-interface
-interface LitSsrPluginOptions {}
+/**
+ * Options for the Lit SSR plugin
+ */
+interface LitSsrPluginOptions {
+  /**
+   * Whether to include the polyfill for Declarative Shadow DOM. Defaults to true.
+   */
+  addDeclarativeShadowDomPolyfill?: boolean;
+}
 
-export = (_pluginOptions: LitSsrPluginOptions = {}) =>
+export = (pluginOptions: LitSsrPluginOptions = {}): NextConfig =>
   (nextConfig: NextConfig = {}) => {
     return Object.assign({}, nextConfig, {
       webpack: (config, options) => {
         const {isServer, nextRuntime, webpack} = options;
+
+        const {addDeclarativeShadowDomPolyfill = true} = pluginOptions;
+
+        // This adds a side-effectful import which monkey patches
+        // `React.createElement` in the server and imports
+        // `@lit-labs/ssr-client/lit-element-hydrate-support.js` in the client.
+        const imports = ['side-effects @lit-labs/ssr-react/enable-lit-ssr.js'];
+
+        if (!isServer && addDeclarativeShadowDomPolyfill) {
+          // Add script that applies @webcomponents/template-shadowroot ponyfill
+          // on document.body
+          imports.push(
+            'side-effects @lit-labs/nextjs/lib/apply-dsd-polyfill.js'
+          );
+        }
+
         config.module.rules.unshift({
           // Grab entry points for all pages
           // TODO(augustjk) This may not work for the new "app" directory
@@ -26,10 +47,7 @@ export = (_pluginOptions: LitSsrPluginOptions = {}) =>
           exclude: /next\/dist\//,
           loader: 'imports-loader',
           options: {
-            // This adds a side-effectful import which monkey patches
-            // `React.createElement` in the server and imports
-            // `@lit-labs/ssr-client/lit-element-hydrate-support.js` in the client.
-            imports: ['side-effects @lit-labs/ssr-react/enable-lit-ssr.js'],
+            imports,
           },
         });
 
