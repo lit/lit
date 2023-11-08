@@ -10,7 +10,7 @@ import {array, ignoreBenignErrors} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {grid} from '../../layouts/grid.js';
 import {styleMap} from 'lit/directives/style-map.js';
-import {expect, html as testingHtml, fixture} from '@open-wc/testing';
+import {expect, fixture} from '@open-wc/testing';
 
 interface NamedItem {
   name: string;
@@ -44,7 +44,7 @@ describe('Virtualizer behaves properly when it has a position: fixed ancestor', 
     // We use the grid layout here because it conveniently will not
     // render any items if it calculates that it doesn't have sufficient
     // space, making our testing job easier.
-    const container = await fixture(testingHtml`
+    const container = await fixture(html`
       <div id="container" style=${styleMap(containerStyles)}>
         <div id="scroller" style=${styleMap(scrollerStyles)}>
           <lit-virtualizer
@@ -89,7 +89,7 @@ describe('Virtualizer behaves properly when it has a position: fixed ancestor', 
       overflow: 'auto',
     };
 
-    const container = await fixture(testingHtml`
+    const container = await fixture(html`
       <div id="container" style=${styleMap(containerStyles)}>
         <div id="scroller" style=${styleMap(scrollerStyles)}>
           <lit-virtualizer
@@ -134,7 +134,7 @@ describe('Virtualizer renders properly when it is slotted into a position: fixed
 
   // Regression test for https://github.com/lit/lit/issues/4346
   it('should render children', async () => {
-    const container = await fixture(testingHtml`
+    const container = await fixture(html`
       <simple-dialog>
         <lit-virtualizer
           .items=${_100Items}
@@ -157,7 +157,7 @@ describe('Virtualizer renders properly when it is position: fixed', () => {
   ignoreBenignErrors(beforeEach, afterEach);
 
   it('should render children', async () => {
-    const virtualizer = (await fixture(testingHtml`
+    const virtualizer = (await fixture(html`
       <lit-virtualizer
         style="position: fixed; width: 200px;"
         .items=${_100Items}

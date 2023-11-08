@@ -8,7 +8,7 @@ import {ignoreBenignErrors} from '../helpers.js';
 import {html, LitElement} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import '../../lit-virtualizer.js';
-import {expect, html as testingHtml, fixture} from '@open-wc/testing';
+import {expect, fixture} from '@open-wc/testing';
 
 /*
   This file contains regression tests for https://github.com/lit/lit/issues/3815
@@ -45,20 +45,18 @@ describe("Don't render any children if the virtualizer is hidden", () => {
 
   it('should not render any children when initially hidden', async () => {
     const el = await fixture<VirtualizerHider>(
-      testingHtml`
-        <virtualizer-hider hidden></virtualizer-hider>
-      `
+      html` <virtualizer-hider hidden></virtualizer-hider> `
     );
     const virtualizer = el.shadowRoot!.querySelector('lit-virtualizer')!;
+    // We can't await on layoutComplete when first render is empty.
+    // See https://github.com/lit/lit/issues/4376
     await new Promise((resolve) => setTimeout(resolve, 500));
     expect(virtualizer.children.length).to.equal(0);
   });
 
   it('should not render any children when subsequently hidden', async () => {
     const el = await fixture<VirtualizerHider>(
-      testingHtml`
-        <virtualizer-hider></virtualizer-hider>
-      `
+      html` <virtualizer-hider></virtualizer-hider> `
     );
     const virtualizer = el.shadowRoot!.querySelector('lit-virtualizer')!;
     await virtualizer.layoutComplete;
