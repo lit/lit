@@ -89,10 +89,13 @@ const getElementTypeImports = (declaration: LitElementDeclaration) => {
 const getElementTypeExportsFromImports = (imports: string) =>
   imports.replace(/(?:^import)/gm, 'export type');
 
-// TODO(sorvell): Add support for `v-bind`.
-// TODO(sorvell): Investigate if it's possible to save the ~15 lines related to
-// handling defaults by factoring the defaults directive and associated code
-// into the vue-utils package.
+// TODO(sorvell): Add support for `v-model`.
+// Note, this uses the `vProps` directive to set all dynamic properties
+// (non-events) on the wrapped element. This facilitates Vue's convention of
+// always setting default property values when the incoming property is
+// `undefined`. Importantly, Vue automatically handles setting known attributes
+// without the need to forward them as props. Therefore native attributes like
+// `class` and `id` are auto-handled.
 const wrapperTemplate = (
   declaration: LitElementDeclaration,
   wcPath: string
@@ -109,25 +112,14 @@ const wrapperTemplate = (
       : ''
   }
     <script setup lang="ts">
-      import { h, useSlots, reactive } from "vue";
-      import { assignSlotNodes, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";
+      import { h, useSlots } from "vue";
+      import { assignSlotNodes, Slots, vProps } from "@lit-labs/vue-utils/wrapper-utils.js";
       import '${wcPath}';
       ${typeImports}
 
       ${renderPropsInterface(reactiveProperties)}
 
-      const vueProps = defineProps<Props>();
-
-      const defaults = reactive({} as Props);
-      const vDefaults = {
-        created(el: any) {
-          for (const p in vueProps) {
-            defaults[p as keyof Props] = el[p];
-          }
-        }
-      };
-
-      let hasRendered = false;
+      const props = defineProps<Props>();
 
       ${
         events.size
@@ -140,24 +132,14 @@ const wrapperTemplate = (
       const slots = useSlots();
 
       const render = () => {
-        const eventProps = ${renderEvents(events)};
-
-        const props = eventProps as (typeof eventProps & Props);
-        for (const p in vueProps) {
-          const v = vueProps[p as keyof Props];
-          if ((v !== undefined) || hasRendered) {
-            (props[p as keyof Props] as unknown) = v ?? defaults[p as keyof Props];
-          }
-        }
-
-        hasRendered = true;
+        const staticProps = ${renderEvents(events)};
 
         return h(
           '${tagname}',
-          props,
+          staticProps,
           assignSlotNodes(slots as Slots)
         );
       };
     </script>
-    <template><render v-defaults /></template>`;
+    <template><render v-props="props" /></template>`;
 };
