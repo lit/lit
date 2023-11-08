@@ -95,11 +95,11 @@ export function provide<ValueType>({
           enumerable: true,
         };
       } else {
-        const oldSetter = descriptor?.set;
+        const oldSetter = descriptor.set;
         newDescriptor = {
           ...descriptor,
           set: function (this: ReactiveElement, value: ValueType) {
-            controllerMap.get(this)?.setValue(value);
+            controllerMap.get(this)!.setValue(value);
             oldSetter?.call(this, value);
           },
         };
