@@ -84,7 +84,8 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
     descriptor?: PropertyDescriptor
   ) => {
     const doQuery = (el: Interface<ReactiveElement>): V => {
-      if (DEV_MODE && !el.hasUpdated) {
+      const result = (el.renderRoot?.querySelector(selector) ?? null) as V;
+      if (DEV_MODE && result === null && cache && !el.hasUpdated) {
         const name =
           typeof nameOrContext === 'object'
             ? nameOrContext.name
@@ -100,7 +101,7 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
       // TODO: if we want to allow users to assert that the query will never
       // return null, we need a new option and to throw here if the result
       // is null.
-      return (el.renderRoot?.querySelector(selector) ?? null) as V;
+      return result;
     };
     if (cache) {
       // Accessors to wrap from either:
