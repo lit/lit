@@ -42,6 +42,7 @@ export interface SSRTestDescription {
   only?: boolean;
   registerElements?(): void | Promise<unknown>;
   serverRenderOptions?: Partial<RenderInfo>;
+  serverOnly?: true;
 }
 
 export type SSRTestFactory = () => SSRTestDescription;

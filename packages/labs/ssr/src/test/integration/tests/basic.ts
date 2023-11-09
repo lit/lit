@@ -42,6 +42,7 @@ import {
 
 import {anyHtml, SSRTest} from './ssr-test.js';
 import {AsyncDirective} from 'lit/async-directive.js';
+import {serverhtml} from '../../../lib/server-template.js';
 
 interface DivWithProp extends HTMLDivElement {
   prop?: unknown;
@@ -5511,21 +5512,83 @@ export const tests: {[name: string]: SSRTest} = {
       stableSelectors: ['le-internals-hydrate'],
     };
   },
-
   'Server-only template works': {
     render(x: unknown) {
-      return html` <div>${x}</div> `;
+      return serverhtml` <div>${x}</div> `;
     },
     expectations: [
       {
         args: ['foo'],
         html: '<div>foo</div>',
       },
-      {
-        args: ['foo2'],
-        html: '<div>foo2</div>',
-      },
     ],
     stableSelectors: ['div'],
+    serverOnly: true,
+  },
+  'Server-only template can bind into a rawtext element': {
+    render(x: unknown) {
+      return serverhtml`<head>
+        <title>hello ${x}</title>
+      </head>`;
+    },
+    expectations: [
+      {
+        args: ['foo'],
+        html: '<head><title>hello foo</title></head>',
+      },
+    ],
+    stableSelectors: ['head', 'title'],
+    serverOnly: true,
+  },
+  'Server-only template can render a basic LitElement': {
+    registerElements() {
+      customElements.define(
+        'server-only-basic',
+        class extends LitElement {
+          override render() {
+            return html`<div>[server rendered: <slot></slot>]</div>`;
+          }
+        }
+      );
+    },
+    render(x: string) {
+      return serverhtml`<server-only-basic>${x}</server-only-basic>`;
+    },
+    expectations: [
+      {
+        args: ['foo'],
+        html: {
+          root: `<server-only-basic>foo</server-only-basic>`,
+          'server-only-basic': `<div>[server rendered: <slot></slot>]</div>`,
+        },
+      },
+    ],
+    stableSelectors: ['server-only-basic'],
+    serverOnly: true,
+  },
+  'Server-only template can pass attributes to a LitElement': {
+    registerElements() {
+      class ServerOnlyAttrElement extends LitElement {
+        @property() name: string = 'initial value';
+        override render() {
+          return html`<div>Hello ${this.name}</div>`;
+        }
+      }
+      customElements.define('server-only-attr', ServerOnlyAttrElement);
+    },
+    render(attr: string) {
+      return serverhtml`<server-only-attr name=${attr}></server-only-attr>`;
+    },
+    expectations: [
+      {
+        args: ['attribute from server'],
+        html: {
+          root: `<server-only-attr name="attribute from server"></server-only-attr>`,
+          'server-only-attr': `<div>Hello attribute from server</div>`,
+        },
+      },
+    ],
+    stableSelectors: ['server-only-attr'],
+    serverOnly: true,
   },
 };

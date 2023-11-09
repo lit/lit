@@ -250,6 +250,7 @@ export const setupTest = async (
         expectMutationsDuringHydration,
         expectMutationsDuringUpgrade,
         skipPreHydrationAssertHtml,
+        serverOnly,
       } = testSetup;
 
       const testFn =
@@ -295,6 +296,19 @@ export const setupTest = async (
               'Upgrading elements should cause no DOM mutations'
             );
           }
+        }
+
+        if (serverOnly) {
+          // Assert that the DOM is the same after registering elements.
+          assertHTML(container, expectations[0].html);
+          // Server-side templates aren't hydratable, and don't support updates,
+          // so we can only have one expectation.
+          assert.strictEqual(expectations.length, 1);
+          // Once we add support for client side templates inside of server-side
+          // templates we'll need to support a way to test hydrating inner
+          // templates, but our initially implementation doesn't yet support
+          // this.
+          return;
         }
 
         let i = 0;
