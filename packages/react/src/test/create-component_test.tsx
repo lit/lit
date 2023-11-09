@@ -241,6 +241,22 @@ suite('createComponent', () => {
     />;
   });
 
+  // Type only test to be caught at build time.
+  test.skip('Prefer element property type over built-in HTMLAttribute', async () => {
+    const TestComponent = createComponent({
+      react: React,
+      tagName: 'my-component',
+      elementClass: class MyComponent extends ReactiveElement {
+        color: number = 0;
+      },
+    });
+
+    // `color` is `string | undefined` in React.HTMLAttribute.
+    // It should be happy with number though because that's how it's typed in
+    // the element above.
+    <TestComponent color={1} />;
+  });
+
   test('works with text children', async () => {
     const name = 'World';
     act(() => {

@@ -61,9 +61,9 @@ type ElementProps<I> = Partial<Omit<I, keyof HTMLElement>>;
 // Acceptable props to the React component.
 type ComponentProps<I, E extends EventNames = {}> = Omit<
   React.HTMLAttributes<I>,
-  // Omit keyof E to prefer provided event handler mapping over React's
-  // built-in event handler props.
-  keyof E
+  // Prefer type of provided event handler props or those on element over
+  // built-in HTMLAttributse
+  keyof E | keyof ElementProps<I>
 > &
   EventListeners<E> &
   ElementProps<I>;
