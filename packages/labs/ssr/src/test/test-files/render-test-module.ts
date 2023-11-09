@@ -143,6 +143,24 @@ export class TestWillUpdate extends LitElement {
 // prettier-ignore
 export const elementWithWillUpdate = html`<test-will-update .first=${'Foo'} .last=${'Bar'}></test-will-update>`;
 
+class TestStaticStyles extends LitElement {
+  static override styles = css`
+    :host {
+      display: block;
+      background-color: blue;
+    }
+  `;
+
+  override render() {
+    return null;
+  }
+}
+customElements.define('test-static-styles', TestStaticStyles);
+
+export const elementWithStaticStyles = html`<test-static-styles></test-static-styles>`;
+export const duplicatedElementWithStaticStyles = html`<test-static-styles></test-static-styles
+  ><test-static-styles></test-static-styles>`;
+
 /* Slots and Distribution */
 // prettier-ignore
 export const noSlot = html`<test-simple><p>Hi</p></test-simple>`;

@@ -13,6 +13,7 @@ import {RenderInfo} from '../../index.js';
 import {FallbackRenderer} from '../../lib/element-renderer.js';
 import type * as testModule from '../test-files/render-test-module.js';
 import {collectResultSync} from '../../lib/render-result.js';
+import {DeclarativeStyleDedupeUtility} from '../../lib/declarative-style-dedupe.js';
 
 /**
  * An empty VM context global. In more recent versions, when running in Node,
@@ -413,6 +414,58 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     assert.is(
       result,
       `<!--lit-part Q0bbGrx71ic=--><!--lit-node 0--><test-will-update  ><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->Foo Bar<!--/lit-part--></main><!--/lit-part--></template></test-will-update><!--/lit-part-->`
+    );
+  });
+
+  test('element with static styles', async () => {
+    const {render, elementWithStaticStyles} = await setup();
+    const result = await render(elementWithStaticStyles);
+    assert.is(
+      result,
+      `<!--lit-part MXMSKR5WU+k=--><test-static-styles><template shadowroot="open" shadowrootmode="open"><style>
+    :host {
+      display: block;
+      background-color: blue;
+    }
+  </style><!--lit-part--><!--/lit-part--></template></test-static-styles><!--/lit-part-->`
+    );
+  });
+
+  test('duplicated element with static styles', async () => {
+    const {render, duplicatedElementWithStaticStyles} = await setup();
+    const result = await render(duplicatedElementWithStaticStyles);
+    const ssrElement = `<test-static-styles><template shadowroot="open" shadowrootmode="open"><style>
+    :host {
+      display: block;
+      background-color: blue;
+    }
+  </style><!--lit-part--><!--/lit-part--></template></test-static-styles>`;
+    assert.is(
+      result,
+      `<!--lit-part KqQuRUrghX8=-->` +
+        ssrElement +
+        ssrElement +
+        `<!--/lit-part-->`
+    );
+  });
+
+  test('duplicated element with static styles using styles de-duplicate utility', async () => {
+    const {render, duplicatedElementWithStaticStyles} = await setup();
+    const result = await render(duplicatedElementWithStaticStyles, {
+      dedupeStyles: new DeclarativeStyleDedupeUtility(),
+    });
+    const ssrElement = `<test-static-styles><template shadowroot="open" shadowrootmode="open"><style>
+    :host {
+      display: block;
+      background-color: blue;
+    }
+  </style><!--lit-part--><!--/lit-part--></template></test-static-styles>`;
+    assert.is(
+      result,
+      `<!--lit-part KqQuRUrghX8=-->` +
+        ssrElement +
+        ssrElement +
+        `<!--/lit-part-->`
     );
   });
 

@@ -8,6 +8,7 @@
  * This is a server-only module that renders the HTML file shell.
  */
 
+import {DeclarativeStyleDedupeUtility} from '../../lib/declarative-style-dedupe.js';
 import {render} from '../../lib/render.js';
 import {template, initialData} from './module.js';
 
@@ -42,7 +43,9 @@ export function* renderApp(data: typeof initialData) {
         <div>`;
 
   // Call the SSR render() function to render a client/server shared template.
-  yield* render(template(data));
+  yield* render(template(data), {
+    dedupeStyles: new DeclarativeStyleDedupeUtility(),
+  });
 
   yield `
         </div>
