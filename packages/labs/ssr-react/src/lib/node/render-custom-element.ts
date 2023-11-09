@@ -69,6 +69,7 @@ export const renderCustomElement = (tagName: string, props: {} | null) => {
   renderer.connectedCallback();
 
   renderInfo.customElementInstanceStack.push(renderer);
+  renderInfo.customElementHostStack.push(renderer);
 
   const shadowContents = renderer.renderShadow(renderInfo);
 
