@@ -11,11 +11,6 @@ import {
 } from 'lit-html';
 
 /**
- * An ordinary lit-html template, can be rendered in the browser, from the
- * server, and can be hydrated.
- */
-export const NORMAL = 0;
-/**
  * A lit-html template that can only be rendered on the server, and cannot be
  * hydrated.
  *
@@ -23,23 +18,10 @@ export const NORMAL = 0;
  * markers for updating the dynamic parts of the server-rendered DOM, and
  * supports rendering into raw text elements like <title> and <textarea>.
  */
-export const SERVER_ONLY = 1;
-/**
- * A lit-html template that can only be rendered on the server, and cannot be
- * hydrated. This is the same as SERVER_ONLY, except that it will be parsed
- * as a full document instead of a document fragment.
- *
- * This is useful for rendering a full document, including doctype,
- * <html>, <head>, and <body> tags, etc.
- */
-export const SERVER_DOCUMENT_ONLY = 2;
-
-export type ServerOnlyRenderMode =
-  | typeof SERVER_ONLY
-  | typeof SERVER_DOCUMENT_ONLY;
+const SERVER_ONLY = 1;
 
 export interface ServerRenderedTemplate extends TemplateResult {
-  $_litServerRenderMode: ServerOnlyRenderMode;
+  $_litServerRenderMode: typeof SERVER_ONLY;
 }
 
 /**
@@ -67,35 +49,19 @@ export function serverhtml(
   return value;
 }
 
-export function documenthtml(
-  strings: TemplateStringsArray,
-  ...values: unknown[]
-): ServerRenderedTemplate {
-  const value = baseHtml(strings, ...values) as ServerRenderedTemplate;
-  value.$_litServerRenderMode = SERVER_ONLY;
-  return value;
-}
-
 /**
  * If true, the given template result is from a normal lit-html template, and
  * not a server-only template.
+ *
+ * Server-only templates are only rendered once, they don't create the
+ * marker comments needed to identify and update their dynamic parts.
  */
 export const isHydratable = (template: MaybeServerTemplate): boolean => {
-  return getServerTemplateType(template) === NORMAL;
+  return template.$_litServerRenderMode !== SERVER_ONLY;
 };
 
 type MaybeCompiledTemplate = TemplateResult | CompiledTemplateResult;
 
 type MaybeServerTemplate = MaybeCompiledTemplate & {
-  $_litServerRenderMode?: typeof SERVER_ONLY | typeof SERVER_DOCUMENT_ONLY;
-};
-
-type TemplateType =
-  | typeof NORMAL
-  | typeof SERVER_ONLY
-  | typeof SERVER_DOCUMENT_ONLY;
-export const getServerTemplateType = (
-  template: MaybeServerTemplate
-): TemplateType => {
-  return template.$_litServerRenderMode ?? NORMAL;
+  $_litServerRenderMode?: typeof SERVER_ONLY;
 };

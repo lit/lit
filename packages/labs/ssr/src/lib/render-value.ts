@@ -51,7 +51,7 @@ import {
 
 import {escapeHtml} from './util/escape-html.js';
 
-import {parseFragment, parse} from 'parse5';
+import {parseFragment} from 'parse5';
 import {
   isElementNode,
   isCommentNode,
@@ -63,11 +63,7 @@ import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-lig
 import {reflectedAttributeName} from './reflected-attributes.js';
 
 import type {RenderResult} from './render-result.js';
-import {
-  getServerTemplateType,
-  isHydratable,
-  SERVER_DOCUMENT_ONLY,
-} from './server-template.js';
+import {isHydratable} from './server-template.js';
 
 declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {
@@ -300,7 +296,6 @@ const getTemplateOpcodes = (result: TemplateResult) => {
     TemplateResultType.HTML
   );
 
-  const templateType = getServerTemplateType(result);
   const hydratable = isHydratable(result);
 
   /**
@@ -308,12 +303,9 @@ const getTemplateOpcodes = (result: TemplateResult) => {
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
    */
-  const ast =
-    templateType === SERVER_DOCUMENT_ONLY
-      ? parse(String(html), {sourceCodeLocationInfo: true})
-      : parseFragment(String(html), {
-          sourceCodeLocationInfo: true,
-        });
+  const ast = parseFragment(String(html), {
+    sourceCodeLocationInfo: true,
+  });
 
   const ops: Array<Op> = [];
 

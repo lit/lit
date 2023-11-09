@@ -9,7 +9,7 @@ import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
-import {documenthtml, serverhtml} from '../../lib/server-template.js';
+import {serverhtml} from '../../lib/server-template.js';
 export {digestForTemplateResult} from '@lit-labs/ssr-client';
 
 export {render} from '../../lib/render-lit-html.js';
@@ -300,7 +300,7 @@ export const serverOnlyRawElementTemplate = serverhtml`
     <textarea>${'This also'} works ${'(kinda).'}</textarea>
   `;
 
-export const serverOnlyDocumentTemplate = documenthtml`
+export const serverOnlyDocumentTemplate = serverhtml`
     <!DOCTYPE html>
     <html>
       <head>
