@@ -92,10 +92,11 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
             : nameOrContext;
         issueWarning(
           '',
-          `@query'd field ${JSON.stringify(String(name))} for selector ` +
-            `'${selector}' has been accessed before the first update. This ` +
-            `yields a certain null result if the renderRoot tree has not ` +
-            `been provided beforehand (e.g. via Declarative Shadow DOM).`
+          `@query'd field ${JSON.stringify(String(name))} with the 'cache' ` +
+            `flag set for selector '${selector}' has been accessed before ` +
+            `the first update and yieled null. This is expected if the ` +
+            `renderRoot tree has not been provided beforehand (e.g. via ` +
+            `Declarative Shadow DOM). Therefore the value hasn't been cached.`
         );
       }
       // TODO: if we want to allow users to assert that the query will never
