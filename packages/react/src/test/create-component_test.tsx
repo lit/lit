@@ -242,7 +242,7 @@ suite('createComponent', () => {
   });
 
   // Type only test to be caught at build time.
-  test.skip('Prefer element property type over built-in HTMLAttribute', async () => {
+  test.skip('Prefer element property type over built-in HTMLAttributes', async () => {
     const TestComponent = createComponent({
       react: React,
       tagName: 'my-component',
@@ -251,10 +251,13 @@ suite('createComponent', () => {
       },
     });
 
-    // `color` is `string | undefined` in React.HTMLAttribute.
+    // `color` is `string | undefined` in React.HTMLAttributes.
     // It should be happy with number though because that's how it's typed in
     // the element above.
     <TestComponent color={1} />;
+
+    // @ts-expect-error color prop should not accept string anymore
+    <TestComponent color={'string'} />;
   });
 
   test('works with text children', async () => {
