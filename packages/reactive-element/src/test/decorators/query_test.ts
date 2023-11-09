@@ -97,7 +97,7 @@ import {assert} from '@esm-bundle/chai';
     if (globalThis.litIssuedWarnings != null) {
       assert(
         [...globalThis.litIssuedWarnings].find((w) =>
-          /@query'd field "divCached" with the 'cache' flag set for selector '#blah' has been accessed before the first update and yieled null\. This is expected if the renderRoot tree has not been provided beforehand \(e\.g\. via Declarative Shadow DOM\)\. Therefore the value hasn't been cached\./.test(
+          /@query'd field "divCached" with the 'cache' flag set for selector '#blah' has been accessed before the first update and returned null\. This is expected if the renderRoot tree has not been provided beforehand \(e\.g\. via Declarative Shadow DOM\)\. Therefore the value hasn't been cached\./.test(
             w ?? ''
           )
         ),

@@ -94,7 +94,7 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
           '',
           `@query'd field ${JSON.stringify(String(name))} with the 'cache' ` +
             `flag set for selector '${selector}' has been accessed before ` +
-            `the first update and yieled null. This is expected if the ` +
+            `the first update and returned null. This is expected if the ` +
             `renderRoot tree has not been provided beforehand (e.g. via ` +
             `Declarative Shadow DOM). Therefore the value hasn't been cached.`
         );
