@@ -979,5 +979,6 @@ function willExecute(node: Element | Template): boolean {
   // that's dangerous.
   // It's only if all types seen were safe, and we saw at least one type, that
   // we can return false.
-  return !safeTypeSeen;
+  const willExecute = !safeTypeSeen;
+  return willExecute;
 }
