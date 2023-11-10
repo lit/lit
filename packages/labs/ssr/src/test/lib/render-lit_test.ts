@@ -657,13 +657,9 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
 
   test('server-only template into a <script>', async () => {
     const {render, renderServerOnlyScript} = await setup();
-    const result = render(renderServerOnlyScript);
-    // We leave a marker, which isn't great, but probably not exploitable,
-    // especially since people won't usually actually ship this because it's
-    // useless.
-    assert.match(
-      result,
-      /^\s+<script>\s+console\.log\("lit\$\d+\$"\);\s+<\/script>\s*$/m
+    assert.throws(
+      () => render(renderServerOnlyScript),
+      /Found binding inside a <script> tag in a server-only template\./
     );
   });
 }

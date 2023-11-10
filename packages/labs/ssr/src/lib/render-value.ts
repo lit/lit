@@ -510,7 +510,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           ops.push({
             type: 'custom-element-shadow',
           });
-        } else if (!hydratable && /^(title|textarea)$/i.test(node.tagName)) {
+        } else if (
+          !hydratable &&
+          /^(title|textarea|script)$/.test(node.tagName)
+        ) {
+          const isScript = node.tagName === 'script';
           // look for mangled parts in the text content
           for (const child of node.childNodes) {
             if (!isTextNode(child)) {
@@ -524,6 +528,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             const markerRegex = new RegExp(marker.replace(/\$/g, '\\$'), 'g');
             for (const mark of text.matchAll(markerRegex)) {
               flushTo(textStart + mark.index!);
+              if (isScript) {
+                throw new Error(
+                  `Found binding inside a <script> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to execute arbitrary JavaScript.`
+                );
+              }
               ops.push({
                 type: 'child-part',
                 index: nodeIndex,
