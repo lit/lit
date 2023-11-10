@@ -151,6 +151,13 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('render into a <script>', async () => {
+    const {render, renderScript} = await setup();
+    assert.throws(() => {
+      render(renderScript);
+    }, "This could be because you're attempting to render an expression in an invalid location.");
+  });
+
   /* Attribute Expressions */
 
   test('attribute expression with string value', async () => {
@@ -645,6 +652,18 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     assert.throws(
       () => render(serverOnlyRenderEventBinding),
       /Server-only templates can't bind to events./
+    );
+  });
+
+  test('server-only template into a <script>', async () => {
+    const {render, renderServerOnlyScript} = await setup();
+    const result = render(renderServerOnlyScript);
+    // We leave a marker, which isn't great, but probably not exploitable,
+    // especially since people won't usually actually ship this because it's
+    // useless.
+    assert.match(
+      result,
+      /^\s+<script>\s+console\.log\("lit\$\d+\$"\);\s+<\/script>\s*$/m
     );
   });
 }

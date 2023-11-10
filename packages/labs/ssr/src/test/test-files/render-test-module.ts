@@ -336,3 +336,12 @@ export const serverOnlyRenderPropertyBinding = serverhtml`<div .foo=${'server on
 
 export const serverOnlyRenderEventBinding = serverhtml`<div @click=${() =>
   console.log('clicked!')}></div>`;
+
+export const renderScript = html` <script>
+  console.log('${'This is dangerous!'}');
+</script>`;
+
+export const renderServerOnlyScript = serverhtml`
+  <script>
+    console.log("${'This is dangerous!'}");
+  </script>`;
