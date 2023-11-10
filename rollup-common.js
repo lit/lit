@@ -145,6 +145,8 @@ const stableProperties = {
   _$isConnected: 'U',
   // lit-html: TemplateInstance (used by private-ssr-support)
   _$parts: 'V',
+  // reactive-element: ReactiveElement (used by private-ssr-support)
+  _$controllers: 'W',
 };
 
 const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');

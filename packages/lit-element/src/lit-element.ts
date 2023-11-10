@@ -273,6 +273,8 @@ export const _$LE = {
   },
   // eslint-disable-next-line
   _$changedProperties: (el: LitElement) => (el as any)._$changedProperties,
+  // eslint-disable-next-line
+  _$controllers: (el: LitElement) => (el as any)._$controllers,
 };
 
 // IMPORTANT: do not change the property name or the assignment expression.

@@ -993,7 +993,7 @@ export abstract class ReactiveElement
   /**
    * Set of controllers.
    */
-  private __controllers?: ReactiveController[];
+  private _$controllers?: ReactiveController[];
 
   constructor() {
     super();
@@ -1030,7 +1030,7 @@ export abstract class ReactiveElement
    * @category controllers
    */
   addController(controller: ReactiveController) {
-    (this.__controllers ??= []).push(controller);
+    (this._$controllers ??= []).push(controller);
     // If a controller is added after the element has been connected,
     // call hostConnected. Note, re-using existence of `renderRoot` here
     // (which is set in connectedCallback) to avoid the need to track a
@@ -1047,7 +1047,7 @@ export abstract class ReactiveElement
   removeController(controller: ReactiveController) {
     // Note, if the indexOf is -1, the >>> will flip the sign which makes the
     // splice do nothing.
-    this.__controllers?.splice(this.__controllers.indexOf(controller) >>> 0, 1);
+    this._$controllers?.splice(this._$controllers.indexOf(controller) >>> 0, 1);
   }
 
   /**
@@ -1109,7 +1109,7 @@ export abstract class ReactiveElement
     (this as Mutable<typeof this, 'renderRoot'>).renderRoot ??=
       this.createRenderRoot();
     this.enableUpdating(true);
-    this.__controllers?.forEach((c) => c.hostConnected?.());
+    this._$controllers?.forEach((c) => c.hostConnected?.());
   }
 
   /**
@@ -1127,7 +1127,7 @@ export abstract class ReactiveElement
    * @category lifecycle
    */
   disconnectedCallback() {
-    this.__controllers?.forEach((c) => c.hostDisconnected?.());
+    this._$controllers?.forEach((c) => c.hostDisconnected?.());
   }
 
   /**
@@ -1439,7 +1439,7 @@ export abstract class ReactiveElement
       shouldUpdate = this.shouldUpdate(changedProperties);
       if (shouldUpdate) {
         this.willUpdate(changedProperties);
-        this.__controllers?.forEach((c) => c.hostUpdate?.());
+        this._$controllers?.forEach((c) => c.hostUpdate?.());
         this.update(changedProperties);
       } else {
         this.__markUpdated();
@@ -1484,7 +1484,7 @@ export abstract class ReactiveElement
   // Note, this is an override point for polyfill-support.
   // @internal
   _$didUpdate(changedProperties: PropertyValues) {
-    this.__controllers?.forEach((c) => c.hostUpdated?.());
+    this._$controllers?.forEach((c) => c.hostUpdated?.());
     if (!this.hasUpdated) {
       this.hasUpdated = true;
       this.firstUpdated(changedProperties);
