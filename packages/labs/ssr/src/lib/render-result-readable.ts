@@ -59,10 +59,6 @@ export class RenderResultReadable extends Readable {
     // - _read() should call `this.push()` as many times as it can until
     //   `this.push()` returns false, which means the underlying Readable
     //   does not want any more values.
-    // - `this._read()` should not be called by the underlying Readable until
-    //   after this.push() has returned false, so we can wait on a Promise
-    //   and call _read() when it resolves to continue without a race condition.
-    //   (We try to verify this with the this._waiting field)
     // - `this.push(null)` ends the stream
     //
     // This means that we cannot use for/of loops to iterate on the render
