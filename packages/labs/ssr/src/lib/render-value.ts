@@ -517,7 +517,6 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           /^(title|textarea|script)$/.test(node.tagName)
         ) {
           const dangerous = willExecute(node);
-          console.log(`dangerous: ${dangerous} – node: `, node);
           // look for mangled parts in the text content
           for (const child of node.childNodes) {
             if (!isTextNode(child)) {
@@ -942,7 +941,6 @@ function willExecute(node: Element | Template): boolean {
   if (isTemplateNode(node)) {
     return false;
   }
-  console.log(node.attrs);
   let safeTypeSeen = false;
   for (const attr of node.attrs) {
     if (attr.name !== 'type') {

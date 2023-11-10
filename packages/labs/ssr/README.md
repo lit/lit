@@ -133,7 +133,8 @@ When `LitElement`s are server rendered, their shadow root contents are emitted i
 Put together, an HTML page that was server rendered and containing `LitElement`s in the main document might look like this:
 
 ```js
-import {render} from '@lit-labs/ssr/lib/render-lit-html.js';
+import {html} from 'lit';
+import {render} from '@lit-labs/ssr';
 import './app-components.js';
 
 const ssrResult = render(html`
@@ -174,6 +175,67 @@ components individually hydrate themselves using data supplied either by
 attributes or via a side-channel mechanism. This is in no way fundamental; the
 top-level template can be used to pass data to the top-level components, and
 that template can be loaded and hydrated on the client to apply the same data.
+
+## Server-only templates
+
+You can also write templates that will only render on the server. These templates can be used for rendering full documents, including the doctype, and rendering into elements that Lit normally cannot, like `<title>`, `<textarea>`, `<template>`, and non-executing `<script>` tags.
+
+serverhtml templates can be composed, and combined, and they support almost all features that normal Lit templates do, with the exception of features that don't have a pure HTML representation, like event handlers or property bindings.
+
+serverhtml template won't send down marker comments, so they can't be updated on the client, however if you render a normal Lit template inside a serverhtml template, then it can be hydrated and updated. Likewise, if you render a custom element inside a serverhtml template, it will automatically hydrate and update like normal.
+
+```js
+import {html} from 'lit';
+import {render, serverhtml} from '@lit-labs/ssr';
+import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
+import './app-shell.js';
+import {contentTemplate} from './content-template.js';
+
+const pageInfo = {
+  /* ... */
+};
+
+const ssrResult = render(serverhtml`
+  <html>
+    <head><title>MyApp ${pageInfo.title}</head>
+    <body>
+      <app-shell>
+        <div id="content">${contentTemplate(pageInfo.description)}</div>
+      </app-shell>
+
+      <script type="module">
+        // Hydrate template-shadowroots eagerly after rendering (for browsers without
+        // native declarative shadow roots)
+        import {
+          hasNativeDeclarativeShadowRoots,
+          hydrateShadowRoots,
+        } from './node_modules/@webcomponents/template-shadowroot/template-shadowroot.js';
+        import {hydrate} from '@lit-labs/ssr-client';
+        import {contentTemplate} from './content-template.js';
+        if (!hasNativeDeclarativeShadowRoots()) {
+          hydrateShadowRoots(document.body);
+        }
+
+        // Load and hydrate app-shell lazily
+        import('./app-shell.js');
+
+        // Hydrate content template
+        const pageInfo = JSON.parse(document.getElementById('page-info').textContent);
+        hydrate(contentTemplate(pageInfo.description), document.querySelector('#content'));
+        // #content element can now be efficiently updated
+      </script>
+      <!-- Pass data to client. -->
+      <script type="text/json" id="page-info">
+        ${JSON.stringify(pageInfo)}
+      </script>
+    </body>
+  </html>
+`);
+
+// ...
+
+context.body = Readable.from(ssrResult);
+```
 
 ## Notes and limitations
 
