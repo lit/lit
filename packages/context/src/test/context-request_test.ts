@@ -16,7 +16,7 @@ import {
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from '@lit-labs/testing';
 
-const simpleContext = createContext<number>('simple-context');
+export const simpleContext = createContext<number>('simple-context');
 
 class SimpleContextProvider extends LitElement {
   private provider = new ContextProvider(this, {
@@ -29,7 +29,7 @@ class SimpleContextProvider extends LitElement {
   }
 }
 
-class SimpleContextConsumer extends LitElement {
+export class SimpleContextConsumer extends LitElement {
   // a one-time property fulfilled by context
   @consume({context: simpleContext})
   @property({type: Number})
