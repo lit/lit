@@ -345,3 +345,10 @@ export const renderServerOnlyScript = serverhtml`
   <script>
     console.log("${'This is dangerous!'}");
   </script>`;
+
+export const renderServerOnlyScriptDeep = serverhtml`
+  <script>
+    <div>
+      console.log("${'This is dangerous!'}");
+    </div>
+  </script>`;

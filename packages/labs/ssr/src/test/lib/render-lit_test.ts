@@ -656,9 +656,14 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
   });
 
   test('server-only template into a <script>', async () => {
-    const {render, renderServerOnlyScript} = await setup();
+    const {render, renderServerOnlyScript, renderServerOnlyScriptDeep} =
+      await setup();
     assert.throws(
       () => render(renderServerOnlyScript),
+      /Found binding inside a <script> tag in a server-only template\./
+    );
+    assert.throws(
+      () => render(renderServerOnlyScriptDeep),
       /Found binding inside a <script> tag in a server-only template\./
     );
   });
