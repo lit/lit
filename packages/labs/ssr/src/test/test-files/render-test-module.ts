@@ -297,7 +297,7 @@ export const serverOnlyInsideServerOnly = serverhtml`<div>${serverhtml`Server on
 
 export const serverOnlyRawElementTemplate = serverhtml`
     <title>${'No'} comments ${'inside'}</title>
-    <textarea>${'This also'} works ${'(kinda).'}</textarea>
+    <textarea>${'This also'} works${'.'}</textarea>
   `;
 
 export const serverOnlyInTemplateElement = serverhtml`
@@ -311,7 +311,7 @@ export const serverOnlyDocumentTemplate = serverhtml`
         <title>${'No'} comments ${'inside'}</title>
       </head>
       <body>
-        <textarea>${'This also'} works ${'(kinda).'}</textarea>
+        <textarea>${'This also'} works${'.'}</textarea>
       </body>
     </html>
   `;

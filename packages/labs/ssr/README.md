@@ -178,11 +178,11 @@ that template can be loaded and hydrated on the client to apply the same data.
 
 ## Server-only templates
 
-You can also write templates that will only render on the server. These templates can be used for rendering full documents, including the doctype, and rendering into elements that Lit normally cannot, like `<title>`, `<textarea>`, `<template>`, and non-executing `<script>` tags.
+You can also write templates that will only render on the server. These templates can be used for rendering full documents, including the doctype, and rendering into elements that Lit normally cannot, like `<title>`, `<textarea>`, `<template>`, and non-executing `<script>` tags like `<script type="text/json">`. They are also slightly more efficient than normal Lit templates, because the generated HTML doesn't need to include markers for updating.
 
-serverhtml templates can be composed, and combined, and they support almost all features that normal Lit templates do, with the exception of features that don't have a pure HTML representation, like event handlers or property bindings.
+`serverhtml` templates can be composed, and combined, and they support almost all features that normal Lit templates do, with the exception of features that don't have a pure HTML representation, like event handlers or property bindings.
 
-serverhtml template won't send down marker comments, so they can't be updated on the client, however if you render a normal Lit template inside a serverhtml template, then it can be hydrated and updated. Likewise, if you render a custom element inside a serverhtml template, it will automatically hydrate and update like normal.
+`serverhtml` templates can only be rendered once, so they can't be updated on the client. However if you render a normal Lit template inside a serverhtml template, then it can be hydrated and updated. Likewise, if you render a custom element inside a serverhtml template, it will automatically hydrate and update like normal.
 
 ```js
 import {html} from 'lit';
@@ -196,6 +196,7 @@ const pageInfo = {
 };
 
 const ssrResult = render(serverhtml`
+  <!DOCTYPE html>
   <html>
     <head><title>MyApp ${pageInfo.title}</head>
     <body>
@@ -234,7 +235,7 @@ const ssrResult = render(serverhtml`
 
 // ...
 
-context.body = Readable.from(ssrResult);
+context.body = new RenderResultReadable(ssrResult);
 ```
 
 ## Notes and limitations

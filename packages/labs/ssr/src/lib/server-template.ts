@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2019 Google LLC
+ * Copyright 2023 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -10,14 +10,6 @@ import {
   type TemplateResult,
 } from 'lit-html';
 
-/**
- * A lit-html template that can only be rendered on the server, and cannot be
- * hydrated.
- *
- * This is a performance optimization, causing the server not to emit comment
- * markers for updating the dynamic parts of the server-rendered DOM, and
- * supports rendering into raw text elements like <title> and <textarea>.
- */
 const SERVER_ONLY = 1;
 
 export interface ServerRenderedTemplate extends TemplateResult {
@@ -25,20 +17,28 @@ export interface ServerRenderedTemplate extends TemplateResult {
 }
 
 /**
- * Returns a variant of the given TemplateResult that, when rendered
- * server-side, will not be rendered for client-side hydration.
+ * A lit-html template that can only be rendered on the server, and cannot be
+ * hydrated.
  *
- * This is a performance optimization, causing the server not to emit comment
- * markers for updating the dynamic parts of the server-rendered DOM.
- * This results in fewer DOM nodes on the client. In most cases the difference
- * will be small.
+ * These templates can be used for rendering full documents, including the
+ * doctype, and rendering into elements that Lit normally cannot, like
+ * `<title>`, `<textarea>`, `<template>`, and non-executing `<script>` tags
+ * like `<script type="text/json">`. They are also slightly more efficient than
+ * normal Lit templates, because the generated HTML doesn't need to include
+ * markers for updating.
  *
- * It also allows for data binding into raw text elements like <title> and
- * <textarea>.
+ * `serverhtml` templates can be composed, and combined, and they support
+ * almost all features that normal Lit templates do, with the exception of
+ * features that don't have a pure HTML representation, like event handlers or
+ * property bindings.
  *
- * Currently, a server-only template cannot contain a normal Lit template,
- * and a normal Lit template can't contain a server-only template. We may
- * relax this restriction in the future.
+ * `serverhtml` templates can only be rendered once, so they can't be updated
+ * on the client. However if you render a normal Lit template inside a
+ * serverhtml template, then it can be hydrated and updated. Likewise, custom
+ * elements behave the same in both server-only templates and normal templates,
+ * and by default they will hydrate.
+ *
+ * A `serverhtml` template can't be rendered inside a normal Lit template.
  */
 export function serverhtml(
   strings: TemplateStringsArray,

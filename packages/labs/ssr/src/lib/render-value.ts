@@ -516,8 +516,10 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           !hydratable &&
           /^(title|textarea|script)$/.test(node.tagName)
         ) {
-          const dangerous = willExecute(node);
-          // look for mangled parts in the text content
+          const dangerous = isJavaScriptScriptTag(node);
+          // Marker comments in a rawtext element will be parsed as text,
+          // so we need to look at the text value of childnodes to try to
+          // find them and render child-part opcodes.
           for (const child of node.childNodes) {
             if (!isTextNode(child)) {
               throw new Error(
@@ -532,7 +534,9 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               flushTo(textStart + mark.index!);
               if (dangerous) {
                 throw new Error(
-                  `Found binding inside an executable <script> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to execute arbitrary JavaScript.`
+                  `Found binding inside an executable <script> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to execute arbitrary JavaScript. The template with the dangerous binding is:
+
+    ${displayTemplateResult(result)}`
                 );
               }
               ops.push({
@@ -699,7 +703,7 @@ function* renderTemplateResult(
           isValueHydratable = isHydratable(value);
           if (!isValueHydratable && hydratable) {
             throw new Error(
-              `A server-only template can't be rendered inside an ordinary, hydratable template. The outer template was:
+              `A server-only template can't be rendered inside an ordinary, hydratable template. A server-only template can only be rendered at the top level, or within other server-only templates. The outer template was:
     ${displayTemplateResult(result)}
 
 And the inner template was:
@@ -934,11 +938,17 @@ function displayTemplateResult(
 
 const getLast = <T>(a: Array<T>) => a[a.length - 1];
 
-function willExecute(node: Element | Template): boolean {
-  if (!/script/i.test(node.tagName)) {
-    return false;
+/**
+ * Returns true if the given node is a <script> node that the browser will
+ * automatically executeif it's rendered on server-side, outside of a
+ * <template> tag.
+ */
+function isJavaScriptScriptTag(node: Element | Template): boolean {
+  function isScriptTag(node: Element | Template): node is Element {
+    return /script/i.test(node.tagName);
   }
-  if (isTemplateNode(node)) {
+
+  if (!isScriptTag(node)) {
     return false;
   }
   let safeTypeSeen = false;

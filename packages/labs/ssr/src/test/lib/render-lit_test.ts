@@ -577,7 +577,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     assert.is(result, `<div>Server only</div>`);
   });
 
-  test(`server-only template can't render a normal template`, async () => {
+  test(`server-only template can render a normal template`, async () => {
     const {render, serverOnlyRenderHydratable} = await setup();
     const result = render(serverOnlyRenderHydratable);
     assert.is(
@@ -604,7 +604,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       result,
       `
     <title>No comments inside</title>
-    <textarea>This also works (kinda).</textarea>
+    <textarea>This also works.</textarea>
   `
     );
   });
@@ -632,7 +632,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
         <title>No comments inside</title>
       </head>
       <body>
-        <textarea>This also works (kinda).</textarea>
+        <textarea>This also works.</textarea>
       </body>
     </html>
   `

@@ -5649,14 +5649,14 @@ const serverClientHydrationTest: SSRTestDescription = {
     {
       // Update #one
       renderFn: 'renderOne',
-      args: ['hydrated c1'],
+      args: ['updated c1'],
       rootSelector: 'div#one',
       html: `
         <!doctype html>
         <html>
           <head><title>title</title></head>
           <body>
-            <div id="one"><h1>hydrated c1</h1></div>
+            <div id="one"><h1>updated c1</h1></div>
             <div id="two"><h2>c2</h2></div>
           </body>
         </html>
@@ -5673,7 +5673,7 @@ const serverClientHydrationTest: SSRTestDescription = {
         <html>
           <head><title>title</title></head>
           <body>
-            <div id="one"><h1>hydrated c1</h1></div>
+            <div id="one"><h1>updated c1</h1></div>
             <div id="two"><h2>c2</h2></div>
           </body>
         </html>
@@ -5682,15 +5682,15 @@ const serverClientHydrationTest: SSRTestDescription = {
     {
       // Update #two
       renderFn: 'renderTwo',
-      args: ['hydrated c2'],
+      args: ['updated c2'],
       rootSelector: 'div#two',
       html: `
         <!doctype html>
         <html>
           <head><title>title</title></head>
           <body>
-            <div id="one"><h1>hydrated c1</h1></div>
-            <div id="two"><h2>hydrated c2</h2></div>
+            <div id="one"><h1>updated c1</h1></div>
+            <div id="two"><h2>updated c2</h2></div>
           </body>
         </html>
         `,
