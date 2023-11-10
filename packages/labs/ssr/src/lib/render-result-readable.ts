@@ -24,6 +24,15 @@ export class RenderResultReadable extends Readable {
    */
   private _iterators: Array<RenderResultIterator>;
   private _currentIterator?: RenderResultIterator;
+  /**
+   * `_reading` flag is used to prevent multiple concurrent reads.
+   *
+   * RenderResultReadable handles async RenderResult's, and must await them.
+   * While awaiting a result, it's possible for `_read` to be called again.
+   * Without this flag, a new read is initiated and the order of the data in the
+   * stream becomes inconsistent.
+   */
+  private _reading = false;
 
   constructor(result: RenderResult) {
     super();
@@ -32,6 +41,9 @@ export class RenderResultReadable extends Readable {
   }
 
   override async _read(_size: number) {
+    if (this._reading) {
+      return;
+    }
     // This implementation reads values from the RenderResult and pushes them
     // into the base class's Readable implementation. It tries to be as
     // efficient as possible, which means:
@@ -80,9 +92,11 @@ export class RenderResultReadable extends Readable {
       } else {
         // Must be a Promise
         this._iterators.push(this._currentIterator);
+        this._reading = true;
         this._currentIterator = (await value)[
           Symbol.iterator
         ]() as RenderResultIterator;
+        this._reading = false;
       }
     }
     // Pushing `null` ends the stream
