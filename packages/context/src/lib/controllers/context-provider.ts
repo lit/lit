@@ -42,7 +42,7 @@ export interface Options<C extends Context<unknown, unknown>> {
   initialValue?: ContextType<C>;
 }
 
-type ReactiveElementHost = ReactiveControllerHost & HTMLElement;
+type ReactiveElementHost = Partial<ReactiveControllerHost> & HTMLElement;
 
 /**
  * A ReactiveController which adds context provider behavior to a
@@ -51,6 +51,11 @@ type ReactiveElementHost = ReactiveControllerHost & HTMLElement;
  * This controller simply listens to the `context-request` event when
  * the host is connected to the DOM and registers the received callbacks
  * against its observable Context implementation.
+ *
+ * The controller may also be attached to any HTML element in which case it's
+ * up to the user to call hostConnected() when attached to the DOM. This is
+ * done automatically for any custom elements implementing
+ * ReactiveControllerHost.
  */
 export class ContextProvider<
     T extends Context<unknown, unknown>,
@@ -82,12 +87,7 @@ export class ContextProvider<
       this.context = contextOrOptions as T;
     }
     this.attachListeners();
-    // We may be constructed with a plain DOM element to provide context to a
-    // whole DOM tree of elements, in this case the host DOM element doesn't
-    // need know about this controller.
-    if ((host as ReactiveControllerHost).addController !== undefined) {
-      this.host.addController(this);
-    }
+    this.host.addController?.(this);
   }
 
   onContextRequest = (

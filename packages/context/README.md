@@ -133,6 +133,28 @@ export class MyApp extends LitElement {
 }
 ```
 
+To provide context within a whole DOM tree, or the whole document (potentially
+containing multiple separate sub-trees of elements), `ContextProvider` can also
+be used with plain html elements:
+
+#### **`my-app.js`**:
+
+```js
+import {ContextProvider} from '@lit/context';
+import {loggerContext, Logger} from './logger.js';
+
+// create a provider for the whole document. If connecting to an element which
+// is not yet attached to the DOM, then call .hostConnected() after the element
+// has been attached.
+const loggingProvider = new ContextProvider(document, loggerContext);
+
+loggingProvider.setValue({
+  log: (msg) => {
+    console.log(`[global] ${msg}`);
+  },
+});
+```
+
 ## Known Issues
 
 ### Late upgraded Context Providers
