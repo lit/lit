@@ -300,6 +300,10 @@ export const serverOnlyRawElementTemplate = serverhtml`
     <textarea>${'This also'} works ${'(kinda).'}</textarea>
   `;
 
+export const serverOnlyInTemplateElement = serverhtml`
+    <template>${'one'}<div>${'two'}<div>${'three'}</div><template>${'recursed'}</template></div></template>
+  `;
+
 export const serverOnlyDocumentTemplate = serverhtml`
     <!DOCTYPE html>
     <html>

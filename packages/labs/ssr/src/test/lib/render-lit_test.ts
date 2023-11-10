@@ -602,6 +602,17 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('server-only template into a <template> element', async () => {
+    const {render, serverOnlyInTemplateElement} = await setup();
+    const result = await render(serverOnlyInTemplateElement);
+    assert.is(
+      result,
+      `
+    <template>one<div>two<div>three</div><template>recursed</template></div></template>
+  `
+    );
+  });
+
   test('server-only document template can render an entire document', async () => {
     const {render, serverOnlyDocumentTemplate} = await setup();
     const result = await render(serverOnlyDocumentTemplate);

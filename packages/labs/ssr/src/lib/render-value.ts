@@ -57,6 +57,7 @@ import {
   isCommentNode,
   traverse,
   isTextNode,
+  isTemplateNode,
 } from '@parse5/tools';
 
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
@@ -532,6 +533,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             }
             flushTo(textStart + text.length);
           }
+        } else if (!hydratable && isTemplateNode(node)) {
+          // Server-only templates look inside of <template> nodes, because
+          // we can afford the complexity and cost, and there's way more
+          // benefit to be gained from it
+          traverse(node.content, this, node);
         }
 
         nodeIndex++;
