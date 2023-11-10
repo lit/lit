@@ -677,15 +677,12 @@ function* renderTemplateResult(
         break;
       case 'child-part': {
         const value = result.values[partIndex++];
+        let isValueHydratable = hydratable;
         if (isTemplateResult(value)) {
-          const isValueHydratable = isHydratable(value);
-          if (isValueHydratable !== hydratable) {
+          isValueHydratable = isHydratable(value);
+          if (!isValueHydratable && hydratable) {
             throw new Error(
-              `Currently, a server-only template can't be rendered inside an ordinary, hydratable template, or vice versa. Tried to render a ${
-                isValueHydratable ? 'normal Lit' : 'server-only'
-              } template inside a ${
-                hydratable ? 'normal Lit' : 'server-only'
-              } template. The outer template was:
+              `A server-only template can't be rendered inside an ordinary, hydratable template. The outer template was:
     ${displayTemplateResult(result)}
 
 And the inner template was:
@@ -694,7 +691,7 @@ And the inner template was:
             );
           }
         }
-        yield* renderValue(value, renderInfo, hydratable);
+        yield* renderValue(value, renderInfo, isValueHydratable);
         break;
       }
       case 'attribute-part': {

@@ -572,9 +572,13 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
 
   test(`server-only template can't render a normal template`, async () => {
     const {render, serverOnlyRenderHydratable} = await setup();
-    assert.throws(
-      () => render(serverOnlyRenderHydratable),
-      /Tried to render a normal Lit template inside a server-only template./
+    const result = render(serverOnlyRenderHydratable);
+    assert.is(
+      result,
+      `
+    <div>server only</div>
+    <!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->hydratable<!--/lit-part--></div><!--/lit-part-->
+  `
     );
   });
 
@@ -582,7 +586,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const {render, hydratableRenderServerOnly} = await setup();
     assert.throws(
       () => render(hydratableRenderServerOnly),
-      /Tried to render a server-only template inside a normal Lit template./
+      /A server-only template can't be rendered inside an ordinary, hydratable template./
     );
   });
 

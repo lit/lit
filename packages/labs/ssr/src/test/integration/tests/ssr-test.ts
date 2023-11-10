@@ -11,24 +11,45 @@ export type SSRExpectedHTML =
   | string
   | {[name: string]: SSRExpectedHTML | SSRExpectedHTML[]};
 
+interface FullHydrationExpectation {
+  /**
+   * The arguments to pass to render()
+   */
+  args: Array<unknown>;
+
+  /**
+   * The expected HTML string.
+   *
+   * Does not need to contain lit-html marker comments.
+   */
+  html: SSRExpectedHTMLGroup | SSRExpectedHTML;
+
+  setup?(assert: Chai.Assert, dom: HTMLElement): void | Promise<unknown>;
+  check?(assert: Chai.Assert, dom: HTMLElement): void | Promise<unknown>;
+}
+
+interface PartialHydrationExpectation extends FullHydrationExpectation {
+  // A key into the renderFns map
+  renderFn: string;
+  // args to pass to the render function
+  args: unknown[];
+  // If true, call the hydrate function (only needed first time for each root)
+  hydrate: boolean;
+  // querySelector for the hydration root
+  rootSelector: string;
+}
+
+type Expectation = FullHydrationExpectation | PartialHydrationExpectation;
+
+export function isPartialHydrationExpectation(
+  expectation: Expectation
+): expectation is PartialHydrationExpectation {
+  return 'renderFn' in expectation;
+}
+
 export interface SSRTestDescription {
   render(...args: any): TemplateResult;
-  expectations: Array<{
-    /**
-     * The arguments to pass to render()
-     */
-    args: Array<unknown>;
-
-    /**
-     * The expected HTML string.
-     *
-     * Does not need to contain lit-html marker comments.
-     */
-    html: SSRExpectedHTMLGroup | SSRExpectedHTML;
-
-    setup?(assert: Chai.Assert, dom: HTMLElement): void | Promise<unknown>;
-    check?(assert: Chai.Assert, dom: HTMLElement): void | Promise<unknown>;
-  }>;
+  expectations: Array<Expectation>;
   /**
    * A list of selectors of elements that should not change between renders.
    * Used to assert that the DOM was reused in hydration, not recreated.
@@ -43,6 +64,7 @@ export interface SSRTestDescription {
   registerElements?(): void | Promise<unknown>;
   serverRenderOptions?: Partial<RenderInfo>;
   serverOnly?: true;
+  renderFns?: Record<string, (...args: any) => TemplateResult>;
 }
 
 export type SSRTestFactory = () => SSRTestDescription;

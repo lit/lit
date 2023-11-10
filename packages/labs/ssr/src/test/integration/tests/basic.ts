@@ -40,7 +40,7 @@ import {
   RenderLightHost,
 } from '@lit-labs/ssr-client/directives/render-light.js';
 
-import {anyHtml, SSRTest} from './ssr-test.js';
+import {anyHtml, SSRTest, SSRTestDescription} from './ssr-test.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {serverhtml} from '../../../lib/server-template.js';
 
@@ -5592,3 +5592,121 @@ export const tests: {[name: string]: SSRTest} = {
     serverOnly: true,
   },
 };
+
+const serverClientHydrationTest: SSRTestDescription = {
+  render(title: string, c1: string, c2: string) {
+    return serverhtml`
+        <!doctype html>
+        <html>
+          <head><title>${title}</title></head>
+          <body>
+            <div id="one">${this.renderFns?.renderOne(c1)}</div>
+            <div id="two">${this.renderFns?.renderTwo(c2)}</div>
+          </body>
+        </html>
+      `;
+  },
+  renderFns: {
+    renderOne(c1: string) {
+      return html`<h1>${c1}</h1>`;
+    },
+    renderTwo(c2: string) {
+      return html`<h2>${c2}</h2>`;
+    },
+  },
+  expectations: [
+    {
+      // Check that the server render is correct.
+      args: ['title', 'c1', 'c2'],
+      html: `
+        <!doctype html>
+        <html>
+          <head><title>title</title></head>
+          <body>
+            <div id="one"><h1>c1</h1></div>
+            <div id="two"><h2>c2</h2></div>
+          </body>
+        </html>
+        `,
+    },
+    {
+      // Hydrate #one with the same data
+      hydrate: true,
+      renderFn: 'renderOne',
+      args: ['c1'],
+      rootSelector: 'div#one',
+      html: `
+        <!doctype html>
+        <html>
+          <head><title>title</title></head>
+          <body>
+            <div id="one"><h1>c1</h1></div>
+            <div id="two"><h2>c2</h2></div>
+          </body>
+        </html>
+        `,
+    },
+    {
+      // Update #one
+      renderFn: 'renderOne',
+      args: ['hydrated c1'],
+      rootSelector: 'div#one',
+      html: `
+        <!doctype html>
+        <html>
+          <head><title>title</title></head>
+          <body>
+            <div id="one"><h1>hydrated c1</h1></div>
+            <div id="two"><h2>c2</h2></div>
+          </body>
+        </html>
+        `,
+    },
+    {
+      // Hydrate #two
+      hydrate: true,
+      renderFn: 'renderTwo',
+      args: ['c2'],
+      rootSelector: 'div#two',
+      html: `
+        <!doctype html>
+        <html>
+          <head><title>title</title></head>
+          <body>
+            <div id="one"><h1>hydrated c1</h1></div>
+            <div id="two"><h2>c2</h2></div>
+          </body>
+        </html>
+        `,
+    },
+    {
+      // Update #two
+      renderFn: 'renderTwo',
+      args: ['hydrated c2'],
+      rootSelector: 'div#two',
+      html: `
+        <!doctype html>
+        <html>
+          <head><title>title</title></head>
+          <body>
+            <div id="one"><h1>hydrated c1</h1></div>
+            <div id="two"><h2>hydrated c2</h2></div>
+          </body>
+        </html>
+        `,
+    },
+  ],
+  stableSelectors: [
+    'html',
+    'head',
+    'title',
+    'body',
+    'div#one',
+    'div#two',
+    'h1',
+    'h2',
+  ],
+  serverOnly: true as const,
+};
+tests['client templates inside server templates can hydrate'] =
+  serverClientHydrationTest;

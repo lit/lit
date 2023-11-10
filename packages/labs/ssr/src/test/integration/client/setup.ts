@@ -14,6 +14,7 @@ import {
   SSRExpectedHTMLGroup,
   SSRTestSuite,
   isAnyHtml,
+  isPartialHydrationExpectation,
 } from '../tests/ssr-test.js';
 
 const assertTemplate = document.createElement('template');
@@ -298,28 +299,39 @@ export const setupTest = async (
           }
         }
 
-        if (serverOnly) {
-          // Assert that the DOM is the same after registering elements.
-          assertHTML(container, expectations[0].html);
-          // Server-side templates aren't hydratable, and don't support updates,
-          // so we can only have one expectation.
-          assert.strictEqual(expectations.length, 1);
-          // Once we add support for client side templates inside of server-side
-          // templates we'll need to support a way to test hydrating inner
-          // templates, but our initially implementation doesn't yet support
-          // this.
-          return;
-        }
-
-        let i = 0;
-        for (const {args, html, setup, check} of expectations) {
-          if (i === 0) {
-            hydrate(testRender(...args), container);
+        let i = -1;
+        for (const expectation of expectations) {
+          i++;
+          const {args, html, setup, check} = expectation;
+          let expectationRender = testRender;
+          let shouldHydrate = i === 0;
+          let expectationContainer = container;
+          if (isPartialHydrationExpectation(expectation)) {
+            if (testSetup.renderFns?.[expectation.renderFn] === undefined) {
+              throw new Error(
+                `No render function registered for key '${expectation.renderFn}'`
+              );
+            }
+            expectationRender = testSetup.renderFns[expectation.renderFn];
+            shouldHydrate = expectation.hydrate ?? false;
+            expectationContainer = container.querySelector(
+              expectation.rootSelector
+            )!;
+          } else if (serverOnly) {
+            // Server only templates only support partial hydration, so just
+            // assert that the HTML is as expected after elements are upgraded,
+            // don't try to render again.
+            assertHTML(container, html);
+            continue;
+          }
+          if (shouldHydrate) {
+            hydrate(expectationRender(...args), expectationContainer);
             // Hydration should cause no DOM mutations, because it does not
             // actually update the DOM - it just recreates data structures
             if (!expectMutationsDuringHydration) {
-              assert.isEmpty(
-                getMutations(),
+              assert.deepEqual(
+                prettyPrintMutations(getMutations()),
+                [],
                 'Hydration should cause no DOM mutations'
               );
             }
@@ -336,9 +348,9 @@ export const setupTest = async (
           }
 
           // After hydration, render() will be operable.
-          render(testRender(...args), container);
+          render(expectationRender(...args), expectationContainer);
 
-          if (i === 0) {
+          if (shouldHydrate) {
             // The first render should also cause no mutations, since it's using
             // the same data as the server.
             if (!expectMutationsOnFirstRender) {
@@ -367,9 +379,35 @@ export const setupTest = async (
           // Check the markup
           assertHTML(container, html);
 
-          i++;
+          // if we rendered without hydration, we should clear mutations
+          if (!shouldHydrate) {
+            clearMutations();
+          }
         }
       });
     }
   });
 };
+
+function prettyPrintMutations(mutations: MutationRecord[]): string[] {
+  const result = [];
+  for (const mutation of mutations) {
+    const {type, target} = mutation;
+    const targetString =
+      'innerHTML' in target ? `${target.innerHTML}` : `${target}`;
+    result.push(
+      JSON.stringify({
+        target: targetString,
+        type,
+        attribute: mutation.attributeName || undefined,
+        addedNodes: mutation.addedNodes
+          ? mutation.addedNodes.length
+          : undefined,
+        removedNodes: mutation.removedNodes
+          ? mutation.removedNodes.length
+          : undefined,
+      })
+    );
+  }
+  return result;
+}
