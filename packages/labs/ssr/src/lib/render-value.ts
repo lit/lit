@@ -58,6 +58,8 @@ import {
   traverse,
   isTextNode,
   isTemplateNode,
+  Template,
+  Element,
 } from '@parse5/tools';
 
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
@@ -514,7 +516,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           !hydratable &&
           /^(title|textarea|script)$/.test(node.tagName)
         ) {
-          const isScript = node.tagName === 'script';
+          const dangerous = willExecute(node);
+          console.log(`dangerous: ${dangerous} – node: `, node);
           // look for mangled parts in the text content
           for (const child of node.childNodes) {
             if (!isTextNode(child)) {
@@ -528,9 +531,9 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             const markerRegex = new RegExp(marker.replace(/\$/g, '\\$'), 'g');
             for (const mark of text.matchAll(markerRegex)) {
               flushTo(textStart + mark.index!);
-              if (isScript) {
+              if (dangerous) {
                 throw new Error(
-                  `Found binding inside a <script> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to execute arbitrary JavaScript.`
+                  `Found binding inside an executable <script> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to execute arbitrary JavaScript.`
                 );
               }
               ops.push({
@@ -931,3 +934,52 @@ function displayTemplateResult(
 }
 
 const getLast = <T>(a: Array<T>) => a[a.length - 1];
+
+function willExecute(node: Element | Template): boolean {
+  if (!/script/i.test(node.tagName)) {
+    return false;
+  }
+  if (isTemplateNode(node)) {
+    return false;
+  }
+  console.log(node.attrs);
+  let safeTypeSeen = false;
+  for (const attr of node.attrs) {
+    if (attr.name !== 'type') {
+      continue;
+    }
+    switch (attr.value) {
+      // see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#textjavascript
+      case null:
+      case undefined:
+      case '':
+      case 'module':
+      case 'text/javascript':
+      case 'application/javascript':
+      case 'application/ecmascript':
+      case 'application/x-ecmascript':
+      case 'application/x-javascript':
+      case 'text/ecmascript':
+      case 'text/javascript1.0':
+      case 'text/javascript1.1':
+      case 'text/javascript1.2':
+      case 'text/javascript1.3':
+      case 'text/javascript1.4':
+      case 'text/javascript1.5':
+      case 'text/jscript':
+      case 'text/livescript':
+      case 'text/x-ecmascript':
+      case 'text/x-javascript':
+        // If we see a dangerous type, we can stop looking
+        return true;
+      default:
+        safeTypeSeen = true;
+    }
+  }
+  // So, remember that attributes can be repeated. If we saw a dangerous type,
+  // then we would have returned early. However, if there's no type, then
+  // that's dangerous.
+  // It's only if all types seen were safe, and we saw at least one type, that
+  // we can return false.
+  return !safeTypeSeen;
+}

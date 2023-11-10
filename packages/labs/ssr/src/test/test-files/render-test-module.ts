@@ -352,3 +352,8 @@ export const renderServerOnlyScriptDeep = serverhtml`
       console.log("${'This is dangerous!'}");
     </div>
   </script>`;
+
+export const renderServerScriptNotJavaScript = serverhtml`
+  <script type="json">
+    {"ok": ${true}}
+  </script>`;

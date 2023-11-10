@@ -660,11 +660,23 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       await setup();
     assert.throws(
       () => render(renderServerOnlyScript),
-      /Found binding inside a <script> tag in a server-only template\./
+      /Found binding inside an executable <script> tag in a server-only template\./
     );
     assert.throws(
       () => render(renderServerOnlyScriptDeep),
-      /Found binding inside a <script> tag in a server-only template\./
+      /Found binding inside an executable <script> tag in a server-only template\./
+    );
+  });
+
+  test('server-only template into non-executing script', async () => {
+    const {render, renderServerScriptNotJavaScript} = await setup();
+    const result = render(renderServerScriptNotJavaScript);
+    assert.is(
+      result,
+      `
+  <script type="json">
+    {"ok": true}
+  </script>`
     );
   });
 }
