@@ -182,7 +182,7 @@ You can also write templates that will only render on the server. These template
 
 `serverhtml` templates can be composed, and combined, and they support almost all features that normal Lit templates do, with the exception of features that don't have a pure HTML representation, like event handlers or property bindings.
 
-`serverhtml` templates can only be rendered once, so they can't be updated on the client. However if you render a normal Lit template inside a serverhtml template, then it can be hydrated and updated. Likewise, if you render a custom element inside a serverhtml template, it will automatically hydrate and update like normal.
+`serverhtml` templates can only be rendered once, so they can't be updated on the client. However if you render a normal Lit template inside a serverhtml template, then it can be hydrated and updated. Likewise, if you place a custom element inside a serverhtml template, it can be hydrated and update like normal.
 
 ```js
 import {html} from 'lit';
