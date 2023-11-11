@@ -189,7 +189,7 @@ import {html} from 'lit';
 import {render, serverhtml} from '@lit-labs/ssr';
 import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import './app-shell.js';
-import {contentTemplate} from './content-template.js';
+import {getContent} from './content-template.js';
 
 const pageInfo = {
   /* ... */
@@ -201,7 +201,8 @@ const ssrResult = render(serverhtml`
     <head><title>MyApp ${pageInfo.title}</head>
     <body>
       <app-shell>
-        <div id="content">${contentTemplate(pageInfo.description)}</div>
+        <!-- getContent is hydratable, as it returns a normal Lit template -->
+        <div id="content">${getContent(pageInfo.description)}</div>
       </app-shell>
 
       <script type="module">
@@ -212,7 +213,7 @@ const ssrResult = render(serverhtml`
           hydrateShadowRoots,
         } from './node_modules/@webcomponents/template-shadowroot/template-shadowroot.js';
         import {hydrate} from '@lit-labs/ssr-client';
-        import {contentTemplate} from './content-template.js';
+        import {getContent} from './content-template.js';
         if (!hasNativeDeclarativeShadowRoots()) {
           hydrateShadowRoots(document.body);
         }
@@ -220,9 +221,10 @@ const ssrResult = render(serverhtml`
         // Load and hydrate app-shell lazily
         import('./app-shell.js');
 
-        // Hydrate content template
+        // Hydrate content template. This <script type=module> will run after
+        // the page has loaded, so we can count on page-id being present.
         const pageInfo = JSON.parse(document.getElementById('page-info').textContent);
-        hydrate(contentTemplate(pageInfo.description), document.querySelector('#content'));
+        hydrate(getContent(pageInfo.description), document.querySelector('#content'));
         // #content element can now be efficiently updated
       </script>
       <!-- Pass data to client. -->

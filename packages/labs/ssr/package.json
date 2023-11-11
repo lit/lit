@@ -19,7 +19,7 @@
     "test:integration:shimmed:prod": "wireit",
     "test:integration:unshimmed:prod": "wireit",
     "test:unit": "wireit",
-    "test:build": "wireit"
+    "test:types": "wireit"
   },
   "wireit": {
     "build": {
@@ -72,7 +72,7 @@
       "dependencies": [
         "test:unit",
         "test:integration",
-        "test:build"
+        "test:types"
       ]
     },
     "test:unit": {
@@ -175,7 +175,7 @@
       ],
       "output": []
     },
-    "test:build": {
+    "test:types": {
       "command": "tsc --pretty --noEmit",
       "dependencies": [
         "../ssr-client:build:ts:types",

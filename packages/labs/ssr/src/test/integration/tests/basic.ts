@@ -5512,6 +5512,9 @@ export const tests: {[name: string]: SSRTest} = {
       stableSelectors: ['le-internals-hydrate'],
     };
   },
+  /******************************************************
+   * Server-only template tests
+   ******************************************************/
   'Server-only template works': {
     render(x: unknown) {
       return serverhtml` <div>${x}</div> `;
