@@ -679,6 +679,14 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
   </script>`
     );
   });
+
+  test('server-only template with element part', async () => {
+    const {render, renderServerOnlyElementPart} = await setup();
+
+    assert.throws(() => {
+      render(renderServerOnlyElementPart);
+    }, /Server-only templates don't support element parts/);
+  });
 }
 
 test.run();

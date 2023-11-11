@@ -480,6 +480,10 @@ const getTemplateOpcodes = (result: TemplateResult) => {
                 useCustomElementInstance: node.isDefinedCustomElement,
               });
             } else {
+              if (!hydratable) {
+                throw new Error(`Server-only templates don't support element parts, as their API does not currently give them any way to render anything on teh server. Found in template:
+    ${displayTemplateResult(result)}`);
+              }
               ops.push({
                 type: 'element-part',
                 index: nodeIndex,

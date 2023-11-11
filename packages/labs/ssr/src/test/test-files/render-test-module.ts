@@ -357,3 +357,7 @@ export const renderServerScriptNotJavaScript = serverhtml`
   <script type="json">
     {"ok": ${true}}
   </script>`;
+
+// This doesn't have to make sense, the test is that it'll throw at the
+// template preparation phase.
+export const renderServerOnlyElementPart = serverhtml`<div ${'foo'}></div>`;
