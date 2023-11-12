@@ -59,11 +59,15 @@ suite('ReactiveElement', () => {
       protected override willUpdate() {
         this.hasRenderRoot = !!this.renderRoot;
       }
+      flushUpdate() {
+        this.performUpdate();
+      }
     }
     customElements.define(generateElementName(), E);
     const el = new E();
-    (el as any).performUpdate();
+    el.flushUpdate();
     assert.isTrue(el.hasRenderRoot);
+    assert.isFalse(el.isConnected);
   });
 
   test(`createRenderRoot is called only once`, async () => {
