@@ -4,4 +4,4 @@
 'lit-element': patch
 ---
 
-Controllers can be added/removed during lifecycle (#4266).
+Fixes bug where adding or removing controllers during a reactive controller lifecycle would affect the execution of other controllers (#4266). Controllers can now be added/removed during lifecycle without affecting others.
