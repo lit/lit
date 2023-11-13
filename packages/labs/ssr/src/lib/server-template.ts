@@ -9,6 +9,7 @@ import {
   type CompiledTemplateResult,
   type TemplateResult,
 } from 'lit-html';
+import {isServer} from 'lit-html/is-server.js';
 
 const SERVER_ONLY = 1;
 
@@ -44,6 +45,11 @@ export function serverhtml(
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): ServerRenderedTemplate {
+  if (!isServer) {
+    throw new Error(
+      `serverhtml templates can only be rendered on the server, they cannot be rendered in the browser. Use the html function for templates that need to be rendered from the browser. This check is based on the "node" export condition: https://nodejs.org/api/packages.html#conditional-exports`
+    );
+  }
   const value = baseHtml(strings, ...values) as ServerRenderedTemplate;
   value.$_litServerRenderMode = SERVER_ONLY;
   return value;
