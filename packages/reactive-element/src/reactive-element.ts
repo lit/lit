@@ -1103,7 +1103,7 @@ export abstract class ReactiveElement
    * @category lifecycle
    */
   connectedCallback() {
-    // Create renderRoot before first update.
+    // Create renderRoot before controllers `hostConnected`
     (this as Mutable<typeof this, 'renderRoot'>).renderRoot ??=
       this.createRenderRoot();
     this.enableUpdating(true);
@@ -1377,6 +1377,10 @@ export abstract class ReactiveElement
     }
     debugLogEvent?.({kind: 'update'});
     if (!this.hasUpdated) {
+      // Create renderRoot before first update. This occurs in `connectedCallback`
+      // but is done here to support out of tree calls to `enableUpdating`/`performUpdate`.
+      (this as Mutable<typeof this, 'renderRoot'>).renderRoot ??=
+        this.createRenderRoot();
       if (DEV_MODE) {
         // Produce warning if any reactive properties on the prototype are
         // shadowed by class fields. Instance fields set before upgrade are
