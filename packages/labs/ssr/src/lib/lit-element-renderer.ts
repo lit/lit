@@ -86,8 +86,10 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   override *renderShadow(renderInfo: RenderInfo): RenderResult {
-    const serverControllers = getControllers(this.element)
-      ?.map((c: Partial<ServerController>) => c.serverUpdateComplete)
+    const serverControllers = Array.from<Partial<ServerController>>(
+      getControllers(this.element) ?? []
+    )
+      .map((c: Partial<ServerController>) => c.serverUpdateComplete)
       .filter((p: Promise<unknown> | undefined) => !!p);
     if (serverControllers?.length > 0) {
       const continuation = Promise.allSettled(serverControllers).then((_) =>
