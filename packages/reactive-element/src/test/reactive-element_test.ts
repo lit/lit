@@ -53,6 +53,23 @@ suite('ReactiveElement', () => {
     assert.isTrue(el.hasRenderRoot);
   });
 
+  test(`renderRoot exists before first update (without connecting)`, async () => {
+    class E extends ReactiveElement {
+      hasRenderRoot = false;
+      protected override willUpdate() {
+        this.hasRenderRoot = !!this.renderRoot;
+      }
+      flushUpdate() {
+        this.performUpdate();
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    el.flushUpdate();
+    assert.isTrue(el.hasRenderRoot);
+    assert.isFalse(el.isConnected);
+  });
+
   test(`createRenderRoot is called only once`, async () => {
     class E extends ReactiveElement {
       renderRootCalls = 0;
