@@ -993,7 +993,7 @@ export abstract class ReactiveElement
   /**
    * Set of controllers.
    */
-  private _$controllers?: ReactiveController[];
+  private _$controllers?: Set<ReactiveController>;
 
   constructor() {
     super();
@@ -1030,7 +1030,7 @@ export abstract class ReactiveElement
    * @category controllers
    */
   addController(controller: ReactiveController) {
-    (this._$controllers ??= []).push(controller);
+    (this._$controllers ??= new Set()).add(controller);
     // If a controller is added after the element has been connected,
     // call hostConnected. Note, re-using existence of `renderRoot` here
     // (which is set in connectedCallback) to avoid the need to track a
@@ -1045,9 +1045,7 @@ export abstract class ReactiveElement
    * @category controllers
    */
   removeController(controller: ReactiveController) {
-    // Note, if the indexOf is -1, the >>> will flip the sign which makes the
-    // splice do nothing.
-    this._$controllers?.splice(this._$controllers.indexOf(controller) >>> 0, 1);
+    this._$controllers?.delete(controller);
   }
 
   /**
