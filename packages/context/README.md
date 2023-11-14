@@ -133,9 +133,8 @@ export class MyApp extends LitElement {
 }
 ```
 
-To provide context within a whole DOM tree, or the whole document (potentially
-containing multiple separate sub-trees of elements), `ContextProvider` can also
-be used with plain html elements:
+`ContextProvider` can also be used with plain HTML elements. This can be
+useful to provide a context provider without introducing a custom element:
 
 #### **`my-app.js`**:
 
@@ -143,17 +142,20 @@ be used with plain html elements:
 import {ContextProvider} from '@lit/context';
 import {loggerContext, Logger} from './logger.js';
 
-// create a provider for the whole document. If connecting to an element which
-// is not yet attached to the DOM, then call .hostConnected() after the element
-// has been attached.
-const loggingProvider = new ContextProvider(document, loggerContext);
-
-loggingProvider.setValue({
-  log: (msg) => {
-    console.log(`[global] ${msg}`);
-  },
-});
+// create a provider for the whole document body.
+const loggingProvider = new ContextProvider(document.body, {
+    context: loggerContext,
+    initialValue: {
+      log: (msg) => {
+        console.log(`[global] ${msg}`);
+      },
+    },
+);
 ```
+
+If the provider is being added when there is already a consumer registered with
+a parent of the specified element or with a `ContextRoot`, then
+`.hostConnected()` must be called on the provider after creating it.
 
 ## Known Issues
 
