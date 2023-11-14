@@ -321,7 +321,7 @@ suite('createComponent', () => {
    */
 
   for (const name of ['div', tagName]) {
-    const Tag = name === 'div' ? 'div' : BasicElementComponent;
+    const Tag = name === tagName ? BasicElementComponent : name;
     let el: HTMLDivElement | BasicElement;
 
     test(`${name}: can set/unset attributes`, async () => {
@@ -336,6 +336,7 @@ suite('createComponent', () => {
 
       // We currently require passing `undefined` to "unset" rather than
       // omitting the prop
+      // See https://github.com/lit/lit/issues/4227
       render(<Tag id={undefined} />);
       assert.equal(el.getAttribute('id'), null);
       assert.equal(el.id, '');
@@ -428,9 +429,11 @@ suite('createComponent', () => {
 
       // The following test fails for basic-element only
       // See https://github.com/lit/lit/issues/4391
-      // render(<Tag draggable="false" />);
-      // assert.equal(el.getAttribute('draggable'), 'false');
-      // assert.equal(el.draggable, false);
+      if (name !== tagName) {
+        render(<Tag draggable="false" />);
+        assert.equal(el.getAttribute('draggable'), 'false');
+        assert.equal(el.draggable, false);
+      }
     });
 
     test(`${name}: sets/unsets boolean aria attributes`, async () => {

@@ -254,7 +254,7 @@ suite('useController', () => {
 
     const render = (props: React.ComponentProps<typeof TestComponent>) => {
       act(() => {
-        root.render(React.createElement(TestComponent, props));
+        root.render(<TestComponent {...props} />);
       });
     };
 
