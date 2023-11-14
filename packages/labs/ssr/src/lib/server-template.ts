@@ -14,7 +14,7 @@ import {isServer} from 'lit-html/is-server.js';
 const SERVER_ONLY = 1;
 
 export interface ServerRenderedTemplate extends TemplateResult {
-  $_litServerRenderMode: typeof SERVER_ONLY;
+  _$litServerRenderMode: typeof SERVER_ONLY;
 }
 
 /**
@@ -51,7 +51,7 @@ export function serverhtml(
     );
   }
   const value = baseHtml(strings, ...values) as ServerRenderedTemplate;
-  value.$_litServerRenderMode = SERVER_ONLY;
+  value._$litServerRenderMode = SERVER_ONLY;
   return value;
 }
 
@@ -63,11 +63,11 @@ export function serverhtml(
  * marker comments needed to identify and update their dynamic parts.
  */
 export const isHydratable = (template: MaybeServerTemplate): boolean => {
-  return template.$_litServerRenderMode !== SERVER_ONLY;
+  return template._$litServerRenderMode !== SERVER_ONLY;
 };
 
 type MaybeCompiledTemplate = TemplateResult | CompiledTemplateResult;
 
 type MaybeServerTemplate = MaybeCompiledTemplate & {
-  $_litServerRenderMode?: typeof SERVER_ONLY;
+  _$litServerRenderMode?: typeof SERVER_ONLY;
 };
