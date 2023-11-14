@@ -5521,9 +5521,7 @@ export const tests: {[name: string]: SSRTest} = {
     return {
       registerElements() {
         class BasicController implements ReactiveController {
-          // To satisfy the ReactiveController interface. Note this controller
-          // doesn't actually do anything. We just check that it works when
-          // running through SSR.
+          // To satisfy the ReactiveController interface.
           declare hostConnected: undefined;
           value = 'default';
 
@@ -5536,7 +5534,6 @@ export const tests: {[name: string]: SSRTest} = {
         customElements.define(
           'rc-basic',
           class extends LitElement {
-            controlledField = 'unset';
             basicController = new BasicController(this);
 
             override render(): unknown {
@@ -5615,19 +5612,19 @@ export const tests: {[name: string]: SSRTest} = {
     };
   },
 
-  'ServerController: can depend on properties being set': () => {
+  'ServerController: can depend on properties set on host': () => {
     // Provide a workaround to the use-case highlighted in
-    // https://github.com/lit/lit/issues/2469#issuecomment-1079662893
-    // This controller does work exclusively on the server, and returns
-    // different results based on the properties passed to its host.
+    // https://github.com/lit/lit/issues/2469#issuecomment-1079662893 This
+    // controller works exclusively on the server, and returns different results
+    // based on the properties passed to its host.
     return {
       registerElements() {
         class ServerOnlyController implements ServerController {
           // To satisfy the ReactiveController interface.
           declare hostConnected: undefined;
-          // Use `noChange` to ensure the controller does not erase the server
-          // rendered url value.
-          url: typeof noChange | string = noChange;
+          // Defaulting to `noChange` ensures the controller does not erase the
+          // server rendered data after hydration.
+          data: typeof noChange | string = noChange;
 
           host: LitElement & {idProperty: number};
           constructor(host: LitElement & {idProperty: number}) {
@@ -5641,7 +5638,7 @@ export const tests: {[name: string]: SSRTest} = {
               // Promise.resolve ensures a microtask has occurred.
               // In production situations this could be replaced with a
               // `isServer` guarded fs.readFile or database call.
-              this.url = `[data with id: ${id}]`;
+              this.data = `[data with id: ${id}]`;
             });
           }
         }
@@ -5654,7 +5651,7 @@ export const tests: {[name: string]: SSRTest} = {
 
           override render(): unknown {
             return html`
-              <div>[sc-async-el: ${this.asyncController.url}]</div>
+              <div>[sc-async-el: ${this.asyncController.data}]</div>
             `;
           }
         }
