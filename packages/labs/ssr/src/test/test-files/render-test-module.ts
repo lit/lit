@@ -353,6 +353,20 @@ export const renderServerOnlyScriptDeep = serverhtml`
     </div>
   </script>`;
 
+export const renderServerOnlyStyle = serverhtml`
+  <style>
+    div {
+      color: ${'red'};
+    }
+  </style>`;
+
+export const renderServerOnlyStyleDeep = serverhtml`
+  <style>
+    <div>
+      color: ${'red'};
+    </div>
+  </style>`;
+
 export const renderServerScriptNotJavaScript = serverhtml`
   <script type="json">
     {"ok": ${true}}

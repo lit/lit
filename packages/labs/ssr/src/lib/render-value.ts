@@ -518,7 +518,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           });
         } else if (
           !hydratable &&
-          /^(title|textarea|script)$/.test(node.tagName)
+          /^(title|textarea|script|style)$/.test(node.tagName)
         ) {
           const dangerous = isJavaScriptScriptTag(node);
           // Marker comments in a rawtext element will be parsed as text,
@@ -538,7 +538,14 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               flushTo(textStart + mark.index!);
               if (dangerous) {
                 throw new Error(
-                  `Found binding inside an executable <script> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to execute arbitrary JavaScript. The template with the dangerous binding is:
+                  `Found binding inside an executable <script> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to execute arbitrary JavaScript. If you do need to create a script element with dynamic contents, you can use the unsafeHTML directive to make one, as that way the code is clearly marked as unsafe and needing careful handling. The template with the dangerous binding is:
+
+    ${displayTemplateResult(result)}`
+                );
+              }
+              if (node.tagName === 'style') {
+                throw new Error(
+                  `Found binding inside a <style> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to exfiltrate information from the page. If you do need to create a style element with dynamic contents, you can use the unsafeHTML directive to make one, as that way the code is clearly marked as unsafe and needing careful handling. The template with the dangerous binding is:
 
     ${displayTemplateResult(result)}`
                 );
@@ -859,7 +866,7 @@ And the inner template was:
     }
   }
 
-  if (partIndex !== result.values.length && hydratable) {
+  if (partIndex !== result.values.length) {
     throwErrorForPartIndexMismatch(partIndex, result);
   }
 }
@@ -944,7 +951,7 @@ const getLast = <T>(a: Array<T>) => a[a.length - 1];
 
 /**
  * Returns true if the given node is a <script> node that the browser will
- * automatically executeif it's rendered on server-side, outside of a
+ * automatically execute if it's rendered on server-side, outside of a
  * <template> tag.
  */
 function isJavaScriptScriptTag(node: Element | Template): boolean {
