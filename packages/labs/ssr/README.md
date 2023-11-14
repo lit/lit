@@ -182,10 +182,11 @@ You can also write templates that will only render on the server. These template
 
 `serverhtml` templates can be composed, and combined, and they support almost all features that normal Lit templates do, with the exception of features that don't have a pure HTML representation, like event handlers or property bindings.
 
-`serverhtml` templates can only be rendered once, so they can't be updated on the client. However if you render a normal Lit template inside a serverhtml template, then it can be hydrated and updated. Likewise, if you place a custom element inside a serverhtml template, it can be hydrated and update like normal.
+`serverhtml` templates can only be rendered on the server, they can't be rendered on the client. However if you render a normal Lit template inside a serverhtml template, then it can be hydrated and updated. Likewise, if you place a custom element inside a serverhtml template, it can be hydrated and update like normal.
+
+Here's an example that shows how to use a serverhtml template to render a full document, and then lazily hydrate both a custom element and a template:
 
 ```js
-import {html} from 'lit';
 import {render, serverhtml} from '@lit-labs/ssr';
 import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import './app-shell.js';
