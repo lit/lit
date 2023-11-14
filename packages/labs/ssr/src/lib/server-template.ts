@@ -33,11 +33,11 @@ export interface ServerRenderedTemplate extends TemplateResult {
  * features that don't have a pure HTML representation, like event handlers or
  * property bindings.
  *
- * `serverhtml` templates can only be rendered once, so they can't be updated
- * on the client. However if you render a normal Lit template inside a
- * serverhtml template, then it can be hydrated and updated. Likewise, custom
- * elements behave the same in both server-only templates and normal templates,
- * and by default they will hydrate.
+ * `serverhtml` templates can only be rendered on the server, they will
+ * throw an Error if created in the browser. However if you render a normal Lit
+ * template inside a serverhtml template, then it can be hydrated and updated.
+ * Likewise, if you place a custom element inside a serverhtml template, it can
+ * be hydrated and update like normal.
  *
  * A `serverhtml` template can't be rendered inside a normal Lit template.
  */
