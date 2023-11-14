@@ -1,5 +1,11 @@
 # @lit-labs/context
 
+## 1.0.2
+
+### Patch Changes
+
+- [#4373](https://github.com/lit/lit/pull/4373) [`22919f6d`](https://github.com/lit/lit/commit/22919f6d0051f075bdb5f6033a5e4263b76a0c3e) - Make property decorated with `@provide()` with TypeScript experimental decorators configurable. This allows chaining additional decorators that modify the property like `@property()` from `lit`.
+
 ## 1.0.1
 
 ### Patch Changes

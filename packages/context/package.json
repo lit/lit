@@ -1,6 +1,6 @@
 {
   "name": "@lit/context",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Helpers and controllers for using Context protocol",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -216,7 +216,7 @@
     "@lit-internal/scripts": "^1.0.1",
     "@lit-labs/testing": "^0.2.2",
     "@types/trusted-types": "^2.0.2",
-    "lit": "^3.0.0"
+    "lit": "^3.1.0"
   },
   "publishConfig": {
     "access": "public"

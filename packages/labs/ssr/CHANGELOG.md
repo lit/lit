@@ -1,5 +1,19 @@
 # Change Log
 
+## 3.2.0
+
+### Minor Changes
+
+- [#4382](https://github.com/lit/lit/pull/4382) [`011b762d`](https://github.com/lit/lit/commit/011b762d68c1f90eff2028cc345cb8cb818a64cb) - Add a serverhtml function, to define templates that will only be rendered on the server.
+
+### Patch Changes
+
+- [#4389](https://github.com/lit/lit/pull/4389) [`ef2976b9`](https://github.com/lit/lit/commit/ef2976b9e6b737f54f61e3ebf7af42ff921f00cb) - Fix a race condition in `RenderResultReadable` which could skip async work.
+
+- Updated dependencies [[`bf551b5b`](https://github.com/lit/lit/commit/bf551b5bdc816c1b0117ab436c50390ae3f5686d), [`949a5467`](https://github.com/lit/lit/commit/949a54677748a1f83ec4d166bd40e244de3afda7), [`c7922a0c`](https://github.com/lit/lit/commit/c7922a0cb90075a9e4c72f93078e411a303c54d1), [`839ca0f8`](https://github.com/lit/lit/commit/839ca0f81a451fbaae97d958aafcaf4c52df9b65)]:
+  - lit@3.1.0
+  - lit-html@3.1.0
+
 ## 3.1.9
 
 ### Patch Changes
