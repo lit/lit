@@ -12,12 +12,14 @@ import type {Message} from './worker/types.js';
 type LitPluginOptions = {
   componentModules?: string[];
   mode?: 'vm' | 'worker';
+  dedupeStyles?: boolean;
 };
 
 function configureWorker(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   eleventyConfig: any,
-  resolvedComponentModules: string[]
+  resolvedComponentModules: string[],
+  dedupeStyles: boolean
 ) {
   let worker: Worker;
 
@@ -65,6 +67,7 @@ function configureWorker(
     const message: Message = {
       type: 'initialize-request',
       imports: resolvedComponentModules,
+      dedupeStyles,
     };
 
     worker.postMessage(message);
@@ -201,7 +204,11 @@ module.exports = {
   configFunction: function (
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     eleventyConfig: any,
-    {componentModules, mode = 'worker'}: LitPluginOptions = {}
+    {
+      componentModules,
+      mode = 'worker',
+      dedupeStyles = false,
+    }: LitPluginOptions = {}
   ) {
     if (componentModules === undefined || componentModules.length === 0) {
       // If there are no component modules, we could never have anything to
@@ -215,7 +222,7 @@ module.exports = {
 
     switch (mode) {
       case 'worker': {
-        configureWorker(eleventyConfig, resolvedComponentModules);
+        configureWorker(eleventyConfig, resolvedComponentModules, dedupeStyles);
         break;
       }
       case 'vm': {
