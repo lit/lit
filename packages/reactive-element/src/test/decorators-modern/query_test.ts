@@ -96,11 +96,27 @@ import {assert} from '@esm-bundle/chai';
     assert.notEqual(el.span, el.renderRoot.querySelector('span'));
   });
 
-  test('returns cached value when accessed before first update', async () => {
+  test('does not cache null values when accessed before first update', async () => {
     const notYetUpdatedEl = new C();
     assert.equal(notYetUpdatedEl.divCached, null);
+
+    if (globalThis.litIssuedWarnings != null) {
+      assert(
+        [...globalThis.litIssuedWarnings].find((w) =>
+          /@query'd field "divCached" with the 'cache' flag set for selector '#blah' has been accessed before the first update and returned null\. This is expected if the renderRoot tree has not been provided beforehand \(e\.g\. via Declarative Shadow DOM\)\. Therefore the value hasn't been cached\./.test(
+            w ?? ''
+          )
+        ),
+        `Expected warning to be issued. Warnings found: ${JSON.stringify(
+          [...globalThis.litIssuedWarnings],
+          null,
+          2
+        )}`
+      );
+    }
+
     container.appendChild(notYetUpdatedEl);
     await notYetUpdatedEl.updateComplete;
-    assert.equal(notYetUpdatedEl.divCached, null);
+    assert.instanceOf(notYetUpdatedEl.divCached, HTMLDivElement);
   });
 });

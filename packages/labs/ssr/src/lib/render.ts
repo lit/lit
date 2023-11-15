@@ -10,6 +10,8 @@ import {renderValue} from './render-value.js';
 import type {RenderInfo} from './render-value.js';
 export type {RenderInfo} from './render-value.js';
 import type {RenderResult} from './render-result.js';
+import {isTemplateResult} from 'lit-html/directive-helpers.js';
+import {isHydratable} from './server-template.js';
 export type {RenderResult} from './render-result.js';
 
 /**
@@ -35,5 +37,9 @@ export function* render(
     deferHydration: false,
   };
   renderInfo = {...defaultRenderInfo, ...renderInfo};
-  yield* renderValue(value, renderInfo as RenderInfo);
+  let hydratable = true;
+  if (isTemplateResult(value)) {
+    hydratable = isHydratable(value);
+  }
+  yield* renderValue(value, renderInfo as RenderInfo, hydratable);
 }

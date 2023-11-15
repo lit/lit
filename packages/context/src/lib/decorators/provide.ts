@@ -80,7 +80,7 @@ export function provide<ValueType>({
         protoOrTarget,
         nameOrContext
       );
-      let newDescriptor;
+      let newDescriptor: PropertyDescriptor;
       if (descriptor === undefined) {
         const valueMap = new WeakMap<ReactiveElement, ValueType>();
         newDescriptor = {
@@ -91,13 +91,15 @@ export function provide<ValueType>({
             controllerMap.get(this)!.setValue(value);
             valueMap.set(this, value);
           },
+          configurable: true,
+          enumerable: true,
         };
       } else {
-        const oldSetter = descriptor?.set;
+        const oldSetter = descriptor.set;
         newDescriptor = {
           ...descriptor,
           set: function (this: ReactiveElement, value: ValueType) {
-            controllerMap.get(this)?.setValue(value);
+            controllerMap.get(this)!.setValue(value);
             oldSetter?.call(this, value);
           },
         };

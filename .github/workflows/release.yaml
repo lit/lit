@@ -4,8 +4,6 @@ on:
   push:
     branches:
       - main
-      # Temporary for pre-release.
-      - '3.0'
 
 jobs:
   release:

@@ -133,6 +133,32 @@ export class MyApp extends LitElement {
 }
 ```
 
+`ContextProvider` can also be used with plain HTML elements. This can be
+useful to provide a context provider without introducing a custom element:
+
+#### **`my-app.js`**:
+
+```js
+import {ContextProvider} from '@lit/context';
+import {loggerContext, Logger} from './logger.js';
+
+// create a provider for the whole document body.
+const loggingProvider = new ContextProvider(document.body, {
+    context: loggerContext,
+    initialValue: {
+      log: (msg) => {
+        console.log(`[global] ${msg}`);
+      },
+    },
+);
+```
+
+If the provider is being added when there is already a consumer registered with
+a parent of the specified element or with a `ContextRoot`, then
+`.hostConnected()` must be called on the provider after creating it. This
+ensures existing downstream consumers will now get their context values from the
+closest parent provider.
+
 ## Known Issues
 
 ### Late upgraded Context Providers
