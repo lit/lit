@@ -89,31 +89,16 @@ export class LitElementRenderer extends ElementRenderer {
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
     if (styles !== undefined && styles.length > 0) {
-      let styleHashId: string | null = null;
       if (renderInfo.dedupeStyles) {
-        styleHashId = renderInfo.dedupeStyles.getStyleHash(styles);
-        yield renderInfo.dedupeStyles.openingTag(styleHashId);
-      }
-      // Emit styles if there is no style hash, or we've not yet
-      // seen the style hash id.
-      if (
-        styleHashId === null ||
-        !renderInfo.dedupeStyles!.seenStyles.has(styleHashId)
-      ) {
+        yield* renderInfo.dedupeStyles.renderDedupedStyles(styles);
+      } else {
+        // Emit styles if there is no style hash, or we've not yet
+        // seen the style hash id.
         yield '<style>';
         for (const style of styles) {
           yield (style as CSSResult).cssText;
         }
         yield '</style>';
-      }
-      if (renderInfo.dedupeStyles) {
-        yield renderInfo.dedupeStyles.closingTag();
-        if (styleHashId === null) {
-          throw new Error(
-            `Internal error, styleHashId is expected to be a string.`
-          );
-        }
-        renderInfo.dedupeStyles.markStyleDigestIdSeen(styleHashId);
       }
     }
     // Render template
