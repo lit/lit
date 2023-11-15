@@ -155,7 +155,9 @@ const loggingProvider = new ContextProvider(document.body, {
 
 If the provider is being added when there is already a consumer registered with
 a parent of the specified element or with a `ContextRoot`, then
-`.hostConnected()` must be called on the provider after creating it.
+`.hostConnected()` must be called on the provider after creating it. This
+ensures existing downstream consumers will now get their context values from the
+closest parent provider.
 
 ## Known Issues
 
