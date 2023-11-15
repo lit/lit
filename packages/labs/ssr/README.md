@@ -178,7 +178,7 @@ that template can be loaded and hydrated on the client to apply the same data.
 
 ## Server-only templates
 
-`@lit-labs/ssr` also exports an `html` function for defining server-only templates. You can also write templates that will only render on the server. These templates can be used for rendering full documents, including the doctype, and rendering into elements that Lit normally cannot, like `<title>`, `<textarea>`, `<template>`, and non-executing `<script>` tags like `<script type="text/json">`. They are also slightly more efficient than normal Lit templates, because the generated HTML doesn't need to include markers for updating.
+`@lit-labs/ssr` also exports an `html` template function, similar to the normal Lit `html` function, only it's used for server-only templates. These templates can be used for rendering full documents, including the `<!DOCTYPE html>`, and rendering into elements that Lit normally cannot, like `<title>`, `<textarea>`, `<template>`, and safe `<script>` tags like `<script type="text/json">`. They are also slightly more efficient than normal Lit templates, because the generated HTML doesn't need to include markers for updating.
 
 Server-only templates can be composed, and combined, and they support almost all features that normal Lit templates do, with the exception of features that don't have a pure HTML representation, like event handlers or property bindings.
 
