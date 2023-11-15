@@ -42,7 +42,7 @@ import {
 
 import {anyHtml, SSRTest, SSRTestDescription} from './ssr-test.js';
 import {AsyncDirective} from 'lit/async-directive.js';
-import {html} from '../../../lib/server-template.js';
+import {html as serverhtml} from '../../../lib/server-template.js';
 
 interface DivWithProp extends HTMLDivElement {
   prop?: unknown;
@@ -5517,7 +5517,7 @@ export const tests: {[name: string]: SSRTest} = {
    ******************************************************/
   'Server-only template works': {
     render(x: unknown) {
-      return html` <div>${x}</div> `;
+      return serverhtml` <div>${x}</div> `;
     },
     expectations: [
       {
@@ -5530,7 +5530,7 @@ export const tests: {[name: string]: SSRTest} = {
   },
   'Server-only template can bind into a rawtext element': {
     render(x: unknown) {
-      return html`<head>
+      return serverhtml`<head>
         <title>hello ${x}</title>
       </head>`;
     },
@@ -5555,7 +5555,7 @@ export const tests: {[name: string]: SSRTest} = {
       );
     },
     render(x: string) {
-      return html`<server-only-basic>${x}</server-only-basic>`;
+      return serverhtml`<server-only-basic>${x}</server-only-basic>`;
     },
     expectations: [
       {
@@ -5580,7 +5580,7 @@ export const tests: {[name: string]: SSRTest} = {
       customElements.define('server-only-attr', ServerOnlyAttrElement);
     },
     render(attr: string) {
-      return html`<server-only-attr name=${attr}></server-only-attr>`;
+      return serverhtml`<server-only-attr name=${attr}></server-only-attr>`;
     },
     expectations: [
       {
@@ -5598,18 +5598,16 @@ export const tests: {[name: string]: SSRTest} = {
 
 const serverClientHydrationTest: SSRTestDescription = {
   render(title: string, c1: string, c2: string) {
-    return html`
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>${title}</title>
-        </head>
-        <body>
-          <div id="one">${this.renderFns?.renderOne(c1)}</div>
-          <div id="two">${this.renderFns?.renderTwo(c2)}</div>
-        </body>
-      </html>
-    `;
+    return serverhtml`
+        <!doctype html>
+        <html>
+          <head><title>${title}</title></head>
+          <body>
+            <div id="one">${this.renderFns?.renderOne(c1)}</div>
+            <div id="two">${this.renderFns?.renderTwo(c2)}</div>
+          </body>
+        </html>
+      `;
   },
   renderFns: {
     renderOne(c1: string) {
