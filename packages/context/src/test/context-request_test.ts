@@ -123,7 +123,7 @@ suite('htmlelement-context-provider', () => {
 
     provider = new ContextProvider(container, {
       context: simpleContext,
-      initialValue: 2000,
+      initialValue: 1000,
     });
 
     document.body.appendChild(container);
