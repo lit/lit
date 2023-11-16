@@ -15,6 +15,8 @@ export interface ServerController extends ReactiveController {
    * `serverUpdateComplete` is accessed on the server during SSR. When
    * implemented, SSR rendering will pause until all the controllers on this
    * ReactiveController's host have settled.
+   *
+   * `serverUpdateComplete` will not be called automatically on the client.
    */
   serverUpdateComplete?: Promise<unknown>;
 }
