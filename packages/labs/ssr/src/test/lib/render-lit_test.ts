@@ -12,7 +12,7 @@ import * as assert from 'uvu/assert';
 import {RenderInfo} from '../../index.js';
 import {FallbackRenderer} from '../../lib/element-renderer.js';
 import type * as testModule from '../test-files/render-test-module.js';
-import {collectResultSync} from '../../lib/render-result.js';
+import {collectResult, collectResultSync} from '../../lib/render-result.js';
 
 /**
  * An empty VM context global. In more recent versions, when running in Node,
@@ -65,6 +65,13 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       /** Renders the value with flattened shadow roots */
       renderFlattened: (r: any) =>
         collectResultSync(namespace.render(r, undefined)),
+
+      /**
+       * Renders the value with declarative shadow roots awaiting async work.
+       */
+      renderAsync(r: any, renderInfo?: Partial<RenderInfo>) {
+        return collectResult(namespace.render(r, renderInfo));
+      },
     };
   };
 
@@ -699,6 +706,65 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     assert.throws(() => {
       render(renderServerOnlyElementPart);
     }, /Server-only templates don't support element parts/);
+  });
+
+  test('all ServerControllers must resolve for an element to complete rendering', async () => {
+    const {renderAsync, serverControllerTestFactory} = await setup();
+    let resolveFnA!: (val: unknown) => void,
+      resolveFnB!: (val: unknown) => void;
+    const promiseA = new Promise((resolve) => {
+      resolveFnA = resolve;
+    });
+    const promiseB = new Promise((resolve) => {
+      resolveFnB = resolve;
+    });
+
+    const template = serverControllerTestFactory({
+      promiseA,
+      promiseB,
+      tagName: 'test-server-controllers',
+    });
+
+    let isRenderFulfilled = false;
+    const asyncResult = renderAsync(template).then((val) => {
+      isRenderFulfilled = true;
+      return val;
+    });
+
+    // Render should not fulfill until both promises resolve.
+    assert.not(isRenderFulfilled, 'still awaiting on controller A');
+    resolveFnA('completed A');
+    await new Promise((r) => setTimeout(r, 0)); // Flush microtask queue.
+    assert.not(isRenderFulfilled, 'still awaiting on controller B');
+    resolveFnB('completed B');
+    await new Promise((r) => setTimeout(r, 0)); // Flush microtask queue.
+    assert.is(isRenderFulfilled, true);
+    const result = await asyncResult;
+    assert.is(
+      result,
+      `<!--lit-part VmnftNkrnNA=--><test-server-controllers><template shadowroot="open" shadowrootmode="open"><!--lit-part t+l0036Tbnw=-->[a: <!--lit-part-->completed A<!--/lit-part-->, b: <!--lit-part-->completed B<!--/lit-part-->]<!--/lit-part--></template></test-server-controllers><!--/lit-part-->`
+    );
+  });
+
+  test('if any ServerController throws, the render throws', async () => {
+    const {renderAsync, serverControllerTestFactory} = await setup();
+    const promiseA = new Promise((_) => {
+      throw new Error('controller A threw error');
+    });
+    const promiseB = Promise.resolve();
+    const template = serverControllerTestFactory({
+      promiseA,
+      promiseB,
+      tagName: 'test-server-controller-throws',
+    });
+
+    try {
+      await renderAsync(template);
+      assert.unreachable('Prior renderAsync should have thrown');
+    } catch (err: unknown) {
+      assert.instance(err, Error);
+      assert.is((err as Error).message, 'controller A threw error');
+    }
   });
 }
 
