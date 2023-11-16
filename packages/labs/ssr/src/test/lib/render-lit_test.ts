@@ -23,6 +23,14 @@ import {DeclarativeStyleDedupeUtility} from '../../lib/declarative-style-dedupe.
 const emptyVmGlobal = {};
 
 /**
+ * Removes the first script tag in HTML. Useful when testing the rendered DOM
+ * if `DeclarativeStyleDedupeUtility` is being used. It injects a large script
+ * tag into the rendered result.
+ */
+const removeDedupeScriptTagHelper = (rawHtml: string) =>
+  rawHtml.replace(/<script>(.|\s)*?<\/script>/gm, '');
+
+/**
  * We still provide a global DOM shim that can be used as a VM context global.
  * In more recent versions of Lit, this is no longer required since Lit includes
  * its own minimal shims, but we still support the old global DOM shim as well.
@@ -441,18 +449,15 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
   test('duplicated element with static styles', async () => {
     const {render, duplicatedElementWithStaticStyles} = await setup();
     const result = await render(duplicatedElementWithStaticStyles);
-    const ssrElement = `<test-static-styles><template shadowroot="open" shadowrootmode="open"><style>
+    const ssrElement = `<template shadowroot="open" shadowrootmode="open"><style>
     :host {
       display: block;
       background-color: blue;
     }
-  </style><!--lit-part--><!--/lit-part--></template></test-static-styles>`;
+  </style><!--lit-part--><!--/lit-part--></template>`;
     assert.is(
       result,
-      `<!--lit-part KqQuRUrghX8=-->` +
-        ssrElement +
-        ssrElement +
-        `<!--/lit-part-->`
+      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles>${ssrElement}</test-static-styles\n  ><test-static-styles>${ssrElement}</test-static-styles><!--/lit-part-->`
     );
   });
 
@@ -461,18 +466,16 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(duplicatedElementWithStaticStyles, {
       dedupeStyles: new DeclarativeStyleDedupeUtility(),
     });
-    const ssrElement = `<test-static-styles><template shadowroot="open" shadowrootmode="open"><style>
+    assert.is(
+      removeDedupeScriptTagHelper(result),
+      `
+<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"><style>
     :host {
       display: block;
       background-color: blue;
     }
-  </style><!--lit-part--><!--/lit-part--></template></test-static-styles>`;
-    assert.is(
-      result,
-      `<!--lit-part KqQuRUrghX8=-->` +
-        ssrElement +
-        ssrElement +
-        `<!--/lit-part-->`
+  </style></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles
+  ><test-static-styles><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles><!--/lit-part-->`
     );
   });
 

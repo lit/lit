@@ -75,8 +75,9 @@ class StyleModule extends HTMLElement {
         this.parentNode.adoptedStyleSheets.push(styleSheet);
       } else {
         const clonedStyles = cachedStyleSheet.children[0].cloneNode(true);
-        this.append(clonedStyles);
+        this.parentNode.insertBefore(clonedStyles, this);
       }
+      this.remove();
     }
 }
 customElements.define('${this.styleModuleTagName}', StyleModule);
