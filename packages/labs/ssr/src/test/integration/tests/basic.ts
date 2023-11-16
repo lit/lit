@@ -42,7 +42,7 @@ import {
 
 import {anyHtml, SSRTest, SSRTestDescription} from './ssr-test.js';
 import {AsyncDirective} from 'lit/async-directive.js';
-import {serverhtml} from '../../../lib/server-template.js';
+import {html as serverhtml} from '../../../lib/server-template.js';
 
 interface DivWithProp extends HTMLDivElement {
   prop?: unknown;
