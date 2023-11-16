@@ -1,5 +1,14 @@
 # @lit-labs/virtualizer
 
+## 2.0.11
+
+### Patch Changes
+
+- [#4375](https://github.com/lit/lit/pull/4375) [`449bc281`](https://github.com/lit/lit/commit/449bc2815593e8150b0737ed0190ba2c9843ba66) Thanks [@graynorton](https://github.com/graynorton)! - Fix issue where virtualizer didn't render children when slotted into a position:fixed ancestor (#4346)
+
+- Updated dependencies [[`bf551b5b`](https://github.com/lit/lit/commit/bf551b5bdc816c1b0117ab436c50390ae3f5686d), [`949a5467`](https://github.com/lit/lit/commit/949a54677748a1f83ec4d166bd40e244de3afda7), [`c7922a0c`](https://github.com/lit/lit/commit/c7922a0cb90075a9e4c72f93078e411a303c54d1), [`839ca0f8`](https://github.com/lit/lit/commit/839ca0f81a451fbaae97d958aafcaf4c52df9b65)]:
+  - lit@3.1.0
+
 ## 2.0.10
 
 ### Patch Changes

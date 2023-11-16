@@ -1,5 +1,15 @@
 # Change Log
 
+## 2.0.2
+
+### Patch Changes
+
+- [#4387](https://github.com/lit/lit/pull/4387) [`bf551b5b`](https://github.com/lit/lit/commit/bf551b5bdc816c1b0117ab436c50390ae3f5686d) - Ensure `renderRoot` exists before first update (#4268)
+
+- [#4282](https://github.com/lit/lit/pull/4282) [`c7922a0c`](https://github.com/lit/lit/commit/c7922a0cb90075a9e4c72f93078e411a303c54d1) Thanks [@MaxArt2501](https://github.com/MaxArt2501)! - Fix a bug where accessing a `@query` decorated field with the `cache` flag set before the first update would result in `null` being cached permanently. `null` will no longer be cached before the first update and in `DEV_MODE` now raises a warning.
+
+- [#4388](https://github.com/lit/lit/pull/4388) [`839ca0f8`](https://github.com/lit/lit/commit/839ca0f81a451fbaae97d958aafcaf4c52df9b65) - Fixes bug where adding or removing controllers during a reactive controller lifecycle would affect the execution of other controllers (#4266). Controllers can now be added/removed during lifecycle without affecting others.
+
 ## 2.0.1
 
 ### Patch Changes

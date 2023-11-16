@@ -1,5 +1,11 @@
 # @lit-labs/nextjs
 
+## 0.1.4
+
+### Patch Changes
+
+- [#4354](https://github.com/lit/lit/pull/4354) [`c8e1509c`](https://github.com/lit/lit/commit/c8e1509c1a86b082061853f56f980c6d1babbefb) - Add plugin option `addDeclarativeShadowDomPolyfill` which, if true, will add a script to the client bundle which will apply the `@webcomponents/template-shadowroot` ponyfill on the document. Note: If you were manually adding the polyfill, you can either remove your own implementation or set this option to `false`.
+
 ## 0.1.3
 
 ### Patch Changes
