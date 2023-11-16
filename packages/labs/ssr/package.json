@@ -37,7 +37,8 @@
         "../ssr-dom-shim:build:ts",
         "../../lit:build:ts:types",
         "../../lit-html:build:ts:types",
-        "../../lit-element:build:ts:types"
+        "../../lit-element:build:ts:types",
+        "../../task:build:ts:types"
       ],
       "files": [
         "src/**/*.ts",
