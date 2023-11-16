@@ -96,18 +96,20 @@ suite('useController', () => {
           // runs. It should have completed an update by now.
           componentLayoutEffectLog = [...testController.log];
         });
-        return React.createElement('div', {className: 'foo'}, [
-          `x:${x}, a:${testController.a}`,
-        ]);
+
+        return <div className="foo">{`x:${x}, a:${testController.a}`}</div>;
       };
 
-      const render = (props: any) => {
-        const component = React.createElement(TestComponent, props);
+      const render = (props: React.ComponentProps<typeof TestComponent>) => {
         act(() => {
           root.render(
-            strict
-              ? React.createElement(React.StrictMode, {}, component)
-              : component
+            strict ? (
+              <React.StrictMode>
+                <TestComponent {...props} />
+              </React.StrictMode>
+            ) : (
+              <TestComponent {...props} />
+            )
           );
         });
       };
@@ -175,14 +177,12 @@ suite('useController', () => {
 
     const TestComponent = ({x}: {x: number}) => {
       testController = useTest('a');
-      return React.createElement('div', {className: 'foo'}, [
-        `x:${x}, a:${testController.a}`,
-      ]);
+      return <div className="foo">{`x:${x}, a:${testController.a}`}</div>;
     };
 
-    const render = (props: any) => {
+    const render = (props: React.ComponentProps<typeof TestComponent>) => {
       act(() => {
-        root.render(React.createElement(TestComponent, props));
+        root.render(<TestComponent {...props} />);
       });
     };
 
@@ -216,19 +216,17 @@ suite('useController', () => {
 
     const TestComponent = ({x}: {x: number}) => {
       testController = useTest('a');
-      return React.createElement('div', {className: 'foo'}, [
-        `x:${x}, a:${testController.a}`,
-      ]);
+      return <div className="foo">{`x:${x}, a:${testController.a}`}</div>;
     };
 
     act(() => {
-      root.render(React.createElement(TestComponent, {x: 1}));
+      root.render(<TestComponent x={1} />);
     });
     assert.deepEqual(testController.log, ['connected', 'update', 'updated']);
     testController.log.length = 0;
 
     act(() => {
-      root.render(React.createElement('div'));
+      root.render(<div></div>);
     });
     assert.equal(container.innerHTML, `<div></div>`);
     assert.deepEqual(testController.log, ['disconnected']);
@@ -251,14 +249,12 @@ suite('useController', () => {
         rerender = false;
         testController.host.requestUpdate();
       }
-      return React.createElement('div', {className: 'foo'}, [
-        `x:${x}, a:${testController.a}`,
-      ]);
+      return <div className="foo">{`x:${x}, a:${testController.a}`}</div>;
     };
 
-    const render = (props: any) => {
+    const render = (props: React.ComponentProps<typeof TestComponent>) => {
       act(() => {
-        root.render(React.createElement(TestComponent, props));
+        root.render(<TestComponent {...props} />);
       });
     };
 

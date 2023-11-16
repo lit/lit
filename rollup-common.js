@@ -145,8 +145,10 @@ const stableProperties = {
   _$isConnected: 'U',
   // lit-html: TemplateInstance (used by private-ssr-support)
   _$parts: 'V',
+  // @lit-labs/ssr: used to identify server-only templates
+  _$litServerRenderMode: 'W',
   // reactive-element: ReactiveElement (used by private-ssr-support)
-  _$controllers: 'W',
+  _$controllers: 'X',
 };
 
 const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
