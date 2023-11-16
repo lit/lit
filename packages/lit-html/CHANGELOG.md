@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.1.0
+
+### Minor Changes
+
+- [#4309](https://github.com/lit/lit/pull/4309) [`949a5467`](https://github.com/lit/lit/commit/949a54677748a1f83ec4d166bd40e244de3afda7) - Adds two new types: UncompiledTemplateResult and MaybeCompiledTemplateResult. Currently UncompiledTemplateResult is the same as TemplateResult, and MaybeCompiledTemplateResult is the union of the compiled and uncompiled types.
+
 ## 3.0.2
 
 ### Patch Changes

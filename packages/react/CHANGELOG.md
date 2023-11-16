@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.2
+
+### Patch Changes
+
+- [#4381](https://github.com/lit/lit/pull/4381) [`001a1b78`](https://github.com/lit/lit/commit/001a1b78074aa799946c0db798bacc1ba1422cbf) - Prefer type of property from an element over built-in React HTMLAttribute types. This also fixes type errors that would arise when they collide and can't be intersected.
+
 ## 1.0.1
 
 ### Patch Changes
