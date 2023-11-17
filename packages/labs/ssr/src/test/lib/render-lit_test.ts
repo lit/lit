@@ -468,13 +468,13 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     });
     assert.is(
       removeDedupeScriptTagHelper(result),
-      `
-<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"><style>
+      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open">
+<style>
   :host {
     display: block;
     background-color: blue;
   }
-</style></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles
+</style><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles
   ><test-static-styles><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles><!--/lit-part-->`
     );
   });
@@ -487,17 +487,17 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
 
     assert.is(
       removeDedupeScriptTagHelper(result),
-      `
-<!--lit-part vozTZ75mUhg=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"><style>
+      `<!--lit-part vozTZ75mUhg=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open">
+<style>
   :host {
     display: block;
     background-color: blue;
   }
-</style></lit-ssr-style-dedupe><lit-ssr-style-dedupe style-id="3" style="display:none;"><style>
+</style><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><style>
   :host {
     margin: 8px;
   }
-</style></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles-array><test-static-styles><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles><!--/lit-part-->`
+</style><lit-ssr-style-dedupe style-id="3" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles-array><test-static-styles><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles><!--/lit-part-->`
     );
   });
 
@@ -509,17 +509,17 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
 
     assert.is(
       removeDedupeScriptTagHelper(result),
-      `
-<!--lit-part SoBZcCoc/o0=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"><style>
+      `<!--lit-part SoBZcCoc/o0=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open">
+<style>
   :host {
     display: block;
     background-color: blue;
   }
-</style></lit-ssr-style-dedupe><lit-ssr-style-dedupe style-id="3" style="display:none;"><style>
+</style><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><style>
   :host {
     margin: 8px;
   }
-</style></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles-array><test-static-styles-array><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><lit-ssr-style-dedupe style-id="3" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles-array><!--/lit-part-->`
+</style><lit-ssr-style-dedupe style-id="3" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles-array><test-static-styles-array><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><lit-ssr-style-dedupe style-id="3" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles-array><!--/lit-part-->`
     );
   });
 
