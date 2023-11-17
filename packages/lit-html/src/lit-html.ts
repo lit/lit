@@ -9,11 +9,25 @@ import type {Directive, DirectiveResult, PartInfo} from './directive.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
-const ENABLE_SHADYDOM_NOPATCH = true;
 const NODE_MODE = false;
 
 // Allows minifiers to rename references to globalThis
 const global = globalThis;
+const {
+  append,
+  insertBefore,
+  setAttribute,
+  removeAttribute,
+  getAttribute,
+  hasAttributes,
+  toggleAttribute,
+  getAttributeNames,
+  removeEventListener,
+  addEventListener,
+} =
+  typeof Element === 'function'
+    ? Element.prototype
+    : ({} as (typeof Element)['prototype']);
 
 /**
  * Contains types that are part of the unstable debug API.
@@ -232,13 +246,6 @@ if (DEV_MODE) {
     `Lit is in dev mode. Not recommended for production!`
   );
 }
-
-const wrap =
-  ENABLE_SHADYDOM_NOPATCH &&
-  global.ShadyDOM?.inUse &&
-  global.ShadyDOM?.noPatch === true
-    ? (global.ShadyDOM!.wrap as <T extends Node>(node: T) => T)
-    : <T extends Node>(node: T) => node;
 
 const trustedTypes = (global as unknown as Window).trustedTypes;
 
@@ -959,11 +966,11 @@ class Template {
         // TODO (justinfagnani): for attempted dynamic tag names, we don't
         // increment the bindingIndex, and it'll be off by 1 in the element
         // and off by two after it.
-        if ((node as Element).hasAttributes()) {
-          for (const name of (node as Element).getAttributeNames()) {
+        if (hasAttributes.call(node)) {
+          for (const name of getAttributeNames.call(node)) {
             if (name.endsWith(boundAttributeSuffix)) {
               const realName = attrNames[attrNameIndex++];
-              const value = (node as Element).getAttribute(name)!;
+              const value = getAttribute.call(node, name)!;
               const statics = value.split(marker);
               const m = /([.?@])?(.*)/.exec(realName)!;
               parts.push({
@@ -980,13 +987,13 @@ class Template {
                     ? EventPart
                     : AttributePart,
               });
-              (node as Element).removeAttribute(name);
+              removeAttribute.call(node, name);
             } else if (name.startsWith(marker)) {
               parts.push({
                 type: ELEMENT_PART,
                 index: nodeIndex,
               });
-              (node as Element).removeAttribute(name);
+              removeAttribute.call(node, name);
             }
           }
         }
@@ -1008,7 +1015,7 @@ class Template {
             // normalized when cloning in IE (could simplify when
             // IE is no longer supported)
             for (let i = 0; i < lastIndex; i++) {
-              (node as Element).append(strings[i], createMarker());
+              append.call(node as Element, strings[i], createMarker());
               // Walk past the marker node we just added
               walker.nextNode();
               parts.push({type: CHILD_PART, index: ++nodeIndex});
@@ -1016,7 +1023,7 @@ class Template {
             // Note because this marker is added after the walker's current
             // node, it will be walked to in the outer loop (and ignored), so
             // we don't need to adjust nodeIndex here
-            (node as Element).append(strings[lastIndex], createMarker());
+            append.call(node as Element, strings[lastIndex], createMarker());
           }
         }
       } else if (node.nodeType === 8) {
@@ -1351,7 +1358,7 @@ class ChildPart implements Disconnectable {
    * consists of all child nodes of `.parentNode`.
    */
   get parentNode(): Node {
-    let parentNode: Node = wrap(this._$startNode).parentNode!;
+    let parentNode: Node = this._$startNode.parentNode!;
     const parent = this._$parent;
     if (
       parent !== undefined &&
@@ -1437,7 +1444,8 @@ class ChildPart implements Disconnectable {
   }
 
   private _insert<T extends Node>(node: T) {
-    return wrap(wrap(this._$startNode).parentNode!).insertBefore(
+    return insertBefore.call(
+      this._$startNode.parentNode!,
       node,
       this._$endNode
     );
@@ -1493,7 +1501,7 @@ class ChildPart implements Disconnectable {
       this._$committedValue !== nothing &&
       isPrimitive(this._$committedValue)
     ) {
-      const node = wrap(this._$startNode).nextSibling as Text;
+      const node = this._$startNode.nextSibling as Text;
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._textSanitizer === undefined) {
           this._textSanitizer = createSanitizer(node, 'data', 'property');
@@ -1507,7 +1515,7 @@ class ChildPart implements Disconnectable {
           value,
           options: this.options,
         });
-      (node as Text).data = value as string;
+      node.data = value as string;
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         const textNode = d.createTextNode('');
@@ -1533,7 +1541,7 @@ class ChildPart implements Disconnectable {
         debugLogEvent &&
           debugLogEvent({
             kind: 'commit text',
-            node: wrap(this._$startNode).nextSibling as Text,
+            node: this._$startNode.nextSibling as Text,
             value,
             options: this.options,
           });
@@ -1641,8 +1649,8 @@ class ChildPart implements Disconnectable {
         // https://github.com/lit/lit/issues/1266
         itemParts.push(
           (itemPart = new ChildPart(
-            this._insert(createMarker()),
-            this._insert(createMarker()),
+            this._insert(createMarker()) as ChildNode,
+            this._insert(createMarker()) as ChildNode,
             this,
             this.options
           ))
@@ -1657,10 +1665,7 @@ class ChildPart implements Disconnectable {
 
     if (partIndex < itemParts.length) {
       // itemParts always have end nodes
-      this._$clear(
-        itemPart && wrap(itemPart._$endNode!).nextSibling,
-        partIndex
-      );
+      this._$clear(itemPart && itemPart._$endNode!.nextSibling, partIndex);
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
     }
@@ -1678,13 +1683,13 @@ class ChildPart implements Disconnectable {
    * @internal
    */
   _$clear(
-    start: ChildNode | null = wrap(this._$startNode).nextSibling,
+    start: ChildNode | null = this._$startNode.nextSibling,
     from?: number
   ) {
     this._$notifyConnectionChanged?.(false, true, from);
     while (start && start !== this._$endNode) {
-      const n = wrap(start!).nextSibling;
-      (wrap(start!) as Element).remove();
+      const n = start!.nextSibling;
+      start.remove();
       start = n;
     }
   }
@@ -1865,7 +1870,7 @@ class AttributePart implements Disconnectable {
   /** @internal */
   _commitValue(value: unknown) {
     if (value === nothing) {
-      (wrap(this.element) as Element).removeAttribute(this.name);
+      removeAttribute.call(this.element, this.name);
     } else {
       if (ENABLE_EXTRA_SECURITY_HOOKS) {
         if (this._sanitizer === undefined) {
@@ -1885,10 +1890,7 @@ class AttributePart implements Disconnectable {
           value,
           options: this.options,
         });
-      (wrap(this.element) as Element).setAttribute(
-        this.name,
-        (value ?? '') as string
-      );
+      setAttribute.call(this.element, this.name, (value ?? '') as string);
     }
   }
 }
@@ -1936,10 +1938,7 @@ class BooleanAttributePart extends AttributePart {
         value: !!(value && value !== nothing),
         options: this.options,
       });
-    (wrap(this.element) as Element).toggleAttribute(
-      this.name,
-      !!value && value !== nothing
-    );
+    toggleAttribute.call(this.element, this.name, !!value && value !== nothing);
   }
 }
 
@@ -2022,7 +2021,8 @@ class EventPart extends AttributePart {
         oldListener,
       });
     if (shouldRemoveListener) {
-      this.element.removeEventListener(
+      removeEventListener.call(
+        this.element,
         this.name,
         this,
         oldListener as EventListenerWithOptions
@@ -2032,7 +2032,8 @@ class EventPart extends AttributePart {
       // Beware: IE11 and Chrome 41 don't like using the listener as the
       // options object. Figure out how to deal w/ this in IE11 - maybe
       // patch addEventListener?
-      this.element.addEventListener(
+      addEventListener.call(
+        this.element,
         this.name,
         this,
         newListener as EventListenerWithOptions
@@ -2204,7 +2205,7 @@ export const render = (
     // This property needs to remain unminified.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (partOwnerNode as any)['_$litPart$'] = part = new ChildPart(
-      container.insertBefore(createMarker(), endNode),
+      insertBefore.call(container, createMarker(), endNode) as ChildNode,
       endNode,
       undefined,
       options ?? {}

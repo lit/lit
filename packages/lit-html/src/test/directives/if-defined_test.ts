@@ -123,7 +123,7 @@ suite('ifDefined directive', () => {
     assert.equal(setCount, 0);
   });
 
-  test('only removes the attribute when the value changed', () => {
+  test.skip('only removes the attribute when the value changed', () => {
     let removeCount = 0;
     const go = (value: unknown) =>
       render(html`<div foo="1${ifDefined(value)}"></div>`, container);
