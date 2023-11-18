@@ -178,16 +178,16 @@ that template can be loaded and hydrated on the client to apply the same data.
 
 ## Server-only templates
 
-You can also write templates that will only render on the server. These templates can be used for rendering full documents, including the doctype, and rendering into elements that Lit normally cannot, like `<title>`, `<textarea>`, `<template>`, and non-executing `<script>` tags like `<script type="text/json">`. They are also slightly more efficient than normal Lit templates, because the generated HTML doesn't need to include markers for updating.
+`@lit-labs/ssr` also exports an `html` template function, similar to the normal Lit `html` function, only it's used for server-only templates. These templates can be used for rendering full documents, including the `<!DOCTYPE html>`, and rendering into elements that Lit normally cannot, like `<title>`, `<textarea>`, `<template>`, and safe `<script>` tags like `<script type="text/json">`. They are also slightly more efficient than normal Lit templates, because the generated HTML doesn't need to include markers for updating.
 
-`serverhtml` templates can be composed, and combined, and they support almost all features that normal Lit templates do, with the exception of features that don't have a pure HTML representation, like event handlers or property bindings.
+Server-only templates can be composed, and combined, and they support almost all features that normal Lit templates do, with the exception of features that don't have a pure HTML representation, like event handlers or property bindings.
 
-`serverhtml` templates can only be rendered on the server, they can't be rendered on the client. However if you render a normal Lit template inside a serverhtml template, then it can be hydrated and updated. Likewise, if you place a custom element inside a serverhtml template, it can be hydrated and update like normal.
+Server-only templates can only be rendered on the server, they can't be rendered on the client. However if you render a normal Lit template inside a server-only template, then it can be hydrated and updated. Likewise, if you place a custom element inside a server-only template, it can be hydrated and update like normal.
 
-Here's an example that shows how to use a serverhtml template to render a full document, and then lazily hydrate both a custom element and a template:
+Here's an example that shows how to use a server-only template to render a full document, and then lazily hydrate both a custom element and a template:
 
 ```js
-import {render, serverhtml} from '@lit-labs/ssr';
+import {render, html} from '@lit-labs/ssr';
 import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import './app-shell.js';
 import {getContent} from './content-template.js';
@@ -196,7 +196,7 @@ const pageInfo = {
   /* ... */
 };
 
-const ssrResult = render(serverhtml`
+const ssrResult = render(html`
   <!DOCTYPE html>
   <html>
     <head><title>MyApp ${pageInfo.title}</head>

@@ -28,26 +28,26 @@ export interface ServerRenderedTemplate extends TemplateResult {
  * normal Lit templates, because the generated HTML doesn't need to include
  * markers for updating.
  *
- * `serverhtml` templates can be composed, and combined, and they support
+ * Server-only `html` templates can be composed, and combined, and they support
  * almost all features that normal Lit templates do, with the exception of
  * features that don't have a pure HTML representation, like event handlers or
  * property bindings.
  *
- * `serverhtml` templates can only be rendered on the server, they will
+ * Server-only `html` templates can only be rendered on the server, they will
  * throw an Error if created in the browser. However if you render a normal Lit
- * template inside a serverhtml template, then it can be hydrated and updated.
- * Likewise, if you place a custom element inside a serverhtml template, it can
+ * template inside a server-only template, then it can be hydrated and updated.
+ * Likewise, if you place a custom element inside a server-only template, it can
  * be hydrated and update like normal.
  *
- * A `serverhtml` template can't be rendered inside a normal Lit template.
+ * A server-only template can't be rendered inside a normal Lit template.
  */
-export function serverhtml(
+export function html(
   strings: TemplateStringsArray,
   ...values: unknown[]
 ): ServerRenderedTemplate {
   if (!isServer) {
     throw new Error(
-      `serverhtml templates can only be rendered on the server, they cannot be rendered in the browser. Use the html function for templates that need to be rendered from the browser. This check is based on the "node" export condition: https://nodejs.org/api/packages.html#conditional-exports`
+      `server-only templates can only be rendered on the server, they cannot be rendered in the browser. Use the html function for templates that need to be rendered from the browser. This check is based on the "node" export condition: https://nodejs.org/api/packages.html#conditional-exports`
     );
   }
   const value = baseHtml(strings, ...values) as ServerRenderedTemplate;
