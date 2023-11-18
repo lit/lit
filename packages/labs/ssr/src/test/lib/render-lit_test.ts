@@ -28,7 +28,7 @@ const emptyVmGlobal = {};
  * tag into the rendered result.
  */
 const removeDedupeScriptTagHelper = (rawHtml: string) =>
-  rawHtml.replace(/<script>(.|\s)*?<\/script>/gm, '');
+  rawHtml.replace(/<script>(.|\s)*?<\/script>/gm, '').trim();
 
 /**
  * We still provide a global DOM shim that can be used as a VM context global.
@@ -468,14 +468,32 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     });
     assert.is(
       removeDedupeScriptTagHelper(result),
-      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open">
-<style>
+      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open"><style>
   :host {
     display: block;
     background-color: blue;
   }
 </style><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles
   ><test-static-styles><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles><!--/lit-part-->`
+    );
+  });
+
+  test('deduplicate styles using a custom tag name', async () => {
+    const {render, duplicatedElementWithStaticStyles} = await setup();
+    const result = await render(duplicatedElementWithStaticStyles, {
+      dedupeStyles: new DeclarativeStyleDedupeUtility({
+        tagName: 'dedupe-custom',
+      }),
+    });
+    assert.is(
+      removeDedupeScriptTagHelper(result),
+      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open"><style>
+  :host {
+    display: block;
+    background-color: blue;
+  }
+</style><dedupe-custom style-id="1" style="display:none;"></dedupe-custom><!--lit-part--><!--/lit-part--></template></test-static-styles
+  ><test-static-styles><template shadowroot="open" shadowrootmode="open"><dedupe-custom style-id="1" style="display:none;"></dedupe-custom><!--lit-part--><!--/lit-part--></template></test-static-styles><!--/lit-part-->`
     );
   });
 
@@ -487,8 +505,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
 
     assert.is(
       removeDedupeScriptTagHelper(result),
-      `<!--lit-part vozTZ75mUhg=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open">
-<style>
+      `<!--lit-part vozTZ75mUhg=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open"><style>
   :host {
     display: block;
     background-color: blue;
@@ -509,8 +526,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
 
     assert.is(
       removeDedupeScriptTagHelper(result),
-      `<!--lit-part SoBZcCoc/o0=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open">
-<style>
+      `<!--lit-part SoBZcCoc/o0=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open"><style>
   :host {
     display: block;
     background-color: blue;

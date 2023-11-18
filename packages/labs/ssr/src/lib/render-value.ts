@@ -632,6 +632,7 @@ export function* renderValue(
   renderInfo: RenderInfo,
   hydratable = true
 ): RenderResult {
+  yield renderInfo.dedupeStyles?.emitCustomElementDeclaration() ?? '';
   patchIfDirective(value);
   if (isRenderLightDirective(value)) {
     // If a value was produced with renderLight(), we want to call and render

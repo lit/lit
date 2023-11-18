@@ -6,7 +6,7 @@
 
 import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
 
-import {html, svg, noChange, nothing, Part} from 'lit';
+import {html, svg, noChange, nothing, Part, css} from 'lit';
 import {html as staticHtml, literal} from 'lit/static-html.js';
 import {
   directive,
@@ -43,6 +43,7 @@ import {
 import {anyHtml, SSRTest, SSRTestDescription} from './ssr-test.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {serverhtml} from '../../../lib/server-template.js';
+import {DeclarativeStyleDedupeUtility} from '../../../lib/declarative-style-dedupe.js';
 
 interface DivWithProp extends HTMLDivElement {
   prop?: unknown;
@@ -5512,6 +5513,191 @@ export const tests: {[name: string]: SSRTest} = {
       stableSelectors: ['le-internals-hydrate'],
     };
   },
+  /******************************************************
+   * Declarative Styles deduping tests
+   ******************************************************/
+
+  'Styles dedupe: use constructable stylesheet': () => {
+    const dedupeStyles = new DeclarativeStyleDedupeUtility();
+    return {
+      registerElements() {
+        class DdShareConstructableStyleSheet extends LitElement {
+          static override styles = css`
+            :host {
+              display: block;
+              background: red;
+              height: 10px;
+              width: 10px;
+            }
+          `;
+        }
+        customElements.define(
+          'dd-constructable-stylesheet',
+          DdShareConstructableStyleSheet
+        );
+      },
+      render() {
+        // Explicitly emitting the <script> tags that define the de-duplication
+        // helper (outside of the declarative shadow DOM).
+        return html`${unsafeHTML(
+            dedupeStyles.emitCustomElementDeclaration()
+          )}<dd-constructable-stylesheet></dd-constructable-stylesheet>`;
+      },
+      serverRenderOptions: {
+        dedupeStyles: dedupeStyles,
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            // Probably want to check shared style sheet here.
+            const el = dom.querySelector(
+              'dd-constructable-stylesheet'
+            ) as LitElement;
+            assert.equal(el.shadowRoot?.adoptedStyleSheets.length, 1);
+            assert.isNull(
+              dom.querySelector('style'),
+              "SSR'd style tags should have been removed."
+            );
+            assert.equal(
+              window.getComputedStyle(el).backgroundColor,
+              'rgb(255, 0, 0)'
+            );
+          },
+          setup() {
+            return customElements.whenDefined('lit-ssr-style-dedupe');
+          },
+          html: {
+            root: `<dd-constructable-stylesheet></dd-constructable-stylesheet>`,
+            'dd-constructable-stylesheet': ``,
+          },
+        },
+      ],
+      expectMutationsOnFirstRender: true, // The test setup manually attaches the de-dupe script tag.
+      stableSelectors: ['dedupe-constructable-stylesheet'],
+    };
+  },
+
+  'Styles dedupe: elements share constructable stylesheet': () => {
+    const dedupeStyles = new DeclarativeStyleDedupeUtility();
+    return {
+      registerElements() {
+        class DdShareStyleSheet extends LitElement {
+          static override styles = css`
+            :host {
+              display: block;
+              background: red;
+              height: 10px;
+              width: 10px;
+            }
+          `;
+        }
+        customElements.define('dd-share-stylesheet', DdShareStyleSheet);
+      },
+      render() {
+        // Explicitly emitting the <script> tags that define the de-duplication
+        // helper (outside of the declarative shadow DOM).
+        return html`${unsafeHTML(
+            dedupeStyles.emitCustomElementDeclaration()
+          )}<dd-share-stylesheet id="el-1"></dd-share-stylesheet
+          ><dd-share-stylesheet id="el-2"></dd-share-stylesheet>`;
+      },
+      serverRenderOptions: {
+        dedupeStyles: dedupeStyles,
+      },
+      expectations: [
+        {
+          args: [],
+          async check(assert: Chai.Assert, dom: HTMLElement) {
+            // Probably want to check shared style sheet here.
+            const el1 = dom.querySelector('#el-1') as LitElement;
+            const el2 = dom.querySelector('#el-2') as LitElement;
+            assert.equal(el1.shadowRoot!.adoptedStyleSheets.length, 1);
+            assert.equal(el2.shadowRoot!.adoptedStyleSheets.length, 1);
+
+            // The stylesheets are the same instance and shared.
+            assert.equal(
+              el1.shadowRoot!.adoptedStyleSheets[0],
+              el2.shadowRoot!.adoptedStyleSheets[0]
+            );
+          },
+          setup() {
+            return customElements.whenDefined('lit-ssr-style-dedupe');
+          },
+          html: {
+            root: `<dd-share-stylesheet id="el-1">\n</dd-share-stylesheet>\n<dd-share-stylesheet id="el-2">\n</dd-share-stylesheet>\n`,
+            '#el-1': ``,
+            '#el-2': ``,
+          },
+        },
+      ],
+      expectMutationsOnFirstRender: true, // The test setup manually attaches the de-dupe script tag.
+      stableSelectors: ['#el-1', '#el-2'],
+    };
+  },
+
+  'Styles dedupe: fall back to style elements if constructable style sheets are not supported':
+    () => {
+      const dedupeStyles = new DeclarativeStyleDedupeUtility();
+      (
+        dedupeStyles as unknown as {
+          testOnlyTurnOffSupportsAdoptingStyleSheets: boolean;
+        }
+      ).testOnlyTurnOffSupportsAdoptingStyleSheets = true;
+      return {
+        registerElements() {
+          class DdFallbackOnStyleEl extends LitElement {
+            static override styles = css`
+              :host {
+                display: block;
+                background: red;
+                height: 10px;
+                width: 10px;
+              }
+            `;
+          }
+          customElements.define('dd-fallback', DdFallbackOnStyleEl);
+        },
+        render() {
+          // Explicitly emitting the <script> tags that define the de-duplication
+          // helper (outside of the declarative shadow DOM).
+          return html`${unsafeHTML(
+              dedupeStyles.emitCustomElementDeclaration()
+            )}<dd-fallback id="el-1"></dd-fallback
+            ><dd-fallback id="el-2"></dd-fallback>`;
+        },
+        serverRenderOptions: {
+          dedupeStyles: dedupeStyles,
+        },
+        expectations: [
+          {
+            args: [],
+            async check(assert: Chai.Assert, dom: HTMLElement) {
+              // Probably want to check shared style sheet here.
+              const el1 = dom.querySelector('#el-1') as LitElement;
+              const el2 = dom.querySelector('#el-2') as LitElement;
+              assert.equal(el1.shadowRoot!.adoptedStyleSheets.length, 0);
+              assert.equal(el2.shadowRoot!.adoptedStyleSheets.length, 0);
+
+              assert.isNotNull(el1.shadowRoot!.querySelector('style'));
+              assert.isNotNull(el2.shadowRoot!.querySelector('style'));
+            },
+            setup() {
+              return customElements.whenDefined('lit-ssr-style-dedupe');
+            },
+            html: {
+              root: `<dd-fallback id="el-1">\n</dd-fallback>\n<dd-fallback id="el-2">\n</dd-fallback>\n`,
+              '#el-1': ``,
+              '#el-2': ``,
+            },
+          },
+        ],
+        only: true,
+        expectMutationsOnFirstRender: true, // The test setup manually attaches the de-dupe script tag.
+        stableSelectors: ['#el-1', '#el-2'],
+      };
+    },
+
   /******************************************************
    * Server-only template tests
    ******************************************************/

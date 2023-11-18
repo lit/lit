@@ -33,6 +33,11 @@ export class DeclarativeStyleDedupeUtility {
   private idCounter = 0;
   private styleToId = new Map<CSSResultOrNative, number>();
 
+  // This is used only in tests to force the fallback behavior of the deduping
+  // custom element. The fallback behavior clones style elements (instead of
+  // adopting constructable stylesheets).
+  private testOnlyTurnOffSupportsAdoptingStyleSheets = false;
+
   constructor(opts?: Options) {
     this.styleModuleTagName = opts?.tagName ?? 'lit-ssr-style-dedupe';
   }
@@ -47,7 +52,9 @@ export class DeclarativeStyleDedupeUtility {
 (function() {
 if (customElements.get('${this.styleModuleTagName}')) return;
 
-const supportsAdoptingStyleSheets = window.ShadowRoot &&
+const supportsAdoptingStyleSheets = ${
+      this.testOnlyTurnOffSupportsAdoptingStyleSheets ? 'false && ' : ''
+    }window.ShadowRoot &&
   (window.ShadyCSS === undefined || global.ShadyCSS.nativeShadow) &&
   'adoptedStyleSheets' in Document.prototype &&
   'replaceSync' in CSSStyleSheet.prototype;
@@ -105,7 +112,6 @@ customElements.define('${this.styleModuleTagName}', StyleModule);
   }
 
   *renderDedupedStyles(styles: CSSResultOrNative[]): RenderResult {
-    yield this.emitCustomElementDeclaration();
     for (const style of styles) {
       const styleHashId = this.getStyleHash(style);
       if (styleHashId === this.idCounter) {
