@@ -7,7 +7,6 @@
 import {parentPort} from 'worker_threads';
 import {render} from '@lit-labs/ssr';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-import {DeclarativeStyleDedupeUtility} from '@lit-labs/ssr/lib/declarative-style-dedupe.js';
 
 import type {Message} from './types.js';
 
@@ -16,14 +15,12 @@ if (parentPort === null) {
 }
 
 let initialized = false;
-let shouldDedupeStyles = false;
 
 parentPort.on('message', async (message: Message) => {
   switch (message.type) {
     case 'initialize-request': {
       if (!initialized) {
-        const {imports, dedupeStyles} = message;
-        shouldDedupeStyles = dedupeStyles;
+        const {imports} = message;
         await Promise.all(imports.map((module) => import(module)));
         const response: Message = {type: 'initialize-response'};
         parentPort!.postMessage(response);
@@ -35,12 +32,7 @@ parentPort.on('message', async (message: Message) => {
     case 'render-request': {
       const {id, content} = message;
       let rendered = '';
-      const renderOpts = {
-        dedupeStyles: shouldDedupeStyles
-          ? new DeclarativeStyleDedupeUtility()
-          : undefined,
-      };
-      for (const str of render(unsafeHTML(content), renderOpts)) {
+      for (const str of render(unsafeHTML(content))) {
         rendered += str;
       }
       const response: Message = {

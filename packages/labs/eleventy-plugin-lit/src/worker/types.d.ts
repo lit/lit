@@ -7,7 +7,6 @@
 interface InitializeRequest {
   type: 'initialize-request';
   imports: string[];
-  dedupeStyles: boolean;
 }
 
 interface InitializeResponse {
