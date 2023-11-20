@@ -184,9 +184,7 @@ suite('asyncReplace', () => {
     render(t(iterable), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
-    const wait = iterable.push('hello');
-    render(t(iterable), container);
-    await wait;
+    await iterable.push('hello');
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
       '<div>hello</div>'
