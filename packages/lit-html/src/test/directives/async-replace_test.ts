@@ -179,7 +179,7 @@ suite('asyncReplace', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
   });
 
-  test('renders the same itetable value when re-rendered with no new value emitted', async () => {
+  test('renders the same iterable value when re-rendered with no new value emitted', async () => {
     const t = (iterable: any) => html`<div>${asyncReplace(iterable)}</div>`;
     render(t(iterable), container);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
