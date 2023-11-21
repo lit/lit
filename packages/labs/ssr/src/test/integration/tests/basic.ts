@@ -5540,7 +5540,7 @@ export const tests: {[name: string]: SSRTest} = {
         // Explicitly emitting the <script> tags that define the de-duplication
         // helper (outside of the declarative shadow DOM).
         return html`${unsafeHTML(
-            dedupeStyles.emitCustomElementDeclaration()
+            dedupeStyles.emitCustomElementDeclarationOnce()
           )}<dd-constructable-stylesheet></dd-constructable-stylesheet>`;
       },
       serverRenderOptions: {
@@ -5598,7 +5598,7 @@ export const tests: {[name: string]: SSRTest} = {
         // Explicitly emitting the <script> tags that define the de-duplication
         // helper (outside of the declarative shadow DOM).
         return html`${unsafeHTML(
-            dedupeStyles.emitCustomElementDeclaration()
+            dedupeStyles.emitCustomElementDeclarationOnce()
           )}<dd-share-stylesheet id="el-1"></dd-share-stylesheet
           ><dd-share-stylesheet id="el-2"></dd-share-stylesheet>`;
       },
@@ -5662,7 +5662,7 @@ export const tests: {[name: string]: SSRTest} = {
           // Explicitly emitting the <script> tags that define the de-duplication
           // helper (outside of the declarative shadow DOM).
           return html`${unsafeHTML(
-              dedupeStyles.emitCustomElementDeclaration()
+              dedupeStyles.emitCustomElementDeclarationOnce()
             )}<dd-fallback id="el-1"></dd-fallback
             ><dd-fallback id="el-2"></dd-fallback>`;
         },

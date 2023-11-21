@@ -24,8 +24,8 @@ export interface Options {
  * platform behavior (https://github.com/WICG/webcomponents/issues/939)
  *
  * Make sure that the same instance of `DeclarativeStyleDedupeUtility` is used
- * for a page, and use `emitCustomElementDeclaration` to insert the script tag
- * helper before any styles are encountered.
+ * for a page, and use `emitCustomElementDeclarationOnce` to insert the script
+ * tag helper before any styles are encountered.
  */
 export class DeclarativeStyleDedupeUtility {
   private hasEmittedDeclaration = false;
@@ -42,7 +42,18 @@ export class DeclarativeStyleDedupeUtility {
     this.styleModuleTagName = opts?.tagName ?? 'lit-ssr-style-dedupe';
   }
 
-  emitCustomElementDeclaration(): string {
+  /**
+   * `emitCustomElementDeclarationOnce` emits a script tag that contains the
+   * declaration for a custom element which performs the de-dupe styles logic.
+   *
+   * It is public so that you can control where the script tag is placed within
+   * your own app. It should be placed before the first SSR'd element. If not
+   * explicitly called, the script will automatically be emitted before the
+   * first de-duplicated style.
+   *
+   * @returns A string containing the custom element declaration within a script tag.
+   */
+  emitCustomElementDeclarationOnce(): string {
     if (this.hasEmittedDeclaration) {
       return '';
     }
@@ -115,12 +126,15 @@ customElements.define('${this.styleModuleTagName}', StyleModule);
     for (const style of styles) {
       const styleHashId = this.getStyleHash(style);
       if (styleHashId === this.idCounter) {
-        this.idCounter++; // Increment idCounter so we only generate styles once.
+        // Increment idCounter so we only generate styles once.
+        this.idCounter++;
+        // Define the style dedupe helper element if it hasn't already been
+        // defined.
+        yield this.emitCustomElementDeclarationOnce();
         yield '<style>';
         yield (style as CSSResult).cssText;
         yield '</style>';
       }
-
       yield `<${this.styleModuleTagName} style-id="${styleHashId}" style="display:none;"></${this.styleModuleTagName}>`;
     }
   }

@@ -468,7 +468,8 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     });
     assert.is(
       removeDedupeScriptTagHelper(result),
-      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open"><style>
+      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open">
+<style>
   :host {
     display: block;
     background-color: blue;
@@ -487,7 +488,8 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     });
     assert.is(
       removeDedupeScriptTagHelper(result),
-      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open"><style>
+      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open">
+<style>
   :host {
     display: block;
     background-color: blue;
@@ -505,7 +507,8 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
 
     assert.is(
       removeDedupeScriptTagHelper(result),
-      `<!--lit-part vozTZ75mUhg=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open"><style>
+      `<!--lit-part vozTZ75mUhg=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open">
+<style>
   :host {
     display: block;
     background-color: blue;
@@ -526,7 +529,8 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
 
     assert.is(
       removeDedupeScriptTagHelper(result),
-      `<!--lit-part SoBZcCoc/o0=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open"><style>
+      `<!--lit-part SoBZcCoc/o0=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open">
+<style>
   :host {
     display: block;
     background-color: blue;
