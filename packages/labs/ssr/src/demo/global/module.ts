@@ -11,6 +11,8 @@
 import {html} from 'lit';
 import {LitElement, css} from 'lit';
 import {property} from 'lit/decorators/property.js';
+import {Task} from '@lit/task';
+import {ServerController} from '@lit-labs/ssr-client/controllers/server-controller.js';
 
 export const initialData = {
   name: 'SSR',
@@ -20,6 +22,13 @@ export const initialData = {
   attr: 'attr-value',
   wasUpdated: false,
 };
+
+class ServerLoadedTask extends Task implements ServerController {
+  get serverUpdateComplete() {
+    this.run();
+    return this.taskComplete;
+  }
+}
 
 export class MyElement extends LitElement {
   static override styles = css`
@@ -50,11 +59,34 @@ export class MyElement extends LitElement {
   @property({type: Boolean, reflect: true})
   wasUpdated = false;
 
+  @property()
+  url =
+    'https://gist.githubusercontent.com/kevinpschaaf/c2baac9c299fb8912bedaafa41f0148f/raw/d23e618049da61c9405ea5464f51d07aa13f5f21/response.json';
+
+  private fetchJson = new ServerLoadedTask(this, {
+    task: async ([url], {signal}) => {
+      const response = await fetch(url as string, {signal});
+      return await response.json();
+    },
+    args: () => [this.url],
+  });
+
   override render() {
     return html`
       <header>I'm a my-element!</header>
       <div><i>this.prop</i>: ${this.prop}</div>
       <div><i>this.attr</i>: ${this.attr}</div>
+
+      ${this.fetchJson.render({
+        pending: () => 'Loading...',
+        complete: (list: unknown) =>
+          html`<ul>
+            ${(list as Array<{name: string}>).map(
+              (item) => html`<li>${item.name}</li>`
+            )}
+          </ul>`,
+        error: (error: unknown) => `Error loading: ${error}`,
+      })}
     `;
   }
 }

@@ -6,7 +6,7 @@
 
 import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
 
-import {html, svg, noChange, nothing, Part} from 'lit';
+import {html, svg, noChange, nothing, Part, type ReactiveController} from 'lit';
 import {html as staticHtml, literal} from 'lit/static-html.js';
 import {
   directive,
@@ -39,6 +39,7 @@ import {
   renderLight,
   RenderLightHost,
 } from '@lit-labs/ssr-client/directives/render-light.js';
+import type {ServerController} from '@lit-labs/ssr-client/controllers/server-controller.js';
 
 import {anyHtml, SSRTest, SSRTestDescription} from './ssr-test.js';
 import {AsyncDirective} from 'lit/async-directive.js';
@@ -5510,6 +5511,167 @@ export const tests: {[name: string]: SSRTest} = {
       expectMutationsDuringUpgrade: true,
       skipPreHydrationAssertHtml: true,
       stableSelectors: ['le-internals-hydrate'],
+    };
+  },
+
+  /******************************************************
+   * ReactiveController tests
+   ******************************************************/
+
+  'ReactiveController: Constructor runs': () => {
+    return {
+      registerElements() {
+        class BasicController implements ReactiveController {
+          // To satisfy the ReactiveController interface.
+          declare hostConnected: undefined;
+          value = 'default';
+
+          constructor(host: LitElement) {
+            host.addController(this);
+            this.value = 'set in controller constructor';
+          }
+        }
+
+        customElements.define(
+          'rc-basic',
+          class extends LitElement {
+            basicController = new BasicController(this);
+
+            override render(): unknown {
+              return html`
+                <div>[rc-basic: ${this.basicController.value}]</div>
+              `;
+            }
+          }
+        );
+      },
+      render() {
+        return html` <rc-basic></rc-basic> `;
+      },
+      expectations: [
+        {
+          args: [],
+          html: {
+            root: `<rc-basic></rc-basic>`,
+            'rc-basic': `<div>[rc-basic: set in controller constructor]</div>`,
+          },
+        },
+      ],
+      stableSelectors: ['rc-basic'],
+    };
+  },
+
+  /******************************************************
+   * ServerController tests
+   ******************************************************/
+
+  'ServerController: SSR render awaits "serverUpdateComplete" result': () => {
+    return {
+      registerElements() {
+        class AsyncController implements ServerController {
+          // To satisfy the ReactiveController interface.
+          declare hostConnected: undefined;
+          value = '';
+
+          constructor(host: LitElement) {
+            host.addController(this);
+          }
+
+          get serverUpdateComplete() {
+            return Promise.resolve().then((_) => {
+              this.value = 'set after async work';
+            });
+          }
+        }
+
+        customElements.define(
+          'rc-async-controller',
+          class extends LitElement {
+            asyncController = new AsyncController(this);
+
+            override render(): unknown {
+              return html`
+                <div>[rc-async-controller: ${this.asyncController.value}]</div>
+              `;
+            }
+          }
+        );
+      },
+      render() {
+        return html` <rc-async-controller></rc-async-controller> `;
+      },
+      expectations: [
+        {
+          args: [],
+          html: {
+            root: `<rc-async-controller></rc-async-controller>`,
+            'rc-async-controller': `<div>[rc-async-controller: set after async work]</div>`,
+          },
+        },
+      ],
+      stableSelectors: ['rc-async-controller'],
+    };
+  },
+
+  'ServerController: can depend on properties set on host': () => {
+    // Provide a workaround to the use-case highlighted in
+    // https://github.com/lit/lit/issues/2469#issuecomment-1079662893 This
+    // controller works exclusively on the server, and returns different results
+    // based on the properties passed to its host.
+    return {
+      registerElements() {
+        class ServerOnlyController implements ServerController {
+          // To satisfy the ReactiveController interface.
+          declare hostConnected: undefined;
+          // Defaulting to `noChange` ensures the controller does not erase the
+          // server rendered data after hydration.
+          data: typeof noChange | string = noChange;
+
+          host: LitElement & {idProperty: number};
+          constructor(host: LitElement & {idProperty: number}) {
+            (this.host = host).addController(this);
+          }
+
+          get serverUpdateComplete() {
+            // Expect that `idProperty` should be defined here.
+            const id = this.host.idProperty;
+            return Promise.resolve().then((_) => {
+              // Promise.resolve ensures a microtask has occurred.
+              // In production situations this could be replaced with a
+              // `isServer` guarded fs.readFile or database call.
+              this.data = `[data with id: ${id}]`;
+            });
+          }
+        }
+
+        class SCAsyncElement extends LitElement {
+          @property({type: Number})
+          idProperty: number = -1;
+
+          asyncController = new ServerOnlyController(this);
+
+          override render(): unknown {
+            return html`
+              <div>[sc-async-el: ${this.asyncController.data}]</div>
+            `;
+          }
+        }
+
+        customElements.define('sc-async-el', SCAsyncElement);
+      },
+      render(x: number) {
+        return html` <sc-async-el .idProperty=${x}></sc-async-el> `;
+      },
+      expectations: [
+        {
+          args: [8],
+          html: {
+            root: `<sc-async-el></sc-async-el>`,
+            'sc-async-el': `<div>[sc-async-el: [data with id: 8]]</div>`,
+          },
+        },
+      ],
+      stableSelectors: ['sc-async-el'],
     };
   },
   /******************************************************

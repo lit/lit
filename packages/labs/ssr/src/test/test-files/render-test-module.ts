@@ -8,10 +8,12 @@ import {html, svg, nothing} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {LitElement, css, PropertyValues} from 'lit';
+import {unsafeHTML} from 'lit/directives/unsafe-html.js';
 import {property, customElement} from 'lit/decorators.js';
 import {html as serverhtml} from '../../lib/server-template.js';
-export {digestForTemplateResult} from '@lit-labs/ssr-client';
+import type {ServerController} from '@lit-labs/ssr-client/controllers/server-controller.js';
 
+export {digestForTemplateResult} from '@lit-labs/ssr-client';
 export {render} from '../../lib/render-lit-html.js';
 
 /* Real Tests */
@@ -375,3 +377,41 @@ export const renderServerScriptNotJavaScript = serverhtml`
 // This doesn't have to make sense, the test is that it'll throw at the
 // template preparation phase.
 export const renderServerOnlyElementPart = serverhtml`<div ${'foo'}></div>`;
+
+// Test that async controller SSR correctly.
+//
+// Sets up a LitElement that contains two server reactive controllers that await
+// the promises passed into the test factory.
+export const serverControllerTestFactory = ({
+  promiseA,
+  promiseB,
+  tagName,
+}: {
+  promiseA: Promise<unknown>;
+  promiseB: Promise<unknown>;
+  tagName: string;
+}) => {
+  class TestServerController implements ServerController {
+    declare hostConnected: undefined;
+
+    value: unknown = undefined;
+    constructor(host: LitElement, readonly promise: Promise<unknown>) {
+      host.addController(this);
+    }
+    get serverUpdateComplete() {
+      return this.promise.then((value) => {
+        this.value = value;
+      });
+    }
+  }
+  class TestServerControllerArray extends LitElement {
+    a = new TestServerController(this, promiseA);
+    b = new TestServerController(this, promiseB);
+
+    override render(): unknown {
+      return html`[a: ${this.a.value}, b: ${this.b.value}]`;
+    }
+  }
+  customElements.define(tagName, TestServerControllerArray);
+  return unsafeHTML(`<${tagName}></${tagName}>`);
+};

@@ -42,6 +42,7 @@
     }
   },
   "files": [
+    "/controllers/",
     "/development/",
     "!/development/test/",
     "/directives/",
@@ -91,6 +92,7 @@
       "output": [
         "*.d.ts{,.map}",
         "directives/*.d.ts{,.map}",
+        "controllers/*.d.ts{,.map}",
         "lib/*.d.ts{,.map}"
       ]
     },
@@ -106,6 +108,7 @@
       "output": [
         "index.js{,.map}",
         "lit-element-hydrate-support.js{,.map}",
+        "controllers/*.js{,.map}",
         "directives/*.js{,.map}",
         "lib/*.js{,.map}",
         "node/"

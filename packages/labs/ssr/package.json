@@ -37,7 +37,8 @@
         "../ssr-dom-shim:build:ts",
         "../../lit:build:ts:types",
         "../../lit-html:build:ts:types",
-        "../../lit-element:build:ts:types"
+        "../../lit-element:build:ts:types",
+        "../../task:build:ts:types"
       ],
       "files": [
         "src/**/*.ts",
@@ -205,6 +206,7 @@
   },
   "devDependencies": {
     "@koa/router": "^12.0.0",
+    "@lit/task": "^1.0.0",
     "@open-wc/testing": "^3.2.0",
     "@open-wc/testing-karma": "^4.0.9",
     "@types/command-line-args": "^5.0.0",

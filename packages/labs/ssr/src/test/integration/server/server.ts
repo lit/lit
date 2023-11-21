@@ -9,7 +9,7 @@ import cors from 'koa-cors';
 
 import {ModuleLoader} from '../../../lib/module-loader.js';
 import {getWindow} from '../../../lib/dom-shim.js';
-import {Readable} from 'stream';
+import {RenderResultReadable} from '../../../lib/render-result-readable.js';
 
 import * as testModule from '../tests/basic-ssr.js';
 import {SSRTest} from '../tests/ssr-test.js';
@@ -104,7 +104,7 @@ export const ssrMiddleware = () => {
       test.serverRenderOptions
     );
     context.type = 'text/html';
-    context.body = Readable.from(result);
+    context.body = new RenderResultReadable(result);
   });
   return [cors(), router.routes(), router.allowedMethods()];
 };

@@ -46,7 +46,11 @@
  *
  * @packageDocumentation
  */
-import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
+import {
+  PropertyValues,
+  type ReactiveController,
+  ReactiveElement,
+} from '@lit/reactive-element';
 import {render, RenderOptions, noChange, RootPart} from 'lit-html';
 export * from '@lit/reactive-element';
 export * from 'lit-html';
@@ -273,6 +277,9 @@ export const _$LE = {
   },
   // eslint-disable-next-line
   _$changedProperties: (el: LitElement) => (el as any)._$changedProperties,
+  _$controllers: (el: LitElement): Set<ReactiveController> | undefined =>
+    // eslint-disable-next-line
+    (el as any)._$controllers,
 };
 
 // IMPORTANT: do not change the property name or the assignment expression.

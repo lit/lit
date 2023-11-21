@@ -326,6 +326,7 @@ packages/labs/ssr/test/**/*.d.ts.map
 packages/labs/ssr/index.*
 !packages/labs/ssr/custom_typings/*.d.ts
 
+packages/labs/ssr-client/controllers/
 packages/labs/ssr-client/development/
 packages/labs/ssr-client/directives/
 packages/labs/ssr-client/lib/

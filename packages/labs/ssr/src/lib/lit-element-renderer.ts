@@ -14,10 +14,11 @@ import {
 import {renderValue} from './render-value.js';
 import type {RenderInfo} from './render-value.js';
 import type {RenderResult} from './render-result.js';
+import type {ServerController} from '@lit-labs/ssr-client/controllers/server-controller.js';
 
 export type Constructor<T> = {new (): T};
 
-const {attributeToProperty, changedProperties} = _$LE;
+const {attributeToProperty, changedProperties, getControllers} = _$LE;
 
 /**
  * ElementRenderer implementation for LitElements
@@ -85,6 +86,22 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   override *renderShadow(renderInfo: RenderInfo): RenderResult {
+    const serverControllerUpdatePromises = Array.from<
+      Partial<ServerController>
+    >(getControllers(this.element) ?? [])
+      .map((c: Partial<ServerController>) => c.serverUpdateComplete)
+      .filter((p: Promise<unknown> | undefined) => !!p);
+    if (serverControllerUpdatePromises?.length > 0) {
+      const continuation = Promise.all(serverControllerUpdatePromises).then(
+        (_) => this._renderShadowContents(renderInfo)
+      );
+      yield continuation;
+    } else {
+      yield* this._renderShadowContents(renderInfo);
+    }
+  }
+
+  private *_renderShadowContents(renderInfo: RenderInfo): RenderResult {
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
