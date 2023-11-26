@@ -40,6 +40,17 @@ test('RenderResultReadable collects strings and nested Promises of iterables', a
   assert.equal(s, 'abcd');
 });
 
+test('RenderResultReadable yields for some time until promises resolve', async () => {
+  const readable = createReadableStream([
+    'a',
+    new Promise((res) => setTimeout(res, 50)).then((_) => ['b', 'c']),
+    new Promise((res) => setTimeout(res, 50)).then((_) => ['d', 'e']),
+    'f',
+  ]);
+  const s = await collectReadable(readable);
+  assert.equal(s, 'abcdef');
+});
+
 test.run();
 
 const collectReadable = async (r: NodeReadableStream) => {

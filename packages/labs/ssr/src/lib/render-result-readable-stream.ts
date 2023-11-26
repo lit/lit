@@ -14,6 +14,8 @@ type RenderResultIterator = Iterator<string | Promise<RenderResult>>;
  */
 export const createReadableStream = (result: RenderResult) => {
   let closed = false;
+  let waiting = false;
+  let currentIterator;
 
   /**
    * A stack of open iterators.
@@ -29,14 +31,18 @@ export const createReadableStream = (result: RenderResult) => {
       closed = true;
     },
     pull: async (controller) => {
-      // Get the current iterator
-      let iterator = iterators.pop();
+      if (waiting) {
+        return;
+      }
 
-      while (iterator !== undefined) {
-        const next = iterator.next();
+      // Get the current iterator, only if we don't already have one from the
+      currentIterator ??= iterators.pop();
+
+      while (currentIterator !== undefined) {
+        const next = currentIterator.next();
         if (next.done === true) {
           // Restore the outer iterator
-          iterator = iterators.pop();
+          currentIterator = iterators.pop();
           continue;
         }
 
@@ -49,8 +55,12 @@ export const createReadableStream = (result: RenderResult) => {
           }
         } else {
           // Must be a Promise
-          iterators.push(iterator);
-          iterator = (await value)[Symbol.iterator]() as RenderResultIterator;
+          iterators.push(currentIterator);
+          waiting = true;
+          currentIterator = (await value)[
+            Symbol.iterator
+          ]() as RenderResultIterator;
+          waiting = false;
         }
       }
       controller.close();
