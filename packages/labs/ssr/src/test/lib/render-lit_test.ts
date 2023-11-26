@@ -700,6 +700,13 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       render(renderServerOnlyElementPart);
     }, /Server-only templates don't support element parts/);
   });
+
+  test('dispatchEvent', async () => {
+    const {render, eventDispatch} = await setup();
+    const result = render(eventDispatch);
+
+    assert.match(result, '<p><!--lit-part-->set<!--/lit-part--></p>');
+  });
 }
 
 test.run();

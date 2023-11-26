@@ -25,6 +25,7 @@ packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
 packages/context/development/
+packages/context/node/
 packages/context/test/
 packages/context/node_modules/
 packages/context/lib/
