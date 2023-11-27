@@ -16,6 +16,7 @@ export const createReadableStream = (result: RenderResult) => {
   let closed = false;
   let waiting = false;
   let currentIterator;
+  const encoder = new TextEncoder();
 
   /**
    * A stack of open iterators.
@@ -49,7 +50,7 @@ export const createReadableStream = (result: RenderResult) => {
         const value = next.value;
 
         if (typeof value === 'string') {
-          controller.enqueue(value);
+          controller.enqueue(encoder.encode(value));
           if (closed) {
             return;
           }
