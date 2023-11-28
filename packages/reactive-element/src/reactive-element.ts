@@ -1237,22 +1237,12 @@ export abstract class ReactiveElement
    * @param oldValue old value of requesting property
    * @param options property options to use instead of the previously
    *     configured options
-   * @param initial whether this call is for the initial value of the property.
-   *     Initial values do not reflect to an attribute.
    * @category updates
    */
   requestUpdate(
     name?: PropertyKey,
     oldValue?: unknown,
     options?: PropertyDeclaration
-  ): void;
-  /* @internal */
-  requestUpdate(
-    name?: PropertyKey,
-    oldValue?: unknown,
-    options?: PropertyDeclaration,
-    initial = false,
-    initialValue?: unknown
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -1260,7 +1250,7 @@ export abstract class ReactiveElement
         this.constructor as typeof ReactiveElement
       ).getPropertyOptions(name);
       const hasChanged = options.hasChanged ?? notEqual;
-      const newValue = initial ? initialValue : this[name as keyof this];
+      const newValue = this[name as keyof this];
       if (hasChanged(newValue, oldValue)) {
         this._$changeProperty(name, oldValue, options);
       } else {
