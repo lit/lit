@@ -298,7 +298,7 @@
       ]
     },
     "test:dev": {
-      "command": "MODE=dev node ../tests/run-web-tests.js \"development/test/**/*_test.js\" --config ../tests/web-test-runner.config.js",
+      "command": "node ../tests/run-web-tests.js \"development/test/**/*_test.js\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
         "build:ts:std-decorators-tests",
@@ -307,13 +307,14 @@
       "env": {
         "BROWSERS": {
           "external": true
-        }
+        },
+        "MODE": "dev"
       },
       "files": [],
       "output": []
     },
     "test:prod": {
-      "command": "MODE=prod node ../tests/run-web-tests.js \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
+      "command": "node ../tests/run-web-tests.js \"development/**/*_test.(js|html)\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
         "build:ts:std-decorators-tests",
@@ -323,7 +324,8 @@
       "env": {
         "BROWSERS": {
           "external": true
-        }
+        },
+        "MODE": "prod"
       },
       "files": [],
       "output": []
