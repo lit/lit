@@ -186,7 +186,8 @@
       "clean": "if-file-deleted",
       "dependencies": [
         "../labs/testing:build:ts:utils",
-        "../labs/ssr-dom-shim:build:ts"
+        "../labs/ssr-dom-shim:build:ts",
+        "../lit-html:build:ts:types"
       ],
       "files": [
         "src/**/*.ts",
