@@ -639,6 +639,19 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  // Regression test for https://github.com/lit/lit/issues/4417
+  test('server-only template can bind attributes to html tag', async () => {
+    const {render, serverOnlyBindAttributeOnHtml} = await setup();
+    const result = await render(serverOnlyBindAttributeOnHtml);
+    assert.is(
+      result,
+      `
+<!DOCTYPE html>
+<html lang="ko"></html>
+`
+    );
+  });
+
   test('server-only template throws on property bindings', async () => {
     const {render, serverOnlyRenderPropertyBinding} = await setup();
     assert.throws(

@@ -316,6 +316,11 @@ export const serverOnlyDocumentTemplate = serverhtml`
     </html>
   `;
 
+export const serverOnlyBindAttributeOnHtml = serverhtml`
+<!DOCTYPE html>
+<html lang="${'ko'}"></html>
+`;
+
 export const serverOnlyArray = serverhtml`<div>${[
   'one',
   'two',
