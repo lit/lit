@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import type {StaticValue} from 'lit-html/static.js';
+
 const NODE_MODE = false;
 
 // Allows minifiers to rename references to globalThis
@@ -103,10 +105,12 @@ type ConstructableCSSResult = CSSResult & {
   ): CSSResult;
 };
 
-const textFromCSSResult = (value: CSSResultGroup | number) => {
+const textFromCSSResult = (value: CSSResultGroup | StaticValue | number) => {
   // This property needs to remain unminified.
   if ((value as CSSResult)['_$cssResult$'] === true) {
     return (value as CSSResult).cssText;
+  } else if ((value as StaticValue)['_$litStatic$']) {
+    return (value as StaticValue)['_$litStatic$'];
   } else if (typeof value === 'number') {
     return value;
   } else {
@@ -142,7 +146,7 @@ export const unsafeCSS = (value: unknown) =>
  */
 export const css = (
   strings: TemplateStringsArray,
-  ...values: (CSSResultGroup | number)[]
+  ...values: (CSSResultGroup | StaticValue | number)[]
 ): CSSResult => {
   const cssText =
     strings.length === 1

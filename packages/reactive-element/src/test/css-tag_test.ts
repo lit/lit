@@ -10,6 +10,9 @@ import {
   unsafeCSS,
   supportsAdoptingStyleSheets,
 } from '@lit/reactive-element/css-tag.js';
+
+import {literal, unsafeStatic} from 'lit-html/static.js';
+
 import {assert} from '@esm-bundle/chai';
 
 suite('Styling', () => {
@@ -75,6 +78,30 @@ suite('Styling', () => {
       const result = cssValue`
         div {
           margin: ${spacer * 2}px;
+        }
+      `;
+      assert.equal(result.cssText.replace(/\s/g, ''), 'div{margin:4px;}');
+    });
+
+    test('`css` allows `literal` static values', async () => {
+      const tag = literal`div`;
+      // Alias avoids syntax highlighting issues in editors
+      const cssValue = css;
+      const result = cssValue`
+        ${tag} {
+          margin: 4px;
+        }
+      `;
+      assert.equal(result.cssText.replace(/\s/g, ''), 'div{margin:4px;}');
+    });
+
+    test('`css` allows `unsafeStatic` static values', async () => {
+      const tag = unsafeStatic('div');
+      // Alias avoids syntax highlighting issues in editors
+      const cssValue = css;
+      const result = cssValue`
+        ${tag} {
+          margin: 4px;
         }
       `;
       assert.equal(result.cssText.replace(/\s/g, ''), 'div{margin:4px;}');
