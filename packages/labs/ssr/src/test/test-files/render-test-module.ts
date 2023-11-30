@@ -329,6 +329,7 @@ ${serverhtml`<html lang="${'ko'}">
   </head>`}
   ${serverhtml`<body>
     ${serverhtml`<p>${'Content'}</p>`}
+    ${serverhtml`<table>${serverhtml`<tr>${serverhtml`<td>${'Table content'}</td>`}</tr>`}</table>`}
   </body>`}
 </html>`}
 `;

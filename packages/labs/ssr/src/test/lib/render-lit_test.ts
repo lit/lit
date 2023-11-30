@@ -665,6 +665,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
   </head>
   <body>
     <p>Content</p>
+    <table><tr><td>Table content</td></tr></table>
   </body>
 </html>
 `
