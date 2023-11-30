@@ -316,23 +316,6 @@ export const serverOnlyDocumentTemplate = serverhtml`
     </html>
   `;
 
-export const serverOnlyBindAttributeOnHtml = serverhtml`
-<!DOCTYPE html>
-<html lang="${'ko'}"></html>
-`;
-
-export const serverOnlyDocumentTemplatesCompose = serverhtml`
-${serverhtml`<!DOCTYPE html>`}
-${serverhtml`<html lang="${'ko'}">
-  ${serverhtml`<head>
-    ${serverhtml`<title>${'Server only title'}</title>`}
-  </head>`}
-  ${serverhtml`<body>
-    ${serverhtml`<p>${'Content'}</p>`}
-  </body>`}
-</html>`}
-`;
-
 export const serverOnlyArray = serverhtml`<div>${[
   'one',
   'two',

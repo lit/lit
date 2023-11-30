@@ -51,7 +51,7 @@ import {
 
 import {escapeHtml} from './util/escape-html.js';
 
-import {parseFragment, parse} from 'parse5';
+import {parseFragment} from 'parse5';
 import {
   isElementNode,
   isCommentNode,
@@ -285,10 +285,7 @@ type Op =
  * - `custom-element-close`
  *   - Pop the CE `instance`+`renderer` off the `customElementInstanceStack`
  */
-const getTemplateOpcodes = (
-  result: TemplateResult,
-  isServerTemplate = false
-) => {
+const getTemplateOpcodes = (result: TemplateResult) => {
   const template = templateCache.get(result.strings);
   if (template !== undefined) {
     return template;
@@ -308,11 +305,8 @@ const getTemplateOpcodes = (
    * The html string is parsed into a parse5 AST with source code information
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
-   *
-   * Server Templates need to use `parse` as they may contain document tags such
-   * as `<html>`.
    */
-  const ast = (isServerTemplate ? parse : parseFragment)(String(html), {
+  const ast = parseFragment(String(html), {
     sourceCodeLocationInfo: true,
   });
 
@@ -703,7 +697,7 @@ function* renderTemplateResult(
   // previous span of HTML.
 
   const hydratable = isHydratable(result);
-  const ops = getTemplateOpcodes(result, !hydratable);
+  const ops = getTemplateOpcodes(result);
 
   /* The next value in result.values to render */
   let partIndex = 0;
