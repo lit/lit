@@ -26,6 +26,8 @@ import {
   PartInfo,
   DirectiveParameters,
 } from 'lit-html/directive.js';
+import {classMap} from 'lit-html/directives/class-map.js';
+
 import {isCompiledTemplateResult} from 'lit-html/directive-helpers.js';
 import {assert} from '@esm-bundle/chai';
 import {
@@ -906,6 +908,17 @@ suite('lit-html', () => {
     test('renders a binding in a class attribute', () => {
       render(html`<div class="${'red'}"></div>`, container);
       assertContent('<div class="red"></div>');
+    });
+
+    test('renders a binding object in a class attribute', () => {
+      const className = 'red';
+      const obj = {
+        [className]: true,
+        bold: false,
+        'italic blue': true,
+      };
+      render(html`<div class=${classMap(obj)}></div>`, container);
+      assertContent('<div class="red italic blue"></div>');
     });
 
     test('renders a binding in an input value attribute', () => {

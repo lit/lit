@@ -12,7 +12,7 @@ import {
   PartInfo,
   PartType,
 } from '../directive.js';
-
+import classNames from 'classnames';
 /**
  * A key-value set of class names to truthy values.
  */
@@ -43,14 +43,7 @@ class ClassMapDirective extends Directive {
   }
 
   render(classInfo: ClassInfo) {
-    // Add spaces to ensure separation from static classes
-    return (
-      ' ' +
-      Object.keys(classInfo)
-        .filter((key) => classInfo[key])
-        .join(' ') +
-      ' '
-    );
+    return classNames(classInfo);
   }
 
   override update(part: AttributePart, [classInfo]: DirectiveParameters<this>) {

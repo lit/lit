@@ -490,7 +490,8 @@
     }
   },
   "dependencies": {
-    "@types/trusted-types": "^2.0.2"
+    "@types/trusted-types": "^2.0.2",
+    "classnames": "^2.3.2"
   },
   "devDependencies": {
     "@lit-internal/scripts": "^1.0.1",
