@@ -146,6 +146,7 @@
     "/layouts/shared/*.{d.ts,d.ts.map,js,js.map}",
     "/polyfillLoaders/*.{d.ts,d.ts.map,js,js.map}",
     "/polyfills/resize-observer-polyfill/ResizeObserver.{d.ts,js}",
+    "/support/*.{d.ts,d.ts.map,js,js.map}",
     "/events.{js,d.ts,d.ts.map,js.map}",
     "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",
     "/virtualize.{d.ts,d.ts.map,js,js.map}",
