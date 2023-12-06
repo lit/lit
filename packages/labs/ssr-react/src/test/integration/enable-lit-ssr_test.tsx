@@ -250,7 +250,7 @@ wrappedCEtest('wrapped element without prop', () => {
 wrappedCEtest('wrapped element with prop', () => {
   assert.equal(
     ReactDOMServer.renderToString(<ReactTestElement name="React" />),
-    `<test-element defer-hydration=""><template shadowroot="open" shadowrootmode="open"><style>
+    `<test-element name="React" defer-hydration=""><template shadowroot="open" shadowrootmode="open"><style>
     p {
       color: blue;
     }
@@ -264,7 +264,7 @@ wrappedCEtest('wrapped element with prop and attribute', () => {
     ReactDOMServer.renderToString(
       <ReactTestElement name="React" id="react-test-element" />
     ),
-    `<test-element id="react-test-element" defer-hydration=""><template shadowroot="open" shadowrootmode="open"><style>
+    `<test-element name="React" id="react-test-element" defer-hydration=""><template shadowroot="open" shadowrootmode="open"><style>
     p {
       color: blue;
     }
@@ -284,7 +284,7 @@ wrappedCEtest('wrapped element with object prop', () => {
     ReactDOMServer.renderToString(
       <ReactObjectTestElement user={{name: 'React'}} />
     ),
-    `<object-test-element defer-hydration=""><template shadowroot="open" shadowrootmode="open"><!--lit-part EvGichL14uw=--><p>Hello, <!--lit-part-->React<!--/lit-part-->!</p><!--/lit-part--></template></object-test-element>`
+    `<object-test-element user="[object Object]" defer-hydration=""><template shadowroot="open" shadowrootmode="open"><!--lit-part EvGichL14uw=--><p>Hello, <!--lit-part-->React<!--/lit-part-->!</p><!--/lit-part--></template></object-test-element>`
   );
 });
 
