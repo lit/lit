@@ -8,9 +8,12 @@ on:
     paths:
       - '**/CHANGELOG.md'
 
+permissions:
+  contents: read
+
 jobs:
   release-image:
-    if: github.repository == 'lit/lit'
+    # if: github.repository == 'lit/lit'
 
     name: Generate Release Image
     runs-on: ubuntu-latest
