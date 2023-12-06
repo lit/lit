@@ -13,7 +13,7 @@ jobs:
   report:
     permissions:
       actions: read  # for dawidd6/action-download-artifact to query and download artifacts
-      pull-requests: read  # for dawidd6/action-download-artifact to query commit hash
+      pull-requests: write  # for thollander/actions-comment-pull-request to write comment
     name: Report sizecheck result
     runs-on: ubuntu-latest
     steps:
