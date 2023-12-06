@@ -13,7 +13,7 @@ permissions:
 
 jobs:
   release-image:
-    # if: github.repository == 'lit/lit'
+    if: github.repository == 'lit/lit'
 
     name: Generate Release Image
     runs-on: ubuntu-latest
