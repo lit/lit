@@ -6,8 +6,14 @@ on:
     branches: ['**']
     types: [completed]
 
+permissions:
+  contents: read
+
 jobs:
   report:
+    permissions:
+      actions: read  # for dawidd6/action-download-artifact to query and download artifacts
+      pull-requests: read  # for dawidd6/action-download-artifact to query commit hash
     name: Report sizecheck result
     runs-on: ubuntu-latest
     steps:

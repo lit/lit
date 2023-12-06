@@ -5,9 +5,14 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   release:
     # Don't run on forks. We can and should only release from the main repo.
+    permissions:
+      contents: write  # for Git to git push
     if: github.repository == 'lit/lit'
 
     name: Release

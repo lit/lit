@@ -8,6 +8,9 @@ on:
     # This is the default list, but I don't know how to YAML an empty pull_request:
     types: [opened, reopened, synchronize]
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
