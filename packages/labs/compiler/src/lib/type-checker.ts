@@ -14,7 +14,15 @@ const compilerOptions = {
   moduleResolution: ts.ModuleResolutionKind.NodeNext,
 };
 
-export const getTypeChecker = (filename: string, source: string) => {
+interface TypeCheckerOptions {
+  allowedImports?: string[];
+}
+
+export const getTypeChecker = (
+  filename: string,
+  source: string,
+  options?: TypeCheckerOptions
+) => {
   const languageServiceHost = new SingleFileLanguageServiceHost(
     filename,
     source
@@ -28,7 +36,7 @@ export const getTypeChecker = (filename: string, source: string) => {
   if (!program) {
     throw new Error(`Internal Error: Could not start TypeScript program`);
   }
-  return new TypeChecker(program.getTypeChecker());
+  return new TypeChecker(program.getTypeChecker(), options);
 };
 
 /**
@@ -37,8 +45,10 @@ export const getTypeChecker = (filename: string, source: string) => {
  */
 class TypeChecker {
   private checker: ts.TypeChecker;
-  constructor(typeChecker: ts.TypeChecker) {
+  private allowedImports?: string[];
+  constructor(typeChecker: ts.TypeChecker, options?: TypeCheckerOptions) {
     this.checker = typeChecker;
+    this.allowedImports = options?.allowedImports;
   }
 
   /**
@@ -170,11 +180,12 @@ class TypeChecker {
   }
 
   private isLitTemplateModuleSpecifier(specifier: string): boolean {
-    return (
-      specifier === 'lit' ||
-      specifier === 'lit-html' ||
-      specifier === 'lit-element'
-    );
+    const litModules = ['lit', 'lit-html', 'lit-element'];
+    if (this.allowedImports) {
+      litModules.push(...this.allowedImports);
+    }
+
+    return litModules.some((module) => specifier === module);
   }
 }
 

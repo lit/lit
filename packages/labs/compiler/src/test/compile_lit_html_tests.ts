@@ -47,7 +47,7 @@ function compile(tsconfigPath: string) {
   const program = programFromTsConfig(configPath);
   for (const file of program.getSourceFiles()) {
     program.emit(file, undefined, undefined, undefined, {
-      before: [compileLitTemplates()],
+      before: [compileLitTemplates({litHtmlSources: ['external-pkg']})],
     });
   }
 }

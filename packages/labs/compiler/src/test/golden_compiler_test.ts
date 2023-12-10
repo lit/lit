@@ -67,7 +67,9 @@ for (const file of readdirSync(TEST_FILES_DIR, {withFileTypes: true})) {
         target: ts.ScriptTarget.Latest,
         module: ts.ModuleKind.ES2020,
       },
-      transformers: {before: [compileLitTemplates()]},
+      transformers: {
+        before: [compileLitTemplates({litHtmlSources: ['external-pkg']})],
+      },
     });
 
     // Update golden file contents

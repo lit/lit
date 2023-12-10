@@ -65,6 +65,18 @@ interface TemplateInfo {
   variableName: ts.Identifier;
 }
 
+export interface CompileLitTemplateOptions {
+  /**
+   * Allows you to use `html` imported from modules other than lit.
+   * It is especially useful when re-exporting `html` tagged templates.
+   */
+  litHtmlSources?: string[];
+}
+
+export interface CompiledTemplatePassOptions {
+  allowedImports?: string[];
+}
+
 /**
  * Matches the raw text elements.
  *
@@ -96,12 +108,16 @@ const elementDoesNotSupportInnerHtmlExpressions = new Set([
  * ```
  */
 class CompiledTemplatePass {
-  static getTransformer(): ts.TransformerFactory<ts.SourceFile> {
+  static getTransformer(
+    options?: CompileLitTemplateOptions
+  ): ts.TransformerFactory<ts.SourceFile> {
     return (
       context: ts.TransformationContext
     ): ts.Transformer<ts.SourceFile> => {
       return (sourceFile: ts.SourceFile): ts.SourceFile => {
-        const pass = new CompiledTemplatePass(context, sourceFile);
+        const pass = new CompiledTemplatePass(context, sourceFile, {
+          allowedImports: options?.litHtmlSources,
+        });
         pass.findTemplates(sourceFile);
         if (pass.expressionToTemplate.size === 0) {
           // No templates to compile.
@@ -170,10 +186,15 @@ class CompiledTemplatePass {
   private readonly checker: ReturnType<typeof getTypeChecker>;
   private constructor(
     private readonly context: ts.TransformationContext,
-    sourceFile: ts.SourceFile
+    sourceFile: ts.SourceFile,
+    options?: CompiledTemplatePassOptions
   ) {
     this.securityBrandIdent = context.factory.createUniqueName('b');
-    this.checker = getTypeChecker(sourceFile.fileName, sourceFile.text);
+    this.checker = getTypeChecker(
+      sourceFile.fileName,
+      sourceFile.text,
+      options
+    );
   }
 
   /**
@@ -591,8 +612,10 @@ class CompiledTemplatePass {
  * };
  * ```
  */
-export const compileLitTemplates = (): ts.TransformerFactory<ts.SourceFile> =>
-  CompiledTemplatePass.getTransformer();
+export const compileLitTemplates = (
+  options?: CompileLitTemplateOptions
+): ts.TransformerFactory<ts.SourceFile> =>
+  CompiledTemplatePass.getTransformer(options);
 
 /**
  * Regex to detect if an invalid octal sequence was used. It also detects the
