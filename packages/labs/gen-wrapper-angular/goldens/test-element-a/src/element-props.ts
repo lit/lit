@@ -19,7 +19,7 @@ export class ElementProps {
   private _el: ElementPropsElement;
   private _ngZone: NgZone;
 
-  constructor(e: ElementRef, ngZone: NgZone) {
+  constructor(e: ElementRef<ElementPropsElement>, ngZone: NgZone) {
     this._el = e.nativeElement;
     this._ngZone = ngZone;
 
