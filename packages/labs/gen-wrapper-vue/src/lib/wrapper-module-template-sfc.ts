@@ -106,16 +106,10 @@ const getElementTypeImports = (declaration: LitElementDeclaration) => {
 const getElementTypeExportsFromImports = (imports: string) =>
   imports.replace(/(?:^import)/gm, 'export type');
 
-const renderPropsParam = (
-  reactiveProperties: Map<string, ModelProperty>,
-  events: Map<string, EventModel>
-) => {
+const renderPropsParam = (reactiveProperties: Map<string, ModelProperty>) => {
   const hasProps = reactiveProperties.size > 0;
   if (hasProps) {
     return javascript`
-      const eventProps = ${renderEvents(events)};
-
-      const props = eventProps as (typeof eventProps & Props);
       for (const p in vueProps) {
         const v = vueProps[p as keyof Props];
         if ((v !== undefined) || hasRendered) {
@@ -127,9 +121,7 @@ const renderPropsParam = (
     `;
   }
 
-  return javascript`
-    const props = {} as Props;
-  `;
+  return '';
 };
 
 // TODO(sorvell): Add support for `v-bind`.
@@ -173,7 +165,10 @@ const wrapperTemplate = (
       const slots = useSlots();
 
       const render = () => {
-        ${renderPropsParam(reactiveProperties, events)}
+        const eventProps = ${renderEvents(events)};
+        const props = eventProps as (typeof eventProps & Props);
+
+        ${renderPropsParam(reactiveProperties)}
 
         return h(
           '${tagname}',
@@ -182,5 +177,5 @@ const wrapperTemplate = (
         );
       };
     </script>
-    <template><render v-defaults /></template>`;
+    <template><render${hasProps ? ' v-defaults' : ''} /></template>`;
 };

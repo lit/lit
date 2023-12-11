@@ -8,9 +8,10 @@ export interface Props {}
 const slots = useSlots();
 
 const render = () => {
-  const props = {} as Props;
+  const eventProps = {};
+  const props = eventProps as typeof eventProps & Props;
 
   return h('element-without-props', props, assignSlotNodes(slots as Slots));
 };
 </script>
-<template><render v-defaults /></template>
+<template><render /></template>
