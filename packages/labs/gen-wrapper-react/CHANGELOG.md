@@ -1,5 +1,14 @@
 # @lit-labs/gen-wrapper-react
 
+## 0.3.1
+
+### Patch Changes
+
+- [#4301](https://github.com/lit/lit/pull/4301) [`0d6ca983`](https://github.com/lit/lit/commit/0d6ca9830366989e67a67d4bf461affc20ce9c1c) - No longer include prerelease version of `@lit/react` in generated package.json.
+
+- Updated dependencies [[`2896209b`](https://github.com/lit/lit/commit/2896209b925169793898b10dc3409de4056c93f7), [`7a9804ad`](https://github.com/lit/lit/commit/7a9804adc676eb2e84252d31d600e59032b0482a)]:
+  - @lit-labs/analyzer@0.11.0
+
 ## 0.3.0
 
 ### Minor Changes

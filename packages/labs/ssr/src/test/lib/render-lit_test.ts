@@ -151,6 +151,13 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('render into a <script>', async () => {
+    const {render, renderScript} = await setup();
+    assert.throws(() => {
+      render(renderScript);
+    }, "This could be because you're attempting to render an expression in an invalid location.");
+  });
+
   /* Attribute Expressions */
 
   test('attribute expression with string value', async () => {
@@ -544,6 +551,187 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
         'https://lit.dev/docs/templates/expressions/#invalid-locations'
       );
     }
+  });
+
+  test('server-only templates', async () => {
+    const {render, trivialServerOnly} = await setup();
+    const result = await render(trivialServerOnly);
+    assert.is(result, `<div>Server only</div>`);
+  });
+
+  test('server-only template with a binding', async () => {
+    const {render, serverOnlyWithBinding} = await setup();
+    const result = await render(serverOnlyWithBinding);
+    assert.is(result, `<div>Server only</div>`);
+  });
+
+  test('server-only template with an array', async () => {
+    const {render, serverOnlyArray} = await setup();
+    const result = await render(serverOnlyArray);
+    assert.is(result, `<div>onetwothree</div>`);
+  });
+
+  test('server-only template inside server-only template', async () => {
+    const {render, serverOnlyInsideServerOnly} = await setup();
+    const result = await render(serverOnlyInsideServerOnly);
+    assert.is(result, `<div>Server only</div>`);
+  });
+
+  test(`server-only template can render a normal template`, async () => {
+    const {render, serverOnlyRenderHydratable} = await setup();
+    const result = render(serverOnlyRenderHydratable);
+    assert.is(
+      result,
+      `
+    <div>server only</div>
+    <!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->hydratable<!--/lit-part--></div><!--/lit-part-->
+  `
+    );
+  });
+
+  test(`normal template can't render a server-only template`, async () => {
+    const {render, hydratableRenderServerOnly} = await setup();
+    assert.throws(
+      () => render(hydratableRenderServerOnly),
+      /A server-only template can't be rendered inside an ordinary, hydratable template./
+    );
+  });
+
+  test('server-only template into raw element', async () => {
+    const {render, serverOnlyRawElementTemplate} = await setup();
+    const result = await render(serverOnlyRawElementTemplate);
+    assert.is(
+      result,
+      `
+    <title>No comments inside</title>
+    <textarea>This also works.</textarea>
+  `
+    );
+  });
+
+  test('server-only template into a <template> element', async () => {
+    const {render, serverOnlyInTemplateElement} = await setup();
+    const result = await render(serverOnlyInTemplateElement);
+    assert.is(
+      result,
+      `
+    <template>one<div>two<div>three</div><template>recursed</template></div></template>
+  `
+    );
+  });
+
+  test('server-only document template can render an entire document', async () => {
+    const {render, serverOnlyDocumentTemplate} = await setup();
+    const result = await render(serverOnlyDocumentTemplate);
+    assert.is(
+      result,
+      `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>No comments inside</title>
+      </head>
+      <body>
+        <textarea>This also works.</textarea>
+      </body>
+    </html>
+  `
+    );
+  });
+
+  // Regression test for https://github.com/lit/lit/issues/4417
+  test('server-only template can bind attributes to html tag', async () => {
+    const {render, serverOnlyBindAttributeOnHtml} = await setup();
+    const result = await render(serverOnlyBindAttributeOnHtml);
+    assert.is(
+      result,
+      `
+<!DOCTYPE html>
+<html lang="ko"></html>
+`
+    );
+  });
+
+  test('server-only document templates compose', async () => {
+    const {render, serverOnlyDocumentTemplatesCompose} = await setup();
+    const result = await render(serverOnlyDocumentTemplatesCompose);
+    assert.is(
+      result,
+      `
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <title>Server only title</title>
+  </head>
+  <body>
+    <p>Content</p>
+    <table><tr><td>Table content</td></tr></table>
+  </body>
+</html>
+`
+    );
+  });
+
+  test('server-only template throws on property bindings', async () => {
+    const {render, serverOnlyRenderPropertyBinding} = await setup();
+    assert.throws(
+      () => render(serverOnlyRenderPropertyBinding),
+      /Server-only templates can't bind to properties./
+    );
+  });
+
+  test('server-only template throws on event bindings', async () => {
+    const {render, serverOnlyRenderEventBinding} = await setup();
+    assert.throws(
+      () => render(serverOnlyRenderEventBinding),
+      /Server-only templates can't bind to events./
+    );
+  });
+
+  test('server-only template into a <script>', async () => {
+    const {render, renderServerOnlyScript, renderServerOnlyScriptDeep} =
+      await setup();
+    assert.throws(
+      () => render(renderServerOnlyScript),
+      /Found binding inside an executable <script> tag in a server-only template\./
+    );
+    assert.throws(
+      () => render(renderServerOnlyScriptDeep),
+      /Found binding inside an executable <script> tag in a server-only template\./
+    );
+  });
+
+  test('server-only template into a <style>', async () => {
+    const {render, renderServerOnlyStyle, renderServerOnlyStyleDeep} =
+      await setup();
+    assert.throws(
+      () => render(renderServerOnlyStyle),
+      /Found binding inside a <style> tag in a server-only template\./
+    );
+    assert.throws(
+      () => render(renderServerOnlyStyleDeep),
+      /Found binding inside a <style> tag in a server-only template\./
+    );
+  });
+
+  test('server-only template into non-executing script', async () => {
+    const {render, renderServerScriptNotJavaScript} = await setup();
+    const result = render(renderServerScriptNotJavaScript);
+    assert.is(
+      result,
+      `
+  <script type="json">
+    {"ok": true}
+  </script>`
+    );
+  });
+
+  test('server-only template with element part', async () => {
+    const {render, renderServerOnlyElementPart} = await setup();
+
+    assert.throws(() => {
+      render(renderServerOnlyElementPart);
+    }, /Server-only templates don't support element parts/);
   });
 }
 

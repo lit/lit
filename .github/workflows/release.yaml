@@ -4,12 +4,16 @@ on:
   push:
     branches:
       - main
-      # Temporary for pre-release.
-      - '3.0'
+
+permissions:
+  contents: read
 
 jobs:
   release:
     # Don't run on forks. We can and should only release from the main repo.
+    permissions:
+      contents: write  # for Git to git push
+      pull-requests: write # to allow creating PR
     if: github.repository == 'lit/lit'
 
     name: Release

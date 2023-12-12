@@ -78,6 +78,7 @@
         "../labs/task:build",
         "../lit-element:build",
         "../lit-html:build",
+        "../lit-html:build:compiled:ts:tests",
         "../lit:build",
         "../context:build",
         "../task:build",

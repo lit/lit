@@ -1,5 +1,13 @@
 # @lit-labs/analyzer
 
+## 0.11.0
+
+### Minor Changes
+
+- [#4322](https://github.com/lit/lit/pull/4322) [`2896209b`](https://github.com/lit/lit/commit/2896209b925169793898b10dc3409de4056c93f7) - Remove dependencies on Node-specific libaries. This change requries passing a path separator to `absoluteToPackage()`.
+
+- [#4260](https://github.com/lit/lit/pull/4260) [`7a9804ad`](https://github.com/lit/lit/commit/7a9804adc676eb2e84252d31d600e59032b0482a) - Adds TypeScript node reference to analyzer model objects
+
 ## 0.10.0
 
 ### Minor Changes

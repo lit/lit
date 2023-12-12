@@ -696,6 +696,52 @@
     },
     {
       "kind": "javascript-module",
+      "path": "element-without-props.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementWithoutProps",
+          "description": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "members": [
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "tagName": "element-without-props",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ElementWithoutProps",
+          "declaration": {"name": "ElementWithoutProps"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-without-props",
+          "declaration": {"name": "ElementWithoutProps"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "package-stuff.js",
       "declarations": [
         {

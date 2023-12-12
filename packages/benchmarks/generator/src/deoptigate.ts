@@ -13,6 +13,7 @@ import createPage from 'deoptigate/app/lib/create-page.js';
 import mkdirp from 'mkdirp';
 import {DevServerConfig, startDevServer} from '@web/dev-server';
 import childProcess from 'child_process';
+import {URL} from 'node:url';
 
 const generate = async (deoptFolder: string) => {
   const json = await logToJSON(path.join(deoptFolder, 'v8.log'), {
@@ -88,11 +89,16 @@ export const deoptigate = async (
   );
   const report = await generate(deoptFolder);
   if (open) {
-    const reportURL = path.relative(process.cwd(), report);
+    const reportPathname = path.relative(process.cwd(), report);
+    const reportUrl = new URL(`http://localhost:9999/`);
+    reportUrl.pathname = reportPathname;
     console.log('Opening report... press ^C to stop server and close.');
-    childProcess.exec(
-      `open -n -a "Google Chrome" http://localhost:9999/${reportURL}`
-    );
+    childProcess.execFile('open', [
+      '-n',
+      '-a',
+      'Google Chrome',
+      reportUrl.href,
+    ]);
   } else {
     server.close();
   }

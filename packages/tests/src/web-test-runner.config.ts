@@ -172,6 +172,7 @@ const config: TestRunnerConfig = {
     '../context/development/**/*_test.(js|html)',
     '../task/development/**/*_test.(js|html)',
     '../lit-element/development/**/*_test.(js|html)',
+    '../lit-html/compiled/**/*_test.(js|html)',
     '../lit-html/development/**/*_test.(js|html)',
     '../reactive-element/development/**/*_test.(js|html)',
   ],

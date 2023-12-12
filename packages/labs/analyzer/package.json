@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/analyzer",
-  "version": "0.10.0",
+  "version": "0.11.0",
   "publishConfig": {
     "access": "public"
   },
@@ -17,7 +17,9 @@
   "type": "module",
   "scripts": {
     "build": "wireit",
-    "test": "wireit"
+    "test": "wireit",
+    "test:server": "wireit",
+    "test:browser": "wireit"
   },
   "wireit": {
     "build": {
@@ -35,9 +37,28 @@
       ],
       "clean": "if-file-deleted"
     },
+    "build:ts-bundle": {
+      "#comment": "This builds a JS module of typescript for use in browser tests",
+      "command": "rollup -c rollup.config.typescript.js",
+      "files": [
+        "rollup.config.typescript.js"
+      ],
+      "output": [
+        "test/browser/typescript.js"
+      ]
+    },
     "test": {
+      "dependencies": [
+        "test:server",
+        "test:browser"
+      ]
+    },
+    "test:server": {
       "#comment": "The quotes around the file regex must be double quotes on windows!",
-      "command": "cross-env NODE_OPTIONS=--enable-source-maps uvu test \"_test\\.js$\"",
+      "command": "uvu test/server \"_test\\.js$\"",
+      "env": {
+        "NODE_OPTIONS": "--enable-source-maps"
+      },
       "dependencies": [
         "build",
         "../../lit:build"
@@ -45,6 +66,22 @@
       "files": [
         "test-files/"
       ],
+      "output": []
+    },
+    "test:browser": {
+      "command": "node ../../tests/run-web-tests.js \"test/browser/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build",
+        "build:ts-bundle",
+        "../../tests:build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        },
+        "MODE": "dev"
+      },
+      "files": [],
       "output": []
     }
   },
@@ -61,5 +98,9 @@
   "dependencies": {
     "package-json-type": "^1.0.3",
     "typescript": "~5.2.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "path-module": "^0.1.2"
   }
 }

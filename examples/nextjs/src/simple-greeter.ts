@@ -7,6 +7,7 @@
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import type React from 'react';
+import './count-display';
 
 @customElement('simple-greeter')
 export class SimpleGreeter extends LitElement {
@@ -44,7 +45,7 @@ export class SimpleGreeter extends LitElement {
     return html`
       <div>
         <h1>Hello, <span>${this.name}</span>!</h1>
-        <p>Count: ${this.count}</p>
+        <count-display .count=${this.count}></count-display>
         <button @click=${() => this.count++}>++</button>
       </div>
     `;
