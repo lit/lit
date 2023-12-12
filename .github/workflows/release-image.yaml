@@ -8,6 +8,9 @@ on:
     paths:
       - '**/CHANGELOG.md'
 
+permissions:
+  contents: read
+
 jobs:
   release-image:
     if: github.repository == 'lit/lit'

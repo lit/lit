@@ -314,13 +314,17 @@ class CompiledTemplatePass {
           }
           if (node.attrs.length > 0) {
             for (const attr of node.attrs) {
-              if (
-                attr.name.endsWith(boundAttributeSuffix) ||
-                attr.name.startsWith(marker)
-              ) {
+              const isAttributePart = attr.name.endsWith(boundAttributeSuffix);
+              const isElementPart = attr.name.startsWith(marker);
+              if (isAttributePart || isElementPart) {
                 attributesToRemove.add(attr);
-                const realName = attrNames[attrNameIndex++];
-                if (realName !== undefined) {
+                if (isAttributePart) {
+                  const realName = attrNames[attrNameIndex++];
+                  if (realName === undefined) {
+                    throw new Error(
+                      `Internal Error: realName is not defined. Please file an issue at https://github.com/lit/lit/issues/new/choose`
+                    );
+                  }
                   const statics = attr.value.split(marker);
                   // We store the case-sensitive name from `attrNames` (generated
                   // while parsing the template strings); note that this assumes

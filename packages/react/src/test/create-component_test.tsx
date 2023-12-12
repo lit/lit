@@ -100,8 +100,6 @@ class BasicElement extends ReactiveElement {
 
 let root: Root;
 let container: HTMLElement;
-let el: HTMLDivElement;
-let wrappedEl: BasicElement;
 
 const basicElementEvents = {
   onFoo: 'foo' as EventName<MouseEvent>,
@@ -115,23 +113,10 @@ const BasicElementComponent = createComponent({
   tagName,
 });
 
-const renderReactComponent = async (
-  props?: React.ComponentProps<typeof BasicElementComponent>
-) => {
+const render = (children: React.ReactNode) => {
   act(() => {
-    root.render(
-      <>
-        <div {...(props as React.HTMLAttributes<HTMLDivElement>)} />,
-        <x-foo {...props} />
-        <BasicElementComponent {...props} />,
-      </>
-    );
+    root.render(children);
   });
-
-  el = container.querySelector('div')!;
-  wrappedEl = container.querySelector(tagName)! as BasicElement;
-
-  await wrappedEl.updateComplete;
 };
 
 if (DEV_MODE) {
@@ -185,10 +170,6 @@ suite('createComponent', () => {
     }
   });
 
-  /*
-    The following test will not build if an incorrect typing occurs
-    when events are not provided to `createComponent`.
-  */
   test('renders element without optional event map', async () => {
     const ComponentWithoutEventMap = createComponent({
       react: React,
@@ -196,15 +177,14 @@ suite('createComponent', () => {
       tagName,
     });
 
-    const name = 'Component without event map.';
-    act(() => {
-      root.render(<ComponentWithoutEventMap>{name}</ComponentWithoutEventMap>);
-    });
+    const text = 'Component without event map.';
 
-    const elWithoutMap = container.querySelector(tagName)! as BasicElement;
-    await elWithoutMap.updateComplete;
+    render(<ComponentWithoutEventMap>{text}</ComponentWithoutEventMap>);
 
-    assert.equal(elWithoutMap.textContent, 'Component without event map.');
+    const el = container.querySelector(tagName)!;
+    await el.updateComplete;
+
+    assert.equal(el.textContent, text);
   });
 
   // Type only test to be caught at build time.
@@ -241,16 +221,34 @@ suite('createComponent', () => {
     />;
   });
 
-  test('works with text children', async () => {
-    const name = 'World';
-    act(() => {
-      root.render(<BasicElementComponent>Hello {name}</BasicElementComponent>);
+  // Type only test to be caught at build time.
+  test.skip('Prefer element property type over built-in HTMLAttributes', async () => {
+    const TestComponent = createComponent({
+      react: React,
+      tagName: 'my-component',
+      elementClass: class MyComponent extends ReactiveElement {
+        color: number = 0;
+      },
     });
 
-    const elWithChildren = container.querySelector(tagName)! as BasicElement;
-    await elWithChildren.updateComplete;
+    // `color` is `string | undefined` in React.HTMLAttributes.
+    // It should be happy with number though because that's how it's typed in
+    // the element above.
+    <TestComponent color={1} />;
 
-    assert.equal(elWithChildren.textContent, 'Hello World');
+    // @ts-expect-error color prop should not accept string anymore
+    <TestComponent color={'string'} />;
+  });
+
+  test('works with text children', async () => {
+    const name = 'World';
+
+    render(<BasicElementComponent>Hello {name}</BasicElementComponent>);
+
+    const el = container.querySelector(tagName)!;
+    await el.updateComplete;
+
+    assert.equal(el.textContent, 'Hello World');
   });
 
   test('has valid displayName', () => {
@@ -268,33 +266,36 @@ suite('createComponent', () => {
   });
 
   test('wrapper renders custom element that updates', async () => {
-    await renderReactComponent();
-    assert.isOk(wrappedEl);
-    assert.isOk(wrappedEl.hasUpdated);
+    render(<BasicElementComponent />);
+    const el = container.querySelector(tagName)!;
+    assert.isOk(el);
+    await el.updateComplete;
+    assert.isOk(el.hasUpdated);
   });
 
   test('can get ref to element', async () => {
     const elementRef1 = React.createRef<BasicElement>();
-    renderReactComponent({ref: elementRef1});
-    assert.equal(elementRef1.current, wrappedEl);
+    render(<BasicElementComponent ref={elementRef1} />);
+    assert.equal(elementRef1.current, container.querySelector(tagName));
+
     const elementRef2 = React.createRef<BasicElement>();
-    renderReactComponent({ref: elementRef2});
+    render(<BasicElementComponent ref={elementRef2} />);
     assert.equal(elementRef1.current, null);
-    assert.equal(elementRef2.current, wrappedEl);
-    renderReactComponent({ref: elementRef1});
-    assert.equal(elementRef1.current, wrappedEl);
+    assert.equal(elementRef2.current, container.querySelector(tagName));
+
+    render(<BasicElementComponent ref={elementRef1} />);
+    assert.equal(elementRef1.current, container.querySelector(tagName));
     assert.equal(elementRef2.current, null);
   });
 
   test('ref does not create new attribute on element', async () => {
-    await renderReactComponent({ref: undefined});
-
-    const outerHTML = wrappedEl?.outerHTML;
+    render(<BasicElementComponent ref={undefined} />);
+    const el = container.querySelector(tagName)!;
+    const outerHTML = el.outerHTML;
     const elementRef1 = React.createRef<BasicElement>();
-    await renderReactComponent({ref: elementRef1});
-
-    const elAfterRef = container.querySelector(tagName);
-    const outerHTMLAfterRef = elAfterRef?.outerHTML;
+    render(<BasicElementComponent ref={elementRef1} />);
+    const elAfterRef = container.querySelector(tagName)!;
+    const outerHTMLAfterRef = elAfterRef.outerHTML;
 
     assert.equal(outerHTML, outerHTMLAfterRef);
   });
@@ -304,286 +305,162 @@ suite('createComponent', () => {
     const refCb1 = (e: Element | null) => ref1Calls.push(e?.localName);
     const ref2Calls: Array<string | undefined> = [];
     const refCb2 = (e: Element | null) => ref2Calls.push(e?.localName);
-    renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, ['div', 'x-foo', tagName]);
-    renderReactComponent({ref: refCb2});
-    assert.deepEqual(ref1Calls, [
-      'div',
-      'x-foo',
-      tagName,
-      undefined,
-      undefined,
-      undefined,
-    ]);
-    assert.deepEqual(ref2Calls, ['div', 'x-foo', tagName]);
-    renderReactComponent({ref: refCb1});
-    assert.deepEqual(ref1Calls, [
-      'div',
-      'x-foo',
-      tagName,
-      undefined,
-      undefined,
-      undefined,
-      'div',
-      'x-foo',
-      tagName,
-    ]);
-    assert.deepEqual(ref2Calls, [
-      'div',
-      'x-foo',
-      tagName,
-      undefined,
-      undefined,
-      undefined,
-    ]);
+    render(<BasicElementComponent ref={refCb1} />);
+    assert.deepEqual(ref1Calls, [tagName]);
+    render(<BasicElementComponent ref={refCb2} />);
+    assert.deepEqual(ref1Calls, [tagName, undefined]);
+    assert.deepEqual(ref2Calls, [tagName]);
+    render(<BasicElementComponent ref={refCb1} />);
+    assert.deepEqual(ref1Calls, [tagName, undefined, tagName]);
+    assert.deepEqual(ref2Calls, [tagName, undefined]);
   });
 
-  test('can set attributes', async () => {
-    await renderReactComponent({});
-    assert.equal(el.getAttribute('id'), null);
-    assert.equal(el.id, '');
-    assert.equal(el.getAttribute('id'), wrappedEl.getAttribute('id'));
-    assert.equal(el.id, wrappedEl.id);
+  /**
+   * The following are testing parity of behavior against native elements in
+   * React on DOM reflecting attributes
+   */
 
-    await renderReactComponent({id: 'id'});
-    assert.equal(el.getAttribute('id'), 'id');
-    assert.equal(el.id, 'id');
-    assert.equal(el.getAttribute('id'), wrappedEl.getAttribute('id'));
-    assert.equal(el.id, wrappedEl.id);
+  for (const name of ['div', tagName]) {
+    const Tag = name === tagName ? BasicElementComponent : name;
+    let el: HTMLDivElement | BasicElement;
 
-    await renderReactComponent({id: undefined});
-    assert.equal(el.getAttribute('id'), null);
-    assert.equal(el.id, '');
-    assert.equal(el.getAttribute('id'), wrappedEl.getAttribute('id'));
-    assert.equal(el.id, wrappedEl.id);
+    test(`${name}: can set/unset attributes`, async () => {
+      render(<Tag />);
+      el = container.querySelector(name)!;
+      assert.equal(el.getAttribute('id'), null);
+      assert.equal(el.id, '');
 
-    await renderReactComponent({id: 'id2'});
-    assert.equal(el.getAttribute('id'), 'id2');
-    assert.equal(el.id, 'id2');
-    assert.equal(el.getAttribute('id'), wrappedEl.getAttribute('id'));
-    assert.equal(el.id, wrappedEl.id);
+      render(<Tag id="foo" />);
+      assert.equal(el.getAttribute('id'), 'foo');
+      assert.equal(el.id, 'foo');
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await renderReactComponent({id: null as any});
-    assert.equal(el.getAttribute('id'), null);
-    assert.equal(el.id, '');
-    assert.equal(el.getAttribute('id'), wrappedEl.getAttribute('id'));
-    assert.equal(el.id, wrappedEl.id);
+      // We currently require passing `undefined` to "unset" rather than
+      // omitting the prop
+      // See https://github.com/lit/lit/issues/4227
+      render(<Tag id={undefined} />);
+      assert.equal(el.getAttribute('id'), null);
+      assert.equal(el.id, '');
 
-    await renderReactComponent({id: 'id3'});
-    assert.equal(el.getAttribute('id'), 'id3');
-    assert.equal(el.id, 'id3');
-    assert.equal(el.getAttribute('id'), wrappedEl.getAttribute('id'));
-    assert.equal(el.id, wrappedEl.id);
-  });
+      render(<Tag id="bar" />);
+      assert.equal(el.getAttribute('id'), 'bar');
+      assert.equal(el.id, 'bar');
 
-  test('sets boolean attributes', async () => {
-    await renderReactComponent({});
-    assert.equal(el.getAttribute('hidden'), null);
-    assert.equal(el.hidden, false);
-    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
-    assert.equal(el.hidden, wrappedEl.hidden);
+      // TS doesn't like it but React can unset with `null` too
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render(<Tag id={null as any} />);
+      assert.equal(el.getAttribute('id'), null);
+      assert.equal(el.id, '');
 
-    await renderReactComponent({hidden: true});
-    assert.equal(wrappedEl.getAttribute('hidden'), '');
-    assert.equal(wrappedEl.hidden, true);
-    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
-    assert.equal(el.hidden, wrappedEl.hidden);
+      render(<Tag id="baz" />);
+      assert.equal(el.getAttribute('id'), 'baz');
+      assert.equal(el.id, 'baz');
+    });
 
-    await renderReactComponent({hidden: false});
-    assert.equal(wrappedEl.getAttribute('hidden'), null);
-    assert.equal(wrappedEl.hidden, false);
-    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
-    assert.equal(el.hidden, wrappedEl.hidden);
+    test(`${name}: set/unset boolean attributes`, async () => {
+      render(<Tag />);
+      el = container.querySelector(name)!;
+      assert.equal(el.getAttribute('hidden'), null);
+      assert.equal(el.hidden, false);
 
-    await renderReactComponent({hidden: true});
-    assert.equal(wrappedEl.getAttribute('hidden'), '');
-    assert.equal(wrappedEl.hidden, true);
-    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
-    assert.equal(el.hidden, wrappedEl.hidden);
+      render(<Tag hidden />);
+      assert.equal(el.getAttribute('hidden'), '');
+      assert.equal(el.hidden, true);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await renderReactComponent({hidden: null as any});
-    assert.equal(wrappedEl.getAttribute('hidden'), null);
-    assert.equal(wrappedEl.hidden, false);
-    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
-    assert.equal(el.hidden, wrappedEl.hidden);
+      render(<Tag hidden={false} />);
+      assert.equal(el.getAttribute('hidden'), null);
+      assert.equal(el.hidden, false);
 
-    await renderReactComponent({hidden: true});
-    assert.equal(wrappedEl.getAttribute('hidden'), '');
-    assert.equal(wrappedEl.hidden, true);
-    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
-    assert.equal(el.hidden, wrappedEl.hidden);
+      render(<Tag hidden />);
+      assert.equal(el.getAttribute('hidden'), '');
+      assert.equal(el.hidden, true);
 
-    await renderReactComponent({hidden: undefined});
-    assert.equal(el.getAttribute('hidden'), null);
-    assert.equal(el.hidden, false);
-    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
-    assert.equal(el.hidden, wrappedEl.hidden);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render(<Tag hidden={null as any} />);
+      assert.equal(el.getAttribute('hidden'), null);
+      assert.equal(el.hidden, false);
 
-    await renderReactComponent({hidden: true});
-    assert.equal(wrappedEl.getAttribute('hidden'), '');
-    assert.equal(wrappedEl.hidden, true);
-    assert.equal(el.getAttribute('hidden'), wrappedEl.getAttribute('hidden'));
-    assert.equal(el.hidden, wrappedEl.hidden);
-  });
+      render(<Tag hidden />);
+      assert.equal(el.getAttribute('hidden'), '');
+      assert.equal(el.hidden, true);
 
-  test('sets enumerated attributes', async () => {
-    await renderReactComponent({});
-    assert.equal(el.getAttribute('draggable'), null);
-    assert.equal(el.draggable, false);
-    assert.equal(
-      el.getAttribute('draggable'),
-      wrappedEl.getAttribute('draggable')
-    );
-    assert.equal(el.draggable, wrappedEl.draggable);
+      render(<Tag hidden={undefined} />);
+      assert.equal(el.getAttribute('hidden'), null);
+      assert.equal(el.hidden, false);
 
-    await renderReactComponent({draggable: true});
-    assert.equal(el.getAttribute('draggable'), 'true');
-    assert.equal(el.draggable, true);
-    assert.equal(
-      el.getAttribute('draggable'),
-      wrappedEl.getAttribute('draggable')
-    );
-    assert.equal(el.draggable, wrappedEl.draggable);
+      render(<Tag hidden />);
+      assert.equal(el.getAttribute('hidden'), '');
+      assert.equal(el.hidden, true);
+    });
 
-    await renderReactComponent({draggable: false});
-    assert.equal(el.getAttribute('draggable'), 'false');
-    assert.equal(el.draggable, false);
-    assert.equal(
-      el.getAttribute('draggable'),
-      wrappedEl.getAttribute('draggable')
-    );
-    assert.equal(el.draggable, wrappedEl.draggable);
+    test(`${name}: set/unset enumerated attributes`, async () => {
+      render(<Tag />);
+      el = container.querySelector(name)!;
+      assert.equal(el.getAttribute('draggable'), null);
+      assert.equal(el.draggable, false);
 
-    await renderReactComponent({draggable: true});
-    assert.equal(el.getAttribute('draggable'), 'true');
-    assert.equal(el.draggable, true);
-    assert.equal(
-      el.getAttribute('draggable'),
-      wrappedEl.getAttribute('draggable')
-    );
-    assert.equal(el.draggable, wrappedEl.draggable);
+      render(<Tag draggable />);
+      assert.equal(el.getAttribute('draggable'), 'true');
+      assert.equal(el.draggable, true);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await renderReactComponent({draggable: null as any});
-    assert.equal(el.getAttribute('draggable'), null);
-    assert.equal(el.draggable, false);
-    assert.equal(
-      el.getAttribute('draggable'),
-      wrappedEl.getAttribute('draggable')
-    );
-    assert.equal(el.draggable, wrappedEl.draggable);
+      render(<Tag draggable={false} />);
+      assert.equal(el.getAttribute('draggable'), 'false');
+      assert.equal(el.draggable, false);
 
-    await renderReactComponent({draggable: true});
-    assert.equal(el.getAttribute('draggable'), 'true');
-    assert.equal(el.draggable, true);
-    assert.equal(
-      el.getAttribute('draggable'),
-      wrappedEl.getAttribute('draggable')
-    );
-    assert.equal(el.draggable, wrappedEl.draggable);
+      render(<Tag draggable />);
+      assert.equal(el.getAttribute('draggable'), 'true');
+      assert.equal(el.draggable, true);
 
-    await renderReactComponent({draggable: undefined});
-    assert.equal(el.getAttribute('draggable'), null);
-    assert.equal(el.draggable, false);
-    assert.equal(
-      el.getAttribute('draggable'),
-      wrappedEl.getAttribute('draggable')
-    );
-    assert.equal(el.draggable, wrappedEl.draggable);
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render(<Tag draggable={null as any} />);
+      assert.equal(el.getAttribute('draggable'), null);
+      assert.equal(el.draggable, false);
 
-    await renderReactComponent({draggable: true});
-    assert.equal(el.getAttribute('draggable'), 'true');
-    assert.equal(el.draggable, true);
-    assert.equal(
-      el.getAttribute('draggable'),
-      wrappedEl.getAttribute('draggable')
-    );
-    assert.equal(el.draggable, wrappedEl.draggable);
-  });
+      render(<Tag draggable />);
+      assert.equal(el.getAttribute('draggable'), 'true');
+      assert.equal(el.draggable, true);
 
-  test('sets boolean aria attributes', async () => {
-    await renderReactComponent({});
-    assert.equal(el.getAttribute('aria-checked'), null);
-    assert.equal(
-      el.getAttribute('aria-checked'),
-      wrappedEl.getAttribute('aria-checked')
-    );
+      render(<Tag draggable={undefined} />);
+      assert.equal(el.getAttribute('draggable'), null);
+      assert.equal(el.draggable, false);
 
-    await renderReactComponent({'aria-checked': true});
-    assert.equal(el.getAttribute('aria-checked'), 'true');
-    assert.equal(
-      el.getAttribute('aria-checked'),
-      wrappedEl.getAttribute('aria-checked')
-    );
+      render(<Tag draggable="true" />);
+      assert.equal(el.getAttribute('draggable'), 'true');
+      assert.equal(el.draggable, true);
 
-    await renderReactComponent({'aria-checked': false});
-    assert.equal(el.getAttribute('aria-checked'), 'false');
-    assert.equal(
-      el.getAttribute('aria-checked'),
-      wrappedEl.getAttribute('aria-checked')
-    );
+      // The following test fails for basic-element only
+      // See https://github.com/lit/lit/issues/4391
+      if (name !== tagName) {
+        render(<Tag draggable="false" />);
+        assert.equal(el.getAttribute('draggable'), 'false');
+        assert.equal(el.draggable, false);
+      }
+    });
 
-    await renderReactComponent({'aria-checked': true});
-    assert.equal(el.getAttribute('aria-checked'), 'true');
-    assert.equal(
-      el.getAttribute('aria-checked'),
-      wrappedEl.getAttribute('aria-checked')
-    );
+    test(`${name}: sets/unsets boolean aria attributes`, async () => {
+      render(<Tag />);
+      el = container.querySelector(name)!;
+      assert.equal(el.getAttribute('aria-checked'), null);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await renderReactComponent({'aria-checked': null as any});
-    assert.equal(el.getAttribute('aria-checked'), null);
-    assert.equal(
-      el.getAttribute('aria-checked'),
-      wrappedEl.getAttribute('aria-checked')
-    );
+      render(<Tag aria-checked />);
+      assert.equal(el.getAttribute('aria-checked'), 'true');
 
-    await renderReactComponent({'aria-checked': true});
-    assert.equal(el.getAttribute('aria-checked'), 'true');
-    assert.equal(
-      el.getAttribute('aria-checked'),
-      wrappedEl.getAttribute('aria-checked')
-    );
+      render(<Tag aria-checked={false} />);
+      assert.equal(el.getAttribute('aria-checked'), 'false');
 
-    await renderReactComponent({'aria-checked': undefined});
-    assert.equal(el.getAttribute('aria-checked'), null);
-    assert.equal(
-      el.getAttribute('aria-checked'),
-      wrappedEl.getAttribute('aria-checked')
-    );
+      render(<Tag aria-checked />);
+      assert.equal(el.getAttribute('aria-checked'), 'true');
 
-    await renderReactComponent({'aria-checked': true});
-    assert.equal(el.getAttribute('aria-checked'), 'true');
-    assert.equal(
-      el.getAttribute('aria-checked'),
-      wrappedEl.getAttribute('aria-checked')
-    );
-  });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      render(<Tag aria-checked={null as any} />);
+      assert.equal(el.getAttribute('aria-checked'), null);
 
-  test('unsets reflected attributes from property with different specifier on null or undefined prop', async () => {
-    // Our types don't allow `ariaChecked`, only `aria-checked`, but it's
-    // possible for JS users, and the wrapper will set the property on the element
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await renderReactComponent({ariaChecked: true} as any);
+      render(<Tag aria-checked />);
+      assert.equal(el.getAttribute('aria-checked'), 'true');
 
-    // Firefox does not implement aria properties that reflect to attribute
-    if ('ariaChecked' in HTMLElement) {
-      assert.equal(wrappedEl.hasAttribute('aria-checked'), true);
-    }
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await renderReactComponent({ariaChecked: undefined} as any);
-    assert.equal(wrappedEl.hasAttribute('aria-checked'), false);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await renderReactComponent({ariaChecked: true} as any);
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    await renderReactComponent({ariaChecked: null} as any);
-    assert.equal(wrappedEl.hasAttribute('aria-checked'), false);
-  });
+      render(<Tag aria-checked={undefined} />);
+      assert.equal(el.getAttribute('aria-checked'), null);
+    });
+  }
 
   test('can listen to events', async () => {
     let fooEvent: Event | undefined,
@@ -598,79 +475,81 @@ suite('createComponent', () => {
     const onBar = (e: Event) => {
       barEvent = e;
     };
-    await renderReactComponent({
-      onFoo,
-      onBar,
-    });
-    wrappedEl.fire('foo');
+
+    render(<BasicElementComponent onFoo={onFoo} onBar={onBar} />);
+    const el = container.querySelector(tagName)!;
+    el.fire('foo');
     assert.equal(fooEvent!.type, 'foo');
-    wrappedEl.fire('bar');
+    el.fire('bar');
     assert.equal(barEvent!.type, 'bar');
     fooEvent = undefined;
     barEvent = undefined;
-    await renderReactComponent({
-      onFoo: undefined,
-    });
-    wrappedEl.fire('foo');
+
+    // Clear listener
+    render(<BasicElementComponent onFoo={undefined} />);
+    el.fire('foo');
     assert.equal(fooEvent, undefined);
-    wrappedEl.fire('bar');
+    el.fire('bar');
+    // We do not clear event listeners unless undefined is explicitly passed in
     assert.equal(barEvent!.type, 'bar');
     fooEvent = undefined;
     barEvent = undefined;
-    await renderReactComponent({
-      onFoo,
-    });
-    wrappedEl.fire('foo');
+
+    // Reattach listener
+    render(<BasicElementComponent onFoo={onFoo} />);
+    el.fire('foo');
     assert.equal(fooEvent!.type, 'foo');
-    wrappedEl.fire('bar');
+    el.fire('bar');
     assert.equal(barEvent!.type, 'bar');
-    await renderReactComponent({
-      onFoo: onFoo2,
-    });
+
+    // Replace listener
+    render(<BasicElementComponent onFoo={onFoo2} />);
     fooEvent = undefined;
     fooEvent2 = undefined;
-    wrappedEl.fire('foo');
+    el.fire('foo');
     assert.equal(fooEvent, undefined);
     assert.equal(fooEvent2!.type, 'foo');
-    await renderReactComponent({
-      onFoo,
-    });
+
+    // Replace listener again
+    render(<BasicElementComponent onFoo={onFoo} />);
     fooEvent = undefined;
     fooEvent2 = undefined;
-    wrappedEl.fire('foo');
+    el.fire('foo');
     assert.equal(fooEvent!.type, 'foo');
     assert.equal(fooEvent2, undefined);
   });
 
   test('can listen to native events', async () => {
     let clickEvent!: React.MouseEvent;
-    await renderReactComponent({
-      onClick(e: React.MouseEvent) {
-        clickEvent = e;
-      },
-    });
-    wrappedEl.click();
-    assert.equal(clickEvent?.type, 'click');
+    render(
+      <BasicElementComponent
+        onClick={(e) => {
+          clickEvent = e;
+        }}
+      />
+    );
+    const el = container.querySelector(tagName)!;
+    el.click();
+    assert.equal(clickEvent.type, 'click');
   });
 
   test('can set children', async () => {
-    const children = React.createElement(
-      'div'
-      // Note, constructing children like this is rare and the React type expects
-      // this to be an HTMLCollection even though that's not the output of
-      // `createElement`.
+    render(
+      <BasicElementComponent>
+        <div></div>
+      </BasicElementComponent>
     );
-    await renderReactComponent({children});
-    assert.equal(wrappedEl.childNodes.length, 1);
-    assert.equal(wrappedEl.firstElementChild!.localName, 'div');
+    const el = document.querySelector(tagName)!;
+    assert.equal(el.childNodes.length, 1);
+    assert.equal(el.firstElementChild!.localName, 'div');
   });
 
   test('can set reserved React properties', async () => {
-    await renderReactComponent({
-      style: {display: 'block'},
-      className: 'foo bar',
-    });
-    assert.equal(wrappedEl.style.display, 'block');
-    assert.equal(wrappedEl.getAttribute('class'), 'foo bar');
+    render(
+      <BasicElementComponent style={{display: 'block'}} className="foo bar" />
+    );
+    const el = document.querySelector(tagName)!;
+    assert.equal(el.style.display, 'block');
+    assert.equal(el.getAttribute('class'), 'foo bar');
   });
 });

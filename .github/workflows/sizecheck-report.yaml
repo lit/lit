@@ -1,0 +1,51 @@
+name: Report Sizecheck Results
+
+on:
+  workflow_run:
+    workflows: [Sizecheck]
+    branches: ['**']
+    types: [completed]
+
+permissions:
+  contents: read
+
+jobs:
+  report:
+    permissions:
+      actions: read  # for dawidd6/action-download-artifact to query and download artifacts
+      pull-requests: write  # for thollander/actions-comment-pull-request to write comment
+    name: Report sizecheck result
+    runs-on: ubuntu-latest
+    steps:
+      # Download the artifact from the triggering workflow that contains the
+      # size check results and PR number to report to
+      - name: Download artifact
+        uses: dawidd6/action-download-artifact@v2
+        with:
+          workflow: ${{ github.event.workflow.id }}
+          run_id: ${{ github.event.workflow_run.id }}
+          name: sizecheck
+          path: artifacts
+
+      # `workflow_run` triggered workflow don't always have access to PR number
+      # from event so it is pass via an artifact from the triggering workflow
+      - name: Get pull request number from artifact
+        id: pr_num
+        run: echo "PR_NUMBER=$(cat artifacts/pr_number.txt)" >> $GITHUB_OUTPUT
+        shell: bash
+
+      - name: Comment on size report empty
+        if: ${{ github.event.workflow_run.conclusion == 'success' }}
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          message: 'The size of lit-html.js and lit-core.min.js are as expected.'
+          comment_tag: check-size # ensures we overwrite old failure comment if present
+          pr_number: ${{ steps.pr_num.outputs.PR_NUMBER }}
+
+      - name: Comment about failing size report
+        if: ${{ github.event.workflow_run.conclusion == 'failure' }}
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          filePath: artifacts/check-size-out.md
+          comment_tag: check-size # ensures we create or update one size comment
+          pr_number: ${{ steps.pr_num.outputs.PR_NUMBER }}

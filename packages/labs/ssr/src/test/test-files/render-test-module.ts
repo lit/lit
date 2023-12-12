@@ -9,6 +9,7 @@ import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
+import {html as serverhtml} from '../../lib/server-template.js';
 export {digestForTemplateResult} from '@lit-labs/ssr-client';
 
 export {render} from '../../lib/render-lit-html.js';
@@ -287,3 +288,108 @@ export const templateUsingAnInvalidExpressLocation = () => {
   const value = 'Invalid expression location';
   return html`<template><div>${value}</div></template>`;
 };
+
+export const trivialServerOnly = serverhtml`<div>Server only</div>`;
+
+export const serverOnlyWithBinding = serverhtml`<div>${'Server only'}</div>`;
+
+export const serverOnlyInsideServerOnly = serverhtml`<div>${serverhtml`Server only`}</div>`;
+
+export const serverOnlyRawElementTemplate = serverhtml`
+    <title>${'No'} comments ${'inside'}</title>
+    <textarea>${'This also'} works${'.'}</textarea>
+  `;
+
+export const serverOnlyInTemplateElement = serverhtml`
+    <template>${'one'}<div>${'two'}<div>${'three'}</div><template>${'recursed'}</template></div></template>
+  `;
+
+export const serverOnlyDocumentTemplate = serverhtml`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>${'No'} comments ${'inside'}</title>
+      </head>
+      <body>
+        <textarea>${'This also'} works${'.'}</textarea>
+      </body>
+    </html>
+  `;
+
+export const serverOnlyBindAttributeOnHtml = serverhtml`
+<!DOCTYPE html>
+<html lang="${'ko'}"></html>
+`;
+
+export const serverOnlyDocumentTemplatesCompose = serverhtml`
+${serverhtml`<!DOCTYPE html>`}
+${serverhtml`<html lang="${'ko'}">
+  ${serverhtml`<head>
+    ${serverhtml`<title>${'Server only title'}</title>`}
+  </head>`}
+  ${serverhtml`<body>
+    ${serverhtml`<p>${'Content'}</p>`}
+    ${serverhtml`<table>${serverhtml`<tr>${serverhtml`<td>${'Table content'}</td>`}</tr>`}</table>`}
+  </body>`}
+</html>`}
+`;
+
+export const serverOnlyArray = serverhtml`<div>${[
+  'one',
+  'two',
+  'three',
+]}</div>`;
+
+export const serverOnlyRenderHydratable = serverhtml`
+    <div>${'server only'}</div>
+    ${html`<div>${'hydratable'}</div>`}
+  `;
+
+export const hydratableRenderServerOnly = html`
+  <div>${'dynamic!'}</div>
+  ${serverhtml`<div>${'one time'}</div>`}
+`;
+
+export const serverOnlyRenderPropertyBinding = serverhtml`<div .foo=${'server only'}></div>`;
+
+export const serverOnlyRenderEventBinding = serverhtml`<div @click=${() =>
+  console.log('clicked!')}></div>`;
+
+export const renderScript = html` <script>
+  console.log('${'This is dangerous!'}');
+</script>`;
+
+export const renderServerOnlyScript = serverhtml`
+  <script>
+    console.log("${'This is dangerous!'}");
+  </script>`;
+
+export const renderServerOnlyScriptDeep = serverhtml`
+  <script>
+    <div>
+      console.log("${'This is dangerous!'}");
+    </div>
+  </script>`;
+
+export const renderServerOnlyStyle = serverhtml`
+  <style>
+    div {
+      color: ${'red'};
+    }
+  </style>`;
+
+export const renderServerOnlyStyleDeep = serverhtml`
+  <style>
+    <div>
+      color: ${'red'};
+    </div>
+  </style>`;
+
+export const renderServerScriptNotJavaScript = serverhtml`
+  <script type="json">
+    {"ok": ${true}}
+  </script>`;
+
+// This doesn't have to make sense, the test is that it'll throw at the
+// template preparation phase.
+export const renderServerOnlyElementPart = serverhtml`<div ${'foo'}></div>`;

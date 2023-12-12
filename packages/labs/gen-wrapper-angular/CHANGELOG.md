@@ -1,5 +1,12 @@
 # @lit-labs/gen-wrapper-angular
 
+## 0.1.1
+
+### Patch Changes
+
+- Updated dependencies [[`2896209b`](https://github.com/lit/lit/commit/2896209b925169793898b10dc3409de4056c93f7), [`7a9804ad`](https://github.com/lit/lit/commit/7a9804adc676eb2e84252d31d600e59032b0482a)]:
+  - @lit-labs/analyzer@0.11.0
+
 ## 0.1.0
 
 ### Minor Changes

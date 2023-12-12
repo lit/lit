@@ -24,6 +24,24 @@ const nextConfig = {
 module.exports = withLitSSR(nextConfig);
 ```
 
+### Options
+
+You can provide an options object as you create the plugin.
+
+e.g.
+
+```js
+const withLitSSR = require('@lit-labs/nextjs')({
+  addDeclarativeShadowDomPolyfill: true,
+});
+```
+
+The following options are supported:
+
+| Property                          | Type      | Description                                                                                                                                                                      |
+| --------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addDeclarativeShadowDomPolyfill` | `boolean` | If `true`, the client bundle will include a script that applies the [Declarative Shadow DOM polyfill](https://github.com/webcomponents/template-shadowroot). Defaults to `true`. |
+
 ## Considerations
 
 The plugin has been tested with Next.js versions 12 and 13. It currently does not support usage with the beta `app` directory introduced with version 13. Follow this [issue](https://github.com/lit/lit/issues/3657) for updates on supporting this feature.

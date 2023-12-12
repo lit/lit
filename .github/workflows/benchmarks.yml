@@ -2,6 +2,9 @@ name: Benchmarks
 
 on: [pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   benchmarks:
     name: benchmarks
@@ -20,23 +23,6 @@ jobs:
 
       - name: NPM install
         run: npm ci
-
-      - name: Generate size report
-        run: npm run benchmark:size
-
-      - name: Comment on size report empty
-        if: ${{ !failure() }}
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          message: 'The size of lit-html.js and lit-core.min.js are as expected.'
-          comment_tag: check-size # ensures we delete the comment if present
-
-      - name: Comment about failing size report
-        if: ${{ failure() }}
-        uses: thollander/actions-comment-pull-request@v2
-        with:
-          filePath: scripts/check-size-out.md
-          comment_tag: check-size # ensures we create or update one size comment
 
       - name: Build
         run: |

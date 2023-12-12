@@ -71,17 +71,22 @@ ${elements.map((element) => wrapperTemplate(element))}
 
 const wrapperTemplate = (element: LitElementDeclaration) => {
   const {name, tagname, events, reactiveProperties} = element;
+  const requiresNgZone = reactiveProperties.size > 0;
+  const requiresEl = reactiveProperties.size > 0 || events.size > 0;
   return javascript`@Component({
   selector: '${tagname}',
   template: '<ng-content></ng-content>',
 })
 export class ${name} {
-  private _el: ${name}Element;
-  private _ngZone: NgZone;
+  ${requiresEl ? javascript`private _el: ${name}Element;` : ''}
+  ${requiresNgZone ? javascript`private _ngZone: NgZone;` : ''}
 
-  constructor(e: ElementRef, ngZone: NgZone) {
-    this._el = e.nativeElement;
-    this._ngZone = ngZone;
+  constructor(
+    ${requiresEl ? 'e' : '_e'}: ElementRef<${name}Element>,
+    ${requiresNgZone ? 'ngZone' : '_ngZone'}: NgZone
+  ) {
+    ${requiresEl ? javascript`this._el = e.nativeElement;` : ''}
+    ${requiresNgZone ? javascript`this._ngZone = ngZone;` : ''}
     ${Array.from(events.keys()).map(
       (eventName) => javascript`
     this._el.addEventListener('${eventName}', (e: Event) => {
