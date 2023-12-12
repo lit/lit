@@ -31,8 +31,8 @@ const render = () => {
     onSubChanged: (event: CustomEvent<unknown>) =>
       emit('sub-changed', event as CustomEvent<unknown>),
   };
-
   const props = eventProps as typeof eventProps & Props;
+
   for (const p in vueProps) {
     const v = vueProps[p as keyof Props];
     if (v !== undefined || hasRendered) {

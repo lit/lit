@@ -39,8 +39,8 @@ const render = () => {
     onAChanged: (event: CustomEvent<unknown>) =>
       emit('a-changed', event as CustomEvent<unknown>),
   };
-
   const props = eventProps as typeof eventProps & Props;
+
   for (const p in vueProps) {
     const v = vueProps[p as keyof Props];
     if (v !== undefined || hasRendered) {
