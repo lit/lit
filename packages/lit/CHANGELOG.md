@@ -1,5 +1,38 @@
 # Change Log
 
+## 3.1.0
+
+### Minor Changes
+
+- [#4309](https://github.com/lit/lit/pull/4309) [`949a5467`](https://github.com/lit/lit/commit/949a54677748a1f83ec4d166bd40e244de3afda7) - Adds two new types: UncompiledTemplateResult and MaybeCompiledTemplateResult. Currently UncompiledTemplateResult is the same as TemplateResult, and MaybeCompiledTemplateResult is the union of the compiled and uncompiled types.
+
+### Patch Changes
+
+- [#4387](https://github.com/lit/lit/pull/4387) [`bf551b5b`](https://github.com/lit/lit/commit/bf551b5bdc816c1b0117ab436c50390ae3f5686d) - Ensure `renderRoot` exists before first update (#4268)
+
+- [#4282](https://github.com/lit/lit/pull/4282) [`c7922a0c`](https://github.com/lit/lit/commit/c7922a0cb90075a9e4c72f93078e411a303c54d1) Thanks [@MaxArt2501](https://github.com/MaxArt2501)! - Fix a bug where accessing a `@query` decorated field with the `cache` flag set before the first update would result in `null` being cached permanently. `null` will no longer be cached before the first update and in `DEV_MODE` now raises a warning.
+
+- [#4388](https://github.com/lit/lit/pull/4388) [`839ca0f8`](https://github.com/lit/lit/commit/839ca0f81a451fbaae97d958aafcaf4c52df9b65) - Fixes bug where adding or removing controllers during a reactive controller lifecycle would affect the execution of other controllers (#4266). Controllers can now be added/removed during lifecycle without affecting others.
+
+- Updated dependencies [[`949a5467`](https://github.com/lit/lit/commit/949a54677748a1f83ec4d166bd40e244de3afda7)]:
+  - lit-html@3.1.0
+
+## 3.0.2
+
+### Patch Changes
+
+- [#4345](https://github.com/lit/lit/pull/4345) [`02b8d620`](https://github.com/lit/lit/commit/02b8d62003a16075ce3873ac3e40db43c0254ecf) - Add a dev mode warning if a static value such as `literal` or `unsafeStatic` is detected within the non-static `html` tag function. These should only be used with the static `html` tag function imported from `lit-html/static.js` or `lit/static-html.js`.
+
+## 3.0.1
+
+### Patch Changes
+
+- [#4240](https://github.com/lit/lit/pull/4240) [`edf998c9`](https://github.com/lit/lit/commit/edf998c9fe34183888ffc781dd330dc8a962dd7a) Thanks [@remziatay](https://github.com/remziatay)! - Improved the type inferece of the `choose()` directive to properly restrict the case type inferred from provided value. **Note**: If this change creates a type error in your code, there must have been an unreachable case that can be removed, or the type of your `value` might be missing a valid case in the union.
+
+- [#4310](https://github.com/lit/lit/pull/4310) [`8f674ab3`](https://github.com/lit/lit/commit/8f674ab319e4eadbf5b028f1c0bd15d276c02d0e) Thanks [@megheaiulian](https://github.com/megheaiulian)! - The `when()` directive now calls the case functions with the provided condition value as an argument. This allows the narrowing of types for the condition value based on its truthiness when used as a parameter for the case function.
+
+- [#4284](https://github.com/lit/lit/pull/4284) [`89a5b088`](https://github.com/lit/lit/commit/89a5b0882b3048e3e95a22eb739c649adc9de055) - Allow `null` to be in the type of `@query()` decorated fields
+
 ## 3.0.0
 
 ### Major Changes

@@ -993,7 +993,7 @@ export abstract class ReactiveElement
   /**
    * Set of controllers.
    */
-  private __controllers?: ReactiveController[];
+  private __controllers?: Set<ReactiveController>;
 
   constructor() {
     super();
@@ -1030,7 +1030,7 @@ export abstract class ReactiveElement
    * @category controllers
    */
   addController(controller: ReactiveController) {
-    (this.__controllers ??= []).push(controller);
+    (this.__controllers ??= new Set()).add(controller);
     // If a controller is added after the element has been connected,
     // call hostConnected. Note, re-using existence of `renderRoot` here
     // (which is set in connectedCallback) to avoid the need to track a
@@ -1045,9 +1045,7 @@ export abstract class ReactiveElement
    * @category controllers
    */
   removeController(controller: ReactiveController) {
-    // Note, if the indexOf is -1, the >>> will flip the sign which makes the
-    // splice do nothing.
-    this.__controllers?.splice(this.__controllers.indexOf(controller) >>> 0, 1);
+    this.__controllers?.delete(controller);
   }
 
   /**
@@ -1105,7 +1103,7 @@ export abstract class ReactiveElement
    * @category lifecycle
    */
   connectedCallback() {
-    // Create renderRoot before first update.
+    // Create renderRoot before controllers `hostConnected`
     (this as Mutable<typeof this, 'renderRoot'>).renderRoot ??=
       this.createRenderRoot();
     this.enableUpdating(true);
@@ -1239,22 +1237,12 @@ export abstract class ReactiveElement
    * @param oldValue old value of requesting property
    * @param options property options to use instead of the previously
    *     configured options
-   * @param initial whether this call is for the initial value of the property.
-   *     Initial values do not reflect to an attribute.
    * @category updates
    */
   requestUpdate(
     name?: PropertyKey,
     oldValue?: unknown,
     options?: PropertyDeclaration
-  ): void;
-  /* @internal */
-  requestUpdate(
-    name?: PropertyKey,
-    oldValue?: unknown,
-    options?: PropertyDeclaration,
-    initial = false,
-    initialValue?: unknown
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -1262,7 +1250,7 @@ export abstract class ReactiveElement
         this.constructor as typeof ReactiveElement
       ).getPropertyOptions(name);
       const hasChanged = options.hasChanged ?? notEqual;
-      const newValue = initial ? initialValue : this[name as keyof this];
+      const newValue = this[name as keyof this];
       if (hasChanged(newValue, oldValue)) {
         this._$changeProperty(name, oldValue, options);
       } else {
@@ -1379,6 +1367,10 @@ export abstract class ReactiveElement
     }
     debugLogEvent?.({kind: 'update'});
     if (!this.hasUpdated) {
+      // Create renderRoot before first update. This occurs in `connectedCallback`
+      // but is done here to support out of tree calls to `enableUpdating`/`performUpdate`.
+      (this as Mutable<typeof this, 'renderRoot'>).renderRoot ??=
+        this.createRenderRoot();
       if (DEV_MODE) {
         // Produce warning if any reactive properties on the prototype are
         // shadowed by class fields. Instance fields set before upgrade are
@@ -1416,6 +1408,9 @@ export abstract class ReactiveElement
       // initializers, so we just set them anyway - a difference from
       // experimental decorators on fields and standard decorators on
       // auto-accessors.
+      // For context why experimentalDecorators with auto accessors are handled
+      // specifically also see:
+      // https://github.com/lit/lit/pull/4183#issuecomment-1711959635
       const elementProperties = (this.constructor as typeof ReactiveElement)
         .elementProperties;
       if (elementProperties.size > 0) {
@@ -1668,7 +1663,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(global.reactiveElementVersions ??= []).push('2.0.0');
+(global.reactiveElementVersions ??= []).push('2.0.2');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

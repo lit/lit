@@ -26,6 +26,7 @@ import {
   PartInfo,
   DirectiveParameters,
 } from 'lit-html/directive.js';
+import {isCompiledTemplateResult} from 'lit-html/directive-helpers.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
@@ -35,6 +36,7 @@ import {repeat} from 'lit-html/directives/repeat.js';
 import {AsyncDirective} from 'lit-html/async-directive.js';
 
 import {createRef, ref} from 'lit-html/directives/ref.js';
+import {literal, unsafeStatic} from 'lit-html/static.js';
 
 // For compiled template tests
 import {_$LH} from 'lit-html/private-ssr-support.js';
@@ -48,6 +50,10 @@ const isIe = ua.indexOf('Trident/') > 0;
 // We don't have direct access to DEV_MODE, but this is a good enough
 // proxy.
 const DEV_MODE = render.setSanitizer != null;
+// Tests are compiled if the passed in runtime template has been
+// compiled.
+const testAreCompiled = isCompiledTemplateResult(html``);
+const skipTestIfCompiled = testAreCompiled ? test.skip : test;
 
 class FireEventDirective extends Directive {
   render() {
@@ -3246,5 +3252,19 @@ suite('lit-html', () => {
       );
       assertNoWarning();
     });
+
+    skipTestIfCompiled(
+      'Static values warn if detected without static html tag',
+      () => {
+        html`${literal`<p>Hello</p>`}`;
+        assertWarning('static');
+
+        html`<div>${unsafeStatic('<p>Hello</p>')}</div>`;
+        assertWarning('static');
+
+        html`<h1 attribute="${unsafeStatic('test')}"></h1>`;
+        assertWarning('static');
+      }
+    );
   });
 });

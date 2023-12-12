@@ -18,7 +18,7 @@ export class ElementEvents {
   private _el: ElementEventsElement;
   private _ngZone: NgZone;
 
-  constructor(e: ElementRef, ngZone: NgZone) {
+  constructor(e: ElementRef<ElementEventsElement>, ngZone: NgZone) {
     this._el = e.nativeElement;
     this._ngZone = ngZone;
 

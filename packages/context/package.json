@@ -1,6 +1,6 @@
 {
   "name": "@lit/context",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Helpers and controllers for using Context protocol",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -50,7 +50,6 @@
         "build:rollup",
         "build:ts",
         "build:ts:std-decorators-tests",
-        "build:ts:lit2-tests",
         "build:ts:types",
         "../lit:build",
         "../reactive-element:build",
@@ -217,7 +216,7 @@
     "@lit-internal/scripts": "^1.0.1",
     "@lit-labs/testing": "^0.2.2",
     "@types/trusted-types": "^2.0.2",
-    "lit": "^3.0.0"
+    "lit": "^3.1.0"
   },
   "publishConfig": {
     "access": "public"

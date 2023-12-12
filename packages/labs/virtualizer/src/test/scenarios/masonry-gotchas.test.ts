@@ -11,6 +11,10 @@ import '../../lit-virtualizer.js';
 import {masonry} from '../../layouts/masonry.js';
 import {expect, html as testingHtml, fixture} from '@open-wc/testing';
 
+/*
+  This file contains regression tests for https://github.com/lit/lit/issues/3815
+*/
+
 type Item = {aspectRatio: number};
 
 @customElement('masonry-gotchas')
@@ -31,6 +35,9 @@ export class MasonryGotchas extends LitElement {
   @property()
   itemSize: `${number}px` = '150px';
 
+  @property({type: Array})
+  items: Item[] = [{aspectRatio: 1}, {aspectRatio: 2}];
+
   render() {
     return html`
       <lit-virtualizer
@@ -40,7 +47,7 @@ export class MasonryGotchas extends LitElement {
           gap: '8px',
           getAspectRatio: (item) => (item as unknown as Item).aspectRatio,
         })}
-        .items=${[{aspectRatio: 1}, {aspectRatio: 2}]}
+        .items=${this.items}
         .renderItem=${(_: Item) => html` <div></div> `}
       ></lit-virtualizer>
     `;
@@ -76,5 +83,17 @@ describe("Calculate range properly even if last item placed doesn't extend the f
     );
     const virtualizer = el.shadowRoot!.querySelector('lit-virtualizer')!;
     expect(virtualizer.children.length).to.equal(2);
+  });
+
+  it('should render all three children', async () => {
+    const el = await fixture<MasonryGotchas>(
+      testingHtml`
+          <masonry-gotchas></masonry-gotchas>
+        `
+    );
+    el.items = [{aspectRatio: 1}, {aspectRatio: 0.5}, {aspectRatio: 2}];
+    const virtualizer = el.shadowRoot!.querySelector('lit-virtualizer')!;
+    await virtualizer.layoutComplete;
+    expect(virtualizer.children.length).to.equal(3);
   });
 });

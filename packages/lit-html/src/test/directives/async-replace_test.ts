@@ -179,6 +179,30 @@ suite('asyncReplace', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
   });
 
+  test('renders the same iterable value when re-rendered with no new value emitted', async () => {
+    const t = (iterable: any) => html`<div>${asyncReplace(iterable)}</div>`;
+    render(t(iterable), container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    await iterable.push('hello');
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>hello</div>'
+    );
+
+    render(t(iterable), container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>hello</div>'
+    );
+
+    render(t(iterable), container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>hello</div>'
+    );
+  });
+
   test('renders new value over a pending iterable', async () => {
     const t = (v: any) => html`<div>${v}</div>`;
     // This is a little bit of an odd usage of directives as values, but it

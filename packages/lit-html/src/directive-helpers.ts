@@ -8,8 +8,9 @@ import {
   _$LH,
   Part,
   DirectiveParent,
-  TemplateResult,
   CompiledTemplateResult,
+  MaybeCompiledTemplateResult,
+  UncompiledTemplateResult,
 } from './lit-html.js';
 import {
   DirectiveResult,
@@ -49,11 +50,11 @@ export type TemplateResultType =
   (typeof TemplateResultType)[keyof typeof TemplateResultType];
 
 type IsTemplateResult = {
-  (val: unknown): val is TemplateResult | CompiledTemplateResult;
+  (val: unknown): val is MaybeCompiledTemplateResult;
   <T extends TemplateResultType>(
     val: unknown,
     type: T
-  ): val is TemplateResult<T>;
+  ): val is UncompiledTemplateResult<T>;
 };
 
 /**
@@ -62,11 +63,11 @@ type IsTemplateResult = {
 export const isTemplateResult: IsTemplateResult = (
   value: unknown,
   type?: TemplateResultType
-): value is TemplateResult =>
+): value is UncompiledTemplateResult =>
   type === undefined
     ? // This property needs to remain unminified.
-      (value as TemplateResult)?.['_$litType$'] !== undefined
-    : (value as TemplateResult)?.['_$litType$'] === type;
+      (value as UncompiledTemplateResult)?.['_$litType$'] !== undefined
+    : (value as UncompiledTemplateResult)?.['_$litType$'] === type;
 
 /**
  * Tests if a value is a CompiledTemplateResult.

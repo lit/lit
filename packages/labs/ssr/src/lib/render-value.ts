@@ -6,7 +6,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {TemplateResult, ChildPart} from 'lit';
+import type {TemplateResult, ChildPart, CompiledTemplateResult} from 'lit';
 import type {
   Directive,
   DirectiveClass,
@@ -20,6 +20,7 @@ import {
   isTemplateResult,
   getDirectiveClass,
   TemplateResultType,
+  isCompiledTemplateResult,
 } from 'lit/directive-helpers.js';
 import {_$LH} from 'lit-html/private-ssr-support.js';
 
@@ -50,13 +51,22 @@ import {
 
 import {escapeHtml} from './util/escape-html.js';
 
-import {parseFragment} from 'parse5';
-import {isElementNode, isCommentNode, traverse} from '@parse5/tools';
+import {parseFragment, parse} from 'parse5';
+import {
+  isElementNode,
+  isCommentNode,
+  traverse,
+  isTextNode,
+  isTemplateNode,
+  Template,
+  Element,
+} from '@parse5/tools';
 
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
 
 import type {RenderResult} from './render-result.js';
+import {isHydratable} from './server-template.js';
 
 declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {
@@ -275,7 +285,10 @@ type Op =
  * - `custom-element-close`
  *   - Pop the CE `instance`+`renderer` off the `customElementInstanceStack`
  */
-const getTemplateOpcodes = (result: TemplateResult) => {
+const getTemplateOpcodes = (
+  result: TemplateResult,
+  isServerTemplate = false
+) => {
   const template = templateCache.get(result.strings);
   if (template !== undefined) {
     return template;
@@ -289,12 +302,17 @@ const getTemplateOpcodes = (result: TemplateResult) => {
     TemplateResultType.HTML
   );
 
+  const hydratable = isHydratable(result);
+
   /**
    * The html string is parsed into a parse5 AST with source code information
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
+   *
+   * Server Templates need to use `parse` as they may contain document tags such
+   * as `<html>`.
    */
-  const ast = parseFragment(String(html), {
+  const ast = (isServerTemplate ? parse : parseFragment)(String(html), {
     sourceCodeLocationInfo: true,
   });
 
@@ -440,6 +458,17 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
                 name as string
               )!;
+              if (!hydratable) {
+                if (prefix === '.') {
+                  throw new Error(
+                    `Server-only templates can't bind to properties. Bind to attributes instead, as they can be serialized when the template is rendered and sent to the browser.`
+                  );
+                } else if (prefix === '@') {
+                  throw new Error(
+                    `Server-only templates can't bind to events. There's no way to serialize an event listener when generating HTML and sending it to the browser.`
+                  );
+                }
+              }
               ops.push({
                 type: 'attribute-part',
                 index: nodeIndex,
@@ -457,6 +486,10 @@ const getTemplateOpcodes = (result: TemplateResult) => {
                 useCustomElementInstance: node.isDefinedCustomElement,
               });
             } else {
+              if (!hydratable) {
+                throw new Error(`Server-only templates don't support element parts, as their API does not currently give them any way to render anything on the server. Found in template:
+    ${displayTemplateResult(result)}`);
+              }
               ops.push({
                 type: 'element-part',
                 index: nodeIndex,
@@ -489,7 +522,56 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           ops.push({
             type: 'custom-element-shadow',
           });
+        } else if (
+          !hydratable &&
+          /^(title|textarea|script|style)$/.test(node.tagName)
+        ) {
+          const dangerous = isJavaScriptScriptTag(node);
+          // Marker comments in a rawtext element will be parsed as text,
+          // so we need to look at the text value of childnodes to try to
+          // find them and render child-part opcodes.
+          for (const child of node.childNodes) {
+            if (!isTextNode(child)) {
+              throw new Error(
+                `Internal error: Unexpected child node inside raw text node, a ${node.tagName} should only contain text nodes, but found a ${node.nodeName} (tagname: ${node.tagName})`
+              );
+            }
+            const text = child.value;
+            const textStart = child.sourceCodeLocation!.startOffset;
+            flushTo(textStart);
+            const markerRegex = new RegExp(marker.replace(/\$/g, '\\$'), 'g');
+            for (const mark of text.matchAll(markerRegex)) {
+              flushTo(textStart + mark.index!);
+              if (dangerous) {
+                throw new Error(
+                  `Found binding inside an executable <script> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to execute arbitrary JavaScript. If you do need to create a script element with dynamic contents, you can use the unsafeHTML directive to make one, as that way the code is clearly marked as unsafe and needing careful handling. The template with the dangerous binding is:
+
+    ${displayTemplateResult(result)}`
+                );
+              }
+              if (node.tagName === 'style') {
+                throw new Error(
+                  `Found binding inside a <style> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to exfiltrate information from the page. If you do need to create a style element with dynamic contents, you can use the unsafeHTML directive to make one, as that way the code is clearly marked as unsafe and needing careful handling. The template with the dangerous binding is:
+
+    ${displayTemplateResult(result)}`
+                );
+              }
+              ops.push({
+                type: 'child-part',
+                index: nodeIndex,
+                useCustomElementInstance: false,
+              });
+              skipTo(textStart + mark.index! + mark[0].length);
+            }
+            flushTo(textStart + text.length);
+          }
+        } else if (!hydratable && isTemplateNode(node)) {
+          // Server-only templates look inside of <template> nodes, because
+          // we can afford the complexity and cost, and there's way more
+          // benefit to be gained from it
+          traverse(node.content, this, node);
         }
+
         nodeIndex++;
       }
     },
@@ -545,7 +627,8 @@ declare global {
 
 export function* renderValue(
   value: unknown,
-  renderInfo: RenderInfo
+  renderInfo: RenderInfo,
+  hydratable = true
 ): RenderResult {
   patchIfDirective(value);
   if (isRenderLightDirective(value)) {
@@ -566,10 +649,19 @@ export function* renderValue(
     );
   }
   if (value != null && isTemplateResult(value)) {
-    yield `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`;
+    if (hydratable) {
+      yield `<!--lit-part ${digestForTemplateResult(
+        value as TemplateResult
+      )}-->`;
+    }
     yield* renderTemplateResult(value as TemplateResult, renderInfo);
+    if (hydratable) {
+      yield `<!--/lit-part-->`;
+    }
   } else {
-    yield `<!--lit-part-->`;
+    if (hydratable) {
+      yield `<!--lit-part-->`;
+    }
     if (
       value === undefined ||
       value === null ||
@@ -580,13 +672,15 @@ export function* renderValue(
     } else if (!isPrimitive(value) && isIterable(value)) {
       // Check that value is not a primitive, since strings are iterable
       for (const item of value) {
-        yield* renderValue(item, renderInfo);
+        yield* renderValue(item, renderInfo, hydratable);
       }
     } else {
       yield escapeHtml(String(value));
     }
+    if (hydratable) {
+      yield `<!--/lit-part-->`;
+    }
   }
-  yield `<!--/lit-part-->`;
 }
 
 function* renderTemplateResult(
@@ -608,7 +702,8 @@ function* renderTemplateResult(
   // elements. For each we will record the offset of the node, and output the
   // previous span of HTML.
 
-  const ops = getTemplateOpcodes(result);
+  const hydratable = isHydratable(result);
+  const ops = getTemplateOpcodes(result, !hydratable);
 
   /* The next value in result.values to render */
   let partIndex = 0;
@@ -620,7 +715,21 @@ function* renderTemplateResult(
         break;
       case 'child-part': {
         const value = result.values[partIndex++];
-        yield* renderValue(value, renderInfo);
+        let isValueHydratable = hydratable;
+        if (isTemplateResult(value)) {
+          isValueHydratable = isHydratable(value);
+          if (!isValueHydratable && hydratable) {
+            throw new Error(
+              `A server-only template can't be rendered inside an ordinary, hydratable template. A server-only template can only be rendered at the top level, or within other server-only templates. The outer template was:
+    ${displayTemplateResult(result)}
+
+And the inner template was:
+    ${displayTemplateResult(value)}
+              `
+            );
+          }
+        }
+        yield* renderValue(value, renderInfo, isValueHydratable);
         break;
       }
       case 'attribute-part': {
@@ -723,7 +832,9 @@ function* renderTemplateResult(
           op.boundAttributesCount > 0 ||
           renderInfo.customElementHostStack.length > 0
         ) {
-          yield `<!--lit-node ${op.nodeIndex}-->`;
+          if (hydratable) {
+            yield `<!--lit-node ${op.nodeIndex}-->`;
+          }
         }
         break;
       }
@@ -775,7 +886,7 @@ function throwErrorForPartIndexMismatch(
     result.values.length
   } while processing the following template:
 
-    ${result.strings.join('${...}')}
+    ${displayTemplateResult(result)}
 
     This could be because you're attempting to render an expression in an invalid location. See
     https://lit.dev/docs/templates/expressions/#invalid-locations for more information about invalid expression
@@ -829,4 +940,72 @@ function* renderAttributePart(
   }
 }
 
+/**
+ * Returns a debug string suitable for an error message describing a
+ * TemplateResult.
+ */
+function displayTemplateResult(
+  result: TemplateResult | CompiledTemplateResult
+) {
+  if (isCompiledTemplateResult(result)) {
+    return result._$litType$.h.join('${...}');
+  }
+  return result.strings.join('${...}');
+}
+
 const getLast = <T>(a: Array<T>) => a[a.length - 1];
+
+/**
+ * Returns true if the given node is a <script> node that the browser will
+ * automatically execute if it's rendered on server-side, outside of a
+ * <template> tag.
+ */
+function isJavaScriptScriptTag(node: Element | Template): boolean {
+  function isScriptTag(node: Element | Template): node is Element {
+    return /script/i.test(node.tagName);
+  }
+
+  if (!isScriptTag(node)) {
+    return false;
+  }
+  let safeTypeSeen = false;
+  for (const attr of node.attrs) {
+    if (attr.name !== 'type') {
+      continue;
+    }
+    switch (attr.value) {
+      // see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#textjavascript
+      case null:
+      case undefined:
+      case '':
+      case 'module':
+      case 'text/javascript':
+      case 'application/javascript':
+      case 'application/ecmascript':
+      case 'application/x-ecmascript':
+      case 'application/x-javascript':
+      case 'text/ecmascript':
+      case 'text/javascript1.0':
+      case 'text/javascript1.1':
+      case 'text/javascript1.2':
+      case 'text/javascript1.3':
+      case 'text/javascript1.4':
+      case 'text/javascript1.5':
+      case 'text/jscript':
+      case 'text/livescript':
+      case 'text/x-ecmascript':
+      case 'text/x-javascript':
+        // If we see a dangerous type, we can stop looking
+        return true;
+      default:
+        safeTypeSeen = true;
+    }
+  }
+  // So, remember that attributes can be repeated. If we saw a dangerous type,
+  // then we would have returned early. However, if there's no type, then
+  // that's dangerous.
+  // It's only if all types seen were safe, and we saw at least one type, that
+  // we can return false.
+  const willExecute = !safeTypeSeen;
+  return willExecute;
+}

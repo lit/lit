@@ -272,6 +272,7 @@ packages/labs/motion/animate.*
 packages/labs/motion/position.*
 packages/labs/motion/animate-controller.*
 packages/labs/nextjs/index.*
+packages/labs/nextjs/lib/
 
 packages/labs/observers/development/
 packages/labs/observers/test/

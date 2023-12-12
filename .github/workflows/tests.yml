@@ -8,19 +8,14 @@ on:
     # This is the default list, but I don't know how to YAML an empty pull_request:
     types: [opened, reopened, synchronize]
 
+permissions:
+  contents: read
+
 jobs:
   lint:
     runs-on: ubuntu-latest
-    # When lit-robot creates a release PR, skip this check as it will always
-    # fail.
-    if: ${{ github.actor != 'lit-robot' }}
-    env:
-      WIREIT_LOGGER: quiet-ci
-
     steps:
       - uses: actions/checkout@v3
-        with:
-          fetch-depth: 0
 
       - uses: actions/setup-node@v3
         with:
@@ -29,21 +24,13 @@ jobs:
           cache-dependency-path: package-lock.json
 
       - name: NPM install
-        run: |
-          git checkout main
-          git checkout ${{ github.sha }}
-          npm ci
+        run: npm ci
 
       - name: Lint
         run: npm run lint
 
       - name: Check formatting
         run: npm run format:check
-
-      - name: Changeset
-        # Enforce that all PRs that change packages need changesets. Changes
-        # without changesets result in this job failing.
-        run: npm run changeset status -- --since=main
 
   tests-local:
     runs-on: ubuntu-latest
@@ -87,7 +74,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 18
           cache: 'npm'
           cache-dependency-path: package-lock.json
 

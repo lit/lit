@@ -1,5 +1,20 @@
 # @lit-labs/ssr-react
 
+## 0.2.3
+
+### Patch Changes
+
+- [#4364](https://github.com/lit/lit/pull/4364) [`1ea4720f`](https://github.com/lit/lit/commit/1ea4720fd65d518cea34d8f8d880a31b8d9c4c1b) - Fix rendering of nested custom elements so that child custom elements will properly have the `defer-hydration` attribute from SSR, ensuring correct hydration order from parent to child.
+
+- Updated dependencies [[`ef2976b9`](https://github.com/lit/lit/commit/ef2976b9e6b737f54f61e3ebf7af42ff921f00cb), [`011b762d`](https://github.com/lit/lit/commit/011b762d68c1f90eff2028cc345cb8cb818a64cb)]:
+  - @lit-labs/ssr@3.2.0
+
+## 0.2.2
+
+### Patch Changes
+
+- [#4311](https://github.com/lit/lit/pull/4311) [`cabe72a8`](https://github.com/lit/lit/commit/cabe72a863a5de14a4bbca384374db748dd9b4c5) - Removed `lit` package from dependency. It is now listed as a dev dependency since it is only used for testing.
+
 ## 0.2.1
 
 ### Patch Changes
