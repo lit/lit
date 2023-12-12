@@ -2,7 +2,7 @@
 
 ## Supported Versions
 
-Security updates are applied only to the latest release.
+Security updates cover the latest two major versions.
 
 ## Reporting a Vulnerability
 
