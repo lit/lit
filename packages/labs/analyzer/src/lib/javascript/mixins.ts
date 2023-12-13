@@ -10,14 +10,16 @@
  * Utilities for working with mixins
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {AnalyzerInterface, MixinDeclarationInit} from '../model.js';
 import {getClassDeclaration} from './classes.js';
 import {createDiagnostic} from '../errors.js';
 import {DiagnosticCode} from '../diagnostic-code.js';
 
-const nodeHasMixinHint = (node: ts.Node) =>
-  ts.getJSDocTags(node).some((tag) => tag.tagName.text === 'mixin');
+const nodeHasMixinHint = (node: ts.Node, analyzer: AnalyzerInterface) =>
+  analyzer.typescript
+    .getJSDocTags(node)
+    .some((tag) => tag.tagName.text === 'mixin');
 
 const addDiagnosticIfMixin = (
   node: ts.Node,
@@ -55,7 +57,7 @@ export const maybeGetMixinFromFunctionLike = (
   fn: ts.FunctionLikeDeclaration,
   name: string,
   analyzer: AnalyzerInterface,
-  hasMixinHint = nodeHasMixinHint(fn)
+  hasMixinHint = nodeHasMixinHint(fn, analyzer)
 ): MixinDeclarationInit | undefined => {
   if (!fn.parameters || fn.parameters.length < 1) {
     addDiagnosticIfMixin(
@@ -67,7 +69,7 @@ export const maybeGetMixinFromFunctionLike = (
     return undefined;
   }
   const possibleSuperClasses = fn.parameters.map((p) =>
-    ts.isIdentifier(p.name) ? p.name.text : ''
+    analyzer.typescript.isIdentifier(p.name) ? p.name.text : ''
   );
   const functionBody = fn.body;
   if (functionBody === undefined) {
@@ -82,7 +84,7 @@ export const maybeGetMixinFromFunctionLike = (
   // TODO (43081j): in typescript, you currently cannot have decorators on
   // a class expression, hence why we effectively disallow them here. However,
   // we may want to loosen this constraint for JS users some day
-  if (!ts.isBlock(functionBody)) {
+  if (!analyzer.typescript.isBlock(functionBody)) {
     addDiagnosticIfMixin(
       fn,
       hasMixinHint,
@@ -95,10 +97,10 @@ export const maybeGetMixinFromFunctionLike = (
   let classDeclaration!: ts.ClassDeclaration;
   let returnStatement!: ts.ReturnStatement;
   functionBody.statements.forEach((s) => {
-    if (ts.isClassDeclaration(s)) {
+    if (analyzer.typescript.isClassDeclaration(s)) {
       classDeclaration = s;
     }
-    if (ts.isReturnStatement(s)) {
+    if (analyzer.typescript.isReturnStatement(s)) {
       returnStatement = s;
     }
   });
@@ -121,7 +123,7 @@ export const maybeGetMixinFromFunctionLike = (
     return undefined;
   }
   const extendsClause = classDeclaration.heritageClauses?.find(
-    (c) => c.token === ts.SyntaxKind.ExtendsKeyword
+    (c) => c.token === analyzer.typescript.SyntaxKind.ExtendsKeyword
   );
   if (extendsClause === undefined) {
     addDiagnosticIfMixin(
@@ -147,7 +149,8 @@ export const maybeGetMixinFromFunctionLike = (
   }
   const superClassArgIdx = findSuperClassArgIndexFromHeritage(
     possibleSuperClasses,
-    extendsClause.types[0].expression
+    extendsClause.types[0].expression,
+    analyzer
   );
   if (superClassArgIdx < 0) {
     analyzer.addDiagnostic(
@@ -181,15 +184,17 @@ export const maybeGetMixinFromFunctionLike = (
 
 const findSuperClassArgIndexFromHeritage = (
   possibleSuperClasses: string[],
-  expression: ts.Expression
+  expression: ts.Expression,
+  analyzer: AnalyzerInterface
 ): number => {
-  if (ts.isIdentifier(expression)) {
+  if (analyzer.typescript.isIdentifier(expression)) {
     return possibleSuperClasses.indexOf(expression.text);
-  } else if (ts.isCallExpression(expression)) {
+  } else if (analyzer.typescript.isCallExpression(expression)) {
     for (const arg of expression.arguments) {
       const index = findSuperClassArgIndexFromHeritage(
         possibleSuperClasses,
-        arg
+        arg,
+        analyzer
       );
       if (index >= 0) {
         return index;
