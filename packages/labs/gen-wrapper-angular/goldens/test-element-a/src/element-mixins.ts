@@ -8,11 +8,5 @@ import '@lit-internal/test-element-a/element-mixins.js';
   template: '<ng-content></ng-content>',
 })
 export class ElementMixins {
-  private _el: ElementMixinsElement;
-  private _ngZone: NgZone;
-
-  constructor(e: ElementRef, ngZone: NgZone) {
-    this._el = e.nativeElement;
-    this._ngZone = ngZone;
-  }
+  constructor(_e: ElementRef<ElementMixinsElement>, _ngZone: NgZone) {}
 }
