@@ -2,6 +2,9 @@ name: Sizecheck
 
 on: [pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   checksize:
     name: sizecheck

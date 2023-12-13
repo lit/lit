@@ -1,5 +1,15 @@
 # @lit-labs/context
 
+## 1.1.0
+
+### Minor Changes
+
+- [#4371](https://github.com/lit/lit/pull/4371) [`62df19da`](https://github.com/lit/lit/commit/62df19da63b94b89e688277967b84b381dcf1660) Thanks [@autopulated](https://github.com/autopulated)! - `ContextProvider` can now be added to any HTML elements, not just custom elements implementing a `ReactiveControllerHost`.
+
+### Patch Changes
+
+- [#4373](https://github.com/lit/lit/pull/4373) [`22919f6d`](https://github.com/lit/lit/commit/22919f6d0051f075bdb5f6033a5e4263b76a0c3e) - Make property decorated with `@provide()` with TypeScript experimental decorators configurable. This allows chaining additional decorators that modify the property like `@property()` from `lit`.
+
 ## 1.0.1
 
 ### Patch Changes

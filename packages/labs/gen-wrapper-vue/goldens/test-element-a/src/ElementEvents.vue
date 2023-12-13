@@ -62,8 +62,8 @@ const render = () => {
         event as CustomEvent<TemplateResult>
       ),
   };
-
   const props = eventProps as typeof eventProps & Props;
+
   for (const p in vueProps) {
     const v = vueProps[p as keyof Props];
     if (v !== undefined || hasRendered) {

@@ -27,6 +27,7 @@
     "ElementMixins.*",
     "ElementProps.*",
     "ElementSlots.*",
+    "ElementWithoutProps.*",
     "sub/ElementSub.*"
   ]
 }

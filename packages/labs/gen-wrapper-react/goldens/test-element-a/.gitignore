@@ -3,4 +3,5 @@ element-events.js
 element-mixins.js
 element-props.js
 element-slots.js
+element-without-props.js
 sub/element-sub.js

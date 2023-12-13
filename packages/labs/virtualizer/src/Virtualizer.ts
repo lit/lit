@@ -556,12 +556,7 @@ export class Virtualizer {
     // Only update the layout and trigger a re-render if we have:
     //   a) A layout
     //   b) A scrollerController, which means we're connected
-    //   c) An offsetParent, which means we're not hidden
-    if (
-      this._layout &&
-      this._scrollerController &&
-      this._hostElement?.offsetParent
-    ) {
+    if (this._layout && this._scrollerController) {
       this._layout.items = this._items;
       this._updateView();
       if (this._childMeasurements !== null) {
@@ -675,8 +670,8 @@ export class Virtualizer {
       const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
       const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
 
-      const height = Math.max(1, bottom - top);
-      const width = Math.max(1, right - left);
+      const height = bottom - top;
+      const width = right - left;
 
       layout.viewportSize = {width, height};
       layout.viewportScroll = {top: scrollTop, left: scrollLeft};

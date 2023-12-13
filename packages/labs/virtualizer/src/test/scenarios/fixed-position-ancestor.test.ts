@@ -4,11 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {LitElement, html} from 'lit';
+import {customElement} from 'lit/decorators.js';
 import {array, ignoreBenignErrors} from '../helpers.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {grid} from '../../layouts/grid.js';
 import {styleMap} from 'lit/directives/style-map.js';
-import {expect, html, fixture} from '@open-wc/testing';
+import {expect, fixture} from '@open-wc/testing';
 
 interface NamedItem {
   name: string;
@@ -115,5 +117,59 @@ describe('Virtualizer behaves properly when it has a position: fixed ancestor', 
     scroller.scrollTo(0, scroller.scrollHeight);
     await virtualizer.layoutComplete;
     expect(virtualizer.textContent).to.contain('Item 99');
+  });
+});
+
+@customElement('simple-dialog')
+export class SimpleDialog extends LitElement {
+  render() {
+    return html`<div style="position: fixed; width: 200px;">
+      <slot></slot>
+    </div> `;
+  }
+}
+
+describe('Virtualizer renders properly when it is slotted into a position: fixed ancestor', () => {
+  ignoreBenignErrors(beforeEach, afterEach);
+
+  // Regression test for https://github.com/lit/lit/issues/4346
+  it('should render children', async () => {
+    const container = await fixture(html`
+      <simple-dialog>
+        <lit-virtualizer
+          .items=${_100Items}
+          .renderItem=${({name}: NamedItem) => html`<p>${name}</p>`}
+        ></lit-virtualizer>
+      </simple-dialog>
+    `);
+
+    const virtualizer = container.querySelector('lit-virtualizer')!;
+    expect(virtualizer).to.be.instanceOf(LitVirtualizer);
+
+    // In practice, we'll time out if we fail here because the `layoutComplete`
+    // promise will never be fulfilled.
+    await virtualizer.layoutComplete;
+    expect(virtualizer.textContent).to.contain('Item 0');
+  });
+});
+
+describe('Virtualizer renders properly when it is position: fixed', () => {
+  ignoreBenignErrors(beforeEach, afterEach);
+
+  it('should render children', async () => {
+    const virtualizer = (await fixture(html`
+      <lit-virtualizer
+        style="position: fixed; width: 200px;"
+        .items=${_100Items}
+        .renderItem=${({name}: NamedItem) => html`<p>${name}</p>`}
+      ></lit-virtualizer>
+    `)) as LitVirtualizer;
+
+    expect(virtualizer).to.be.instanceOf(LitVirtualizer);
+
+    // In practice, we'll time out if we fail here because the `layoutComplete`
+    // promise will never be fulfilled.
+    await virtualizer.layoutComplete;
+    expect(virtualizer.textContent).to.contain('Item 0');
   });
 });

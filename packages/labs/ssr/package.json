@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "3.1.9",
+  "version": "3.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -18,7 +18,8 @@
     "test:integration:unshimmed:dev": "wireit",
     "test:integration:shimmed:prod": "wireit",
     "test:integration:unshimmed:prod": "wireit",
-    "test:unit": "wireit"
+    "test:unit": "wireit",
+    "test:types": "wireit"
   },
   "wireit": {
     "build": {
@@ -70,7 +71,8 @@
     "test": {
       "dependencies": [
         "test:unit",
-        "test:integration"
+        "test:integration",
+        "test:types"
       ]
     },
     "test:unit": {
@@ -172,6 +174,22 @@
         "../../tests/web-test-runner.config.js"
       ],
       "output": []
+    },
+    "test:types": {
+      "command": "tsc --pretty --noEmit",
+      "dependencies": [
+        "../ssr-client:build:ts:types",
+        "../ssr-dom-shim:build:ts",
+        "../../lit:build:ts:types",
+        "../../lit-html:build:ts:types",
+        "../../lit-element:build:ts:types"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "custom_typings/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": []
     }
   },
   "files": [
@@ -212,9 +230,9 @@
     "@parse5/tools": "^0.3.0",
     "@types/node": "^16.0.0",
     "enhanced-resolve": "^5.10.0",
-    "lit": "^2.7.0 || ^3.0.0",
+    "lit": "^3.1.0",
     "lit-element": "^3.3.0 || ^4.0.0",
-    "lit-html": "^2.7.0 || ^3.0.0",
+    "lit-html": "^3.1.0",
     "node-fetch": "^3.2.8",
     "parse5": "^7.1.1"
   },
