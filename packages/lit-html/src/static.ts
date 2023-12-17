@@ -39,7 +39,7 @@ export interface StaticValue {
 const brand = Symbol.for('');
 
 /** Safely extracts the string part of a StaticValue. */
-const unwrapStaticValue = (value: unknown): string | undefined => {
+export const unwrapStaticValue = (value: unknown): string | undefined => {
   if ((value as Partial<StaticValue>)?.r !== brand) {
     return undefined;
   }
