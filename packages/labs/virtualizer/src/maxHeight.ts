@@ -3,7 +3,7 @@
  * The returned height may become null if the height is not supported.
  *
  * @param height the height to set
- * @returns in case the heigt is supported, the height of the dummy div, otherwise 0
+ * @returns in case the height is supported, the height of the dummy div, otherwise 0
  */
 export const setHeight = (height: number) => {
   const div = document.createElement("div");

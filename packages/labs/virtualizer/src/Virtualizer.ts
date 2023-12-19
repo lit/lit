@@ -690,9 +690,10 @@ export class Virtualizer {
    * total size of all items.
    */
   private _sizeHostElement(size?: Size | null) {
-    // Some browsers seem to crap out if the host element gets larger than
-    // a certain size, so we clamp it here (this value based on ad hoc
-    // testing in Chrome / Safari / Firefox Mac)
+    // Browsers support a given max height/width of the host element
+    // we clamp it
+    // Math.min(this._maxHeigth, size.height)
+    // based on the _maxHeigth we found in the init
     const h = size && size.width !== null ? Math.min(this._maxHeigth, size.width) : 0;
     const v = size && size.height !== null ? Math.min(this._maxHeigth, size.height) : 0;
 
