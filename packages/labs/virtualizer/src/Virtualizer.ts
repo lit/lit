@@ -27,6 +27,7 @@ import {
   UnpinnedEvent,
 } from './events.js';
 import {ScrollerController} from './ScrollerController.js';
+import { getMaxSupportedCssHeight } from './maxHeight.js';
 
 // Virtualizer depends on `ResizeObserver`, which is supported in
 // all modern browsers. For developers whose browser support
@@ -230,6 +231,8 @@ export class Virtualizer {
    */
   private _layoutInitialized: Promise<void> | null = null;
 
+  private _maxHeigth: number = 0;
+
   constructor(config: VirtualizerConfig) {
     if (!config) {
       throw new Error(
@@ -263,6 +266,8 @@ export class Virtualizer {
     // Save the promise returned by `_initLayout` as a state
     // variable we can check before updating layout config
     this._layoutInitialized = this._initLayout(layoutConfig);
+    // let us find the max supported heigth
+    this._maxHeigth = getMaxSupportedCssHeight();
   }
 
   private _initObservers() {
@@ -688,9 +693,8 @@ export class Virtualizer {
     // Some browsers seem to crap out if the host element gets larger than
     // a certain size, so we clamp it here (this value based on ad hoc
     // testing in Chrome / Safari / Firefox Mac)
-    const max = 8200000;
-    const h = size && size.width !== null ? Math.min(max, size.width) : 0;
-    const v = size && size.height !== null ? Math.min(max, size.height) : 0;
+    const h = size && size.width !== null ? Math.min(this._maxHeigth, size.width) : 0;
+    const v = size && size.height !== null ? Math.min(this._maxHeigth, size.height) : 0;
 
     if (this._isScroller) {
       this._getSizer().style.transform = `translate(${h}px, ${v}px)`;
