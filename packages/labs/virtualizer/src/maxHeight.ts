@@ -28,9 +28,7 @@ export const getMaxSupportedCssHeight = () => {
   for (lower = 1, upper = 1; setHeight(upper); upper *= 2) {
     lower = upper;
     if (upper >= tooBig) {
-      console.log(upper)
       supportedHeight = setHeight(upper);
-      console.log(supportedHeight)
       return supportedHeight;
     }
 
