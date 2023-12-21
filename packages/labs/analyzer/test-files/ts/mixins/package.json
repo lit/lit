@@ -1,6 +1,6 @@
 {
-  "name": "@lit-internal/test-mixins",
+  "name": "@lit-internal/test-mixins-ts",
   "dependencies": {
-    "lit": "^2.0.0"
+    "lit": "^3.0.0"
   }
 }
