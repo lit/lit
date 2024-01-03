@@ -1,12 +1,14 @@
 name: Sauce
 
 on:
-  push:
-    branches:
-      - main
-  pull_request:
-    # This is the default list, but I don't know how to YAML an empty pull_request:
-    types: [opened, reopened, synchronize]
+  # This workflow must be manually triggered. Uncomment below to re-enable this in CI.
+  workflow_dispatch
+  # push:
+  #   branches:
+  #     - main
+  # pull_request:
+  #   # This is the default list, but I don't know how to YAML an empty pull_request:
+  #   types: [opened, reopened, synchronize]
 
 permissions:
   contents: read
