@@ -106,6 +106,7 @@ export interface Options<I extends HTMLElement, E extends EventNames = {}> {
   elementClass: Constructor<I>;
   events?: E;
   displayName?: string;
+  setNonObjectValuesAsAttributeValues?: boolean;
 }
 
 type Constructor<T> = {new (): T};
@@ -213,6 +214,11 @@ const setProperty = <E extends Element>(
  * @param options.displayName A React component display name, used in debugging
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
+ * @param options.setNonObjectValuesAsAttributeValues Whether all non object values
+ * should be passed to the web component as attributes instead of properties.
+ * The attribute values are present during first rendering of the web component and
+ * this can therefore prevent potential FOUCs.
+ * Object values are excluded as they cannot be passed as attributes.
  */
 export const createComponent = <
   I extends HTMLElement,
@@ -223,6 +229,7 @@ export const createComponent = <
   elementClass,
   events,
   displayName,
+  setNonObjectValuesAsAttributeValues,
 }: Options<I, E>): ReactWebComponent<I, E> => {
   const eventProps = new Set(Object.keys(events ?? {}));
 
@@ -263,7 +270,29 @@ export const createComponent = <
 
       if (eventProps.has(k) || k in elementClass.prototype) {
         elementProps[k] = v;
-        continue;
+
+        if (
+          setNonObjectValuesAsAttributeValues === true &&
+          typeof v !== 'object'
+        ) {
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          const attributeMap = elementClass.__attributeToPropertyMap as Map<
+            string,
+            string
+          >;
+          if (attributeMap) {
+            const attributeName = [...attributeMap].find(
+              ({1: v}) => v === k
+            )?.[0];
+            if (attributeName) {
+              reactProps[attributeName] = v;
+              continue;
+            }
+          }
+        } else {
+          continue;
+        }
       }
 
       reactProps[k] = v;
