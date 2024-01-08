@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2022 Google LLC
+ * Copyright 2024 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -341,7 +341,15 @@ export const getSuperClassAndMixins = (
     const mixinRef = getReferenceForIdentifier(expression.expression, analyzer);
     // We need to eagerly dereference a mixin ref to know what argument the
     // super class is passed into
-    const mixin = mixinRef?.dereference(MixinDeclaration);
+    let mixin;
+
+    try {
+      mixin = mixinRef?.dereference(MixinDeclaration);
+    } catch (_err) {
+      // It wasn't a MixinDeclaration for whatever reason
+      mixin = undefined;
+    }
+
     // TODO (43081j): consider supporting external mixins properly at some point
     if (mixinRef === undefined || mixin === undefined) {
       analyzer.addDiagnostic(
