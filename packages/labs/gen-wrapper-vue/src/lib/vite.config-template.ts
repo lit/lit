@@ -38,14 +38,14 @@ export default {
           .map((path) => `'./${path.replace(/\\/g, '/')}'`)
           .join(', ')}
       ],
-      preserveModules: true,
-			preserveModulesRoot: 'src',
-      preserveEntrySignatures: true,
+      preserveEntrySignatures: "strict",
       output: {
         format: 'es',
         entryFileNames: ({ name }) => \`\${name}.js\`,
         dir: './',
-        sourcemap: true
+        sourcemap: true,
+        preserveModules: true,
+			  preserveModulesRoot: 'src',
       }
     },
     outDir: './'
