@@ -56,9 +56,9 @@ const addDiagnosticIfMixin = (
 export const maybeGetMixinFromFunctionLike = (
   fn: ts.FunctionLikeDeclaration,
   name: string,
-  analyzer: AnalyzerInterface,
-  hasMixinHint = nodeHasMixinHint(fn, analyzer)
+  analyzer: AnalyzerInterface
 ): MixinDeclarationInit | undefined => {
+  const hasMixinHint = nodeHasMixinHint(fn, analyzer);
   if (!fn.parameters || fn.parameters.length < 1) {
     addDiagnosticIfMixin(
       fn,
