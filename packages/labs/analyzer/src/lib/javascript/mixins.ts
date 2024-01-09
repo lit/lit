@@ -94,16 +94,16 @@ export const maybeGetMixinFromFunctionLike = (
     );
     return undefined;
   }
-  let classDeclaration!: ts.ClassDeclaration;
-  let returnStatement!: ts.ReturnStatement;
-  functionBody.statements.forEach((s) => {
+  let classDeclaration: ts.ClassDeclaration | null = null;
+  let returnStatement: ts.ReturnStatement | null = null;
+  for (const s of functionBody.statements) {
     if (analyzer.typescript.isClassDeclaration(s)) {
       classDeclaration = s;
     }
     if (analyzer.typescript.isReturnStatement(s)) {
       returnStatement = s;
     }
-  });
+  }
   if (!classDeclaration) {
     addDiagnosticIfMixin(
       fn,
