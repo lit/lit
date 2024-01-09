@@ -158,3 +158,17 @@ export const C = function C(superClass) {
   }
   return C;
 };
+
+/**
+ * Mixin with sub-mixin with multiple params
+ * @mixin
+ * @template {Constructor<LitElement>} T
+ * @param {T} superClass
+ */
+export const ChildWithMultipleParams = function ChildWithMultipleParams(
+  superClass,
+  secondArg
+) {
+  class ChildWithMultipleParams extends Highlightable(secondArg, superClass) {}
+  return ChildWithMultipleParams;
+};

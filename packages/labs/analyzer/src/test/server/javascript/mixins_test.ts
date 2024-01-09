@@ -252,5 +252,16 @@ for (const lang of languages) {
     );
   });
 
+  test('mixin with child mixin with multiple parameters', ({
+    getModule,
+    analyzer,
+  }) => {
+    const currentDiagnostics = [...analyzer.getDiagnostics()];
+    const decl = getModule('mixins').getDeclaration('ChildWithMultipleParams');
+    assert.equal(decl.isMixinDeclaration(), true);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, currentDiagnostics.length);
+  });
+
   test.run();
 }

@@ -107,3 +107,14 @@ export const C = function C<T extends Constructor<LitElement>>(superClass: T) {
   }
   return C as Constructor<IC> & T;
 };
+
+/**
+ * Mixin with sub-mixin with multiple params
+ * @mixin
+ */
+export const ChildWithMultipleParams = function ChildWithMultipleParams<
+  T extends Constructor<LitElement>
+>(superClass: T, secondArg: string) {
+  class ChildWithMultipleParams extends Highlightable(secondArg, superClass) {}
+  return ChildWithMultipleParams;
+};
