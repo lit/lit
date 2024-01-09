@@ -367,7 +367,7 @@ export const getSuperClassAndMixins = (
       return undefined;
     }
     foundMixins.push(mixinRef);
-    const superArg = expression.arguments[mixin.superClassArgIdx];
+    const superArg = expression.arguments[mixin.superClassArgIndex];
     const superClass = getSuperClassAndMixins(superArg, foundMixins, analyzer);
     return superClass;
   }

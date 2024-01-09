@@ -564,18 +564,17 @@ export class ClassDeclaration extends Declaration {
 }
 
 export interface MixinDeclarationInit extends FunctionLikeInit {
-  node: ts.FunctionLikeDeclaration;
   classDeclaration: ClassDeclaration;
-  superClassArgIdx: number;
+  superClassArgIndex: number;
 }
 
 export class MixinDeclaration extends FunctionDeclaration {
   readonly classDeclaration: ClassDeclaration;
-  readonly superClassArgIdx: number;
+  readonly superClassArgIndex: number;
   constructor(init: MixinDeclarationInit) {
     super(init);
     this.classDeclaration = init.classDeclaration;
-    this.superClassArgIdx = init.superClassArgIdx;
+    this.superClassArgIndex = init.superClassArgIndex;
   }
 }
 

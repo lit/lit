@@ -43,10 +43,29 @@ const addDiagnosticIfMixin = (
 
 /**
  * If the given variable declaration was a mixin function, returns a
- * MixinDeclaration, otherwise returns undefined.
+ * MixinDeclaration initialisation object, otherwise returns undefined.
  *
  * The mixin logic requires a few important syntactic heuristics to be met in
- * order to be detected as a mixin.
+ * order to be detected as a mixin:
+ *
+ * - a super class parameter (by any name) which is later used as a base class
+ * - a function body (rather than an arrow function)
+ * - an internal class which extends the previously mentioned super class parameter
+ * - a return statement returning the class
+ *
+ * For example:
+ *
+ * ```
+ * function MyMixin(superClass) {
+ *   class MixedClass extends superClass {
+ *     // ...
+ *   }
+ *   return MixedClass;
+ * }
+ * ```
+ *
+ * You can read more about this pattern in the TypeScript docs here:
+ * https://www.typescriptlang.org/docs/handbook/mixins.html
  *
  * If the function is unannotated and does not match the above mixin shape, it
  * will silently just be analyzed as a simple function and not a mixin. However,
@@ -59,7 +78,7 @@ export const maybeGetMixinFromFunctionLike = (
   analyzer: AnalyzerInterface
 ): MixinDeclarationInit | undefined => {
   const hasMixinHint = nodeHasMixinHint(fn, analyzer);
-  if (!fn.parameters || fn.parameters.length < 1) {
+  if (fn.parameters === undefined || fn.parameters.length < 1) {
     addDiagnosticIfMixin(
       fn,
       hasMixinHint,
@@ -94,8 +113,8 @@ export const maybeGetMixinFromFunctionLike = (
     );
     return undefined;
   }
-  let classDeclaration: ts.ClassDeclaration | null = null;
-  let returnStatement: ts.ReturnStatement | null = null;
+  let classDeclaration: ts.ClassDeclaration | undefined;
+  let returnStatement: ts.ReturnStatement | undefined;
   for (const s of functionBody.statements) {
     if (analyzer.typescript.isClassDeclaration(s)) {
       classDeclaration = s;
@@ -104,7 +123,7 @@ export const maybeGetMixinFromFunctionLike = (
       returnStatement = s;
     }
   }
-  if (!classDeclaration) {
+  if (classDeclaration === undefined) {
     addDiagnosticIfMixin(
       fn,
       hasMixinHint,
@@ -113,7 +132,7 @@ export const maybeGetMixinFromFunctionLike = (
     );
     return undefined;
   }
-  if (!returnStatement) {
+  if (returnStatement === undefined) {
     addDiagnosticIfMixin(
       fn,
       hasMixinHint,
@@ -147,12 +166,12 @@ export const maybeGetMixinFromFunctionLike = (
     );
     return undefined;
   }
-  const superClassArgIdx = findSuperClassArgIndexFromHeritage(
+  const superClassArgIndex = findSuperClassArgIndexFromHeritage(
     possibleSuperClasses,
     extendsClause.types[0].expression,
     analyzer
   );
-  if (superClassArgIdx < 0) {
+  if (superClassArgIndex < 0) {
     analyzer.addDiagnostic(
       createDiagnostic({
         typescript: analyzer.typescript,
@@ -171,7 +190,7 @@ export const maybeGetMixinFromFunctionLike = (
   return {
     node: fn,
     name,
-    superClassArgIdx,
+    superClassArgIndex,
     classDeclaration: getClassDeclaration(
       classDeclaration,
       classDeclarationName,

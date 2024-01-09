@@ -76,6 +76,9 @@ export const getFunctionDeclarationInfo = (
  * Returns an analyzer `FunctionDeclaration` model for the given
  * ts.FunctionLikeDeclaration.
  *
+ * If this is a mixin function, the return value will be a `MixinDeclaration`
+ * model instead.
+ *
  * Note, the `docNode` may differ from the `declaration` in the case of a const
  * assignment to a class expression, as the JSDoc will be attached to the
  * VariableStatement rather than the class-like expression.
@@ -92,7 +95,7 @@ export const getFunctionDeclaration = (
     analyzer
   );
 
-  if (mixinDeclarationInfo) {
+  if (mixinDeclarationInfo !== undefined) {
     return new MixinDeclaration({
       ...mixinDeclarationInfo,
       ...parseNodeJSDocInfo(docNode ?? declaration, analyzer),
