@@ -7,6 +7,7 @@
 import {html, svg, nothing} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {ref, createRef} from 'lit/directives/ref.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
 import {html as serverhtml} from '../../lib/server-template.js';
@@ -35,6 +36,11 @@ export const templateWithMultipleAttributeExpressions = (
   x: string,
   y: string
 ) => html`<div x=${x} y=${y} z="not-dynamic"></div>`;
+// prettier-ignore
+export const templateWithElementAndMultipleAttributeExpressions = (
+  x: string,
+  y: string
+) => html`<div ${ref(createRef())} x=${x} y=${y} z="not-dynamic"></div>`;
 // prettier-ignore
 export const templateWithMultiBindingAttributeExpression = (
   x: string,

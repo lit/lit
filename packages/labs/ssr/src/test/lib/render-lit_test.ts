@@ -207,6 +207,19 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('multiple attribute expressions with string value preceded by element expression', async () => {
+    const {render, templateWithElementAndMultipleAttributeExpressions} =
+      await setup();
+    const result = await render(
+      templateWithElementAndMultipleAttributeExpressions('foo', 'bar')
+    );
+    // Has marker attribute for number of bound attributes.
+    assert.is(
+      result,
+      `<!--lit-part NdVlqfEioQk=--><!--lit-node 0--><div  x="foo" y="bar" z="not-dynamic"></div><!--/lit-part-->`
+    );
+  });
+
   test('attribute expression with multiple bindings', async () => {
     const {render, templateWithMultiBindingAttributeExpression} = await setup();
     const result = await render(

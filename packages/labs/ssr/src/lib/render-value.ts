@@ -293,7 +293,6 @@ const getTemplateOpcodes = (
   if (template !== undefined) {
     return template;
   }
-  // The property '_$litType$' needs to remain unminified.
   const [html, attrNames] = getTemplateHtml(
     result.strings,
     // SVG TemplateResultType functionality is only required on the client,
@@ -445,16 +444,16 @@ const getTemplateOpcodes = (
             // nodes with bindings, we don't account for it in the nodeIndex because
             // that will not be injected into the client template
             const strings = attr.value.split(marker);
-            // We store the case-sensitive name from `attrNames` (generated
-            // while parsing the template strings); note that this assumes
-            // parse5 attribute ordering matches string ordering
-            const name = attrNames[attrIndex++];
             const attrSourceLocation =
               node.sourceCodeLocation!.attrs![attr.name]!;
             const attrNameStartOffset = attrSourceLocation.startOffset;
             const attrEndOffset = attrSourceLocation.endOffset;
             flushTo(attrNameStartOffset);
             if (isAttrBinding) {
+              // We store the case-sensitive name from `attrNames` (generated
+              // while parsing the template strings); note that this assumes
+              // parse5 attribute ordering matches string ordering
+              const name = attrNames[attrIndex++];
               const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
                 name as string
               )!;
