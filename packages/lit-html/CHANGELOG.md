@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.1.1
+
+### Patch Changes
+
+- [#4409](https://github.com/lit/lit/pull/4409) [`1af7991c`](https://github.com/lit/lit/commit/1af7991c27456c7e6073a3ee6f18f102c2adc026) - asyncReplace correctly re-renders when value is unchanged (#4408)
+
 ## 3.1.0
 
 ### Minor Changes
