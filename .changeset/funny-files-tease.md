@@ -9,5 +9,5 @@
 ---
 
 Add "browser" export condition entrypoints to any package.json files with "node"
-export conditions. This fixes test runners that were incorrectly loading the
+export conditions. This fixes Node test runners emulating browser environments that were incorrectly loading the
 "node" entrypoints instead of the browser code.

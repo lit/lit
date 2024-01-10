@@ -10,7 +10,7 @@
 // The script is idempotent.
 //
 // # Instructions
-// After building the script run:
+// After building the script run from monorepo root:
 // `node packages/internal-scripts/bin/add-browser-exports.js`
 
 import assert from 'assert';
@@ -40,7 +40,7 @@ interface Exports {
   };
 }
 
-const result = execSync(`find . -name package.json`);
+const result = execSync(`find ./packages -name package.json`);
 
 const packageJsonFiles = result
   .toString()
