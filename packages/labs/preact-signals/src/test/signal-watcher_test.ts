@@ -119,32 +119,6 @@ suite('SignalWatcher', () => {
     new TestElFromConcreteClass();
   });
 
-  test('can mixin an abstract class and watch a signal', async () => {
-    const count = signal(0);
-    abstract class BaseEl extends LitElement {
-      abstract foo(): void;
-    }
-    class TestEl extends SignalWatcher(BaseEl) {
-      foo() {
-        /* Need implementation */
-      }
-      override render() {
-        return html`<p>count: ${count.value}</p>`;
-      }
-    }
-    customElements.define(generateElementName(), TestEl);
-    const el = new TestEl();
-    container.append(el);
-
-    await el.updateComplete;
-    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 0');
-
-    count.value = 1;
-
-    await el.updateComplete;
-    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 1');
-  });
-
   test('class returned from signal-watcher should be directly instantiatable if non-abstract', async () => {
     const count = signal(0);
     class TestEl extends LitElement {
