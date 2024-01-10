@@ -10,34 +10,48 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
+import type {ReactiveElement} from '../reactive-element.js';
+import {desc, type Interface} from './base.js';
 
-import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
+/**
+ * Options for the {@linkcode queryAssignedNodes} decorator. Extends the options
+ * that can be passed into [HTMLSlotElement.assignedNodes](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedNodes).
+ */
+export interface QueryAssignedNodesOptions extends AssignedNodesOptions {
+  /**
+   * Name of the slot to query. Leave empty for the default slot.
+   */
+  slot?: string;
+}
 
-// TODO(sorvell): Remove when https://github.com/webcomponents/polyfills/issues/397 is addressed.
-// x-browser support for matches
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const ElementProto = Element.prototype as any;
-const legacyMatches =
-  ElementProto.msMatchesSelector || ElementProto.webkitMatchesSelector;
+export type QueryAssignedNodesDecorator = {
+  // legacy
+  (
+    proto: Interface<ReactiveElement>,
+    name: PropertyKey,
+    descriptor?: PropertyDescriptor
+    // Note TypeScript requires the return type to be `void|any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+
+  // standard
+  <C extends Interface<ReactiveElement>, V extends Array<Node>>(
+    value: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V>;
+};
 
 /**
  * A property decorator that converts a class property into a getter that
- * returns the `assignedNodes` of the given named `slot`. Note, the type of
- * this property should be annotated as `NodeListOf<HTMLElement>`.
+ * returns the `assignedNodes` of the given `slot`.
  *
- * @param slotName A string name of the slot.
- * @param flatten A boolean which when true flattens the assigned nodes,
- *     meaning any assigned nodes that are slot elements are replaced with their
- *     assigned nodes.
- * @param selector A string which filters the results to elements that match
- *     the given css selector.
+ * Can be passed an optional {@linkcode QueryAssignedNodesOptions} object.
  *
- * * @example
+ * Example usage:
  * ```ts
  * class MyElement {
- *   @queryAssignedNodes('list', true, '.item')
- *   listItems;
+ *   @queryAssignedNodes({slot: 'list', flatten: true})
+ *   listItems!: Array<Node>;
  *
  *   render() {
  *     return html`
@@ -46,35 +60,29 @@ const legacyMatches =
  *   }
  * }
  * ```
+ *
+ * Note the type of this property should be annotated as `Array<Node>`. Use the
+ * queryAssignedElements decorator to list only elements, and optionally filter
+ * the element list using a CSS selector.
+ *
  * @category Decorator
  */
 export function queryAssignedNodes(
-  slotName = '',
-  flatten = false,
-  selector = ''
-) {
-  return decorateProperty({
-    descriptor: (_name: PropertyKey) => ({
-      get(this: ReactiveElement) {
-        const slotSelector = `slot${
-          slotName ? `[name=${slotName}]` : ':not([name])'
-        }`;
-        const slot = this.renderRoot?.querySelector(slotSelector);
-        let nodes = (slot as HTMLSlotElement)?.assignedNodes({flatten});
-        if (nodes && selector) {
-          nodes = nodes.filter(
-            (node) =>
-              node.nodeType === Node.ELEMENT_NODE &&
-              // eslint-disable-next-line @typescript-eslint/no-explicit-any
-              ((node as any).matches
-                ? (node as Element).matches(selector)
-                : legacyMatches.call(node as Element, selector))
-          );
-        }
-        return nodes;
+  options?: QueryAssignedNodesOptions
+): QueryAssignedNodesDecorator {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (<V extends Array<Node>>(
+    obj: object,
+    name: PropertyKey | ClassAccessorDecoratorContext<unknown, unknown>
+  ) => {
+    const {slot} = options ?? {};
+    const slotSelector = `slot${slot ? `[name=${slot}]` : ':not([name])'}`;
+    return desc(obj, name, {
+      get(this: ReactiveElement): V {
+        const slotEl =
+          this.renderRoot?.querySelector<HTMLSlotElement>(slotSelector);
+        return (slotEl?.assignedNodes(options) ?? []) as unknown as V;
       },
-      enumerable: true,
-      configurable: true,
-    }),
-  });
+    });
+  }) as QueryAssignedNodesDecorator;
 }

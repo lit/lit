@@ -1,0 +1,83 @@
+{
+  "name": "@lit-labs/cli-localize",
+  "description": "Implements the `lit localize` command. Use from @lit-labs/cli",
+  "version": "0.2.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "bugs": "https://github.com/lit/lit/issues",
+  "type": "module",
+  "main": "lib/index.js",
+  "repository": "lit/lit",
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit",
+    "test:compile": "wireit",
+    "build:deps": "wireit",
+    "build:compile": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:deps",
+        "build:compile"
+      ]
+    },
+    "build:compile": {
+      "command": "tsc --skipLibCheck || echo ''",
+      "#comment": "This never fails and always emits output so that we can run tests of code that doesn't type check",
+      "clean": "if-file-deleted",
+      "files": [
+        "tsconfig.json",
+        "src/**/*"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "index.{js,js.map,d.ts}"
+      ]
+    },
+    "build:deps": {
+      "dependencies": [
+        "../../localize-tools:build:ts"
+      ]
+    },
+    "test": {
+      "dependencies": [
+        "test:compile"
+      ]
+    },
+    "test:compile": {
+      "dependencies": [
+        "build:deps"
+      ],
+      "command": "tsc --pretty --noEmit",
+      "files": [
+        "tsconfig.json",
+        "src/**/*"
+      ],
+      "output": []
+    }
+  },
+  "dependencies": {
+    "@lit/localize-tools": "^0.7.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.2.0"
+  },
+  "engines": {
+    "node": ">=14.8.0"
+  },
+  "files": [
+    "lib"
+  ],
+  "homepage": "https://github.com/lit/lit",
+  "keywords": [
+    "lit",
+    "localization",
+    "localize",
+    "lit-cli"
+  ]
+}

@@ -27,9 +27,8 @@ export class UnsafeHTMLDirective extends Directive {
     }
   }
 
-  render(value: string | typeof nothing | typeof noChange) {
-    // TODO: add tests for nothing and noChange
-    if (value === nothing) {
+  render(value: string | typeof nothing | typeof noChange | undefined | null) {
+    if (value === nothing || value == null) {
       this._templateResult = undefined;
       return (this._value = value);
     }
@@ -47,7 +46,7 @@ export class UnsafeHTMLDirective extends Directive {
       return this._templateResult;
     }
     this._value = value;
-    const strings = ([value] as unknown) as TemplateStringsArray;
+    const strings = [value] as unknown as TemplateStringsArray;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     (strings as any).raw = strings;
     // WARNING: impersonating a TemplateResult like this is extremely
@@ -55,7 +54,8 @@ export class UnsafeHTMLDirective extends Directive {
     return (this._templateResult = {
       // Cast to a known set of integers that satisfy ResultType so that we
       // don't have to export ResultType and possibly encourage this pattern.
-      _$litType$: (this.constructor as typeof UnsafeHTMLDirective)
+      // This property needs to remain unminified.
+      ['_$litType$']: (this.constructor as typeof UnsafeHTMLDirective)
         .resultType as 1 | 2,
       strings,
       values: [],
@@ -65,6 +65,9 @@ export class UnsafeHTMLDirective extends Directive {
 
 /**
  * Renders the result as HTML, rather than text.
+ *
+ * The values `undefined`, `null`, and `nothing`, will all result in no content
+ * (empty string) being rendered.
  *
  * Note, this is unsafe to use with any user-provided input that hasn't been
  * sanitized or escaped, as it may lead to cross-site-scripting

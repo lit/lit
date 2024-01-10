@@ -9,11 +9,16 @@
     "ecmaVersion": 2020,
     "sourceType": "module"
   },
-  "plugins": ["eslint-plugin-no-only-tests", "@typescript-eslint"],
+  "plugins": [
+    "eslint-plugin-import",
+    "eslint-plugin-no-only-tests",
+    "@typescript-eslint"
+  ],
   "env": {
     "browser": true
   },
   "rules": {
+    "import/extensions": ["error", "always"],
     "no-prototype-builtins": "off",
     "no-only-tests/no-only-tests": "error",
     "@typescript-eslint/ban-types": "off",
@@ -26,7 +31,12 @@
       {
         "argsIgnorePattern": "^_"
       }
-    ]
+    ],
+    // Enforces that when a module is imported, that module is listed in the
+    // package's immediate "dependencies". Note internal-only files are excluded
+    // in an "overrides" configuration below.
+    "import/no-extraneous-dependencies": ["error"],
+    "@typescript-eslint/consistent-generic-constructors": "error"
   },
   "overrides": [
     {
@@ -55,6 +65,32 @@
       ],
       "rules": {
         "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
+    {
+      // Files listed here don't need to declare their imports in their
+      // immediate package.json "dependencies". This should include all
+      // internal-only files, like tests, which are allowed to import from
+      // "devDependencies", and also from packages declared only in the root
+      // monorepo "package.json".
+      "files": [
+        "**/goldens/**",
+        "**/rollup.config.js",
+        "**/rollup.config.*.js",
+        "**/src/test-gen/**",
+        "**/src/test/**",
+        "**/src/tests/**",
+        "**/test-output/**",
+        "**/web-test-runner.config.js",
+        "packages/benchmarks/**",
+        "packages/labs/ssr/src/demo/**",
+        "packages/labs/eleventy-plugin-lit/demo/**",
+        "packages/tests/**",
+        "rollup-common.js",
+        "packages/labs/compiler/rollup.source_map_tests.js"
+      ],
+      "rules": {
+        "import/no-extraneous-dependencies": "off"
       }
     }
   ]

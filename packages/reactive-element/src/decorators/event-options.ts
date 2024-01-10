@@ -11,8 +11,25 @@
  * not an arrow function.
  */
 
-import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
+import type {ReactiveElement} from '../reactive-element.js';
+import type {Interface} from './base.js';
+
+export type EventOptionsDecorator = {
+  // legacy
+  (
+    proto: Interface<ReactiveElement>,
+    name: PropertyKey
+    // Note TypeScript requires the return type to be `void|any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+
+  // standard
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  <C, V extends (this: C, ...args: any) => any>(
+    value: V,
+    _context: ClassMethodDecoratorContext<C, V>
+  ): void;
+};
 
 /**
  * Adds event listener options to a method used as an event listener in a
@@ -24,14 +41,13 @@ import {decorateProperty} from './base.js';
  * Current browsers support the `capture`, `passive`, and `once` options. See:
  * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#Parameters
  *
- * @example
  * ```ts
  * class MyElement {
  *   clicked = false;
  *
  *   render() {
  *     return html`
- *       <div @click=${this._onClick}`>
+ *       <div @click=${this._onClick}>
  *         <button></button>
  *       </div>
  *     `;
@@ -45,10 +61,18 @@ import {decorateProperty} from './base.js';
  * ```
  * @category Decorator
  */
-export function eventOptions(options: AddEventListenerOptions) {
-  return decorateProperty({
-    finisher: (ctor: typeof ReactiveElement, name: PropertyKey) => {
-      Object.assign(ctor.prototype[name as keyof ReactiveElement], options);
-    },
-  });
+export function eventOptions(
+  options: AddEventListenerOptions
+): EventOptionsDecorator {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return (<C, V extends (this: C, ...args: any) => any>(
+    protoOrValue: V,
+    nameOrContext: PropertyKey | ClassMethodDecoratorContext<C, V>
+  ) => {
+    const method =
+      typeof protoOrValue === 'function'
+        ? protoOrValue
+        : protoOrValue[nameOrContext as keyof ReactiveElement];
+    Object.assign(method, options);
+  }) as EventOptionsDecorator;
 }

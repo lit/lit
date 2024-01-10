@@ -41,7 +41,7 @@ const defaults = {
   from: 0,
   // 'to' item index used in operations (add, move, swap)
   to: 1000,
-  // When true, supported operations are mirrored symetrically on the other side
+  // When true, supported operations are mirrored symmetrically on the other side
   // of the list
   mirror: false,
   // Number of times to loop, repeating the same operation on the list
@@ -293,9 +293,8 @@ performance.measure('update', `update-start`);
 performance.measure('total', 'render-start');
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-(window as any).tachometerResult = performance.getEntriesByName(
-  'total'
-)[0].duration;
+(window as any).tachometerResult =
+  performance.getEntriesByName('total')[0].duration;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 document.title = (window as any).tachometerResult.toFixed(2) + 'ms';
 console.table({

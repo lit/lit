@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Disconnectable, Part} from './lit-html';
+import {Disconnectable, Part} from './lit-html.js';
 
 export {
   AttributePart,
@@ -13,7 +13,8 @@ export {
   ElementPart,
   EventPart,
   Part,
-} from './lit-html';
+  PropertyPart,
+} from './lit-html.js';
 
 export interface DirectiveClass {
   new (part: PartInfo): Directive;
@@ -30,8 +31,10 @@ export type DirectiveParameters<C extends Directive> = Parameters<C['render']>;
  * returns a DirectiveResult object that captures the arguments.
  */
 export interface DirectiveResult<C extends DirectiveClass = DirectiveClass> {
-  /** @internal */
-  _$litDirective$: C;
+  /**
+   * This property needs to remain unminified.
+   * @internal */
+  ['_$litDirective$']: C;
   /** @internal */
   values: DirectiveParameters<InstanceType<C>>;
 }
@@ -45,7 +48,7 @@ export const PartType = {
   ELEMENT: 6,
 } as const;
 
-export type PartType = typeof PartType[keyof typeof PartType];
+export type PartType = (typeof PartType)[keyof typeof PartType];
 
 export interface ChildPartInfo {
   readonly type: typeof PartType.CHILD;
@@ -78,19 +81,20 @@ export type PartInfo = ChildPartInfo | AttributePartInfo | ElementPartInfo;
  * Creates a user-facing directive function from a Directive class. This
  * function has the same parameters as the directive's render() method.
  */
-export const directive = <C extends DirectiveClass>(c: C) => (
-  ...values: DirectiveParameters<InstanceType<C>>
-): DirectiveResult<C> => ({
-  _$litDirective$: c,
-  values,
-});
+export const directive =
+  <C extends DirectiveClass>(c: C) =>
+  (...values: DirectiveParameters<InstanceType<C>>): DirectiveResult<C> => ({
+    // This property needs to remain unminified.
+    ['_$litDirective$']: c,
+    values,
+  });
 
 /**
  * Base class for creating custom directives. Users should extend this class,
  * implement `render` and/or `update`, and then pass their subclass to
  * `directive`.
  */
-export abstract class Directive {
+export abstract class Directive implements Disconnectable {
   //@internal
   __part!: Part;
   //@internal
@@ -104,10 +108,16 @@ export abstract class Directive {
   // These will only exist on the AsyncDirective subclass
   //@internal
   _$disconnectableChildren?: Set<Disconnectable>;
+  // This property needs to remain unminified.
   //@internal
-  _$setDirectiveConnected?(isConnected: boolean): void;
+  ['_$notifyDirectiveConnectionChanged']?(isConnected: boolean): void;
 
   constructor(_partInfo: PartInfo) {}
+
+  // See comment in Disconnectable interface for why this is a getter
+  get _$isConnected() {
+    return this._$parent._$isConnected;
+  }
 
   /** @internal */
   _$initialize(

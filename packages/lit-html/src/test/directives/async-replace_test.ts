@@ -4,18 +4,17 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {asyncReplace} from '../../directives/async-replace.js';
-import {render, html} from '../../lit-html.js';
+import {asyncReplace} from 'lit-html/directives/async-replace.js';
+import {render, html, nothing} from 'lit-html';
 import {TestAsyncIterable} from './test-async-iterable.js';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {stripExpressionMarkers} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
+import {memorySuite} from '../test-utils/memory.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-// Set Symbol.asyncIterator on browsers without it
-if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {
-  Object.defineProperty(Symbol, 'Symbol.asyncIterator', {value: Symbol()});
-}
+const nextFrame = () =>
+  new Promise<void>((r) => requestAnimationFrame(() => r()));
 
 suite('asyncReplace', () => {
   let container: HTMLDivElement;
@@ -108,7 +107,7 @@ suite('asyncReplace', () => {
     await iterable.push('foo');
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>foo</div>');
 
-    await iterable.push((undefined as unknown) as string);
+    await iterable.push(undefined as unknown as string);
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
   });
 
@@ -180,6 +179,30 @@ suite('asyncReplace', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div>bar</div>');
   });
 
+  test('renders the same iterable value when re-rendered with no new value emitted', async () => {
+    const t = (iterable: any) => html`<div>${asyncReplace(iterable)}</div>`;
+    render(t(iterable), container);
+    assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
+
+    await iterable.push('hello');
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>hello</div>'
+    );
+
+    render(t(iterable), container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>hello</div>'
+    );
+
+    render(t(iterable), container);
+    assert.equal(
+      stripExpressionMarkers(container.innerHTML),
+      '<div>hello</div>'
+    );
+  });
+
   test('renders new value over a pending iterable', async () => {
     const t = (v: any) => html`<div>${v}</div>`;
     // This is a little bit of an odd usage of directives as values, but it
@@ -225,18 +248,152 @@ suite('asyncReplace', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '<p>fast</p>');
   });
 
-  test('does not render while disconnected', async () => {
-    const component = (value: any) => html`<p>${asyncReplace(value)}</p>`;
-    const part = render(component(iterable), container);
-    await iterable.push('1');
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
-    part.setConnected(false);
-    await iterable.push('2');
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
-    part.setConnected(true);
-    await new Promise<void>((r) => requestAnimationFrame(() => r()));
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>2</p>');
-    await iterable.push('3');
-    assert.equal(stripExpressionMarkers(container.innerHTML), '<p>3</p>');
+  suite('disconnection', () => {
+    test('does not render when iterable resolves while disconnected', async () => {
+      const component = (value: any) => html`<p>${asyncReplace(value)}</p>`;
+      const part = render(component(iterable), container);
+      await iterable.push('1');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      part.setConnected(false);
+      await iterable.push('2');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      part.setConnected(true);
+      await nextFrame();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>2</p>');
+      await iterable.push('3');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>3</p>');
+    });
+
+    test('disconnection thrashing', async () => {
+      const component = (value: any) => html`<p>${asyncReplace(value)}</p>`;
+      const part = render(component(iterable), container);
+      await iterable.push('1');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      part.setConnected(false);
+      await iterable.push('2');
+      part.setConnected(true);
+      part.setConnected(false);
+      await nextFrame();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      part.setConnected(true);
+      await nextFrame();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>2</p>');
+      await iterable.push('3');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>3</p>');
+    });
+
+    test('does not render when newly rendered while disconnected', async () => {
+      const component = (value: any) => html`<p>${value}</p>`;
+      const part = render(component('static'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>static</p>'
+      );
+      part.setConnected(false);
+      render(component(asyncReplace(iterable)), container);
+      await iterable.push('1');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>static</p>'
+      );
+      part.setConnected(true);
+      await nextFrame();
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>1</p>');
+      await iterable.push('2');
+      assert.equal(stripExpressionMarkers(container.innerHTML), '<p>2</p>');
+    });
+
+    test('does not render when resolved and changed while disconnected', async () => {
+      const component = (value: any) => html`<p>${value}</p>`;
+      const part = render(component('staticA'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticA</p>'
+      );
+      part.setConnected(false);
+      render(component(asyncReplace(iterable)), container);
+      await iterable.push('1');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticA</p>'
+      );
+      render(component('staticB'), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticB</p>'
+      );
+      part.setConnected(true);
+      await nextFrame();
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticB</p>'
+      );
+      await iterable.push('2');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>staticB</p>'
+      );
+    });
+
+    test('the same promise can be rendered into two asyncReplace instances', async () => {
+      const component = (iterable: AsyncIterable<unknown>) =>
+        html`<p>${asyncReplace(iterable)}</p><p>${asyncReplace(iterable)}</p>`;
+      render(component(iterable), container);
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p></p><p></p>'
+      );
+      await iterable.push('1');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>1</p><p>1</p>'
+      );
+      await iterable.push('2');
+      assert.equal(
+        stripExpressionMarkers(container.innerHTML),
+        '<p>2</p><p>2</p>'
+      );
+    });
+  });
+
+  memorySuite('memory leak tests', () => {
+    test('tree with asyncReplace cleared while iterables are pending', async () => {
+      const template = (v: unknown) => html`<div>${v}</div>`;
+      // Make a big array set on an expando to exaggerate any leaked DOM
+      const big = () => new Array(10000).fill(0);
+      // Hold onto the iterables to prevent them from being gc'ed
+      const iterables: Array<TestAsyncIterable<string>> = [];
+      window.gc();
+      const heap = performance.memory.usedJSHeapSize;
+      for (let i = 0; i < 1000; i++) {
+        // Iterable passed to asyncReplace that will never yield
+        const iterable = new TestAsyncIterable<string>();
+        iterables.push(iterable);
+        // Render the directive into a `<span>` with a 10kb expando, to exaggerate
+        // when DOM is not being gc'ed
+        render(
+          template(html`<span .p=${big()}>${asyncReplace(iterable)}</span>`),
+          container
+        );
+        // Clear the `<span>` + directive
+        render(template(nothing), container);
+        // Periodically force a GC to prevent the heap size from expanding
+        // too much.
+        // If we're leaking memory this is a noop. But if we aren't, this makes
+        // it easier for the browser's GC to keep the heap size similar to the
+        // actual amount of memory we're using.
+        if (i % 30 === 0) {
+          window.gc();
+        }
+      }
+      window.gc();
+      assert.isAtMost(
+        performance.memory.usedJSHeapSize / heap - 1,
+        // Allow a 30% margin of heap growth; due to the 10kb expando, an actual
+        // DOM leak is orders of magnitude larger.
+        0.3,
+        'memory leak detected'
+      );
+    });
   });
 });

@@ -4,7 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {_Σ, Part, DirectiveParent, TemplateResult} from './lit-html.js';
+import {
+  _$LH,
+  Part,
+  DirectiveParent,
+  CompiledTemplateResult,
+  MaybeCompiledTemplateResult,
+  UncompiledTemplateResult,
+} from './lit-html.js';
 import {
   DirectiveResult,
   DirectiveClass,
@@ -13,7 +20,7 @@ import {
 } from './directive.js';
 type Primitive = null | undefined | boolean | number | string | symbol | bigint;
 
-const {_ChildPart: ChildPart} = _Σ;
+const {_ChildPart: ChildPart} = _$LH;
 
 type ChildPart = InstanceType<typeof ChildPart>;
 
@@ -39,30 +46,51 @@ export const TemplateResultType = {
   SVG: 2,
 } as const;
 
-export type TemplateResultType = typeof TemplateResultType[keyof typeof TemplateResultType];
+export type TemplateResultType =
+  (typeof TemplateResultType)[keyof typeof TemplateResultType];
+
+type IsTemplateResult = {
+  (val: unknown): val is MaybeCompiledTemplateResult;
+  <T extends TemplateResultType>(
+    val: unknown,
+    type: T
+  ): val is UncompiledTemplateResult<T>;
+};
 
 /**
- * Tests if a value is a TemplateResult.
+ * Tests if a value is a TemplateResult or a CompiledTemplateResult.
  */
-export const isTemplateResult = (
+export const isTemplateResult: IsTemplateResult = (
   value: unknown,
   type?: TemplateResultType
-): value is TemplateResult =>
+): value is UncompiledTemplateResult =>
   type === undefined
-    ? (value as TemplateResult)?._$litType$ !== undefined
-    : (value as TemplateResult)?._$litType$ === type;
+    ? // This property needs to remain unminified.
+      (value as UncompiledTemplateResult)?.['_$litType$'] !== undefined
+    : (value as UncompiledTemplateResult)?.['_$litType$'] === type;
+
+/**
+ * Tests if a value is a CompiledTemplateResult.
+ */
+export const isCompiledTemplateResult = (
+  value: unknown
+): value is CompiledTemplateResult => {
+  return (value as CompiledTemplateResult)?.['_$litType$']?.h != null;
+};
 
 /**
  * Tests if a value is a DirectiveResult.
  */
 export const isDirectiveResult = (value: unknown): value is DirectiveResult =>
-  (value as DirectiveResult)?._$litDirective$ !== undefined;
+  // This property needs to remain unminified.
+  (value as DirectiveResult)?.['_$litDirective$'] !== undefined;
 
 /**
  * Retrieves the Directive class for a DirectiveResult
  */
 export const getDirectiveClass = (value: unknown): DirectiveClass | undefined =>
-  (value as DirectiveResult)?._$litDirective$;
+  // This property needs to remain unminified.
+  (value as DirectiveResult)?.['_$litDirective$'];
 
 /**
  * Tests whether a part has only a single-expression with no strings to
@@ -110,7 +138,8 @@ export const insertPart = (
     );
   } else {
     const endNode = wrap(part._$endNode!).nextSibling;
-    const parentChanged = part._$parent !== containerPart;
+    const oldParent = part._$parent;
+    const parentChanged = oldParent !== containerPart;
     if (parentChanged) {
       part._$reparentDisconnectables?.(containerPart);
       // Note that although `_$reparentDisconnectables` updates the part's
@@ -118,6 +147,17 @@ export const insertPart = (
       // method only exists if Disconnectables are present, so we need to
       // unconditionally set it here
       part._$parent = containerPart;
+      // Since the _$isConnected getter is somewhat costly, only
+      // read it once we know the subtree has directives that need
+      // to be notified
+      let newConnectionState;
+      if (
+        part._$notifyConnectionChanged !== undefined &&
+        (newConnectionState = containerPart._$isConnected) !==
+          oldParent!._$isConnected
+      ) {
+        part._$notifyConnectionChanged(newConnectionState);
+      }
     }
     if (endNode !== refNode || parentChanged) {
       let start: Node | null = part._$startNode;
@@ -157,7 +197,7 @@ export const setChildPartValue = <T extends ChildPart>(
   return part;
 };
 
-// A sentinal value that can never appear as a part value except when set by
+// A sentinel value that can never appear as a part value except when set by
 // live(). Used to force a dirty-check to fail and cause a re-render.
 const RESET_VALUE = {};
 
@@ -180,7 +220,7 @@ export const setCommittedValue = (part: Part, value: unknown = RESET_VALUE) =>
  *
  * The committed value is used for change detection and efficient updates of
  * the part. It can differ from the value set by the template or directive in
- * cases where the template value is transformed before being commited.
+ * cases where the template value is transformed before being committed.
  *
  * - `TemplateResult`s are committed as a `TemplateInstance`
  * - Iterables are committed as `Array<ChildPart>`
@@ -197,7 +237,7 @@ export const getCommittedValue = (part: ChildPart) => part._$committedValue;
  * @param part The Part to remove
  */
 export const removePart = (part: ChildPart) => {
-  part._$setChildPartConnected?.(false, true);
+  part._$notifyConnectionChanged?.(false, true);
   let start: ChildNode | null = part._$startNode;
   const end: ChildNode | null = wrap(part._$endNode!).nextSibling;
   while (start !== end) {

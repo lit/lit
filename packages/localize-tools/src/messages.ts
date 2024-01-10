@@ -66,6 +66,7 @@ export interface Bundle {
  */
 export interface Placeholder {
   untranslatable: string;
+  index: number;
   // TODO(aomarks) Placeholders can also have names and examples, to help the
   // translator understand the meaning of the placeholder. We could
   // automatically add names for common markup patterns like START_BOLD and

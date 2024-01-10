@@ -6,13 +6,22 @@
 
 import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
 import {LitElement, html, css} from 'lit';
-import {ScopedRegistryHost} from '../scoped-registry-mixin';
+import {ScopedRegistryHost} from '@lit-labs/scoped-registry-mixin';
 import {assert} from '@esm-bundle/chai';
+
+// Prevent ie11 or other incompatible browsers from running
+// scoped-registry-mixin tests.
+export const canTest =
+  window.ShadowRoot &&
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  !(window as any).ShadyDOM?.inUse &&
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (window as any).ShadowRootInit;
 
 class SimpleGreeting extends LitElement {
   private name: String;
 
-  static get properties() {
+  static override get properties() {
     return {name: {type: String}};
   }
 
@@ -22,7 +31,7 @@ class SimpleGreeting extends LitElement {
     this.name = 'World';
   }
 
-  render() {
+  override render() {
     return html`<span>hello ${this.name}!</span>`;
   }
 }
@@ -32,7 +41,7 @@ class ScopedComponent extends ScopedRegistryHost(LitElement) {
     'simple-greeting': SimpleGreeting,
   };
 
-  static get styles() {
+  static override get styles() {
     return css`
       :host {
         color: #ff0000;
@@ -40,7 +49,7 @@ class ScopedComponent extends ScopedRegistryHost(LitElement) {
     `;
   }
 
-  render() {
+  override render() {
     return html` <simple-greeting
       id="greeting"
       name="scoped world"
@@ -50,7 +59,7 @@ class ScopedComponent extends ScopedRegistryHost(LitElement) {
 
 customElements.define('scoped-component', ScopedComponent);
 
-suite('scoped-registry-mixin', () => {
+(canTest ? suite : suite.skip)('scoped-registry-mixin', () => {
   test(`host element should have a registry`, async () => {
     const container = document.createElement('div');
     container.innerHTML = `<scoped-component></scoped-component>`;
@@ -117,9 +126,8 @@ suite('scoped-registry-mixin', () => {
 
     const scopedComponent = container.firstChild as LitElement;
     await scopedComponent.updateComplete;
-    const simpleGreeting = scopedComponent?.shadowRoot?.getElementById(
-      'greeting'
-    );
+    const simpleGreeting =
+      scopedComponent?.shadowRoot?.getElementById('greeting');
     const {color} = getComputedStyle(simpleGreeting!);
 
     assert.equal(color, 'rgb(255, 0, 0)');

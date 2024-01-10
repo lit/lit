@@ -37,16 +37,13 @@ class LiveDirective extends Directive {
     return value;
   }
 
-  update(part: AttributePart, [value]: DirectiveParameters<this>) {
+  override update(part: AttributePart, [value]: DirectiveParameters<this>) {
     if (value === noChange || value === nothing) {
       return value;
     }
     const element = part.element;
     const name = part.name;
 
-    // TODO (justinfagnani): This is essentially implementing a getLiveValue()
-    // method for each part type. Should that be moved into the AttributePart
-    // interface?
     if (part.type === PartType.PROPERTY) {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       if (value === (element as any)[name]) {
@@ -82,9 +79,11 @@ class LiveDirective extends Directive {
  * it alone. If this is not what you want--if you want to overwrite the DOM
  * value with the bound value no matter what--use the `live()` directive:
  *
- *     html`<input .value=${live(x)}>`
+ * ```js
+ * html`<input .value=${live(x)}>`
+ * ```
  *
- * `live()` performs a strict equality check agains the live DOM value, and if
+ * `live()` performs a strict equality check against the live DOM value, and if
  * the new value is equal to the live value, does nothing. This means that
  * `live()` should not be used when the binding will cause a type conversion. If
  * you use `live()` with an attribute binding, make sure that only strings are

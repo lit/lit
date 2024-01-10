@@ -5,13 +5,13 @@
  */
 
 import {litProdConfig} from '../../rollup-common.js';
+import {createRequire} from 'module';
 
 export default litProdConfig({
-  classPropertyPrefix: 'Φ',
+  packageName: createRequire(import.meta.url)('./package.json').name,
   entryPoints: [
     'index',
     'lit-element',
-    'experimental-hydrate-support',
     'private-ssr-support',
     'decorators',
     'decorators/custom-element',
@@ -20,6 +20,7 @@ export default litProdConfig({
     'decorators/property',
     'decorators/query',
     'decorators/query-all',
+    'decorators/query-assigned-elements',
     'decorators/query-assigned-nodes',
     'decorators/query-async',
   ],

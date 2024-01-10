@@ -1,0 +1,64 @@
+name: 🦄 Feature Request
+description: Request a new feature for Lit or a Lit library/tool.
+
+body:
+  - type: checkboxes
+    attributes:
+      label: Should this be an RFC?
+      description: |
+        Lit uses the [Lit RFC Process](https://github.com/lit/rfcs) to propose and discuss substantial changes. Significant changes should not be opened as feature request issues here, but follow the RFC process at https://github.com/lit/rfcs.
+      options:
+        - label: This is not a substantial change
+          required: true
+  - type: dropdown
+    id: affected
+    validations:
+      required: true
+    attributes:
+      label: Which package is this a feature request for?
+      multiple: true
+      description: Note you can select more than one.
+      options:
+        - Lit Core (lit / lit-html / lit-element / reactive-element)
+        - Context (@lit/context)
+        - Eleventy Plugin (@lit-labs/eleventy-plugin-lit)
+        - Localize (@lit/localize)
+        - Motion (@lit-labs/motion)
+        - Observers (@lit-labs/observers)
+        - React (@lit/react)
+        - SSR (@lit-labs/ssr)
+        - Starter Kits (@lit/lit-starter-js / @lit/lit-starter-ts)
+        - Task (@lit/task)
+        - Virtualizer (@lit-labs/virtualizer)
+        - Analyzer (@lit-labs/analyzer)
+        - Other/unknown (please mention in description)
+
+  - type: textarea
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: Description
+      description: |
+        Please describe the feature request in as much detail as possible, including examples of how you would use the new feature.
+      placeholder: |
+        It would be useful to have a more concise syntax for adding event listeners to DOM elements. For example, I would like to be able to concisely add a click handler to a button, using a syntax like this:
+
+        ```js
+        render() {
+          return html`
+            <button @click=${this._onClickButton}>Click me</button>
+          `;
+        }
+        ```
+
+  - type: textarea
+    id: alternatives
+    validations:
+      required: true
+    attributes:
+      label: Alternatives and Workarounds
+      description: |
+        Please describe any alternatives or workarounds you have considered that could be used instead of this feature.
+      placeholder: |
+        It's possible to achieve the same result by manually calling `addEventListener` in the element's `connectedCallback` method, and calling `removeEventListener` in `disconnectedCallback`, but this isn't satisfactory because it is tedious and error-prone.

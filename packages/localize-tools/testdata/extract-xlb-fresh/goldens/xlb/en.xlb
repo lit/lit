@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <localizationbundle locale="en">
   <messages>
-    <msg name="he7b474847636149b" desc="Description of Hello $(name)">Hello <ph>&lt;b>${name}</ph>!<ph>&lt;/b></ph></msg>
+    <msg name="he7b474847636149b" desc="Description of Hello $(name)">Hello <ph name="0">&lt;b&gt;${name}</ph>!<ph name="1">&lt;/b&gt;</ph></msg>
     <msg name="s8c0ec8d1fb9e6e32" desc="Description of Hello World">Hello World!</msg>
   </messages>
 </localizationbundle>

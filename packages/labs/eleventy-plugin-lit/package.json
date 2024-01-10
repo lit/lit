@@ -1,0 +1,101 @@
+{
+  "name": "@lit-labs/eleventy-plugin-lit",
+  "version": "1.0.3",
+  "description": "Eleventy plugin for rendering Lit components.",
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "homepage": "https://lit.dev/",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/eleventy-plugin-lit"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "index.js",
+  "types": "index.d.ts",
+  "exports": {
+    ".": {
+      "default": "./index.js"
+    }
+  },
+  "files": [
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/worker/worker.{d.ts,d.ts.map,js,js.map}",
+    "/worker/package.json"
+  ],
+  "engines": {
+    "node": ">=12.16.0"
+  },
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit",
+    "build:demo": "wireit",
+    "serve:demo": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "../ssr:build",
+        "../../lit:build"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "dependencies": [
+        "../ssr:build:ts",
+        "../../lit:build:ts:types"
+      ],
+      "files": [
+        "src",
+        "tsconfig.json"
+      ],
+      "output": [
+        "index.{js,d.ts}",
+        "test",
+        "worker",
+        "*.tsbuildinfo",
+        "!test/__temp",
+        "!test/package.json",
+        "!worker/package.json"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "build:demo": {
+      "command": "cd demo && NODE_OPTIONS=--experimental-vm-modules eleventy",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "demo"
+      ]
+    },
+    "serve:demo": {
+      "command": "wds --watch --node-resolve --open demo/_site/test",
+      "dependencies": [
+        "build:demo"
+      ],
+      "files": []
+    },
+    "test": {
+      "command": "uvu test/ \".*-test.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    }
+  },
+  "dependencies": {
+    "@lit-labs/ssr": "^3.1.8",
+    "lit": "^2.7.0 || ^3.0.0"
+  },
+  "devDependencies": {
+    "@11ty/eleventy": "^1.0.0",
+    "@webcomponents/template-shadowroot": "^0.1.0",
+    "rimraf": "^3.0.2"
+  }
+}

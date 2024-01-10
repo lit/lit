@@ -1,8 +1,14 @@
 /decorators/
 /development/
+/legacy-decorators/
+/node/
+/std-decorators/
 /test/
+
 /css-tag.*
 /decorators.*
+/legacy-decorators.*
 /polyfill-support.*
+/std-decorators.*
 /reactive-element.*
 /reactive-controller.*

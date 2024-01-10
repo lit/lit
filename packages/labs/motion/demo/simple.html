@@ -19,10 +19,10 @@
       import {LitElement, html, css} from 'lit';
       import {classMap} from 'lit/directives/class-map.js';
       import {
-        flip,
+        animate,
         flyBelow,
         defaultCssProperties,
-      } from '../development/flip.js';
+      } from '../development/animate.js';
 
       class MyElement extends LitElement {
         static properties = {shifted: {}};
@@ -44,7 +44,10 @@
         render() {
           return html`
             <p><button @click=${this._toggle}>Move</button></p>
-            <p class="box ${classMap({shifted: this.shifted})}" ${flip()}></p>
+            <p
+              class="box ${classMap({shifted: this.shifted})}"
+              ${animate()}
+            ></p>
           `;
         }
 

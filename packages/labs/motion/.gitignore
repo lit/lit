@@ -1,6 +1,7 @@
 /development/
+/test/
 /node_modules/
 /index.*
-/flip.*
+/animate.*
 /position.*
-/flip-controller.*
+/animate-controller.*

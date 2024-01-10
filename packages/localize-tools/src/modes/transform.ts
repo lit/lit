@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Message, makeMessageIdMap} from '../messages.js';
+import {Message, Placeholder, makeMessageIdMap} from '../messages.js';
 import {writeLocaleCodesModule} from '../locales.js';
 import type {Locale} from '../types/locale.js';
 import type {Config} from '../types/config.js';
@@ -19,7 +19,7 @@ import {
 } from '../program-analysis.js';
 import {KnownError} from '../error.js';
 import {
-  escapeStringToEmbedInTemplateLiteral,
+  escapeTextContentToEmbedInTemplateLiteral,
   stringifyDiagnostics,
   parseStringAsTemplateLiteral,
 } from '../typescript.js';
@@ -98,6 +98,11 @@ async function transformOutput(
   transformConfig: TransformOutputConfig,
   program: ts.Program
 ) {
+  if (transformConfig.outputDir === undefined && !config.tsConfig) {
+    throw new KnownError(
+      `Either output.outputDir or tsConfig must be specified.`
+    );
+  }
   if (transformConfig.localeCodesModule) {
     await writeLocaleCodesModule(
       config.sourceLocale,
@@ -111,8 +116,8 @@ async function transformOutput(
   // transformation into a real project so that the user can still use --watch
   // and other tsc flags. It would also be nice to support the language server,
   // so that diagnostics will show up immediately in the editor.
-  const opts = program.getCompilerOptions();
-  const outRoot = opts.outDir || '.';
+  const compilerOpts = program.getCompilerOptions();
+  const outRoot = transformConfig.outputDir ?? compilerOpts.outDir ?? '.';
   for (const locale of [config.sourceLocale, ...config.targetLocales]) {
     let translations;
     if (locale !== config.sourceLocale) {
@@ -121,7 +126,7 @@ async function transformOutput(
         translations.set(message.name, message);
       }
     }
-    opts.outDir = pathLib.join(outRoot, '/', locale);
+    compilerOpts.outDir = pathLib.join(outRoot, '/', locale);
     program.emit(undefined, undefined, undefined, undefined, {
       before: [litLocalizeTransform(translations, locale, program)],
     });
@@ -145,7 +150,7 @@ export function litLocalizeTransform(
         program,
         file
       );
-      return ts.visitNode(file, transformer.boundVisitNode);
+      return ts.visitNode(file, transformer.boundVisitNode) as ts.SourceFile;
     };
   };
 }
@@ -178,7 +183,7 @@ class Transformer {
   /**
    * Top-level delegating visitor for all nodes.
    */
-  visitNode(node: ts.Node): ts.VisitResult<ts.Node> {
+  visitNode(node: ts.Node): ts.VisitResult<ts.Node | undefined> {
     // msg('greeting', 'hello') -> 'hola'
     if (isMsgCall(node, this.typeChecker)) {
       return this.replaceMsgCall(node);
@@ -189,7 +194,9 @@ class Transformer {
       // If an html-tagged template literal embeds a msg call, we want to
       // collapse the result of that msg call into the parent template.
       return tagLit(
+        this.context.factory,
         makeTemplateLiteral(
+          this.context.factory,
           this.recursivelyFlattenTemplate(node.template, true)
         )
       );
@@ -200,11 +207,12 @@ class Transformer {
       const moduleSymbol = this.typeChecker.getSymbolAtLocation(
         node.moduleSpecifier
       );
-      if (moduleSymbol && this.isLitLocalizeModule(moduleSymbol)) {
+      if (moduleSymbol && this.fileNameAppearsToBeLitLocalize(moduleSymbol)) {
         return undefined;
       }
     }
 
+    const factory = this.context.factory;
     if (ts.isCallExpression(node)) {
       // configureTransformLocalization(...) -> {getLocale: () => "es-419"}
       if (
@@ -213,17 +221,17 @@ class Transformer {
           '_LIT_LOCALIZE_CONFIGURE_TRANSFORM_LOCALIZATION_'
         )
       ) {
-        return ts.createObjectLiteral(
+        return factory.createObjectLiteralExpression(
           [
-            ts.createPropertyAssignment(
-              ts.createIdentifier('getLocale'),
-              ts.createArrowFunction(
+            factory.createPropertyAssignment(
+              factory.createIdentifier('getLocale'),
+              factory.createArrowFunction(
                 undefined,
                 undefined,
                 [],
                 undefined,
-                ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                ts.createStringLiteral(this.locale)
+                factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                factory.createStringLiteral(this.locale)
               )
             ),
           ],
@@ -250,7 +258,7 @@ class Transformer {
       if (
         this.typeHasProperty(node.expression, '_LIT_LOCALIZE_CONTROLLER_FN_')
       ) {
-        return ts.createIdentifier('undefined');
+        return factory.createIdentifier('undefined');
       }
     }
 
@@ -289,16 +297,18 @@ class Transformer {
         // but not in the case of `import * as ...`.
         eventSymbol = this.typeChecker.getAliasedSymbol(eventSymbol);
       }
-      for (const decl of eventSymbol.declarations) {
+      for (const decl of eventSymbol.declarations ?? []) {
         let sourceFile: ts.Node = decl;
         while (!ts.isSourceFile(sourceFile)) {
           sourceFile = sourceFile.parent;
         }
-        const sourceFileSymbol = this.typeChecker.getSymbolAtLocation(
-          sourceFile
-        );
-        if (sourceFileSymbol && this.isLitLocalizeModule(sourceFileSymbol)) {
-          return ts.createStringLiteral('lit-localize-status');
+        const sourceFileSymbol =
+          this.typeChecker.getSymbolAtLocation(sourceFile);
+        if (
+          sourceFileSymbol &&
+          this.fileNameAppearsToBeLitLocalize(sourceFileSymbol)
+        ) {
+          return factory.createStringLiteral('lit-localize-status');
         }
       }
     }
@@ -324,8 +334,8 @@ class Transformer {
     if (templateResult.error) {
       throw new Error(stringifyDiagnostics([templateResult.error]));
     }
-    const {tag} = templateResult.result;
-    let {template} = templateResult.result;
+    const {tag, contents, template} = templateResult.result;
+    let newTemplate = template;
 
     const optionsResult = extractOptions(optionsArg, this.sourceFile);
     if (optionsResult.error) {
@@ -334,65 +344,114 @@ class Transformer {
     const options = optionsResult.result;
     const id = options.id ?? generateMsgIdFromAstNode(template, tag === 'html');
 
-    const sourceExpressions = new Map<string, ts.Expression>();
-    if (ts.isTemplateExpression(template)) {
-      for (const span of template.templateSpans) {
-        // TODO(aomarks) Support less brittle/more readable placeholder keys.
-        const key = this.sourceFile.text.slice(
-          span.expression.pos,
-          span.expression.end
-        );
-        sourceExpressions.set(key, span.expression);
-      }
-    }
-
-    // If translations are available, replace the source template from the
-    // second argument with the corresponding translation.
     if (this.translations !== undefined) {
       const translation = this.translations.get(id);
       if (translation !== undefined) {
+        // If translations are available, replace the source template from the
+        // second argument with the corresponding translation.
+
+        // Maps from <translation absolute expression index> to
+        // <[source placeholder index, placeholder-relative expression index]>.
+        const transExprToSourcePosition = new Map<number, [number, number]>();
+
+        // Maps from <source placeholder index> to <the number of expressions in
+        // that placeholder>.
+        const placeholderExpressionCounts = new Map<number, number>();
+
+        // The absolute position of each expression within the translated
+        // message.
+        let absTransExprIdx = 0;
+
+        // Maps source placeholder to their index.
+        const placeholdersByIndex = new Map<number, Placeholder>();
+        for (let i = 0, phIdx = 0; i < contents.length; i++) {
+          const content = contents[i];
+          if (typeof content === 'object') {
+            placeholdersByIndex.set(phIdx++, content);
+          }
+        }
+
         const templateLiteralBody = translation.contents
-          .map((content) =>
-            typeof content === 'string'
-              ? escapeStringToEmbedInTemplateLiteral(content)
-              : content.untranslatable
-          )
+          .map((content) => {
+            if (typeof content === 'string') {
+              return escapeTextContentToEmbedInTemplateLiteral(content);
+            }
+            const sourcePlaceholderIdx = content.index;
+            const matchingPlaceholder =
+              placeholdersByIndex.get(sourcePlaceholderIdx);
+            if (matchingPlaceholder === undefined) {
+              throw new Error(
+                `Placeholder from translation does not appear in source.` +
+                  `\nLocale: ${this.locale}` +
+                  `\nPlaceholder: ${content.untranslatable}`
+              );
+            }
+            const parsedPlaceholder = parseStringAsTemplateLiteral(
+              matchingPlaceholder.untranslatable
+            );
+            if (ts.isTemplateExpression(parsedPlaceholder)) {
+              placeholderExpressionCounts.set(
+                sourcePlaceholderIdx,
+                parsedPlaceholder.templateSpans.length
+              );
+              for (let i = 0; i < parsedPlaceholder.templateSpans.length; i++) {
+                const placeholderRelativeExprIdx = i;
+                transExprToSourcePosition.set(absTransExprIdx++, [
+                  sourcePlaceholderIdx,
+                  placeholderRelativeExprIdx,
+                ]);
+              }
+            }
+
+            return matchingPlaceholder.untranslatable;
+          })
           .join('');
 
-        template = parseStringAsTemplateLiteral(templateLiteralBody);
-        if (ts.isTemplateExpression(template)) {
-          const newParts = [];
-          newParts.push(template.head.text);
-          for (const span of template.templateSpans) {
-            const expressionKey = templateLiteralBody.slice(
-              span.expression.pos - 1,
-              span.expression.end - 1
-            );
-            const sourceExpression = sourceExpressions.get(expressionKey);
-            if (sourceExpression === undefined) {
+        newTemplate = parseStringAsTemplateLiteral(templateLiteralBody);
+        if (ts.isTemplateExpression(newTemplate)) {
+          const newParts: Array<string | ts.Expression> = [];
+          newParts.push(newTemplate.head.text);
+          for (let i = 0; i < newTemplate.templateSpans.length; i++) {
+            const span = newTemplate.templateSpans[i];
+            const srcPos = transExprToSourcePosition.get(i);
+            if (srcPos === undefined) {
+              const expressionText = templateLiteralBody.slice(
+                span.expression.pos - 1,
+                span.expression.end - 1
+              );
               throw new Error(
                 `Expression in translation does not appear in source.` +
                   `\nLocale: ${this.locale}` +
-                  `\nExpression: ${expressionKey}`
+                  `\nExpression: ${expressionText}`
               );
             }
-            newParts.push(sourceExpression);
+            const [sourcePlaceholderIdx, placeholderRelativeExprIdx] = srcPos;
+            let absSourceExprIdx = placeholderRelativeExprIdx;
+            for (let j = 0; j < sourcePlaceholderIdx; j++) {
+              // Offset by the length of all preceding placeholder indexes.
+              absSourceExprIdx += placeholderExpressionCounts.get(j) ?? 0;
+            }
+            if (!ts.isTemplateExpression(template)) {
+              throw new Error('Internal error');
+            }
+            const sourceExpression = template.templateSpans[absSourceExprIdx];
+            newParts.push(sourceExpression.expression);
             newParts.push(span.literal.text);
           }
-          template = makeTemplateLiteral(newParts);
+          newTemplate = makeTemplateLiteral(this.context.factory, newParts);
         }
       }
       // TODO(aomarks) Emit a warning that a translation was missing.
     }
 
     // Nothing more to do with a simple string.
-    if (ts.isStringLiteral(template)) {
+    if (ts.isStringLiteral(newTemplate)) {
       if (tag === 'html') {
         throw new KnownError(
           'Internal error: string literal cannot be html-tagged'
         );
       }
-      return template;
+      return newTemplate;
     }
 
     // We may have ended up with template expressions that can be represented
@@ -400,10 +459,13 @@ class Transformer {
     //
     // Given: html`Hello <b>${"World"}</b>`
     // Generate: html`Hello <b>World</b>`
-    template = makeTemplateLiteral(
-      this.recursivelyFlattenTemplate(template, tag === 'html')
+    newTemplate = makeTemplateLiteral(
+      this.context.factory,
+      this.recursivelyFlattenTemplate(newTemplate, tag === 'html')
     );
-    return tag === 'html' ? tagLit(template) : template;
+    return tag === 'html'
+      ? tagLit(this.context.factory, newTemplate)
+      : newTemplate;
   }
 
   /**
@@ -433,7 +495,7 @@ class Transformer {
         if (value === undefined) {
           throw new KnownError('No value provided');
         }
-        return ts.createTemplateSpan(value, span.literal);
+        return this.context.factory.createTemplateSpan(value, span.literal);
       },
       this.context
     );
@@ -463,7 +525,10 @@ class Transformer {
     }
 
     const fragments: Array<string | ts.Expression> = [template.head.text];
-    const subsume = (expression: ts.Expression): boolean => {
+    const subsume = (expression: ts.Node | undefined): boolean => {
+      if (expression === undefined) {
+        return false;
+      }
       if (ts.isStringLiteral(expression)) {
         fragments.push(expression.text);
       } else if (ts.isTemplateLiteral(expression)) {
@@ -478,12 +543,43 @@ class Transformer {
       return true;
     };
 
-    for (const span of template.templateSpans) {
-      let expression = span.expression;
+    for (let i = 0; i < template.templateSpans.length; i++) {
+      const span = template.templateSpans[i];
+      // A span preceded by `=` can be an attribute so skip subsume and
+      // keep it as an expression to produce valid lit-html template
+      // TODO(augustinekim) Consider optimizing to regular quoted string for
+      // regular html attributes
+      if (
+        (i === 0
+          ? template.head.text
+          : template.templateSpans[i - 1].literal.text
+        ).endsWith('=')
+      ) {
+        const expr = ts.visitNode(span.expression, this.boundVisitNode);
+        if (expr === undefined || !ts.isExpression(expr)) {
+          throw new Error(
+            `Internal error: expected expression, but got ${
+              expr ? ts.SyntaxKind[expr.kind] : 'undefined'
+            }`
+          );
+        }
+        fragments.push(expr);
+        fragments.push(span.literal.text);
+        continue;
+      }
+      let expression: ts.Node | undefined = span.expression;
       // Can we directly subsume this span?
       if (!subsume(expression)) {
         // No, but it may still need transformation.
         expression = ts.visitNode(expression, this.boundVisitNode);
+        if (expression === undefined || !ts.isExpression(expression)) {
+          throw new Error(
+            `Internal error: expected expression, but got ${
+              expression ? ts.SyntaxKind[expression.kind] : 'undefined'
+            }`
+          );
+        }
+
         // Maybe we can subsume it after transformation (e.g a `msg` call which
         // is now transformed to a template)?
         if (!subsume(expression)) {
@@ -498,25 +594,18 @@ class Transformer {
 
   /**
    * Return whether the given symbol looks like one of the lit-localize modules
-   * (because it exports one of the special tagged functions).
+   * based on its filename. Note when we call this function, we're already
+   * strongly suspecting a lit-localize call.
    */
-  isLitLocalizeModule(moduleSymbol: ts.Symbol): boolean {
-    if (!moduleSymbol.exports) {
-      return false;
-    }
-    const exports = moduleSymbol.exports.values();
-    for (const xport of exports as typeof exports & {
-      [Symbol.iterator](): Iterator<ts.Symbol>;
-    }) {
-      const type = this.typeChecker.getTypeAtLocation(xport.valueDeclaration);
-      const props = this.typeChecker.getPropertiesOfType(type);
+  fileNameAppearsToBeLitLocalize(moduleSymbol: ts.Symbol): boolean {
+    // TODO(aomarks) Find a better way to implement this. We could probably just
+    // check for any file path matching '/@lit/localize/` -- however that will
+    // fail our tests because we import with a relative path in that case.
+    for (const decl of moduleSymbol.declarations ?? []) {
       if (
-        props.some(
-          (prop) =>
-            prop.escapedName === '_LIT_LOCALIZE_MSG_' ||
-            prop.escapedName === '_LIT_LOCALIZE_CONTROLLER_FN_' ||
-            prop.escapedName === '_LIT_LOCALIZE_DECORATOR_'
-        )
+        ts.isSourceFile(decl) &&
+        (decl.fileName.endsWith('/localize/lit-localize.d.ts') ||
+          decl.fileName.endsWith('/localize/internal/locale-status-event.d.ts'))
       ) {
         return true;
       }
@@ -541,8 +630,15 @@ class Transformer {
 /**
  * Wrap a TemplateLiteral in the lit `html` tag.
  */
-function tagLit(template: ts.TemplateLiteral): ts.TaggedTemplateExpression {
-  return ts.createTaggedTemplate(ts.createIdentifier('html'), template);
+function tagLit(
+  factory: ts.NodeFactory,
+  template: ts.TemplateLiteral
+): ts.TaggedTemplateExpression {
+  return factory.createTaggedTemplateExpression(
+    factory.createIdentifier('html'),
+    undefined,
+    template
+  );
 }
 
 /**
@@ -552,6 +648,7 @@ function tagLit(template: ts.TemplateLiteral): ts.TaggedTemplateExpression {
  * TemplateSpan.
  */
 function makeTemplateLiteral(
+  factory: ts.NodeFactory,
   fragments: Array<string | ts.Expression>
 ): ts.TemplateLiteral {
   let textBuf: string[] = [];
@@ -564,18 +661,18 @@ function makeTemplateLiteral(
       const text = textBuf.join('');
       const literal =
         spans.length === 0
-          ? ts.createTemplateTail(text)
-          : ts.createTemplateMiddle(text);
-      const span = ts.createTemplateSpan(fragment, literal);
+          ? factory.createTemplateTail(text)
+          : factory.createTemplateMiddle(text);
+      const span = factory.createTemplateSpan(fragment, literal);
       spans.unshift(span);
       textBuf = [];
     }
   }
   if (spans.length === 0) {
-    return ts.createNoSubstitutionTemplateLiteral(textBuf.join(''));
+    return factory.createNoSubstitutionTemplateLiteral(textBuf.join(''));
   }
-  return ts.createTemplateExpression(
-    ts.createTemplateHead(textBuf.join('')),
+  return factory.createTemplateExpression(
+    factory.createTemplateHead(textBuf.join('')),
     spans
   );
 }

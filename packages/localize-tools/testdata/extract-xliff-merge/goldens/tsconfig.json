@@ -5,7 +5,9 @@
     "noUnusedParameters": true,
     "preserveConstEnums": true,
     "forceConsistentCasingInFileNames": true,
-    "rootDir": "./"
+    "rootDir": "./",
+    "skipLibCheck": true,
+    "types": []
   },
   "include": ["**/*.ts"]
 }

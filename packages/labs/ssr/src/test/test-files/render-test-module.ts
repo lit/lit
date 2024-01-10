@@ -4,12 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html, nothing} from 'lit';
+import {html, svg, nothing} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {ref, createRef} from 'lit/directives/ref.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
-export {digestForTemplateResult} from 'lit/experimental-hydrate.js';
+import {html as serverhtml} from '../../lib/server-template.js';
+export {digestForTemplateResult} from '@lit-labs/ssr-client';
 
 export {render} from '../../lib/render-lit-html.js';
 
@@ -19,7 +21,11 @@ export const simpleTemplateResult = html`<div></div>`;
 
 /* Text Expressions */
 // prettier-ignore
-export const templateWithTextExpression = (x: string) => html`<div>${x}</div>`;
+export const templateWithTextExpression = (x: string|null|undefined) => html`<div>${x}</div>`;
+
+/* Iterable Expression */
+// prettier-ignore
+export const templateWithIterableExpression = (x: Iterable<string>) => html`<div>${x}</div>`;
 
 /* Attribute Expressions */
 // prettier-ignore
@@ -31,10 +37,27 @@ export const templateWithMultipleAttributeExpressions = (
   y: string
 ) => html`<div x=${x} y=${y} z="not-dynamic"></div>`;
 // prettier-ignore
+export const templateWithElementAndMultipleAttributeExpressions = (
+  x: string,
+  y: string
+) => html`<div ${ref(createRef())} x=${x} y=${y} z="not-dynamic"></div>`;
+// prettier-ignore
 export const templateWithMultiBindingAttributeExpression = (
   x: string,
   y: string
 ) => html`<div test="a ${x} b ${y} c"></div>`;
+// prettier-ignore
+export const inputTemplateWithAttributeExpression = (x: string) =>
+html`<input x=${x}>`;
+// prettier-ignore
+export const inputTemplateWithAttributeExpressionAndChildElement = (x: string) =>
+  html`<input x=${x}><p>hi</p></input>`;
+// prettier-ignore
+export const templateWithMixedCaseAttrs = (str: string) => html`<svg dynamicCamel=${str} staticCamel="static"></svg>`;
+// prettier-ignore
+export const svgTemplate = (x: number, y: number, r: number) => svg`<circle cx="${x}" cy="${y}" r="${r}" />`;
+// prettier-ignore
+export const templateWithSvgTemplate = (x: number, y: number, r: number) => html`<svg>${svgTemplate(x, y, r)}</svg>`;
 
 /* Reflected Property Expressions */
 
@@ -59,7 +82,7 @@ export const nestedTemplate = html`<div>${html`<p>Hi</p>`}</div>`;
 
 @customElement('test-simple')
 export class TestSimple extends LitElement {
-  render() {
+  override render() {
     // prettier-ignore
     return html`<main></main>`;
   }
@@ -68,11 +91,18 @@ export class TestSimple extends LitElement {
 // prettier-ignore
 export const simpleTemplateWithElement = html`<test-simple></test-simple>`;
 
+// This must be excluded from rendering in the test
+@customElement('test-not-rendered')
+export class NotRendered extends LitElement {}
+
+// prettier-ignore
+export const templateWithNotRenderedElement = html`<test-not-rendered></test-not-rendered>`;
+
 @customElement('test-property')
 export class TestProperty extends LitElement {
   @property() foo?: string;
 
-  render() {
+  override render() {
     // prettier-ignore
     return html`<main>${this.foo}</main>`;
   }
@@ -80,6 +110,22 @@ export class TestProperty extends LitElement {
 
 // prettier-ignore
 export const elementWithProperty = html`<test-property .foo=${'bar'}></test-property>`;
+export const elementWithAttribute = (x: string | undefined | null) =>
+  html`<test-property foo=${x}></test-property>`;
+
+@customElement('test-reflected-properties')
+export class TestReflectedProperties extends LitElement {
+  @property({type: String, reflect: true, attribute: 'reflect-foo'})
+  foo?: string;
+  @property({type: Boolean, reflect: true}) bar = false;
+  @property({type: String, reflect: true}) baz = 'default reflected string';
+}
+
+// prettier-ignore
+export const elementWithReflectedProperties = html`<test-reflected-properties .foo=${'badazzled'} .bar=${true}></test-reflected-properties>`;
+
+// prettier-ignore
+export const elementWithDefaultReflectedProperties = html`<test-reflected-properties></test-reflected-properties>`;
 
 @customElement('test-will-update')
 export class TestWillUpdate extends LitElement {
@@ -89,13 +135,13 @@ export class TestWillUpdate extends LitElement {
   last?: string;
   fullName = '';
 
-  willUpdate(changedProperties: PropertyValues) {
+  override willUpdate(changedProperties: PropertyValues) {
     if (changedProperties.has('first') || changedProperties.has('last')) {
       this.fullName = `${this.first} ${this.last}`;
     }
   }
 
-  render() {
+  override render() {
     // prettier-ignore
     return html`<main>${this.fullName}</main>`;
   }
@@ -110,7 +156,7 @@ export const noSlot = html`<test-simple><p>Hi</p></test-simple>`;
 
 @customElement('test-simple-slot')
 export class TestSlot extends LitElement {
-  render() {
+  override render() {
     // prettier-ignore
     return html`<main><slot></slot></main>`;
   }
@@ -135,7 +181,7 @@ export const slotWithReusedDynamicChild = html`<test-simple-slot>${dynamicChild}
 
 @customElement('test-two-slots')
 export class TestTwoSlots extends LitElement {
-  render() {
+  override render() {
     // prettier-ignore
     return html`<main><slot></slot></main>
       <slot name="a"></slot>`;
@@ -157,7 +203,7 @@ export const twoSlotsWithDynamicChildrenOutOfOrder = html`<test-two-slots>${html
 @customElement('test-dynamic-slot')
 export class TestDynamicSlot extends LitElement {
   @property({type: Boolean}) renderSlot = true;
-  render() {
+  override render() {
     // prettier-ignore
     return html`${this.renderSlot ? html`<slot></slot>` : nothing}`;
   }
@@ -168,7 +214,7 @@ export const dynamicSlot = (renderSlot: boolean) =>
 
 @customElement('test-styles')
 export class TestStyles extends LitElement {
-  static styles = css`
+  static override styles = css`
     :host {
       display: block;
     }
@@ -212,3 +258,144 @@ export const nestedTemplateResult = html`<div></div>`;
 export const trickyNestedDynamicChildren = html`<test-simple-slot
   >${html`${nestedTemplateResult}${nestedTemplateResult}`}</test-simple-slot
 >`;
+
+@customElement('test-shadowroot-open')
+export class TestShadowrootOpen extends LitElement {
+  static override shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    mode: 'open' as const,
+  };
+}
+
+export const shadowrootOpen = html`<test-shadowroot-open></test-shadowroot-open>`;
+
+@customElement('test-shadowroot-closed')
+export class TestShadowrootClosed extends LitElement {
+  static override shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    mode: 'closed' as const,
+  };
+}
+
+export const shadowrootClosed = html`<test-shadowroot-closed></test-shadowroot-closed>`;
+
+@customElement('test-shadowrootdelegatesfocus')
+export class TestShadowrootdelegatesfocus extends LitElement {
+  static override shadowRootOptions = {
+    ...LitElement.shadowRootOptions,
+    delegatesFocus: true,
+  };
+}
+
+export const shadowrootdelegatesfocus = html`<test-shadowrootdelegatesfocus></test-shadowrootdelegatesfocus>`;
+
+/* Invalid Expression Locations */
+export const templateUsingAnInvalidExpressLocation = () => {
+  const value = 'Invalid expression location';
+  return html`<template><div>${value}</div></template>`;
+};
+
+export const trivialServerOnly = serverhtml`<div>Server only</div>`;
+
+export const serverOnlyWithBinding = serverhtml`<div>${'Server only'}</div>`;
+
+export const serverOnlyInsideServerOnly = serverhtml`<div>${serverhtml`Server only`}</div>`;
+
+export const serverOnlyRawElementTemplate = serverhtml`
+    <title>${'No'} comments ${'inside'}</title>
+    <textarea>${'This also'} works${'.'}</textarea>
+  `;
+
+export const serverOnlyInTemplateElement = serverhtml`
+    <template>${'one'}<div>${'two'}<div>${'three'}</div><template>${'recursed'}</template></div></template>
+  `;
+
+export const serverOnlyDocumentTemplate = serverhtml`
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <title>${'No'} comments ${'inside'}</title>
+      </head>
+      <body>
+        <textarea>${'This also'} works${'.'}</textarea>
+      </body>
+    </html>
+  `;
+
+export const serverOnlyBindAttributeOnHtml = serverhtml`
+<!DOCTYPE html>
+<html lang="${'ko'}"></html>
+`;
+
+export const serverOnlyDocumentTemplatesCompose = serverhtml`
+${serverhtml`<!DOCTYPE html>`}
+${serverhtml`<html lang="${'ko'}">
+  ${serverhtml`<head>
+    ${serverhtml`<title>${'Server only title'}</title>`}
+  </head>`}
+  ${serverhtml`<body>
+    ${serverhtml`<p>${'Content'}</p>`}
+    ${serverhtml`<table>${serverhtml`<tr>${serverhtml`<td>${'Table content'}</td>`}</tr>`}</table>`}
+  </body>`}
+</html>`}
+`;
+
+export const serverOnlyArray = serverhtml`<div>${[
+  'one',
+  'two',
+  'three',
+]}</div>`;
+
+export const serverOnlyRenderHydratable = serverhtml`
+    <div>${'server only'}</div>
+    ${html`<div>${'hydratable'}</div>`}
+  `;
+
+export const hydratableRenderServerOnly = html`
+  <div>${'dynamic!'}</div>
+  ${serverhtml`<div>${'one time'}</div>`}
+`;
+
+export const serverOnlyRenderPropertyBinding = serverhtml`<div .foo=${'server only'}></div>`;
+
+export const serverOnlyRenderEventBinding = serverhtml`<div @click=${() =>
+  console.log('clicked!')}></div>`;
+
+export const renderScript = html` <script>
+  console.log('${'This is dangerous!'}');
+</script>`;
+
+export const renderServerOnlyScript = serverhtml`
+  <script>
+    console.log("${'This is dangerous!'}");
+  </script>`;
+
+export const renderServerOnlyScriptDeep = serverhtml`
+  <script>
+    <div>
+      console.log("${'This is dangerous!'}");
+    </div>
+  </script>`;
+
+export const renderServerOnlyStyle = serverhtml`
+  <style>
+    div {
+      color: ${'red'};
+    }
+  </style>`;
+
+export const renderServerOnlyStyleDeep = serverhtml`
+  <style>
+    <div>
+      color: ${'red'};
+    </div>
+  </style>`;
+
+export const renderServerScriptNotJavaScript = serverhtml`
+  <script type="json">
+    {"ok": ${true}}
+  </script>`;
+
+// This doesn't have to make sense, the test is that it'll throw at the
+// template preparation phase.
+export const renderServerOnlyElementPart = serverhtml`<div ${'foo'}></div>`;

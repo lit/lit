@@ -1,0 +1,127 @@
+name: 🐛 Bug Report
+description: Report a bug that affects Lit or a Lit library/tool
+
+body:
+  - type: dropdown
+    id: affected
+    validations:
+      required: true
+    attributes:
+      label: Which package(s) are affected?
+      multiple: true
+      description: Note you can select more than one.
+      options:
+        - Lit Core (lit / lit-html / lit-element / reactive-element)
+        - Context (@lit/context)
+        - Eleventy Plugin (@lit-labs/eleventy-plugin-lit)
+        - Localize (@lit/localize)
+        - Motion (@lit-labs/motion)
+        - Observers (@lit-labs/observers)
+        - React (@lit/react)
+        - SSR (@lit-labs/ssr)
+        - Starter Kits (@lit/lit-starter-js / @lit/lit-starter-ts)
+        - Task (@lit/task)
+        - Virtualizer (@lit-labs/virtualizer)
+        - Analyzer (@lit-labs/analyzer)
+        - Other/unknown (please mention in description)
+
+  - type: textarea
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: Description
+      description: |
+        Please describe the bug in as much detail as possible. Include what you expected to happen, and what actually happened. If you have an error message, please include as much of the error message as possible.
+      placeholder: |
+        When I register an event listener on a button like this:
+
+        ```html
+        <button @click=${this._onClickButton}>Click me</button>
+        ```
+
+        I would expect the `_onClickButton` event handler to fire when the button is clicked.
+
+        However, clicking on the button doesn't fire the event handler, and I see the following error in the console:
+
+        ```
+        repro.js:23 Uncaught TypeError: Cannot read properties of undefined (reading 'numClicks')
+        at XRepro._onClickButton (repro.js:23:24)
+        at EventPart.handleEvent (lit-html.js:1383:35)
+        ```
+
+  - type: textarea
+    id: reproduction
+    validations:
+      required: true
+    attributes:
+      label: Reproduction
+      description: |
+        Please link to a working reproduction that will help us verify and understand the bug.
+
+        For bugs that show up in the browser, please provide a link to the lit.dev playground: [TypeScript example](https://lit.dev/playground/#gist=b90fc1b4d2ee57120763d2e7db934511), [JavaScript example](https://lit.dev/playground/#gist=2d20e91832d3f98332bf23ced55bea04). Click the "Share" button to generate a URL.
+
+        For bugs that show up on the command-line, please create a public GitHub repo, and provide step-by-step instructions for cloning, setting up, and observing the bug.
+
+        If you are unable to create a reproduction with the above methods, please provide a link to a working reproduction hosted elsewhere.
+      placeholder: |
+        The text should update when the button is clicked, but it doesn't:
+        https://lit.dev/playground/#gist=b90fc1b4d2ee57120763d2e7db934511
+
+        ... or for command-line issues:
+
+        1. git clone git@github.com:<user>/<repo>.git
+        2. cd <repo>
+        3. npm ci
+        4. npm run serve
+        5. Observe the error "Error: Cannot do something"
+
+  - type: textarea
+    id: workaround
+    validations:
+      required: true
+    attributes:
+      label: Workaround
+      description: |
+        If you have found a workaround for this problem, please explain it here. If you have not found a workaround, please write "I have not found a workaround".
+      placeholder: |
+        I have worked around this problem by registering the event handler manually with `addEventListener`.
+
+        ... or:
+
+        I have not found a workaround.
+
+  - type: dropdown
+    id: regression
+    validations:
+      required: true
+    attributes:
+      label: Is this a regression?
+      multiple: false
+      options:
+        - Yes. This used to work, but now it doesn't.
+        - No or unsure. This never worked, or I haven't tried before.
+
+  - type: input
+    id: version
+    validations:
+      required: true
+    attributes:
+      label: Affected versions
+      description: Please specify which version of the package you are using, and if this is a known regression, what is the last known version that worked? Run e.g. `npm ls lit` to check your installed version.
+      placeholder: |
+        Failing in 3.2.0, worked in 3.1.0
+
+  - type: textarea
+    id: environment
+    validations:
+      required: true
+    attributes:
+      label: Browser/OS/Node environment
+      description: |
+        Please list which browser and operating system combination(s) you are using, and/or if this bug affects a command-line tool, please list your Node and npm versions.
+      placeholder: |
+        Browser: Chrome 103.0.5060.53
+        OS: macOS 12.4
+        Node version: 16.15.0
+        npm version: 8.11.0

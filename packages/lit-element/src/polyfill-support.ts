@@ -42,12 +42,12 @@ interface PatchableLitElement extends HTMLElement {
   renderOptions: RenderOptions;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementPlatformSupport'] ??= ({
-  LitElement,
-}: {
-  LitElement: PatchableLitElement;
-}) => {
+// Note, explicitly use `var` here so that this can be re-defined when
+// bundled.
+// eslint-disable-next-line no-var
+var DEV_MODE = true;
+
+const polyfillSupport = ({LitElement}: {LitElement: PatchableLitElement}) => {
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
   // webcomponentsjs and polyfill-support in either order
@@ -63,7 +63,9 @@ interface PatchableLitElement extends HTMLElement {
   //   'color: lightgreen; font-style: italic'
   // );
 
-  ((LitElement as unknown) as PatchableLitElementConstructor)._$handlesPrepareStyles = true;
+  (
+    LitElement as unknown as PatchableLitElementConstructor
+  )._$handlesPrepareStyles = true;
 
   /**
    * Patch to apply adoptedStyleSheets via ShadyCSS
@@ -78,3 +80,9 @@ interface PatchableLitElement extends HTMLElement {
     return createRenderRoot.call(this);
   };
 };
+
+if (DEV_MODE) {
+  globalThis.litElementPolyfillSupportDevMode ??= polyfillSupport;
+} else {
+  globalThis.litElementPolyfillSupport ??= polyfillSupport;
+}

@@ -1,1 +1,10 @@
 /node_modules/
+/utils/
+run-web-tests.js
+run-web-tests.js.map
+run-web-tests.d.ts
+run-web-tests.d.ts.map
+web-test-runner.config.js
+web-test-runner.config.js.map
+web-test-runner.config.d.ts
+web-test-runner.config.d.ts.map

@@ -4,7 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import test, {Test} from 'tape';
+import {test} from 'uvu';
+// eslint-disable-next-line import/extensions
+import * as assert from 'uvu/assert';
 
 import {extractMessagesFromProgram} from '../program-analysis.js';
 import {ProgramMessage} from '../messages.js';
@@ -12,7 +14,7 @@ import ts from 'typescript';
 import {
   createTsProgramFromFragment,
   CompilerHostCache,
-} from './compile-ts-fragment.js';
+} from '@lit/ts-transformers/tests/compile-ts-fragment.js';
 
 const cache = new CompilerHostCache();
 
@@ -22,7 +24,6 @@ const cache = new CompilerHostCache();
  * diagnostics are returned.
  */
 function checkAnalysis(
-  t: Test,
   inputTs: string,
   expectedMessages: Array<
     Pick<ProgramMessage, 'name' | 'contents'> &
@@ -39,16 +40,17 @@ function checkAnalysis(
   options.typeRoots = [];
   const {program, host} = createTsProgramFromFragment(
     inputTs,
+    '',
     options,
     cache,
     () => undefined
   );
   const {messages, errors} = extractMessagesFromProgram(program);
-  t.deepEqual(
+  assert.equal(
     errors.map((diagnostic) => ts.formatDiagnostic(diagnostic, host).trim()),
     expectedErrors
   );
-  t.deepEqual(
+  assert.equal(
     messages.map(({name, contents, desc}) => ({
       name,
       contents,
@@ -60,20 +62,19 @@ function checkAnalysis(
       desc,
     }))
   );
-  t.end();
 }
 
-test('irrelevant code', (t) => {
+test('irrelevant code', () => {
   const src = 'const foo = "foo";';
-  checkAnalysis(t, src, []);
+  checkAnalysis(src, []);
 });
 
-test('string message', (t) => {
+test('string message', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg('Hello World', {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
       contents: ['Hello World'],
@@ -81,12 +82,12 @@ test('string message', (t) => {
   ]);
 });
 
-test('string message unnecessarily tagged with str', (t) => {
+test('string message unnecessarily tagged with str', () => {
   const src = `
     import {msg, str} from '@lit/localize';
     msg(str\`Hello World\`, {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
       contents: ['Hello World'],
@@ -94,12 +95,12 @@ test('string message unnecessarily tagged with str', (t) => {
   ]);
 });
 
-test('string message (auto ID)', (t) => {
+test('string message (auto ID)', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg('Hello World');
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 's3d58dee72d4e0c27',
       contents: ['Hello World'],
@@ -107,104 +108,104 @@ test('string message (auto ID)', (t) => {
   ]);
 });
 
-test('HTML message', (t) => {
+test('HTML message', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg(html\`<b>Hello World</b>\`, {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
       contents: [
-        {untranslatable: '<b>'},
+        {untranslatable: '<b>', index: 0},
         'Hello World',
-        {untranslatable: '</b>'},
+        {untranslatable: '</b>', index: 1},
       ],
     },
   ]);
 });
 
-test('HTML message (auto ID)', (t) => {
+test('HTML message (auto ID)', () => {
   const src = `
     import {msg} from '@lit/localize');
     msg(html\`<b>Hello World</b>\`);
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'hc468c061c2d171f4',
       contents: [
-        {untranslatable: '<b>'},
+        {untranslatable: '<b>', index: 0},
         'Hello World',
-        {untranslatable: '</b>'},
+        {untranslatable: '</b>', index: 1},
       ],
     },
   ]);
 });
 
-test('HTML message with comment', (t) => {
+test('HTML message with comment', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg(html\`<b><!-- greeting -->Hello World</b>\`, {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
       contents: [
-        {untranslatable: '<b><!-- greeting -->'},
+        {untranslatable: '<b><!-- greeting -->', index: 0},
         'Hello World',
-        {untranslatable: '</b>'},
+        {untranslatable: '</b>', index: 1},
       ],
     },
   ]);
 });
 
-test('parameterized string message', (t) => {
+test('parameterized string message', () => {
   const src = `
     import {msg, str} from '@lit/localize';
     const name = "friend";
     msg(str\`Hello \${name}\`, {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
-      contents: ['Hello ', {untranslatable: '${name}'}],
+      contents: ['Hello ', {untranslatable: '${name}', index: 0}],
     },
   ]);
 });
 
-test('parameterized string message (auto ID)', (t) => {
+test('parameterized string message (auto ID)', () => {
   const src = `
     import {msg, str} from '@lit/localize';
     const name = "friend";
     msg(str\`Hello \${name}\`);
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'saed7d3734ce7f09d',
-      contents: ['Hello ', {untranslatable: '${name}'}],
+      contents: ['Hello ', {untranslatable: '${name}', index: 0}],
     },
   ]);
 });
 
-test('parameterized HTML message', (t) => {
+test('parameterized HTML message', () => {
   const src = `
     import {msg} from '@lit/localize';
     const name = "Friend";
     msg(html\`<b>Hello \${friend}</b>\`, {id: 'greeting'});
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 'greeting',
       contents: [
-        {untranslatable: '<b>'},
+        {untranslatable: '<b>', index: 0},
         'Hello ',
-        {untranslatable: '${friend}</b>'},
+        {untranslatable: '${friend}</b>', index: 1},
       ],
     },
   ]);
 });
 
-test('desc option (string)', (t) => {
+test('desc option (string)', () => {
   const src = `
     import {msg} from '@lit/localize';
 
@@ -212,7 +213,7 @@ test('desc option (string)', (t) => {
       desc: 'A greeting to Earth'
     });
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 's3d58dee72d4e0c27',
       contents: ['Hello World'],
@@ -221,7 +222,7 @@ test('desc option (string)', (t) => {
   ]);
 });
 
-test('desc option (no substitution literal)', (t) => {
+test('desc option (no substitution literal)', () => {
   const src = `
     import {msg} from '@lit/localize';
 
@@ -229,7 +230,7 @@ test('desc option (no substitution literal)', (t) => {
       desc: \`A greeting to Earth\`
     });
   `;
-  checkAnalysis(t, src, [
+  checkAnalysis(src, [
     {
       name: 's3d58dee72d4e0c27',
       contents: ['Hello World'],
@@ -238,7 +239,7 @@ test('desc option (no substitution literal)', (t) => {
   ]);
 });
 
-test('error: desc option (substitution literal)', (t) => {
+test('error: desc option (substitution literal)', () => {
   const src = `
     import {msg} from '@lit/localize';
 
@@ -247,7 +248,6 @@ test('error: desc option (substitution literal)', (t) => {
     });
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -257,23 +257,22 @@ test('error: desc option (substitution literal)', (t) => {
   );
 });
 
-test('different msg function', (t) => {
+test('different msg function', () => {
   const src = `
     function msg(id: string, template: string) {
       return template;
     }
     msg('Greeting', {id: 'greeting'});
   `;
-  checkAnalysis(t, src, []);
+  checkAnalysis(src, []);
 });
 
-test('error: message id cannot be empty', (t) => {
+test('error: message id cannot be empty', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg('Hello World', {id: ''});
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -282,14 +281,13 @@ test('error: message id cannot be empty', (t) => {
   );
 });
 
-test('error: options must be object literal', (t) => {
+test('error: options must be object literal', () => {
   const src = `
     import {msg} from '@lit/localize';
     const options = {id: 'greeting'};
     msg('Hello World', options);
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -298,14 +296,13 @@ test('error: options must be object literal', (t) => {
   );
 });
 
-test('error: options must be long-form', (t) => {
+test('error: options must be long-form', () => {
   const src = `
     import {msg} from '@lit/localize';
     const id = 'greeting';
     msg('Hello World', {id});
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -314,7 +311,7 @@ test('error: options must be long-form', (t) => {
   );
 });
 
-test('error: message id must be static', (t) => {
+test('error: message id must be static', () => {
   const src = `
     import {msg} from '@lit/localize';
     const id = 'greeting';
@@ -322,7 +319,6 @@ test('error: message id must be static', (t) => {
     msg('Hello World', {id: \`\${id}\`});
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -332,14 +328,13 @@ test('error: message id must be static', (t) => {
   );
 });
 
-test('error: different message contents', (t) => {
+test('error: different message contents', () => {
   const src = `
     import {msg} from '@lit/localize';
     msg('Hello World', {id: 'greeting'});
     msg('Hello Friend', {id: 'greeting'});
   `;
   checkAnalysis(
-    t,
     src,
     [
       {
@@ -348,19 +343,55 @@ test('error: different message contents', (t) => {
       },
     ],
     [
-      '__DUMMY__.ts(4,5): error TS2324: Message ids must have the same default text wherever they are used',
+      '__DUMMY__.ts(3,5): error TS2324: The translation message with ID greeting was defined in 2 places, but with different strings or descriptions. If these messages should be translated together, make sure their strings and descriptions are identical, and consider factoring out a common variable or function. If they should be translated separately, add one or more {id: "..."} overrides to distinguish them.',
     ]
   );
 });
 
-test('error: string with expressions must use str tag', (t) => {
+test('same message contents with different expression is not error', () => {
+  const src = `
+    import {msg, str} from '@lit/localize';
+    const name = "friend";
+    const otherName = "pal";
+    msg(str\`Hello \${name}\`);
+    msg(str\`Hello \${otherName}\`);
+  `;
+  checkAnalysis(src, [
+    {
+      name: 'saed7d3734ce7f09d',
+      contents: ['Hello ', {untranslatable: '${name}', index: 0}],
+    },
+  ]);
+});
+
+test('error: same message contents with different desc', () => {
+  const src = `
+    import {msg} from '@lit/localize';
+    msg('Hello World', {desc: 'greeting'});
+    msg('Hello World', {desc: 'greeting2'});
+  `;
+  checkAnalysis(
+    src,
+    [
+      {
+        name: 's3d58dee72d4e0c27',
+        contents: ['Hello World'],
+        desc: 'greeting',
+      },
+    ],
+    [
+      '__DUMMY__.ts(3,5): error TS2324: The translation message with ID s3d58dee72d4e0c27 was defined in 2 places, but with different strings or descriptions. If these messages should be translated together, make sure their strings and descriptions are identical, and consider factoring out a common variable or function. If they should be translated separately, add one or more {id: "..."} overrides to distinguish them.',
+    ]
+  );
+});
+
+test('error: string with expressions must use str tag', () => {
   const src = `
     import {msg} from '@lit/localize';
     const name = 'friend';
     msg(\`Hello \${name}\`);
   `;
   checkAnalysis(
-    t,
     src,
     [],
     [
@@ -368,3 +399,5 @@ test('error: string with expressions must use str tag', (t) => {
     ]
   );
 });
+
+test.run();

@@ -26,6 +26,7 @@ class ClassMapDirective extends Directive {
    * Used to unset existing values when a new ClassInfo object is applied.
    */
   private _previousClasses?: Set<string>;
+  private _staticClasses?: Set<string>;
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -42,17 +43,30 @@ class ClassMapDirective extends Directive {
   }
 
   render(classInfo: ClassInfo) {
-    return Object.keys(classInfo)
-      .filter((key) => classInfo[key])
-      .join(' ');
+    // Add spaces to ensure separation from static classes
+    return (
+      ' ' +
+      Object.keys(classInfo)
+        .filter((key) => classInfo[key])
+        .join(' ') +
+      ' '
+    );
   }
 
-  update(part: AttributePart, [classInfo]: DirectiveParameters<this>) {
+  override update(part: AttributePart, [classInfo]: DirectiveParameters<this>) {
     // Remember dynamic classes on the first render
     if (this._previousClasses === undefined) {
       this._previousClasses = new Set();
+      if (part.strings !== undefined) {
+        this._staticClasses = new Set(
+          part.strings
+            .join(' ')
+            .split(/\s/)
+            .filter((s) => s !== '')
+        );
+      }
       for (const name in classInfo) {
-        if (classInfo[name]) {
+        if (classInfo[name] && !this._staticClasses?.has(name)) {
           this._previousClasses.add(name);
         }
       }
@@ -62,21 +76,22 @@ class ClassMapDirective extends Directive {
     const classList = part.element.classList;
 
     // Remove old classes that no longer apply
-    // We use forEach() instead of for-of so that we don't require down-level
-    // iteration.
-    this._previousClasses.forEach((name) => {
+    for (const name of this._previousClasses) {
       if (!(name in classInfo)) {
         classList.remove(name);
         this._previousClasses!.delete(name);
       }
-    });
+    }
 
     // Add or remove classes based on their classMap value
     for (const name in classInfo) {
       // We explicitly want a loose truthy check of `value` because it seems
       // more convenient that '' and 0 are skipped.
       const value = !!classInfo[name];
-      if (value !== this._previousClasses.has(name)) {
+      if (
+        value !== this._previousClasses.has(name) &&
+        !this._staticClasses?.has(name)
+      ) {
         if (value) {
           classList.add(name);
           this._previousClasses.add(name);

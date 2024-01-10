@@ -47,7 +47,7 @@
       "name": "TS: ssr",
       "icon": "checklist",
       "cwd": "[workspaceFolder]/packages/labs/ssr",
-      "command": "npm run build:watch",
+      "command": "npm run build:ts:watch",
       "focus": true
     },
     {
@@ -55,6 +55,13 @@
       "icon": "checklist",
       "cwd": "[workspaceFolder]/packages/labs/ssr-client",
       "command": "npm run build:watch",
+      "focus": true
+    },
+    {
+      "name": "TS: eleventy-plugin-lit",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/eleventy-plugin-lit",
+      "command": "npm run build:ts:watch",
       "focus": true
     },
     {

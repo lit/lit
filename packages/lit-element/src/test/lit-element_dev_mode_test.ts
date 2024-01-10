@@ -4,8 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement} from '../lit-element.js';
-import {generateElementName} from './test-helpers.js';
+import {LitElement} from 'lit-element';
 import {assert} from '@esm-bundle/chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
@@ -39,46 +38,13 @@ if (DEV_MODE) {
       }
     });
 
-    test('warns when `static render` is implemented', () => {
-      class A extends LitElement {
-        static render() {}
-      }
-      customElements.define(generateElementName(), A);
-      new A();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'render');
-    });
+    const litWarnings = globalThis.litIssuedWarnings!;
 
-    test('warns on first instance only', () => {
-      class A extends LitElement {
-        static render() {}
-      }
-      customElements.define(generateElementName(), A);
-      new A();
-      new A();
-      new A();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'render');
-    });
-
-    test('warns when `static getStyles` is implemented', () => {
-      class A extends LitElement {
-        static getStyles() {}
-      }
-      customElements.define(generateElementName(), A);
-      new A();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'getStyles');
-    });
-
-    test('warns when `adoptStyles` is implemented', () => {
-      class A extends LitElement {
-        adoptStyles() {}
-      }
-      customElements.define(generateElementName(), A);
-      new A();
-      assert.equal(warnings.length, 1);
-      assert.include(warnings[0], 'adoptStyles');
+    test('warns for dev mode only 1x', () => {
+      assert.equal(
+        Array.from(litWarnings).filter((v) => v?.includes('dev mode')).length,
+        1
+      );
     });
   });
 }

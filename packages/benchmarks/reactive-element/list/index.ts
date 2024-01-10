@@ -79,7 +79,7 @@ import {queryParams} from '../../utils/query-params.js';
   }
 
   class XThing extends ReactiveElement {
-    static styles = css`
+    static override styles = css`
       .container {
         box-sizing: border-box;
         height: 80px;
@@ -120,7 +120,7 @@ import {queryParams} from '../../utils/query-params.js';
 
     controller = useController ? new MyController(this) : undefined;
 
-    protected update(changedProperties: PropertyValues) {
+    protected override update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       if (!this.hasUpdated) {
         const container = document.createElement('div');
@@ -152,7 +152,7 @@ import {queryParams} from '../../utils/query-params.js';
   customElements.define('x-thing', XThing);
 
   class XItem extends ReactiveElement {
-    static styles = css`
+    static override styles = css`
       .item {
         display: flex;
       }
@@ -163,7 +163,7 @@ import {queryParams} from '../../utils/query-params.js';
     count = 6;
     things: XThing[] = [];
 
-    protected update(changedProperties: PropertyValues) {
+    protected override update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       if (!this.hasUpdated) {
         this.renderRoot.appendChild(document.createTextNode(' '));
@@ -209,7 +209,7 @@ import {queryParams} from '../../utils/query-params.js';
     items = data;
     itemEls: XItem[] = [];
 
-    protected update(changedProperties: PropertyValues) {
+    protected override update(changedProperties: PropertyValues) {
       super.update(changedProperties);
       if (!this.hasUpdated) {
         this.items.forEach(() => {

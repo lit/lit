@@ -4,16 +4,17 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {AttributePart, html, render} from '../../lit-html.js';
-import {directive} from '../../directive.js';
-import {StyleInfo, styleMap} from '../../directives/style-map.js';
+import {AttributePart, html, render} from 'lit-html';
+import {directive} from 'lit-html/directive.js';
+import {StyleInfo, styleMap} from 'lit-html/directives/style-map.js';
 import {assert} from '@esm-bundle/chai';
 
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;
 const isIE = ua.indexOf('Trident/') > 0;
+const supportsCSSVariables = !isIE && !isChrome41;
 const testIfSupportsCSSVariables = (test: any) =>
-  isIE || isChrome41 ? test.skip : test;
+  supportsCSSVariables ? test : test.skip;
 
 suite('styleMap', () => {
   let container: HTMLDivElement;
@@ -36,11 +37,15 @@ suite('styleMap', () => {
   test('render() only properties', () => {
     // Get the StyleMapDirective class indirectly, since it's not exported
     const result = styleMap({});
-    const StyleMapDirective = result._$litDirective$;
+    // This property needs to remain unminified.
+    const StyleMapDirective = result['_$litDirective$'];
 
     // Extend StyleMapDirective so we can test its render() method
     class TestStyleMapDirective extends StyleMapDirective {
-      update(_part: AttributePart, [styleInfo]: Parameters<this['render']>) {
+      override update(
+        _part: AttributePart,
+        [styleInfo]: Parameters<this['render']>
+      ) {
         return this.render(styleInfo);
       }
     }
@@ -52,6 +57,7 @@ suite('styleMap', () => {
           backgroundColor: 'blue',
           webkitAppearance: 'none',
           ['padding-left']: '4px',
+          '--fooBar': 'red',
         })}
       ></div>`,
       container
@@ -62,6 +68,10 @@ suite('styleMap', () => {
     assert.equal(style.backgroundColor, 'blue');
     assert.include(['none', undefined], style.webkitAppearance);
     assert.equal(style.paddingLeft, '4px');
+    if (supportsCSSVariables) {
+      assert.equal(style.getPropertyValue('--fooBar'), 'red');
+      assert.equal(style.getPropertyValue('--foobar'), '');
+    }
   });
 
   test('first render skips undefined properties', () => {
@@ -75,15 +85,27 @@ suite('styleMap', () => {
   });
 
   test('adds and updates properties', () => {
-    renderStyleMap({marginTop: '2px', 'padding-bottom': '4px', opacity: '0.5'});
+    renderStyleMap({
+      marginTop: '2px',
+      'padding-bottom': '4px',
+      opacity: '0.5',
+      'z-index': 10,
+    });
     const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
     assert.equal(el.style.paddingBottom, '4px');
     assert.equal(el.style.opacity, '0.5');
-    renderStyleMap({marginTop: '4px', paddingBottom: '8px', opacity: '0.55'});
+    assert.equal(el.style.zIndex, '10');
+    renderStyleMap({
+      marginTop: '4px',
+      paddingBottom: '8px',
+      opacity: '0.55',
+      'z-index': 1,
+    });
     assert.equal(el.style.marginTop, '4px');
     assert.equal(el.style.paddingBottom, '8px');
     assert.equal(el.style.opacity, '0.55');
+    assert.equal(el.style.zIndex, '1');
   });
 
   test('removes properties', () => {
@@ -129,8 +151,25 @@ suite('styleMap', () => {
     assert.equal(el.style.getPropertyValue('--size'), '');
   });
 
+  // IE does not seeem to properly handle priority argument to
+  // CSSStyleDeclaration.setProperty()
+  (isIE ? test.skip : test)('adds priority in updated properties', () => {
+    renderStyleMap({color: 'blue !important'});
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.style.getPropertyValue('color'), 'blue');
+    assert.equal(el.style.getPropertyPriority('color'), 'important');
+    renderStyleMap({color: 'green !important'});
+    assert.equal(el.style.getPropertyValue('color'), 'green');
+    assert.equal(el.style.getPropertyPriority('color'), 'important');
+    renderStyleMap({color: 'red'});
+    assert.equal(el.style.getPropertyValue('color'), 'red');
+    assert.equal(el.style.getPropertyPriority('color'), '');
+    renderStyleMap({});
+    assert.equal(el.style.getPropertyValue('color'), '');
+  });
+
   test('works when used with the same object', () => {
-    const styleInfo = {marginTop: '2px', 'padding-bottom': '4px'};
+    const styleInfo: StyleInfo = {marginTop: '2px', 'padding-bottom': '4px'};
     renderStyleMap(styleInfo);
     const el = container.firstElementChild as HTMLElement;
     assert.equal(el.style.marginTop, '2px');
@@ -140,6 +179,20 @@ suite('styleMap', () => {
     renderStyleMap(styleInfo);
     assert.equal(el.style.marginTop, '6px');
     assert.equal(el.style.paddingBottom, '8px');
+  });
+
+  test('works when same object adds and removes properties', () => {
+    const styleInfo: StyleInfo = {marginTop: '2px', 'padding-bottom': '4px'};
+    renderStyleMap(styleInfo);
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.style.marginTop, '2px');
+    assert.equal(el.style.paddingBottom, '4px');
+    assert.equal(el.style.color, '');
+    delete styleInfo['marginTop'];
+    styleInfo.color = 'green';
+    renderStyleMap(styleInfo);
+    assert.equal(el.style.marginTop, '');
+    assert.equal(el.style.color, 'green');
   });
 
   test('throws when used on non-style attribute', () => {

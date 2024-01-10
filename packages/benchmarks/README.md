@@ -4,10 +4,9 @@ Benchmarks for lit-html and LitElement.
 
 ```bash
 git clone git@github.com:lit/lit.git
-cd lit-html
+cd lit
 
-npm install
-npm run bootstrap
+npm ci
 npm run build
 
 cd packages/benchmarks

@@ -1,0 +1,113 @@
+name: Release
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    # Don't run on forks. We can and should only release from the main repo.
+    permissions:
+      contents: write  # for Git to git push
+      pull-requests: write # to allow creating PR
+    if: github.repository == 'lit/lit'
+
+    name: Release
+    environment: Changesets
+    runs-on: ubuntu-latest
+    env:
+      WIREIT_LOGGER: quiet-ci
+    steps:
+      - name: Use Lit Robot's name and email for all git actions
+        run: |
+          git config --global user.name "Lit Robot"
+          git config --global user.email "lit-robot@google.com"
+
+      - name: Checkout Lit Repo
+        uses: actions/checkout@v3
+        with:
+          path: lit
+          # This makes Actions fetch all Git history so that Changesets can
+          # generate changelogs with the correct commits
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: lit/package-lock.json
+
+      - name: Install Dependencies
+        working-directory: lit
+        run: npm ci
+
+      - name: Create Release Pull Request or Publish to npm
+        # The id of this step must not be "changesets", or else the step will be invisible
+        # in the list of steps from the GitHub UI when the action runs (though it will still
+        # run, and its output will appear in the raw logs). Unknown why this is the case,
+        # see https://github.com/changesets/action/issues/149 for discussion.
+        id: cs
+        uses: changesets/action@v1
+        with:
+          # The `working-directory` option is only available for steps that use
+          # `run`. This `cwd` option is the same, but specific to this action.
+          cwd: lit
+          # This prevents `changesets/action` from changing the git username and
+          # email.
+          setupGitUser: false
+          version: npm run version
+          publish: npm run release
+        env:
+          HUSKY: 0
+          GITHUB_TOKEN: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
+          NPM_TOKEN: ${{ secrets.LIT_ROBOT_NPM_PUBLISH_ACCESS_TOKEN }}
+
+      - name: Checkout dist repo
+        uses: actions/checkout@v3
+        # GitHub Actions outputs are strings and the string 'false' converts to
+        # `true` because it isn't the empty string.
+        if: steps.cs.outputs.published == 'true'
+        with:
+          repository: lit/dist
+          ref: empty
+          path: dist
+          token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
+
+      - name: Push bundles to dist repo
+        # GitHub Actions outputs are strings and the string 'false' converts to
+        # `true` because it isn't the empty string.
+        if: steps.cs.outputs.published == 'true'
+        working-directory: dist
+        run: |
+          # Extract the version of `lit` that was published or the empty string.
+          echo "Checking if Lit was published..."
+          LIT_VERSION=$(node ../lit/scripts/extract-published-lit-version.js <<EOF
+            ${{ steps.cs.outputs.publishedPackages }}
+          EOF
+          )
+          # Don't create a bundle commit if `lit` wasn't published.
+          if [[ -z "$LIT_VERSION" ]]; then
+            echo "Lit wasn't published, so bundles will not be pushed."
+            exit 0
+          fi
+          echo "Lit was published (${LIT_VERSION}), so bundles will be pushed."
+          echo "Checking out the empty root commit..."
+          git checkout --detach empty
+          echo "Copying in all of the bundles..."
+          mkdir all
+          cp ../lit/packages/lit/lit-all.min.js all
+          cp ../lit/packages/lit/lit-all.min.js.map all
+          mkdir core
+          cp ../lit/packages/lit/lit-core.min.js core
+          cp ../lit/packages/lit/lit-core.min.js.map core
+          echo "Committing and pushing new bundles with tag 'v${LIT_VERSION}'..."
+          git add .
+          git commit -m "Bundles for lit@${LIT_VERSION}"
+          git tag "v${LIT_VERSION}"
+          git push origin "v${LIT_VERSION}"
+          echo "Done."

@@ -1,6 +1,6 @@
 <html>
   <head>
-    <link rel="stylesheet" href="../../../node_modules/mocha/mocha.css" />
+    <link rel="stylesheet" href="../../../../../node_modules/mocha/mocha.css" />
     <meta name="manual-polyfills" />
     <script>
       // Simulate no Shadow DOM.
@@ -18,32 +18,36 @@
       window.customElements = window.customElements || {};
       window.customElements.forcePolyfill = true;
     </script>
-    <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-pf_js.js"></script>
-    <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-pf_dom.js"></script>
-    <script src="../../../node_modules/@webcomponents/template/template.js"></script>
-    <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-ce.js"></script>
-    <script src="../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-sd.js"></script>
+    <script src="../../../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-pf_js.js"></script>
+    <script src="../../../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-pf_dom.js"></script>
+    <script src="../../../../../node_modules/@webcomponents/template/template.js"></script>
+    <script src="../../../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-ce.js"></script>
+    <script src="../../../../../node_modules/@webcomponents/webcomponentsjs/bundles/webcomponents-sd.js"></script>
   </head>
 
   <body>
     <script type="module">
-      // TODO(sorvell): node resolution doesn't seem to be working here.
+      // node resolution doesn't seem to be working here.
       import {
         mocha,
         sessionFinished,
         sessionFailed,
-      } from '../../../../tests/node_modules/@web/test-runner-mocha/dist/standalone.js';
+      } from '../../../../../node_modules/@web/test-runner-mocha/dist/standalone.js';
       // import { mocha, sessionFinished, sessionFailed } from '@web/test-runner-mocha';
 
       (async () => {
         try {
           // setup mocha
-          mocha.setup({ui: 'tdd'});
+          mocha.setup({ui: 'tdd', timeout: 60000});
 
-          // Note, only test noPatch if it's explicitly enabled. This is set
-          // on the `litHtmlPlatformSupport` object for this purpose.
-          await import('../../polyfill-support.js');
-          if (window['litHtmlPlatformSupport']?.noPatchSupported) {
+          // Note, only test `noPatch` if it's explicitly enabled. This is set
+          // on the `litHtmlPolyfillSupport` object for this purpose.
+          await import('lit-html/polyfill-support.js');
+          if (
+            // Note, since this file is not built, it doesn't support DEV_MODE
+            // so manually check both globals
+            window['litHtmlPolyfillSupport']?.noPatchSupported ||
+            window['litHtmlPolyfillSupportDevMode']?.noPatchSupported) {
             console.log('Testing `ShadyDOM.noPatch`');
             await import('./lit-html_html-test.js');
           }

@@ -8,7 +8,7 @@ import {
   PropertyValues,
   ReactiveElement,
   ReactiveController,
-} from '../reactive-element.js';
+} from '@lit/reactive-element';
 import {generateElementName} from './test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -48,7 +48,7 @@ suite('Reactive controllers', () => {
   }
 
   class A extends ReactiveElement {
-    static properties = {foo: {}};
+    static override properties = {foo: {}};
     foo = 'foo';
     updateCount = 0;
     updatedCount = 0;
@@ -57,29 +57,29 @@ suite('Reactive controllers', () => {
 
     controller = new MyController(this);
 
-    connectedCallback() {
+    override connectedCallback() {
       this.connectedCount++;
       super.connectedCallback();
       this.controller.callbackOrder.push('connectedCallback');
     }
 
-    disconnectedCallback() {
+    override disconnectedCallback() {
       this.disconnectedCount++;
       super.disconnectedCallback();
       this.controller.callbackOrder.push('disconnectedCallback');
     }
 
-    update(changedProperties: PropertyValues) {
+    override update(changedProperties: PropertyValues) {
       this.updateCount++;
       super.update(changedProperties);
       this.controller.callbackOrder.push('update');
     }
 
-    firstUpdated() {
+    override firstUpdated() {
       this.controller.callbackOrder.push('firstUpdated');
     }
 
-    updated() {
+    override updated() {
       this.updatedCount++;
       this.controller.callbackOrder.push('updated');
     }
@@ -200,5 +200,76 @@ suite('Reactive controllers', () => {
     container.appendChild(el);
     assert.equal(el.controller.connectedCount, 2);
     assert.equal(el.controller.disconnectedCount, 1);
+  });
+
+  test('controllers can be removed during lifecycle', async () => {
+    class RemovingController implements ReactiveController {
+      host: ReactiveElement;
+      updatedCount = 0;
+
+      constructor(host: ReactiveElement) {
+        this.host = host;
+        this.host.addController(this);
+      }
+
+      hostUpdated() {
+        this.updatedCount++;
+        this.host.removeController(this);
+      }
+    }
+    const removingController = new RemovingController(el);
+    const controller = new MyController(el);
+    assert.equal(el.controller.updatedCount, 1);
+    assert.equal(removingController.updatedCount, 0);
+    assert.equal(controller.updatedCount, 0);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(el.controller.updatedCount, 2);
+    assert.equal(removingController.updatedCount, 1);
+    assert.equal(controller.updatedCount, 1);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(el.controller.updatedCount, 3);
+    assert.equal(removingController.updatedCount, 1);
+    assert.equal(controller.updatedCount, 2);
+  });
+
+  test('controllers can add other controllers during lifecycle', async () => {
+    class AddingController implements ReactiveController {
+      host: ReactiveElement;
+      updateCount = 0;
+
+      controllers?: MyController[];
+
+      constructor(host: ReactiveElement) {
+        this.host = host;
+        this.host.addController(this);
+      }
+
+      hostUpdate() {
+        this.updateCount++;
+        (this.controllers ??= []).push(new MyController(this.host));
+      }
+    }
+    const addingController = new AddingController(el);
+    const controller = new MyController(el);
+    assert.equal(el.controller.updatedCount, 1);
+    assert.equal(addingController.updateCount, 0);
+    assert.equal(controller.updateCount, 0);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(el.controller.updateCount, 2);
+    assert.equal(addingController.updateCount, 1);
+    assert.equal(addingController.controllers?.length, 1);
+    assert.equal(addingController.controllers?.[0].updateCount, 1);
+    assert.equal(controller.updateCount, 1);
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(el.controller.updateCount, 3);
+    assert.equal(addingController.updateCount, 2);
+    assert.equal(addingController.controllers?.length, 2);
+    assert.equal(addingController.controllers?.[0].updateCount, 2);
+    assert.equal(addingController.controllers?.[1].updateCount, 1);
+    assert.equal(controller.updateCount, 2);
   });
 });

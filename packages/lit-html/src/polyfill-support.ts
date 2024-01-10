@@ -25,6 +25,8 @@
  * @packageDocumentation
  */
 
+export {};
+
 interface RenderOptions {
   readonly renderBefore?: ChildNode | null;
   scope?: string;
@@ -32,7 +34,8 @@ interface RenderOptions {
 
 interface ShadyTemplateResult {
   strings: TemplateStringsArray;
-  _$litType$?: string;
+  // This property needs to remain unminified.
+  ['_$litType$']?: string;
 }
 
 // Note, this is a dummy type as the full type here is big.
@@ -77,20 +80,24 @@ interface PatchableTemplateInstance {
 
 // Scopes that have had styling prepared. Note, must only be done once per
 // scope.
-const styledScopes: Set<string> = new Set();
+const styledScopes = new Set<string>();
 // Map of css per scope. This is collected during first scope render, used when
 // styling is prepared, and then discarded.
-const scopeCssStore: Map<string, string[]> = new Map();
+const scopeCssStore = new Map<string, string[]>();
 
 const ENABLE_SHADYDOM_NOPATCH = true;
+
+// Note, explicitly use `var` here so that this can be re-defined when
+// bundled.
+// eslint-disable-next-line no-var
+var DEV_MODE = true;
 
 /**
  * lit-html patches. These properties cannot be renamed.
  * * ChildPart.prototype._$getTemplate
  * * ChildPart.prototype._$setValue
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litHtmlPlatformSupport'] ??= (
+const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
   Template: PatchableTemplateConstructor,
   ChildPart: PatchableChildPartConstructor
 ) => {
@@ -149,7 +156,12 @@ const ENABLE_SHADYDOM_NOPATCH = true;
     // template. It must be moved to the *end* of the template so it doesn't
     // mess up part indices.
     if (hasScopeCss && window.ShadyCSS!.nativeShadow) {
-      template.content.appendChild(template.content.querySelector('style')!);
+      // If there were styles but the CSS text was empty, ShadyCSS will
+      // eliminate the style altogether, so the style here could be null
+      const style = template.content.querySelector('style');
+      if (style !== null) {
+        template.content.appendChild(style);
+      }
     }
   };
 
@@ -171,19 +183,23 @@ const ENABLE_SHADYDOM_NOPATCH = true;
       if (!window.ShadyCSS!.nativeShadow) {
         window.ShadyCSS!.prepareTemplateDom(element, scope);
       }
-      const scopeCss = cssForScope(scope);
-      // Remove styles and store textContent.
-      const styles = element.content.querySelectorAll(
-        'style'
-      ) as NodeListOf<HTMLStyleElement>;
-      // Store the css in this template in the scope css and remove the <style>
-      // from the template _before_ the node-walk captures part indices
-      scopeCss.push(
-        ...Array.from(styles).map((style) => {
-          style.parentNode?.removeChild(style);
-          return style.textContent!;
-        })
-      );
+      // Process styles only if this scope is being prepared. Otherwise,
+      // leave styles as is for back compat with Lit1.
+      if (needsPrepareStyles(scope)) {
+        const scopeCss = cssForScope(scope);
+        // Remove styles and store textContent.
+        const styles = element.content.querySelectorAll(
+          'style'
+        ) as NodeListOf<HTMLStyleElement>;
+        // Store the css in this template in the scope css and remove the <style>
+        // from the template _before_ the node-walk captures part indices
+        scopeCss.push(
+          ...Array.from(styles).map((style) => {
+            style.parentNode?.removeChild(style);
+            return style.textContent!;
+          })
+        );
+      }
     }
     return element;
   };
@@ -226,7 +242,8 @@ const ENABLE_SHADYDOM_NOPATCH = true;
 
       // Get the template for this result or create a dummy one if a result
       // is not being rendered.
-      const template = (value as ShadyTemplateResult)?._$litType$
+      // This property needs to remain unminified.
+      const template = (value as ShadyTemplateResult)?.['_$litType$']
         ? (this._$committedValue as PatchableTemplateInstance)._$template.el
         : document.createElement('template');
       prepareStyles(scope!, template);
@@ -274,8 +291,11 @@ const ENABLE_SHADYDOM_NOPATCH = true;
 };
 
 if (ENABLE_SHADYDOM_NOPATCH) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
-  (globalThis as any)[
-    'litHtmlPlatformSupport'
-  ].noPatchSupported = ENABLE_SHADYDOM_NOPATCH;
+  polyfillSupport.noPatchSupported = ENABLE_SHADYDOM_NOPATCH;
+}
+
+if (DEV_MODE) {
+  globalThis.litHtmlPolyfillSupportDevMode ??= polyfillSupport;
+} else {
+  globalThis.litHtmlPolyfillSupport ??= polyfillSupport;
 }

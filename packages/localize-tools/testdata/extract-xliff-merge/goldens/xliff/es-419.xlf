@@ -1,16 +1,26 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
-<file target-language="es-419" source-language="en" original="lit-localize-inputs" datatype="plaintext">
-<body>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" xmlns:foo="http://foo.bar" version="1.2">
+  <!-- Comment by translation tool -->
+  <file target-language="es-419" source-language="en" original="other-original" datatype="plaintext" date="2002-01-25T21:06:00Z">
+  <body>
+    <trans-unit id="sa6552c557bbace72" approved="yes">
+      <source>I am translated. Hello <ph id="0">${who}</ph>.</source>
+      <target state="translated">Estoy traducido. Hola <ph id="0">${who}</ph>.</target>
+  <note from="lit-localize">Description of translated</note>
+    </trans-unit>
+    <trans-unit id="s18fa8e4d6470399d">
+      <source foo:attribute="bar">I am translated with a note</source>
+      <target state="translated">Estoy traducido con una nota</target>
+      <note>Note by the translator</note>
+      <note from="lit-localize">Happy note</note>
+    </trans-unit>
+    <trans-unit id="s6cfd2eb4786af3dd">
+      <source>My note needs to be migrated</source>
+      <note from="lit-localize">Existing note</note>
+    </trans-unit>
 <trans-unit id="se86f4e822256d113">
-  <note>Description of not translated</note>
   <source>I am not translated</source>
+  <note from="lit-localize">Description of not translated</note>
 </trans-unit>
-<trans-unit id="s677cb50a446c46f4">
-  <note>Description of translated</note>
-  <source>I am translated</source>
-  <target>Estoy traducido</target>
-</trans-unit>
-</body>
-</file>
-</xliff>
+</body><!-- no format changes --></file>
+    </xliff>

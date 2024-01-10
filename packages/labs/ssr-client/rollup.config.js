@@ -5,9 +5,15 @@
  */
 
 import {litProdConfig} from '../../../rollup-common.js';
+import {createRequire} from 'module';
 
 export default litProdConfig({
-  classPropertyPrefix: 'Λ',
-  entryPoints: ['index', 'directives/render-light'],
+  packageName: createRequire(import.meta.url)('./package.json').name,
+  entryPoints: [
+    'index',
+    'lit-element-hydrate-support',
+    'directives/render-light',
+  ],
   external: ['lit/directive.js', 'lit/directive-helpers.js'],
+  includeNodeBuild: true,
 });

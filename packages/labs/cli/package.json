@@ -1,0 +1,114 @@
+{
+  "name": "@lit-labs/cli",
+  "description": "Tooling for Lit development",
+  "version": "0.6.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "bin": {
+    "lit": "./bin/lit.js"
+  },
+  "bugs": "https://github.com/lit/lit/issues",
+  "type": "module",
+  "main": "lib/index.js",
+  "repository": "lit/lit",
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit",
+    "test:compile": "wireit",
+    "test:actual": "wireit",
+    "build:deps": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --skipLibCheck || echo ''",
+      "#comment": "This never fails and always emits output so that we can run tests of code that doesn't type check",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:deps"
+      ],
+      "files": [
+        "tsconfig.json",
+        "src/**/*"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "index.{js,js.map,d.ts}"
+      ]
+    },
+    "build:deps": {
+      "dependencies": [
+        "../cli-localize:build",
+        "../../tests:build",
+        "../analyzer:build",
+        "../gen-wrapper-react:build",
+        "../gen-wrapper-vue:build",
+        "../gen-manifest:build",
+        "../gen-utils:build"
+      ]
+    },
+    "test": {
+      "dependencies": [
+        "test:compile",
+        "test:actual"
+      ]
+    },
+    "test:compile": {
+      "dependencies": [
+        "build:deps"
+      ],
+      "command": "tsc --pretty --noEmit",
+      "files": [
+        "tsconfig.json",
+        "src/**/*",
+        "test-goldens/**/*"
+      ],
+      "output": []
+    },
+    "test:actual": {
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "cross-env NODE_OPTIONS=--enable-source-maps uvu test \"_test\\.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    }
+  },
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.11.0",
+    "@lit-labs/gen-utils": "^0.3.0",
+    "@lit/localize-tools": "^0.7.0",
+    "chalk": "^5.0.1",
+    "command-line-args": "^5.2.1",
+    "command-line-commands": "^3.0.2",
+    "command-line-usage": "^6.1.1",
+    "tslib": "^2.0.3",
+    "typescript": "~5.2.0"
+  },
+  "devDependencies": {
+    "@lit-internal/tests": "^0.0.1",
+    "@types/command-line-args": "^5.2.0",
+    "@types/command-line-commands": "^2.0.1",
+    "@types/command-line-usage": "^5.0.2"
+  },
+  "engines": {
+    "node": ">=14.8.0"
+  },
+  "files": [
+    "bin",
+    "lib",
+    "npm-shrinkwrap.json"
+  ],
+  "exports": "./index.js",
+  "homepage": "https://github.com/lit/lit",
+  "keywords": [
+    "lit",
+    "lit-html",
+    "lit-element",
+    "LitElement"
+  ]
+}

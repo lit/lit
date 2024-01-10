@@ -1,0 +1,7 @@
+/development/
+/test/
+/node_modules/
+/lib/
+/index.*
+/router.*
+/routes.*

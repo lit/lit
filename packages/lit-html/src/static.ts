@@ -3,7 +3,48 @@
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
+
+// Any new exports need to be added to the export statement in
+// `packages/lit/src/index.all.ts`.
+
 import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
+
+export interface StaticValue {
+  /** The value to interpolate as-is into the template. */
+  _$litStatic$: string;
+
+  /**
+   * A value that can't be decoded from ordinary JSON, make it harder for
+   * a attacker-controlled data that goes through JSON.parse to produce a valid
+   * StaticValue.
+   */
+  r: typeof brand;
+}
+
+/**
+ * Prevents JSON injection attacks.
+ *
+ * The goals of this brand:
+ *   1) fast to check
+ *   2) code is small on the wire
+ *   3) multiple versions of Lit in a single page will all produce mutually
+ *      interoperable StaticValues
+ *   4) normal JSON.parse (without an unusual reviver) can not produce a
+ *      StaticValue
+ *
+ * Symbols satisfy (1), (2), and (4). We use Symbol.for to satisfy (3), but
+ * we don't care about the key, so we break ties via (2) and use the empty
+ * string.
+ */
+const brand = Symbol.for('');
+
+/** Safely extracts the string part of a StaticValue. */
+const unwrapStaticValue = (value: unknown): string | undefined => {
+  if ((value as Partial<StaticValue>)?.r !== brand) {
+    return undefined;
+  }
+  return (value as Partial<StaticValue>)?.['_$litStatic$'];
+};
 
 /**
  * Wraps a string so that it behaves like part of the static template
@@ -19,13 +60,14 @@ import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
  * Static values can be changed, but they will cause a complete re-render
  * since they effectively create a new template.
  */
-export const unsafeStatic = (value: string) => ({
-  _$litStatic$: value,
+export const unsafeStatic = (value: string): StaticValue => ({
+  ['_$litStatic$']: value,
+  r: brand,
 });
 
-const textFromStatic = (value: StaticValue): string => {
-  if (value._$litStatic$ !== undefined) {
-    return value._$litStatic$;
+const textFromStatic = (value: StaticValue) => {
+  if (value['_$litStatic$'] !== undefined) {
+    return value['_$litStatic$'];
   } else {
     throw new Error(
       `Value passed to 'literal' function must be a 'literal' result: ${value}. Use 'unsafeStatic' to pass non-literal values, but
@@ -48,16 +90,16 @@ const textFromStatic = (value: StaticValue): string => {
  * Static values can be changed, but they will cause a complete re-render since
  * they effectively create a new template.
  */
-export const literal = (strings: TemplateStringsArray, ...values: unknown[]) =>
-  unsafeStatic(
-    values.reduce(
-      (acc, v, idx) =>
-        acc + textFromStatic(v as StaticValue) + strings[idx + 1],
-      strings[0]
-    ) as string
-  );
-
-type StaticValue = ReturnType<typeof unsafeStatic>;
+export const literal = (
+  strings: TemplateStringsArray,
+  ...values: unknown[]
+): StaticValue => ({
+  ['_$litStatic$']: values.reduce(
+    (acc, v, idx) => acc + textFromStatic(v as StaticValue) + strings[idx + 1],
+    strings[0]
+  ) as string,
+  r: brand,
+});
 
 type StaticTemplate = {
   strings: Array<string>;
@@ -81,7 +123,7 @@ export const withStatic = (coreTag: typeof coreHtml | typeof coreSvg) => (
       let s: string = strings[0];
       for (let i = 0; i < values.length; ++i) {
         let value = values[i] as StaticValue | undefined;
-        const valueString = value?._$litStatic$;
+        const valueString = unwrapStaticValue(value);
         if (valueString !== undefined) {
           s += valueString + strings[i + 1];
         } else {
@@ -92,6 +134,11 @@ export const withStatic = (coreTag: typeof coreHtml | typeof coreSvg) => (
         staticValues.push(value);
       }
       staticStrings.push(s);
+      // Beware: in general this pattern is unsafe, and doing so may bypass
+      // lit's security checks and allow an attacker to execute arbitrary
+      // code and inject arbitrary content.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (staticStrings as any).raw = staticStrings;
       staticTemplate = {strings: staticStrings, values: staticValues};
       stringsCache.set(strings, staticTemplate);
     }

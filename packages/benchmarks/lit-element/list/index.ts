@@ -14,11 +14,11 @@ import {queryParams} from '../../utils/query-params.js';
   try {
     decorators = await import('lit-element/decorators.js');
   } catch (e) {
-    decorators = await ((import(
+    decorators = await (import(
       // eslint-disable-next-line @typescript-eslint/ban-ts-comment
       // @ts-expect-error
       'lit-element/lib/decorators.js'
-    ) as unknown) as typeof import('lit-element/decorators.js'));
+    ) as unknown as typeof import('lit-element/decorators.js'));
   }
   const {property} = decorators;
   // Settings
@@ -50,7 +50,7 @@ import {queryParams} from '../../utils/query-params.js';
   const propertyOptions: PropertyDeclaration = {};
 
   class XThing extends LitElement {
-    static styles = css`
+    static override styles = css`
       .container {
         box-sizing: border-box;
         height: 80px;
@@ -86,7 +86,7 @@ import {queryParams} from '../../utils/query-params.js';
     @property(propertyOptions)
     subject = '';
 
-    protected render() {
+    protected override render() {
       return html`
         <div class="container">
           <span class="from">${this.from}</span>
@@ -99,7 +99,7 @@ import {queryParams} from '../../utils/query-params.js';
   customElements.define('x-thing', XThing);
 
   class XItem extends LitElement {
-    static styles = css`
+    static override styles = css`
       .item {
         display: flex;
       }
@@ -108,7 +108,7 @@ import {queryParams} from '../../utils/query-params.js';
     @property()
     item!: SimpleItem;
 
-    protected render() {
+    protected override render() {
       return html`
         <div @click="${this.onClick}" class="item">
           <x-thing
@@ -155,7 +155,7 @@ import {queryParams} from '../../utils/query-params.js';
     @property()
     items = data;
 
-    protected render() {
+    protected override render() {
       return html`${this.items.map(
         (item) => html`<x-item .item="${item}"></x-item>`
       )}`;

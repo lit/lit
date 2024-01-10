@@ -9,27 +9,29 @@ import * as path from 'path';
 import {KnownError} from './error.js';
 
 /**
- * Set up a TypeScript API program given a tsconfig.json filepath.
+ * Read and parse a tsconfig.json file, including expanding its file patterns
+ * into a list of files.
  */
-export function programFromTsConfig(tsConfigPath: string): ts.Program {
+export function readTsConfig(tsConfigPath: string): {
+  fileNames: string[];
+  options: ts.CompilerOptions;
+} {
   const {config, error} = ts.readConfigFile(tsConfigPath, ts.sys.readFile);
   if (error) {
     // TODO(aomarks) Set up proper TypeScript diagnostics reporting here too.
     throw new KnownError(JSON.stringify(error));
   }
-  const parsedCommandLine = ts.parseJsonConfigFileContent(
+  const {errors, fileNames, options} = ts.parseJsonConfigFileContent(
     config,
     ts.sys,
     path.dirname(tsConfigPath)
   );
-  if (parsedCommandLine.errors.length > 0) {
+  if (errors.length > 0) {
     throw new KnownError(
-      parsedCommandLine.errors.map((error) => JSON.stringify(error)).join('\n')
+      errors.map((error) => JSON.stringify(error)).join('\n')
     );
   }
-  const {fileNames, options} = parsedCommandLine;
-  const program = ts.createProgram(fileNames, options);
-  return program;
+  return {fileNames, options};
 }
 
 /**
@@ -78,16 +80,19 @@ export function printDiagnostics(diagnostics: ts.Diagnostic[]): void {
 }
 
 /**
- * Escape a string such that it can be safely embedded in a JavaScript template
- * literal (backtick string).
+ * Escape an HTML text content string such that it can be safely embedded in a
+ * JavaScript template literal (backtick string).
  */
-export function escapeStringToEmbedInTemplateLiteral(
+export function escapeTextContentToEmbedInTemplateLiteral(
   unescaped: string
 ): string {
   return unescaped
     .replace(/\\/g, `\\\\`)
     .replace(/`/g, '\\`')
-    .replace(/\$/g, '\\$');
+    .replace(/\$/g, '\\$')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
 }
 
 /**

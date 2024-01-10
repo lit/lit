@@ -2,65 +2,8 @@
 
 A controller for Lit that renders asynchronous tasks.
 
-## Overview
+This package has graduated from labs! It is now available as `@lit/task`. This package is just a proxy that re-exports `@lit/task`. As a result, while it will no longer be updated, it will continue to work and get updates through the ^1.0.0 version range of `@lit/task`. This should reduce duplication of code while the ecosystem migrates their imports away from `@lit-labs/task`.
 
-Often a Lit element needs to request, process, and render remote data, for
-example when querying a REST API for data to be displayed. The `Task`
-controller provides a simple pattern for encapsulating this behavior in an
-easily reusable way. The controller integrates with a host Lit element. The
-user provides a task function and a dependencies function. Whenever the element
-updates, the dependencies are checked and if any have changed, the task is
-initiated. The controller requests an update of the element whenever the task
-status changes. Task status is provided via the `TaskStatus` object which has
-values for `INITIAL`, `PENDING`, `COMPLETE`, and `ERROR`. The task result is
-available via its `value` property, or via the `error` property when an error
-occurs. The task `render` method may also be used to easily render different
-task states. It accepts an object which optionally can implement methods for
-`initial`, `pending`, `complete(value)`, and `error(error)`. These methods
-typically return a Lit `TemplateResult` to render
+If you're looking at this locally or on GitHub, you can now find the README here: [README.md](../../task/README.md).
 
-## Installation
-
-From inside your project folder, run:
-
-```bash
-$ npm install @lit-labs/task
-```
-
-## Usage
-
-Here's an example:
-
-```ts
-import {Task, TaskStatus} from '@lit-labs/task';
-// ...
-
-class MyElement extends LitElement {
-
-  @state()
-  private _userId: number;
-
-  private _apiTask = new Task(
-      this,
-      ([userId]) =>
-        fetch(`//example.com/api/userInfo?${userId}`)
-          .then(response => response.json())
-      () => [this.userId]
-    );
-
-  render() {
-    return html`
-      <div>User Info</div>
-      ${this._apiTask.render({
-        pending: html`Loading user info...`;
-        complete(user): html`${user.name}`;
-      })}
-      <!-- ... -->
-    `;
-  }
-}
-```
-
-## Contributing
-
-Please see [CONTRIBUTING.md](./CONTRIBUTING.md).
+If you're looking at this online, you can also find its README on npmjs: https://www.npmjs.com/package/@lit/task

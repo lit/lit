@@ -4,10 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-// Set Symbol.asyncIterator on browsers without it
-if (typeof Symbol !== undefined && Symbol.asyncIterator === undefined) {
-  Object.defineProperty(Symbol, 'asyncIterator', {value: Symbol()});
-}
+const nextFrame = () => new Promise((r) => requestAnimationFrame(r));
 
 /**
  * An async iterable that can have values pushed into it for testing code
@@ -19,7 +16,7 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
    * A Promise that resolves with the next value to be returned by the
    * async iterable returned from iterable()
    */
-  private _nextValue: Promise<T> = new Promise(
+  private _nextValue = new Promise<T>(
     (resolve) => (this._resolveNextValue = resolve)
   );
   private _resolveNextValue!: (value: T) => void;
@@ -46,9 +43,9 @@ export class TestAsyncIterable<T> implements AsyncIterable<T> {
     currentResolveValue(value);
     // Waits for the value to be emitted
     await currentValue;
-    // Need to wait for one more microtask for value to be rendered, but only
-    // when devtools is closed. Waiting for rAF might be more reliable, but
-    // this waits the minimum that seems reliable now.
-    await Promise.resolve();
+    // Since this is used in tests, awaiting a rAF here is a convenience so
+    // that we get past any async code in directives used to resolve/commit
+    // the iterable value; when this returns it should be rendered
+    await nextFrame();
   }
 }

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement, PropertyValues} from '../../reactive-element.js';
-import {state} from '../../decorators/state.js';
+import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
+import {state} from '@lit/reactive-element/decorators/state.js';
 import {generateElementName} from '../test-helpers.js';
 import {assert} from '@esm-bundle/chai';
 
@@ -21,7 +21,7 @@ suite('@state', () => {
 
     updateCount = 0;
 
-    update(changed: PropertyValues) {
+    override update(changed: PropertyValues) {
       this.updateCount++;
       super.update(changed);
     }

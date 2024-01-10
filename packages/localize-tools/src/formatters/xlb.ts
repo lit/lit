@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as xmldom from 'xmldom';
-import glob from 'glob';
+import * as xmldom from '@xmldom/xmldom';
+import fastGlob from 'fast-glob';
 import fsExtra from 'fs-extra';
 import * as pathlib from 'path';
 import type {Config} from '../types/config.js';
@@ -49,7 +49,7 @@ class XlbFormatter implements Formatter {
    * pattern.
    */
   readTranslations(): Array<Bundle> {
-    const files = glob.sync(this.xlbConfig.translationsGlob, {
+    const files = fastGlob.sync(this.xlbConfig.translationsGlob, {
       cwd: this.config.baseDir,
       absolute: true,
     });
@@ -90,7 +90,10 @@ class XlbFormatter implements Formatter {
           ) {
             throw new KnownError(`Expected <ph> to have exactly one text node`);
           }
-          contents.push({untranslatable: phText.nodeValue || ''});
+          const index = Number(
+            getNonEmptyAttributeOrThrow(child as Element, 'name')
+          );
+          contents.push({untranslatable: phText.nodeValue || '', index});
         } else {
           throw new KnownError(
             `Unexpected node in <msg>: ${child.nodeType} ${child.nodeName}`
@@ -127,12 +130,14 @@ class XlbFormatter implements Formatter {
       }
       indent(messagesNode, 2);
       messagesNode.appendChild(messageNode);
+      let phIdx = 0;
       for (const content of contents) {
         if (typeof content === 'string') {
           messageNode.appendChild(doc.createTextNode(content));
         } else {
           const {untranslatable} = content;
           const ph = doc.createElement('ph');
+          ph.setAttribute('name', String(phIdx++));
           ph.appendChild(doc.createTextNode(untranslatable));
           messageNode.appendChild(ph);
         }
@@ -150,7 +155,7 @@ class XlbFormatter implements Formatter {
       throw new KnownError(
         `Error creating XLB directory: ${parentDir}\n` +
           `Do you have write permission?\n` +
-          e.message
+          (e as Error).message
       );
     }
     try {
@@ -159,7 +164,7 @@ class XlbFormatter implements Formatter {
       throw new KnownError(
         `Error creating XLB file: ${filePath}\n` +
           `Do you have write permission?\n` +
-          e.message
+          (e as Error).message
       );
     }
   }

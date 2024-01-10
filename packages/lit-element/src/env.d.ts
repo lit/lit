@@ -4,53 +4,23 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-interface ShadyCSS {
-  nativeCss: boolean;
-  nativeShadow: boolean;
-  styleElement(host: Element, overrideProps?: {[key: string]: string}): void;
-  styleSubtree(host: Element, overrideProps?: {[key: string]: string}): void;
-  getComputedStyleValue(element: Element, property: string): string;
-  ApplyShim: object;
-  prepareTemplateDom(template: Element, elementName: string): void;
-  prepareTemplateStyles(template: Element, elementName: string): void;
-  ScopingShim:
-    | undefined
-    | {
-        prepareAdoptedCssText(
-          cssTextArray: string[],
-          elementName: string
-        ): void;
-      };
-}
-
-interface ShadyDOM {
-  inUse: boolean;
-  flush: () => void;
-  noPatch: boolean | string;
-  wrap: (node: Node) => Node;
-}
-
-interface Window {
-  ShadyCSS?: ShadyCSS;
-  ShadyDOM?: ShadyDOM;
-  ShadowRoot: typeof ShadowRoot;
+// eslint-disable-next-line no-var
+declare var litElementHydrateSupport:
+  | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  reactiveElementPlatformSupport: (options: {[index: string]: any}) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  litElementPlatformSupport: (options: {[index: string]: any}) => void;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  litHtmlPlatformSupport: (template: unknown, childPart: unknown) => void;
-}
+  | ((options: {LitElement: any}) => void);
 
-// Augment existing types with styling API
-interface ShadowRoot {
-  adoptedStyleSheets: CSSStyleSheet[];
-}
+// Note, define both DEV_MODE and prod versions of this since this file is not
+// built.
+// eslint-disable-next-line no-var
+declare var litElementPolyfillSupport:
+  | undefined
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  | ((options: {LitElement: any}) => void);
+// eslint-disable-next-line no-var
+declare var litElementPolyfillSupportDevMode: typeof litElementPolyfillSupport;
 
 // eslint-disable-next-line no-var
-declare var ShadowRoot: {prototype: ShadowRoot; new (): ShadowRoot};
-
-interface CSSStyleSheet {
-  replaceSync(cssText: string): void;
-  replace(cssText: string): Promise<unknown>;
-}
+declare var litElementVersions: undefined | Array<string>;
+// eslint-disable-next-line no-var
+declare var litIssuedWarnings: undefined | Set<string | undefined>;

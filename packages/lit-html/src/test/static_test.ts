@@ -3,10 +3,10 @@
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {render} from '../lit-html.js';
-import {html, literal, unsafeStatic} from '../static.js';
+import {render} from 'lit-html';
+import {html, literal, unsafeStatic} from 'lit-html/static.js';
 import {assert} from '@esm-bundle/chai';
-import {stripExpressionComments} from './test-utils/strip-markers.js';
+import {stripExpressionComments} from '@lit-labs/testing';
 
 suite('static', () => {
   let container: HTMLElement;
@@ -163,5 +163,26 @@ suite('static', () => {
         '<div x-foo="bar"></div>'
       );
     });
+  });
+
+  test(`don't render simple spoofed static values`, () => {
+    const spoof = {
+      ['_$staticValue$']: 'foo',
+      r: {},
+    };
+    const template = html`<div>${spoof}</div>`;
+    render(template, container);
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div>[object Object]</div>'
+    );
+  });
+
+  test('static html should not add value for consumed static expression', () => {
+    const tagName = literal`div`;
+    const template = html`<${tagName}>${'foo'}</${tagName}>`;
+    assert.equal(template.values.length, 1);
+    const template2 = html`<${tagName}>${'foo'}</${tagName}>${'bar'}`;
+    assert.equal(template2.values.length, 2);
   });
 });

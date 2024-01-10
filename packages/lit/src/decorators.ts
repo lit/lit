@@ -11,4 +11,5 @@ export * from '@lit/reactive-element/decorators/event-options.js';
 export * from '@lit/reactive-element/decorators/query.js';
 export * from '@lit/reactive-element/decorators/query-all.js';
 export * from '@lit/reactive-element/decorators/query-async.js';
+export * from '@lit/reactive-element/decorators/query-assigned-elements.js';
 export * from '@lit/reactive-element/decorators/query-assigned-nodes.js';

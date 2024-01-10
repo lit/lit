@@ -23,8 +23,12 @@ export default {
   plugins: [
     replace({'Reflect.decorate': 'undefined'}),
     resolve(),
+    /**
+     * This minification setup serves the static site generation.
+     * For bundling and minification, check the README.md file.
+     */
     terser({
-      ecma: 2017,
+      ecma: 2021,
       module: true,
       warnings: true,
       mangle: {

@@ -1,0 +1,118 @@
+{
+  "name": "@lit-labs/testing",
+  "version": "0.2.3",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Testing utilites for Lit",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/testing",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/testing"
+  },
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit",
+    "build:ts:utils": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "../../lit:build",
+        "../ssr-client:build"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:ts:utils",
+        "../../lit:build:ts:types",
+        "../ssr:build:ts",
+        "../ssr-client:build:ts:types"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "!src/index.ts",
+        "!src/lib/utils.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "fixtures.{d.ts,d.ts.map,js,js.map}",
+        "web-test-runner-ssr-plugin.{d.ts,d.ts.map,js,js.map}",
+        "lib/",
+        "!lib/utils.{d.ts,d.ts.map,js,js.map}",
+        "test/",
+        ".tsbuildinfo"
+      ]
+    },
+    "build:ts:utils": {
+      "command": "tsc --project tsconfig-utils.json --pretty",
+      "clean": "if-file-deleted",
+      "dependencies": [],
+      "files": [
+        "src/index.ts",
+        "src/lib/utils.ts",
+        "tsconfig.json",
+        "tsconfig-utils.json"
+      ],
+      "output": [
+        "index.{d.ts,d.ts.map,js,js.map}",
+        "lib/utils.{d.ts,d.ts.map,js,js.map}",
+        ".tsbuildinfo-utils"
+      ]
+    },
+    "test": {
+      "command": "wtr",
+      "dependencies": [
+        "build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
+      "files": [
+        "web-test-runner.config.js"
+      ],
+      "output": []
+    }
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./fixtures.js": {
+      "types": "./fixtures.d.ts",
+      "default": "./fixtures.js"
+    },
+    "./web-test-runner-ssr-plugin.js": {
+      "types": "./web-test-runner-ssr-plugin.d.ts",
+      "default": "./web-test-runner-ssr-plugin.js"
+    }
+  },
+  "files": [
+    "index.{d.ts,d.ts.map,js,js.map}",
+    "fixtures.{d.ts,d.ts.map,js,js.map}",
+    "web-test-runner-ssr-plugin.{d.ts,d.ts.map,js,js.map}",
+    "lib/**/*.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "dependencies": {
+    "@lit-labs/ssr": "^3.1.8",
+    "@lit-labs/ssr-client": "^1.1.4",
+    "@web/test-runner-commands": "^0.6.1",
+    "@webcomponents/template-shadowroot": "^0.1.0",
+    "lit": "^2.0.0 || ^3.0.0"
+  },
+  "devDependencies": {
+    "@open-wc/testing": "^3.1.5"
+  }
+}

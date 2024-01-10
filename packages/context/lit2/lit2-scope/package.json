@@ -1,0 +1,8 @@
+{
+  "name": "@lit-internal/context-lit2-scope",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "lit": "^2.8.0"
+  }
+}

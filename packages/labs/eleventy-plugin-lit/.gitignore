@@ -1,0 +1,8 @@
+/development/
+/demo/_site/
+/demo/_js/*.bundle.js
+/index.*
+/worker/worker.*
+/test/
+# Switches Node into module mode for tests
+!/test/package.json

@@ -1,0 +1,69 @@
+{
+  "name": "@lit-labs/gen-utils",
+  "description": "Utilities for lit code generators",
+  "version": "0.3.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "bugs": "https://github.com/lit/lit/issues",
+  "type": "module",
+  "main": "index.js",
+  "repository": "lit/lit",
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "dependencies": [
+        "../analyzer:build",
+        "../../tests:build"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "index.{js,js.map,d.ts,d.ts.map}"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "uvu test \"_test\\.js$\"",
+      "dependencies": [
+        "build",
+        "../../lit:build",
+        "../../tests:build"
+      ],
+      "files": [],
+      "output": []
+    }
+  },
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.11.0"
+  },
+  "devDependencies": {
+    "@lit-internal/tests": "^0.0.1"
+  },
+  "engines": {
+    "node": ">=14.8.0"
+  },
+  "files": [
+    "lib"
+  ],
+  "homepage": "https://github.com/lit/lit",
+  "keywords": [
+    "lit",
+    "lit-html",
+    "lit-element",
+    "LitElement",
+    "generator",
+    "cli"
+  ]
+}

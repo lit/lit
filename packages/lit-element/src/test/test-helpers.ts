@@ -17,14 +17,13 @@ export const getComputedStyleValue = (element: Element, property: string) =>
     ? window.ShadyCSS.getComputedStyleValue(element, property)
     : getComputedStyle(element).getPropertyValue(property);
 
-export const stripExpressionComments = (html: string) =>
-  html.replace(/<!--\?lit\$[0-9]+\$-->|<!--\??-->/g, '');
+const DEV_MODE = true;
 
 // Only test LitElement if ShadowRoot is available and either ShadyDOM is not
 // in use or it is and LitElement platform support is available.
 export const canTestLitElement =
   (window.ShadowRoot && !window.ShadyDOM?.inUse) ||
-  window.litElementPlatformSupport;
+  window[`litElementPolyfillSupport${DEV_MODE ? `DevMode` : ``}`];
 
 export interface ShadyRenderOptions extends RenderOptions {
   scope?: string;

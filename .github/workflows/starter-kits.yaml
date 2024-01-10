@@ -1,0 +1,101 @@
+name: Sync Starter Kits
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  starter-kits:
+    # Don't run on forks. We can and should only release from the main repo.
+    permissions:
+      contents: write  # for Git to git push
+    if: github.repository == 'lit/lit'
+
+    name: Sync Starter Kits
+    runs-on: ubuntu-latest
+    steps:
+      - name: Use Lit Robot's name and email for all git actions
+        run: |
+          git config --global user.name "Lit Robot"
+          git config --global user.email "lit-robot@google.com"
+
+      - name: Checkout Lit Repo
+        uses: actions/checkout@v3
+        with:
+          path: lit
+          # Fetch all history, otherwise we can't fetch from this repo.
+          fetch-depth: 0
+
+      - name: Checkout lit-element-starter-ts repo
+        uses: actions/checkout@v3
+        with:
+          repository: lit/lit-element-starter-ts
+          ref: main
+          path: lit-element-starter-ts
+          token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
+          # Fetch all history, otherwise we can't push to this repo.
+          fetch-depth: 0
+
+      - name: Push changes to lit-element-starter-ts repo
+        working-directory: lit-element-starter-ts
+        run: |
+          # Add the local Lit repo as a remote and fetch the currently checked
+          # out commit.
+          echo "Fetching from local Lit repo..."
+          git remote add lit ../lit
+          git fetch --no-tags lit HEAD:lit-head
+          IMPORT_REF=$(git rev-parse lit-head)
+          # Read the contents of the TS starter kit directory from the imported
+          # commit into the index root, ignoring any conflicts (`--reset`) and
+          # updating the work tree too (`-u`).
+          echo "Staging changes..."
+          git read-tree --reset -u "$IMPORT_REF":packages/lit-starter-ts
+          # If there are no changes, skip the rest of this step.
+          if git diff --cached --quiet --exit-code; then
+            echo "There are no changes."
+            exit 0
+          fi
+          # Commit and push.
+          echo "Pushing changes..."
+          git commit -m "Import upstream changes (${IMPORT_REF})"
+          git push origin main
+          echo "Done."
+
+      - name: Checkout lit-element-starter-js repo
+        uses: actions/checkout@v3
+        with:
+          repository: lit/lit-element-starter-js
+          ref: main
+          path: lit-element-starter-js
+          token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
+          # Fetch all history, otherwise we can't push to this repo.
+          fetch-depth: 0
+
+      - name: Push changes to lit-element-starter-js repo
+        working-directory: lit-element-starter-js
+        run: |
+          # Add the local Lit repo as a remote and fetch the currently checked
+          # out commit.
+          echo "Fetching from local Lit repo..."
+          git remote add lit ../lit
+          git fetch --no-tags lit HEAD:lit-head
+          IMPORT_REF=$(git rev-parse lit-head)
+          # Read the contents of the JS starter kit directory from the imported
+          # commit into the index root, ignoring any conflicts (`--reset`) and
+          # updating the work tree too (`-u`).
+          echo "Staging changes..."
+          git read-tree --reset -u "$IMPORT_REF":packages/lit-starter-js
+          # If there are no changes, skip the rest of this step.
+          if git diff --cached --quiet --exit-code; then
+            echo "There are no changes."
+            exit 0
+          fi
+          # Commit and push.
+          echo "Pushing changes..."
+          git commit -m "Import upstream changes (${IMPORT_REF})"
+          git push origin main
+          echo "Done."

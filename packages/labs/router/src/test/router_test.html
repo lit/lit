@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <script type="module">
+      import {URLPattern} from 'urlpattern-polyfill';
+      if (!window.URLPattern) {
+        window.URLPattern = URLPattern;
+      }
+    </script>
+    <script type="module" src="./router_test_code.js"></script>
+  </head>
+</html>

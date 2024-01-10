@@ -45,10 +45,10 @@ import {styleMap} from 'lit-html/directives/style-map.js';
 import {queryParams} from '../../utils/query-params.js';
 
 // Configurable params
-const width = queryParams.width ?? 4;
-const depth = queryParams.depth ?? 4;
-const updateCount = queryParams.updateCount ?? 10;
-const nopUpdateCount = queryParams.nopUpdateCount ?? 10;
+const width = Number(queryParams.width ?? 4);
+const depth = Number(queryParams.depth ?? 4);
+const updateCount = Number(queryParams.updateCount ?? 10);
+const nopUpdateCount = Number(queryParams.nopUpdateCount ?? 10);
 
 // Data model
 interface Data {

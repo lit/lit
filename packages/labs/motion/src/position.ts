@@ -1,3 +1,8 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
 import {LitElement} from 'lit';
 import {nothing, AttributePart} from 'lit/html.js';
 import {directive, PartInfo, PartType} from 'lit/directive.js';
@@ -38,7 +43,10 @@ export class Position extends AsyncDirective {
     return nothing;
   }
 
-  update(part: AttributePart, [target, positions]: Parameters<this['render']>) {
+  override update(
+    part: AttributePart,
+    [target, positions]: Parameters<this['render']>
+  ) {
     if (this._host === undefined) {
       this._host = part.options?.host as LitElement;
       this._host.addController(this);

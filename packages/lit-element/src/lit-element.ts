@@ -5,15 +5,15 @@
  */
 
 /**
- * The main LitElement module, which defines the [[`LitElement`]] base class and
- * related APIs.
+ * The main LitElement module, which defines the {@linkcode LitElement} base
+ * class and related APIs.
  *
  *  LitElement components can define a template and a set of observed
  * properties. Changing an observed property triggers a re-render of the
  * element.
  *
- *  Import [[`LitElement`]] and [[`html`]] from this module to create a
- * component:
+ *  Import {@linkcode LitElement} and {@linkcode html} from this module to
+ * create a component:
  *
  *  ```js
  * import {LitElement, html} from 'lit-element';
@@ -40,34 +40,75 @@
  * customElements.define('my-element', MyElement);
  * ```
  *
- * `LitElement` extends [[`ReactiveElement`]] and adds lit-html templating.
- * The `ReactiveElement` class is provided for users that want to build
- * their own custom element base classes that don't use lit-html.
+ * `LitElement` extends {@linkcode ReactiveElement} and adds lit-html
+ * templating. The `ReactiveElement` class is provided for users that want to
+ * build their own custom element base classes that don't use lit-html.
  *
  * @packageDocumentation
  */
 import {PropertyValues, ReactiveElement} from '@lit/reactive-element';
-import {render, RenderOptions, noChange, ChildPart} from 'lit-html';
+import {render, RenderOptions, noChange, RootPart} from 'lit-html';
 export * from '@lit/reactive-element';
 export * from 'lit-html';
 
-// For backwards compatibility export ReactiveElement as UpdatingElement. Note,
-// IE transpilation requires exporting like this.
-export const UpdatingElement = ReactiveElement;
+import {LitUnstable} from 'lit-html';
+import {ReactiveUnstable} from '@lit/reactive-element';
+
+/**
+ * Contains types that are part of the unstable debug API.
+ *
+ * Everything in this API is not stable and may change or be removed in the future,
+ * even on patch releases.
+ */
+// eslint-disable-next-line @typescript-eslint/no-namespace
+export namespace Unstable {
+  /**
+   * When Lit is running in dev mode and `window.emitLitDebugLogEvents` is true,
+   * we will emit 'lit-debug' events to window, with live details about the update and render
+   * lifecycle. These can be useful for writing debug tooling and visualizations.
+   *
+   * Please be aware that running with window.emitLitDebugLogEvents has performance overhead,
+   * making certain operations that are normally very cheap (like a no-op render) much slower,
+   * because we must copy data and dispatch events.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  export namespace DebugLog {
+    export type Entry =
+      | LitUnstable.DebugLog.Entry
+      | ReactiveUnstable.DebugLog.Entry;
+  }
+}
+/*
+ * When using Closure Compiler, JSCompiler_renameProperty(property, object) is
+ * replaced at compile time by the munged name for object[property]. We cannot
+ * alias this function, so we have to use a small shim that has the same
+ * behavior when not compiling.
+ */
+/*@__INLINE__*/
+const JSCompiler_renameProperty = <P extends PropertyKey>(
+  prop: P,
+  _obj: unknown
+): P => prop;
 
 const DEV_MODE = true;
 
-declare global {
-  interface Window {
-    litElementVersions: string[];
-  }
-}
+let issueWarning: (code: string, warning: string) => void;
 
-// IMPORTANT: do not change the property name or the assignment expression.
-// This line will be used in regexes to search for LitElement usage.
-// TODO(justinfagnani): inject version number at build time
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-((globalThis as any)['litElementVersions'] ??= []).push('3.0.0-rc.1');
+if (DEV_MODE) {
+  // Ensure warnings are issued only 1x, even if multiple versions of Lit
+  // are loaded.
+  const issuedWarnings: Set<string | undefined> =
+    (globalThis.litIssuedWarnings ??= new Set());
+
+  // Issue a warning, if we haven't already.
+  issueWarning = (code: string, warning: string) => {
+    warning += ` See https://lit.dev/msg/${code} for more information.`;
+    if (!issuedWarnings.has(warning)) {
+      console.warn(warning);
+      issuedWarnings.add(warning);
+    }
+  };
+}
 
 /**
  * Base element class that manages element properties and attributes, and
@@ -75,31 +116,24 @@ declare global {
  *
  * To define a component, subclass `LitElement` and implement a
  * `render` method to provide the component's template. Define properties
- * using the [[`properties`]] property or the [[`property`]] decorator.
+ * using the {@linkcode LitElement.properties properties} property or the
+ * {@linkcode property} decorator.
  */
 export class LitElement extends ReactiveElement {
-  /**
-   * Ensure this class is marked as `finalized` as an optimization ensuring
-   * it will not needlessly try to `finalize`.
-   *
-   * Note this property name is a string to prevent breaking Closure JS Compiler
-   * optimizations. See @lit/reactive-element for more information.
-   */
-  protected static ['finalized'] = true;
-
-  static _$litElement$ = true;
+  // This property needs to remain unminified.
+  static ['_$litElement$'] = true;
 
   /**
    * @category rendering
    */
   readonly renderOptions: RenderOptions = {host: this};
 
-  private __childPart: ChildPart | undefined = undefined;
+  private __childPart: RootPart | undefined = undefined;
 
   /**
    * @category rendering
    */
-  protected createRenderRoot() {
+  protected override createRenderRoot() {
     const renderRoot = super.createRenderRoot();
     // When adoptedStyleSheets are shimmed, they are inserted into the
     // shadowRoot by createRenderRoot. Adjust the renderBefore node so that
@@ -117,30 +151,63 @@ export class LitElement extends ReactiveElement {
    * @param changedProperties Map of changed properties with old values
    * @category updates
    */
-  protected update(changedProperties: PropertyValues) {
+  protected override update(changedProperties: PropertyValues) {
     // Setting properties in `render` should not trigger an update. Since
     // updates are allowed after super.update, it's important to call `render`
     // before that.
     const value = this.render();
+    if (!this.hasUpdated) {
+      this.renderOptions.isConnected = this.isConnected;
+    }
     super.update(changedProperties);
     this.__childPart = render(value, this.renderRoot, this.renderOptions);
   }
 
-  // TODO(kschaaf): Consider debouncing directive disconnection so element moves
-  // do not thrash directive callbacks
-  // https://github.com/lit/lit/issues/1457
   /**
+   * Invoked when the component is added to the document's DOM.
+   *
+   * In `connectedCallback()` you should setup tasks that should only occur when
+   * the element is connected to the document. The most common of these is
+   * adding event listeners to nodes external to the element, like a keydown
+   * event handler added to the window.
+   *
+   * ```ts
+   * connectedCallback() {
+   *   super.connectedCallback();
+   *   addEventListener('keydown', this._handleKeydown);
+   * }
+   * ```
+   *
+   * Typically, anything done in `connectedCallback()` should be undone when the
+   * element is disconnected, in `disconnectedCallback()`.
+   *
    * @category lifecycle
    */
-  connectedCallback() {
+  override connectedCallback() {
     super.connectedCallback();
     this.__childPart?.setConnected(true);
   }
 
   /**
+   * Invoked when the component is removed from the document's DOM.
+   *
+   * This callback is the main signal to the element that it may no longer be
+   * used. `disconnectedCallback()` should ensure that nothing is holding a
+   * reference to the element (such as event listeners added to nodes external
+   * to the element), so that it is free to be garbage collected.
+   *
+   * ```ts
+   * disconnectedCallback() {
+   *   super.disconnectedCallback();
+   *   window.removeEventListener('keydown', this._handleKeydown);
+   * }
+   * ```
+   *
+   * An element may be re-connected after being disconnected.
+   *
    * @category lifecycle
    */
-  disconnectedCallback() {
+  override disconnectedCallback() {
     super.disconnectedCallback();
     this.__childPart?.setConnected(false);
   }
@@ -157,47 +224,25 @@ export class LitElement extends ReactiveElement {
   }
 }
 
+/**
+ * Ensure this class is marked as `finalized` as an optimization ensuring
+ * it will not needlessly try to `finalize`.
+ *
+ * Note this property name is a string to prevent breaking Closure JS Compiler
+ * optimizations. See @lit/reactive-element for more information.
+ */
+(LitElement as unknown as Record<string, unknown>)[
+  JSCompiler_renameProperty('finalized', LitElement)
+] = true;
+
 // Install hydration if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementHydrateSupport']?.({LitElement});
+globalThis.litElementHydrateSupport?.({LitElement});
 
 // Apply polyfills if available
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-(globalThis as any)['litElementPlatformSupport']?.({LitElement});
-
-// DEV mode warnings
-if (DEV_MODE) {
-  // Note, for compatibility with closure compilation, this access
-  // needs to be as a string property index.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (LitElement as any)['finalize'] = function (this: typeof LitElement) {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const finalized = (ReactiveElement as any).finalize.call(this);
-    if (!finalized) {
-      return false;
-    }
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const warnRemoved = (obj: any, name: string) => {
-      if (obj[name] !== undefined) {
-        console.warn(
-          `\`${name}\` is implemented. It ` +
-            `has been removed from this version of LitElement. `
-          // TODO(sorvell): add link to changelog when location has stabilized.
-          // + See the changelog at https://github.com/lit/lit/blob/main/packages/lit-element/CHANGELOG.md`
-        );
-      }
-    };
-    [`render`, `getStyles`].forEach((name: string) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      warnRemoved(this as any, name)
-    );
-    [`adoptStyles`].forEach((name: string) =>
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      warnRemoved(this.prototype as any, name)
-    );
-    return true;
-  };
-}
+const polyfillSupport = DEV_MODE
+  ? globalThis.litElementPolyfillSupportDevMode
+  : globalThis.litElementPolyfillSupport;
+polyfillSupport?.({LitElement});
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
@@ -207,7 +252,7 @@ if (DEV_MODE) {
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
  * to keep a number of (otherwise private) top-level exports  mangled in the
- * client side code, we export a _Φ object containing those members (or
+ * client side code, we export a _$LE object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
  * client-side code is being used in `dev` mode or `prod` mode.
@@ -217,7 +262,7 @@ if (DEV_MODE) {
  *
  * @private
  */
-export const _Φ = {
+export const _$LE = {
   _$attributeToProperty: (
     el: LitElement,
     name: string,
@@ -229,3 +274,14 @@ export const _Φ = {
   // eslint-disable-next-line
   _$changedProperties: (el: LitElement) => (el as any)._$changedProperties,
 };
+
+// IMPORTANT: do not change the property name or the assignment expression.
+// This line will be used in regexes to search for LitElement usage.
+(globalThis.litElementVersions ??= []).push('4.0.3');
+if (DEV_MODE && globalThis.litElementVersions.length > 1) {
+  issueWarning!(
+    'multiple-versions',
+    `Multiple versions of Lit loaded. Loading multiple versions ` +
+      `is not recommended.`
+  );
+}

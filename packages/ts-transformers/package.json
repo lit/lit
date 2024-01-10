@@ -1,0 +1,71 @@
+{
+  "name": "@lit/ts-transformers",
+  "version": "2.0.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "TypeScript transformers for Lit",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/ts-transformers",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/ts-transformers"
+  },
+  "type": "commonjs",
+  "files": [
+    "/CHANGELOG.md",
+    "/*.{js,js.map,d.ts}",
+    "/internal/"
+  ],
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "../lit:build",
+        "../localize:build"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "tsconfig.tsbuildinfo",
+        "*.{js,js.map,d.ts}",
+        "internal",
+        "tests"
+      ]
+    },
+    "test": {
+      "command": "uvu tests/ \"\\-test\\.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    }
+  },
+  "dependencies": {
+    "ts-clone-node": "^3.0.0",
+    "typescript": "~5.2.0"
+  },
+  "devDependencies": {
+    "@lit/localize": "^0.12.0",
+    "@lit/reactive-element": "^2.0.0",
+    "@types/prettier": "^2.2.3",
+    "lit": "^3.0.0",
+    "lit-element": "^4.0.0",
+    "prettier": "^2.3.2",
+    "rimraf": "^3.0.2"
+  }
+}

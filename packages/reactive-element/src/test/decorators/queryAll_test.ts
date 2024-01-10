@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {queryAll} from '../../decorators/query-all.js';
+import {queryAll} from '@lit/reactive-element/decorators/query-all.js';
 import {
   canTestReactiveElement,
   generateElementName,
@@ -22,7 +22,7 @@ import {assert} from '@esm-bundle/chai';
 
     @queryAll('span') spans!: NodeList;
 
-    render() {
+    override render() {
       return html`
         <div>Not this one</div>
         <div id="blah">This one</div>
@@ -61,5 +61,11 @@ import {assert} from '@esm-bundle/chai';
       Array.from(el.spans),
       Array.from(el.renderRoot.querySelectorAll('span'))
     );
+  });
+
+  test('returns empty array when no match and accessed before first update', () => {
+    const notYetUpdatedEl = new C();
+    assert.lengthOf(notYetUpdatedEl.spans, 0);
+    assert.deepEqual(Array.from(notYetUpdatedEl.spans), []);
   });
 });

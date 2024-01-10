@@ -30,24 +30,26 @@ interface RefInternal {
 
 // When callbacks are used for refs, this map tracks the last value the callback
 // was called with, for ensuring a directive doesn't clear the ref if the ref
-// has already been rendered to a new spot
-const lastElementForCallback: WeakMap<
-  Function,
-  Element | undefined
-> = new WeakMap();
+// has already been rendered to a new spot. It is double-keyed on both the
+// context (`options.host`) and the callback, since we auto-bind class methods
+// to `options.host`.
+const lastElementForContextAndCallback = new WeakMap<
+  object,
+  WeakMap<Function, Element | undefined>
+>();
 
-export type RefOrCallback = Ref | ((el: Element | undefined) => void);
+export type RefOrCallback<T = Element> = Ref<T> | ((el: T | undefined) => void);
 
 class RefDirective extends AsyncDirective {
   private _element?: Element;
   private _ref?: RefOrCallback;
-  private _context: unknown;
+  private _context?: object;
 
-  render(_ref: RefOrCallback) {
+  render(_ref?: RefOrCallback) {
     return nothing;
   }
 
-  update(part: ElementPart, [ref]: Parameters<this['render']>) {
+  override update(part: ElementPart, [ref]: Parameters<this['render']>) {
     const refChanged = ref !== this._ref;
     if (refChanged && this._ref !== undefined) {
       // The ref passed to the directive has changed;
@@ -71,7 +73,17 @@ class RefDirective extends AsyncDirective {
       // way regardless of whether a ref might be moving up in the tree (in
       // which case it would otherwise be called with the new value before the
       // previous one unsets it) and down in the tree (where it would be unset
-      // before being set)
+      // before being set). Note that element lookup is keyed by
+      // both the context and the callback, since we allow passing unbound
+      // functions that are called on options.host, and we want to treat
+      // these as unique "instances" of a function.
+      const context = this._context ?? globalThis;
+      let lastElementForCallback =
+        lastElementForContextAndCallback.get(context);
+      if (lastElementForCallback === undefined) {
+        lastElementForCallback = new WeakMap();
+        lastElementForContextAndCallback.set(context, lastElementForCallback);
+      }
       if (lastElementForCallback.get(this._ref) !== undefined) {
         this._ref.call(this._context, undefined);
       }
@@ -87,11 +99,13 @@ class RefDirective extends AsyncDirective {
 
   private get _lastElementForRef() {
     return typeof this._ref === 'function'
-      ? lastElementForCallback.get(this._ref)
+      ? lastElementForContextAndCallback
+          .get(this._context ?? globalThis)
+          ?.get(this._ref)
       : this._ref?.value;
   }
 
-  disconnected() {
+  override disconnected() {
     // Only clear the box if our element is still the one in it (i.e. another
     // directive instance hasn't rendered its element to it before us); that
     // only happens in the event of the directive being cleared (not via manual
@@ -101,7 +115,7 @@ class RefDirective extends AsyncDirective {
     }
   }
 
-  reconnected() {
+  override reconnected() {
     // If we were manually disconnected, we can safely put our element back in
     // the box, since no rendering could have occurred to change its state
     this._updateRefValue(this._element);
@@ -122,16 +136,16 @@ class RefDirective extends AsyncDirective {
  * removed in a subsequent render, it will first be called with `undefined`,
  * followed by another call with the new element it was rendered to (if any).
  *
- * @example
+ * ```js
+ * // Using Ref object
+ * const inputRef = createRef();
+ * render(html`<input ${ref(inputRef)}>`, container);
+ * inputRef.value.focus();
  *
- *    // Using Ref object
- *    const inputRef = createRef();
- *    render(html`<input ${ref(inputRef)}>`, container);
- *    inputRef.value.focus();
- *
- *    // Using callback
- *    const callback = (inputElement) => inputElement.focus();
- *    render(html`<input ${ref(callback)}>`, container);
+ * // Using callback
+ * const callback = (inputElement) => inputElement.focus();
+ * render(html`<input ${ref(callback)}>`, container);
+ * ```
  */
 export const ref = directive(RefDirective);
 

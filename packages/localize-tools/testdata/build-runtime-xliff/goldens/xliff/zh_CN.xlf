@@ -1,14 +1,51 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<xliff version="1.2" xmlns="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="urn:oasis:names:tc:xliff:document:1.2 xliff-core-1.2-strict.xsd">
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
 <file target-language="zh_CN" source-language="en" original="lit-localize-inputs" datatype="plaintext">
 <body>
 <trans-unit id="s8c0ec8d1fb9e6e32">
   <source>Hello World!</source>
   <target>你好，世界!</target>
 </trans-unit>
+<trans-unit id="s00ad08ebae1e0f74">
+  <source>Hello <x id="0" equiv-text="${user}"/>!</source>
+</trans-unit>
 <trans-unit id="h3c44aff2d5f5ef6b">
-  <source>Hello <ph id="0">&lt;b></ph>World<ph id="1">&lt;/b></ph>!</source>
-  <target>你好 <ph id="0">&lt;b></ph>世界<ph id="1">&lt;/b></ph>!</target>
+  <source>Hello <x id="0" equiv-text="&lt;b>"/>World<x id="1" equiv-text="&lt;/b>"/>!</source>
+  <target>你好 <x id="0" equiv-text="&lt;b>"/>世界<x id="1" equiv-text="&lt;/b>"/>!</target>
+</trans-unit>
+<trans-unit id="h82ccc38d4d46eaa9">
+  <source>Hello <x id="0" equiv-text="&lt;b>${user}&lt;/b>"/>!</source>
+</trans-unit>
+<trans-unit id="h99e74f744fda7e25">
+  <source>Click <x id="0" equiv-text="&lt;a href=&quot;${url}&quot;>"/>here<x id="1" equiv-text="&lt;/a>"/>!</source>
+</trans-unit>
+<trans-unit id="hc1c6bfa4414cb3e3">
+  <source>[SALT] Click <x id="0" equiv-text="&lt;a href=&quot;${'https://www.example.com/'}&quot;>"/>here<x id="1" equiv-text="&lt;/a>"/>!</source>
+</trans-unit>
+<trans-unit id="h349c3c4777670217">
+  <source>[SALT] Hello <x id="0" equiv-text="&lt;b>${msg('World')}&lt;/b>"/>!</source>
+</trans-unit>
+<trans-unit id="s0f19e6c4e521dd53">
+  <source>World</source>
+</trans-unit>
+<trans-unit id="hbe936ff3da20ffdf">
+  <source>Hello <x id="0" equiv-text="&lt;b>&lt;!-- comment -->"/>World<x id="1" equiv-text="&lt;/b>"/>!</source>
+</trans-unit>
+<trans-unit id="hf979404a36e879cb">
+  <source>a:<x id="0" equiv-text="${'A'}"/> b:<x id="1" equiv-text="${'B'}"/> c:<x id="2" equiv-text="${'C'}"/></source>
+</trans-unit>
+<trans-unit id="myId">
+  <source>Hello World</source>
+</trans-unit>
+<trans-unit id="h8d70dfec810d1eae">
+  <source><x id="0" equiv-text="&lt;b>"/>Hello<x id="1" equiv-text="&lt;/b>"/>! Click <x id="2" equiv-text="&lt;a href=&quot;${urlBase}/${urlPath}&quot;>"/>here<x id="3" equiv-text="&lt;/a>"/>!</source>
+</trans-unit>
+<trans-unit id="h02c268d9b1fcb031">
+  <source>&lt;Hello<x id="0" equiv-text="&lt;b>"/>&lt;World &amp; Friends><x id="1" equiv-text="&lt;/b>"/>!></source>
+</trans-unit>
+<trans-unit id="s03c68d79ad36e8d4">
+  <note>Description of 0</note>
+  <source>described 0</source>
 </trans-unit>
 </body>
 </file>

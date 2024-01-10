@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/lit/lit/main/packages/localize-tools/tsconfig.schema.json",
+  "$schema": "https://raw.githubusercontent.com/lit/lit/main/packages/localize-tools/config.schema.json",
   "sourceLocale": "en",
   "targetLocales": [
     "es-419"

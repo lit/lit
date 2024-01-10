@@ -5,8 +5,10 @@
  */
 
 import {litProdConfig} from '../../../rollup-common.js';
+import {createRequire} from 'module';
 
 export default litProdConfig({
-  classPropertyPrefix: 'Ω',
-  entryPoints: ['index', 'create-component', 'use-controller'],
+  packageName: createRequire(import.meta.url)('./package.json').name,
+  entryPoints: ['index', 'use-controller'],
+  includeNodeBuild: true,
 });

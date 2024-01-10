@@ -9,6 +9,7 @@ import {LitElement, html, css} from 'lit';
 /**
  * An example element.
  *
+ * @fires count-changed - Indicates when the count changes
  * @slot - This element has a slot
  * @csspart button - The button
  */
@@ -28,11 +29,13 @@ export class MyElement extends LitElement {
     return {
       /**
        * The name to say "Hello" to.
+       * @type {string}
        */
       name: {type: String},
 
       /**
        * The number of times the button has been clicked.
+       * @type {number}
        */
       count: {type: Number},
     };
@@ -46,7 +49,7 @@ export class MyElement extends LitElement {
 
   render() {
     return html`
-      <h1>Hello, ${this.name}!</h1>
+      <h1>${this.sayHello(this.name)}!</h1>
       <button @click=${this._onClick} part="button">
         Click Count: ${this.count}
       </button>
@@ -56,6 +59,16 @@ export class MyElement extends LitElement {
 
   _onClick() {
     this.count++;
+    this.dispatchEvent(new CustomEvent('count-changed'));
+  }
+
+  /**
+   * Formats a greeting
+   * @param name {string} The name to say "Hello" to
+   * @returns {string} A greeting directed at `name`
+   */
+  sayHello(name) {
+    return `Hello, ${name}`;
   }
 }
 

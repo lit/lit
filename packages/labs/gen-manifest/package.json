@@ -1,0 +1,82 @@
+{
+  "name": "@lit-labs/gen-manifest",
+  "description": "Code generator for generating Custom Elements Manifests for Lit components",
+  "version": "0.3.1",
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "bugs": "https://github.com/lit/lit/issues",
+  "type": "module",
+  "main": "index.js",
+  "repository": "lit/lit",
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit",
+    "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "dependencies": [
+        "../../tests:build",
+        "../analyzer:build",
+        "../gen-utils:build",
+        "../../lit:build"
+      ],
+      "files": [
+        "src/**/*",
+        "tsconfig.json",
+        "../test-projects/test-element-a"
+      ],
+      "output": [
+        "test",
+        "index.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "goldens/**/*",
+        "../test-projects/test-element-a"
+      ],
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "cross-env NODE_OPTIONS=--enable-source-maps uvu test \"_test\\.js$\"",
+      "output": []
+    }
+  },
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.11.0",
+    "@lit-labs/gen-utils": "^0.3.0",
+    "custom-elements-manifest": "^2.0.0"
+  },
+  "devDependencies": {
+    "@lit-internal/tests": "^0.0.1",
+    "@types/node": "^17.0.31",
+    "lit": "^3.0.0",
+    "uvu": "^0.5.3"
+  },
+  "engines": {
+    "node": ">=14.8.0"
+  },
+  "files": [
+    "index.js",
+    "index.map.js",
+    "index.d.ts",
+    "index.d.ts.map"
+  ],
+  "homepage": "https://github.com/lit/lit",
+  "keywords": [
+    "lit",
+    "lit-html",
+    "lit-element",
+    "LitElement",
+    "generator",
+    "cli",
+    "manifest",
+    "custom-elements-manifest",
+    "CEM"
+  ]
+}

@@ -1,5 +1,10 @@
 node_modules/
-lerna-debug.log
 *.tgz
 *.tsbuildinfo
 .DS_Store
+.vscode/
+.wireit
+/temp
+.idea
+/scripts/check-size-out.md
+

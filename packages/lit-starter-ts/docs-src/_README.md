@@ -1,4 +1,4 @@
-This directory containts the sources for the static site contained in the /docs/ directory. The site is based on the [eleventy](11ty.dev) static site generator.
+This directory contains the sources for the static site contained in the /docs/ directory. The site is based on the [eleventy](11ty.dev) static site generator.
 
 The site is intended to be used with GitHub pages. To enable the site go to the GitHub settings and change the GitHub Pages "Source" setting to "master branch /docs folder".
 

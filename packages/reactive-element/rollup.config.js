@@ -5,21 +5,22 @@
  */
 
 import {litProdConfig} from '../../rollup-common.js';
+import {createRequire} from 'module';
 
 export default litProdConfig({
-  classPropertyPrefix: 'Π',
+  packageName: createRequire(import.meta.url)('./package.json').name,
   entryPoints: [
     'reactive-element',
     'reactive-controller',
     'css-tag',
     'decorators',
-    'decorators/base',
     'decorators/custom-element',
     'decorators/event-options',
     'decorators/state',
     'decorators/property',
     'decorators/query',
     'decorators/query-all',
+    'decorators/query-assigned-elements',
     'decorators/query-assigned-nodes',
     'decorators/query-async',
   ],
@@ -29,4 +30,5 @@ export default litProdConfig({
       file: 'polyfill-support',
     },
   ],
+  includeNodeBuild: true,
 });

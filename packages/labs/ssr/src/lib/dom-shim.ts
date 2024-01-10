@@ -13,6 +13,11 @@
  */
 
 import fetch from 'node-fetch';
+import {
+  HTMLElement,
+  Element,
+  CustomElementRegistry,
+} from '@lit-labs/ssr-dom-shim';
 
 /**
  * Constructs a fresh instance of the "window" vm context to use for evaluating
@@ -28,52 +33,6 @@ export const getWindow = ({
   includeJSBuiltIns = false,
   props = {},
 }): {[key: string]: unknown} => {
-  const attributes: WeakMap<HTMLElement, Map<string, string>> = new WeakMap();
-  const attributesForElement = (element: HTMLElement) => {
-    let attrs = attributes.get(element);
-    if (!attrs) {
-      attributes.set(element, (attrs = new Map()));
-    }
-    return attrs;
-  };
-
-  class Element {}
-
-  abstract class HTMLElement extends Element {
-    get attributes() {
-      return Array.from(attributesForElement(this)).map(([name, value]) => ({
-        name,
-        value,
-      }));
-    }
-    abstract attributeChangedCallback?(
-      name: string,
-      old: string | null,
-      value: string | null
-    ): void;
-    setAttribute(name: string, value: string) {
-      attributesForElement(this).set(name, value);
-    }
-    removeAttribute(name: string) {
-      attributesForElement(this).delete(name);
-    }
-    hasAttribute(name: string) {
-      return attributesForElement(this).has(name);
-    }
-    attachShadow() {
-      return {host: this};
-    }
-    getAttribute(name: string) {
-      const value = attributesForElement(this).get(name);
-      return value === undefined ? null : value;
-    }
-  }
-
-  interface CustomHTMLElement {
-    new (): HTMLElement;
-    observedAttributes?: string[];
-  }
-
   class ShadowRoot {}
 
   class Document {
@@ -95,28 +54,6 @@ export const getWindow = ({
     replace() {}
   }
 
-  type CustomElementRegistration = {
-    ctor: {new (): HTMLElement};
-    observedAttributes: string[];
-  };
-
-  class CustomElementRegistry {
-    private __definitions = new Map<string, CustomElementRegistration>();
-
-    define(name: string, ctor: CustomHTMLElement) {
-      this.__definitions.set(name, {
-        ctor,
-        observedAttributes:
-          (ctor as CustomHTMLElement).observedAttributes ?? [],
-      });
-    }
-
-    get(name: string) {
-      const definition = this.__definitions.get(name);
-      return definition && definition.ctor;
-    }
-  }
-
   const window = {
     Element,
     HTMLElement,
@@ -129,7 +66,10 @@ export const getWindow = ({
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
-    fetch: (url: URL, init: {}) => fetch(url, init),
+    fetch: (url: URL, init: {}) =>
+      // TODO(aomarks) The typings from node-fetch are wrong because they don't
+      // allow URL.
+      fetch(url as unknown as Parameters<typeof fetch>[0], init),
 
     location: new URL('http://localhost'),
     MutationObserver: class {
@@ -141,14 +81,10 @@ export const getWindow = ({
 
     // Set below
     window: undefined as unknown,
-    global: undefined as unknown,
 
     // User-provided globals, like `require`
     ...props,
   };
-
-  window.window = window;
-  window.global = window; // Required for node-fetch
 
   if (includeJSBuiltIns) {
     Object.assign(window, {
@@ -157,6 +93,8 @@ export const getWindow = ({
       clearTimeout() {},
       // Required for node-fetch
       Buffer,
+      URL,
+      URLSearchParams,
       console: {
         log(...args: unknown[]) {
           console.log(...args);
@@ -189,18 +127,6 @@ export const installWindowOnGlobal = (props: {[key: string]: unknown} = {}) => {
   // Avoid installing the DOM shim if one already exists
   if (globalThis.window === undefined) {
     const window = getWindow({props});
-    // Setup window to proxy all globals added to window to the node global
-    window.window = new Proxy(window, {
-      set(
-        _target: {[key: string]: unknown},
-        p: PropertyKey,
-        value: unknown
-      ): boolean {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (window as any)[p] = (globalThis as any)[p] = value;
-        return true;
-      },
-    });
     // Copy initial window globals to node global
     Object.assign(globalThis, window);
   }

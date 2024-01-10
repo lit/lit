@@ -1,0 +1,11 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+    "module": "es2020",
+    "outDir": "../",
+    "rootDir": ".",
+    "composite": true
+  },
+  "include": ["worker/*.ts", "./test/*.ts", "types.d.ts"],
+  "exclude": []
+}

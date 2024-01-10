@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {templateContent} from '../../directives/template-content.js';
-import {html, render} from '../../lit-html.js';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {templateContent} from 'lit-html/directives/template-content.js';
+import {html, render} from 'lit-html';
+import {stripExpressionMarkers} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
 
 suite('templateContent', () => {
@@ -59,10 +59,7 @@ suite('templateContent', () => {
     );
   });
 
-  // TODO (justinfagnani): lit-html core has a bug/limitiation around swapping
-  // a directive with a non-directive.
-  // See https://github.com/lit/lit/issues/1286
-  test.skip('re-renders a template over a non-templateContent value', () => {
+  test('re-renders a template over a non-templateContent value', () => {
     const go = (v: unknown) => render(html`<div>${v}</div>`, container);
     go(templateContent(template));
     assert.equal(

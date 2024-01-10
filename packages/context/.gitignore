@@ -1,0 +1,7 @@
+/development/
+/test/
+/node_modules/
+/lib/
+/index.*
+/lit2/test/
+/lit2/lit2-scope/context/
