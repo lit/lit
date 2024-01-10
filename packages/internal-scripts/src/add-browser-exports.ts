@@ -160,7 +160,7 @@ function optionallyAddBrowserExportCondition(exports: Exports): {
           assert.notStrictEqual(
             exportPath,
             undefined,
-            `Any key/value exports defined in a node conditional export needs a browser export. Got undefind for "exports.node.${nodeKey}".`
+            `Any key/value exports defined in a node conditional export needs a browser export. Got undefined for "exports.node.${nodeKey}".`
           );
           browserExports[nodeKey] = exportPath;
         }
