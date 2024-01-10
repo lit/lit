@@ -7,8 +7,10 @@
 import type {ReactiveElement} from 'lit';
 import {effect} from '@preact/signals-core';
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type ReactiveElementConstructor = new (...args: any[]) => ReactiveElement;
+type ReactiveElementConstructor = abstract new (
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ...args: any[]
+) => ReactiveElement;
 
 /**
  * Adds the ability for a LitElement or other ReactiveElement class to
@@ -18,7 +20,7 @@ type ReactiveElementConstructor = new (...args: any[]) => ReactiveElement;
 export function SignalWatcher<T extends ReactiveElementConstructor>(
   Base: T
 ): T {
-  return class SignalWatcher extends Base {
+  abstract class SignalWatcher extends Base {
     private __dispose?: () => void;
 
     override performUpdate() {
@@ -67,5 +69,6 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       super.disconnectedCallback();
       this.__dispose?.();
     }
-  };
+  }
+  return SignalWatcher;
 }
