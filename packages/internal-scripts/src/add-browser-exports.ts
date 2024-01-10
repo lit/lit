@@ -16,7 +16,7 @@
 import assert from 'assert';
 import {execSync} from 'child_process';
 import {readFile, writeFile} from 'fs/promises';
-import {resolve} from 'path';
+import {resolve, relative} from 'path';
 
 testScriptIntegrity();
 
@@ -56,6 +56,21 @@ const absolutePackageJsonFilePaths = packageJsonFiles.map((relativePath) =>
 );
 
 export const run = async () => {
+  const [, , command] = process.argv;
+  if (!validateCommand(command)) {
+    console.error(
+      `
+USAGE
+    add-browser-exports <command>
+
+COMMANDS
+    test    Ensure this script doesn't need to fix any package.json files.
+    fix     Write export fixes to package.json files.
+`.trim()
+    );
+    process.exit(1);
+  }
+  let hadTestFailure = false;
   const work: Promise<void>[] = [];
   for (const packageJsonPath of absolutePackageJsonFilePaths) {
     work.push(
@@ -72,20 +87,53 @@ export const run = async () => {
         if (typeof exports === 'string') {
           return;
         }
-        const fixedExports = optionallyAddBrowserExportCondition(exports);
+        const {value: fixedExports, dirty} =
+          optionallyAddBrowserExportCondition(exports);
+        if (dirty === false) {
+          return;
+        }
+        if (command === 'test') {
+          // When testing, instead of writing to the filesystem, throw an error.
+          console.log(
+            `\x1b[41m[Error]\x1b[0m '${relative(
+              process.cwd(),
+              packageJsonPath
+            )}' needs to be updated using script 'add-browser-exports'.`
+          );
+          hadTestFailure = true;
+          return;
+        }
         parsedPackageJson['exports'] = fixedExports;
         await writeFile(
           packageJsonPath,
           JSON.stringify(parsedPackageJson, null, 2) + '\n'
+        );
+        console.log(
+          `\x1b[42m[Updated]\x1b[0m ${relative(process.cwd(), packageJsonPath)}`
         );
       })()
     );
   }
 
   await Promise.allSettled(work);
+  if (hadTestFailure) {
+    process.exit(1);
+  }
 };
 
-function optionallyAddBrowserExportCondition(exports: Exports): Exports {
+/**
+ * Given the "exports" value from a package.json config, add a "browser" export
+ * condition if it is not yet present above any "node" export conditions.
+ *
+ * @returns new config that may contain new "browser" fields. The "dirty" flag
+ *          indicates if the returned exports are different from the passed in
+ *          exports.
+ */
+function optionallyAddBrowserExportCondition(exports: Exports): {
+  value: Exports;
+  dirty: boolean;
+} {
+  let dirty = false;
   const newExports: Exports = {};
   for (const [path, exportValue] of Object.entries(exports)) {
     if (exportValue.node === undefined || exportValue.browser !== undefined) {
@@ -103,6 +151,7 @@ function optionallyAddBrowserExportCondition(exports: Exports): Exports {
     for (const key of keyOrder) {
       // Add the browser export condition above the node export condition.
       if (key === 'node') {
+        dirty = true;
         const browserExports: Partial<Exports['']['browser']> = {};
         for (const nodeKey of Object.keys(exportValue.node) as Array<
           keyof typeof exportValue.node
@@ -121,7 +170,11 @@ function optionallyAddBrowserExportCondition(exports: Exports): Exports {
     }
     newExports[path] = newExportObject;
   }
-  return newExports;
+  return {value: newExports, dirty};
+}
+
+function validateCommand(mode: string): mode is 'fix' | 'test' {
+  return mode === 'fix' || mode === 'test';
 }
 
 /**
@@ -135,7 +188,10 @@ function testScriptIntegrity() {
    */
   assert.deepStrictEqual(
     optionallyAddBrowserExportCondition({}),
-    {},
+    {
+      value: {},
+      dirty: false,
+    },
     'Expect empty exports to return empty exports'
   );
   /**
@@ -154,19 +210,22 @@ function testScriptIntegrity() {
       },
     }),
     {
-      '.': {
-        types: './dev/path.d.ts',
-        browser: {
+      value: {
+        '.': {
+          types: './dev/path.d.ts',
+          browser: {
+            development: './dev/path.js',
+            default: './path.js',
+          },
+          node: {
+            development: './node/dev/path.js',
+            default: './node/path.js',
+          },
           development: './dev/path.js',
           default: './path.js',
         },
-        node: {
-          development: './node/dev/path.js',
-          default: './node/path.js',
-        },
-        development: './dev/path.js',
-        default: './path.js',
       },
+      dirty: true,
     },
     `Expected browser exports to be added above the node export.`
   );
@@ -191,7 +250,7 @@ function testScriptIntegrity() {
   };
   assert.deepStrictEqual(
     optionallyAddBrowserExportCondition(exportsWithBrowser),
-    exportsWithBrowser,
+    {value: exportsWithBrowser, dirty: false},
     `Expected browser exports to be added above the node export.`
   );
 
