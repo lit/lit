@@ -151,6 +151,7 @@
         "See ./packages/tests/src/web-test-runner.config.ts"
       ],
       "dependencies": [
+        "./packages/internal-scripts:test",
         "./packages/localize:test",
         "./packages/localize-tools:test",
         "./packages/react:test",
