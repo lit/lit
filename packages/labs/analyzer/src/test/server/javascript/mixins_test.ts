@@ -185,8 +185,7 @@ for (const lang of languages) {
     const lastDiagnostic = diagnostics[diagnostics.length - 1];
     assert.equal(
       lastDiagnostic.messageText,
-      'Expected mixin to have a block function body; arrow-function class ' +
-        'expression syntax is not supported.'
+      'Expected mixin to contain a class declaration statement.'
     );
   });
 
@@ -258,6 +257,26 @@ for (const lang of languages) {
   }) => {
     const currentDiagnostics = [...analyzer.getDiagnostics()];
     const decl = getModule('mixins').getDeclaration('ChildWithMultipleParams');
+    assert.equal(decl.isMixinDeclaration(), true);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, currentDiagnostics.length);
+  });
+
+  test('mixin with class expression body', ({getModule, analyzer}) => {
+    const currentDiagnostics = [...analyzer.getDiagnostics()];
+    const decl = getModule('mixins-vanilla').getDeclaration(
+      'MixinWithExpression'
+    );
+    assert.equal(decl.isMixinDeclaration(), true);
+    const diagnostics = [...analyzer.getDiagnostics()];
+    assert.equal(diagnostics.length, currentDiagnostics.length);
+  });
+
+  test('mixin with class expression return value', ({getModule, analyzer}) => {
+    const currentDiagnostics = [...analyzer.getDiagnostics()];
+    const decl = getModule('mixins-vanilla').getDeclaration(
+      'MixinWithExpressionReturn'
+    );
     assert.equal(decl.isMixinDeclaration(), true);
     const diagnostics = [...analyzer.getDiagnostics()];
     assert.equal(diagnostics.length, currentDiagnostics.length);

@@ -22,6 +22,7 @@ import {
   getJSDocData,
   getTagName as getCustomElementTagName,
 } from '../custom-elements/custom-elements.js';
+import {getBaseTypes} from '../utils.js';
 
 export type TypeScript = typeof ts;
 
@@ -112,8 +113,9 @@ export const isLitElementSubclass = (
     return false;
   }
   const checker = analyzer.program.getTypeChecker();
-  const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
-  const baseTypes = checker.getBaseTypes(type);
+  const type = checker.getTypeAtLocation(node);
+  const baseTypes = getBaseTypes(type);
+
   return baseTypes.some((t) =>
     // Mixins will cause the base types to be an intersection that
     // includes `LitElement`

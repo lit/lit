@@ -100,43 +100,43 @@ export const maybeGetMixinFromFunctionLike = (
     );
     return undefined;
   }
-  // TODO (43081j): in typescript, you currently cannot have decorators on
-  // a class expression, hence why we effectively disallow them here. However,
-  // we may want to loosen this constraint for JS users some day
-  if (!analyzer.typescript.isBlock(functionBody)) {
-    addDiagnosticIfMixin(
-      fn,
-      hasMixinHint,
-      `Expected mixin to have a block function body; arrow-function class ` +
-        `expression syntax is not supported.`,
-      analyzer
-    );
-    return undefined;
-  }
-  let classDeclaration: ts.ClassDeclaration | undefined;
+  let classDeclaration: ts.ClassLikeDeclaration | undefined;
   let returnStatement: ts.ReturnStatement | undefined;
-  for (const s of functionBody.statements) {
-    if (analyzer.typescript.isClassDeclaration(s)) {
-      classDeclaration = s;
+  if (analyzer.typescript.isBlock(functionBody)) {
+    for (const s of functionBody.statements) {
+      if (analyzer.typescript.isClassDeclaration(s)) {
+        classDeclaration = s;
+      }
+      if (analyzer.typescript.isReturnStatement(s)) {
+        returnStatement = s;
+
+        if (
+          classDeclaration === undefined &&
+          s.expression !== undefined &&
+          analyzer.typescript.isClassLike(s.expression)
+        ) {
+          classDeclaration = s.expression;
+        }
+      }
     }
-    if (analyzer.typescript.isReturnStatement(s)) {
-      returnStatement = s;
+
+    if (returnStatement === undefined) {
+      addDiagnosticIfMixin(
+        fn,
+        hasMixinHint,
+        `Expected mixin to contain a return statement returning a class.`,
+        analyzer
+      );
+      return undefined;
     }
+  } else if (analyzer.typescript.isClassLike(functionBody)) {
+    classDeclaration = functionBody;
   }
   if (classDeclaration === undefined) {
     addDiagnosticIfMixin(
       fn,
       hasMixinHint,
       `Expected mixin to contain a class declaration statement.`,
-      analyzer
-    );
-    return undefined;
-  }
-  if (returnStatement === undefined) {
-    addDiagnosticIfMixin(
-      fn,
-      hasMixinHint,
-      `Expected mixin to contain a return statement returning a class.`,
       analyzer
     );
     return undefined;
