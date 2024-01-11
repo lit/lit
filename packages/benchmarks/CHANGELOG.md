@@ -1,5 +1,11 @@
 # @lit-internal/benchmarks
 
+## 1.0.6
+
+### Patch Changes
+
+- [#4451](https://github.com/lit/lit/pull/4451) [`7852e130`](https://github.com/lit/lit/commit/7852e13022c9dcfcff5ed54a215c93420349e318) - Minor security fixes.
+
 ## 1.0.5
 
 ### Patch Changes

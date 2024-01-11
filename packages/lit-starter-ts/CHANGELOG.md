@@ -1,5 +1,11 @@
 # @lit/lit-starter-ts
 
+## 2.0.1
+
+### Patch Changes
+
+- [#4451](https://github.com/lit/lit/pull/4451) [`7852e130`](https://github.com/lit/lit/commit/7852e13022c9dcfcff5ed54a215c93420349e318) - Minor security fixes.
+
 ## 2.0.0
 
 ### Major Changes

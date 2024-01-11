@@ -1,5 +1,11 @@
 # @lit-labs/gen-wrapper-angular
 
+## 0.1.2
+
+### Patch Changes
+
+- [#4293](https://github.com/lit/lit/pull/4293) [`5eea178e`](https://github.com/lit/lit/commit/5eea178e0df1199cd29e9d46bc888d52882f18dd) Thanks [@43081j](https://github.com/43081j)! - Generate valid wrappers for elements without reactive properties
+
 ## 0.1.1
 
 ### Patch Changes
