@@ -9,6 +9,31 @@ import {BLANK_LINE_PLACEHOLDER_COMMENT} from '../../preserve-blank-lines.js';
 
 import type {LitClassContext} from '../lit-class-context.js';
 import type {MemberDecoratorVisitor} from '../visitor.js';
+import {removeDecorators} from '../util.js';
+
+/**
+ * Copies the comments and, optionally, leading blank lines from one node to
+ * another.
+ *
+ * @param fromNode Node from which to copy comments.
+ * @param toNode Node where comments should be copied to.
+ * @param blankLines (Default: false) Whether to preserve leading blank lines.
+ *   Useful for classmembers not moved to the constructor.
+ */
+const copyComments = (
+  fromNode: ts.Node,
+  toNode: ts.Node,
+  blankLines = false
+) => {
+  // Omit blank lines from the PreserveBlankLines transformer, because they
+  // usually look awkward in the constructor.
+  const nonBlankLineSyntheticComments = ts
+    .getSyntheticLeadingComments(fromNode)
+    ?.filter(
+      (comment) => blankLines || comment.text !== BLANK_LINE_PLACEHOLDER_COMMENT
+    );
+  ts.setSyntheticLeadingComments(toNode, nonBlankLineSyntheticComments);
+};
 
 /**
  * Transform:
@@ -40,13 +65,14 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
 
   visit(
     litClassContext: LitClassContext,
-    property: ts.ClassElement,
+    propertyOrGetter: ts.ClassElement,
     decorator: ts.Decorator
   ) {
-    if (!ts.isPropertyDeclaration(property)) {
+    const isGetter = ts.isGetAccessor(propertyOrGetter);
+    if (!ts.isPropertyDeclaration(propertyOrGetter) && !isGetter) {
       return;
     }
-    if (!ts.isIdentifier(property.name)) {
+    if (!ts.isIdentifier(propertyOrGetter.name)) {
       return;
     }
     if (!ts.isCallExpression(decorator.expression)) {
@@ -57,12 +83,35 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
       return;
     }
     const options = this._augmentOptions(arg0);
-    const name = property.name.text;
-    litClassContext.litFileContext.nodeReplacements.set(property, undefined);
+    const name = propertyOrGetter.name.text;
+    const factory = this._factory;
+
+    if (isGetter) {
+      // Decorators is readonly so clone the property.
+      const getterWithoutDecorators = factory.createGetAccessorDeclaration(
+        removeDecorators(factory, propertyOrGetter.modifiers),
+        propertyOrGetter.name,
+        propertyOrGetter.parameters,
+        propertyOrGetter.type,
+        propertyOrGetter.body
+      );
+
+      copyComments(propertyOrGetter, getterWithoutDecorators, true);
+
+      litClassContext.litFileContext.nodeReplacements.set(
+        propertyOrGetter,
+        getterWithoutDecorators
+      );
+    } else {
+      // Delete the member property
+      litClassContext.litFileContext.nodeReplacements.set(
+        propertyOrGetter,
+        undefined
+      );
+    }
     litClassContext.reactiveProperties.push({name, options});
 
-    if (property.initializer !== undefined) {
-      const factory = this._factory;
+    if (!isGetter && propertyOrGetter.initializer !== undefined) {
       const initializer = factory.createExpressionStatement(
         factory.createBinaryExpression(
           factory.createPropertyAccessExpression(
@@ -70,19 +119,11 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
             factory.createIdentifier(name)
           ),
           factory.createToken(ts.SyntaxKind.EqualsToken),
-          property.initializer
+          propertyOrGetter.initializer
         )
       );
-      ts.setTextRange(initializer, property);
-      // Omit blank lines from the PreserveBlankLines transformer, because they
-      // usually look awkward in the constructor.
-      const nonBlankLineSyntheticComments = ts
-        .getSyntheticLeadingComments(property)
-        ?.filter((comment) => comment.text !== BLANK_LINE_PLACEHOLDER_COMMENT);
-      ts.setSyntheticLeadingComments(
-        initializer,
-        nonBlankLineSyntheticComments
-      );
+      ts.setTextRange(initializer, propertyOrGetter);
+      copyComments(propertyOrGetter, initializer);
       litClassContext.extraConstructorStatements.push(initializer);
     }
   }

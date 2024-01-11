@@ -1,0 +1,122 @@
+{
+  "name": "@lit-labs/compiler",
+  "description": "Compiler to prepare Lit templates at build time",
+  "version": "1.0.1",
+  "author": "Google LLC",
+  "homepage": "https://github.com/Lit/Lit/tree/main/packages/labs/compiler",
+  "license": "BSD-3-Clause",
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "files": [
+    "/lib/",
+    "/index.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lit/Lit.git",
+    "directory": "packages/labs/compiler"
+  },
+  "bugs": {
+    "url": "https://github.com/lit/lit/issues"
+  },
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit",
+    "build:rollup-source-map-tests": "wireit",
+    "test": "wireit",
+    "update-goldens": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "build:rollup-source-map-tests"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "dependencies": [
+        "../../lit-html:build:ts:types",
+        "../../lit-html:build:rollup"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "test",
+        "tsconfig.tsbuildinfo",
+        "index.{d.ts,d.ts.map,js,js.map}"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "build:rollup-source-map-tests": {
+      "command": "rollup -c rollup.source_map_tests.js",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "test_files/source_map_tests/*.ts",
+        "test_files/source_map_tests/tsconfig.json",
+        "rollup.source_map_tests.js"
+      ],
+      "output": [
+        "test_files/source_map_tests/*.js",
+        "test_files/source_map_tests/*.js.map"
+      ]
+    },
+    "test": {
+      "command": "uvu test \".*_test\\.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "test_files/*.ts",
+        "test_files/*.js"
+      ]
+    },
+    "update-goldens": {
+      "command": "uvu test \".*_test\\.js$\"",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "test_files/*.ts",
+        "test_files/*.js",
+        "!test_files/*.golden.js"
+      ],
+      "output": [
+        "test_files/*.golden.js"
+      ],
+      "env": {
+        "UPDATE_LIT_COMPILER_GOLDENS": "true"
+      }
+    }
+  },
+  "dependencies": {
+    "@parse5/tools": "^0.3.0",
+    "lit-html": "^3.0.0",
+    "parse5": "^7.1.2",
+    "typescript": "~5.2.0"
+  },
+  "devDependencies": {
+    "@rollup/plugin-typescript": "11.1.2",
+    "rollup": "^3.27.2",
+    "source-map": "^0.7.4",
+    "uvu": "^0.5.6"
+  },
+  "engines": {
+    "node": ">=14.17"
+  },
+  "publishConfig": {
+    "access": "public"
+  }
+}

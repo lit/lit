@@ -1,27 +1,56 @@
 {
-  "name": "internal-scripts",
+  "name": "@lit-internal/scripts",
   "private": true,
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Internal scripts for the Lit monorepo",
   "repository": {
     "type": "git",
     "url": "https://github.com/lit/lit.git",
-    "directory": "packages/internal-scripts"
+    "directory": "packages/@lit-internal/scripts"
   },
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "type": "module",
   "bin": {
-    "treemirror": "bin/treemirror.js"
+    "treemirror": "bin/treemirror.js",
+    "release-image": "bin/release-image.js"
   },
   "scripts": {
-    "build": "npm run clean && npm run build:ts",
-    "build:ts": "tsc --build",
-    "clean": "rm -rf lib/"
+    "build": "wireit",
+    "build:ts": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        "src/**.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib"
+      ]
+    }
   },
   "dependencies": {
     "@types/node": "^16.7.8",
+    "changelog-parser": "^2.8.1",
+    "command-line-args": "^5.2.1",
     "fast-glob": "^3.2.5",
-    "typescript": "^4.3.5"
+    "line-reader": "^0.4.0",
+    "marked": "^4.0.16",
+    "puppeteer": "^15.4.0"
+  },
+  "devDependencies": {
+    "@types/changelog-parser": "^2.8.1",
+    "@types/command-line-args": "^5.2.0",
+    "@types/line-reader": "^0.0.34",
+    "@types/marked": "^4.0.3",
+    "@types/puppeteer": "^5.4.6"
   }
 }

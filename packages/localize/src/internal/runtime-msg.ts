@@ -52,13 +52,10 @@ export function runtimeMsg(
           order = localized.values as number[];
           expressionOrders.set(localized, order);
         }
-        // Cast `localized.values` because it's readonly.
-        (
-          localized as {
-            values: TemplateResult['values'];
-          }
-        ).values = order.map((i) => (template as TemplateResult).values[i]);
-        return localized;
+        return {
+          ...localized,
+          values: order.map((i) => (template as TemplateResult).values[i]),
+        };
       }
     }
   }

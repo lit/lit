@@ -1,0 +1,26 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "sampleSize": 5,
+  "root": "../../../../../",
+  "benchmarks": [
+    {
+      "name": "simple scrolling test",
+      "measurement": "global",
+      "browser": "chrome",
+      "expand": [
+        {
+          "name": "native ResizeObserver",
+          "url": "http://localhost:8080/packages/uni-virtualizer-examples/public/basic-lit-html/"
+        },
+        {
+          "name": "@juggle/resize-observer",
+          "url": "http://localhost:8081/packages/uni-virtualizer-examples/public/basic-lit-html/"
+        },
+        {
+          "name": "resize-observer-polyfill",
+          "url": "http://localhost:8082/packages/uni-virtualizer-examples/public/basic-lit-html/"
+        }
+      ]
+    }
+  ]
+}

@@ -75,7 +75,7 @@ export function preserveBlankLinesTransformer(): ts.TransformerFactory<ts.Source
         transformer.addComments(node);
         return ts.visitEachChild(node, visit, context);
       };
-      return ts.visitNode(file, visit);
+      return ts.visitNode(file, visit) as ts.SourceFile;
     };
   };
 }
@@ -149,7 +149,7 @@ class PreserveBlankLinesTransformer {
       // If this is the first child node, we are restricted in what we can do,
       // because the source file node has the same trivia as the first child,
       // and there is no way to prevent it from being emitted (the
-      // `deleteTrivaRange` trick doesn't work). This means we can't preserve
+      // `deleteTriviaRange` trick doesn't work). This means we can't preserve
       // blank lines before or between leading comments at start of the file --
       // but we can at least preserve blank lines after those leading comments.
       previousRegionEnd = comment.end;

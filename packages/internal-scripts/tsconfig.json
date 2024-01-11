@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2020",
+    "target": "es2021",
     "module": "es2020",
     "moduleResolution": "node",
     "sourceMap": true,
@@ -17,7 +17,8 @@
     "noImplicitThis": true,
     "allowSyntheticDefaultImports": true,
     "tsBuildInfoFile": "./lib/.tsbuildinfo",
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "types": []
   },
   "include": ["src/**/*.ts"]
 }

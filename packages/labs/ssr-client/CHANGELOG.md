@@ -1,5 +1,86 @@
 # Change Log
 
+## 1.1.6
+
+### Patch Changes
+
+- [#4481](https://github.com/lit/lit/pull/4481) [`1a1f3f0f`](https://github.com/lit/lit/commit/1a1f3f0fff9dc87548e5fc8e7f5c80142b52d669) - Provide better error message in `createAttributeParts()` when an error occurs due to hydration value mismatch.
+
+## 1.1.5
+
+### Patch Changes
+
+- [#4311](https://github.com/lit/lit/pull/4311) [`cabe72a8`](https://github.com/lit/lit/commit/cabe72a863a5de14a4bbca384374db748dd9b4c5) - Update version range for `lit` dependency to include v2. This allows projects still on lit v2 to use this package without being forced to install lit v3.
+
+- [#4312](https://github.com/lit/lit/pull/4312) [`26182733`](https://github.com/lit/lit/commit/26182733046e347670db01ebf9cec5b0b3611523) - Avoid nullish logical assignment in hydrate-lit-html which some minification process would not handle correctly. Fixes hydration errors in Next.js production bundles.
+
+## 1.1.4
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- [#4081](https://github.com/lit/lit/pull/4081) [`d27a77ec`](https://github.com/lit/lit/commit/d27a77ec3d3999e872df9218a2b07f90f22eb417) - Sync from last stable release
+
+- Updated dependencies:
+  - @lit/reactive-element@2.0.0
+  - lit-html@3.0.0
+  - lit@3.0.0
+
+## 1.1.4-pre.1
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- [#4081](https://github.com/lit/lit/pull/4081) [`d27a77ec`](https://github.com/lit/lit/commit/d27a77ec3d3999e872df9218a2b07f90f22eb417) - Sync from last stable release
+
+- Updated dependencies [[`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5), [`0f6878dc`](https://github.com/lit/lit/commit/0f6878dc45fd95bbeb8750f277349c1392e2b3ad), [`2a01471a`](https://github.com/lit/lit/commit/2a01471a5f65fe34bad11e1099281811b8d0f79b), [`2eba6997`](https://github.com/lit/lit/commit/2eba69974c9e130e7483f44f9daca308345497d5), [`d27a77ec`](https://github.com/lit/lit/commit/d27a77ec3d3999e872df9218a2b07f90f22eb417), [`6470807f`](https://github.com/lit/lit/commit/6470807f3a0981f9d418cb26f05969912455d148), [`09949234`](https://github.com/lit/lit/commit/09949234445388d51bfb4ee24ff28a4c9f82fe17)]:
+  - @lit/reactive-element@2.0.0-pre.1
+  - lit-html@3.0.0-pre.1
+  - lit@3.0.0-pre.1
+
+## 1.1.2-pre.0
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+- Updated dependencies [[`be72f66b`](https://github.com/lit/lit/commit/be72f66bd9aab5d0586729fb5be4bac4aa27cb7f), [`dfd747cf`](https://github.com/lit/lit/commit/dfd747cf4f7239e0c3bb7134f8acb967d0157654), [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2), [`1db01376`](https://github.com/lit/lit/commit/1db0137699b35d7e7bfac9b2ab274af4100fd7cf), [`6f2833fd`](https://github.com/lit/lit/commit/6f2833fd05f2ecde5386f72d291dafc9dbae0cf7), [`c3e473b4`](https://github.com/lit/lit/commit/c3e473b499ff029b5e1aff01ca8799daf1ca1bbe), [`92cedaa2`](https://github.com/lit/lit/commit/92cedaa2c8cd8a306be3fe25d52e0e47bb044020), [`7e8491d4`](https://github.com/lit/lit/commit/7e8491d4ed9f0c39d974616c4678552ef50b81df), [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa), [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4)]:
+  - @lit/reactive-element@2.0.0-pre.0
+  - lit-html@3.0.0-pre.0
+  - lit@3.0.0-pre.0
+
+## 1.1.3
+
+### Patch Changes
+
+- [#3993](https://github.com/lit/lit/pull/3993) [`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d) - Add better error message during hydration when throwing on `CompiledTemplate`s.
+
+- Updated dependencies [[`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d), [`8057c78d`](https://github.com/lit/lit/commit/8057c78def09e345e68c3fc009b8ab9d6cf1c0f2)]:
+  - lit-html@2.8.0
+  - lit@2.8.0
+
+## 1.1.2
+
+### Patch Changes
+
+- [#3901](https://github.com/lit/lit/pull/3901) [`82e9f370`](https://github.com/lit/lit/commit/82e9f3708973709e916ccbb6d8a450110dea7755) - Bump minimum version of `lit-html` dependency to 2.7.1 which includes needed shared internals.
+
+## 1.1.1
+
+### Patch Changes
+
+- [#3781](https://github.com/lit/lit/pull/3781) [`41b18f30`](https://github.com/lit/lit/commit/41b18f3004163e9011c822dddf73a8669e3c74d8) - Include node build output in npm package. Fixes "Cannot find module ... ssr-client/node/index.js" errors.
+
+## 1.1.0
+
+### Minor Changes
+
+- [#3720](https://github.com/lit/lit/pull/3720) [`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7) - `lit-html/experimental-hydrate.js` and `lit-element/experimental-hydrate-support.js` have been moved to `@lit-labs/ssr-client`.
+
+  The modules in the original location have been marked deprecated and will be removed in a future version.
+
 ## 1.0.1
 
 ### Patch Changes

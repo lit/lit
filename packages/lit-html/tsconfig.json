@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2019",
-    "module": "es2020",
-    "lib": ["es2020", "DOM", "DOM.Iterable"],
+    "target": "es2021",
+    "module": "NodeNext",
+    "lib": ["es2021", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -17,13 +17,17 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "stripInternal": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "paths": {
+      "@esm-bundle/chai": ["../../local-types/@esm-bundle/chai/index.d.ts"]
+    },
+    "types": ["mocha", "node", "trusted-types"]
   },
   "include": [
-    "node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
+    "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
     "src/**/*.ts"
   ],
   "exclude": ["src/polyfill-support.ts"],

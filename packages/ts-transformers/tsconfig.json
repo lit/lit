@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es2020",
+    "target": "es2021",
     "module": "commonjs",
     "moduleResolution": "node",
-    "lib": ["es2020", "DOM"],
+    "lib": ["es2021", "DOM"],
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "incremental": true,
 
     "strict": true,
     "noFallthroughCasesInSwitch": true,
@@ -17,11 +18,13 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
 
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "rootDir": "src/",
     "outDir": ".",
     "declaration": true,
     "sourceMap": true,
-    "inlineSources": true
+    "inlineSources": true,
+    "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": []

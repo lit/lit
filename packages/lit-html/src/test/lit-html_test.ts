@@ -17,8 +17,7 @@ import {
   SanitizerFactory,
   Part,
   CompiledTemplate,
-} from '../lit-html.js';
-import * as litHtmlLib from '../lit-html.js';
+} from 'lit-html';
 
 import {
   directive,
@@ -26,20 +25,22 @@ import {
   PartType,
   PartInfo,
   DirectiveParameters,
-} from '../directive.js';
+} from 'lit-html/directive.js';
+import {isCompiledTemplateResult} from 'lit-html/directive-helpers.js';
 import {assert} from '@esm-bundle/chai';
 import {
   stripExpressionComments,
   stripExpressionMarkers,
-} from './test-utils/strip-markers.js';
-import {repeat} from '../directives/repeat.js';
-import {AsyncDirective} from '../async-directive.js';
+} from '@lit-labs/testing';
+import {repeat} from 'lit-html/directives/repeat.js';
+import {AsyncDirective} from 'lit-html/async-directive.js';
 
-import {createRef, ref} from '../directives/ref.js';
+import {createRef, ref} from 'lit-html/directives/ref.js';
+import {literal, unsafeStatic} from 'lit-html/static.js';
 
 // For compiled template tests
-import {_$LH} from '../private-ssr-support.js';
-import {until} from '../directives/until.js';
+import {_$LH} from 'lit-html/private-ssr-support.js';
+import {until} from 'lit-html/directives/until.js';
 const {AttributePart} = _$LH;
 
 type AttributePart = InstanceType<typeof AttributePart>;
@@ -49,10 +50,10 @@ const isIe = ua.indexOf('Trident/') > 0;
 // We don't have direct access to DEV_MODE, but this is a good enough
 // proxy.
 const DEV_MODE = render.setSanitizer != null;
-/**
- * litHtmlLib.INTERNAL is not exported in prod mode
- */
-const INTERNAL = litHtmlLib.INTERNAL === true;
+// Tests are compiled if the passed in runtime template has been
+// compiled.
+const testAreCompiled = isCompiledTemplateResult(html``);
+const skipTestIfCompiled = testAreCompiled ? test.skip : test;
 
 class FireEventDirective extends Directive {
   render() {
@@ -467,7 +468,13 @@ suite('lit-html', () => {
 
     test('comment', () => {
       render(html`<!--${'A'}-->`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<!---->');
+      // Strip only the marker text (and not the entire comment as
+      // stripExpressionMarkers does) so that the test works on both runtime and
+      // compiled templates.
+      assert.equal(
+        container.innerHTML.replace(/lit\$[0-9]+\$/g, ''),
+        '<!----><!---->'
+      );
     });
 
     test('comment with attribute-like content', () => {
@@ -1159,6 +1166,20 @@ suite('lit-html', () => {
       assertContent('<div foo=""></div>');
       assert.isEmpty(observer.takeRecords());
     });
+
+    test('binding undefined removes the attribute', () => {
+      const go = (v: unknown) => render(html`<div ?foo=${v}></div>`, container);
+      go(undefined);
+      assertContent('<div></div>');
+      // it doesn't toggle the attribute
+      go(undefined);
+      assertContent('<div></div>');
+      // it does remove it
+      go(true);
+      assertContent('<div foo=""></div>');
+      go(undefined);
+      assertContent('<div></div>');
+    });
   });
 
   suite('properties', () => {
@@ -1178,6 +1199,17 @@ suite('lit-html', () => {
 
       go(nothing);
       assert.strictEqual((div as any).foo, undefined);
+    });
+
+    test('noChange does not set property', () => {
+      const go = (v: any) =>
+        render(html`<div id="a" .tabIndex=${v}></div>`, container);
+
+      go(noChange);
+      const div = container.querySelector('div')!;
+
+      // If noChange has been interpreted as undefined, tabIndex would be 0
+      assert.strictEqual(div.tabIndex, -1);
     });
 
     test('null sets null', () => {
@@ -1595,16 +1627,12 @@ suite('lit-html', () => {
   });
 
   suite('compiled', () => {
-    const trustedTypes = (globalThis as unknown as Partial<Window>)
-      .trustedTypes;
-    const policy = trustedTypes?.createPolicy('lit-html', {
-      createHTML: (s) => s,
-    }) ?? {createHTML: (s) => s as unknown as TrustedHTML};
+    const branding_tag = (s: TemplateStringsArray) => s;
 
     test('only text', () => {
       // A compiled template for html`${'A'}`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML('<!---->'),
+        h: branding_tag`<!---->`,
         parts: [{type: 2, index: 0}],
       };
       assertRender(
@@ -1620,7 +1648,7 @@ suite('lit-html', () => {
     test('text expression', () => {
       // A compiled template for html`<div>${'A'}</div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML(`<div><!----></div>`),
+        h: branding_tag`<div><!----></div>`,
         parts: [{type: 2, index: 1}],
       };
       const result = {
@@ -1634,7 +1662,7 @@ suite('lit-html', () => {
     test('attribute expression', () => {
       // A compiled template for html`<div foo=${'A'}></div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML('<div></div>'),
+        h: branding_tag`<div></div>`,
         parts: [
           {
             type: 1,
@@ -1657,7 +1685,7 @@ suite('lit-html', () => {
       const r = createRef();
       // A compiled template for html`<div ${ref(r)}></div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML('<div></div>'),
+        h: branding_tag`<div></div>`,
         parts: [{type: 6, index: 0}],
       };
       const result = {
@@ -1669,6 +1697,19 @@ suite('lit-html', () => {
       const div = container.firstElementChild;
       assert.isDefined(div);
       assert.strictEqual(r.value, div);
+    });
+
+    test(`throw if unbranded`, () => {
+      const _$lit_template_1: CompiledTemplate = {
+        h: ['<div><!----></div>'] as unknown as TemplateStringsArray,
+        parts: [{type: 2, index: 1}],
+      };
+      const result = {
+        // This property needs to remain unminified.
+        ['_$litType$']: _$lit_template_1,
+        values: ['A'],
+      };
+      assert.throws(() => render(result, container));
     });
   });
 
@@ -1720,35 +1761,52 @@ suite('lit-html', () => {
     });
 
     suite('ChildPart invariants for parentNode, startNode, endNode', () => {
+      // Let's us get a reference to a directive instance
+      let currentDirective: CheckNodePropertiesBehavior;
+
       class CheckNodePropertiesBehavior extends Directive {
-        render(_parentId?: string) {
+        part?: ChildPart;
+
+        render(_parentId?: string, _done?: (err?: unknown) => void) {
           return nothing;
         }
 
         override update(
           part: ChildPart,
-          [parentId]: DirectiveParameters<this>
+          [parentId, done]: DirectiveParameters<this>
         ) {
-          const {parentNode, startNode, endNode} = part;
+          this.part = part;
+          // eslint-disable-next-line
+          currentDirective = this;
+          try {
+            const {parentNode, startNode, endNode} = part;
 
-          if (endNode !== null) {
-            assert.notEqual(startNode, null);
-          }
+            if (endNode !== null) {
+              assert.notEqual(startNode, null);
+            }
 
-          if (startNode === null) {
-            // The part covers all children in `parentNode`.
-            assert.equal(parentNode.childNodes.length, 0);
-            assert.equal(endNode, null);
-          } else if (endNode === null) {
-            // The part covers all siblings following `startNode`.
-            assert.equal(startNode.nextSibling, null);
-          } else {
-            // The part covers all siblings between `startNode` and `endNode`.
-            assert.equal<Node | null>(startNode.nextSibling, endNode);
-          }
+            if (startNode === null) {
+              // The part covers all children in `parentNode`.
+              assert.equal(parentNode.childNodes.length, 0);
+              assert.equal(endNode, null);
+            } else if (endNode === null) {
+              // The part covers all siblings following `startNode`.
+              assert.equal(startNode.nextSibling, null);
+            } else {
+              // The part covers all siblings between `startNode` and `endNode`.
+              assert.equal<Node | null>(startNode.nextSibling, endNode);
+            }
 
-          if (parentId !== undefined) {
-            assert.equal((parentNode as HTMLElement).id, parentId);
+            if (parentId !== undefined) {
+              assert.equal((parentNode as HTMLElement).id, parentId);
+            }
+            done?.();
+          } catch (e) {
+            if (done === undefined) {
+              throw e;
+            } else {
+              done(e);
+            }
           }
 
           return nothing;
@@ -1783,7 +1841,19 @@ suite('lit-html', () => {
       });
 
       test(`part's parentNode is the logical DOM parent`, async () => {
-        const asyncCheckDiv = Promise.resolve(checkPart('divPromise'));
+        let resolve: () => void;
+        let reject: (e: unknown) => void;
+        // This Promise settles when then until() directive calls the directive
+        // in asyncCheckDiv.
+        const asyncCheckDivRendered = new Promise<void>((res, rej) => {
+          resolve = res;
+          reject = rej;
+        });
+        const asyncCheckDiv = Promise.resolve(
+          checkPart('div', (e?: unknown) =>
+            e === undefined ? resolve() : reject(e)
+          )
+        );
         const makeTemplate = () =>
           html`
             ${checkPart('container')}
@@ -1802,10 +1872,21 @@ suite('lit-html', () => {
             </div>
           `;
 
-        // Render twice so that `update` is called.
         render(makeTemplate(), container);
-        await asyncCheckDiv;
-        render(makeTemplate(), container);
+        await asyncCheckDivRendered;
+      });
+
+      test(`when the parentNode is null`, async () => {
+        const template = () => html`${checkPart('container')}`;
+
+        // Render the template to instantiate the directive
+        render(template(), container);
+
+        // Manually clear the container to detach the directive
+        container.innerHTML = '';
+
+        // Check that we can access parentNode
+        assert.equal(currentDirective.part!.parentNode, undefined);
       });
 
       test(`part's parentNode is correct when rendered into a document fragment`, async () => {
@@ -2925,7 +3006,7 @@ suite('lit-html', () => {
 
   const securityHooksSuiteFunction = DEV_MODE ? suite : suite.skip;
 
-  securityHooksSuiteFunction('enahnced security hooks', () => {
+  securityHooksSuiteFunction('enhanced security hooks', () => {
     class FakeSanitizedWrapper {
       sanitizeTo: string;
       constructor(sanitizeTo: string) {
@@ -3041,7 +3122,7 @@ suite('lit-html', () => {
       ]);
     });
 
-    test('sanitizes concatonated attributes after contatonation', () => {
+    test('sanitizes concatenated attributes after concatenation', () => {
       render(html`<div attrib="hello ${'big'} world"></div>`, container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
@@ -3182,23 +3263,19 @@ suite('lit-html', () => {
       );
       assertNoWarning();
     });
-  });
 
-  suite('internal', () => {
-    test('clearContainerForLit2MigrationOnly', () => {
-      const clearedHtml = `<div>TEST 1</div><div>TEST 2</div>`;
-      const remainingHtml = `<div class="renderBefore">REMAIN 1</div><div>REMAIN 2</div>`;
-      container.innerHTML = `${clearedHtml}${remainingHtml}`;
-      render(html`<p>HELLO</p>`, container, {
-        clearContainerForLit2MigrationOnly: true,
-        renderBefore: container.querySelector('.renderBefore'),
-      } as RenderOptions);
-      assert.equal(
-        stripExpressionComments(container.innerHTML),
-        INTERNAL
-          ? `<p>HELLO</p>${remainingHtml}`
-          : `${clearedHtml}<p>HELLO</p>${remainingHtml}`
-      );
-    });
+    skipTestIfCompiled(
+      'Static values warn if detected without static html tag',
+      () => {
+        html`${literal`<p>Hello</p>`}`;
+        assertWarning('static');
+
+        html`<div>${unsafeStatic('<p>Hello</p>')}</div>`;
+        assertWarning('static');
+
+        html`<h1 attribute="${unsafeStatic('test')}"></h1>`;
+        assertWarning('static');
+      }
+    );
   });
 });

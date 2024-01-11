@@ -1,4 +1,4 @@
-The Lit community is full of bright, thoughtful, helpful, supportive people - it's on all of us to keep it this way! Google and the Lit team want to help foster and support this, and we take any breaches of mutual respect very seriously. Below is the community code of conduct, which applies to our Github repos and organizations, mailing lists, Slack channels, and any other Lit-supported communication group.
+The Lit community is full of bright, thoughtful, helpful, supportive people - it's on all of us to keep it this way! Google and the Lit team want to help foster and support this, and we take any breaches of mutual respect very seriously. Below is the community code of conduct, which applies to our GitHub repos and organizations, mailing lists, Discord channels, and any other Lit-supported communication group.
 
 ### Be excellent to each other.
 

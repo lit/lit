@@ -3,10 +3,10 @@
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import '../../polyfill-support.js';
+import 'lit-html/polyfill-support.js';
 // Rename the html tag so that CSS linting doesn't warn on the non-standard
 // @apply syntax
-import {html as htmlWithApply} from '../../lit-html.js';
+import {html as htmlWithApply} from 'lit-html';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {assert} from '@esm-bundle/chai';
 

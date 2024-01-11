@@ -3,8 +3,8 @@
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {html, render} from '../../lit-html.js';
-import {ref, createRef, RefOrCallback} from '../../directives/ref.js';
+import {html, render} from 'lit-html';
+import {ref, createRef, RefOrCallback} from 'lit-html/directives/ref.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('ref', () => {
@@ -27,6 +27,13 @@ suite('ref', () => {
     render(html`<div ${ref(divCallback)}></div>`, container);
     const div = container.firstElementChild;
     assert.equal(divRef, div);
+  });
+
+  test('handles an undefined ref', () => {
+    render(html`<div ${ref(undefined)}></div>`, container);
+    const div = container.firstElementChild;
+    // Not much to assert. We mainly care that we didn't throw
+    assert.isOk(div);
   });
 
   test('sets a ref when Ref object changes', () => {

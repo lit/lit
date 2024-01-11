@@ -4,24 +4,60 @@ A package for server-side rendering Lit templates and components.
 
 ## Status
 
-`@lit-labs/ssr` is pre-release software, not quite ready for public consumption. As we develop it we are using it as a test bed to ensure that new versions of `lit` (`lit-html` and `lit-element`) are SSR-ready. We expect that the foundational SSR support in this package will support a wide variety of use cases, from full-blown app rendering frameworks built on top of web components, to framework-specific plugins for rending custom elements in e.g. React or Angular, to pre-rendering plugins for static site generators like 11ty. Please stay tuned and file issues with use cases you'd like to see covered.
+`@lit-labs/ssr` is pre-release software, not quite ready for public consumption. As we develop it we are using it as a test bed to ensure that new versions of `lit` (`lit-html` and `lit-element`) are SSR-ready. We expect that the foundational SSR support in this package will support a wide variety of use cases, from full-blown app rendering frameworks built on top of web components, to framework-specific plugins for rendering custom elements in e.g. React or Angular, to pre-rendering plugins for static site generators like 11ty. Please stay tuned and file issues with use cases you'd like to see covered.
 
 ## Server Usage
 
 ### Rendering in the Node.js global scope
 
-The easiest way to get started is to import your Lit template modules (and any `LitElement` definitions they may use) into the node global scope and render them to a stream (or string) using the `render(value: unknown): Iterable<string>` function provided by the `render-with-global-dom-shim.js` module. Since Lit-authored code may rely on DOM globals, the `render-with-global-dom-shim.js` module will install a minimal DOM shim into the Node.js global scope, which should be sufficient for typical use cases. As such, `render-with-global-dom-shim.js` should be imported before any modules containing Lit code.
+The easiest way to get started is to import your Lit template modules (and any
+`LitElement` definitions they may use) into the node global scope and render
+them to a stream (or string) using the `render(value: unknown, renderInfo?: Partial<RenderInfo>): RenderResult` function provided by `@lit-labs/ssr`. When
+running in Node, Lit automatically depends on Node-compatible implementations of
+a minimal set of DOM APIs provided by the `@lit-labs/ssr-dom-shim` package,
+including defining `customElements` on the global object.
+
+#### Rendering to a stream
+
+Web servers should prefer rendering to a stream, as they have a lower memory
+footprint and allow sending data in chunks as they are being processed. For this
+case use `RenderResultReadable`, which is a Node `Readable` stream
+implementation that provides values from `RenderResult`. This can be piped
+into a `Writable` stream, or passed to web server frameworks like [Koa](https://koajs.com/).
 
 ```js
 // Example: server.js:
 
-import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
+import {render} from '@lit-labs/ssr';
+import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import {myTemplate} from './my-template.js';
 
 //...
 
 const ssrResult = render(myTemplate(data));
-context.body = Readable.from(ssrResult);
+// Assume `context` is a Koa.Context.
+context.body = new RenderResultReadable(ssrResult);
+```
+
+#### Rendering to a string
+
+To render to a string, you can use the `collectResult` or `collectResultSync` helper functions.
+
+```js
+import {render} from '@lit-labs/ssr';
+import {
+  collectResult,
+  collectResultSync,
+} from '@lit-labs/ssr/lib/render-result.js';
+import {html} from 'lit';
+
+const myServerTemplate = (name) => html`<p>Hello ${name}</p>`;
+const ssrResult = render(myServerTemplate('SSR with Lit!'));
+
+// Will throw if a Promise is encountered
+console.log(collectResultSync(ssrResult));
+// Awaits promises
+console.log(await collectResult(ssrResult));
 ```
 
 ### Rendering in a separate VM context
@@ -40,7 +76,8 @@ iterable that incrementally emits the serialized strings of the given template.
 ```js
 // Example: render-template.js
 
-import {render} from '@lit-labs/ssr/lib/render-lit-html.js';
+import {render} from '@lit-labs/ssr';
+import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import {myTemplate} from './my-template.js';
 export const renderTemplate = (someData) => {
   return render(myTemplate(someData));
@@ -62,19 +99,22 @@ const ssrResult = await (renderModule(
 
 // ...
 
-context.body = Readable.from(ssrResult);
+// Assume `context` is a Koa.Context, or other API that accepts a Readable.
+context.body = new RenderResultReadable(ssrResult);
 ```
 
 ## Client usage
 
-### Hydrating lit templates
+### Hydrating Lit templates
 
-"Hydration" is the process of having lit re-associate the expressions of a lit template with the nodes they should update in the DOM. In order to "hydrate" lit templates, the `hydrate` method from the `experimental-hydrate` module is provided in the `lit` package. Prior to updating a server-rendered container using `render`, you should first call `hydrate` on that container using the same template and data that was used to render on the server:
+"Hydration" is the process of re-associating expressions in a template with the nodes they should update in the DOM. Hydration is performed by the `hydrate()` function from the `@lit-labs/ssr-client` module.
+
+Prior to updating a server-rendered container using `render()`, you must first call `hydrate()` on that container using the same template and data that was used to render on the server:
 
 ```js
 import {myTemplate} from './my-template.js';
 import {render} from 'lit';
-import {hydrate} from 'lit/experimental-hydrate.js';
+import {hydrate} from '@lit-labs/ssr-client';
 // Initial hydration required before render:
 // (must be same data used to render on the server)
 const initialData = getInitialAppData();
@@ -86,42 +126,40 @@ const update = (data) => render(myTemplate(data), document.body);
 
 ### Hydrating LitElements
 
-When `LitElement`s are server rendered, their shadow root contents are emitted inside a `<template shadowroot>`, also known as a [Declarative Shadow Root](https://web.dev/declarative-shadow-dom/), a new browser feature that is shipping [Chrome](https://developer.chrome.com/blog/new-in-chrome-90/#declarative). Declarative shadow roots automatically attach their contents to a shadow root on the template's parent element when parsed. For browsers that do not yet implement declarative shadow root, there is a [`template-shadowroot`](https://github.com/webcomponents/template-shadowroot) polyfill, described below.
+When `LitElement`s are server rendered, their shadow root contents are emitted inside a `<template shadowroot>`, also known as a [Declarative Shadow Root](https://web.dev/declarative-shadow-dom/), a new browser feature that is shipping in [most modern browsers](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template#browser_compatibility). Declarative shadow roots automatically attach their contents to a shadow root on the template's parent element when parsed. For browsers that do not yet implement declarative shadow root, there is a [`template-shadowroot`](https://github.com/webcomponents/template-shadowroot) polyfill, described below.
 
-Because the `hydrate` function above does not descend into shadow roots, it only works on one scope of the DOM at a time. To hydrate `LitElement` shadow roots, load the `lit/hydrate-support.js` module, which installs support for `LitElement` automatically hydrating itself when it detects it was server-rendered with declarative shadow DOM. This module should be loaded before the `lit` module is loaded, to ensure hydration support is properly installed.
+`hydrate()` does not descend into shadow roots - it only works on one scope of the DOM at a time. To hydrate `LitElement` shadow roots, load the `@lit-labs/ssr-client/lit-element-hydrate-support.js` module, which installs support for `LitElement` to automatically hydrate itself when it detects it was server-rendered with declarative shadow DOM. This module must be loaded before the `lit` module is loaded, to ensure hydration support is properly installed.
 
 Put together, an HTML page that was server rendered and containing `LitElement`s in the main document might look like this:
 
 ```js
-import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
+import {html} from 'lit';
+import {render} from '@lit-labs/ssr';
 import './app-components.js';
 
 const ssrResult = render(html`
   <html>
-    <head>
-    </head>
+    <head> </head>
     <body>
-
       <app-shell>
         <app-page-one></app-page-one>
         <app-page-two></app-page-two>
-      </app-component>
+      </app-shell>
 
       <script type="module">
         // Hydrate template-shadowroots eagerly after rendering (for browsers without
         // native declarative shadow roots)
         import {
           hasNativeDeclarativeShadowRoots,
-          hydrateShadowRoots
+          hydrateShadowRoots,
         } from './node_modules/@webcomponents/template-shadowroot/template-shadowroot.js';
-        if (!hasNativeDeclarativeShadowRoots) {
+        if (!hasNativeDeclarativeShadowRoots()) {
           hydrateShadowRoots(document.body);
         }
         // ...
         // Load and hydrate components lazily
         import('./app-components.js');
       </script>
-
     </body>
   </html>
 `);
@@ -137,6 +175,71 @@ components individually hydrate themselves using data supplied either by
 attributes or via a side-channel mechanism. This is in no way fundamental; the
 top-level template can be used to pass data to the top-level components, and
 that template can be loaded and hydrated on the client to apply the same data.
+
+## Server-only templates
+
+`@lit-labs/ssr` also exports an `html` template function, similar to the normal Lit `html` function, only it's used for server-only templates. These templates can be used for rendering full documents, including the `<!DOCTYPE html>`, and rendering into elements that Lit normally cannot, like `<title>`, `<textarea>`, `<template>`, and safe `<script>` tags like `<script type="text/json">`. They are also slightly more efficient than normal Lit templates, because the generated HTML doesn't need to include markers for updating.
+
+Server-only templates can be composed, and combined, and they support almost all features that normal Lit templates do, with the exception of features that don't have a pure HTML representation, like event handlers or property bindings.
+
+Server-only templates can only be rendered on the server, they can't be rendered on the client. However if you render a normal Lit template inside a server-only template, then it can be hydrated and updated. Likewise, if you place a custom element inside a server-only template, it can be hydrated and update like normal.
+
+Here's an example that shows how to use a server-only template to render a full document, and then lazily hydrate both a custom element and a template:
+
+```js
+import {render, html} from '@lit-labs/ssr';
+import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
+import './app-shell.js';
+import {getContent} from './content-template.js';
+
+const pageInfo = {
+  /* ... */
+};
+
+const ssrResult = render(html`
+  <!DOCTYPE html>
+  <html>
+    <head><title>MyApp ${pageInfo.title}</head>
+    <body>
+      <app-shell>
+        <!-- getContent is hydratable, as it returns a normal Lit template -->
+        <div id="content">${getContent(pageInfo.description)}</div>
+      </app-shell>
+
+      <script type="module">
+        // Hydrate template-shadowroots eagerly after rendering (for browsers without
+        // native declarative shadow roots)
+        import {
+          hasNativeDeclarativeShadowRoots,
+          hydrateShadowRoots,
+        } from './node_modules/@webcomponents/template-shadowroot/template-shadowroot.js';
+        import {hydrate} from '@lit-labs/ssr-client';
+        import {getContent} from './content-template.js';
+        if (!hasNativeDeclarativeShadowRoots()) {
+          hydrateShadowRoots(document.body);
+        }
+
+        // Load and hydrate app-shell lazily
+        import('./app-shell.js');
+
+        // Hydrate content template. This <script type=module> will run after
+        // the page has loaded, so we can count on page-id being present.
+        const pageInfo = JSON.parse(document.getElementById('page-info').textContent);
+        hydrate(getContent(pageInfo.description), document.querySelector('#content'));
+        // #content element can now be efficiently updated
+      </script>
+      <!-- Pass data to client. -->
+      <script type="text/json" id="page-info">
+        ${JSON.stringify(pageInfo)}
+      </script>
+    </body>
+  </html>
+`);
+
+// ...
+
+context.body = new RenderResultReadable(ssrResult);
+```
 
 ## Notes and limitations
 

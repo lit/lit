@@ -65,8 +65,6 @@ export default litProdConfig({
     'directives/when',
     'async-directive',
     'html',
-    'experimental-hydrate-support',
-    'experimental-hydrate',
     'index',
     'static-html',
   ],

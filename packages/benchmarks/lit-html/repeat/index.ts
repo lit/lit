@@ -41,7 +41,7 @@ const defaults = {
   from: 0,
   // 'to' item index used in operations (add, move, swap)
   to: 1000,
-  // When true, supported operations are mirrored symetrically on the other side
+  // When true, supported operations are mirrored symmetrically on the other side
   // of the list
   mirror: false,
   // Number of times to loop, repeating the same operation on the list

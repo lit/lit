@@ -1,5 +1,107 @@
 # Changelog
 
+## 0.7.1
+
+### Patch Changes
+
+- [#4299](https://github.com/lit/lit/pull/4299) [`fffa4406`](https://github.com/lit/lit/commit/fffa44066e06bdbec2d2e28166b7c81b11a8c213) - Update version range for `lit` dependency to include v2 (and/or `@lit/reactive-element` v1). This allows projects still on lit v2 to use this package without being forced to install lit v3.
+
+## 0.7.0
+
+### Minor Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0, which includes breaking changes to the TypeScript compiler APIs
+
+### Patch Changes
+
+- Updated dependencies:
+  - lit@3.0.0
+  - @lit/localize@0.12.0
+
+## 0.7.0-pre.1
+
+### Minor Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+### Patch Changes
+
+- Updated dependencies [[`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5), [`0f6878dc`](https://github.com/lit/lit/commit/0f6878dc45fd95bbeb8750f277349c1392e2b3ad), [`2a01471a`](https://github.com/lit/lit/commit/2a01471a5f65fe34bad11e1099281811b8d0f79b), [`2eba6997`](https://github.com/lit/lit/commit/2eba69974c9e130e7483f44f9daca308345497d5), [`d27a77ec`](https://github.com/lit/lit/commit/d27a77ec3d3999e872df9218a2b07f90f22eb417), [`6470807f`](https://github.com/lit/lit/commit/6470807f3a0981f9d418cb26f05969912455d148), [`09949234`](https://github.com/lit/lit/commit/09949234445388d51bfb4ee24ff28a4c9f82fe17), [`d1e126c4`](https://github.com/lit/lit/commit/d1e126c4a75967ad2cf0c0155b3b2e415e0bc906)]:
+  - @lit/localize@0.12.0-pre.1
+  - lit@3.0.0-pre.1
+
+## 0.7.0-pre.0
+
+### Minor Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript 5.0, which includes breaking changes to the TypeScript compiler APIs.
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+- Updated dependencies [[`dfd747cf`](https://github.com/lit/lit/commit/dfd747cf4f7239e0c3bb7134f8acb967d0157654), [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2), [`1db01376`](https://github.com/lit/lit/commit/1db0137699b35d7e7bfac9b2ab274af4100fd7cf), [`c3e473b4`](https://github.com/lit/lit/commit/c3e473b499ff029b5e1aff01ca8799daf1ca1bbe), [`92cedaa2`](https://github.com/lit/lit/commit/92cedaa2c8cd8a306be3fe25d52e0e47bb044020), [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa), [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4)]:
+  - lit@3.0.0-pre.0
+  - @lit/localize@0.11.5-pre.0
+
+## 0.6.10
+
+### Patch Changes
+
+- [#4175](https://github.com/lit/lit/pull/4175) [`84bb0523`](https://github.com/lit/lit/commit/84bb052335605581c88a2071d00b6c2598952122) Thanks [@43081j](https://github.com/43081j)! - Update parse5/tools to simplify importing of node types from the default tree adapter
+
+- [#4168](https://github.com/lit/lit/pull/4168) [`444599eb`](https://github.com/lit/lit/commit/444599eb46d2fa0fa1b348921dfda317d860a327) Thanks [@43081j](https://github.com/43081j)! - Upgrade parse5 to 7.x in localize-tools and import from root of parse5 where possible
+
+## 0.6.9
+
+### Patch Changes
+
+- [#3800](https://github.com/lit/lit/pull/3800) [`c5add753`](https://github.com/lit/lit/commit/c5add75362b61fa331b534fe6291d3264b0d1f93) - Relax the typescript version for compatibility with typescript > 4.7 && < 5.0
+
+## 0.6.8
+
+### Patch Changes
+
+- [#3674](https://github.com/lit/lit/pull/3674) [`52ab0872`](https://github.com/lit/lit/commit/52ab087210ad76f9509028f98a850706bb32f302) - Fix incorrect extraction of html embedded within html
+
+- Updated dependencies [[`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86), [`e00f6f52`](https://github.com/lit/lit/commit/e00f6f52199d5dbc08d4c15f62380422e77cde7f), [`88a40177`](https://github.com/lit/lit/commit/88a40177de9be5d117a21e3da5414bd777872544)]:
+  - lit@2.7.0
+
+## 0.6.7
+
+### Patch Changes
+
+- [#3576](https://github.com/lit/lit/pull/3576) [`6be30739`](https://github.com/lit/lit/commit/6be30739694dd6f09b6cf28c9146db3ee66d1cf1) - Fix regression in Localize XLIFF serialization. When updating an existing XLIFF file, placeholders would appear in the wrong places.
+
+## 0.6.6
+
+### Patch Changes
+
+- [#3514](https://github.com/lit/lit/pull/3514) [`78811714`](https://github.com/lit/lit/commit/78811714eeb00f979e2074a7dd639e8d65903a0f) - - Existing XLIFF files will be updated instead of re-generated, so additional data added by other processes (such as `state="translated"` attributes) will be preserved instead of deleted.
+  - XLIFF `<note>` elements generated by Lit Localize will now have a `from="lit-localize"` attribute to distinguish them from other notes.
+- Updated dependencies [[`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8)]:
+  - lit@2.6.0
+
+## 0.6.5
+
+### Patch Changes
+
+- [#3116](https://github.com/lit/lit/pull/3116) [`7d185b4e`](https://github.com/lit/lit/commit/7d185b4e882aeca70c7b750d8295d0da34a09cd8) - Upgraded TypeScript version to ~4.7.4
+
+- [#3136](https://github.com/lit/lit/pull/3136) [`afff4c17`](https://github.com/lit/lit/commit/afff4c174f131b6461be1ac86e2ceb4201030a8a) - Updated xmldom dependency. Minor change to XML attribute formatting can be expected.
+
+## 0.6.4
+
+### Patch Changes
+
+- [#3092](https://github.com/lit/lit/pull/3092) [`0c9ee0ec`](https://github.com/lit/lit/commit/0c9ee0ec87b831513f04bdd37e9ed434a134f06f) - Dependencies pinned due to breaking changes.
+
+## 0.6.3
+
+### Patch Changes
+
+- [#2732](https://github.com/lit/lit/pull/2732) [`3e181bcb`](https://github.com/lit/lit/commit/3e181bcb3d969775eda799fd6fcae1ead843225b) - Enforce use of file extensions in imports. Fixes an issue with older TypeScript compilers.
+
 ## 0.6.2
 
 ### Patch Changes
@@ -107,7 +209,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
   ```ts
   import {configureSsrLocalization} from '@lit/localize-tools/lib/ssr.js';
-  import {render} from '@lit-labs/ssr/lib/render-with-global-dom-shim.js';
+  import {render} from '@lit-labs/ssr';
   import {html} from 'lit';
 
   const {withLocale} = await configureSsrLocalization({

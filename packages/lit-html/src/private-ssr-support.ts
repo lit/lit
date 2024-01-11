@@ -17,7 +17,15 @@ import {
   Part,
   Disconnectable,
 } from './lit-html.js';
-export type {Template} from './lit-html.js';
+
+import type {
+  PropertyPart,
+  ChildPart,
+  BooleanAttributePart,
+  EventPart,
+  ElementPart,
+  TemplateInstance,
+} from './lit-html.js';
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
@@ -74,8 +82,11 @@ export const _$LH = {
   }),
   resolveDirective: p._resolveDirective,
   AttributePart: p._AttributePart,
-  PropertyPart: p._PropertyPart,
-  BooleanAttributePart: p._BooleanAttributePart,
-  EventPart: p._EventPart,
-  ElementPart: p._ElementPart,
+  PropertyPart: p._PropertyPart as typeof PropertyPart,
+  BooleanAttributePart: p._BooleanAttributePart as typeof BooleanAttributePart,
+  EventPart: p._EventPart as typeof EventPart,
+  ElementPart: p._ElementPart as typeof ElementPart,
+  TemplateInstance: p._TemplateInstance as typeof TemplateInstance,
+  isIterable: p._isIterable,
+  ChildPart: p._ChildPart as typeof ChildPart,
 };

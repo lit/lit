@@ -21,6 +21,8 @@ const tempRoot = pathlib.resolve(__dirname, '__temp');
  * Normalizes indentation and leading/trailing newlines.
  */
 const normalize = (s: string) => stripIndent(s).trim() + '\n';
+const sleep = (ms: number) =>
+  new Promise<void>((resolve) => setTimeout(() => resolve(), ms));
 
 /**
  * Utilities for managing a temporary filesystem and running Eleventy.
@@ -223,7 +225,7 @@ modes.forEach((mode) => {
       await rig.read('_site/index.html'),
       normalize(`
         <h1>Heading</h1>
-        <p><my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element></p>
+        <p><my-element><template shadowroot="open" shadowrootmode="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element></p>
       `)
     );
   });
@@ -259,7 +261,7 @@ modes.forEach((mode) => {
       await rig.read('_site/index.html'),
       normalize(`
         <h1>Heading</h1>
-        <my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element>
+        <my-element><template shadowroot="open" shadowrootmode="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element>
       `)
     );
   });
@@ -287,7 +289,7 @@ modes.forEach((mode) => {
         <html>
           <body>
             <h1>Heading</h1>
-            <my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element>
+            <my-element><template shadowroot="open" shadowrootmode="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element>
           </body>
         </html>
       `)
@@ -302,7 +304,7 @@ modes.forEach((mode) => {
         <my-container>
           <my-content></my-content>
         </my-container>
-  
+
         # Heading 2
         <my-container></my-container>
       `,
@@ -321,14 +323,14 @@ modes.forEach((mode) => {
       // js
       'js/my-element.js': `
         import { html, LitElement } from 'lit';
-  
+
         class MyContainer extends LitElement {
           render() {
             return html\`<slot></slot>\`;
           }
         }
         customElements.define('my-container', MyContainer);
-  
+
         class MyContent extends LitElement {
           render() {
             return html\`<b>shadow content</b>\`;
@@ -342,11 +344,11 @@ modes.forEach((mode) => {
       await rig.read('_site/index.html'),
       normalize(`
         <h1>Heading 1</h1>
-        <my-container><template shadowroot="open"><!--lit-part Pz0gobCCM4E=--><slot></slot><!--/lit-part--></template>
-          <my-content><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-content>
+        <my-container><template shadowroot="open" shadowrootmode="open"><!--lit-part Pz0gobCCM4E=--><slot></slot><!--/lit-part--></template>
+          <my-content><template shadowroot="open" shadowrootmode="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-content>
         </my-container>
         <h1>Heading 2</h1>
-        <p><my-container><template shadowroot="open"><!--lit-part Pz0gobCCM4E=--><slot></slot><!--/lit-part--></template></my-container></p>
+        <p><my-container><template shadowroot="open" shadowrootmode="open"><!--lit-part Pz0gobCCM4E=--><slot></slot><!--/lit-part--></template></my-container></p>
       `)
     );
   });
@@ -422,7 +424,7 @@ modes.forEach((mode) => {
         await rig.read('_site/index.html'),
         normalize(`
           <h1>Heading</h1>
-          <p><my-element><template shadowroot="open"><!--lit-part QMmCfL7Whws=-->INITIAL<!--/lit-part--></template></my-element></p>
+          <p><my-element><template shadowroot="open" shadowrootmode="open"><!--lit-part QMmCfL7Whws=-->INITIAL<!--/lit-part--></template></my-element></p>
         `)
       );
     });
@@ -449,7 +451,7 @@ modes.forEach((mode) => {
           await rig.read('_site/index.html'),
           normalize(`
             <h1>Heading</h1>
-            <p><my-element><template shadowroot="open"><!--lit-part JDaFfBEPiAs=-->UPDATED<!--/lit-part--></template></my-element></p>
+            <p><my-element><template shadowroot="open" shadowrootmode="open"><!--lit-part JDaFfBEPiAs=-->UPDATED<!--/lit-part--></template></my-element></p>
           `)
         );
       });
@@ -508,8 +510,8 @@ modes.forEach((mode) => {
       await rig.read('_site/index.html'),
       normalize(`
         <h1>Heading</h1>
-        <my-element-1><template shadowroot="open"><!--lit-part wBkDjDE4LIw=--><b>shadow content 1</b><!--/lit-part--></template></my-element-1>
-        <my-element-2><template shadowroot="open"><!--lit-part gxUDjDE4LIw=--><b>shadow content 2</b><!--/lit-part--></template></my-element-2>
+        <my-element-1><template shadowroot="open" shadowrootmode="open"><!--lit-part wBkDjDE4LIw=--><b>shadow content 1</b><!--/lit-part--></template></my-element-1>
+        <my-element-2><template shadowroot="open" shadowrootmode="open"><!--lit-part gxUDjDE4LIw=--><b>shadow content 2</b><!--/lit-part--></template></my-element-2>
       `)
     );
   });
@@ -529,10 +531,36 @@ modes.forEach((mode) => {
         await rig.read(`_site/page${i}/index.html`),
         normalize(`
           <h1>Page ${i}</h1>
-          <p><my-element><template shadowroot="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element></p>
+          <p><my-element><template shadowroot="open" shadowrootmode="open"><!--lit-part 8dHorjH6jDo=--><b>shadow content</b><!--/lit-part--></template></my-element></p>
         `)
       );
     }
+  });
+
+  test('template files with `permalink: false` in frontmatter', async ({
+    rig,
+  }) => {
+    await rig.write({
+      ...myElementDefinitionAndConfig,
+      // md
+      'index.md': `
+        ---
+        permalink: false
+        ---
+        # Heading
+        <my-element></my-element>
+      `,
+    });
+
+    const {kill, done} = rig.exec(baseCommandToExec);
+    const timeout = 30_000;
+    await Promise.race([
+      done.then(({code}) => assert.equal(code, 0)),
+      sleep(timeout).then(() => {
+        kill(/* SIGINT */ 2);
+        assert.not(true, `11ty process didn't exit in ${timeout}ms.`);
+      }),
+    ]);
   });
 });
 

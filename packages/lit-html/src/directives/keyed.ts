@@ -43,3 +43,9 @@ class Keyed extends Directive {
  * animation techniques.
  */
 export const keyed = directive(Keyed);
+
+/**
+ * The type of the class that powers this directive. Necessary for naming the
+ * directive's return type.
+ */
+export type {Keyed};

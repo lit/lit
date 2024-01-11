@@ -1,0 +1,70 @@
+{
+  "name": "@lit-internal/gen-wrapper-vue-test-output",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@esm-bundle/chai": "^4.3.4-fix.0",
+    "@types/chai": "^4.0.1",
+    "@types/mocha": "^9.0.0",
+    "vue": "^3.2.25",
+    "@lit-labs/vue-utils": "../../vue-utils",
+    "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.1.tgz",
+    "@lit-internal/test-element-a-vue": "file:../gen-output/test-element-a-vue/lit-internal-test-element-a-vue-1.0.1.tgz"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^2.3.1",
+    "typescript": "~5.2.0",
+    "vite": "^2.9.2",
+    "vue-tsc": "^1.8.8"
+  },
+  "scripts": {
+    "installSelf": "wireit",
+    "build": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "installSelf": {
+      "dependencies": [
+        "../:test:gen"
+      ],
+      "files": [
+        "package.json"
+      ],
+      "command": "npm i",
+      "output": [
+        "node_modules",
+        "package-lock.json"
+      ]
+    },
+    "build": {
+      "dependencies": [
+        "installSelf"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "src/**/*.vue",
+        "tsconfig.json"
+      ],
+      "command": "vue-tsc --noEmit && vite build",
+      "output": [
+        "tests",
+        "tsconfig.tsbuildinfo"
+      ]
+    },
+    "test": {
+      "dependencies": [
+        "build",
+        "../../../tests:build"
+      ],
+      "files": [],
+      "command": "node ../../../tests/run-web-tests.js \"tests/**/tests.js\" --config ../../../tests/web-test-runner.config.js",
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
+      "output": []
+    }
+  }
+}

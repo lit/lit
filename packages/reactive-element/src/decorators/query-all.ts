@@ -10,9 +10,29 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
+import type {ReactiveElement} from '../reactive-element.js';
+import {desc, type Interface} from './base.js';
 
-import {ReactiveElement} from '../reactive-element.js';
-import {decorateProperty} from './base.js';
+export type QueryAllDecorator = {
+  // legacy
+  (
+    proto: Interface<ReactiveElement>,
+    name: PropertyKey,
+    descriptor?: PropertyDescriptor
+    // Note TypeScript requires the return type to be `void|any`
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+
+  // standard
+  <C extends Interface<ReactiveElement>, V extends NodeList>(
+    value: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V>;
+};
+
+// Shared fragment used to generate empty NodeLists when a render root is
+// undefined
+let fragment: DocumentFragment;
 
 /**
  * A property decorator that converts a class property into a getter
@@ -38,14 +58,17 @@ import {decorateProperty} from './base.js';
  * ```
  * @category Decorator
  */
-export function queryAll(selector: string) {
-  return decorateProperty({
-    descriptor: (_name: PropertyKey) => ({
+export function queryAll(selector: string): QueryAllDecorator {
+  return ((
+    obj: object,
+    name: PropertyKey | ClassAccessorDecoratorContext<unknown, unknown>
+  ) => {
+    return desc(obj, name, {
       get(this: ReactiveElement) {
-        return this.renderRoot?.querySelectorAll(selector) ?? [];
+        const container =
+          this.renderRoot ?? (fragment ??= document.createDocumentFragment());
+        return container.querySelectorAll(selector);
       },
-      enumerable: true,
-      configurable: true,
-    }),
-  });
+    });
+  }) as QueryAllDecorator;
 }

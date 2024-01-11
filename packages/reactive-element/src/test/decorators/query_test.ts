@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {query} from '../../decorators/query.js';
+import {query} from '@lit/reactive-element/decorators/query.js';
 import {
   canTestReactiveElement,
   generateElementName,
@@ -90,11 +90,57 @@ import {assert} from '@esm-bundle/chai';
     assert.notEqual(el.span, el.renderRoot.querySelector('span'));
   });
 
-  test('returns cached value when accessed before first update', async () => {
+  test('does not cache null values when accessed before first update', async () => {
     const notYetUpdatedEl = new C();
     assert.equal(notYetUpdatedEl.divCached, null);
+
+    if (globalThis.litIssuedWarnings != null) {
+      assert(
+        [...globalThis.litIssuedWarnings].find((w) =>
+          /@query'd field "divCached" with the 'cache' flag set for selector '#blah' has been accessed before the first update and returned null\. This is expected if the renderRoot tree has not been provided beforehand \(e\.g\. via Declarative Shadow DOM\)\. Therefore the value hasn't been cached\./.test(
+            w ?? ''
+          )
+        ),
+        `Expected warning to be issued. Warnings found: ${JSON.stringify(
+          [...globalThis.litIssuedWarnings],
+          null,
+          2
+        )}`
+      );
+    }
+
     container.appendChild(notYetUpdatedEl);
     await notYetUpdatedEl.updateComplete;
-    assert.equal(notYetUpdatedEl.divCached, null);
+    assert.instanceOf(notYetUpdatedEl.divCached, HTMLDivElement);
+  });
+
+  test('works with an old and busted Reflect.decorate', async () => {
+    const extendedReflect: typeof Reflect & {decorate?: unknown} = Reflect;
+    assert.isUndefined(extendedReflect.decorate);
+    extendedReflect.decorate = (
+      decorators: Function[],
+      proto: object,
+      name: string,
+      ...args: unknown[]
+    ) => {
+      for (const decorator of decorators) {
+        decorator(proto, name, ...args);
+      }
+    };
+
+    class C extends RenderingElement {
+      @query('#blah') div?: HTMLDivElement;
+
+      override render() {
+        return html` <div id="blah">This one</div> `;
+      }
+    }
+    customElements.define(generateElementName(), C);
+
+    const elem = new C();
+    document.body.appendChild(elem);
+    await elem.updateComplete;
+    assert(elem.div instanceof HTMLDivElement);
+    delete extendedReflect.decorate;
   });
 });

@@ -17,9 +17,6 @@ export const getComputedStyleValue = (element: Element, property: string) =>
     ? window.ShadyCSS.getComputedStyleValue(element, property)
     : getComputedStyle(element).getPropertyValue(property);
 
-export const stripExpressionComments = (html: string) =>
-  html.replace(/<!--\?lit\$[0-9]+\$-->|<!--\??-->/g, '');
-
 const DEV_MODE = true;
 
 // Only test LitElement if ShadowRoot is available and either ShadyDOM is not

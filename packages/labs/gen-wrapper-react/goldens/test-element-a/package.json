@@ -1,0 +1,28 @@
+{
+  "name": "@lit-internal/test-element-a-react",
+  "type": "module",
+  "scripts": {
+    "build": "tsc",
+    "build:watch": "tsc --watch"
+  },
+  "version": "1.0.1",
+  "dependencies": {
+    "@lit-internal/test-element-a": "^1.0.1",
+    "@lit/react": "^1.0.0"
+  },
+  "peerDependencies": {
+    "react": "^17 || ^18",
+    "@types/react": "^17 || ^18"
+  },
+  "devDependencies": {
+    "typescript": "~5.2.0"
+  },
+  "files": [
+    "element-a.{js,js.map,d.ts,d.ts.map}",
+    "element-events.{js,js.map,d.ts,d.ts.map}",
+    "element-props.{js,js.map,d.ts,d.ts.map}",
+    "element-slots.{js,js.map,d.ts,d.ts.map}",
+    "element-without-props.{js,js.map,d.ts,d.ts.map}",
+    "sub/element-sub.{js,js.map,d.ts,d.ts.map}"
+  ]
+}

@@ -1,5 +1,182 @@
 # Change Log
 
+## 4.0.3
+
+### Patch Changes
+
+- [#4473](https://github.com/lit/lit/pull/4473) [`9a4d569f`](https://github.com/lit/lit/commit/9a4d569f710a3c49409dcc778b71a71a04c4916a) - Add a warning in dev mode when binding this.requestUpdate directly as an event listener.
+
+- [#4413](https://github.com/lit/lit/pull/4413) [`f60a3a2c`](https://github.com/lit/lit/commit/f60a3a2c994f41fc3df1bd8a76451ea185b66e11) - Remove unused internal parameters to `requestUpdate()`
+
+## 4.0.2
+
+### Patch Changes
+
+- [#4387](https://github.com/lit/lit/pull/4387) [`bf551b5b`](https://github.com/lit/lit/commit/bf551b5bdc816c1b0117ab436c50390ae3f5686d) - Ensure `renderRoot` exists before first update (#4268)
+
+- [#4282](https://github.com/lit/lit/pull/4282) [`c7922a0c`](https://github.com/lit/lit/commit/c7922a0cb90075a9e4c72f93078e411a303c54d1) Thanks [@MaxArt2501](https://github.com/MaxArt2501)! - Fix a bug where accessing a `@query` decorated field with the `cache` flag set before the first update would result in `null` being cached permanently. `null` will no longer be cached before the first update and in `DEV_MODE` now raises a warning.
+
+- [#4388](https://github.com/lit/lit/pull/4388) [`839ca0f8`](https://github.com/lit/lit/commit/839ca0f81a451fbaae97d958aafcaf4c52df9b65) - Fixes bug where adding or removing controllers during a reactive controller lifecycle would affect the execution of other controllers (#4266). Controllers can now be added/removed during lifecycle without affecting others.
+
+- Updated dependencies [[`949a5467`](https://github.com/lit/lit/commit/949a54677748a1f83ec4d166bd40e244de3afda7)]:
+  - lit-html@3.1.0
+
+## 4.0.1
+
+### Patch Changes
+
+- [#4284](https://github.com/lit/lit/pull/4284) [`89a5b088`](https://github.com/lit/lit/commit/89a5b0882b3048e3e95a22eb739c649adc9de055) - Allow `null` to be in the type of `@query()` decorated fields
+
+- [#4306](https://github.com/lit/lit/pull/4306) [`c28ebba1`](https://github.com/lit/lit/commit/c28ebba15669042144db48563611b2c9bb7a2e47) - Update dependency version to refer to stable versions, rather than pre-release versions of our own packages.
+
+## 4.0.0
+
+### Major Changes
+
+- [#3751](https://github.com/lit/lit/pull/3751) [`dfd747cf`](https://github.com/lit/lit/commit/dfd747cf4f7239e0c3bb7134f8acb967d0157654) - Simplify lit-html attribute handling for standards-compliant browsers that iterate attributes in source order
+
+- [#4254](https://github.com/lit/lit/pull/4254) [`1040f758`](https://github.com/lit/lit/commit/1040f75861b029527538b4ec36b2cfedcc32988a) - Change the type of `ReactiveElement.renderRoot` and return type of `ReactiveElement.createRenderRoot()` to be `HTMLElement | DocumentFragment` to match each other and lit-html's `render()` method.
+
+- [#4146](https://github.com/lit/lit/pull/4146) [`0f6878dc`](https://github.com/lit/lit/commit/0f6878dc45fd95bbeb8750f277349c1392e2b3ad) - Generated accessor for reactive properties now wrap user accessors and automatically call `this.requestUpdate()` in the setter. As in previous versions, users can still specify `noAccessor: true`, in which case they should call `this.requestUpdate()` themselves in the setter if they want to trigger a reactive update.
+
+- [#3759](https://github.com/lit/lit/pull/3759) [`1db01376`](https://github.com/lit/lit/commit/1db0137699b35d7e7bfac9b2ab274af4100fd7cf) - Use replaceWith() for SVG templates
+
+- [#3750](https://github.com/lit/lit/pull/3750) [`c3e473b4`](https://github.com/lit/lit/commit/c3e473b499ff029b5e1aff01ca8799daf1ca1bbe) - Use toggleAttribute() to simplify boolean attribute parts
+
+- [#3850](https://github.com/lit/lit/pull/3850) [`7e8491d4`](https://github.com/lit/lit/commit/7e8491d4ed9f0c39d974616c4678552ef50b81df) - Delete deprecated queryAssignedNodes behavior and arguments.
+
+  Migrate deprecated usage with a selector argument to use
+  `@queryAssignedElements`. E.g.: `@queryAssignedNodes('list', true, '.item')` to
+  `@queryAssignedElements({slot: '', flatten: false, selector: '.item'})`.
+
+- [#3754](https://github.com/lit/lit/pull/3754) [`76795a18`](https://github.com/lit/lit/commit/76795a18263bb5e762e9fc909c97d1fdacee5b1f) - Remove UpdatingElement alias for ReactiveElement
+
+- [#3765](https://github.com/lit/lit/pull/3765) [`92cedaa2`](https://github.com/lit/lit/commit/92cedaa2c8cd8a306be3fe25d52e0e47bb044020) - Remove experimental hydrate modules. These are available from `@lit-labs/ssr-client`.
+
+- [#3756](https://github.com/lit/lit/pull/3756) [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4) - Drop IE11 support
+
+- [#3896](https://github.com/lit/lit/pull/3896) [`2eba6997`](https://github.com/lit/lit/commit/2eba69974c9e130e7483f44f9daca308345497d5) - Warn on async overrides of performUpdate()
+
+### Patch Changes
+
+- [#4183](https://github.com/lit/lit/pull/4183) [`6470807f`](https://github.com/lit/lit/commit/6470807f3a0981f9d418cb26f05969912455d148) - Make the decorators work with the `accessor` keyword when `experimentalDecorators` is true.
+
+- [#3762](https://github.com/lit/lit/pull/3762) [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2) - Remove Lit 1 -> Lit 2 migration warnings
+
+- [#3918](https://github.com/lit/lit/pull/3918) [`2a01471a`](https://github.com/lit/lit/commit/2a01471a5f65fe34bad11e1099281811b8d0f79b) - Some code golf on ReactiveElement
+
+- [#3809](https://github.com/lit/lit/pull/3809) [`6f2833fd`](https://github.com/lit/lit/commit/6f2833fd05f2ecde5386f72d291dafc9dbae0cf7) - Use for/of loops in more places
+
+- [#3710](https://github.com/lit/lit/pull/3710) [`09949234`](https://github.com/lit/lit/commit/09949234445388d51bfb4ee24ff28a4c9f82fe17) - Add `undefined` to the return type of PropertyValues.get()
+
+- Updated dependencies:
+
+  - @lit/reactive-element@2.0.0
+  - lit-html@3.0.0
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+## 4.0.0-pre.1
+
+### Major Changes
+
+- [#4146](https://github.com/lit/lit/pull/4146) [`0f6878dc`](https://github.com/lit/lit/commit/0f6878dc45fd95bbeb8750f277349c1392e2b3ad) - Generated accessor for reactive properties now wrap user accessors and automatically call `this.requestUpdate()` in the setter. As in previous versions, users can still specify `noAccessor: true`, in which case they should call `this.requestUpdate()` themselves in the setter if they want to trigger a reactive update.
+
+- [#3896](https://github.com/lit/lit/pull/3896) [`2eba6997`](https://github.com/lit/lit/commit/2eba69974c9e130e7483f44f9daca308345497d5) - Warn on async overrides of performUpdate()
+
+### Minor Changes
+
+- [#4081](https://github.com/lit/lit/pull/4081) [`d27a77ec`](https://github.com/lit/lit/commit/d27a77ec3d3999e872df9218a2b07f90f22eb417) - Sync from last stable release
+
+- [#4183](https://github.com/lit/lit/pull/4183) [`6470807f`](https://github.com/lit/lit/commit/6470807f3a0981f9d418cb26f05969912455d148) - Make the decorators work with the `accessor` keyword when `experimentalDecorators` is true.
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- [#3918](https://github.com/lit/lit/pull/3918) [`2a01471a`](https://github.com/lit/lit/commit/2a01471a5f65fe34bad11e1099281811b8d0f79b) - Some code golf on ReactiveElement
+
+- [#3710](https://github.com/lit/lit/pull/3710) [`09949234`](https://github.com/lit/lit/commit/09949234445388d51bfb4ee24ff28a4c9f82fe17) - Add `undefined` to the return type of PropertyValues.get()
+
+- Updated dependencies [[`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5), [`0f6878dc`](https://github.com/lit/lit/commit/0f6878dc45fd95bbeb8750f277349c1392e2b3ad), [`2a01471a`](https://github.com/lit/lit/commit/2a01471a5f65fe34bad11e1099281811b8d0f79b), [`2eba6997`](https://github.com/lit/lit/commit/2eba69974c9e130e7483f44f9daca308345497d5), [`d27a77ec`](https://github.com/lit/lit/commit/d27a77ec3d3999e872df9218a2b07f90f22eb417), [`6470807f`](https://github.com/lit/lit/commit/6470807f3a0981f9d418cb26f05969912455d148), [`09949234`](https://github.com/lit/lit/commit/09949234445388d51bfb4ee24ff28a4c9f82fe17)]:
+  - @lit/reactive-element@2.0.0-pre.1
+  - lit-html@3.0.0-pre.1
+
+## 4.0.0-pre.0
+
+### Major Changes
+
+- [#3751](https://github.com/lit/lit/pull/3751) [`dfd747cf`](https://github.com/lit/lit/commit/dfd747cf4f7239e0c3bb7134f8acb967d0157654) - Simplify lit-html attribute handling for standards-compliant browsers that iterate attributes in source order
+
+- [#3754](https://github.com/lit/lit/pull/3754) [`76795a18`](https://github.com/lit/lit/commit/76795a18263bb5e762e9fc909c97d1fdacee5b1f) - Remove UpdatingElement alias for ReactiveElement
+
+- [#3759](https://github.com/lit/lit/pull/3759) [`1db01376`](https://github.com/lit/lit/commit/1db0137699b35d7e7bfac9b2ab274af4100fd7cf) - Use replaceWith() for SVG templates
+
+- [#3750](https://github.com/lit/lit/pull/3750) [`c3e473b4`](https://github.com/lit/lit/commit/c3e473b499ff029b5e1aff01ca8799daf1ca1bbe) - Use toggleAttribute() to simplify boolean attribute parts
+
+- [#3765](https://github.com/lit/lit/pull/3765) [`92cedaa2`](https://github.com/lit/lit/commit/92cedaa2c8cd8a306be3fe25d52e0e47bb044020) - Remove experimental hydrate modules. These are available from `@lit-labs/ssr-client`.
+
+- [#3756](https://github.com/lit/lit/pull/3756) [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4) - Drop IE11 support
+
+- [#3754](https://github.com/lit/lit/pull/3754) [`76795a18`](https://github.com/lit/lit/commit/76795a18263bb5e762e9fc909c97d1fdacee5b1f) - Remove re-export of decorators from main lit-element module
+
+### Patch Changes
+
+- [#3762](https://github.com/lit/lit/pull/3762) [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2) - Remove Lit 1 -> Lit 2 migration warnings
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+- Updated dependencies [[`be72f66b`](https://github.com/lit/lit/commit/be72f66bd9aab5d0586729fb5be4bac4aa27cb7f), [`dfd747cf`](https://github.com/lit/lit/commit/dfd747cf4f7239e0c3bb7134f8acb967d0157654), [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2), [`1db01376`](https://github.com/lit/lit/commit/1db0137699b35d7e7bfac9b2ab274af4100fd7cf), [`6f2833fd`](https://github.com/lit/lit/commit/6f2833fd05f2ecde5386f72d291dafc9dbae0cf7), [`c3e473b4`](https://github.com/lit/lit/commit/c3e473b499ff029b5e1aff01ca8799daf1ca1bbe), [`92cedaa2`](https://github.com/lit/lit/commit/92cedaa2c8cd8a306be3fe25d52e0e47bb044020), [`7e8491d4`](https://github.com/lit/lit/commit/7e8491d4ed9f0c39d974616c4678552ef50b81df), [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa), [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4)]:
+  - @lit/reactive-element@2.0.0-pre.0
+  - lit-html@3.0.0-pre.0
+
+## 3.3.3
+
+### Patch Changes
+
+- [#4031](https://github.com/lit/lit/pull/4031) [`8057c78d`](https://github.com/lit/lit/commit/8057c78def09e345e68c3fc009b8ab9d6cf1c0f2) - Rename ReactiveElement.\_initialize to \_\_initialize, make it private, and remove the @internal annotation. This will help prevent collisions with subclasses that implement their own \_initialize method, while using development builds.
+
+- Updated dependencies [[`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d)]:
+  - lit-html@2.8.0
+
+## 3.3.2
+
+### Patch Changes
+
+- [#3766](https://github.com/lit/lit/pull/3766) [`4431cbb8`](https://github.com/lit/lit/commit/4431cbb85428e54bafa090088056a325fe623aa1) - Fix styleMap initial render of mixed-case custom props
+
+## 3.3.1
+
+### Patch Changes
+
+- [#3720](https://github.com/lit/lit/pull/3720) [`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7) - `lit-html/experimental-hydrate.js` and `lit-element/experimental-hydrate-support.js` have been moved to `@lit-labs/ssr-client`.
+
+  The modules in the original location have been marked deprecated and will be removed in a future version.
+
+## 3.3.0
+
+### Minor Changes
+
+- [#3677](https://github.com/lit/lit/pull/3677) [`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86) - [SSR only] Reflect ARIA attributes onto server rendered Lit elements with attached internals during SSR and remove them upon hydration.
+
+### Patch Changes
+
+- Updated dependencies [[`4d698430`](https://github.com/lit/lit/commit/4d698430b38efa49c97b841238b331340af5fef0), [`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86), [`e00f6f52`](https://github.com/lit/lit/commit/e00f6f52199d5dbc08d4c15f62380422e77cde7f), [`88a40177`](https://github.com/lit/lit/commit/88a40177de9be5d117a21e3da5414bd777872544)]:
+  - lit-html@2.7.0
+  - @lit-labs/ssr-dom-shim@1.1.0
+
+## 3.2.2
+
+### Patch Changes
+
+- [#3132](https://github.com/lit/lit/pull/3132) [`2fe2053f`](https://github.com/lit/lit/commit/2fe2053fe04e7226e5fa4e8b730e91a62a547b27) - Added "types" entry to package exports. This tells newer versions of TypeScript where to look for typings for each module.
+
+## 3.2.1
+
+### Patch Changes
+
+- [#2978](https://github.com/lit/lit/pull/2978) [`634d4560`](https://github.com/lit/lit/commit/634d45601b1d13be6d21fce725ece6abb9b3ee71) - Changed the caching behavior of the css`` template literal tag so that same-text styles do not share a CSSStyleSheet. Note that this may be a breaking change in some very unusual scenarios on Chromium and Firefox > 101 only.
+
 ## 3.2.0
 
 ### Minor Changes
@@ -102,7 +279,7 @@
 - For efficiency, the `css` function now maintains a cache and will use a cached value if available when the same style text is requested.
 - Fixed reflecting a property when it is set in a setter of another property that is called because its attribute changed ([#965](https://github.com/Polymer/lit-element/issues/965)).
 - Fixed exceptions when parsing attributes from JSON ([#722](https://github.com/Polymer/lit-element/issues/722)).
-- Fixed issue with combining `static get properties` on an undefined superclass with `@property` on a subclasss ([#890]https://github.com/Polymer/lit-element/issues/890));
+- Fixed issue with combining `static get properties` on an undefined superclass with `@property` on a subclass ([#890]https://github.com/Polymer/lit-element/issues/890));
 
 ## 3.0.0-rc.4
 
@@ -261,7 +438,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 - Fixed reflecting a property when it is set in a setter of another property that is called because its attribute changed ([#965](https://github.com/Polymer/lit-element/issues/965)).
 - Fixed exceptions when parsing attributes from JSON ([#722](https://github.com/Polymer/lit-element/issues/722)).
-- Fixed issue with combining `static get properties` on an undefined superclass with `@property` on a subclasss ([#890]https://github.com/Polymer/lit-element/issues/890));
+- Fixed issue with combining `static get properties` on an undefined superclass with `@property` on a subclass ([#890]https://github.com/Polymer/lit-element/issues/890));
 
 ## [2.4.0] - 2020-08-19
 
@@ -274,7 +451,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 - Adds a `cache: boolean` argument to the `@query` decorator as a performance optimization for properties whose queried element is not expected to change. If cache is set to true, element DOM is queried when the property is first accessed, and the value is cached so it can be immediately returned on all subsequent property accesses. ([#1013](https://github.com/Polymer/lit-element/issues/1013))
 - Adds a `selector: string` argument to the `@queryAssignedNodes` decorator as a convenience to filter the assigned nodes by the given selector ([#1016](https://github.com/Polymer/lit-element/issues/1016)).
 - The `requestUpdateInternal(name, oldValue, options)` method has been added. This method is sometimes useful to call in a custom property setter to optimize performance. It is slightly more efficient than `requestUpdate` since it does not return the `updateComplete` property which can be overridden to do work.
-- The protected `performUpdate()` method may now be called to syncronously "flush" a pending update, for example via a property setter. Note, performing a synchronous update only updates the element and not any potentially pending descendants in the element's local DOM ([#959](https://github.com/Polymer/lit-element/issues/959)).
+- The protected `performUpdate()` method may now be called to synchronously "flush" a pending update, for example via a property setter. Note, performing a synchronous update only updates the element and not any potentially pending descendants in the element's local DOM ([#959](https://github.com/Polymer/lit-element/issues/959)).
 - Constructible stylesheets may now be provided directly as styles, in addition to using the `css` tagged template function ([#853](https://github.com/Polymer/lit-element/issues/853)).
 
 ### Fixed
@@ -400,7 +577,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 - [Breaking] Property accessors are no longer wrapped when they already exist. Instead the `noAccessor` flag should be set when a user-defined accessor exists on the prototype (and in this case, user-defined accessors must call `requestUpdate` themselves). ([#454](https://github.com/Polymer/lit-element/pull/454)).
 - Class fields can now be used to define styles, e.g. `static styles = css` and `styles` correctly compose when elements are extended ([#456](https://github.com/Polymer/lit-element/pull/456)).
-- Styles returned via `static styles` are automatically flattend ([#437](https://github.com/Polymer/lit-element/pull/437)).
+- Styles returned via `static styles` are automatically flattened ([#437](https://github.com/Polymer/lit-element/pull/437)).
 - Replace use of for/of loops over Maps with forEach ([#455](https://github.com/Polymer/lit-element/pull/455))
 
 ## [2.0.0-rc.2] - 2019-01-11

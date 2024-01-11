@@ -7,18 +7,22 @@
 import {html, LitElement} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
-import {ContextConsumer, ContextProvider, createContext} from '../index.js';
+import {
+  ContextConsumer,
+  ContextProvider,
+  createContext,
+  consume,
+} from '@lit-labs/context';
 import {assert} from '@esm-bundle/chai';
-import {contextProvided} from '../lib/decorators/context-provided.js';
+import {stripExpressionComments} from '@lit-labs/testing';
 
 const simpleContext = createContext<number>('simple-context');
 
-// @TODO: would be good to get this exported out of lit-elements
-const stripExpressionComments = (html: string) =>
-  html.replace(/<!--\?lit\$[0-9]+\$-->|<!--\??-->/g, '');
-
 class SimpleContextProvider extends LitElement {
-  private provider = new ContextProvider(this, simpleContext, 1000);
+  private provider = new ContextProvider(this, {
+    context: simpleContext,
+    initialValue: 1000,
+  });
 
   public setValue(value: number) {
     this.provider.setValue(value);
@@ -26,23 +30,22 @@ class SimpleContextProvider extends LitElement {
 }
 
 class SimpleContextConsumer extends LitElement {
-  // a one-time property fullfilled by context
-  @contextProvided({context: simpleContext})
+  // a one-time property fulfilled by context
+  @consume({context: simpleContext})
   @property({type: Number})
   public onceValue = 0;
 
   // a subscribed property fulfilled by context
-  @contextProvided({context: simpleContext, subscribe: true})
+  @consume({context: simpleContext, subscribe: true})
   @property({type: Number})
   public subscribedValue = 0;
 
   // just use the controller directly
-  public controllerContext = new ContextConsumer(
-    this,
-    simpleContext,
-    undefined, // no callback
-    true // subscribe to updates
-  );
+  public controllerContext = new ContextConsumer(this, {
+    context: simpleContext,
+    callback: undefined,
+    subscribe: true,
+  });
 
   public render() {
     return html`${this.controllerContext.value}`;

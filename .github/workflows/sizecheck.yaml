@@ -1,0 +1,44 @@
+name: Sizecheck
+
+on: [pull_request]
+
+permissions:
+  contents: read
+
+jobs:
+  checksize:
+    name: sizecheck
+
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - uses: google/wireit@setup-github-actions-caching/v1
+
+      - name: NPM install
+        run: npm ci
+
+      # This is needed to be able to read it from sizecheck-report.yaml to
+      # comment on the correct PR
+      - name: Save PR number
+        env:
+          PR_NUMBER: ${{ github.event.number }}
+        run: echo $PR_NUMBER > ./scripts/pr_number.txt
+
+      - name: Generate size report
+        run: npm run benchmark:size
+
+      - name: Upload artifacts
+        if: ${{ success() || failure() }}
+        uses: actions/upload-artifact@v3
+        with:
+          name: sizecheck
+          path: |
+            scripts/check-size-out.md
+            scripts/pr_number.txt

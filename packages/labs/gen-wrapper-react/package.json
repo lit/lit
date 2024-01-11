@@ -1,0 +1,85 @@
+{
+  "name": "@lit-labs/gen-wrapper-react",
+  "description": "Code generator for React wrapper for Lit components",
+  "version": "0.3.1",
+  "publishConfig": {
+    "access": "public"
+  },
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "bugs": "https://github.com/lit/lit/issues",
+  "type": "module",
+  "main": "lib/index.js",
+  "repository": "lit/lit",
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit",
+    "test:gen": "wireit",
+    "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:gen"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "dependencies": [
+        "../analyzer:build",
+        "../../tests:build",
+        "../gen-utils:build"
+      ],
+      "files": [
+        "src/**/*",
+        "tsconfig.json"
+      ],
+      "output": [
+        "test-gen",
+        "index.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test:gen": {
+      "dependencies": [
+        "build",
+        "../../react:build",
+        "../test-projects/test-element-a:pack"
+      ],
+      "files": [
+        "goldens/**/*"
+      ],
+      "#comment": "The quotes around the file regex must be double quotes on windows!",
+      "command": "uvu test-gen \"_test\\.js$\"",
+      "output": [
+        "gen-output",
+        "!gen-output/node_modules"
+      ]
+    },
+    "test": {
+      "dependencies": [
+        "test:gen",
+        "./test-output:test"
+      ]
+    }
+  },
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.11.0",
+    "@lit-labs/gen-utils": "^0.3.0"
+  },
+  "devDependencies": {
+    "@lit-internal/tests": "^0.0.1"
+  },
+  "engines": {
+    "node": ">=14.8.0"
+  },
+  "files": [
+    "index.js"
+  ],
+  "homepage": "https://github.com/lit/lit",
+  "keywords": [
+    "lit",
+    "lit-html",
+    "lit-element",
+    "LitElement",
+    "generator",
+    "cli",
+    "react"
+  ]
+}

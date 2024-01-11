@@ -2,7 +2,7 @@
 .gitignore
 
 [relative]
-packages/{*,labs/*}/{.gitignore,.eslintignore}
+packages/{*,labs/*,labs/test-projects/*}/{.gitignore,.eslintignore}
 
 [inline]
 packages/localize/testdata/

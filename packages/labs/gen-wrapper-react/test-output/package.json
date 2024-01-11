@@ -1,0 +1,83 @@
+{
+  "name": "@lit-internal/gen-wrapper-react-test-output",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "@esm-bundle/chai": "^4.3.4-fix.0",
+    "@types/chai": "^4.0.1",
+    "@types/mocha": "^9.0.0",
+    "@types/react": "file:../../../../node_modules/@types/react",
+    "@types/react-dom": "file:../../../../node_modules/@types/react-dom",
+    "react": "file:../../../../node_modules/react",
+    "react-dom": "file:../../../../node_modules/react-dom",
+    "@lit/react": "file:../../../react",
+    "lit": "file:../../../lit",
+    "lit-html": "file:../../../lit-html",
+    "lit-element": "file:../../../lit-element",
+    "@lit/reactive-element": "file:../../../reactive-element",
+    "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.1.tgz",
+    "@lit-internal/test-element-a-react": "file:../gen-output/test-element-a-react/lit-internal-test-element-a-react-1.0.1.tgz"
+  },
+  "scripts": {
+    "installSelf": "wireit",
+    "build": "wireit",
+    "build:ts": "wireit",
+    "test": "wireit"
+  },
+  "wireit": {
+    "installSelf": {
+      "dependencies": [
+        "../:test:gen"
+      ],
+      "files": [
+        "package.json"
+      ],
+      "command": "npm i",
+      "output": [
+        "node_modules",
+        "package-lock.json"
+      ]
+    },
+    "build:ts": {
+      "dependencies": [
+        "installSelf"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "src/**/*.tsx",
+        "tsconfig.json"
+      ],
+      "command": "tsc --build --pretty",
+      "output": [
+        "js",
+        "tsconfig.tsbuildinfo"
+      ]
+    },
+    "build": {
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "rollup.config.js"
+      ],
+      "command": "rollup -c",
+      "output": [
+        "tests/*.{js,js.map,d.ts,d.ts.map}"
+      ]
+    },
+    "test": {
+      "dependencies": [
+        "build",
+        "../../../tests:build"
+      ],
+      "command": "node ../../../tests/run-web-tests.js \"tests/tests.js\" --config ../../../tests/web-test-runner.config.js",
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
+      "output": []
+    }
+  }
+}

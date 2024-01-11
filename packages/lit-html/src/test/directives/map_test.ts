@@ -3,10 +3,10 @@
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {html} from '../../lit-html.js';
+import {html} from 'lit-html';
 import {makeAssertRender} from '../test-utils/assert-render.js';
 
-import {map} from '../../directives/map.js';
+import {map} from 'lit-html/directives/map.js';
 
 suite('map', () => {
   let container: HTMLDivElement;

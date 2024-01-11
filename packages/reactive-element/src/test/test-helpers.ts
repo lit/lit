@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ReactiveElement, PropertyValues} from '../reactive-element.js';
+import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 
 let count = 0;
 export const generateElementName = () => `x-${count++}`;
@@ -16,9 +16,6 @@ export const getComputedStyleValue = (element: Element, property: string) =>
   window.ShadyCSS
     ? window.ShadyCSS.getComputedStyleValue(element, property)
     : getComputedStyle(element).getPropertyValue(property);
-
-export const stripExpressionComments = (html: string) =>
-  html.replace(/<!--\?lit\$[0-9]+\$-->|<!---->/g, '');
 
 const DEV_MODE = true;
 

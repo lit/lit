@@ -1,11 +1,20 @@
-<img src="./packages/lit/logo.svg" alt="Lit" width="300" height="141">
+<div align="center">
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="./packages/lit/logo-dark.svg" alt="Lit" width="300" height="141">
+  </source>
+  <source media="(prefers-color-scheme: light)" srcset="./packages/lit/logo.svg" alt="Lit" width="300" height="141">
+  </source>
+  <img src="./packages/lit/logo.svg" alt="Lit" width="300" height="141">
+</picture>
 
 ### Simple. Fast. Web Components.
 
 [![Build Status](https://github.com/lit/lit/actions/workflows/tests.yml/badge.svg)](https://github.com/lit/lit/actions/workflows/tests.yml)
 [![Published on npm](https://img.shields.io/npm/v/lit.svg?logo=npm)](https://www.npmjs.com/package/lit)
-[![Join our Slack](https://img.shields.io/badge/slack-join%20chat-4a154b.svg?logo=slack)](https://lit.dev/slack-invite/)
+[![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
+
+</div>
 
 Lit is a simple library for building fast, lightweight web components.
 
@@ -41,25 +50,26 @@ lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/lit/
 - Additional libraries
   - [`@lit/localize`](./packages/localize) - A library and command-line tool for localizing web applications built using Lit.
   - [`@lit/localize-tools`](./packages/localize-tools) - Localization tooling for use with `@lit/localize`.
+  - [`@lit/react`](./packages/react) - A React component wrapper for web components.
+  - [`@lit/task`](./packages/task) - A controller for Lit that renders asynchronous tasks.
+  - [`@lit/context`](./packages/context) - A system for passing data through a tree of elements using browser events, avoiding the need to pass properties down every layer of the tree using [a community defined protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md).
 - Labs
   - [`@lit-labs/ssr`](./packages/labs/ssr) - A server package for rendering Lit templates and components on the server.
   - [`@lit-labs/ssr-client`](./packages/labs/ssr-client) - A set of client-side support modules for rendering Lit components and templates on the server using `@lit-labs/ssr`.
   - [`@lit-labs/eleventy-plugin-lit`](./packages/labs/eleventy-plugin-lit) - A plugin for Eleventy that pre-renders
     Lit components using `@lit-labs/ssr` with optional hydration.
-  - [`@lit-labs/react`](./packages/labs/react) - A React component wrapper for web components.
   - [`@lit-labs/router`](./packages/labs/router) - A router for Lit.
-  - [`@lit-labs/task`](./packages/labs/task) - A controller for Lit that renders asynchronous tasks.
   - [`@lit-labs/motion`](./packages/labs/motion) - Lit directives for making things move
   - [`@lit-labs/scoped-registry-mixin`](./packages/labs/scoped-registry-mixin) - A mixin for LitElement that integrates with the speculative Scoped CustomElementRegistry polyfill.
 - Starter kits (not published to npm)
   - [`lit-starter-ts`](./packages/lit-starter-ts) ([template
     repo](https://github.com/lit/lit-element-starter-ts)) - A starter repo for building reusable components using Lit in TypeScript.
   - [`lit-starter-js`](./packages/lit-starter-js) ([template
-    repo](https://github.com/lit/lit-element-starter-js)) - A starter repo for building reusable components using Lit in Javascript.
+    repo](https://github.com/lit/lit-element-starter-js)) - A starter repo for building reusable components using Lit in JavaScript.
 - Internal packages (not published to npm)
   - [`tests`](./packages/tests) - Test infrastructure for the monorepo.
   - [`benchmarks`](./packages/benchmarks) - Benchmarks for testing various libraries in the monorepo.
-  - [`internal-scripts`](./packages/internal-scripts) - Utility scripts used within the monorepo.
+  - [`@lit-internal/scripts`](./packages/@lit-internal/scripts) - Utility scripts used within the monorepo.
 
 ## Contributing to Lit
 
@@ -72,8 +82,7 @@ Initialize repo:
 ```sh
 git clone https://github.com/lit/lit.git
 cd lit
-npm install
-npm run bootstrap
+npm ci
 ```
 
 Build all packages:

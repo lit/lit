@@ -6,11 +6,33 @@
 
 import {updateWhenLocaleChanges} from './localized-controller.js';
 
-import type {ReactiveElement} from '@lit/reactive-element';
-import type {
-  Constructor,
-  ClassDescriptor,
-} from '@lit/reactive-element/decorators/base.js';
+import type {ReactiveControllerHost} from 'lit';
+
+/**
+ * Generates a public interface type that removes private and protected fields.
+ * This allows accepting otherwise incompatible versions of the type (e.g. from
+ * multiple copies of the same package in `node_modules`).
+ */
+export type Interface<T> = {
+  [K in keyof T]: T[K];
+};
+
+type ReactiveElementClass = {
+  addInitializer(initializer: (element: ReactiveControllerHost) => void): void;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  new (...args: any[]): ReactiveControllerHost;
+};
+
+export type LocalizedDecorator = {
+  // legacy
+  (cls: ReactiveElementClass): void;
+
+  // standard
+  (
+    target: ReactiveElementClass,
+    context: ClassDecoratorContext<ReactiveElementClass>
+  ): void;
+};
 
 /**
  * Class decorator to enable re-rendering the given LitElement whenever a new
@@ -36,28 +58,18 @@ import type {
  *     }
  *   }
  */
-const _localized =
-  () => (classOrDescriptor: Constructor<ReactiveElement> | ClassDescriptor) =>
-    typeof classOrDescriptor === 'function'
-      ? legacyLocalized(classOrDescriptor as unknown as typeof ReactiveElement)
-      : standardLocalized(classOrDescriptor);
-
-export const localized: typeof _localized & {
-  _LIT_LOCALIZE_DECORATOR_?: never;
-} = _localized;
-
-const standardLocalized = ({kind, elements}: ClassDescriptor) => {
-  return {
-    kind,
-    elements,
-    finisher(clazz: typeof ReactiveElement) {
-      clazz.addInitializer(updateWhenLocaleChanges);
-    },
+export const localized: Localized =
+  (): LocalizedDecorator =>
+  (
+    clazz: ReactiveElementClass,
+    _context?: ClassDecoratorContext<ReactiveElementClass>
+  ) => {
+    clazz.addInitializer(updateWhenLocaleChanges);
+    return clazz;
   };
-};
 
-const legacyLocalized = (clazz: typeof ReactiveElement) => {
-  clazz.addInitializer(updateWhenLocaleChanges);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return clazz as any;
+type Localized = (() => LocalizedDecorator) & {
+  // Used by the localize-tools transform to detect this decorator based
+  // on type.
+  _LIT_LOCALIZE_DECORATOR_?: never;
 };

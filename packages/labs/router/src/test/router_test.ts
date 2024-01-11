@@ -6,6 +6,11 @@
 
 import {assert} from '@esm-bundle/chai';
 import type {Test1, Child1, Child2} from './router_test_code.js';
+import type {RouteConfig, PathRouteConfig} from '@lit-labs/router/routes.js';
+import {stripExpressionComments} from '@lit-labs/testing';
+
+const isPathRouteConfig = (route: RouteConfig): route is PathRouteConfig =>
+  route.hasOwnProperty('path');
 
 const canTest =
   window.ShadowRoot &&
@@ -162,6 +167,12 @@ const canTest =
     contentDocument!.body.append(el);
     await el.updateComplete;
 
+    assert.isFalse(
+      el._router.routes.some(
+        (r) => isPathRouteConfig(r) && r.path === '/server-route'
+      )
+    );
+
     //
     // Fallback
     //
@@ -169,13 +180,78 @@ const canTest =
     // '/server-route' is not pre-configured, is dynamically installed
     await el._router.goto('/server-route');
 
+    assert.isTrue(
+      el._router.routes.some(
+        (r) => isPathRouteConfig(r) && r.path === '/server-route'
+      )
+    );
+
     await el.updateComplete;
     assert.include(
       stripExpressionComments(el.shadowRoot!.innerHTML),
       '<h2>Server</h2>'
     );
+
+    await el._router.goto('/404');
+    await el.updateComplete;
+    assert.include(
+      stripExpressionComments(el.shadowRoot!.innerHTML),
+      '<h2>Not Found</h2>'
+    );
+  });
+
+  test('link() returns URL string including parent route', async () => {
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-1'
+    ) as Test1;
+    const {contentWindow, contentDocument} = container;
+
+    // Set the iframe URL before appending the element
+    contentWindow!.history.pushState({}, '', '/child1/def');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+    const child1 = el.shadowRoot!.querySelector('child-1') as Child1;
+    await child1.updateComplete;
+
+    assert.equal(el._router.link(), '/child1/');
+    assert.equal(child1._routes.link(), '/child1/def');
+  });
+
+  test('link() can replace local path', async () => {
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-1'
+    ) as Test1;
+    const {contentWindow, contentDocument} = container;
+
+    // Set the iframe URL before appending the element
+    contentWindow!.history.pushState({}, '', '/child1/def');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+    const child1 = el.shadowRoot!.querySelector('child-1') as Child1;
+    await child1.updateComplete;
+
+    assert.equal(child1._routes.link('local_path'), `/child1/local_path`);
+  });
+
+  test(`link() with local absolute path doesn't include parent route`, async () => {
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-1'
+    ) as Test1;
+    const {contentWindow, contentDocument} = container;
+
+    // Set the iframe URL before appending the element
+    contentWindow!.history.pushState({}, '', '/child1/def');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+    const child1 = el.shadowRoot!.querySelector('child-1') as Child1;
+    await child1.updateComplete;
+
+    assert.equal(
+      child1._routes.link('/local_absolute_path'),
+      '/local_absolute_path'
+    );
   });
 });
-
-export const stripExpressionComments = (html: string) =>
-  html.replace(/<!--\?lit\$[0-9]+\$-->|<!--\??-->/g, '');

@@ -2,9 +2,9 @@
   "compilerOptions": {
     "incremental": true,
     "composite": true,
-    "tsBuildInfoFile": "./lib/.tsbuildinfo",
-    "target": "es2020",
-    "lib": ["es2020"],
+    "tsBuildInfoFile": "tsconfig.tsbuildinfo",
+    "target": "es2021",
+    "lib": ["es2021"],
     "module": "ES2020",
     "rootDir": "./src",
     "moduleResolution": "node",
@@ -24,7 +24,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "types": ["node", "mocha"]
   },
   "include": ["src/**/*.ts"],
   "exclude": []

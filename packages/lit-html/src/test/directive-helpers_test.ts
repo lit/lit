@@ -3,10 +3,18 @@
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {html, ChildPart, render, svg} from '../lit-html.js';
-import {directive, Directive} from '../directive.js';
+import {
+  html,
+  ChildPart,
+  render,
+  svg,
+  TemplateResult,
+  CompiledTemplateResult,
+  CompiledTemplate,
+  UncompiledTemplateResult,
+} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
-import {stripExpressionComments} from './test-utils/strip-markers.js';
+import {stripExpressionComments} from '@lit-labs/testing';
 import {
   getDirectiveClass,
   insertPart,
@@ -16,9 +24,25 @@ import {
   removePart,
   setChildPartValue,
   TemplateResultType,
-} from '../directive-helpers.js';
-import {classMap} from '../directives/class-map.js';
-import {AsyncDirective} from '../async-directive.js';
+  isCompiledTemplateResult,
+} from 'lit-html/directive-helpers.js';
+import {classMap} from 'lit-html/directives/class-map.js';
+import {
+  directive,
+  Directive,
+  AsyncDirective,
+} from 'lit-html/async-directive.js';
+
+const branding_tag = (s: TemplateStringsArray) => s;
+const _$lit_template_1: CompiledTemplate = {
+  h: branding_tag``,
+  parts: [],
+};
+
+/**
+ * Use to check if the file has been compiled with @lit-labs/compiler.
+ */
+const isTestFileNotCompiled = html``['_$litType$'] === 1;
 
 suite('directive-helpers', () => {
   let container: HTMLDivElement;
@@ -49,7 +73,13 @@ suite('directive-helpers', () => {
   test('isTemplateResult', () => {
     assert.isTrue(isTemplateResult(html``));
     assert.isTrue(isTemplateResult(svg``));
-    assert.isTrue(isTemplateResult(html``, TemplateResultType.HTML));
+    if (isTestFileNotCompiled) {
+      assert.isTrue(isTemplateResult(html``, TemplateResultType.HTML));
+    } else {
+      // This template was compiled, so `isTemplateResult` with an explicit
+      // check for `TemplateResultType.HTML` returns false.
+      assert.isFalse(isTemplateResult(html``, TemplateResultType.HTML));
+    }
     assert.isTrue(isTemplateResult(svg``, TemplateResultType.SVG));
 
     assert.isFalse(isTemplateResult(null));
@@ -60,6 +90,84 @@ suite('directive-helpers', () => {
     assert.isFalse(isTemplateResult(null, TemplateResultType.HTML));
     assert.isFalse(isTemplateResult(undefined, TemplateResultType.HTML));
     assert.isFalse(isTemplateResult({}, TemplateResultType.HTML));
+
+    assert.isTrue(
+      isTemplateResult({
+        _$litType$: _$lit_template_1,
+        values: [],
+      })
+    );
+    assert.isFalse(
+      isTemplateResult(
+        {
+          _$litType$: _$lit_template_1,
+          values: [],
+        },
+        TemplateResultType.HTML
+      )
+    );
+    assert.isFalse(
+      isTemplateResult(
+        {
+          _$litType$: _$lit_template_1,
+          values: [],
+        },
+        TemplateResultType.SVG
+      )
+    );
+  });
+
+  test('isTemplateResult type only test', () => {
+    // This test has no runtime checks, and fails at build time if there are
+    // type issues.
+    function acceptUncompiledTemplateResult(_v: UncompiledTemplateResult) {}
+
+    function acceptTemplateOrCompiledTemplateResult(
+      _v: TemplateResult | CompiledTemplateResult
+    ) {}
+    function acceptTemplateResultHtml(
+      _v: TemplateResult<typeof TemplateResultType.HTML>
+    ) {}
+    function acceptTemplateResultSvg(
+      _v: TemplateResult<typeof TemplateResultType.SVG>
+    ) {}
+
+    const v = html`` as TemplateResult | CompiledTemplateResult;
+    if (isTemplateResult(v)) {
+      acceptTemplateOrCompiledTemplateResult(v);
+
+      // @ts-expect-error v could be a CompiledTemplateResult
+      acceptUncompiledTemplateResult(v);
+    }
+    if (isTemplateResult(v, TemplateResultType.HTML)) {
+      acceptUncompiledTemplateResult(v);
+      acceptTemplateResultHtml(v);
+      // @ts-expect-error v is an html template result
+      acceptTemplateResultSvg(v);
+    }
+    if (isTemplateResult(v, TemplateResultType.SVG)) {
+      acceptUncompiledTemplateResult(v);
+      acceptTemplateResultSvg(v);
+      // @ts-expect-error v is an svg template result
+      acceptTemplateResultHtml(v);
+    }
+  });
+
+  test('isCompiledTemplateResult', () => {
+    assert.isTrue(
+      isCompiledTemplateResult({
+        _$litType$: _$lit_template_1,
+        values: [],
+      })
+    );
+
+    if (isTestFileNotCompiled) {
+      assert.isFalse(isCompiledTemplateResult(html``));
+    }
+    assert.isFalse(isCompiledTemplateResult(svg``));
+    assert.isFalse(isCompiledTemplateResult(null));
+    assert.isFalse(isCompiledTemplateResult(undefined));
+    assert.isFalse(isCompiledTemplateResult({}));
   });
 
   test('isDirectiveResult', () => {
@@ -103,7 +211,7 @@ suite('directive-helpers', () => {
     assertContent('<div>A</div>');
   });
 
-  test('insertPart keeps connectinon state in sync', () => {
+  test('insertPart keeps connection state in sync', () => {
     // Directive that tracks/renders connected state
     let connected = false;
     const aDirective = directive(

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html, svg, render} from '../../lit-html.js';
-import {ClassInfo, classMap} from '../../directives/class-map.js';
+import {html, svg, render} from 'lit-html';
+import {ClassInfo, classMap} from 'lit-html/directives/class-map.js';
 import {assert} from '@esm-bundle/chai';
 
 suite('classMap directive', () => {

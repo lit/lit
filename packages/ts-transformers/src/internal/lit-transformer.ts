@@ -137,7 +137,7 @@ export class LitTransformer {
     return node;
   };
 
-  visit = (node: ts.Node): ts.VisitResult<ts.Node> => {
+  visit = (node: ts.Node): ts.VisitResult<ts.Node | undefined> => {
     if (this._litFileContext.nodeReplacements.has(node)) {
       // A node that some previous visitor has requested to be replaced.
       return this._litFileContext.nodeReplacements.get(node);
@@ -151,9 +151,7 @@ export class LitTransformer {
     if (ts.isClassDeclaration(node)) {
       return this._visitClassDeclaration(node);
     }
-    return this._cleanUpDecoratorCruft(
-      ts.visitEachChild(node, this.visit, this._context)
-    );
+    return ts.visitEachChild(node, this.visit, this._context);
   };
 
   /**
@@ -247,7 +245,7 @@ export class LitTransformer {
       isLitImport(node.moduleSpecifier.text)
     ) {
       // Remove the import altogether if there are no bindings left. But only if
-      // we acutally modified the import, and it's from an official Lit module.
+      // we actually modified the import, and it's from an official Lit module.
       // Otherwise we might remove imports that are still needed for their
       // side-effects.
       return undefined;
@@ -255,11 +253,22 @@ export class LitTransformer {
     return node;
   }
 
+  private *getDecorators(node: ts.Node): IterableIterator<ts.Decorator> {
+    if (!ts.canHaveDecorators(node)) {
+      return;
+    }
+    for (const modifier of node.modifiers ?? []) {
+      if (ts.isDecorator(modifier)) {
+        yield modifier;
+      }
+    }
+  }
+
   private _visitClassDeclaration(class_: ts.ClassDeclaration) {
     const litClassContext = new LitClassContext(this._litFileContext, class_);
 
     // Class decorators
-    for (const decorator of class_.decorators ?? []) {
+    for (const decorator of this.getDecorators(class_)) {
       if (!ts.isCallExpression(decorator.expression)) {
         continue;
       }
@@ -276,7 +285,7 @@ export class LitTransformer {
 
     // Class member decorators
     for (const member of class_.members ?? []) {
-      for (const decorator of member.decorators ?? []) {
+      for (const decorator of this.getDecorators(member)) {
         if (!ts.isCallExpression(decorator.expression)) {
           continue;
         }
@@ -304,7 +313,6 @@ export class LitTransformer {
       } else {
         const factory = this._context.factory;
         const staticPropertiesField = factory.createPropertyDeclaration(
-          undefined,
           [factory.createModifier(ts.SyntaxKind.StaticKeyword)],
           factory.createIdentifier('properties'),
           undefined,
@@ -325,20 +333,17 @@ export class LitTransformer {
     // nodes that still need to be deleted via `this._nodesToRemove` (e.g. a
     // property decorator or a property itself), and [2] in theory there could
     // be a nested custom element definition somewhere in this class.
-    const transformedClass = this._cleanUpDecoratorCruft(
-      ts.visitEachChild(
-        this._context.factory.updateClassDeclaration(
-          class_,
-          class_.decorators,
-          class_.modifiers,
-          class_.name,
-          class_.typeParameters,
-          class_.heritageClauses,
-          [...litClassContext.classMembers, ...class_.members]
-        ),
-        this.visit,
-        this._context
-      )
+    const transformedClass = ts.visitEachChild(
+      this._context.factory.updateClassDeclaration(
+        class_,
+        class_.modifiers,
+        class_.name,
+        class_.typeParameters,
+        class_.heritageClauses,
+        [...litClassContext.classMembers, ...class_.members]
+      ),
+      this.visit,
+      this._context
     );
 
     // These visitors only apply within the scope of the current class.
@@ -447,7 +452,6 @@ export class LitTransformer {
     if (existingCtor === undefined) {
       const newCtor = factory.createConstructorDeclaration(
         undefined,
-        undefined,
         [],
         factory.createBlock(
           [
@@ -477,48 +481,6 @@ export class LitTransformer {
         newCtorBody
       );
     }
-  }
-
-  /**
-   * TypeScript will sometimes emit no-op decorator transform cruft like this ...
-   *
-   *   MyElement = __decorate([], MyElement)
-   *
-   * ... when a class or method's decorators field is an empty array, as opposed
-   * to undefined, due to conditionals in the decorator transform like `if
-   * (node.decorators) {...}`. If we've removed all decorators for a node, reset
-   * the decorators field to undefined so that we get clean output instead.
-   */
-  private _cleanUpDecoratorCruft(node: ts.Node) {
-    if (node.decorators === undefined || node.decorators.length > 0) {
-      return node;
-    }
-    if (ts.isClassDeclaration(node)) {
-      return this._context.factory.updateClassDeclaration(
-        node,
-        /* decorators */ undefined,
-        node.modifiers,
-        node.name,
-        node.typeParameters,
-        node.heritageClauses,
-        node.members
-      );
-    }
-    if (ts.isMethodDeclaration(node)) {
-      return this._context.factory.updateMethodDeclaration(
-        node,
-        /* decorators */ undefined,
-        node.modifiers,
-        node.asteriskToken,
-        node.name,
-        node.questionToken,
-        node.typeParameters,
-        node.parameters,
-        node.type,
-        node.body
-      );
-    }
-    return node;
   }
 }
 

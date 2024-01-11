@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2019",
-    "module": "es2015",
-    "lib": ["es2020", "DOM", "DOM.Iterable"],
+    "target": "es2021",
+    "module": "NodeNext",
+    "lib": ["es2021", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -17,16 +17,15 @@
     "noFallthroughCasesInSwitch": true,
     "noImplicitAny": true,
     "noImplicitThis": true,
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "paths": {
+      "@esm-bundle/chai": ["../../../local-types/@esm-bundle/chai/index.d.ts"]
+    },
+    "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": [],
-  "references": [
-    {"path": "../../lit-html"},
-    {"path": "../../lit-element"},
-    {"path": "../../reactive-element"}
-  ]
+  "exclude": []
 }

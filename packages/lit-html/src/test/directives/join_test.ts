@@ -3,10 +3,10 @@
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {html} from '../../lit-html.js';
+import {html} from 'lit-html';
 import {makeAssertRender} from '../test-utils/assert-render.js';
 
-import {join} from '../../directives/join.js';
+import {join} from 'lit-html/directives/join.js';
 
 suite('join', () => {
   let container: HTMLDivElement;

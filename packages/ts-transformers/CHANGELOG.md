@@ -1,5 +1,51 @@
 # Changelog
 
+## 2.0.0
+
+### Major Changes
+
+- [#3850](https://github.com/lit/lit/pull/3850) [`7e8491d4`](https://github.com/lit/lit/commit/7e8491d4ed9f0c39d974616c4678552ef50b81df) - Remove transform for deprecated usage of queryAssignedNodes.
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0, which includes breaking changes to the TypeScript compiler APIs
+
+## 2.0.0-pre.1
+
+### Major Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+## 2.0.0-pre.0
+
+### Major Changes
+
+- [#3850](https://github.com/lit/lit/pull/3850) [`7e8491d4`](https://github.com/lit/lit/commit/7e8491d4ed9f0c39d974616c4678552ef50b81df) - Remove transform for deprecated usage of queryAssignedNodes.
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript 5.0, which includes breaking changes to the TypeScript compiler APIs.
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+## 1.1.3
+
+### Patch Changes
+
+- [#3116](https://github.com/lit/lit/pull/3116) [`7d185b4e`](https://github.com/lit/lit/commit/7d185b4e882aeca70c7b750d8295d0da34a09cd8) - Upgraded TypeScript version to ~4.7.4
+
+- [#3136](https://github.com/lit/lit/pull/3136) [`afff4c17`](https://github.com/lit/lit/commit/afff4c174f131b6461be1ac86e2ceb4201030a8a) - Upgrade ts-clone-node dependency
+
+## 1.1.2
+
+### Patch Changes
+
+- [#3092](https://github.com/lit/lit/pull/3092) [`0c9ee0ec`](https://github.com/lit/lit/commit/0c9ee0ec87b831513f04bdd37e9ed434a134f06f) - Dependencies pinned due to breaking changes.
+
+## 1.1.1
+
+### Patch Changes
+
+- [#2780](https://github.com/lit/lit/pull/2780) [`0f3a87b8`](https://github.com/lit/lit/commit/0f3a87b83ccf32a997208ca8328a8a3fbbafe955) - Fix reactive prop support for getters
+
 ## 1.1.0
 
 ### Minor Changes

@@ -4,11 +4,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html, render, nothing} from '../../lit-html.js';
-import {cache} from '../../directives/cache.js';
-import {stripExpressionComments} from '../test-utils/strip-markers.js';
+import {html, render, nothing, CompiledTemplate} from 'lit-html';
+import {cache} from 'lit-html/directives/cache.js';
+import {stripExpressionComments} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
-import {directive, AsyncDirective} from '../../async-directive.js';
+import {directive, AsyncDirective} from 'lit-html/async-directive.js';
+
+// For compiled template tests
+import {_$LH} from 'lit-html/private-ssr-support.js';
+
+const branding_tag = (s: TemplateStringsArray) => s;
 
 suite('cache directive', () => {
   let container: HTMLDivElement;
@@ -22,6 +27,78 @@ suite('cache directive', () => {
       render(
         html`${cache(
           condition ? html`<div v=${v}></div>` : html`<span v=${v}></span>`
+        )}`,
+        container
+      );
+
+    renderCached(true, 'A');
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div v="A"></div>'
+    );
+    const element1 = container.firstElementChild;
+
+    renderCached(false, 'B');
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<span v="B"></span>'
+    );
+    const element2 = container.firstElementChild;
+
+    assert.notStrictEqual(element1, element2);
+
+    renderCached(true, 'C');
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<div v="C"></div>'
+    );
+    assert.strictEqual(container.firstElementChild, element1);
+
+    renderCached(false, 'D');
+    assert.equal(
+      stripExpressionComments(container.innerHTML),
+      '<span v="D"></span>'
+    );
+    assert.strictEqual(container.firstElementChild, element2);
+  });
+
+  test('caches compiled templates', () => {
+    const _$lit_template_1: CompiledTemplate = {
+      h: branding_tag`<div></div>`,
+      parts: [
+        {
+          type: 1,
+          index: 0,
+          name: 'v',
+          strings: ['', ''],
+          ctor: _$LH.AttributePart,
+        },
+      ],
+    };
+    const _$lit_template_2: CompiledTemplate = {
+      h: branding_tag`<span></span>`,
+      parts: [
+        {
+          type: 1,
+          index: 0,
+          name: 'v',
+          strings: ['', ''],
+          ctor: _$LH.AttributePart,
+        },
+      ],
+    };
+    const renderCached = (condition: any, v: string) =>
+      render(
+        html`${cache(
+          condition
+            ? {
+                _$litType$: _$lit_template_1,
+                values: [v],
+              }
+            : {
+                _$litType$: _$lit_template_2,
+                values: [v],
+              }
         )}`,
         container
       );

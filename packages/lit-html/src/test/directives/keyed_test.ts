@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {keyed} from '../../directives/keyed.js';
-import {html, render} from '../../lit-html.js';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {keyed} from 'lit-html/directives/keyed.js';
+import {html, render} from 'lit-html';
+import {stripExpressionMarkers} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
 
 suite('keyed directive', () => {

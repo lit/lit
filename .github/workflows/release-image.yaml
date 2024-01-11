@@ -1,0 +1,54 @@
+name: Generate Release Image
+
+on:
+  pull_request:
+    paths:
+      - '**/CHANGELOG.md'
+  push:
+    paths:
+      - '**/CHANGELOG.md'
+
+permissions:
+  contents: read
+
+jobs:
+  release-image:
+    if: github.repository == 'lit/lit'
+
+    name: Generate Release Image
+    runs-on: ubuntu-latest
+    env:
+      WIREIT_LOGGER: quiet-ci
+    steps:
+      - uses: actions/checkout@v3
+
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 20
+          cache: 'npm'
+          cache-dependency-path: package-lock.json
+
+      - uses: google/wireit@setup-github-actions-caching/v1
+
+      - name: NPM install
+        run: npm ci
+
+      - name: Build release-image script
+        working-directory: packages/internal-scripts
+        run: npm run build
+
+      - name: Create release image
+        env:
+          BODY: ${{ github.event.pull_request.body }}
+        run: |
+          # Store the PR body contents containing the changelog in 'release.md'
+          echo "$BODY" > release.md
+          # Only render the pull request content including and after the "#
+          # Releases" heading.
+          node_modules/.bin/release-image -m <(sed -n '/# Releases/,$p' release.md)
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: releaseimage
+          path: release.png

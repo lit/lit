@@ -5,6 +5,7 @@
  */
 
 import * as path from 'path';
+import {pathToFileURL} from 'url';
 import {Worker} from 'worker_threads';
 import type {Message} from './worker/types.js';
 
@@ -76,8 +77,8 @@ function configureWorker(
 
   eleventyConfig.addTransform(
     'render-lit',
-    async (content: string, outputPath: string) => {
-      if (!outputPath.endsWith('.html')) {
+    async (content: string, outputPath: string | false) => {
+      if (outputPath && !outputPath.endsWith('.html')) {
         return content;
       }
 
@@ -156,11 +157,11 @@ ${reset}`
     )) as typeof import('@lit-labs/ssr/lib/module-loader.js');
     const window = getWindow({includeJSBuiltIns: true});
     const loader = new ModuleLoader({global: window});
-    // TODO(aomarks) Replace with concurrent Promise.all version once
-    // https://github.com/lit/lit/issues/2549 has been addressed.
-    for (const module of resolvedComponentModules) {
-      await loader.importModule(module, renderModulePath);
-    }
+    await Promise.all(
+      resolvedComponentModules.map((module) =>
+        loader.importModule(module, renderModulePath)
+      )
+    );
     contextifiedRender = (
       await loader.importModule(
         '@lit-labs/ssr/lib/render-lit-html.js',
@@ -168,7 +169,7 @@ ${reset}`
       )
     ).module.namespace.render as typeof contextifiedRender;
     // TOOD(aomarks) We could also directly synthesize an html TemplateResult
-    // instead of doing so via the the unsafeHTML directive. The directive is
+    // instead of doing so via the unsafeHTML directive. The directive is
     // performing some extra validation that doesn't really apply to us.
     contextifiedUnsafeHTML = (
       await loader.importModule(
@@ -180,8 +181,8 @@ ${reset}`
 
   eleventyConfig.addTransform(
     'render-lit',
-    async (content: string, outputPath: string) => {
-      if (!outputPath.endsWith('.html')) {
+    async (content: string, outputPath: string | false) => {
+      if (outputPath && !outputPath.endsWith('.html')) {
         return content;
       }
 
@@ -208,8 +209,8 @@ module.exports = {
       return;
     }
 
-    const resolvedComponentModules = componentModules.map((module) =>
-      path.resolve(process.cwd(), module)
+    const resolvedComponentModules = componentModules.map(
+      (module) => pathToFileURL(path.resolve(process.cwd(), module)).href
     );
 
     switch (mode) {

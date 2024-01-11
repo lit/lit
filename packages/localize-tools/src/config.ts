@@ -12,6 +12,12 @@ import type {Config, ConfigFile} from './types/config.js';
 import {dirname} from 'path';
 import {fileURLToPath} from 'url';
 
+export type {Config} from './types/config.js';
+export type {
+  TransformOutputConfig,
+  RuntimeOutputConfig,
+} from './types/modes.js';
+
 /**
  * Read a JSON config file from the given path, validate it, and return it. Also
  * adds a "$schema" property if missing. Throws if there was a problem reading,

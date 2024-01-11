@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2019",
+    "target": "es2021",
     "module": "es2015",
-    "lib": ["es2020", "DOM", "DOM.Iterable"],
+    "lib": ["es2021", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -20,13 +20,9 @@
     "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "types": ["node"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": [],
-  "references": [
-    {"path": "../../lit-html"},
-    {"path": "../../lit-element"},
-    {"path": "../../reactive-element"}
-  ]
+  "exclude": []
 }

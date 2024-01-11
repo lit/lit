@@ -1,0 +1,70 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "@lit-internal/test-element-a",
+  "version": "1.0.1",
+  "scripts": {
+    "build": "wireit",
+    "pack": "wireit"
+  },
+  "files": [
+    "/element-a.{js,js.map,d.ts,d.ts.map}",
+    "/element-events.{js,js.map,d.ts,d.ts.map}",
+    "/element-props.{js,js.map,d.ts,d.ts.map}",
+    "/element-slots.{js,js.map,d.ts,d.ts.map}",
+    "/sub/element-sub.{js,js.map,d.ts,d.ts.map}",
+    "/detail-type.{js,js.map,d.ts,d.ts.map}",
+    "/package-stuff.{js,js.map,d.ts,d.ts.map}",
+    "/special-event.{js,js.map,d.ts,d.ts.map}"
+  ],
+  "dependencies": {
+    "lit": "^3.0.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.2.0"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "../../../lit:build"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "command": "tsc --build --pretty",
+      "output": [
+        "element-a.{js,js.map,d.ts,d.ts.map}",
+        "element-events.{js,js.map,d.ts,d.ts.map}",
+        "element-props.{js,js.map,d.ts,d.ts.map}",
+        "element-slots.{js,js.map,d.ts,d.ts.map}",
+        "sub/element-sub.{js,js.map,d.ts,d.ts.map}",
+        "detail-type.{js,js.map,d.ts,d.ts.map}",
+        "package-stuff.{js,js.map,d.ts,d.ts.map}",
+        "special-event.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "pack": {
+      "dependencies": [
+        "build"
+      ],
+      "command": "npm pack",
+      "files": [
+        "package.json",
+        "element-a.{js,js.map,d.ts,d.ts.map}",
+        "element-events.{js,js.map,d.ts,d.ts.map}",
+        "element-props.{js,js.map,d.ts,d.ts.map}",
+        "element-slots.{js,js.map,d.ts,d.ts.map}",
+        "sub/element-sub.{js,js.map,d.ts,d.ts.map}",
+        "detail-type.{js,js.map,d.ts,d.ts.map}",
+        "package-stuff.{js,js.map,d.ts,d.ts.map}",
+        "special-event.{js,js.map,d.ts,d.ts.map}"
+      ],
+      "output": [
+        "*.tgz"
+      ]
+    }
+  }
+}

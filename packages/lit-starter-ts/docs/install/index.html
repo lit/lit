@@ -34,7 +34,7 @@
 <pre class="language-bash"><code class="language-bash"><span class="token function">npm</span> i my-element</code></pre>
 <h2>CDN</h2>
 <p>npm CDNs like <a href="">unpkg.com</a> can directly serve files that have been published to npm. This works great for standard JavaScript modules that the browser can load natively.</p>
-<p>For this element to work from unpkg.com specifically, you need to include the <code>?module</code> query parameter, which tells unpkg.com to rewrite &quot;bare&quot; module specificers to full URLs.</p>
+<p>For this element to work from unpkg.com specifically, you need to include the <code>?module</code> query parameter, which tells unpkg.com to rewrite &quot;bare&quot; module specifiers to full URLs.</p>
 <h3>HTML</h3>
 <pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>module<span class="token punctuation">"</span></span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>https://unpkg.com/my-element?module<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token script"></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span></code></pre>
 <h3>JavaScript</h3>

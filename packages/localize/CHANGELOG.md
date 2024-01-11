@@ -1,5 +1,67 @@
 # Changelog
 
+## 0.12.1
+
+### Patch Changes
+
+- [#4326](https://github.com/lit/lit/pull/4326) [`75943d95`](https://github.com/lit/lit/commit/75943d957b0e3a4850d87fc3a67d28fbf665dc9f) - Loosen type for the `@localized()` decorator to be able to decorate any `ReactiveControllerHost` which also alleviates type errors that could arise with multiple copies of `@lit/reactive-element` present in the project. Also remove dependency on `@lit/reactive-element` as it is already covered by the `lit` dependency.
+
+- [#4299](https://github.com/lit/lit/pull/4299) [`fffa4406`](https://github.com/lit/lit/commit/fffa44066e06bdbec2d2e28166b7c81b11a8c213) - Update version range for `lit` dependency to include v2 (and/or `@lit/reactive-element` v1). This allows projects still on lit v2 to use this package without being forced to install lit v3.
+
+## 0.12.0
+
+### Minor Changes
+
+- [#4159](https://github.com/lit/lit/pull/4159) [`d1e126c4`](https://github.com/lit/lit/commit/d1e126c4a75967ad2cf0c0155b3b2e415e0bc906) - Add support for standard decorators to the `@localize` decorator.
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- Updated dependencies:
+  - @lit/reactive-element@2.0.0
+  - lit@3.0.0
+
+## 0.12.0-pre.1
+
+### Minor Changes
+
+- [#4159](https://github.com/lit/lit/pull/4159) [`d1e126c4`](https://github.com/lit/lit/commit/d1e126c4a75967ad2cf0c0155b3b2e415e0bc906) - Add support for standard decorators to the `@localize` decorator.
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- Updated dependencies [[`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5), [`0f6878dc`](https://github.com/lit/lit/commit/0f6878dc45fd95bbeb8750f277349c1392e2b3ad), [`2a01471a`](https://github.com/lit/lit/commit/2a01471a5f65fe34bad11e1099281811b8d0f79b), [`2eba6997`](https://github.com/lit/lit/commit/2eba69974c9e130e7483f44f9daca308345497d5), [`d27a77ec`](https://github.com/lit/lit/commit/d27a77ec3d3999e872df9218a2b07f90f22eb417), [`6470807f`](https://github.com/lit/lit/commit/6470807f3a0981f9d418cb26f05969912455d148), [`09949234`](https://github.com/lit/lit/commit/09949234445388d51bfb4ee24ff28a4c9f82fe17)]:
+  - @lit/reactive-element@2.0.0-pre.1
+  - lit@3.0.0-pre.1
+
+## 0.11.5-pre.0
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+- Updated dependencies [[`be72f66b`](https://github.com/lit/lit/commit/be72f66bd9aab5d0586729fb5be4bac4aa27cb7f), [`dfd747cf`](https://github.com/lit/lit/commit/dfd747cf4f7239e0c3bb7134f8acb967d0157654), [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2), [`1db01376`](https://github.com/lit/lit/commit/1db0137699b35d7e7bfac9b2ab274af4100fd7cf), [`6f2833fd`](https://github.com/lit/lit/commit/6f2833fd05f2ecde5386f72d291dafc9dbae0cf7), [`c3e473b4`](https://github.com/lit/lit/commit/c3e473b499ff029b5e1aff01ca8799daf1ca1bbe), [`92cedaa2`](https://github.com/lit/lit/commit/92cedaa2c8cd8a306be3fe25d52e0e47bb044020), [`7e8491d4`](https://github.com/lit/lit/commit/7e8491d4ed9f0c39d974616c4678552ef50b81df), [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa), [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4)]:
+  - @lit/reactive-element@2.0.0-pre.0
+  - lit@3.0.0-pre.0
+
+## 0.11.4
+
+### Patch Changes
+
+- [#3198](https://github.com/lit/lit/pull/3198) [`0162fbad`](https://github.com/lit/lit/commit/0162fbad61826ba0ff4188135ca4ab778762c4d7) - TS sources are now inlined in the JS source maps
+
+- Updated dependencies [[`daddeb34`](https://github.com/lit/lit/commit/daddeb346a2f454b25a6a5d1722683197f25fbcd), [`6361a4b4`](https://github.com/lit/lit/commit/6361a4b4a589465cf6836c8454ed8ca4521d7b4d), [`ae6f6808`](https://github.com/lit/lit/commit/ae6f6808f539254b72ec7efcff34b812173abe64)]:
+  - lit@2.3.0
+  - @lit/reactive-element@1.4.0
+
+## 0.11.3
+
+### Patch Changes
+
+- [#2972](https://github.com/lit/lit/pull/2972) [`ee864b6d`](https://github.com/lit/lit/commit/ee864b6dd6616d6cb72924089581af220196c894) - Fix multiple runtime msg call with same template but different expressions
+
 ## 0.11.2
 
 ### Patch Changes
@@ -254,7 +316,7 @@ class HomePage {
 ### Fixed
 
 - Fixed `main` field of `package.json` so that it resolves to `lit-localize.js`
-  instead of non-existent file.
+  instead of nonexistent file.
 
 ## [0.4.0] - 2020-09-08
 

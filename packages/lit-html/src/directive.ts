@@ -48,7 +48,7 @@ export const PartType = {
   ELEMENT: 6,
 } as const;
 
-export type PartType = typeof PartType[keyof typeof PartType];
+export type PartType = (typeof PartType)[keyof typeof PartType];
 
 export interface ChildPartInfo {
   readonly type: typeof PartType.CHILD;

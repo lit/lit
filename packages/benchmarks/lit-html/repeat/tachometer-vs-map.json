@@ -1,5 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
   "sampleSize": 50,
   "timeout": 0,
   "collate": true,
@@ -22,11 +23,11 @@
       "expand": [
         {
           "name": "repeat",
-          "url": "lit-html/repeat/index.html?method=repeat"
+          "url": "index.html?method=repeat"
         },
         {
           "name": "map",
-          "url": "lit-html/repeat/index.html?method=map"
+          "url": "index.html?method=map"
         }
       ]
     }

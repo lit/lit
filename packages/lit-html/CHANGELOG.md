@@ -1,5 +1,227 @@
 # Change Log
 
+## 3.1.1
+
+### Patch Changes
+
+- [#4409](https://github.com/lit/lit/pull/4409) [`1af7991c`](https://github.com/lit/lit/commit/1af7991c27456c7e6073a3ee6f18f102c2adc026) - asyncReplace correctly re-renders when value is unchanged (#4408)
+
+## 3.1.0
+
+### Minor Changes
+
+- [#4309](https://github.com/lit/lit/pull/4309) [`949a5467`](https://github.com/lit/lit/commit/949a54677748a1f83ec4d166bd40e244de3afda7) - Adds two new types: UncompiledTemplateResult and MaybeCompiledTemplateResult. Currently UncompiledTemplateResult is the same as TemplateResult, and MaybeCompiledTemplateResult is the union of the compiled and uncompiled types.
+
+## 3.0.2
+
+### Patch Changes
+
+- [#4345](https://github.com/lit/lit/pull/4345) [`02b8d620`](https://github.com/lit/lit/commit/02b8d62003a16075ce3873ac3e40db43c0254ecf) - Add a dev mode warning if a static value such as `literal` or `unsafeStatic` is detected within the non-static `html` tag function. These should only be used with the static `html` tag function imported from `lit-html/static.js` or `lit/static-html.js`.
+
+## 3.0.1
+
+### Patch Changes
+
+- [#4240](https://github.com/lit/lit/pull/4240) [`edf998c9`](https://github.com/lit/lit/commit/edf998c9fe34183888ffc781dd330dc8a962dd7a) Thanks [@remziatay](https://github.com/remziatay)! - Improved the type inferece of the `choose()` directive to properly restrict the case type inferred from provided value. **Note**: If this change creates a type error in your code, there must have been an unreachable case that can be removed, or the type of your `value` might be missing a valid case in the union.
+
+- [#4310](https://github.com/lit/lit/pull/4310) [`8f674ab3`](https://github.com/lit/lit/commit/8f674ab319e4eadbf5b028f1c0bd15d276c02d0e) Thanks [@megheaiulian](https://github.com/megheaiulian)! - The `when()` directive now calls the case functions with the provided condition value as an argument. This allows the narrowing of types for the condition value based on its truthiness when used as a parameter for the case function.
+
+## 3.0.0
+
+### Major Changes
+
+- [#3756](https://github.com/lit/lit/pull/3756) [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4) - Drop IE11 support
+
+- [#3759](https://github.com/lit/lit/pull/3759) [`1db01376`](https://github.com/lit/lit/commit/1db0137699b35d7e7bfac9b2ab274af4100fd7cf) - Use replaceWith() for SVG templates
+
+- [#3765](https://github.com/lit/lit/pull/3765) [`92cedaa2`](https://github.com/lit/lit/commit/92cedaa2c8cd8a306be3fe25d52e0e47bb044020) - Remove experimental hydrate modules. These are available from `@lit-labs/ssr-client`.
+
+- [#3751](https://github.com/lit/lit/pull/3751) [`dfd747cf`](https://github.com/lit/lit/commit/dfd747cf4f7239e0c3bb7134f8acb967d0157654) - Simplify lit-html attribute handling for standards-compliant browsers that iterate attributes in source order
+
+- [#3750](https://github.com/lit/lit/pull/3750) [`c3e473b4`](https://github.com/lit/lit/commit/c3e473b499ff029b5e1aff01ca8799daf1ca1bbe) - Use toggleAttribute() to simplify boolean attribute parts
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- [#3762](https://github.com/lit/lit/pull/3762) [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2) - Remove Lit 1 -> Lit 2 migration warnings
+
+## 3.0.0-pre.1
+
+### Minor Changes
+
+- [#4081](https://github.com/lit/lit/pull/4081) [`d27a77ec`](https://github.com/lit/lit/commit/d27a77ec3d3999e872df9218a2b07f90f22eb417) - Sync from last stable release
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+## 3.0.0-pre.0
+
+### Major Changes
+
+- [#3751](https://github.com/lit/lit/pull/3751) [`dfd747cf`](https://github.com/lit/lit/commit/dfd747cf4f7239e0c3bb7134f8acb967d0157654) - Simplify lit-html attribute handling for standards-compliant browsers that iterate attributes in source order
+
+- [#3759](https://github.com/lit/lit/pull/3759) [`1db01376`](https://github.com/lit/lit/commit/1db0137699b35d7e7bfac9b2ab274af4100fd7cf) - Use replaceWith() for SVG templates
+
+- [#3750](https://github.com/lit/lit/pull/3750) [`c3e473b4`](https://github.com/lit/lit/commit/c3e473b499ff029b5e1aff01ca8799daf1ca1bbe) - Use toggleAttribute() to simplify boolean attribute parts
+
+- [#3765](https://github.com/lit/lit/pull/3765) [`92cedaa2`](https://github.com/lit/lit/commit/92cedaa2c8cd8a306be3fe25d52e0e47bb044020) - Remove experimental hydrate modules. These are available from `@lit-labs/ssr-client`.
+
+- [#3756](https://github.com/lit/lit/pull/3756) [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4) - Drop IE11 support
+
+### Patch Changes
+
+- [#3762](https://github.com/lit/lit/pull/3762) [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2) - Remove Lit 1 -> Lit 2 migration warnings
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+## 2.8.0
+
+### Minor Changes
+
+- [#3993](https://github.com/lit/lit/pull/3993) [`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d) - Fix return type of `isTemplateResult` helper to include the `CompiledTemplateResult` and fix the `cache` directive to work correctly with `CompiledTemplateResult`s. Also add an explicit `isCompiledTemplateResult` helper.
+
+## 2.7.5
+
+### Patch Changes
+
+- [#3968](https://github.com/lit/lit/pull/3968) [`5bb40831`](https://github.com/lit/lit/commit/5bb408315f89b8855329074ad5d707880dc77923) - Allow undefined to be passed to the ref() directive
+
+- [#3969](https://github.com/lit/lit/pull/3969) [`7d8d4a15`](https://github.com/lit/lit/commit/7d8d4a1517a10f51b7de442acd9354f6083e1518) - Make RefOrCallback generic like Ref<T>
+
+- [#3987](https://github.com/lit/lit/pull/3987) [`bb2560f1`](https://github.com/lit/lit/commit/bb2560f15884c3decbedb5be6bab587150910668) - Change the `h` field of `CompiledTemplate`s to a `TemplateStringsArray` preventing the spoofing of `CompiledTemplate`s by JSON injection attacks. This should not be a breaking change for most users unless you're using CompiledTemplates. This is a necessary security fix, similar to [#2307](https://github.com/lit/lit/pull/2307).
+
+## 2.7.4
+
+### Patch Changes
+
+- [#3888](https://github.com/lit/lit/pull/3888) [`0f30e6fb`](https://github.com/lit/lit/commit/0f30e6fbcc1aba2649e7670ac9c03544f4932b6d) - Fix a memory leak cause by lit-html's shared TreeWalker holding a reference to the last tree it walked.
+
+## 2.7.3
+
+### Patch Changes
+
+- [#3825](https://github.com/lit/lit/pull/3825) [`343187b1`](https://github.com/lit/lit/commit/343187b1acbbdb02ce8d01fa0a0d326870419763) - `static-html` no longer adds an item to `TemplateResult`'s value array for the last consumed static value. This fixes an error with server-side rendering of static html.
+
+- [#3766](https://github.com/lit/lit/pull/3766) [`4431cbb8`](https://github.com/lit/lit/commit/4431cbb85428e54bafa090088056a325fe623aa1) - Fix styleMap initial render of mixed-case custom props
+
+## 2.7.2
+
+### Patch Changes
+
+- [#3788](https://github.com/lit/lit/pull/3788) [`88fe0390`](https://github.com/lit/lit/commit/88fe039015ff979e031efbdde1861ae5b11a0da5) - Allow numbers to be used as values in styleMap()
+
+## 2.7.1
+
+### Patch Changes
+
+- [#3768](https://github.com/lit/lit/pull/3768) [`7c1191da`](https://github.com/lit/lit/commit/7c1191da8e2f33e145ea58265531b7c744835401) - Fix styleMap's handling of important flags
+
+- [#3720](https://github.com/lit/lit/pull/3720) [`575fb578`](https://github.com/lit/lit/commit/575fb578473031859b59b9ed98634ba091b389f7) - `lit-html/experimental-hydrate.js` and `lit-element/experimental-hydrate-support.js` have been moved to `@lit-labs/ssr-client`.
+
+  The modules in the original location have been marked deprecated and will be removed in a future version.
+
+## 2.7.0
+
+### Minor Changes
+
+- [#3667](https://github.com/lit/lit/pull/3667) [`e00f6f52`](https://github.com/lit/lit/commit/e00f6f52199d5dbc08d4c15f62380422e77cde7f) - [SSR only] Improved how nodes with attribute/property/event/element bindings are rendered in SSR, to avoid adding comments inside of "raw text elements" like `<textarea>`. Fixes #3663.
+
+  Note: `@lit-labs/ssr` and `lit-html` must be updated together.
+
+### Patch Changes
+
+- [#3615](https://github.com/lit/lit/pull/3615) [`4d698430`](https://github.com/lit/lit/commit/4d698430b38efa49c97b841238b331340af5fef0) - Don't throw in `ChildPart.parentNode` if the `parentNode` is null
+
+- [#3583](https://github.com/lit/lit/pull/3583) [`88a40177`](https://github.com/lit/lit/commit/88a40177de9be5d117a21e3da5414bd777872544) - [SSR only] Add more detail to some hydration errors
+
+## 2.6.1
+
+### Patch Changes
+
+- [#3526](https://github.com/lit/lit/pull/3526) [`65e56655`](https://github.com/lit/lit/commit/65e56655b73d22172647c1a748e7a907ad0227c0) - Disable ShadyDOM noPatch in Node dev build. This fixes the issue of throwing due to undefined `window`.
+
+## 2.6.0
+
+### Minor Changes
+
+- [#3522](https://github.com/lit/lit/pull/3522) [`72fcf0d7`](https://github.com/lit/lit/commit/72fcf0d70b4f4644e080e9c375a58cf8fc35e9e8) - When running in Node, Lit now automatically includes minimal DOM shims which are
+  sufficient for most SSR (Server Side Rendering) use-cases, removing the need to
+  import the global DOM shim from `@lit-labs/ssr`.
+
+  The new `@lit-labs/ssr-dom-shim` package has been introduced, which exports an `HTMLElement`, `CustomElementRegistry`, and default `customElements` singleton.
+
+  The existing `@lit-labs/ssr` global DOM shim can still be used, and is compatible with the new package, because `@lit-labs/ssr` imports from `@lit-labs/ssr-dom-shim`. Importing the global DOM shim adds more APIs to the global object, such as a global `HTMLElement`, `TreeWalker`, `fetch`, and other APIs. It is recommended that users try to remove usage of the `@lit-labs/ssr` DOM shim, and instead rely on the more minimal, automatic shimming that `@lit/reactive-element` now provides automatically.
+
+## 2.5.0
+
+### Minor Changes
+
+- [#3507](https://github.com/lit/lit/pull/3507) [`b152db29`](https://github.com/lit/lit/commit/b152db291932aa25356543395251a9b42e12292d) - `lit-html` and `reactive-element` now include development Node builds with unminified code and dev warnings.
+
+## 2.4.0
+
+### Minor Changes
+
+- [#3318](https://github.com/lit/lit/pull/3318) [`21313077`](https://github.com/lit/lit/commit/21313077669c19b3d631a50825b8a01dae1dd0d4) - Adds an `isServer` variable export to `lit` and `lit-html/is-server.js` which will be `true` in Node and `false` in the browser. This can be used when authoring components to change behavior based on whether or not the component is executing in an SSR context.
+
+## 2.3.1
+
+### Patch Changes
+
+- [#3223](https://github.com/lit/lit/pull/3223) [`5a65ca97`](https://github.com/lit/lit/commit/5a65ca97464839fcd4ea59240b9910002fa64a82) - Use existing `document` in Node build
+
+## 2.3.0
+
+### Minor Changes
+
+- [#3156](https://github.com/lit/lit/pull/3156) [`ae6f6808`](https://github.com/lit/lit/commit/ae6f6808f539254b72ec7efcff34b812173abe64) - Lit and its underlying libraries can now be imported directly from Node without crashing, without the need to load the @lit-labs/ssr dom-shim library. Note that actually rendering from a Node context still requires the @lit-labs/ssr dom-shim, and the appropriate integration between @lit-labs/ssr and your framework/tool.
+
+### Patch Changes
+
+- [#3003](https://github.com/lit/lit/pull/3003) [`daddeb34`](https://github.com/lit/lit/commit/daddeb346a2f454b25a6a5d1722683197f25fbcd) - Lit's `async-directive` now re-exports everything from the `directive` module.
+
+- [#3199](https://github.com/lit/lit/pull/3199) [`0725fdb4`](https://github.com/lit/lit/commit/0725fdb4dd7d36e3a7154830c41b9af4cf866e52) - In DEV_MODE, render a warning instead of rendering a template's host in the template.
+
+  Most commonly this would happen when rendering `${this}` in a LitElement's template, which has the counterintuitive behavior of removing the element from the DOM, because when rendering the element's template we attach it into its own shadow root, which removes it from the DOM, causing it simply disappear. This is especially problematic with a fast HMR system.
+
+- [#3186](https://github.com/lit/lit/pull/3186) [`3766ae4c`](https://github.com/lit/lit/commit/3766ae4c35edf794aa30ee2d738c6f63fdda44e5) - `StaticValue` interface type is now exported.
+
+## 2.2.7
+
+### Patch Changes
+
+- [#3130](https://github.com/lit/lit/pull/3130) [`1f0567f1`](https://github.com/lit/lit/commit/1f0567f10c56531e555329eeb006349ba022070f) - Export the underlying type of the `keyed` directive.
+
+- [#3132](https://github.com/lit/lit/pull/3132) [`2fe2053f`](https://github.com/lit/lit/commit/2fe2053fe04e7226e5fa4e8b730e91a62a547b27) - Added "types" entry to package exports. This tells newer versions of TypeScript where to look for typings for each module.
+
+## 2.2.6
+
+### Patch Changes
+
+- [#2849](https://github.com/lit/lit/pull/2849) [`b12e8d93`](https://github.com/lit/lit/commit/b12e8d93fb4a45b1a16e37716ac6e0a684d5e220) - Expand documentation for `render` and `TemplateResult`.
+
+## 2.2.5
+
+### Patch Changes
+
+- [#2952](https://github.com/lit/lit/pull/2952) [`a78cc3b7`](https://github.com/lit/lit/commit/a78cc3b7f221a97e04dfda77d790fbea8f48d12c) - Fix SSR hydration bug relating to <input> and other void elements having attribute bindings.
+
+## 2.2.4
+
+### Patch Changes
+
+- [#2847](https://github.com/lit/lit/pull/2847) [`79d82385`](https://github.com/lit/lit/commit/79d823851fcf938a8b6a0ca5f164b6b6fb1b4155) - Fix typo in API docs for live() directive.
+
+- [#2828](https://github.com/lit/lit/pull/2828) [`b3b6bc33`](https://github.com/lit/lit/commit/b3b6bc336910d73b5abad1c7da81731c110e74be) - Remove private Lit 2 migration helpers: `INTERNAL` and `clearContainerForLit2MigrationOnly`. This logic is no longer depended on.
+
+## 2.2.3
+
+### Patch Changes
+
+- [#2732](https://github.com/lit/lit/pull/2732) [`3e181bcb`](https://github.com/lit/lit/commit/3e181bcb3d969775eda799fd6fcae1ead843225b) - Enforce use of file extensions in imports. Fixes an issue with older TypeScript compilers.
+
 ## 2.2.2
 
 ### Patch Changes
@@ -138,7 +360,7 @@
   re-render to the tree. When called with `true`, any such directives'
   `reconnected` callback will be called prior to its next `update`/`render`
   callbacks. Note that `LitElement` will call this method by default on the
-  rendered part in its `connectedCallback` and `disconnetedCallback`.
+  rendered part in its `connectedCallback` and `disconnectedCallback`.
 - Added the `static-html` module, a static `html` tag function, a `literal` tag function, and `unsafeStatic()`, which allows template authors to add strings to the
   static structure of the template, before it's parsed as HTML. See [Static expressions](https://lit.dev/docs/templates/expressions/#static-expressions) for more details.
 - Added `lit-html/directive-helpers.js` module with helpers for creating custom directives. See [Custom directives](https://lit.dev/docs/api/custom-directives/#clearPart) for more details.
@@ -340,7 +562,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
   re-render to the tree. When called with `true`, any such directives'
   `reconnectedCallback` will be called prior to its next `update`/`render`
   callbacks. Note that `LitElement` will call this method by default on the
-  rendered part in its `connectedCallback` and `disconnetedCallback`.
+  rendered part in its `connectedCallback` and `disconnectedCallback`.
 
 - Added `unsafeStatic()`, which allows template authors to add strings to the
   static structure of the template, before it's parsed as HTML.
@@ -381,7 +603,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
   `AttributePart`, etc) have been change to interface-only exports. The constructors are no longer exported. Directive authors should use helpers in `directive-helpers.js` to construct parts.
 
 - (since 2.0.0-pre.3) The `setPartValue` function in
-  `directove-helpers.js` has been renamed to `setChildPartValue` and now only
+  `directive-helpers.js` has been renamed to `setChildPartValue` and now only
   supports ChildParts. Directives that require updating their container
   part outside the `render`/`update` lifecycle should extend
   `DisconnectableDirective` and use `this.setValue()`.
@@ -400,7 +622,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 - Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.
 - Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that `` html`<div class=${['a', 'b']}> `` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
 - Multiple bindings in a single attribute value don't require the attribute value is quoted, as long as there is no whitespace or other attribute-ending character in the attribute value. `` html`<div id=${a}-${b}> ``
-- The directive and part APIs are significantly different. See the [README](README.md) for mroe details.
+- The directive and part APIs are significantly different. See the [README](README.md) for more details.
 
 ### Added
 
@@ -602,7 +824,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 ### Changed
 
 - Eliminated a cycle in the module import graph ([#472](https://github.com/Polymer/lit-html/pull/472))
-- Remove the default value for the templateProcessor parameter in TemplateResult#constuctor, making it a required paremeter ([#472](https://github.com/Polymer/lit-html/pull/472))
+- Remove the default value for the templateProcessor parameter in TemplateResult#constuctor, making it a required parameter ([#472](https://github.com/Polymer/lit-html/pull/472))
 
 ## [0.11.0] - 2018-08-28
 
@@ -658,7 +880,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 - Refactored how template tags and `render()` are implemented so that all
   specialization of template syntax is done in tags, not `render()`, allowing
-  for the mixining of templates of different syntaxes, and for hooks in
+  for the mixing-in of templates of different syntaxes, and for hooks in
   `render()` to change templates before they're initially processed.
 - Added ShadyCSS support in lib/shady-render.js. It's exported render function
   will pass templates to ShadyCSS's `prepareTemplate()` function to process style

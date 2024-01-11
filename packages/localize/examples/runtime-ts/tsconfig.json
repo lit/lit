@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
-    "target": "es2019",
+    "target": "es2021",
     "module": "esnext",
     "moduleResolution": "node",
-    "lib": ["es2020", "DOM"],
+    "lib": ["es2021", "DOM"],
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
@@ -13,7 +13,10 @@
     "outDir": "lib/",
     "declaration": true,
     "sourceMap": true,
-    "experimentalDecorators": true
+    "experimentalDecorators": true,
+    "incremental": true,
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "types": []
   },
   "include": ["src/**/*"]
 }

@@ -9,7 +9,7 @@
 
 import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
 
-interface StaticValue {
+export interface StaticValue {
   /** The value to interpolate as-is into the template. */
   _$litStatic$: string;
 
@@ -131,7 +131,10 @@ export const withStatic =
         s += staticValue + strings[++i];
         hasStatics = true;
       }
-      dynamicValues.push(dynamicValue);
+      // If the last value is static, we don't need to push it.
+      if (i !== l) {
+        dynamicValues.push(dynamicValue);
+      }
       staticStrings.push(s);
       i++;
     }

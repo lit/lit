@@ -3,8 +3,8 @@
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import '../../polyfill-support.js';
-import {html, render} from '../../lit-html.js';
+import 'lit-html/polyfill-support.js';
+import {html, render} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
 import {ShadyRenderOptions} from '../test-utils/shadow-root.js';
 

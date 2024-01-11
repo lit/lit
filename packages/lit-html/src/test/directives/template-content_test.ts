@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {templateContent} from '../../directives/template-content.js';
-import {html, render} from '../../lit-html.js';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {templateContent} from 'lit-html/directives/template-content.js';
+import {html, render} from 'lit-html';
+import {stripExpressionMarkers} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
 
 suite('templateContent', () => {

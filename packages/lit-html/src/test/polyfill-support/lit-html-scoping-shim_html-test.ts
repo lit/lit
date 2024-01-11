@@ -3,9 +3,9 @@
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import '../../polyfill-support.js';
+import 'lit-html/polyfill-support.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
-import {html} from '../../lit-html.js';
+import {html} from 'lit-html';
 import {assert} from '@esm-bundle/chai';
 
 suite('ShadyCSS scoping shim', () => {

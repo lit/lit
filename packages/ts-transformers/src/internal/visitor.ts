@@ -23,7 +23,7 @@ export interface ClassDecoratorVisitor {
   visit(classContext: LitClassContext, decorator: ts.Decorator): void;
 }
 
-/** Visit a Lit decorator that is applied to a class memeber. */
+/** Visit a Lit decorator that is applied to a class member. */
 export interface MemberDecoratorVisitor {
   kind: 'memberDecorator';
   decoratorName: string;

@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {unsafeHTML} from '../../directives/unsafe-html.js';
-import {render, html, nothing, noChange} from '../../lit-html.js';
-import {stripExpressionMarkers} from '../test-utils/strip-markers.js';
+import {unsafeHTML} from 'lit-html/directives/unsafe-html.js';
+import {render, html, nothing, noChange} from 'lit-html';
+import {stripExpressionMarkers} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
 
 suite('unsafeHTML directive', () => {

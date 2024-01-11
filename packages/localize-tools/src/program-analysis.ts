@@ -6,6 +6,7 @@
 
 import ts from 'typescript';
 import * as parse5 from 'parse5';
+import {ChildNode, ParentNode, TextNode, CommentNode} from '@parse5/tools';
 import {ProgramMessage, Placeholder} from './messages.js';
 import {createDiagnostic} from './typescript.js';
 import {
@@ -370,9 +371,11 @@ interface Expression {
  */
 const EXPRESSION_RAND = String(Math.random()).slice(2);
 const EXPRESSION_START = `_START_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
-const EXPRESSION_START_REGEXP = new RegExp(EXPRESSION_START, 'g');
 const EXPRESSION_END = `_END_LIT_LOCALIZE_EXPR_${EXPRESSION_RAND}_`;
-const EXPRESSION_END_REGEXP = new RegExp(EXPRESSION_END, 'g');
+const EXPRESSION_START_END_REGEXP = new RegExp(
+  EXPRESSION_START + '(.*?)' + EXPRESSION_END,
+  'g'
+);
 
 /**
  * Our template is split apart based on template string literal expressions.
@@ -401,10 +404,17 @@ function replaceExpressionsAndHtmlWithPlaceholders(
   parts: Array<string | Expression>
 ): Array<string | Omit<Placeholder, 'index'>> {
   const concatenatedHtml = parts
-    .map((part) =>
+    .map((part, expressionIndex) =>
       typeof part === 'string'
         ? part
-        : EXPRESSION_START + part.identifier + EXPRESSION_END
+        : EXPRESSION_START +
+          // Use the index of the expression instead of the actual expression,
+          // because the actual expression might contain embedded HTML which
+          // will confuse HTML parsing. We could also escape it, but it's
+          // simpler to just use the index and swap it back with the actual
+          // expression after HTML parsing.
+          expressionIndex +
+          EXPRESSION_END
     )
     .join('');
   const contents: Array<string | Omit<Placeholder, 'index'>> = [];
@@ -418,8 +428,13 @@ function replaceExpressionsAndHtmlWithPlaceholders(
             contents.push(substr);
           }
         } else {
-          const [identifier, tail] = endSplit;
-          contents.push({untranslatable: '${' + identifier + '}'});
+          // Swap the expression index with the actual expression.
+          const [expressionIndexStr, tail] = endSplit;
+          const expressionIndex = Number(expressionIndexStr);
+          const expression = (parts[expressionIndex] as Expression).identifier;
+          contents.push({
+            untranslatable: '${' + expression + '}',
+          });
           if (tail) {
             contents.push(tail);
           }
@@ -430,9 +445,16 @@ function replaceExpressionsAndHtmlWithPlaceholders(
       // markup, it's fine and good to just keep this one placeholder. We just
       // need to fix the syntax.
       contents.push({
-        untranslatable: part.untranslatable
-          .replace(EXPRESSION_START_REGEXP, '${')
-          .replace(EXPRESSION_END_REGEXP, '}'),
+        untranslatable: part.untranslatable.replace(
+          EXPRESSION_START_END_REGEXP,
+          (_, expressionIndexStr) => {
+            // Swap the expression index with the actual expression.
+            const expressionIndex = Number(expressionIndexStr);
+            const expression = (parts[expressionIndex] as Expression)
+              .identifier;
+            return '${' + expression + '}';
+          }
+        ),
       });
     }
   }
@@ -444,7 +466,7 @@ function replaceExpressionsAndHtmlWithPlaceholders(
  * structure.
  *
  * This situation arises because we initially generate unique placeholders for
- * each HTML open/close tag, and for each each template string literal
+ * each HTML open/close tag, and for each template string literal
  * expression, and it's simpler to collapse all of these at once afterwards.
  *
  * For example, if given:
@@ -493,13 +515,13 @@ function replaceHtmlWithPlaceholders(
 ): Array<string | Omit<Placeholder, 'index'>> {
   const components: Array<string | Omit<Placeholder, 'index'>> = [];
 
-  const traverse = (node: parse5.ChildNode): void => {
+  const traverse = (node: ChildNode): void => {
     if (node.nodeName === '#text') {
-      const text = (node as parse5.TextNode).value;
+      const text = (node as TextNode).value;
       components.push(text);
     } else if (node.nodeName === '#comment') {
       components.push({
-        untranslatable: serializeComment(node as parse5.CommentNode),
+        untranslatable: serializeComment(node as CommentNode),
       });
     } else {
       const {open, close} = serializeOpenCloseTags(node);
@@ -528,12 +550,17 @@ function replaceHtmlWithPlaceholders(
  *
  *   <b class="red">foo</b> --> {open: '<b class="red">, close: '</b>'}
  */
-function serializeOpenCloseTags(node: parse5.ChildNode): {
+function serializeOpenCloseTags(node: ChildNode): {
   open: string;
   close: string;
 } {
-  const withoutChildren: parse5.ChildNode = {...node, childNodes: []};
-  const fakeParent = {childNodes: [withoutChildren]} as parse5.Node;
+  const withoutChildren: ChildNode = {
+    ...node,
+    childNodes: [],
+  };
+  const fakeParent = {
+    childNodes: [withoutChildren],
+  } as ParentNode;
   const serialized = parse5.serialize(fakeParent);
   const lastLt = serialized.lastIndexOf('<');
   const open = serialized.slice(0, lastLt);
@@ -548,8 +575,10 @@ function serializeOpenCloseTags(node: parse5.ChildNode): {
  *
  *   {data: "foo"} --> "<!-- foo -->"
  */
-function serializeComment(comment: parse5.CommentNode): string {
-  return parse5.serialize({childNodes: [comment]} as parse5.Node);
+function serializeComment(comment: CommentNode): string {
+  return parse5.serialize({
+    childNodes: [comment],
+  } as ParentNode);
 }
 
 /**

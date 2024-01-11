@@ -4,7 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {msg} from '@lit/localize';
+import {msg, str} from '@lit/localize';
 
-msg('I am translated', {desc: 'Description of translated'});
+const who = 'World';
+msg(str`I am translated. Hello ${who}.`, {desc: 'Description of translated'});
 msg('I am not translated', {desc: 'Description of not translated'});
+msg('I am translated with a note', {desc: 'Happy note'});
+msg('My note needs to be migrated', {desc: 'Existing note'});

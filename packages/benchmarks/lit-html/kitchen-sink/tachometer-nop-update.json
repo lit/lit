@@ -1,10 +1,11 @@
 {
   "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
   "sampleSize": 30,
   "timeout": 0,
   "benchmarks": [
     {
-      "url": "lit-html/kitchen-sink/index.html?updateCount=0",
+      "url": "index.html?updateCount=0",
       "browser": {
         "name": "chrome",
         "headless": true

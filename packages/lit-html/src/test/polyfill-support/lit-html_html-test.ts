@@ -3,14 +3,14 @@
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import '../../polyfill-support.js';
-import {html, render as litRender} from '../../lit-html.js';
-import {ref, createRef} from '../../directives/ref.js';
-import {repeat} from '../../directives/repeat.js';
-import {cache} from '../../directives/cache.js';
+import 'lit-html/polyfill-support.js';
+import {html, render as litRender} from 'lit-html';
+import {ref, createRef} from 'lit-html/directives/ref.js';
+import {repeat} from 'lit-html/directives/repeat.js';
+import {cache} from 'lit-html/directives/cache.js';
 import {assert} from '@esm-bundle/chai';
 import {renderShadowRoot, wrap, shadowRoot} from '../test-utils/shadow-root.js';
-import {html as staticHtml, unsafeStatic} from '../../static.js';
+import {html as staticHtml, unsafeStatic} from 'lit-html/static.js';
 
 import '../lit-html_test.js';
 // selected directive tests

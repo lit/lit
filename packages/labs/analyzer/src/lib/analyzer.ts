@@ -4,97 +4,133 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
-import {Package, Module} from './model.js';
+import type ts from 'typescript';
+import {Package, PackageJson, AnalyzerInterface, Module} from './model.js';
+import {AbsolutePath} from './paths.js';
+import {getModule} from './javascript/modules.js';
+export {PackageJson};
+import {
+  getPackageInfo,
+  getPackageRootForModulePath,
+} from './javascript/packages.js';
+
+export type TypeScript = typeof ts;
+
+export interface AnalyzerInit {
+  typescript: TypeScript;
+  getProgram: () => ts.Program;
+  fs: AnalyzerInterface['fs'];
+  path: AnalyzerInterface['path'];
+  basePath?: AbsolutePath;
+}
 
 /**
- * An analyzer for Lit npm packages
+ * An analyzer for Lit typescript modules.
  */
-export class Analyzer {
-  readonly packageRoot: string;
-  readonly commandLine: ts.ParsedCommandLine;
-  readonly program: ts.Program;
-  readonly checker: ts.TypeChecker;
+export class Analyzer implements AnalyzerInterface {
+  // Cache of Module models by path; invalidated when the sourceFile
+  // or any of its dependencies change
+  readonly moduleCache = new Map<AbsolutePath, Module>();
+  private readonly _getProgram: () => ts.Program;
+  readonly typescript: TypeScript;
+  readonly fs: AnalyzerInterface['fs'];
+  readonly path: AnalyzerInterface['path'];
+  private _commandLine: ts.ParsedCommandLine | undefined = undefined;
+  private readonly diagnostics: ts.Diagnostic[] = [];
 
-  /**
-   * @param packageRoot The root directory of the package to analyze. Currently
-   * this directory must have a tsconfig.json file.
-   */
-  constructor(packageRoot: string) {
-    this.packageRoot = packageRoot;
-
-    const configFileName = ts.findConfigFile(
-      packageRoot,
-      ts.sys.fileExists,
-      'tsconfig.json'
-    );
-    if (configFileName === undefined) {
-      // TODO: use a hard-coded tsconfig for JS projects.
-      throw new Error('tsconfig not found');
-    }
-    const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
-    this.commandLine = ts.parseJsonConfigFileContent(
-      configFile.config,
-      ts.sys,
-      packageRoot
-    );
-    this.program = ts.createProgram(
-      this.commandLine.fileNames,
-      this.commandLine.options
-    );
-    this.checker = this.program.getTypeChecker();
+  constructor(init: AnalyzerInit) {
+    ({
+      fs: this.fs,
+      path: this.path,
+      typescript: this.typescript,
+      getProgram: this._getProgram,
+    } = init);
   }
 
-  analyzePackage() {
-    const diagnostics = this.program.getSemanticDiagnostics();
-    if (diagnostics.length > 0) {
-      console.error('Please fix errors first');
-      console.error(diagnostics);
-      throw new Error('Copmiler errors');
-    }
+  get program() {
+    return this._getProgram();
+  }
+
+  get commandLine() {
+    return (this._commandLine ??= getCommandLineFromProgram(this));
+  }
+
+  getModule(modulePath: AbsolutePath) {
+    return getModule(modulePath, this);
+  }
+
+  getPackage() {
     const rootFileNames = this.program.getRootFileNames();
-    const modules = [];
-    for (const fileName of rootFileNames) {
-      modules.push(this.analyzeFile(fileName));
+
+    // Find the package.json for this package based on the first root filename
+    // in the program (we assume all root files in a program belong to the same
+    // package)
+    if (rootFileNames.length === 0) {
+      throw new Error('No source files found in package.');
     }
-    // TODO: return a package object...
-    return new Package(modules);
+    const packageInfo = getPackageInfo(rootFileNames[0] as AbsolutePath, this);
+
+    return new Package({
+      ...packageInfo,
+      modules: rootFileNames.map((fileName) =>
+        getModule(
+          this.path.normalize(fileName) as AbsolutePath,
+          this,
+          packageInfo
+        )
+      ),
+    });
   }
 
-  analyzeFile(fileName: string) {
-    const sourceFile = this.program.getSourceFile(fileName)!;
-
-    return new Module(sourceFile);
+  addDiagnostic(diagnostic: ts.Diagnostic) {
+    this.diagnostics.push(diagnostic);
   }
 
-  private _isLitElementClassDeclaration = (t: ts.BaseType) => {
-    const declarations = t.getSymbol()?.getDeclarations();
-    if (declarations?.length !== 1) {
-      return false;
-    }
-    const node = declarations[0];
-    return (
-      this._isLitElementModule(node.getSourceFile()) &&
-      ts.isClassDeclaration(node) &&
-      node.name?.getText() === 'LitElement'
-    );
-  };
-
-  private _isLitElementModule = (file: ts.SourceFile) => {
-    return file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts');
-  };
-
-  isLitElement = (node: ts.Node): node is ts.ClassDeclaration => {
-    if (!ts.isClassLike(node)) {
-      return false;
-    }
-    const type = this.checker.getTypeAtLocation(node) as ts.InterfaceType;
-    const baseTypes = this.checker.getBaseTypes(type);
-    for (const t of baseTypes) {
-      if (this._isLitElementClassDeclaration(t)) {
-        return true;
-      }
-    }
-    return false;
-  };
+  *getDiagnostics() {
+    yield* this.typescript.sortAndDeduplicateDiagnostics(this.diagnostics);
+  }
 }
+
+/**
+ * Extracts a `ts.ParsedCommandLine` (essentially, the key bits of a
+ * `tsconfig.json`) from the analyzer's `ts.Program`.
+ *
+ * The `ts.getOutputFileNames()` function must be passed a
+ * `ts.ParsedCommandLine`; since not all usages of the analyzer create the
+ * program directly from a tsconfig (plugins get passed the program only),
+ * this allows backing the `ParsedCommandLine` out of an existing program.
+ */
+export const getCommandLineFromProgram = (
+  analyzer: Analyzer
+): ts.ParsedCommandLine => {
+  const {program, typescript, path, fs} = analyzer;
+  const compilerOptions = program.getCompilerOptions();
+  const files = program.getRootFileNames();
+  const json = {
+    files,
+    compilerOptions,
+  };
+  if (compilerOptions.configFilePath !== undefined) {
+    // For a TS project, derive the package root from the config file path
+    const packageRoot = path.basename(compilerOptions.configFilePath as string);
+    return typescript.parseJsonConfigFileContent(
+      json,
+      fs,
+      packageRoot,
+      undefined,
+      compilerOptions.configFilePath as string
+    );
+  } else {
+    // Otherwise, this is a JS project; we can determine the package root
+    // based on the package.json location; we can look that up based on
+    // the first root file
+    const packageRoot = getPackageRootForModulePath(
+      files[0] as AbsolutePath,
+      analyzer
+      // Note we don't pass a configFilePath since we don't have one; This just
+      // means we can't use ts.getOutputFileNames(), which we isn't needed in
+      // JS program
+    );
+    return typescript.parseJsonConfigFileContent(json, fs, packageRoot);
+  }
+};

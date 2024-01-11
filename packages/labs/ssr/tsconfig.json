@@ -2,12 +2,13 @@
   "compilerOptions": {
     "composite": true,
     "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
-    "target": "es2020",
+    "target": "es2021",
     "module": "esnext",
-    "lib": ["es2019", "ES2020.String"],
+    "lib": ["es2021"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
+    "inlineSources": true,
     "outDir": ".",
     "rootDir": "./src",
     // For module loader tests:
@@ -21,13 +22,9 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "skipLibCheck": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "types": ["mocha"]
   },
   "include": ["src/**/*.ts", "src/test/**/*.js", "custom_typings/*.d.ts"],
-  "exclude": [],
-  "references": [
-    {"path": "../ssr-client"},
-    {"path": "../../lit-html"},
-    {"path": "../../lit-element"}
-  ]
+  "exclude": []
 }
