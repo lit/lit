@@ -31,6 +31,7 @@
     "test:not-starter-kits": "wireit",
     "test:lit-starter-js": "wireit",
     "test:lit-starter-ts": "wireit",
+    "test:package-exports": "wireit",
     "test:windows": "wireit",
     "prepare": "husky install",
     "changeset": "changeset",
@@ -151,6 +152,7 @@
         "See ./packages/tests/src/web-test-runner.config.ts"
       ],
       "dependencies": [
+        "test:package-exports",
         "./packages/localize:test",
         "./packages/localize-tools:test",
         "./packages/react:test",
@@ -198,6 +200,12 @@
         "./packages/lit-starter-ts/web-test-runner.config.js"
       ],
       "output": []
+    },
+    "test:package-exports": {
+      "command": "add-browser-exports test",
+      "dependencies": [
+        "./packages/internal-scripts:build"
+      ]
     },
     "test:windows": {
       "dependencies": [
