@@ -18,8 +18,7 @@
   },
   "scripts": {
     "build": "wireit",
-    "build:ts": "wireit",
-    "test": "wireit"
+    "build:ts": "wireit"
   },
   "wireit": {
     "build": {
@@ -36,12 +35,6 @@
       ],
       "output": [
         "lib"
-      ]
-    },
-    "test": {
-      "command": "(cd ../../ && node packages/internal-scripts/bin/add-browser-exports.js test)",
-      "dependencies": [
-        "build"
       ]
     }
   },
