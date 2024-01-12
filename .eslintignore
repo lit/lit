@@ -348,6 +348,7 @@ packages/labs/ssr-client/lit-element-hydrate-support.*
 
 packages/labs/ssr-dom-shim/index.*
 packages/labs/ssr-dom-shim/lib/
+packages/labs/ssr-dom-shim/test/
 
 packages/labs/ssr-react/node/
 packages/labs/ssr-react/lib/
