@@ -61,6 +61,17 @@ const ElementShim = class Element {
   removeAttribute(name: string) {
     attributesForElement(this).delete(name);
   }
+  toggleAttribute(name: string, force?: boolean): boolean {
+    if (force === undefined) {
+      force = !this.hasAttribute(name);
+    }
+    if (force) {
+      this.setAttribute(name, '');
+    } else {
+      this.removeAttribute(name);
+    }
+    return force;
+  }
   hasAttribute(name: string) {
     return attributesForElement(this).has(name);
   }
