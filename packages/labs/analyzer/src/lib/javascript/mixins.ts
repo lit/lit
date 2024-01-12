@@ -15,6 +15,7 @@ import {AnalyzerInterface, MixinDeclarationInit} from '../model.js';
 import {getClassDeclaration} from './classes.js';
 import {createDiagnostic} from '../errors.js';
 import {DiagnosticCode} from '../diagnostic-code.js';
+import {getSymbolForName} from '../references.js';
 
 const nodeHasMixinHint = (node: ts.Node, analyzer: AnalyzerInterface) =>
   analyzer.typescript
@@ -87,9 +88,6 @@ export const maybeGetMixinFromFunctionLike = (
     );
     return undefined;
   }
-  const possibleSuperClasses = fn.parameters.map((p) =>
-    analyzer.typescript.isIdentifier(p.name) ? p.name.text : ''
-  );
   const functionBody = fn.body;
   if (functionBody === undefined) {
     addDiagnosticIfMixin(
@@ -167,7 +165,7 @@ export const maybeGetMixinFromFunctionLike = (
     return undefined;
   }
   const superClassArgIndex = findSuperClassArgIndexFromHeritage(
-    possibleSuperClasses,
+    fn,
     extendsClause.types[0].expression,
     analyzer
   );
@@ -202,16 +200,23 @@ export const maybeGetMixinFromFunctionLike = (
 };
 
 const findSuperClassArgIndexFromHeritage = (
-  possibleSuperClasses: string[],
+  mixinFunction: ts.FunctionLikeDeclaration,
   expression: ts.Expression,
   analyzer: AnalyzerInterface
 ): number => {
   if (analyzer.typescript.isIdentifier(expression)) {
-    return possibleSuperClasses.indexOf(expression.text);
+    const paramSymbol = getSymbolForName(expression.text, expression, analyzer);
+
+    if (paramSymbol?.declarations) {
+      const paramDecl = paramSymbol.declarations;
+      return mixinFunction.parameters.findIndex((param) =>
+        paramDecl.includes(param)
+      );
+    }
   } else if (analyzer.typescript.isCallExpression(expression)) {
     for (const arg of expression.arguments) {
       const index = findSuperClassArgIndexFromHeritage(
-        possibleSuperClasses,
+        mixinFunction,
         arg,
         analyzer
       );
