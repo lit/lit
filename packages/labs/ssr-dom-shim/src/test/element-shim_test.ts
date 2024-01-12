@@ -30,6 +30,13 @@ test('toggleAttribute accepts an optional force parameter', () => {
   assert.ok(shimmedEl.hasAttribute('potato'));
 });
 
+test('toggleAttribute retains a previously set value if force is true', () => {
+  const shimmedEl = new HTMLElement();
+  shimmedEl.setAttribute('foo', 'bar');
+  assert.ok(shimmedEl.toggleAttribute('foo', true));
+  assert.equal(shimmedEl.getAttribute('foo'), 'bar');
+});
+
 test('setAttribute silently casts values to a string', () => {
   const shimmedEl = new HTMLElement();
   // It is possible to pass any value to `setAttribute`, and we
