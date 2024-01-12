@@ -351,6 +351,11 @@ export const getSuperClassAndMixins = (
     }
 
     // TODO (43081j): consider supporting external mixins properly at some point
+    // An external mixin is one which we discovered via analysis (e.g. CEM)
+    // but don't have a reference to in sources. In future, we should support
+    // those as it is likely we will pull most dependencies from manifest
+    // analysis rather than source.
+    // See issue #4492
     if (mixinRef === undefined || mixin === undefined) {
       analyzer.addDiagnostic(
         createDiagnostic({
@@ -359,7 +364,8 @@ export const getSuperClassAndMixins = (
           message:
             `This is presumed to be a mixin but it could not be found ` +
             `in the current project. Mixins imported from outside the ` +
-            `project are not yet supported.`,
+            `project are not yet supported ` +
+            `(see https://github.com/lit/lit/issues/4492).`,
           code: DiagnosticCode.UNSUPPORTED,
           category: analyzer.typescript.DiagnosticCategory.Warning,
         })
