@@ -514,7 +514,7 @@ export class Animate extends AsyncDirective {
       .filter((a) => a !== undefined) as CSSValues[];
     let dScaleX = 1;
     let dScaleY = 1;
-    if (ancestorProps !== undefined) {
+    if (ancestorProps.length) {
       // gather scaling data for ancestors
       ancestorProps.forEach((a) => {
         if (a['width']) {
