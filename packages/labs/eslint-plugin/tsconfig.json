@@ -4,10 +4,10 @@
     "composite": true,
     "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "target": "es2020",
-    "lib": ["es2020"],
-    "module": "ES2020",
+    "lib": ["es2022"],
+    "module": "NodeNext",
     "rootDir": "./src",
-    "moduleResolution": "node",
+    "moduleResolution": "NodeNext",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -24,8 +24,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
-    "skipLibCheck": true,
-    "types": []
+    "skipLibCheck": true
   },
   "include": ["src/**/*.ts"],
   "exclude": []
