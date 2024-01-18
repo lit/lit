@@ -13,8 +13,16 @@ const createRule = ESLintUtils.RuleCreator(
 // A rule that doesn't require a TypeScript program
 export const noKevin = createRule({
   create(context) {
+    console.log('create no-kvein');
     return {
+      VariableDeclaration(node) {
+        console.log('VariableDeclaration', node);
+      },
+      VariableDeclarator(node) {
+        console.log('VariableDeclarator', node);
+      },
       Identifier(node) {
+        console.log('Identifier', node);
         if (node.name.toLowerCase() === 'kevin') {
           context.report({
             messageId: 'no-kevin',
@@ -28,10 +36,10 @@ export const noKevin = createRule({
   meta: {
     docs: {
       description: `Don't name things Kevin`,
-      // recommended: 'recommended',
+      recommended: 'recommended',
     },
     messages: {
-      'no-kevin': `No Kevin's allowed`,
+      'no-kevin': `No Kevins allowed`,
     },
     type: 'problem',
     schema: [],
