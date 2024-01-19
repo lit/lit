@@ -1,9 +1,0 @@
-{
-  "compilerOptions": {
-    "rootDir": ".",
-    "strict": true,
-    "types": []
-  },
-  "include": ["**/*.ts", "**/*.tsx"],
-  "exclude": []
-}

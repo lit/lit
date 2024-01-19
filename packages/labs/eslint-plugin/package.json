@@ -51,6 +51,7 @@
   },
   "devDependencies": {
     "@types/node": "^20.11.5",
+    "@typescript-eslint/parser": "^6.19.0",
     "@typescript-eslint/rule-tester": "^6.19.0",
     "eslint": "^8.56.0"
   },

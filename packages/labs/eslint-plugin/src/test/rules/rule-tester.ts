@@ -19,6 +19,6 @@ export const ruleTester = new RuleTester({
   parser: '@typescript-eslint/parser',
   parserOptions: {
     tsconfigRootDir: './fixture',
-    project: './tsconfig-fixture.json',
+    project: './tsconfig.json',
   },
 });
