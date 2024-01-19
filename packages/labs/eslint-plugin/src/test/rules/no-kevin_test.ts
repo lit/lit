@@ -15,8 +15,8 @@ ruleTester.run('no-kevin', noKevin, {
   ],
   invalid: [
     {
-      code: "const kevin = 'baz';",
-      output: "const kevin = 'baz';",
+      code: "const kevin = 'bar';",
+      output: "const kevin = 'bar';",
       errors: [
         {
           messageId: 'no-kevin',

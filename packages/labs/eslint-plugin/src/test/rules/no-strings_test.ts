@@ -15,8 +15,8 @@ ruleTester.run('no-strings', noStrings, {
   ],
   invalid: [
     {
-      code: "const foo = 'baz';",
-      output: "const foo = 'baz';",
+      code: "const foo: string = 'baz';",
+      output: "const foo: string = 'baz';",
       errors: [
         {
           messageId: 'no-strings',

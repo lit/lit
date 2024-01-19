@@ -7,6 +7,8 @@
 import {RuleTester} from '@typescript-eslint/rule-tester';
 import {describe as suite, test} from 'node:test';
 
+const fixtureRootDir = new URL('../../fixture', import.meta.url).pathname;
+
 RuleTester.afterAll = () => {
   console.log('All tests passed!');
 };
@@ -18,7 +20,7 @@ RuleTester.it = test;
 export const ruleTester = new RuleTester({
   parser: '@typescript-eslint/parser',
   parserOptions: {
-    tsconfigRootDir: './fixture',
+    tsconfigRootDir: fixtureRootDir,
     project: './tsconfig.json',
   },
 });

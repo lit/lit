@@ -10,7 +10,7 @@ import ts from 'typescript';
 // import path from 'path';
 
 const createRule = ESLintUtils.RuleCreator(
-  (name: string) => `https://lit.dev/eslint/${name}`
+  (name: string) => `https://lit.dev/eslint-plugin/${name}`
 );
 
 const lastMods = new Map<string, ts.SourceFile>();
@@ -20,7 +20,7 @@ export const noStrings = createRule({
   create(context) {
     const services = ESLintUtils.getParserServices(context);
     services.program.getSourceFiles().forEach((m) => {
-      console.log('Mod:', m.fileName, lastMods.get(m.fileName) === m);
+      // console.log('Mod:', m.fileName, lastMods.get(m.fileName) === m);
       lastMods.set(m.fileName, m);
     });
     // console.log(`Program info:
@@ -43,12 +43,12 @@ export const noStrings = createRule({
     //   }
     //   `);
     return {
-      VariableDeclaration(node) {
-        console.log('VariableDeclaration', node);
-      },
-      VariableDeclarator(node) {
-        console.log('VariableDeclarator', node);
-      },
+      // VariableDeclaration(node) {
+      //   console.log('VariableDeclaration', node);
+      // },
+      // VariableDeclarator(node) {
+      //   console.log('VariableDeclarator', node);
+      // },
       TSStringKeyword(node) {
         context.report({
           messageId: 'no-strings',

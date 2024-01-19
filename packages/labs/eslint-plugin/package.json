@@ -33,7 +33,7 @@
       "clean": "if-file-deleted"
     },
     "test": {
-      "command": "node --enable-source-maps --test test/**/no-kevin_test.js",
+      "command": "node --enable-source-maps --test-reporter=dot --test test/**/*_test.js",
       "dependencies": [
         "build"
       ],
