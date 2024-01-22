@@ -222,6 +222,7 @@ packages/labs/eleventy-plugin-lit/test/
 !packages/labs/eleventy-plugin-lit/test/package.json
 
 packages/labs/eslint-plugin/lib/
+packages/labs/eslint-plugin/rules/
 packages/labs/eslint-plugin/test/
 
 packages/labs/eslint-plugin/**/index.js
