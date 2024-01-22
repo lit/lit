@@ -243,10 +243,11 @@
         ".eslintignore",
         ".eslintrc.json",
         "!**/examples/**/*.{js,ts}",
+        "!**/example/**/*.{js,ts}",
         "!node_modules/"
       ],
       "output": [],
-      "command": "eslint --ignore-pattern=examples/ \"**/*.{js,ts}\""
+      "command": "eslint --ignore-pattern \"examples/\" --ignore-pattern \"example/\" \"**/*.{js,ts}\""
     },
     "rollup-config": {
       "files": [
