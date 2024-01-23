@@ -97,7 +97,7 @@
   },
   "dependencies": {
     "package-json-type": "^1.0.3",
-    "typescript": "~5.2.0"
+    "typescript": "~5.3.3"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
