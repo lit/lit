@@ -13,6 +13,7 @@ import {RenderInfo} from '../../index.js';
 import {FallbackRenderer} from '../../lib/element-renderer.js';
 import type * as testModule from '../test-files/render-test-module.js';
 import {collectResultSync} from '../../lib/render-result.js';
+import {DeclarativeStyleDedupeUtility} from '../../lib/declarative-style-dedupe.js';
 
 /**
  * An empty VM context global. In more recent versions, when running in Node,
@@ -20,6 +21,14 @@ import {collectResultSync} from '../../lib/render-result.js';
  * required at all.
  */
 const emptyVmGlobal = {};
+
+/**
+ * Removes the first script tag in HTML. Useful when testing the rendered DOM
+ * if `DeclarativeStyleDedupeUtility` is being used. It injects a large script
+ * tag into the rendered result.
+ */
+const removeDedupeScriptTagHelper = (rawHtml: string) =>
+  rawHtml.replace(/<script>(.|\s)*?<\/script>/gm, '').trim();
 
 /**
  * We still provide a global DOM shim that can be used as a VM context global.
@@ -433,6 +442,117 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     assert.is(
       result,
       `<!--lit-part Q0bbGrx71ic=--><!--lit-node 0--><test-will-update  ><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->Foo Bar<!--/lit-part--></main><!--/lit-part--></template></test-will-update><!--/lit-part-->`
+    );
+  });
+
+  test('element with static styles', async () => {
+    const {render, elementWithStaticStyles} = await setup();
+    const result = await render(elementWithStaticStyles);
+    assert.is(
+      result,
+      `<!--lit-part MXMSKR5WU+k=--><test-static-styles><template shadowroot="open" shadowrootmode="open"><style>
+  :host {
+    display: block;
+    background-color: blue;
+  }
+</style><!--lit-part--><!--/lit-part--></template></test-static-styles><!--/lit-part-->`
+    );
+  });
+
+  test('duplicated element with static styles', async () => {
+    const {render, duplicatedElementWithStaticStyles} = await setup();
+    const result = await render(duplicatedElementWithStaticStyles);
+    const ssrElement = `<template shadowroot="open" shadowrootmode="open"><style>
+  :host {
+    display: block;
+    background-color: blue;
+  }
+</style><!--lit-part--><!--/lit-part--></template>`;
+    assert.is(
+      result,
+      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles>${ssrElement}</test-static-styles\n  ><test-static-styles>${ssrElement}</test-static-styles><!--/lit-part-->`
+    );
+  });
+
+  test('duplicated element with static styles using styles de-duplicate utility', async () => {
+    const {render, duplicatedElementWithStaticStyles} = await setup();
+    const result = await render(duplicatedElementWithStaticStyles, {
+      dedupeStyles: new DeclarativeStyleDedupeUtility(),
+    });
+    assert.is(
+      removeDedupeScriptTagHelper(result),
+      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open">
+<style>
+  :host {
+    display: block;
+    background-color: blue;
+  }
+</style><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles
+  ><test-static-styles><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles><!--/lit-part-->`
+    );
+  });
+
+  test('deduplicate styles using a custom tag name', async () => {
+    const {render, duplicatedElementWithStaticStyles} = await setup();
+    const result = await render(duplicatedElementWithStaticStyles, {
+      dedupeStyles: new DeclarativeStyleDedupeUtility({
+        tagName: 'dedupe-custom',
+      }),
+    });
+    assert.is(
+      removeDedupeScriptTagHelper(result),
+      `<!--lit-part sUH7hRvaZ8U=--><test-static-styles><template shadowroot="open" shadowrootmode="open">
+<style>
+  :host {
+    display: block;
+    background-color: blue;
+  }
+</style><dedupe-custom style-id="1" style="display:none;"></dedupe-custom><!--lit-part--><!--/lit-part--></template></test-static-styles
+  ><test-static-styles><template shadowroot="open" shadowrootmode="open"><dedupe-custom style-id="1" style="display:none;"></dedupe-custom><!--lit-part--><!--/lit-part--></template></test-static-styles><!--/lit-part-->`
+    );
+  });
+
+  test('element with static styles array using styles de-duplication utility', async () => {
+    const {render, sharingFromStaticStylesArray} = await setup();
+    const result = await render(sharingFromStaticStylesArray, {
+      dedupeStyles: new DeclarativeStyleDedupeUtility(),
+    });
+
+    assert.is(
+      removeDedupeScriptTagHelper(result),
+      `<!--lit-part vozTZ75mUhg=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open">
+<style>
+  :host {
+    display: block;
+    background-color: blue;
+  }
+</style><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><style>
+  :host {
+    margin: 8px;
+  }
+</style><lit-ssr-style-dedupe style-id="3" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles-array><test-static-styles><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles><!--/lit-part-->`
+    );
+  });
+
+  test('doubled element with static styles array using deduplicated styles', async () => {
+    const {render, duplicatingElementWithStaticStylesArray} = await setup();
+    const result = await render(duplicatingElementWithStaticStylesArray, {
+      dedupeStyles: new DeclarativeStyleDedupeUtility(),
+    });
+
+    assert.is(
+      removeDedupeScriptTagHelper(result),
+      `<!--lit-part SoBZcCoc/o0=--><test-static-styles-array><template shadowroot="open" shadowrootmode="open">
+<style>
+  :host {
+    display: block;
+    background-color: blue;
+  }
+</style><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><style>
+  :host {
+    margin: 8px;
+  }
+</style><lit-ssr-style-dedupe style-id="3" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles-array><test-static-styles-array><template shadowroot="open" shadowrootmode="open"><lit-ssr-style-dedupe style-id="1" style="display:none;"></lit-ssr-style-dedupe><lit-ssr-style-dedupe style-id="3" style="display:none;"></lit-ssr-style-dedupe><!--lit-part--><!--/lit-part--></template></test-static-styles-array><!--/lit-part-->`
     );
   });
 

@@ -267,6 +267,16 @@ export const setupTest = async (
         // Get the SSR result from the server.
         const response = await fetch(`/render/${mode}/${testFile}/${testName}`);
         container.innerHTML = await response.text();
+        // Script tags do not execute when used in innerHTML. So instead
+        // re-attach them to the DOM so they can execute. This must be done
+        // here, so it's early enough for the test to be able to assert DOM.
+        // These tests must use `expectMutationsOnFirstRender: true`.
+        Array.from(container.querySelectorAll('script')).forEach((scriptEl) => {
+          const newScript = document.createElement('script');
+          newScript.appendChild(document.createTextNode(scriptEl.innerHTML));
+          scriptEl.before(newScript);
+          scriptEl.remove();
+        });
 
         // For element tests, hydrate shadowRoots
         if (typeof registerElements === 'function') {

@@ -150,6 +150,48 @@ export class TestWillUpdate extends LitElement {
 // prettier-ignore
 export const elementWithWillUpdate = html`<test-will-update .first=${'Foo'} .last=${'Bar'}></test-will-update>`;
 
+/* Sharing and deduplicating styles */
+
+const styleA = css`
+  :host {
+    display: block;
+    background-color: blue;
+  }
+`;
+
+const styleB = css`
+  :host {
+    margin: 8px;
+  }
+`;
+
+class TestStaticStyles extends LitElement {
+  static override styles = styleA;
+
+  override render() {
+    return null;
+  }
+}
+customElements.define('test-static-styles', TestStaticStyles);
+
+export const elementWithStaticStyles = html`<test-static-styles></test-static-styles>`;
+export const duplicatedElementWithStaticStyles = html`<test-static-styles></test-static-styles
+  ><test-static-styles></test-static-styles>`;
+
+class TestStaticStylesArray extends LitElement {
+  static override styles = [styleA, styleB];
+
+  override render() {
+    return null;
+  }
+}
+customElements.define('test-static-styles-array', TestStaticStylesArray);
+
+// prettier-ignore
+export const sharingFromStaticStylesArray = html`<test-static-styles-array></test-static-styles-array><test-static-styles></test-static-styles>`;
+// prettier-ignore
+export const duplicatingElementWithStaticStylesArray = html`<test-static-styles-array></test-static-styles-array><test-static-styles-array></test-static-styles-array>`;
+
 /* Slots and Distribution */
 // prettier-ignore
 export const noSlot = html`<test-simple><p>Hi</p></test-simple>`;

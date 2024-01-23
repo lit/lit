@@ -67,6 +67,7 @@ import {reflectedAttributeName} from './reflected-attributes.js';
 
 import type {RenderResult} from './render-result.js';
 import {isHydratable} from './server-template.js';
+import {DeclarativeStyleDedupeUtility} from './declarative-style-dedupe.js';
 
 declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {
@@ -616,6 +617,13 @@ export type RenderInfo = {
    * Flag to defer hydration of top level custom element. Defaults to false.
    */
   deferHydration: boolean;
+
+  /**
+   * An optional utility which will de-duplicate styles on your page. Note, that for a page
+   * there should be only one utility instantiated which must be shared between multiple SSR
+   * renders.
+   */
+  dedupeStyles?: DeclarativeStyleDedupeUtility;
 };
 
 declare global {

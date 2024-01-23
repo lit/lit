@@ -89,11 +89,17 @@ export class LitElementRenderer extends ElementRenderer {
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
     if (styles !== undefined && styles.length > 0) {
-      yield '<style>';
-      for (const style of styles) {
-        yield (style as CSSResult).cssText;
+      if (renderInfo.dedupeStyles) {
+        yield* renderInfo.dedupeStyles.renderDedupedStyles(styles);
+      } else {
+        // Emit styles if there is no style hash, or we've not yet
+        // seen the style hash id.
+        yield '<style>';
+        for (const style of styles) {
+          yield (style as CSSResult).cssText;
+        }
+        yield '</style>';
       }
-      yield '</style>';
     }
     // Render template
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
