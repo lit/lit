@@ -74,6 +74,10 @@ declare module 'parse5/dist/tree-adapters/default.js' {
   }
 }
 
+interface MaybePatchedDirective extends DirectiveClass {
+  patchedDirective: true | undefined;
+}
+
 const patchedDirectiveCache = new WeakMap<DirectiveClass, DirectiveClass>();
 
 /**
@@ -83,7 +87,10 @@ const patchedDirectiveCache = new WeakMap<DirectiveClass, DirectiveClass>();
 const patchIfDirective = (value: unknown) => {
   // This property needs to remain unminified.
   const directiveCtor = getDirectiveClass(value);
-  if (directiveCtor !== undefined) {
+  if (
+    directiveCtor !== undefined &&
+    (directiveCtor as MaybePatchedDirective).patchedDirective === undefined
+  ) {
     let patchedCtor = patchedDirectiveCache.get(directiveCtor);
     if (patchedCtor === undefined) {
       patchedCtor = overrideDirectiveResolve(
@@ -94,6 +101,7 @@ const patchIfDirective = (value: unknown) => {
           return patchIfDirective(directive.render(...values));
         }
       );
+      (patchedCtor as MaybePatchedDirective).patchedDirective = true;
       patchedDirectiveCache.set(directiveCtor, patchedCtor);
     }
     // This property needs to remain unminified.
