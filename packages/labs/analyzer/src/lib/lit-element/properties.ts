@@ -60,6 +60,8 @@ export const getProperties = (
       const options = getPropertyOptions(ts, propertyDecorator);
       reactiveProperties.set(name, {
         name,
+        node: prop,
+        optionsNode: options,
         type: getTypeForNode(prop, analyzer),
         attribute: getPropertyAttribute(ts, options, name),
         typeOption: getPropertyType(ts, options),
@@ -131,6 +133,8 @@ const addPropertiesFromStaticBlock = (
       const nodeForType = undecoratedProperties.get(name);
       reactiveProperties.set(name, {
         name,
+        node: prop,
+        optionsNode: options,
         type:
           nodeForType !== undefined
             ? getTypeForNode(nodeForType, analyzer)
