@@ -250,18 +250,23 @@ const addConstructorInitializers = (
 
 /**
  * Gets the `attribute` property of a property options object as a string.
+ *
+ * The attribute value returned is the value that is used at runtime by
+ * ReactiveElement, not the raw option. If the attribute property option is
+ * not given or is `true`, the lower-cased property name is used. If the
+ * attribute property option is `false`, `undefined` is returned.
  */
 export const getPropertyAttribute = (
   ts: TypeScript,
-  obj: ts.ObjectLiteralExpression | undefined,
-  propName: string
+  optionsNode: ts.ObjectLiteralExpression | undefined,
+  propertyName: string
 ) => {
-  if (obj === undefined) {
-    return propName.toLowerCase();
+  if (optionsNode === undefined) {
+    return propertyName.toLowerCase();
   }
-  const attributeProperty = getObjectProperty(ts, obj, 'attribute');
+  const attributeProperty = getObjectProperty(ts, optionsNode, 'attribute');
   if (attributeProperty === undefined) {
-    return propName.toLowerCase();
+    return propertyName.toLowerCase();
   }
   const {initializer} = attributeProperty;
   if (ts.isStringLiteral(initializer)) {
@@ -275,7 +280,7 @@ export const getPropertyAttribute = (
     (ts.isIdentifier(initializer) && initializer.text === 'undefined') ||
     initializer.kind === ts.SyntaxKind.UndefinedKeyword
   ) {
-    return propName.toLowerCase();
+    return propertyName.toLowerCase();
   }
   return undefined;
 };
