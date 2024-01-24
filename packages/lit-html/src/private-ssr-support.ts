@@ -57,6 +57,18 @@ export const _$LH = {
         return resolveOverrideFn(this, values);
       }
     },
+  patchDirectiveResolve: (
+    directiveClass: new (part: PartInfo) => Directive,
+    resolveOverrideFn: (
+      this: Directive,
+      _part: Part,
+      values: unknown[]
+    ) => unknown
+  ) => {
+    if (directiveClass.prototype._$resolve !== resolveOverrideFn) {
+      directiveClass.prototype._$resolve = resolveOverrideFn;
+    }
+  },
   setDirectiveClass(value: DirectiveResult, directiveClass: DirectiveClass) {
     // This property needs to remain unminified.
     value['_$litDirective$'] = directiveClass;
