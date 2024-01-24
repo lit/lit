@@ -59,11 +59,7 @@ export const _$LH = {
     },
   patchDirectiveResolve: (
     directiveClass: new (part: PartInfo) => Directive,
-    resolveOverrideFn: (
-      this: Directive,
-      _part: Part,
-      values: unknown[]
-    ) => unknown
+    resolveOverrideFn: Directive['_$resolve']
   ) => {
     if (directiveClass.prototype._$resolve !== resolveOverrideFn) {
       directiveClass.prototype._$resolve = resolveOverrideFn;
