@@ -102,7 +102,14 @@ If you've already signed a CLA but are still getting bothered by the awfully ins
 
 ## Set up
 
+You'll need at least [**Node** >= `20.x`](https://nodejs.org/en) installed on your machine. If you're using [**nvm**](https://github.com/nvm-sh/nvm) you can run `nvm use`.
+
+Once the minimum Node version is installed, you continue with the rest of the repo setup.
+
 ```bash
+node -v
+v20.11.0
+
 git clone https://github.com/lit/lit.git
 cd lit
 npm ci
