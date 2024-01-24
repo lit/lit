@@ -21,6 +21,7 @@
     "element-events.js",
     "element-props.js",
     "element-slots.js",
+    "element-without-props.js",
     "sub/element-sub.js"
   ]
 }

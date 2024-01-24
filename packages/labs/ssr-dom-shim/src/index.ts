@@ -61,6 +61,28 @@ const ElementShim = class Element {
   removeAttribute(name: string) {
     attributesForElement(this).delete(name);
   }
+  toggleAttribute(name: string, force?: boolean): boolean {
+    // Steps reference https://dom.spec.whatwg.org/#dom-element-toggleattribute
+    if (this.hasAttribute(name)) {
+      // Step 5
+      if (force === undefined || !force) {
+        this.removeAttribute(name);
+        return false;
+      }
+    } else {
+      // Step 4
+      if (force === undefined || force) {
+        // Step 4.1
+        this.setAttribute(name, '');
+        return true;
+      } else {
+        // Step 4.2
+        return false;
+      }
+    }
+    // Step 6
+    return true;
+  }
   hasAttribute(name: string) {
     return attributesForElement(this).has(name);
   }

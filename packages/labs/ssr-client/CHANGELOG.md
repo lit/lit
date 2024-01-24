@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.1.6
+
+### Patch Changes
+
+- [#4481](https://github.com/lit/lit/pull/4481) [`1a1f3f0f`](https://github.com/lit/lit/commit/1a1f3f0fff9dc87548e5fc8e7f5c80142b52d669) - Provide better error message in `createAttributeParts()` when an error occurs due to hydration value mismatch.
+
 ## 1.1.5
 
 ### Patch Changes

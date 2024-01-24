@@ -7,6 +7,7 @@
 import {html, svg, nothing} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {ref, createRef} from 'lit/directives/ref.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
 import {html as serverhtml} from '../../lib/server-template.js';
@@ -35,6 +36,11 @@ export const templateWithMultipleAttributeExpressions = (
   x: string,
   y: string
 ) => html`<div x=${x} y=${y} z="not-dynamic"></div>`;
+// prettier-ignore
+export const templateWithElementAndMultipleAttributeExpressions = (
+  x: string,
+  y: string
+) => html`<div ${ref(createRef())} x=${x} y=${y} z="not-dynamic"></div>`;
 // prettier-ignore
 export const templateWithMultiBindingAttributeExpression = (
   x: string,
@@ -315,6 +321,24 @@ export const serverOnlyDocumentTemplate = serverhtml`
       </body>
     </html>
   `;
+
+export const serverOnlyBindAttributeOnHtml = serverhtml`
+<!DOCTYPE html>
+<html lang="${'ko'}"></html>
+`;
+
+export const serverOnlyDocumentTemplatesCompose = serverhtml`
+${serverhtml`<!DOCTYPE html>`}
+${serverhtml`<html lang="${'ko'}">
+  ${serverhtml`<head>
+    ${serverhtml`<title>${'Server only title'}</title>`}
+  </head>`}
+  ${serverhtml`<body>
+    ${serverhtml`<p>${'Content'}</p>`}
+    ${serverhtml`<table>${serverhtml`<tr>${serverhtml`<td>${'Table content'}</td>`}</tr>`}</table>`}
+  </body>`}
+</html>`}
+`;
 
 export const serverOnlyArray = serverhtml`<div>${[
   'one',

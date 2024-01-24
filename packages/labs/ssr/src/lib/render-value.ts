@@ -51,7 +51,7 @@ import {
 
 import {escapeHtml} from './util/escape-html.js';
 
-import {parseFragment} from 'parse5';
+import {parseFragment, parse} from 'parse5';
 import {
   isElementNode,
   isCommentNode,
@@ -285,12 +285,14 @@ type Op =
  * - `custom-element-close`
  *   - Pop the CE `instance`+`renderer` off the `customElementInstanceStack`
  */
-const getTemplateOpcodes = (result: TemplateResult) => {
+const getTemplateOpcodes = (
+  result: TemplateResult,
+  isServerTemplate = false
+) => {
   const template = templateCache.get(result.strings);
   if (template !== undefined) {
     return template;
   }
-  // The property '_$litType$' needs to remain unminified.
   const [html, attrNames] = getTemplateHtml(
     result.strings,
     // SVG TemplateResultType functionality is only required on the client,
@@ -305,8 +307,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
    * The html string is parsed into a parse5 AST with source code information
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
+   *
+   * Server Templates need to use `parse` as they may contain document tags such
+   * as `<html>`.
    */
-  const ast = parseFragment(String(html), {
+  const ast = (isServerTemplate ? parse : parseFragment)(String(html), {
     sourceCodeLocationInfo: true,
   });
 
@@ -439,16 +444,16 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             // nodes with bindings, we don't account for it in the nodeIndex because
             // that will not be injected into the client template
             const strings = attr.value.split(marker);
-            // We store the case-sensitive name from `attrNames` (generated
-            // while parsing the template strings); note that this assumes
-            // parse5 attribute ordering matches string ordering
-            const name = attrNames[attrIndex++];
             const attrSourceLocation =
               node.sourceCodeLocation!.attrs![attr.name]!;
             const attrNameStartOffset = attrSourceLocation.startOffset;
             const attrEndOffset = attrSourceLocation.endOffset;
             flushTo(attrNameStartOffset);
             if (isAttrBinding) {
+              // We store the case-sensitive name from `attrNames` (generated
+              // while parsing the template strings); note that this assumes
+              // parse5 attribute ordering matches string ordering
+              const name = attrNames[attrIndex++];
               const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
                 name as string
               )!;
@@ -697,7 +702,7 @@ function* renderTemplateResult(
   // previous span of HTML.
 
   const hydratable = isHydratable(result);
-  const ops = getTemplateOpcodes(result);
+  const ops = getTemplateOpcodes(result, !hydratable);
 
   /* The next value in result.values to render */
   let partIndex = 0;

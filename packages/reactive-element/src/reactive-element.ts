@@ -1246,6 +1246,12 @@ export abstract class ReactiveElement
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
+      if (DEV_MODE && (name as unknown) instanceof Event) {
+        issueWarning(
+          ``,
+          `The requestUpdate() method was called with an Event as the property name. This is probably a mistake caused by binding this.requestUpdate as an event listener. Instead bind a function that will call it with no arguments: () => this.requestUpdate()`
+        );
+      }
       options ??= (
         this.constructor as typeof ReactiveElement
       ).getPropertyOptions(name);
@@ -1663,7 +1669,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(global.reactiveElementVersions ??= []).push('2.0.2');
+(global.reactiveElementVersions ??= []).push('2.0.3');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

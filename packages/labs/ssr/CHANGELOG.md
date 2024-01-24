@@ -1,5 +1,14 @@
 # Change Log
 
+## 3.2.1
+
+### Patch Changes
+
+- [#4421](https://github.com/lit/lit/pull/4421) [`c7134a40`](https://github.com/lit/lit/commit/c7134a40f38d9db6adbb2c499431cf616f793f04) - Fix server template throwing when encountering an attribute binding on the
+  `html` tag. This is now handled correctly.
+
+- [#4479](https://github.com/lit/lit/pull/4479) [`ee97d089`](https://github.com/lit/lit/commit/ee97d089a209b70527118c9dcd730440ccaf51b2) - Fix incorrect attribute names being matched to values when attribute expressions are followed by element expressions such as using the `ref` directive.
+
 ## 3.2.0
 
 ### Minor Changes

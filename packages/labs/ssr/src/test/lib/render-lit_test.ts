@@ -207,6 +207,19 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('multiple attribute expressions with string value preceded by element expression', async () => {
+    const {render, templateWithElementAndMultipleAttributeExpressions} =
+      await setup();
+    const result = await render(
+      templateWithElementAndMultipleAttributeExpressions('foo', 'bar')
+    );
+    // Has marker attribute for number of bound attributes.
+    assert.is(
+      result,
+      `<!--lit-part NdVlqfEioQk=--><!--lit-node 0--><div  x="foo" y="bar" z="not-dynamic"></div><!--/lit-part-->`
+    );
+  });
+
   test('attribute expression with multiple bindings', async () => {
     const {render, templateWithMultiBindingAttributeExpression} = await setup();
     const result = await render(
@@ -636,6 +649,39 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       </body>
     </html>
   `
+    );
+  });
+
+  // Regression test for https://github.com/lit/lit/issues/4417
+  test('server-only template can bind attributes to html tag', async () => {
+    const {render, serverOnlyBindAttributeOnHtml} = await setup();
+    const result = await render(serverOnlyBindAttributeOnHtml);
+    assert.is(
+      result,
+      `
+<!DOCTYPE html>
+<html lang="ko"></html>
+`
+    );
+  });
+
+  test('server-only document templates compose', async () => {
+    const {render, serverOnlyDocumentTemplatesCompose} = await setup();
+    const result = await render(serverOnlyDocumentTemplatesCompose);
+    assert.is(
+      result,
+      `
+<!DOCTYPE html>
+<html lang="ko">
+  <head>
+    <title>Server only title</title>
+  </head>
+  <body>
+    <p>Content</p>
+    <table><tr><td>Table content</td></tr></table>
+  </body>
+</html>
+`
     );
   });
 

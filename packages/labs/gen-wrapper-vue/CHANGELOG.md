@@ -1,5 +1,13 @@
 # @lit-labs/gen-wrapper-vue
 
+## 0.3.2
+
+### Patch Changes
+
+- [#4466](https://github.com/lit/lit/pull/4466) [`8f38857c`](https://github.com/lit/lit/commit/8f38857c4a1da2014d7ac3d86eb2949f13d15e53) Thanks [@tibnor](https://github.com/tibnor)! - fix generated vite.config.ts to be valid
+
+- [#4293](https://github.com/lit/lit/pull/4293) [`5eea178e`](https://github.com/lit/lit/commit/5eea178e0df1199cd29e9d46bc888d52882f18dd) Thanks [@43081j](https://github.com/43081j)! - Generate valid wrappers for elements without reactive properties
+
 ## 0.3.1
 
 ### Patch Changes
