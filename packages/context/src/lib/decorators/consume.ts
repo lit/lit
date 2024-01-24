@@ -43,9 +43,11 @@ import {Context} from '../create-context.js';
 export function consume<ValueType>({
   context,
   subscribe,
+  callback,
 }: {
   context: Context<unknown, ValueType>;
   subscribe?: boolean;
+  callback?: (value: ValueType, dispose?: () => void) => void;
 }): ConsumeDecorator<ValueType> {
   return (<C extends ReactiveElement, V extends ValueType>(
     protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
@@ -56,9 +58,10 @@ export function consume<ValueType>({
       nameOrContext.addInitializer(function (this: ReactiveElement): void {
         new ContextConsumer(this, {
           context,
-          callback: (value: ValueType) => {
+          callback: (value, dispose) => {
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (this as any)[nameOrContext.name] = value;
+            callback?.(value, dispose);
           },
           subscribe,
         });
@@ -69,9 +72,10 @@ export function consume<ValueType>({
         (element: ReactiveElement): void => {
           new ContextConsumer(element, {
             context,
-            callback: (value: ValueType) => {
+            callback: (value, dispose) => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (element as any)[nameOrContext] = value;
+              callback?.(value, dispose);
             },
             subscribe,
           });
