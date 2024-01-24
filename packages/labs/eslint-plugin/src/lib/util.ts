@@ -15,6 +15,7 @@ import ts from 'typescript';
 import * as path from 'path';
 
 export const createRule = ESLintUtils.RuleCreator(
+  // TODO (justinfagnani): set up rule doc publishing pipeline for lit.dev
   (name: string) => `https://lit.dev/eslint-plugin/${name}`
 );
 
@@ -29,7 +30,6 @@ export const getAnalyzer = (services: ParserServicesWithTypeInformation) => {
       getProgram: () => program,
       fs: ts.sys,
       path,
-      // basePath,
     });
   }
   return analyzer;

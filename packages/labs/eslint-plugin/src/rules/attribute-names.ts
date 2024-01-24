@@ -55,7 +55,6 @@ export const attributeNames = createRule({
           return;
         }
         const properties = declaration.reactiveProperties;
-        // const propertyMap = getPropertyMap(node);
 
         for (const [propertyName, property] of properties.entries()) {
           const attributeOptionNode = property.optionsNode?.properties.find(
