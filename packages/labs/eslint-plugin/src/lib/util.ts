@@ -56,7 +56,7 @@ export const isTrueLiteral = (e: ts.Expression): e is ts.TrueLiteral =>
   e.kind === ts.SyntaxKind.TrueKeyword;
 
 export const isFalseLiteral = (e: ts.Expression): e is ts.FalseLiteral =>
-  e.kind === ts.SyntaxKind.TrueKeyword;
+  e.kind === ts.SyntaxKind.FalseKeyword;
 
 // TODO (justinfagnani): add a type predicate?
 // When is `undefined` ever not an identifier?
