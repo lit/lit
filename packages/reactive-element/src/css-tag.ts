@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {StaticValue} from 'lit-html/static.js';
+import {type StaticValue, unwrapStaticValue} from 'lit-html/static.js';
 
 const NODE_MODE = false;
 
@@ -109,8 +109,8 @@ const textFromCSSResult = (value: CSSResultGroup | StaticValue | number) => {
   // This property needs to remain unminified.
   if ((value as CSSResult)['_$cssResult$'] === true) {
     return (value as CSSResult).cssText;
-  } else if ((value as StaticValue)['_$litStatic$']) {
-    return (value as StaticValue)['_$litStatic$'];
+  } else if ((value as StaticValue)['_$litStatic$'] !== undefined) {
+    return unwrapStaticValue(value);
   } else if (typeof value === 'number') {
     return value;
   } else {
