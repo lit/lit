@@ -1,5 +1,6 @@
 ---
 '@lit-labs/ssr': patch
+'lit-html': patch
 ---
 
-fix a memory leak when patching directive constructors.
+Fix a memory leak when patching directive constructors for SSR.
