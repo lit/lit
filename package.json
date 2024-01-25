@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=16.0.0",
+    "node": ">=18.15.0",
     "npm": ">=7.0.0"
   },
   "workspaces": [
