@@ -327,6 +327,11 @@ export const serverOnlyBindAttributeOnHtml = serverhtml`
 <html lang="${'ko'}"></html>
 `;
 
+export const nonServerTemplateBindAttributeOnHtmlShouldError = html`
+  <!DOCTYPE html>
+  <html lang="${'ko'}"></html>
+`;
+
 export const serverOnlyDocumentTemplatesCompose = serverhtml`
 ${serverhtml`<!DOCTYPE html>`}
 ${serverhtml`<html lang="${'ko'}">

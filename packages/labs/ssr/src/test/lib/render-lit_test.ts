@@ -665,6 +665,19 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('client templates cannot bind attributes to the html tag', async () => {
+    const {render, nonServerTemplateBindAttributeOnHtmlShouldError} =
+      await setup();
+    assert.throws(
+      () => {
+        render(nonServerTemplateBindAttributeOnHtmlShouldError);
+      },
+      // TODO: This error message could be improved to be more descriptive. A
+      // top level html tag should only be used in a server-only template.
+      /Unexpected final partIndex/
+    );
+  });
+
   test('server-only document templates compose', async () => {
     const {render, serverOnlyDocumentTemplatesCompose} = await setup();
     const result = await render(serverOnlyDocumentTemplatesCompose);

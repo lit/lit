@@ -225,10 +225,10 @@ type Op =
 
 /**
  * Any of these top level tags will be removed by parse5's `parseFragment` and
- * will cause part errors if there are any part bindings. For only these tags,
- * we use a page-level template `parse`.
+ * will cause part errors if there are any part bindings. For only the `html`,
+ * `head`, and `body` tags, we use a page-level template `parse`.
  */
-const REGEXP_TEMPLATE_STARTS_WITH_PAGE_TAG =
+const REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG =
   /^(\s|<!--[^(-->)]*-->)*(<(!doctype|html|head|body))/i;
 
 /**
@@ -307,16 +307,19 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   );
 
   const hydratable = isHydratable(result);
+  const isServerTemplate = !hydratable;
   const htmlString = String(html);
+  // Only server templates can use top level document tags such as `<html>`,
+  // `<body>`, and `<head>`.
   const isPageLevelTemplate =
-    REGEXP_TEMPLATE_STARTS_WITH_PAGE_TAG.test(htmlString);
+    isServerTemplate && REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG.test(htmlString);
 
   /**
    * The html string is parsed into a parse5 AST with source code information
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
    *
-   * Server Templates need to use `parse` as they may contain document tags such
+   * Server Templates may need to use `parse` as they may contain document tags such
    * as `<html>`.
    */
   const ast = (isPageLevelTemplate ? parse : parseFragment)(htmlString, {
