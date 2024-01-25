@@ -685,6 +685,54 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('server-only page elements supports bindings', async () => {
+    const {render, serverOnlyPageElementsSupportBindings} = await setup();
+    const result = await render(serverOnlyPageElementsSupportBindings);
+    assert.is(
+      result.trim(),
+      `<!-- A multi
+     line comment -->
+<html lang="ko">
+  <p>Hello, world!</p>
+</html>`
+    );
+  });
+
+  test('server-only top level body element support bindings', async () => {
+    const {render, serverOnlyBodyElementSupportsBindings} = await setup();
+    const result = await render(serverOnlyBodyElementSupportsBindings);
+    assert.is(
+      result,
+      `\n<!-- A multi
+     line comment -->
+<body class="testClass">
+  <p>Body Contents!</p>
+</body>\n`
+    );
+  });
+
+  test('server-only top level head element with comment supports bindings', async () => {
+    const {render, serverOnlyHeadWithComment} = await setup();
+    const result = await render(serverOnlyHeadWithComment);
+    assert.is(
+      result,
+      `\n<!-- Head content -->
+<head attr-key="attrValue">
+</head>\n`
+    );
+  });
+
+  test('server-only top level head element supports bindings', async () => {
+    const {render, serverOnlyHeadTagComposition} = await setup();
+    const result = await render(serverOnlyHeadTagComposition);
+    assert.is(
+      result,
+      `\n<head attr-key="attrValue">
+  <title attr-key="attrValue">Document title!</title>
+</head>\n`
+    );
+  });
+
   // Regression test for https://github.com/lit/lit/issues/4513
   test('server-only table templates can contain attribute bindings', async () => {
     const {render, serverOnlyTdTag} = await setup();
