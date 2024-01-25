@@ -740,6 +740,16 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     assert.is(result, `<td colspan="2">Table content</td>`);
   });
 
+  // Regression test for https://github.com/lit/lit/issues/4513
+  test('server-only table templates can contain attribute bindings and have comment', async () => {
+    const {render, serverOnlyTdTagWithCommentPrefix} = await setup();
+    const result = await render(serverOnlyTdTagWithCommentPrefix);
+    assert.is(
+      result,
+      `<!-- HTML comment --><td colspan="3">Table content</td>`
+    );
+  });
+
   test('server-only template throws on property bindings', async () => {
     const {render, serverOnlyRenderPropertyBinding} = await setup();
     assert.throws(

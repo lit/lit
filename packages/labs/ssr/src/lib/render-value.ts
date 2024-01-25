@@ -229,7 +229,7 @@ type Op =
  * we use a page-level template `parse`.
  */
 const REGEXP_TEMPLATE_STARTS_WITH_PAGE_TAG =
-  /^(\s*|<!--.*-->)*(<(!doctype|html|head|body))/is;
+  /^(\s*|<!--[^(-->)]*-->)*(<(!doctype|html|head|body))/is;
 
 /**
  * For a given TemplateResult, generates and/or returns a cached list of opcodes

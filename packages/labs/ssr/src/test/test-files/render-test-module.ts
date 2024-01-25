@@ -369,6 +369,8 @@ export const serverOnlyHeadTagComposition = serverhtml`
 
 export const serverOnlyTdTag = serverhtml`<td colspan=${2}>${'Table content'}</td>`;
 
+export const serverOnlyTdTagWithCommentPrefix = serverhtml`<!-- HTML comment --><td colspan=${3}>${'Table content'}</td>`;
+
 export const serverOnlyArray = serverhtml`<div>${[
   'one',
   'two',
