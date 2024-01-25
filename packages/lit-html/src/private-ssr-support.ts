@@ -58,13 +58,17 @@ export const _$LH = {
       }
     },
   patchDirectiveResolve: (
-    directiveClass: new (part: PartInfo) => Directive,
+    directiveClass: typeof Directive,
     resolveOverrideFn: (
       this: Directive,
       _part: Part,
       values: unknown[]
     ) => unknown
   ) => {
+    // TODO: This could be optimized such that `_$resolve` is only patched on
+    // the Directive base class once. This should reduce class shape changes and
+    // be slightly more optimal. The hazard is that we need to handle both the
+    // unminified and minified property keys.
     if (directiveClass.prototype._$resolve !== resolveOverrideFn) {
       directiveClass.prototype._$resolve = resolveOverrideFn;
     }
