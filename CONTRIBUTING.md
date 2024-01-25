@@ -104,7 +104,7 @@ If you've already signed a CLA but are still getting bothered by the awfully ins
 
 You'll need at least [**Node** >= `18.15.0`](https://nodejs.org/en) installed on your machine.
 
-Once the minimum Node version is installed, you continue with the rest of the repo setup.
+Once the minimum Node version is installed, you can continue with the rest of the repo setup.
 
 ```bash
 node -v
