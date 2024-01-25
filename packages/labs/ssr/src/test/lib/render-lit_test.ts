@@ -666,6 +666,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
   });
 
   test('server-only document templates compose', async () => {
+    console.log('\n\nTEMPLATES COMPOSE TEST START\n\n');
     const {render, serverOnlyDocumentTemplatesCompose} = await setup();
     const result = await render(serverOnlyDocumentTemplatesCompose);
     assert.is(
@@ -683,6 +684,13 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
 </html>
 `
     );
+  });
+
+  // Regression test for https://github.com/lit/lit/issues/4513
+  test('server-only table templates can contain attribute bindings', async () => {
+    const {render, serverOnlyTdTag} = await setup();
+    const result = await render(serverOnlyTdTag);
+    assert.is(result, `<td colspan="2">Table content</td>`);
   });
 
   test('server-only template throws on property bindings', async () => {

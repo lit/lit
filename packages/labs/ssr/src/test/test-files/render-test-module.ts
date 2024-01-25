@@ -340,6 +340,8 @@ ${serverhtml`<html lang="${'ko'}">
 </html>`}
 `;
 
+export const serverOnlyTdTag = serverhtml`<td colspan=${2}>${'Table content'}</td>`;
+
 export const serverOnlyArray = serverhtml`<div>${[
   'one',
   'two',
