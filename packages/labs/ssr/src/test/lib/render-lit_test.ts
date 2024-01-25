@@ -666,7 +666,6 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
   });
 
   test('server-only document templates compose', async () => {
-    console.log('\n\nTEMPLATES COMPOSE TEST START\n\n');
     const {render, serverOnlyDocumentTemplatesCompose} = await setup();
     const result = await render(serverOnlyDocumentTemplatesCompose);
     assert.is(

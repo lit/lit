@@ -295,7 +295,6 @@ const REGEXP_TEMPLATE_STARTS_WITH_PAGE_TAG =
  */
 const getTemplateOpcodes = (result: TemplateResult) => {
   const template = templateCache.get(result.strings);
-  console.log('got undefined template', result.strings);
   if (template !== undefined) {
     return template;
   }
