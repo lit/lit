@@ -2193,7 +2193,7 @@ suite('lit-html', () => {
         );
       });
 
-      test('Duplicate attributes throw', () => {
+      skipTestIfCompiled('Duplicate attributes throw', () => {
         assert.throws(() => {
           render(
             html`<input ?disabled=${true} ?disabled=${false} fooAttribute=${'potato'}>`,
