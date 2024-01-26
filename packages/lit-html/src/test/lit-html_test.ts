@@ -2193,6 +2193,12 @@ suite('lit-html', () => {
         );
       });
 
+      test('Duplicate attributes throw', () => {
+        assert.throws(() => {
+          render(html`<input ?disabled=${true} ?disabled=${false}>`, container);
+        }, `Detected duplicate attribute bindings of attribute: '?disabled', in the template: \`<input ?disabled=\${...} ?disabled=\${...}>\``);
+      });
+
       test('Expressions inside nested templates throw in dev mode', () => {
         // top level
         assert.throws(() => {

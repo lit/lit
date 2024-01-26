@@ -925,6 +925,29 @@ class Template {
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
+    if (DEV_MODE) {
+      let attrSet;
+      if ((attrSet = new Set(attrNames)).size !== attrNames.length) {
+        // Report all duplicated attributes. This is linear time, but is only
+        // done in DEV_MODE when an error is expected.
+        const duplicatedAttributes = new Set<string>();
+        for (const attrName of attrNames) {
+          if (!attrSet.has(attrName)) {
+            continue;
+          }
+          duplicatedAttributes.add(attrName);
+        }
+        throw new Error(
+          `Detected duplicate attribute ` +
+            `bindings of attribute${
+              duplicatedAttributes.size > 1 ? 's' : ''
+            }: '${[...duplicatedAttributes].join(', ')}', in the template: ` +
+            '`' +
+            strings.join('${...}') +
+            '`'
+        );
+      }
+    }
     this.el = Template.createElement(html, options);
     walker.currentNode = this.el.content;
 
