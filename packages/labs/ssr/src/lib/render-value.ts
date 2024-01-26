@@ -307,12 +307,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   );
 
   const hydratable = isHydratable(result);
-  const isServerTemplate = !hydratable;
   const htmlString = String(html);
   // Only server templates can use top level document tags such as `<html>`,
   // `<body>`, and `<head>`.
   const isPageLevelTemplate =
-    isServerTemplate && REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG.test(htmlString);
+    !hydratable && REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG.test(htmlString);
 
   /**
    * The html string is parsed into a parse5 AST with source code information
