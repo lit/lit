@@ -2199,7 +2199,7 @@ suite('lit-html', () => {
             html`<input ?disabled=${true} ?disabled=${false} fooAttribute=${'potato'}>`,
             container
           );
-        }, `Detected duplicate attribute bindings. This occurs if your template has the dupliate attributes on an element tag. For example "<input ?disabled=\${true} ?disabled=\${false}>" contains a duplicate "disabled" attribute. The error was detected in the following template: \n\`<input ?disabled=\${...} ?disabled=\${...} fooAttribute=\${...}>\``);
+        }, `Detected duplicate attribute bindings. This occurs if your template has duplicate attributes on an element tag. For example "<input ?disabled=\${true} ?disabled=\${false}>" contains a duplicate "disabled" attribute. The error was detected in the following template: \n\`<input ?disabled=\${...} ?disabled=\${...} fooAttribute=\${...}>\``);
       });
 
       test('Matching attribute bindings across elements should not throw', () => {

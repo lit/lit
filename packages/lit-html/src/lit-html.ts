@@ -1045,7 +1045,7 @@ class Template {
       if (attrNames.length !== attrNameIndex) {
         throw new Error(
           `Detected duplicate attribute bindings. This occurs if your template ` +
-            `has the dupliate attributes on an element tag. For example ` +
+            `has duplicate attributes on an element tag. For example ` +
             `"<input ?disabled=\${true} ?disabled=\${false}>" contains a ` +
             `duplicate "disabled" attribute. The error was detected in ` +
             `the following template: \n` +
