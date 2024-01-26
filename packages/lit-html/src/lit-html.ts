@@ -925,29 +925,6 @@ class Template {
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);
-    if (DEV_MODE) {
-      let attrSet;
-      if ((attrSet = new Set(attrNames)).size !== attrNames.length) {
-        // Report all duplicated attributes. This is linear time, but is only
-        // done in DEV_MODE when an error is expected.
-        const duplicatedAttributes = new Set<string>();
-        for (const attrName of attrNames) {
-          if (!attrSet.has(attrName)) {
-            continue;
-          }
-          duplicatedAttributes.add(attrName);
-        }
-        throw new Error(
-          `Detected duplicate attribute ` +
-            `bindings of attribute${
-              duplicatedAttributes.size > 1 ? 's' : ''
-            }: '${[...duplicatedAttributes].join(', ')}', in the template: ` +
-            '`' +
-            strings.join('${...}') +
-            '`'
-        );
-      }
-    }
     this.el = Template.createElement(html, options);
     walker.currentNode = this.el.content;
 
@@ -1059,6 +1036,26 @@ class Template {
       }
       nodeIndex++;
     }
+
+    if (DEV_MODE) {
+      // If there was a duplicate attribute on a tag, then when the tag is
+      // parsed into an element the attribute gets de-duplicated. We can detect
+      // this mismatch if we haven't precisely consumed every attribute name
+      // when preparing the template.
+      if (attrNames.length !== attrNameIndex) {
+        throw new Error(
+          `Detected duplicate attribute bindings. This occurs if your template ` +
+            `has the dupliate attributes on an element tag. For example ` +
+            `"<input ?disabled=\${true} ?disabled=\${false}>" contains a ` +
+            `duplicate "disabled" attribute. The error was detected in ` +
+            `the following template: \n` +
+            '`' +
+            strings.join('${...}') +
+            '`'
+        );
+      }
+    }
+
     // We could set walker.currentNode to another node here to prevent a memory
     // leak, but every time we prepare a template, we immediately render it
     // and re-use the walker in new TemplateInstance._clone().
