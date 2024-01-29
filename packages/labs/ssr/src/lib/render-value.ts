@@ -224,6 +224,14 @@ type Op =
   | PossibleNodeMarkerOp;
 
 /**
+ * Any of these top level tags will be removed by parse5's `parseFragment` and
+ * will cause part errors if there are any part bindings. For only the `html`,
+ * `head`, and `body` tags, we use a page-level template `parse`.
+ */
+const REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG =
+  /^(\s|<!--[^(-->)]*-->)*(<(!doctype|html|head|body))/i;
+
+/**
  * For a given TemplateResult, generates and/or returns a cached list of opcodes
  * for the associated Template.  Opcodes are designed to allow emitting
  * contiguous static text from the template as much as possible, with specific
@@ -285,10 +293,7 @@ type Op =
  * - `custom-element-close`
  *   - Pop the CE `instance`+`renderer` off the `customElementInstanceStack`
  */
-const getTemplateOpcodes = (
-  result: TemplateResult,
-  isServerTemplate = false
-) => {
+const getTemplateOpcodes = (result: TemplateResult) => {
   const template = templateCache.get(result.strings);
   if (template !== undefined) {
     return template;
@@ -302,16 +307,21 @@ const getTemplateOpcodes = (
   );
 
   const hydratable = isHydratable(result);
+  const htmlString = String(html);
+  // Only server templates can use top level document tags such as `<html>`,
+  // `<body>`, and `<head>`.
+  const isPageLevelTemplate =
+    !hydratable && REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG.test(htmlString);
 
   /**
    * The html string is parsed into a parse5 AST with source code information
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
    *
-   * Server Templates need to use `parse` as they may contain document tags such
+   * Server Templates may need to use `parse` as they may contain document tags such
    * as `<html>`.
    */
-  const ast = (isServerTemplate ? parse : parseFragment)(String(html), {
+  const ast = (isPageLevelTemplate ? parse : parseFragment)(htmlString, {
     sourceCodeLocationInfo: true,
   });
 
@@ -702,7 +712,7 @@ function* renderTemplateResult(
   // previous span of HTML.
 
   const hydratable = isHydratable(result);
-  const ops = getTemplateOpcodes(result, !hydratable);
+  const ops = getTemplateOpcodes(result);
 
   /* The next value in result.values to render */
   let partIndex = 0;
