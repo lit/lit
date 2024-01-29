@@ -95,6 +95,10 @@ const patchIfDirective = (value: unknown) => {
         }
       );
       patchedDirectiveCache.set(directiveCtor, patchedCtor);
+      // If `patchIfDirective` is called with a previously patched directive,
+      // the patched directive will become patched again unless it's also a key
+      // in the WeakMap. This line prevents a memory leak.
+      patchedDirectiveCache.set(patchedCtor, patchedCtor);
     }
     // This property needs to remain unminified.
     setDirectiveClass(value as DirectiveResult, patchedCtor);
