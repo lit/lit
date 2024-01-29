@@ -1041,7 +1041,9 @@ class Template {
       // If there was a duplicate attribute on a tag, then when the tag is
       // parsed into an element the attribute gets de-duplicated. We can detect
       // this mismatch if we haven't precisely consumed every attribute name
-      // when preparing the template. This works because `attrNames` is built from the template string and `attrNameIndex` comes from processing the resulting DOM.
+      // when preparing the template. This works because `attrNames` is built
+      // from the template string and `attrNameIndex` comes from processing the
+      // resulting DOM.
       if (attrNames.length !== attrNameIndex) {
         throw new Error(
           `Detected duplicate attribute bindings. This occurs if your template ` +
