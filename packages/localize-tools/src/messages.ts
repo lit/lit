@@ -4,8 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as ts from 'typescript';
+import ts from 'typescript';
 import type {Locale} from './types/locale.js';
+import {parseStringAsTemplateLiteral} from './typescript.js';
 
 /**
  * A message for translation.
@@ -111,17 +112,20 @@ export function sortProgramMessages(
  * (no more, no less, no changes, but order can change).
  *
  * It is important to validate this condition because placeholders can contain
- * arbitrary HTML and JavaScript template literal placeholder expressions, will
- * be substituted back into generated executable source code. A well behaving
- * localization process/tool would not allow any modification of these
- * placeholders, but we can't assume that to be the case, so it is a potential
- * source of bugs and attacks and must be validated.
+ * arbitrary HTML which will be substituted back into generated executable
+ * source code. A well behaving localization process/tool would not allow any
+ * modification of these placeholders, but we can't assume that to be the case,
+ * so it is a potential source of bugs and attacks and must be validated.
+ *
+ * JavaScript template expressions within placeholders are not validated since
+ * they are replaced by numbers in runtime mode, or the expression from the
+ * source code in transform mode.
  */
 export function validateLocalizedPlaceholders(
   programMessages: Message[],
   localizedMessages: Map<Locale, Message[]>
 ): string[] {
-  const errors = [];
+  const errors: string[] = [];
   const programMap = makeMessageIdMap(programMessages);
   for (const [locale, messages] of localizedMessages) {
     for (const localizedMsg of messages) {
@@ -138,13 +142,17 @@ export function validateLocalizedPlaceholders(
       const remainingProgramPlaceholders = [];
       for (const content of programMsg.contents) {
         if (typeof content !== 'string') {
-          remainingProgramPlaceholders.push(content.untranslatable);
+          remainingProgramPlaceholders.push(
+            replaceExpressionInTemplateString(content.untranslatable)
+          );
         }
       }
 
       for (const content of localizedMsg.contents) {
         if (typeof content !== 'string') {
-          const placeholder = content.untranslatable;
+          const placeholder = replaceExpressionInTemplateString(
+            content.untranslatable
+          );
           const index = remainingProgramPlaceholders.indexOf(placeholder);
           if (index === -1) {
             errors.push(
@@ -168,4 +176,27 @@ export function validateLocalizedPlaceholders(
     }
   }
   return errors;
+}
+
+/**
+ * Given a template string, replace all expression with a provided string (or
+ * "expr" if none provided).
+ *
+ * e.g. `hello ${foo} world ${bar}` -> `hello ${expr} world ${expr}`
+ */
+function replaceExpressionInTemplateString(
+  templateString: string,
+  expression = 'expr'
+): string {
+  const template = parseStringAsTemplateLiteral(templateString);
+  if (ts.isNoSubstitutionTemplateLiteral(template)) {
+    return template.text;
+  }
+  const fragments: string[] = [];
+  fragments.push(template.head.text);
+  for (let i = 0; i < template.templateSpans.length; i++) {
+    fragments.push('${' + expression + '}');
+    fragments.push(template.templateSpans[i].literal.text);
+  }
+  return fragments.join('');
 }

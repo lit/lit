@@ -11,6 +11,8 @@ const name = 'Friend';
 
 msg(`Hello World`, {id: 'extra-expression'});
 msg(str`Hello ${name}`, {id: 'missing-expression'});
+// Changed expression used to be considered errors but no longer are
+// See https://github.com/lit/lit/issues/4502
 msg(str`Hello ${name}`, {id: 'changed-expression'});
 msg(html`<b>Hello World</b>`, {id: 'missing-html'});
 msg(html`<b>Hello World</b>`, {id: 'changed-html'});
