@@ -105,7 +105,7 @@
     "@parse5/tools": "^0.3.0",
     "lit-html": "^3.0.0",
     "parse5": "^7.1.2",
-    "typescript": "~5.2.0"
+    "typescript": "~5.3.3"
   },
   "devDependencies": {
     "@rollup/plugin-typescript": "11.1.2",
