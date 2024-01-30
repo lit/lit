@@ -88,9 +88,9 @@ export const _$LH = {
       // client contains multiple duplicate Lit modules with minified and
       // unminified exports, we currently cannot handle both.
       throw new Error(
-        `Internal error: It is possible  that both dev mode and production mode` +
-          ` Lit was mixed together during SSR. Please file a bug at: ` +
-          `https://github.com/lit/lit/issues/new/choose`
+        `Internal error: It is possible that both dev mode and production mode` +
+          ` Lit was mixed together during SSR. Please comment on the issue: ` +
+          `https://github.com/lit/lit/issues/4527`
       );
     }
   },
