@@ -11,6 +11,7 @@ export const templates = {
   h02c268d9b1fcb031: html`&lt;Hola<b>&lt;Mundo &amp; Amigos&gt;</b>!&gt;`,
   h349c3c4777670217: html`[SALT] Hola <b>${0}</b>!`,
   h3c44aff2d5f5ef6b: html`Hola <b>Mundo</b>!`,
+  h5e2d21ff71e6c8b5: html`<b>${0}</b> diferente`,
   h82ccc38d4d46eaa9: html`Hola <b>${0}</b>!`,
   h8d70dfec810d1eae: html`<b>Hola</b>! Clic <a href="${0}/${1}">aquí</a>!`,
   h99e74f744fda7e25: html`Clic <a href="${0}">aquí</a>!`,
@@ -21,5 +22,6 @@ export const templates = {
   s00ad08ebae1e0f74: str`Hola ${0}!`,
   s03c68d79ad36e8d4: `described 0`,
   s0f19e6c4e521dd53: `Mundo`,
+  s372f95c2b25986c8: str`${0} diferente`,
   s8c0ec8d1fb9e6e32: `Hola Mundo!`,
 };
