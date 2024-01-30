@@ -7,11 +7,7 @@
  */
 
 import type {TemplateResult, ChildPart, CompiledTemplateResult} from 'lit';
-import type {
-  Directive,
-  DirectiveClass,
-  DirectiveResult,
-} from 'lit/directive.js';
+import type {Directive} from 'lit/directive.js';
 
 import {nothing, noChange} from 'lit';
 import {PartType} from 'lit/directive.js';
@@ -29,8 +25,7 @@ const {
   marker,
   markerMatch,
   boundAttributeSuffix,
-  overrideDirectiveResolve,
-  setDirectiveClass,
+  patchDirectiveResolve,
   getAttributePartCommittedValue,
   resolveDirective,
   AttributePart,
@@ -67,6 +62,7 @@ import {reflectedAttributeName} from './reflected-attributes.js';
 
 import type {RenderResult} from './render-result.js';
 import {isHydratable} from './server-template.js';
+import type {Part} from 'lit-html';
 
 declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {
@@ -74,30 +70,20 @@ declare module 'parse5/dist/tree-adapters/default.js' {
   }
 }
 
-const patchedDirectiveCache = new WeakMap<DirectiveClass, DirectiveClass>();
+function ssrResolve(this: Directive, _part: Part, values: unknown[]) {
+  // Since the return value may also be a directive result in the case of nested
+  // directives, we may need to patch that as well.
+  return patchIfDirective(this.render(...values));
+}
 
 /**
- * Looks for values of type `DirectiveResult` and replaces its Directive class
- * with a subclass that calls `render` rather than `update`
+ * Looks for values of type `DirectiveResult` and patches its Directive class
+ * such that it calls `render` rather than `update`.
  */
 const patchIfDirective = (value: unknown) => {
-  // This property needs to remain unminified.
   const directiveCtor = getDirectiveClass(value);
   if (directiveCtor !== undefined) {
-    let patchedCtor = patchedDirectiveCache.get(directiveCtor);
-    if (patchedCtor === undefined) {
-      patchedCtor = overrideDirectiveResolve(
-        directiveCtor,
-        (directive: Directive, values: unknown[]) => {
-          // Since the return value may also be a directive result in the case of
-          // nested directives, we may need to patch that as well
-          return patchIfDirective(directive.render(...values));
-        }
-      );
-      patchedDirectiveCache.set(directiveCtor, patchedCtor);
-    }
-    // This property needs to remain unminified.
-    setDirectiveClass(value as DirectiveResult, patchedCtor);
+    patchDirectiveResolve(directiveCtor, ssrResolve);
   }
   return value;
 };
