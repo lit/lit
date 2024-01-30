@@ -28,7 +28,7 @@ import type {
 } from './lit-html.js';
 
 // Contains either the minified or unminified `_$resolve` Directive method name.
-let resolveName = null;
+let resolveMethodName: Extract<keyof Directive, '_$resolve'> | null = null;
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
@@ -69,13 +69,15 @@ export const _$LH = {
     ) => unknown
   ) => {
     if (directiveClass.prototype._$resolve !== resolveOverrideFn) {
-      resolveName ??= directiveClass.prototype._$resolve.name;
-      let proto = directiveClass.prototype;
-      for (; proto !== Object.prototype; proto = Object.getPrototypeOf(proto)) {
-        if (proto.hasOwnProperty(resolveName)) {
-          (proto as unknown as {[key: string]: typeof resolveOverrideFn})[
-            resolveName
-          ] = resolveOverrideFn;
+      resolveMethodName ??= directiveClass.prototype._$resolve
+        .name as NonNullable<typeof resolveMethodName>;
+      for (
+        let proto = directiveClass.prototype;
+        proto !== Object.prototype;
+        proto = Object.getPrototypeOf(proto)
+      ) {
+        if (proto.hasOwnProperty(resolveMethodName)) {
+          proto[resolveMethodName] = resolveOverrideFn;
           return;
         }
       }
