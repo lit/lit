@@ -327,6 +327,11 @@ export const serverOnlyBindAttributeOnHtml = serverhtml`
 <html lang="${'ko'}"></html>
 `;
 
+export const nonServerTemplateBindAttributeOnHtmlShouldError = html`
+  <!DOCTYPE html>
+  <html lang="${'ko'}"></html>
+`;
+
 export const serverOnlyDocumentTemplatesCompose = serverhtml`
 ${serverhtml`<!DOCTYPE html>`}
 ${serverhtml`<html lang="${'ko'}">
@@ -339,6 +344,37 @@ ${serverhtml`<html lang="${'ko'}">
   </body>`}
 </html>`}
 `;
+
+export const serverOnlyPageElementsSupportBindings = serverhtml`
+<!-- A multi
+     line comment -->
+<html lang="${'ko'}">
+  <p>${'Hello, world!'}</p>
+</html>`;
+
+export const serverOnlyBodyElementSupportsBindings = serverhtml`
+<!-- A multi
+     line comment -->
+<body class="${'testClass'}">
+  <p>${'Body Contents!'}</p>
+</body>
+`;
+
+export const serverOnlyHeadWithComment = serverhtml`
+<!-- Head content -->
+<head attr-key=${'attrValue'}>
+</head>
+`;
+
+export const serverOnlyHeadTagComposition = serverhtml`
+<head attr-key=${'attrValue'}>
+  ${serverhtml`<title attr-key=${'attrValue'}>${'Document title!'}</title>`}
+</head>
+`;
+
+export const serverOnlyTdTag = serverhtml`<td colspan=${2}>${'Table content'}</td>`;
+
+export const serverOnlyTdTagWithCommentPrefix = serverhtml`<!-- HTML comment --><td colspan=${3}>${'Table content'}</td>`;
 
 export const serverOnlyArray = serverhtml`<div>${[
   'one',

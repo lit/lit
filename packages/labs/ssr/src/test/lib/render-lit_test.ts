@@ -665,6 +665,19 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('client templates cannot bind attributes to the html tag', async () => {
+    const {render, nonServerTemplateBindAttributeOnHtmlShouldError} =
+      await setup();
+    assert.throws(
+      () => {
+        render(nonServerTemplateBindAttributeOnHtmlShouldError);
+      },
+      // TODO: This error message could be improved to be more descriptive. A
+      // top level html tag should only be used in a server-only template.
+      /Unexpected final partIndex/
+    );
+  });
+
   test('server-only document templates compose', async () => {
     const {render, serverOnlyDocumentTemplatesCompose} = await setup();
     const result = await render(serverOnlyDocumentTemplatesCompose);
@@ -682,6 +695,71 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
   </body>
 </html>
 `
+    );
+  });
+
+  test('server-only page elements supports bindings', async () => {
+    const {render, serverOnlyPageElementsSupportBindings} = await setup();
+    const result = await render(serverOnlyPageElementsSupportBindings);
+    assert.is(
+      result.trim(),
+      `<!-- A multi
+     line comment -->
+<html lang="ko">
+  <p>Hello, world!</p>
+</html>`
+    );
+  });
+
+  test('server-only top level body element support bindings', async () => {
+    const {render, serverOnlyBodyElementSupportsBindings} = await setup();
+    const result = await render(serverOnlyBodyElementSupportsBindings);
+    assert.is(
+      result,
+      `\n<!-- A multi
+     line comment -->
+<body class="testClass">
+  <p>Body Contents!</p>
+</body>\n`
+    );
+  });
+
+  test('server-only top level head element with comment supports bindings', async () => {
+    const {render, serverOnlyHeadWithComment} = await setup();
+    const result = await render(serverOnlyHeadWithComment);
+    assert.is(
+      result,
+      `\n<!-- Head content -->
+<head attr-key="attrValue">
+</head>\n`
+    );
+  });
+
+  test('server-only top level head element supports bindings', async () => {
+    const {render, serverOnlyHeadTagComposition} = await setup();
+    const result = await render(serverOnlyHeadTagComposition);
+    assert.is(
+      result,
+      `\n<head attr-key="attrValue">
+  <title attr-key="attrValue">Document title!</title>
+</head>\n`
+    );
+  });
+
+  // Regression test for https://github.com/lit/lit/issues/4513
+  test('server-only table templates can contain attribute bindings', async () => {
+    const {render, serverOnlyTdTag} = await setup();
+    const result = await render(serverOnlyTdTag);
+    assert.is(result, `<td colspan="2">Table content</td>`);
+  });
+
+  // Regression test for https://github.com/lit/lit/issues/4513
+  test('server-only table templates can contain attribute bindings and have comment', async () => {
+    const {render, serverOnlyTdTagWithCommentPrefix} = await setup();
+    const result = await render(serverOnlyTdTagWithCommentPrefix);
+    assert.is(
+      result,
+      `<!-- HTML comment --><td colspan="3">Table content</td>`
     );
   });
 

@@ -7,11 +7,7 @@
  */
 
 import type {TemplateResult, ChildPart, CompiledTemplateResult} from 'lit';
-import type {
-  Directive,
-  DirectiveClass,
-  DirectiveResult,
-} from 'lit/directive.js';
+import type {Directive} from 'lit/directive.js';
 
 import {nothing, noChange} from 'lit';
 import {PartType} from 'lit/directive.js';
@@ -29,8 +25,7 @@ const {
   marker,
   markerMatch,
   boundAttributeSuffix,
-  overrideDirectiveResolve,
-  setDirectiveClass,
+  patchDirectiveResolve,
   getAttributePartCommittedValue,
   resolveDirective,
   AttributePart,
@@ -67,6 +62,7 @@ import {reflectedAttributeName} from './reflected-attributes.js';
 
 import type {RenderResult} from './render-result.js';
 import {isHydratable} from './server-template.js';
+import type {Part} from 'lit-html';
 
 declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {
@@ -74,30 +70,20 @@ declare module 'parse5/dist/tree-adapters/default.js' {
   }
 }
 
-const patchedDirectiveCache = new WeakMap<DirectiveClass, DirectiveClass>();
+function ssrResolve(this: Directive, _part: Part, values: unknown[]) {
+  // Since the return value may also be a directive result in the case of nested
+  // directives, we may need to patch that as well.
+  return patchIfDirective(this.render(...values));
+}
 
 /**
- * Looks for values of type `DirectiveResult` and replaces its Directive class
- * with a subclass that calls `render` rather than `update`
+ * Looks for values of type `DirectiveResult` and patches its Directive class
+ * such that it calls `render` rather than `update`.
  */
 const patchIfDirective = (value: unknown) => {
-  // This property needs to remain unminified.
   const directiveCtor = getDirectiveClass(value);
   if (directiveCtor !== undefined) {
-    let patchedCtor = patchedDirectiveCache.get(directiveCtor);
-    if (patchedCtor === undefined) {
-      patchedCtor = overrideDirectiveResolve(
-        directiveCtor,
-        (directive: Directive, values: unknown[]) => {
-          // Since the return value may also be a directive result in the case of
-          // nested directives, we may need to patch that as well
-          return patchIfDirective(directive.render(...values));
-        }
-      );
-      patchedDirectiveCache.set(directiveCtor, patchedCtor);
-    }
-    // This property needs to remain unminified.
-    setDirectiveClass(value as DirectiveResult, patchedCtor);
+    patchDirectiveResolve(directiveCtor, ssrResolve);
   }
   return value;
 };
@@ -224,6 +210,14 @@ type Op =
   | PossibleNodeMarkerOp;
 
 /**
+ * Any of these top level tags will be removed by parse5's `parseFragment` and
+ * will cause part errors if there are any part bindings. For only the `html`,
+ * `head`, and `body` tags, we use a page-level template `parse`.
+ */
+const REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG =
+  /^(\s|<!--[^(-->)]*-->)*(<(!doctype|html|head|body))/i;
+
+/**
  * For a given TemplateResult, generates and/or returns a cached list of opcodes
  * for the associated Template.  Opcodes are designed to allow emitting
  * contiguous static text from the template as much as possible, with specific
@@ -285,10 +279,7 @@ type Op =
  * - `custom-element-close`
  *   - Pop the CE `instance`+`renderer` off the `customElementInstanceStack`
  */
-const getTemplateOpcodes = (
-  result: TemplateResult,
-  isServerTemplate = false
-) => {
+const getTemplateOpcodes = (result: TemplateResult) => {
   const template = templateCache.get(result.strings);
   if (template !== undefined) {
     return template;
@@ -302,16 +293,21 @@ const getTemplateOpcodes = (
   );
 
   const hydratable = isHydratable(result);
+  const htmlString = String(html);
+  // Only server templates can use top level document tags such as `<html>`,
+  // `<body>`, and `<head>`.
+  const isPageLevelTemplate =
+    !hydratable && REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG.test(htmlString);
 
   /**
    * The html string is parsed into a parse5 AST with source code information
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
    *
-   * Server Templates need to use `parse` as they may contain document tags such
+   * Server Templates may need to use `parse` as they may contain document tags such
    * as `<html>`.
    */
-  const ast = (isServerTemplate ? parse : parseFragment)(String(html), {
+  const ast = (isPageLevelTemplate ? parse : parseFragment)(htmlString, {
     sourceCodeLocationInfo: true,
   });
 
@@ -702,7 +698,7 @@ function* renderTemplateResult(
   // previous span of HTML.
 
   const hydratable = isHydratable(result);
-  const ops = getTemplateOpcodes(result, !hydratable);
+  const ops = getTemplateOpcodes(result);
 
   /* The next value in result.values to render */
   let partIndex = 0;

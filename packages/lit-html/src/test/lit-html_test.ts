@@ -2193,6 +2193,24 @@ suite('lit-html', () => {
         );
       });
 
+      skipTestIfCompiled('Duplicate attributes throw', () => {
+        assert.throws(() => {
+          render(
+            html`<input ?disabled=${true} ?disabled=${false} fooAttribute=${'potato'}>`,
+            container
+          );
+        }, `Detected duplicate attribute bindings. This occurs if your template has duplicate attributes on an element tag. For example "<input ?disabled=\${true} ?disabled=\${false}>" contains a duplicate "disabled" attribute. The error was detected in the following template: \n\`<input ?disabled=\${...} ?disabled=\${...} fooAttribute=\${...}>\``);
+      });
+
+      test('Matching attribute bindings across elements should not throw', () => {
+        assert.doesNotThrow(() => {
+          render(
+            html`<input ?disabled=${true}><input ?disabled=${false}>`,
+            container
+          );
+        });
+      });
+
       test('Expressions inside nested templates throw in dev mode', () => {
         // top level
         assert.throws(() => {
