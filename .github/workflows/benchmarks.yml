@@ -25,6 +25,7 @@ jobs:
         env:
           # Force installed chromedriver version to match the available chrome
           # version regardless of package-lock
+          # https://github.com/giggio/node-chromedriver?tab=readme-ov-file#detect-chromedriver-version
           DETECT_CHROMEDRIVER_VERSION: true
         run: npm ci
 
