@@ -1,5 +1,11 @@
 # @lit-labs/ssr-dom-shim
 
+## 1.2.0
+
+### Minor Changes
+
+- [#4493](https://github.com/lit/lit/pull/4493) [`e901c582`](https://github.com/lit/lit/commit/e901c5829b50b38db9c434e979a8fd215adafea8) - Add `toggleAttribute` to the Element shim.
+
 ## 1.1.2
 
 ### Patch Changes

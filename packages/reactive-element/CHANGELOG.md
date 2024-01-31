@@ -1,5 +1,15 @@
 # Change Log
 
+## 2.0.4
+
+### Patch Changes
+
+- [#4485](https://github.com/lit/lit/pull/4485) [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf) - Add "browser" export condition entrypoints to any package.json files with "node"
+  export conditions. This fixes Node test runners emulating browser environments that were incorrectly loading the
+  "node" entrypoints instead of the browser code.
+- Updated dependencies [[`e901c582`](https://github.com/lit/lit/commit/e901c5829b50b38db9c434e979a8fd215adafea8)]:
+  - @lit-labs/ssr-dom-shim@1.2.0
+
 ## 2.0.3
 
 ### Patch Changes

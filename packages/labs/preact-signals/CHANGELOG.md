@@ -1,5 +1,14 @@
 # @lit-labs/preact-signals
 
+## 1.0.2
+
+### Patch Changes
+
+- [#4487](https://github.com/lit/lit/pull/4487) [`b6371030`](https://github.com/lit/lit/commit/b637103020e1f697bead0f784b202c3802574aa8) - The `SignalWatcher` mixin can now accept abstract classes.
+
+- Updated dependencies [[`1a32b61e`](https://github.com/lit/lit/commit/1a32b61ecf09c2c2e6efac2735c2c627af793286), [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf)]:
+  - lit@3.1.2
+
 ## 1.0.1
 
 ### Patch Changes

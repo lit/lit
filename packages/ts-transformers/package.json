@@ -1,6 +1,6 @@
 {
   "name": "@lit/ts-transformers",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "publishConfig": {
     "access": "public"
   },
@@ -61,10 +61,10 @@
   },
   "devDependencies": {
     "@lit/localize": "^0.12.0",
-    "@lit/reactive-element": "^2.0.0",
+    "@lit/reactive-element": "^2.0.4",
     "@types/prettier": "^2.2.3",
-    "lit": "^3.0.0",
-    "lit-element": "^4.0.0",
+    "lit": "^3.1.2",
+    "lit-element": "^4.0.4",
     "prettier": "^2.3.2",
     "rimraf": "^3.0.2"
   }

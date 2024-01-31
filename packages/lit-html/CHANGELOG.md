@@ -1,5 +1,17 @@
 # Change Log
 
+## 3.1.2
+
+### Patch Changes
+
+- [#4523](https://github.com/lit/lit/pull/4523) [`1a32b61e`](https://github.com/lit/lit/commit/1a32b61ecf09c2c2e6efac2735c2c627af793286) - Add a DEV_MODE error to catch duplicate attribute bindings that otherwise create silent errors.
+
+- [#4485](https://github.com/lit/lit/pull/4485) [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf) - Add "browser" export condition entrypoints to any package.json files with "node"
+  export conditions. This fixes Node test runners emulating browser environments that were incorrectly loading the
+  "node" entrypoints instead of the browser code.
+
+- [#4515](https://github.com/lit/lit/pull/4515) [`dca963f7`](https://github.com/lit/lit/commit/dca963f7f5d2f7be91f2f073ebabe92d033b3a25) - Fix a memory leak when patching directive constructors for SSR.
+
 ## 3.1.1
 
 ### Patch Changes

@@ -1,5 +1,11 @@
 # @lit-labs/analyzer
 
+## 0.11.1
+
+### Patch Changes
+
+- [#4520](https://github.com/lit/lit/pull/4520) [`89c5bdfb`](https://github.com/lit/lit/commit/89c5bdfbc9bc9177f25d4d8f35e41e842afa0d63) - Update typescript dependency
+
 ## 0.11.0
 
 ### Minor Changes
