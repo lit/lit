@@ -12,7 +12,11 @@ import {
 } from '@web/test-runner-playwright';
 import {createSauceLabsLauncher} from '@web/test-runner-saucelabs';
 import {legacyPlugin} from '@web/dev-server-legacy';
-import type {BrowserLauncher, TestRunnerConfig} from '@web/test-runner';
+import type {
+  BrowserLauncher,
+  TestRunnerConfig,
+  TestRunnerPlugin,
+} from '@web/test-runner';
 import type {PolyfillConfig} from '@web/polyfills-loader';
 
 const mode = process.env.MODE || 'dev';
@@ -211,7 +215,8 @@ const config: TestRunnerConfig = {
           } as PolyfillConfig,
         ],
       },
-    }),
+      // TODO (justinfagnani): remove cast when we dedupe @web/dev-server-core
+    }) as TestRunnerPlugin,
   ],
   // Only actually log errors. This helps make test output less spammy.
   filterBrowserLogs: ({type}) => type === 'error',
@@ -259,7 +264,7 @@ const config: TestRunnerConfig = {
               console.log(
                 `❌ There may be a relative import in '${maybeTestFile}' which ` +
                   `is resolving to '${context.url}'. Ensure the import is a bare module. ` +
-                  'Reproduce locally with: ' +
+                  'Reproduce locally with:  ' +
                   '`MODE=prod npm run test:common -w @lit-internal/tests`'
               );
             }
