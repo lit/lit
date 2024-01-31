@@ -139,26 +139,34 @@ export function validateLocalizedPlaceholders(
       // Note that two identical placeholders could appear in the same template,
       // and it matters how many of them there are, hence we use an array, not a
       // set (might be good to implement some form of multiset here).
-      const remainingProgramPlaceholders = [];
+      const remainingProgramPlaceholders: Array<{
+        raw: string;
+        normalized: string;
+      }> = [];
       for (const content of programMsg.contents) {
         if (typeof content !== 'string') {
-          remainingProgramPlaceholders.push(
-            replaceExpressionInTemplateString(content.untranslatable)
-          );
+          remainingProgramPlaceholders.push({
+            raw: content.untranslatable,
+            normalized: normalizeExpressionInTemplateString(
+              content.untranslatable
+            ),
+          });
         }
       }
 
       for (const content of localizedMsg.contents) {
         if (typeof content !== 'string') {
-          const placeholder = replaceExpressionInTemplateString(
+          const normalizedPlaceholder = normalizeExpressionInTemplateString(
             content.untranslatable
           );
-          const index = remainingProgramPlaceholders.indexOf(placeholder);
+          const index = remainingProgramPlaceholders.findIndex(
+            ({normalized}) => normalized === normalizedPlaceholder
+          );
           if (index === -1) {
             errors.push(
               `Placeholder error in ${locale} ` +
                 `localization of ${localizedMsg.name}: ` +
-                `unexpected "${placeholder}"`
+                `unexpected "${content.untranslatable}"`
             );
           } else {
             remainingProgramPlaceholders.splice(index, 1);
@@ -170,7 +178,7 @@ export function validateLocalizedPlaceholders(
         errors.push(
           `Placeholder error in ${locale} ` +
             `localization of ${localizedMsg.name}: ` +
-            `missing "${placeholder}"`
+            `missing "${placeholder.raw}"`
         );
       }
     }
@@ -179,24 +187,19 @@ export function validateLocalizedPlaceholders(
 }
 
 /**
- * Given a template string, replace all expression with a provided string (or
- * "expr" if none provided).
+ * Given a template string, replace all expression with "expr". Used to compare
+ * static parts of the template string.
  *
  * e.g. `hello ${foo} world ${bar}` -> `hello ${expr} world ${expr}`
  */
-function replaceExpressionInTemplateString(
-  templateString: string,
-  expression = 'expr'
-): string {
+function normalizeExpressionInTemplateString(templateString: string): string {
   const template = parseStringAsTemplateLiteral(templateString);
   if (ts.isNoSubstitutionTemplateLiteral(template)) {
     return template.text;
   }
-  const fragments: string[] = [];
-  fragments.push(template.head.text);
-  for (let i = 0; i < template.templateSpans.length; i++) {
-    fragments.push('${' + expression + '}');
-    fragments.push(template.templateSpans[i].literal.text);
+  let normalizedString = template.head.text;
+  for (const span of template.templateSpans) {
+    normalizedString += '${expr}' + span.literal.text;
   }
-  return fragments.join('');
+  return normalizedString;
 }

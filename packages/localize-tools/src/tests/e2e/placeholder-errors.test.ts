@@ -12,8 +12,8 @@ e2eGoldensTest(
   1,
   `One or more localized templates contain a set of placeholders (HTML or template literal expressions) that do not exactly match the source code, aborting. Details:
 
-Placeholder error in es-419 localization of extra-expression: unexpected "\${expr}"
-Placeholder error in es-419 localization of missing-expression: missing "\${expr}"
+Placeholder error in es-419 localization of extra-expression: unexpected "\${alert("evil")}"
+Placeholder error in es-419 localization of missing-expression: missing "\${name}"
 Placeholder error in es-419 localization of missing-html: missing "<b>"
 Placeholder error in es-419 localization of missing-html: missing "</b>"
 Placeholder error in es-419 localization of changed-html: unexpected "<blink>"
