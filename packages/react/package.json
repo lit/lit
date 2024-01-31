@@ -1,6 +1,6 @@
 {
   "name": "@lit/react",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A React component wrapper for web components.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -187,7 +187,7 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@lit/reactive-element": "^2.0.0",
+    "@lit/reactive-element": "^2.0.4",
     "@lit-internal/scripts": "^1.0.1",
     "@types/react-dom": "^18.2.6",
     "@types/trusted-types": "^2.0.2",

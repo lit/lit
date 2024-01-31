@@ -1,5 +1,14 @@
 # @lit-labs/compiler
 
+## 1.0.2
+
+### Patch Changes
+
+- [#4520](https://github.com/lit/lit/pull/4520) [`89c5bdfb`](https://github.com/lit/lit/commit/89c5bdfbc9bc9177f25d4d8f35e41e842afa0d63) - Update typescript dependency
+
+- Updated dependencies [[`1a32b61e`](https://github.com/lit/lit/commit/1a32b61ecf09c2c2e6efac2735c2c627af793286), [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf), [`dca963f7`](https://github.com/lit/lit/commit/dca963f7f5d2f7be91f2f073ebabe92d033b3a25)]:
+  - lit-html@3.1.2
+
 ## 1.0.1
 
 ### Patch Changes
