@@ -26,7 +26,6 @@ for (const lang of languages) {
 
   test('isLitHtmlTemplateTag', ({getModule, analyzer, typescript}) => {
     const elementAModule = getModule('element-a')!;
-    console.log('elementAModule.jsPath', elementAModule.sourcePath);
     const decl = elementAModule.declarations[0];
 
     // get to the lit-html template tag
@@ -51,8 +50,6 @@ for (const lang of languages) {
       ),
       true
     );
-
-    // console.log('template', returnStatement.expression);
   });
 
   test.run();
