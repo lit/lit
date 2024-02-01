@@ -171,7 +171,6 @@
         "./packages/labs/gen-wrapper-vue:test",
         "./packages/labs/nextjs:test",
         "./packages/labs/preact-signals:test",
-        "./packages/labs/react:test",
         "./packages/labs/rollup-plugin-minify-html-literals:test",
         "./packages/labs/ssr:test",
         "./packages/labs/ssr-dom-shim:test",
