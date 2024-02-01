@@ -9,9 +9,7 @@ import {describe as suite, test} from 'node:test';
 
 const fixtureRootDir = new URL('../../fixture', import.meta.url).pathname;
 
-RuleTester.afterAll = () => {
-  console.log('All tests passed!');
-};
+RuleTester.afterAll = () => {};
 
 RuleTester.describe = suite;
 

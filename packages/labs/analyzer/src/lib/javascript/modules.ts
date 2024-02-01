@@ -305,7 +305,7 @@ const getJSPathFromSourcePath = (
 ) => {
   sourcePath = analyzer.path.normalize(sourcePath) as AbsolutePath;
   // If the source file was already JS, just return that
-  if (sourcePath.endsWith('js')) {
+  if (sourcePath.endsWith('.js')) {
     return sourcePath;
   }
   // TODO(kschaaf): If the source file was a declaration file, this means we're
