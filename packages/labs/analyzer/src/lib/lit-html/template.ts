@@ -31,7 +31,7 @@ type Attribute = Element['attrs'][number];
 /**
  * Returns true if the specifier is known to export the Lit html template tag.
  *
- * This can be used in a hueristic to determine if a template is a lit-html
+ * This can be used in a heuristic to determine if a template is a lit-html
  * template.
  */
 export const isKnownLitModuleSpecifier = (specifier: string): boolean => {
@@ -42,6 +42,10 @@ export const isKnownLitModuleSpecifier = (specifier: string): boolean => {
   );
 };
 
+// TODO (justinfagnani): we have a number of template tags now:
+// lit-html plain, lit-html static, lit-ssr server, preact-signals, svg,
+// even the css tag. We should consider returning a template tag _type_
+// to support all of them.
 /**
  * Returns true if the given node is a tagged template expression with the
  * lit-html template tag.
@@ -265,6 +269,9 @@ export const parseLitTemplate = (
   // Depth-first node index
   let nodeIndex = 0;
 
+  // TODO (justinfagnani): to support server-only templates that include
+  // non-fragment-parser supported tags (<html>, <body>, etc) we need to
+  // inspect the string and conditionally use parse() here.
   const ast = parseFragment(html.toString(), {
     sourceCodeLocationInfo: true,
   });
@@ -344,7 +351,7 @@ export const parseLitTemplate = (
 // TODO (justinfagnani): export a traverse function that takes a visitor that
 // gets passed our extended Lit interfaces. Also possibly export a unified
 // traverse that can traverse TypeScript and parse5 nodes. This would allow us
-// to do analysis of nexted templates, for rules like "A <li> element must be a
+// to do analysis of nested templates, for rules like "A <li> element must be a
 // child of a <ul> or <ol> element", even if the <li> is in a nested template.
 
 export const getTemplateStrings = (
