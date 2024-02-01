@@ -5,8 +5,7 @@
  */
 
 import {test, describe as suite} from 'node:test';
-// eslint-disable-next-line import/extensions
-import * as assert from 'uvu/assert';
+import * as assert from 'node:assert';
 import type ts from 'typescript';
 
 import {languages, setupAnalyzerForNodeTest} from '../utils.js';
@@ -28,17 +27,17 @@ for (const lang of languages) {
       const renderMethod = (decl as ClassDeclaration).getMethod('render')!;
       const statement = renderMethod.node.body!.statements[0];
 
-      assert.is(typescript.isReturnStatement(statement), true);
+      assert.equal(typescript.isReturnStatement(statement), true);
       const returnStatement = statement as ts.ReturnStatement;
       assert.ok(returnStatement.expression);
-      assert.is(
+      assert.equal(
         typescript.isTaggedTemplateExpression(returnStatement.expression),
         true
       );
       const expression =
         returnStatement.expression as ts.TaggedTemplateExpression;
-      assert.is(typescript.isIdentifier(expression.tag), true);
-      assert.is(
+      assert.equal(typescript.isIdentifier(expression.tag), true);
+      assert.equal(
         isLitTaggedTemplateExpression(
           expression,
           analyzer.typescript,
