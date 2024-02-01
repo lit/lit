@@ -244,6 +244,30 @@ export const setupAnalyzerForTest = (
   }
 };
 
+export const setupAnalyzerForNodeTest = (lang: Language, pkg: string) => {
+  const packagePath = fileURLToPath(
+    new URL(`../../test-files/${lang}/${pkg}`, import.meta.url).href
+  ) as AbsolutePath;
+  const analyzer = createPackageAnalyzer(packagePath);
+  const diagnostics = [...analyzer.getDiagnostics()];
+  if (diagnostics.length > 0) {
+    throw makeDiagnosticError(diagnostics);
+  }
+  const getModule = (name: string) =>
+    analyzer.getModule(
+      getSourceFilename(
+        analyzer.path.join(packagePath, name),
+        lang
+      ) as AbsolutePath
+    );
+  return {
+    packagePath,
+    analyzer,
+    typescript: analyzer.typescript,
+    getModule,
+  };
+};
+
 export interface AnalyzerModuleTestContext extends AnalyzerTestContext {
   module: Module;
 }
