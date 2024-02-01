@@ -243,7 +243,7 @@ export const createComponent = <
   type Props = ComponentProps<I, E>;
 
   const ReactComponent = React.forwardRef<I, Props>((props, ref) => {
-    const prevElemPropsRef = React.useRef<Map<string, unknown>>(new Map());
+    const prevElemPropsRef = React.useRef(new Map());
     const elementRef = React.useRef<I | null>(null);
 
     // Props to be passed to React.createElement
@@ -286,7 +286,10 @@ export const createComponent = <
           prevElemPropsRef.current.delete(key);
           newElemProps.set(key, props[key]);
         }
-        // "Unset" any props from previous render that no longer exist
+        // "Unset" any props from previous render that no longer exist.
+        // Setting to `undefined` seems like the correct thing to "unset"
+        // but currently React will set it as `null`.
+        // See https://github.com/facebook/react/issues/28203
         for (const [key, value] of prevElemPropsRef.current) {
           setProperty(elementRef.current, key, undefined, value, events);
         }
