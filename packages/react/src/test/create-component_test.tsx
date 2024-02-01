@@ -483,11 +483,11 @@ suite('createComponent', () => {
     barEvent = undefined;
 
     // Clear listener
+    // Explicitly setting `undefined` or omitting prop will clear listeners
     render(<BasicElementComponent onFoo={undefined} />);
     el.fire('foo');
     assert.equal(fooEvent, undefined);
     el.fire('bar');
-    // Omitting `onBar` from prop also clears the event listener
     assert.equal(barEvent, undefined);
     fooEvent = undefined;
     barEvent = undefined;
