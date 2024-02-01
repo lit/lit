@@ -93,7 +93,8 @@
   ],
   "exports": {
     ".": "./index.js",
-    "./package-analyzer.js": "./package-analyzer.js"
+    "./package-analyzer.js": "./package-analyzer.js",
+    "./lib/*.js": "./lib/*.js"
   },
   "dependencies": {
     "package-json-type": "^1.0.3",

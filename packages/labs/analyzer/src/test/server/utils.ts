@@ -206,6 +206,7 @@ export class InMemoryAnalyzer extends Analyzer {
 
 export interface AnalyzerTestContext {
   analyzer: Analyzer;
+  typescript: typeof ts;
   packagePath: AbsolutePath;
   getModule: (name: string) => Module;
 }
@@ -233,6 +234,7 @@ export const setupAnalyzerForTest = (
       );
     ctx.packagePath = packagePath;
     ctx.analyzer = analyzer;
+    ctx.typescript = analyzer.typescript;
     ctx.getModule = getModule;
   } catch (error) {
     // Uvu has a bug where it silently ignores failures in before and after,
