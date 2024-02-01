@@ -44,7 +44,8 @@
       "command": "tsc --build --pretty",
       "dependencies": [
         "../../lit-html:build:ts:types",
-        "../../lit-html:build:rollup"
+        "../../lit-html:build:rollup",
+        "../analyzer:build"
       ],
       "files": [
         "src/**/*.ts",
@@ -102,6 +103,7 @@
     }
   },
   "dependencies": {
+    "@lit-labs/analyzer": "^0.11.0",
     "@parse5/tools": "^0.3.0",
     "lit-html": "^3.1.2",
     "parse5": "^7.1.2",
