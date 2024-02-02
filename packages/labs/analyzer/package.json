@@ -19,6 +19,8 @@
     "build": "wireit",
     "test": "wireit",
     "test:server": "wireit",
+    "test:server:uvu": "wireit",
+    "test:server:node": "wireit",
     "test:browser": "wireit"
   },
   "wireit": {
@@ -54,11 +56,28 @@
       ]
     },
     "test:server": {
+      "dependencies": [
+        "test:server:node",
+        "test:server:uvu"
+      ]
+    },
+    "test:server:uvu": {
       "#comment": "The quotes around the file regex must be double quotes on windows!",
-      "command": "uvu test/server \"_test\\.js$\" && node --enable-source-maps --test-reporter=spec --test test/server/lit-html/*_test.js",
+      "command": "uvu test/server \"_test\\.js$\" -i \"lit-html/\"",
       "env": {
         "NODE_OPTIONS": "--enable-source-maps"
       },
+      "dependencies": [
+        "build",
+        "../../lit:build"
+      ],
+      "files": [
+        "test-files/"
+      ],
+      "output": []
+    },
+    "test:server:node": {
+      "command": "node --enable-source-maps --test-reporter=spec --test test/server/lit-html/*_test.js",
       "dependencies": [
         "build",
         "../../lit:build"
