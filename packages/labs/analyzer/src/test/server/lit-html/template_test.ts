@@ -31,7 +31,6 @@ for (const lang of languages) {
       // get to the lit-html template tag
       const renderMethod = (decl as ClassDeclaration).getMethod('render')!;
       const statement = renderMethod.node.body!.statements[0];
-
       assert.equal(typescript.isReturnStatement(statement), true);
       const returnStatement = statement as ts.ReturnStatement;
       assert.ok(returnStatement.expression);
