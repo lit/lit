@@ -5,6 +5,7 @@
  */
 
 const NODE_MODE = false;
+const DEV_MODE = true;
 
 // Allows minifiers to rename references to globalThis
 const global = globalThis;
@@ -38,6 +39,28 @@ const constructionToken = Symbol();
 
 const cssTagCache = new WeakMap<TemplateStringsArray, CSSStyleSheet>();
 
+const stylesByHref = new Map<string, Set<CSSResult>>();
+
+interface SourceLocationInfo {
+  functionName: string;
+  url: URL;
+  line: number;
+  column: number;
+}
+function getSourceLocationFromStack(
+  stack: string | undefined
+): undefined | SourceLocationInfo {
+  const parsed = stack
+    ?.split('\n')[2]
+    .match(/at (.*?)\((https?:\/\/.*?):(\d+):(\d+)\)/);
+  if (!parsed) {
+    return undefined;
+  }
+  const [, functionName, href, line, column] = parsed;
+  const url = new URL(href);
+  return {functionName, url, line: Number(line), column: Number(column)};
+}
+
 /**
  * A container for a string of CSS text, that may be used to create a CSSStyleSheet.
  *
@@ -52,6 +75,10 @@ export class CSSResult {
   private _styleSheet?: CSSStyleSheet;
   private _strings: TemplateStringsArray | undefined;
 
+  // These two fields are only present when debugging.
+  sourceLocationInfo?: SourceLocationInfo;
+  readonly adoptedInto?: Array<WeakRef<ShadowRoot>>;
+
   private constructor(
     cssText: string,
     strings: TemplateStringsArray | undefined,
@@ -64,6 +91,9 @@ export class CSSResult {
     }
     this.cssText = cssText;
     this._strings = strings;
+    if (DEV_MODE && typeof WeakRef === 'function') {
+      this.adoptedInto = [];
+    }
   }
 
   // This is a getter so that it's lazy. In practice, this means stylesheets
@@ -93,6 +123,19 @@ export class CSSResult {
   toString(): string {
     return this.cssText;
   }
+
+  // Only present when debugging.
+  static getStyleHrefs?: () => IterableIterator<string>;
+  static getStylesByHref?: (href: string) => Set<CSSResult> | undefined;
+}
+
+if (DEV_MODE) {
+  CSSResult.getStyleHrefs = () => {
+    return stylesByHref.keys();
+  };
+  CSSResult.getStylesByHref = (href: string) => {
+    return stylesByHref.get(href);
+  };
 }
 
 type ConstructableCSSResult = CSSResult & {
@@ -151,11 +194,24 @@ export const css = (
           (acc, v, idx) => acc + textFromCSSResult(v) + strings[idx + 1],
           strings[0]
         );
-  return new (CSSResult as ConstructableCSSResult)(
+  const result = new (CSSResult as ConstructableCSSResult)(
     cssText,
     strings,
     constructionToken
   );
+  if (DEV_MODE) {
+    const sourceLocationInfo = getSourceLocationFromStack(new Error().stack);
+    if (sourceLocationInfo) {
+      result.sourceLocationInfo = sourceLocationInfo;
+      let set = stylesByHref.get(sourceLocationInfo.url.href);
+      if (set == null) {
+        set = new Set();
+        stylesByHref.set(sourceLocationInfo.url.href, set);
+      }
+      set.add(result);
+    }
+  }
+  return result;
 };
 
 /**
@@ -172,9 +228,13 @@ export const adoptStyles = (
   styles: Array<CSSResultOrNative>
 ) => {
   if (supportsAdoptingStyleSheets) {
-    (renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) =>
-      s instanceof CSSStyleSheet ? s : s.styleSheet!
-    );
+    (renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) => {
+      if (DEV_MODE && s instanceof CSSResult) {
+        console.log('adopting css result into shadow root');
+        s.adoptedInto?.push(new WeakRef(renderRoot));
+      }
+      return s instanceof CSSStyleSheet ? s : s.styleSheet!;
+    });
   } else {
     for (const s of styles) {
       const style = document.createElement('style');

@@ -1,21 +1,29 @@
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {
-  html,
   css,
+  html,
   LitUnstable,
-  nothing,
-  TemplateResult,
   noChange,
+  nothing,
   Part,
+  TemplateResult,
 } from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {Directive, directive} from 'lit/directive.js';
+
 import {
-  DebugLogLitElement,
   DebugLitController,
+  DebugLogLitElement,
   FrameEntry,
-  TreeEntry,
   RenderEntry,
+  TreeEntry,
 } from './capture-logs.js';
+import {findElementsMatching} from './css-tracking.js';
 
 // We use long tag names to avoid clashing with user code.
 
@@ -332,11 +340,9 @@ function summaryHtml(entries: Iterable<TreeEntry>) {
     return html`<span class="vocab" title=${explanation}>render()</span>`;
   })();
   if (renders > 0) {
-    summary.push(
-      html`<span class="section"
-        >${renders} ${rendered} call${renders === 1 ? '' : 's'}</span
-      >`
-    );
+    summary.push(html`<span class="section"
+      >${renders} ${rendered} call${renders === 1 ? '' : 's'}</span
+    >`);
   }
   const comparisons = (() => {
     const explanation = `The number of places Lit needed to compare the previously rendered value (if any) to the updated value.`;
@@ -352,7 +358,8 @@ function summaryHtml(entries: Iterable<TreeEntry>) {
   // } else if (rerenders === renders) {
   //   summary.push(html`${rendered} ${renders} (update)`);
   // } else {
-  //   summary.push(html`${rendered} ${renders} (${firstRenders} first time, ${rerenders} update)`);
+  //   summary.push(html`${rendered} ${renders} (${firstRenders} first time,
+  //   ${rerenders} update)`);
   // }
   if (parsed.size > 0) {
     const explanation =
@@ -376,23 +383,19 @@ function summaryHtml(entries: Iterable<TreeEntry>) {
     </span>`);
   }
   if (unknown > 0) {
-    summary.push(
-      html`<span class="section"
-        >${unknown} unknown entr${unknown === 1 ? 'y' : 'ies'} (version
-        mismatch?)</span
-      >`
-    );
+    summary.push(html`<span class="section"
+      >${unknown} unknown entr${unknown === 1 ? 'y' : 'ies'} (version
+      mismatch?)</span
+    >`);
   }
   if (mutations > 0) {
     const detail =
       mutations === nodes
         ? nothing
         : html` (${nodes} total HTML node${nodes === 1 ? '' : 's'})`;
-    summary.push(
-      html`<span class="section"
-        >${mutations} mutation${mutations === 1 ? '' : 's'}${detail}</span
-      >`
-    );
+    summary.push(html`<span class="section"
+      >${mutations} mutation${mutations === 1 ? '' : 's'}${detail}</span
+    >`);
   }
   if (duplicatedRenders > 0) {
     const explanation =
@@ -417,7 +420,8 @@ function* allDescendents(node: Node): IterableIterator<Node> {
 function summarize(entries: Iterable<TreeEntry>) {
   const parsed = new Set<unknown>();
   const instantiated = [];
-  // TODO: count number of rendered nodes in first renders as individual mutations
+  // TODO: count number of rendered nodes in first renders as individual
+  // mutations
   let renders = 0;
   let firstRenders = 0;
   let rerenders = 0;
@@ -627,9 +631,8 @@ export class TemplatePrepEntryElement extends DebugLogLitElement {
     }
   `;
 
-  @property({attribute: false}) entry:
-    | LitUnstable.DebugLog.TemplatePrep
-    | undefined = undefined;
+  @property({attribute: false})
+  entry: LitUnstable.DebugLog.TemplatePrep | undefined = undefined;
 
   @property({type: Boolean, reflect: true}) expanded = false;
 
@@ -810,10 +813,11 @@ export class RenderEntryElement extends DebugLogLitElement {
     }
 
     let children: unknown = nothing;
+    const templates = new Set<unknown>();
     if (this.expanded) {
       const renderedChildren = [];
       for (const child of entry.events) {
-        renderedChildren.push(this.renderChild(child));
+        renderedChildren.push(this.renderChild(child, templates));
       }
       children = html`<div class="children">${renderedChildren}</div>`;
     }
@@ -850,8 +854,7 @@ export class RenderEntryElement extends DebugLogLitElement {
     `;
   }
 
-  private renderChild(child: TreeEntry) {
-    const templates = new Set<unknown>();
+  private renderChild(child: TreeEntry, templates: Set<unknown>) {
     switch (child.kind) {
       case 'commit attribute':
         return html`<div ${highlightElemOnHover(child.element)}>
@@ -931,6 +934,16 @@ export class RenderEntryElement extends DebugLogLitElement {
       case 'template prep':
       case 'template instantiated':
       case 'template instantiated and updated':
+        if (!child.template) {
+          return nothing;
+        }
+        if (templates.has(child.template)) {
+          return nothing;
+        }
+        templates.add(child.template);
+        return html`<template-info
+          .template=${child.template}
+        ></template-info>`;
       case 'render':
       case 'template updating':
       case 'set part':
@@ -944,7 +957,6 @@ export class RenderEntryElement extends DebugLogLitElement {
         </div>`;
       }
     }
-    return nothing;
   }
 
   private restoreContent: null | (() => void) = null;
@@ -996,6 +1008,116 @@ export class RenderEntryElement extends DebugLogLitElement {
   }
 }
 DebugLitTerminal.install();
+
+@customElement('template-info')
+export class TemplateInfo extends DebugLogLitElement {
+  static override styles = [
+    css`
+      :host {
+        display: block;
+      }
+    `,
+  ];
+  template: {constructedAt: string} | undefined;
+  override render() {
+    const parsed = this.constructorInfo;
+    if (parsed === undefined) {
+      return nothing;
+    }
+    const {url, line, column} = parsed;
+    return html`<div class="clickable" @click=${this.clicked}>
+      Template from ${url.pathname}:${line}:${column}
+    </div>`;
+  }
+
+  private get constructorInfo() {
+    if (this.template === undefined) {
+      return undefined;
+    }
+    const parsed = getConstructorFromStack(this.template.constructedAt);
+    if (!parsed) {
+      return undefined;
+    }
+    return parsed;
+  }
+
+  private clicked() {
+    const parsed = this.constructorInfo;
+    if (parsed === undefined) {
+      return;
+    }
+    const {url, line, column} = parsed;
+    // so, if we're in an environment where we can talk to a text editor,
+    // we'd like to send a message to the embedder to focus the file matching
+    // the given URL, line, and column.
+    if (false as boolean) {
+      console.log(url, line, column);
+    }
+  }
+}
+
+interface ConstructorInfo {
+  functionName: string;
+  url: URL;
+  line: number;
+  column: number;
+}
+function getConstructorFromStack(
+  constructedAt: string | undefined
+): undefined | ConstructorInfo {
+  const parsed = constructedAt
+    ?.split('\n')[2]
+    .match(/at (.*?)\((.*?):(\d+):(\d+)\)/);
+  if (!parsed) {
+    return undefined;
+  }
+  const [, functionName, href, line, column] = parsed;
+  const url = new URL(href);
+  return {functionName, url, line: Number(line), column: Number(column)};
+}
+
+type MessageFromEmbedder =
+  | HighlightMatchingNodesFromCss
+  | ClearHighlightFromCss;
+
+interface HighlightMatchingNodesFromCss {
+  kind: 'highlight matching nodes from css';
+  fileUrl: URL;
+  selector: string;
+}
+
+interface ClearHighlightFromCss {
+  kind: 'clear highlight from css';
+}
+
+function listenForMessagesFromEmbedder(
+  callback: (msg: MessageFromEmbedder) => void
+): void {
+  // needs implementing, e.g. for playground.
+}
+
+let cssNodesHighlighter: Highlighter | undefined;
+listenForMessagesFromEmbedder((msg) => {
+  switch (msg.kind) {
+    case 'highlight matching nodes from css': {
+      cssNodesHighlighter?.restore();
+      console.log(msg);
+      const url = msg.fileUrl;
+      console.log(url.href);
+      cssNodesHighlighter = new Highlighter(
+        findElementsMatching(url.href, msg.selector)
+      );
+      break;
+    }
+    case 'clear highlight from css': {
+      cssNodesHighlighter?.restore();
+      break;
+    }
+    default: {
+      // do nothing
+    }
+  }
+});
 
 declare global {
   interface HTMLElementTagNameMap {
