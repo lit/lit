@@ -471,6 +471,9 @@ export type UncompiledTemplateResult<T extends ResultType = ResultType> = {
   ['_$litType$']: T;
   strings: TemplateStringsArray;
   values: unknown[];
+  // A value that's only present when debugging and may contain the error
+  // stack where this template result was constructed.
+  constructedAt?: string;
 };
 
 /**
@@ -563,13 +566,33 @@ const tag =
         );
       }
     }
-    return {
+    const result: TemplateResult<T> = {
       // This property needs to remain unminified.
       ['_$litType$']: type,
       strings,
       values,
     };
+    // Getting a stack trace is super expensive, in excess is a millisecond
+    // on many devices, so we only do it in dev mode and only when the
+    // `emitLitDebugLogEvents` flag is set. This means we won't have stack
+    // traces when the flag is set after the template result is constructed,
+    // but the alternative would degrade devmode performance too much.
+    if (
+      DEV_MODE &&
+      (global as unknown as DebugLoggingWindow).emitLitDebugLogEvents
+    ) {
+      let constructedAt = constructedAtCache.get(strings);
+      if (constructedAt == null) {
+        const e = new Error();
+        constructedAt = e.stack;
+        constructedAtCache.set(strings, constructedAt);
+      }
+      result.constructedAt = constructedAt;
+    }
+    return result;
   };
+
+const constructedAtCache = new Map<TemplateStringsArray, string | undefined>();
 
 /**
  * Interprets a template literal as an HTML template that can efficiently
@@ -912,6 +935,9 @@ class Template {
 
   parts: Array<TemplatePart> = [];
 
+  // Debug only
+  constructedAt?: string;
+
   constructor(
     // This property needs to remain unminified.
     {strings, ['_$litType$']: type}: UncompiledTemplateResult,
@@ -922,6 +948,14 @@ class Template {
     let attrNameIndex = 0;
     const partCount = strings.length - 1;
     const parts = this.parts;
+
+    if (DEV_MODE) {
+      // We use `arguments` here so that we don't add any bytes in non-devmode
+      // builds.
+      // eslint-disable-next-line
+      const templateResult: UncompiledTemplateResult = arguments[0];
+      this.constructedAt = templateResult.constructedAt;
+    }
 
     // Create template element
     const [html, attrNames] = getTemplateHtml(strings, type);

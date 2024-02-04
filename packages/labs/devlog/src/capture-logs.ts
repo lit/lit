@@ -1,8 +1,14 @@
-import {LitElement, LitUnstable, RenderOptions} from 'lit';
+/**
+ * @license
+ * Copyright 2022 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+import {LitElement, LitUnstable, RenderOptions, Unstable} from 'lit';
 
 /**
- * A collection of all of the debug log events that took place in inside of a single
- * Lit render() call.
+ * A collection of all of the debug log events that took place in inside of a
+ * single Lit render() call.
  */
 export interface RenderEntry {
   kind: 'render';
@@ -26,12 +32,16 @@ export type TreeEntry =
 /**
  * All of the debug log events that were emitted in a single frame.
  *
- * i.e. from the time that the first entry in entries was emitted until the next time the browser calls requestAnimationFrame callbacks.
+ * i.e. from the time that the first entry in entries was emitted until the next
+ * time the browser calls requestAnimationFrame callbacks.
  */
-export type FrameEntry = {entries: TreeEntry[]};
+export type FrameEntry = {
+  entries: TreeEntry[];
+};
 
 /**
- * Exposes a growing array of render logs, as well as notifying its host when new entries are added.
+ * Exposes a growing array of render logs, as well as notifying its host when
+ * new entries are added.
  */
 export class DebugLitController {
   public readonly entries: FrameEntry[] = [];
@@ -44,7 +54,8 @@ export class DebugLitController {
   private hosts: DebugLogLitElement[] = [];
   private currentFrameEntries: TreeEntry[] = [];
 
-  // We should probably create the instance lazily. The danger with that though, is that we might miss some debug entries.
+  // We should probably create the instance lazily. The danger with that though,
+  // is that we might miss some debug entries.
   private static readonly instance = new DebugLitController();
   static getInstance() {
     return this.instance;
@@ -72,13 +83,19 @@ export class DebugLitController {
   private constructor() {
     // Ask lit to start emitting debug log events
     (
-      window as unknown as {emitLitDebugLogEvents?: boolean}
+      window as unknown as {
+        emitLitDebugLogEvents?: boolean;
+      }
     ).emitLitDebugLogEvents = true;
-    // memory leak, but ensures we capture as many events as possible by subscribing here and never unsubscribing
+    // memory leak, but ensures we capture as many events as possible by
+    // subscribing here and never unsubscribing
     window.addEventListener('lit-debug', (e: Event) => {
-      const event = e as CustomEvent<LitUnstable.DebugLog.Entry>;
+      const event = e as CustomEvent<Unstable.DebugLog.Entry>;
       const entry = event.detail;
       const maybeOptions = (entry as {options?: ExtendedRenderOptions}).options;
+      if (entry.kind === 'update') {
+        return;
+      }
 
       if (entry.kind === 'begin render') {
         this.renderStack.push({
@@ -125,7 +142,10 @@ export class DebugLitController {
     });
   }
 
-  /** We often need to create clones of nodes as they were at the time the debug log entry was generated. */
+  /**
+   * We often need to create clones of nodes as they were at the time the debug
+   * log entry was generated.
+   */
   private clone(node: Node): Node {
     if (node instanceof ShadowRoot) {
       const fragment = document.createDocumentFragment();
@@ -169,8 +189,8 @@ export interface ExtendedRenderOptions extends RenderOptions {
  * A LitElement whose render activity will be ignored by DebugLitController.
  *
  * Generally useful for Lit Elements that themselves display debug log entries,
- * to prevent infinite loops, as well as avoiding displaying info unrelated to the
- * application being debugged.
+ * to prevent infinite loops, as well as avoiding displaying info unrelated to
+ * the application being debugged.
  */
 export abstract class DebugLogLitElement extends LitElement {
   // Ensures that updates to these elements don't end up as entries
