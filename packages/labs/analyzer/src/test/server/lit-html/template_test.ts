@@ -13,7 +13,7 @@ import {ClassDeclaration} from '../../../lib/model.js';
 import {isLitTaggedTemplateExpression} from '../../../lib/lit-html/template.js';
 
 for (const lang of languages) {
-  suite(`lit-html template tests (${lang})`, () => {
+  suite(`lit-html template utility tests (${lang})`, () => {
     const {getModule, analyzer, typescript} = setupAnalyzerForNodeTest(
       lang,
       'basic-elements'

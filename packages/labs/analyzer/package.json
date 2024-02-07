@@ -26,6 +26,9 @@
   "wireit": {
     "build": {
       "command": "tsc --build --pretty",
+      "dependencies": [
+        "../../lit:build"
+      ],
       "files": [
         "src/**/*.ts",
         "tsconfig.json"
@@ -68,8 +71,7 @@
         "NODE_OPTIONS": "--enable-source-maps"
       },
       "dependencies": [
-        "build",
-        "../../lit:build"
+        "build"
       ],
       "files": [
         "test-files/"
@@ -77,10 +79,9 @@
       "output": []
     },
     "test:server:node": {
-      "command": "node --enable-source-maps --test-reporter=spec --test \"test/server/lit-html/*_test.js\"",
+      "command": "node --enable-source-maps --test-reporter=spec --test test/server/lit-html/*_test.js",
       "dependencies": [
-        "build",
-        "../../lit:build"
+        "build"
       ],
       "files": [
         "test-files/"
