@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 21
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
@@ -43,7 +43,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 21
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
@@ -74,7 +74,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 21
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
