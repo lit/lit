@@ -180,8 +180,6 @@ The following options for available for the `grid` layout.
 
 The `gap` property determines spacing between items and can be either a single pixel value such as `8px` (the default), or by applying both a vertical and horizontal pair such as `8px 0`.
 
-Additionally `auto` can be used to split available space evenly between items, however this may only make sense for inline axis.
-
 ```js
   render() {
     return html`
@@ -197,9 +195,27 @@ Additionally `auto` can be used to split available space evenly between items, h
   }
 ```
 
+Additionally `auto` can be used to split available space evenly between items, however this may only make sense for inline axis. The `auto` value can only be used when a `justify` property is set to `space-evenly` | `space-around` | `space-between`.
+
+```js
+  render() {
+    return html`
+      <lit-virtualizer
+        .layout=${grid({
+          itemSize: {width: '100px', height: '100px'},
+          gap: '0 auto',
+          justify: 'space-between'
+        })}
+        .items=${this.photos}
+        .renderItem=${photos => html`<img src=${photo.url}>`}
+      ></lit-virtualizer>
+    `;
+  }
+```
+
 #### padding 
 
-The `padding` property determines the spaces around the edges and can either be a single value pair such as `8px 16px`, or four values to specify top, right, bottom, and left independently, for example `8px 12px 16px 24px`. 
+The `padding` property determines the spaces around each item and can either be a single value pair such as `8px 16px`, or four values to specify top, right, bottom, and left independently, for example `8px 12px 16px 24px`. 
 
 
 ```js
