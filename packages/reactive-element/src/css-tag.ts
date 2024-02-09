@@ -243,6 +243,10 @@ export const adoptStyles = (
       if (nonce !== undefined) {
         style.setAttribute('nonce', nonce);
       }
+      if (DEV_MODE && s instanceof CSSResult) {
+        console.log('adopting css result into shadow root');
+        s.adoptedInto?.push(new WeakRef(renderRoot));
+      }
       style.textContent = (s as CSSResult).cssText;
       renderRoot.appendChild(style);
     }
