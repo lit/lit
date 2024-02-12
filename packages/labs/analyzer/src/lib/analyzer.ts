@@ -7,7 +7,7 @@
 import type ts from 'typescript';
 import {Package, PackageJson, AnalyzerInterface, Module} from './model.js';
 import {AbsolutePath} from './paths.js';
-import {getModule} from './javascript/modules.js';
+import {getModule, getModuleInfo} from './javascript/modules.js';
 export {PackageJson};
 import {
   getPackageInfo,
@@ -22,6 +22,7 @@ export interface AnalyzerInit {
   fs: AnalyzerInterface['fs'];
   path: AnalyzerInterface['path'];
   basePath?: AbsolutePath;
+  commandLine?: ts.ParsedCommandLine;
 }
 
 /**
@@ -44,6 +45,7 @@ export class Analyzer implements AnalyzerInterface {
       path: this.path,
       typescript: this.typescript,
       getProgram: this._getProgram,
+      commandLine: this._commandLine,
     } = init);
   }
 
@@ -53,6 +55,13 @@ export class Analyzer implements AnalyzerInterface {
 
   get commandLine() {
     return (this._commandLine ??= getCommandLineFromProgram(this));
+  }
+
+  getModuleInfos() {
+    const modulePaths = this.moduleCache.keys();
+    return [...modulePaths].map((modulePath) => {
+      return getModuleInfo(modulePath, this);
+    });
   }
 
   getModule(modulePath: AbsolutePath) {

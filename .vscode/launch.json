@@ -10,6 +10,19 @@
       "request": "attach",
       "name": "Attach to VS Code TS Server via Port",
       "processId": "${command:PickProcess}"
+    },
+    // A launch configuration that compiles the extension and then opens it inside a new window
+    {
+      "name": "Run Ignition",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/labs/ignition"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/packages/labs/ignition/out/**/*.{js|cjs}"
+      ],
+      "preLaunchTask": "build-ignition"
     }
   ]
 }

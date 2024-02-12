@@ -7,7 +7,6 @@ node_modules/
 *.tgz
 *.tsbuildinfo
 .DS_Store
-.vscode/
 .wireit
 /temp
 .idea
@@ -276,6 +275,18 @@ packages/labs/gen-wrapper-vue/*.js.map
 packages/labs/gen-wrapper-vue/*.d.ts
 packages/labs/gen-wrapper-vue/*.d.ts.map
 packages/labs/gen-wrapper-vue/gen-output/
+
+packages/labs/ignition/lib/
+packages/labs/ignition/dev/
+packages/labs/ignition/test/
+packages/labs/ignition/.vscode-test/
+packages/labs/ignition/**/extension.cjs
+packages/labs/ignition/**/extension.cjs.map
+
+packages/labs/ignition-ui/**/index.js
+packages/labs/ignition-ui/**/index.js.map
+packages/labs/ignition-ui/**/index.d.ts
+packages/labs/ignition-ui/**/index.d.ts.map
 
 packages/labs/motion/development/
 packages/labs/motion/test/

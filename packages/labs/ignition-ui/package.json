@@ -1,0 +1,49 @@
+{
+  "name": "@lit-labs/ignition-ui",
+  "description": "Advanced workflows for Lit",
+  "version": "0.0.1",
+  "type": "module",
+  "main": "./indexjs",
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit"
+  },
+  "dependencies": {
+    "lit": "3.0.0-pre.0",
+    "package-json-type": "^1.0.3",
+    "typescript": "^5.3.3"
+  },
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    }
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --pretty",
+      "dependencies": [
+        "../../lit:build"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "index.{js|js.map|d.ts|d.ts.map}"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "command": "exit 1",
+      "dependencies": [
+        "build"
+      ]
+    }
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "path-module": "^0.1.2"
+  }
+}

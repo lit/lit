@@ -30,6 +30,7 @@ export const createPackageAnalyzer = (
   packagePath: AbsolutePath,
   options: AnalyzerOptions = {}
 ) => {
+  console.log('createPackageAnalyzer', packagePath);
   // This logic accepts either a path to folder containing a tsconfig.json
   // directly inside it or a path to a specific tsconfig file. If no tsconfig
   // file is found, we fallback to creating a JavaScript program.
@@ -38,7 +39,10 @@ export const createPackageAnalyzer = (
     ? path.join(packagePath, 'tsconfig.json')
     : packagePath;
   let commandLine: ts.ParsedCommandLine;
+  console.log('configFileName', configFileName);
   if (ts.sys.fileExists(configFileName)) {
+    console.log('configFile exists');
+
     const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
     if (options.exclude !== undefined) {
       (configFile.config.exclude ??= []).push(...options.exclude);
@@ -50,6 +54,8 @@ export const createPackageAnalyzer = (
       {} /* existingOptions */,
       configFileName /* configFileName */
     );
+
+    console.log('parsed commandLine. errors:', commandLine.errors.length);
   } else if (isDirectory) {
     console.info(`No tsconfig.json found; assuming package is JavaScript.`);
     commandLine = ts.parseJsonConfigFileContent(
@@ -108,6 +114,7 @@ export const createPackageAnalyzer = (
     typescript: ts,
     fs: ts.sys,
     path,
+    commandLine,
   });
   for (const diagnostic of program.getSyntacticDiagnostics()) {
     analyzer.addDiagnostic(diagnostic);

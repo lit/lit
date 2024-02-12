@@ -1,0 +1,6 @@
+/lib/
+/dev/
+/test/
+/.vscode-test/
+extension.cjs
+extension.cjs.map
