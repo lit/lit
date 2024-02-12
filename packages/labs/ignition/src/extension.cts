@@ -5,7 +5,6 @@
  */
 
 import * as vscode from 'vscode';
-import {WebviewSerializer} from './webview-serializer.cjs';
 
 export async function activate(context: vscode.ExtensionContext) {
   let disposable = vscode.commands.registerCommand('ignition.hello', () => {
@@ -25,6 +24,8 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(disposable);
 
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const {WebviewSerializer} = await import('./lib/webview-serializer.js');
   disposable = vscode.window.registerWebviewPanelSerializer(
     'ignition',
     new WebviewSerializer()

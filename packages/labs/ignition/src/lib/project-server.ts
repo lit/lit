@@ -5,6 +5,7 @@ import {bareSpecifierTransformer} from './bare-specifier-transformer.js';
 import type ts from 'typescript';
 import {getModulePathFromJsPath} from './paths.js';
 import * as path from 'path';
+import {logChannel} from './logging.js';
 
 const baseUrl = '/_src/';
 const jsBaseUrl = '/_js/';
@@ -27,11 +28,6 @@ export const startServer = async (analyzer: Analyzer, port: number = 3334) => {
         const printer = analyzer.typescript.createPrinter();
 
         const transformedFile = result.transformed[0];
-
-        // console.log(
-        //   'result',
-        //   printer.printFile(transformedFile).substring(0, 1000)
-        // );
 
         const emittedFiles: Array<{fileName: string; text: string}> = [];
 
@@ -80,6 +76,6 @@ export const startServer = async (analyzer: Analyzer, port: number = 3334) => {
     context.body = 'Hello World';
   });
   const server = app.listen(port);
-  console.log(server.address());
+  logChannel.appendLine(`Ignition project server started on port ${port}`);
   return server;
 };
