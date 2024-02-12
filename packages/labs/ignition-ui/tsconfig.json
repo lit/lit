@@ -23,7 +23,7 @@
     "paths": {
       "@esm-bundle/chai": ["../../../local-types/@esm-bundle/chai/index.d.ts"]
     },
-    "types": ["mocha"]
+    "types": ["mocha", "@types/vscode-webview"]
   },
   "include": ["src/**/*.ts"],
   "exclude": []

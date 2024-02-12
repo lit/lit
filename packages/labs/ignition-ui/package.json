@@ -44,6 +44,7 @@
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",
+    "@types/vscode-webview": "^1.57.5",
     "path-module": "^0.1.2"
   }
 }

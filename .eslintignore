@@ -282,6 +282,8 @@ packages/labs/ignition/test/
 packages/labs/ignition/.vscode-test/
 packages/labs/ignition/**/extension.cjs
 packages/labs/ignition/**/extension.cjs.map
+packages/labs/ignition/**/webview-serializer.cjs
+packages/labs/ignition/**/webview-serializer.cjs.map
 
 packages/labs/ignition-ui/**/index.js
 packages/labs/ignition-ui/**/index.js.map

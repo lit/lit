@@ -10,24 +10,19 @@
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onWebviewPanel:ignition"
+  ],
   "main": "./extension.cjs",
   "contributes": {
-    "customEditors": [
-      {
-        "viewType": "ignition.lit-module-editor",
-        "displayName": "Lit Editor",
-        "selector": [
-          {
-            "filenamePattern": "*.ts"
-          }
-        ]
-      }
-    ],
     "commands": [
       {
         "command": "ignition.hello",
         "title": "Hello Ignition"
+      },
+      {
+        "command": "ignition.createWebview",
+        "title": "Start Ignition"
       }
     ]
   },
@@ -64,7 +59,8 @@
     "build": {
       "command": "tsc --pretty",
       "dependencies": [
-        "../analyzer:build"
+        "../analyzer:build",
+        "../ignition-ui:build"
       ],
       "files": [
         "src/**/*.ts",

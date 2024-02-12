@@ -4,3 +4,5 @@
 /.vscode-test/
 extension.cjs
 extension.cjs.map
+webview-serializer.cjs
+webview-serializer.cjs.map

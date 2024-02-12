@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2024 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import cors from 'koa-cors';
 import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
 import {createPackageAnalyzer} from '@lit-labs/analyzer/package-analyzer.js';
@@ -23,7 +29,7 @@ const workspaceResourcesCache = new Map<
 
 const uiRoot = path.dirname(require.resolve('@lit-labs/ignition-ui'));
 let _uiServer: DevServer;
-const startUiServer = async () => {
+const ensureUiServerRunning = async () => {
   return (_uiServer ??= await startDevServer({
     config: {
       rootDir: uiRoot,
@@ -60,68 +66,31 @@ const getWorkspaceResources = async (
   return workspaceResources;
 };
 
-export class LitModuleEditorProvider
-  implements vscode.CustomTextEditorProvider
-{
-  public static register(context: vscode.ExtensionContext): vscode.Disposable {
-    const provider = new LitModuleEditorProvider(context);
-    const providerRegistration = vscode.window.registerCustomEditorProvider(
-      LitModuleEditorProvider.viewType,
-      provider
-    );
-    return providerRegistration;
-  }
+function getHtmlForWebview(
+  documentUri: vscode.Uri,
+  workspaceFolder: vscode.WorkspaceFolder | undefined,
+  analyzer: Analyzer,
+  server: Server
+): string {
+  const modulePath = documentUri.fsPath as AbsolutePath;
+  const module = analyzer.getModule(modulePath);
+  const elements = module.getCustomElementExports();
+  const server2Address = server.address() as AddressInfo;
+  const {port} = server2Address;
 
-  private static readonly viewType = 'ignition.lit-module-editor';
+  const scriptUrl = `http://localhost:${port}/_src/${module.jsPath}`;
+  const uiScriptUrl = `http://localhost:${3333}/index.js`;
 
-  private readonly context: vscode.ExtensionContext;
+  const initialState: IgnitionWebviewState = {modulePath};
 
-  constructor(context: vscode.ExtensionContext) {
-    this.context = context;
-  }
-
-  async resolveCustomTextEditor(
-    document: vscode.TextDocument,
-    webviewPanel: vscode.WebviewPanel,
-    token: vscode.CancellationToken
-  ): Promise<void> {
-    webviewPanel.webview.options = {
-      enableScripts: true,
-    };
-    const workspaceFolder = vscode.workspace.getWorkspaceFolder(document.uri);
-
-    const {server, analyzer} = await getWorkspaceResources(workspaceFolder!);
-
-    await startUiServer();
-
-    webviewPanel.webview.html = this.getHtmlForWebview(
-      document,
-      workspaceFolder,
-      analyzer,
-      server
-    );
-  }
-
-  private getHtmlForWebview(
-    document: vscode.TextDocument,
-    workspaceFolder: vscode.WorkspaceFolder | undefined,
-    analyzer: Analyzer,
-    server: Server
-  ): string {
-    const modulePath = document.uri.fsPath;
-    const module = analyzer.getModule(modulePath as AbsolutePath);
-    const elements = module.getCustomElementExports();
-    const server2Address = server.address() as AddressInfo;
-    const {port} = server2Address;
-
-    const scriptUrl = `http://localhost:${port}/_src/${module.jsPath}`;
-    const uiScriptUrl = `http://localhost:${3333}/index.js`;
-
-    return /* html */ `
+  return /* html */ `
       <!DOCTYPE html>
       <html lang="en">
         <head>
         <script type="module" src="${uiScriptUrl}"></script>
+        <script type="json" id="state">
+          ${JSON.stringify(initialState)}
+        </script>
           <style>
             html, body {
               min-height: 100%;
@@ -135,7 +104,7 @@ export class LitModuleEditorProvider
           <h1>Lit Editor</h1>
           <pre>
             workspaceFolder: ${workspaceFolder?.uri}
-            fileName: ${document.fileName}
+            fileName: ${documentUri.fsPath}
             jsPath: ${module.jsPath}
             scriptUrl: ${scriptUrl}
             elements: ${elements.map((e) => e.tagname)}
@@ -153,5 +122,45 @@ export class LitModuleEditorProvider
         </body>
       </html>
     `;
-  }
 }
+
+export const createWebView = async () => {
+  const documentUri = vscode.window.activeTextEditor?.document.uri;
+  if (documentUri === undefined) {
+    // Can we do something better here? Infer a story from the workspace?
+    return;
+  }
+  const webviewPanel = vscode.window.createWebviewPanel(
+    'ignition',
+    'Ignition',
+    vscode.ViewColumn.Two,
+    {
+      enableScripts: true,
+    }
+  );
+  return driveWebviewPanel(webviewPanel, documentUri);
+};
+
+// Sets up the webview panel and starts any necessary services.
+export const driveWebviewPanel = async (
+  webviewPanel: vscode.WebviewPanel,
+  documentUri: vscode.Uri
+) => {
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(documentUri);
+  const [{server, analyzer}] = await Promise.all([
+    getWorkspaceResources(workspaceFolder!),
+    ensureUiServerRunning(),
+  ]);
+
+  webviewPanel.webview.html = getHtmlForWebview(
+    documentUri,
+    workspaceFolder,
+    analyzer,
+    server
+  );
+
+  webviewPanel.onDidDispose(() => {
+    server.close();
+  });
+  return webviewPanel;
+};
