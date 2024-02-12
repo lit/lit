@@ -13,7 +13,7 @@ export class WebviewSerializer
     state: IgnitionWebviewState
   ) {
     console.log(`Restoring from state, `, state);
-    const {driveWebviewPanel} = await import('./lib/lit-module-editor.js');
+    const {driveWebviewPanel} = await import('./lib/ignition-webview.js');
     const path = state.modulePath;
     // construct a vscode.Uri from the path
     const documentUri = vscode.Uri.file(path);

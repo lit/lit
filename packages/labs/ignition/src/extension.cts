@@ -16,7 +16,7 @@ export async function activate(context: vscode.ExtensionContext) {
   disposable = vscode.commands.registerCommand(
     'ignition.createWebview',
     async () => {
-      const {createWebView} = await import('./lib/lit-module-editor.js');
+      const {createWebView} = await import('./lib/ignition-webview.js');
       const disposable = await createWebView();
       if (disposable) {
         context.subscriptions.push(disposable);
