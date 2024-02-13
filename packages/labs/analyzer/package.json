@@ -38,7 +38,8 @@
         "test",
         "index.{js,js.map,d.ts,d.ts.map}",
         "package-analyzer.{js,js.map,d.ts,d.ts.map}",
-        "tsconfig.tsbuildinfo"
+        "tsconfig.tsbuildinfo",
+        "!test/browser/typescript.js"
       ],
       "clean": "if-file-deleted"
     },
