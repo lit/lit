@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2024 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 // A TypeScript transform that resolve bare module specifers to relative paths,
 // with the Node module resolution algorithm.
 

@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2024 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
 
 export function getModulePathFromJsPath(

@@ -9,6 +9,7 @@
     "test": "wireit"
   },
   "dependencies": {
+    "comlink": "^4.4.1",
     "lit": "3.0.0-pre.0",
     "package-json-type": "^1.0.3",
     "typescript": "^5.3.3"

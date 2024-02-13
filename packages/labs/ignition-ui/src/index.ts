@@ -6,6 +6,7 @@
 
 import {LitElement, html, css} from 'lit';
 import {customElement} from 'lit/decorators.js';
+import {expose} from './lib/comlink-endpoint-to-vscode.js';
 
 @customElement('test-element')
 export class TestElement extends LitElement {
@@ -41,3 +42,23 @@ const vscode = acquireVsCodeApi();
     vscode.setState(JSON.parse(initialStateString));
   }
 }
+
+/**
+ * This represents the API that's accessible from the ignition extension in
+ * vscode.
+ */
+class ApiToExtension {
+  private textContainer = (() => {
+    const div = document.createElement('div');
+    document.body.appendChild(div);
+    div.textContent = `Waiting to connect...`;
+    return div;
+  })();
+
+  displayText(text: string) {
+    this.textContainer.textContent = text;
+  }
+}
+
+export type ApiExposedToExtension = ApiToExtension;
+expose(vscode, new ApiToExtension());

@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2024 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import cors from 'koa-cors';
 import Koa from 'koa';
 import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';

@@ -12,12 +12,15 @@ import type {Server} from 'http';
 import {startServer} from './project-server.js';
 import {AddressInfo} from 'net';
 import * as path from 'path';
+import * as comlink from 'comlink';
+import type {ApiExposedToExtension} from '@lit-labs/ignition-ui';
 
 const require = createRequire(import.meta.url);
 
 import vscode = require('vscode');
 import wds = require('@web/dev-server');
 import {DevServer} from './types.cjs';
+import {ComlinkEndpointToWebview} from './comlink-endpoint-to-webview.js';
 
 const {startDevServer} = wds;
 
@@ -151,16 +154,21 @@ export const driveWebviewPanel = async (
     getWorkspaceResources(workspaceFolder!),
     ensureUiServerRunning(),
   ]);
+  webviewPanel.onDidDispose(() => {
+    server.close();
+  });
 
-  webviewPanel.webview.html = getHtmlForWebview(
+  const webview = webviewPanel.webview;
+  webview.html = getHtmlForWebview(
     documentUri,
     workspaceFolder,
     analyzer,
     server
   );
 
-  webviewPanel.onDidDispose(() => {
-    server.close();
+  ComlinkEndpointToWebview.connect(webview).then((endpoint) => {
+    const connection = comlink.wrap<ApiExposedToExtension>(endpoint);
+    connection.displayText('The extension has connected to the webview.');
   });
   return webviewPanel;
 };
