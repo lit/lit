@@ -24,7 +24,9 @@ import {ComlinkEndpointToWebview} from './comlink-endpoint-to-webview.js';
 
 const {startDevServer} = wds;
 
-// Map of workspace folder to dev server and analyzer
+// Map of workspace folder to dev server and analyzer. This allows very fast
+// re-opening of a previous "Ignition" webview. Currently this map leaks, and is
+// only cleared by refreshing vscode.
 const workspaceResourcesCache = new Map<
   string,
   {server: Server; analyzer: Analyzer}
@@ -154,9 +156,6 @@ export const driveWebviewPanel = async (
     getWorkspaceResources(workspaceFolder!),
     ensureUiServerRunning(),
   ]);
-  webviewPanel.onDidDispose(() => {
-    server.close();
-  });
 
   const webview = webviewPanel.webview;
   webview.html = getHtmlForWebview(
