@@ -84,7 +84,13 @@ const _isLitElement = (ts: TypeScript, node: ts.Declaration) => {
 const _isLitElementModule = (file: ts.SourceFile) => {
   return (
     file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts') ||
+    file.fileName.endsWith(
+      '/node_modules/lit-element/development/lit-element.d.ts'
+    ) ||
     // Handle case of running analyzer in symlinked monorepo
+    file.fileName.endsWith(
+      '/packages/lit-element/development/lit-element.d.ts'
+    ) ||
     file.fileName.endsWith('/packages/lit-element/lit-element.d.ts')
   );
 };
