@@ -41,6 +41,14 @@ const cssTagCache = new WeakMap<TemplateStringsArray, CSSStyleSheet>();
 
 const stylesByHref = new Map<string, Set<CSSResult>>();
 
+declare class MaybeWeakRef<T> {
+  constructor(value: T);
+  deref(): T | undefined;
+}
+
+declare let WeakRef: typeof MaybeWeakRef | undefined;
+type WeakRef<T> = MaybeWeakRef<T>;
+
 interface SourceLocationInfo {
   functionName: string;
   url: URL;
@@ -229,7 +237,7 @@ export const adoptStyles = (
 ) => {
   if (supportsAdoptingStyleSheets) {
     (renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) => {
-      if (DEV_MODE && s instanceof CSSResult) {
+      if (DEV_MODE && s instanceof CSSResult && typeof WeakRef == 'function') {
         console.log('adopting css result into shadow root');
         s.adoptedInto?.push(new WeakRef(renderRoot));
       }
@@ -243,7 +251,7 @@ export const adoptStyles = (
       if (nonce !== undefined) {
         style.setAttribute('nonce', nonce);
       }
-      if (DEV_MODE && s instanceof CSSResult) {
+      if (DEV_MODE && s instanceof CSSResult && typeof WeakRef == 'function') {
         console.log('adopting css result into shadow root');
         s.adoptedInto?.push(new WeakRef(renderRoot));
       }
