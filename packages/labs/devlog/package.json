@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/devlog",
   "version": "1.0.0",
-  "description": "",
+  "description": "A detailed visualization of Lit rendering in any app.",
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
@@ -14,16 +14,16 @@
   "main": "index.js",
   "typings": "index.d.ts",
   "scripts": {
-    "start": "wds -c wds.config.js",
+    "start": "wds",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "@lit-labs/motion": "^1.0.1",
-    "lit": "^2.0.2"
+    "@lit-labs/motion": "^1.0.7",
+    "lit": "^3.1.2"
   },
   "devDependencies": {
-    "@web/dev-server": "^0.1.25",
-    "@web/dev-server-esbuild": "^0.2.14",
-    "@web/dev-server-hmr": "^0.1.9"
+    "@web/dev-server": "^0.4.2",
+    "@web/dev-server-esbuild": "^1.0.2",
+    "@web/dev-server-hmr": "^0.4.0"
   }
 }

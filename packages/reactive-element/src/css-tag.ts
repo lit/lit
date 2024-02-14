@@ -41,6 +41,10 @@ const cssTagCache = new WeakMap<TemplateStringsArray, CSSStyleSheet>();
 
 const stylesByHref = new Map<string, Set<CSSResult>>();
 
+// We have a dev-only field that uses WeakRefs, but we don't want to require
+// either that dev browsers support WeakRefs or that people compile with
+// a super modern target, so we use our own WeakRef type and mark that the
+// WeakRef runtime value may not exist.
 declare class MaybeWeakRef<T> {
   constructor(value: T);
   deref(): T | undefined;
@@ -251,7 +255,6 @@ export const adoptStyles = (
   if (supportsAdoptingStyleSheets) {
     (renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) => {
       if (DEV_MODE && s instanceof CSSResult && typeof WeakRef == 'function') {
-        console.log('adopting css result into shadow root');
         s.adoptedInto?.push(new WeakRef(renderRoot));
       }
       return s instanceof CSSStyleSheet ? s : s.styleSheet!;
@@ -265,7 +268,6 @@ export const adoptStyles = (
         style.setAttribute('nonce', nonce);
       }
       if (DEV_MODE && s instanceof CSSResult && typeof WeakRef == 'function') {
-        console.log('adopting css result into shadow root');
         s.adoptedInto?.push(new WeakRef(renderRoot));
       }
       style.textContent = (s as CSSResult).cssText;
