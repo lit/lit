@@ -39,7 +39,7 @@ function getHtmlForWebview(
           </style>
         </head>
         <body>
-          <h1>Lit Editor</h1>
+          <ignition-ui></ignition-ui>
         </body>
       </html>
     `;
@@ -103,7 +103,6 @@ export const driveWebviewPanel = async (
       connection.createStoryIframe({
         tagname: element.tagname,
         scriptUrl: scriptUrl,
-        id: element.tagname,
       });
     }
   }

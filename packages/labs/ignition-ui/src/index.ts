@@ -28,17 +28,13 @@ const vscode = acquireVsCodeApi();
  * vscode.
  */
 class ApiToExtension {
-  private readonly ui = (() => {
-    const ui = new IgnitionUi();
-    document.body.appendChild(ui);
-    return ui;
-  })();
+  readonly #ui = document.querySelector('ignition-ui') as IgnitionUi;
 
   /**
    * Returns once the story has been created and is ready to be interacted with.
    */
   async createStoryIframe(storyInfo: StoryInfo) {
-    await this.ui.createStoryIframe(storyInfo);
+    await this.#ui.createStoryIframe(storyInfo);
   }
 }
 

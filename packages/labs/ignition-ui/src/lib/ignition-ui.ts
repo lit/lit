@@ -10,7 +10,6 @@ import * as comlink from 'comlink';
 import type {ApiToWebview} from '../in-user-iframe.js';
 
 export interface StoryInfo {
-  id: string;
   tagname: string;
   scriptUrl: string;
 }
@@ -35,24 +34,48 @@ export class IgnitionUi extends LitElement {
       height: 400px;
     }
   `;
-  private readonly stories = new Map<string, LiveStory>();
+
+  readonly #stories = new Map<string, LiveStory>();
+
+  override render() {
+    return html`
+      <h1>Lit Editor</h1>
+      ${this.#renderStories()}
+    `;
+  }
+
+  #renderStories() {
+    if (this.#stories.size === 0) {
+      return html`<p>No stories to display</p>`;
+    }
+    return html`
+      ${[...this.#stories.values()].map((liveStory) => {
+        return html`
+          <h2>${liveStory.info.tagname}</h2>
+          ${liveStory.iframe}
+        `;
+      })}
+    `;
+  }
 
   /**
    * Returns once the story has been created and is ready to be interacted with.
    */
   async createStoryIframe(storyInfo: StoryInfo) {
-    if (this.stories.has(storyInfo.id)) {
-      throw new Error(`Story with id ${storyInfo.id} already exists`);
+    // TODO (justinfagnani): Migrate from tag name to story file export name
+    const storyId = storyInfo.scriptUrl + '?' + storyInfo.tagname;
+    if (this.#stories.has(storyId)) {
+      throw new Error(`Story with ${storyId} already exists`);
     }
     const iframeScriptUrl = new URL('../in-user-iframe.js', import.meta.url)
       .href;
     const iframe = document.createElement('iframe');
     iframe.srcdoc = /* html */ `
-      <!doctype html>
-      <script type='module' src='${iframeScriptUrl}'></script>
-      <script type='module' src='${storyInfo.scriptUrl}'></script>
-      <${storyInfo.tagname}></${storyInfo.tagname}>
-    `;
+        <!doctype html>
+        <script type='module' src='${iframeScriptUrl}'></script>
+        <script type='module' src='${storyInfo.scriptUrl}'></script>
+        <${storyInfo.tagname}></${storyInfo.tagname}>
+      `;
     const connectedPromise = new Promise<comlink.Remote<ApiToWebview>>(
       (resolve) => {
         iframe.onload = async () => {
@@ -68,24 +91,10 @@ export class IgnitionUi extends LitElement {
       }
     );
     const api = connectedPromise;
-    if (this.stories.has(storyInfo.id)) {
-      throw new Error(`Story with id ${storyInfo.id} already exists`);
+    if (this.#stories.has(storyId)) {
+      throw new Error(`Story with ${storyId} already exists`);
     }
-    this.stories.set(storyInfo.id, {info: storyInfo, iframe, api});
+    this.#stories.set(storyId, {info: storyInfo, iframe, api});
     this.requestUpdate();
-  }
-
-  override render() {
-    if (this.stories.size === 0) {
-      return html`<p>No stories to display</p>`;
-    }
-    return html`
-      ${[...this.stories.values()].map((liveStory) => {
-        return html`
-          <h2>${liveStory.info.tagname}</h2>
-          ${liveStory.iframe}
-        `;
-      })}
-    `;
   }
 }
