@@ -4,3 +4,8 @@
 /index.d.ts.map
 /in-user-iframe.*
 /lib
+/queries.js
+/queries.js.map
+/queries.d.ts
+/queries.d.ts.map
+/test

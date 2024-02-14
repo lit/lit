@@ -293,6 +293,11 @@ packages/labs/ignition-ui/index.d.ts
 packages/labs/ignition-ui/index.d.ts.map
 packages/labs/ignition-ui/in-user-iframe.*
 packages/labs/ignition-ui/lib
+packages/labs/ignition-ui/queries.js
+packages/labs/ignition-ui/queries.js.map
+packages/labs/ignition-ui/queries.d.ts
+packages/labs/ignition-ui/queries.d.ts.map
+packages/labs/ignition-ui/test
 
 packages/labs/motion/development/
 packages/labs/motion/test/
