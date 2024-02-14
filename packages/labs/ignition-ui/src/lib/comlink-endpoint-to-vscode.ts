@@ -15,7 +15,13 @@ class ComlinkEndpointToVscode implements comlink.Endpoint {
     this.webviewApi = webviewApi;
   }
 
-  postMessage(message: unknown, _transfer?: Transferable[] | undefined): void {
+  postMessage(
+    message: unknown,
+    transferrables?: Transferable[] | undefined
+  ): void {
+    if (transferrables != null && transferrables.length > 0) {
+      throw new Error(`VSCode doesn't support transferrables.`);
+    }
     this.webviewApi.postMessage(message);
   }
   addEventListener(

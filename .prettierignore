@@ -277,6 +277,7 @@ packages/labs/ignition-ui/index.js
 packages/labs/ignition-ui/index.js.map
 packages/labs/ignition-ui/index.d.ts
 packages/labs/ignition-ui/index.d.ts.map
+packages/labs/ignition-ui/in-user-iframe.*
 packages/labs/ignition-ui/lib
 
 packages/labs/motion/development/

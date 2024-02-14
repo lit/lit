@@ -4,28 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, html, css} from 'lit';
-import {customElement} from 'lit/decorators.js';
 import {expose} from './lib/comlink-endpoint-to-vscode.js';
-
-@customElement('test-element')
-export class TestElement extends LitElement {
-  static styles = css`
-    :host {
-      display: block;
-    }
-  `;
-
-  render() {
-    return html`<p>Hello world!</p>`;
-  }
-}
-
-declare global {
-  interface HTMLElementTagNameMap {
-    'test-element': TestElement;
-  }
-}
+import * as comlink from 'comlink';
+import type {ApiToWebview} from './in-user-iframe.js';
 
 // acquireVsCodeApi is automatically injected when running in a VS Code webview
 const vscode = acquireVsCodeApi();
@@ -43,6 +24,18 @@ const vscode = acquireVsCodeApi();
   }
 }
 
+interface StoryInfo {
+  id: string;
+  tagname: string;
+  scriptUrl: string;
+}
+
+interface LiveStory {
+  info: StoryInfo;
+  iframe: HTMLIFrameElement;
+  api: comlink.Remote<ApiToWebview>;
+}
+
 /**
  * This represents the API that's accessible from the ignition extension in
  * vscode.
@@ -57,6 +50,46 @@ class ApiToExtension {
 
   displayText(text: string) {
     this.textContainer.textContent = text;
+  }
+
+  private readonly stories = new Map<string, LiveStory>();
+
+  /**
+   * Returns once the story has been created and is ready to be interacted with.
+   */
+  async createStoryIframe(storyInfo: StoryInfo) {
+    if (this.stories.has(storyInfo.id)) {
+      throw new Error(`Story with id ${storyInfo.id} already exists`);
+    }
+    const iframeScriptUrl = new URL('./in-user-iframe.js', import.meta.url)
+      .href;
+    const iframe = document.createElement('iframe');
+    iframe.srcdoc = /* html */ `
+      <!doctype html>
+      <script type='module' src='${iframeScriptUrl}'></script>
+      <script type='module' src='${storyInfo.scriptUrl}'></script>
+      <${storyInfo.tagname}></${storyInfo.tagname}>
+    `;
+    const connectedPromise = new Promise<comlink.Remote<ApiToWebview>>(
+      (resolve) => {
+        iframe.onload = async () => {
+          const iframeWindow = iframe.contentWindow!;
+
+          // get the ApiToWebview object from the iframe
+          const apiToWebview = comlink.wrap<ApiToWebview>(
+            comlink.windowEndpoint(iframeWindow)
+          );
+          apiToWebview.displayText('The webview has connected to the iframe.');
+          resolve(apiToWebview);
+        };
+      }
+    );
+    document.body.appendChild(iframe);
+    const api = await connectedPromise;
+    if (this.stories.has(storyInfo.id)) {
+      throw new Error(`Story with id ${storyInfo.id} already exists`);
+    }
+    this.stories.set(storyInfo.id, {info: storyInfo, iframe, api});
   }
 }
 

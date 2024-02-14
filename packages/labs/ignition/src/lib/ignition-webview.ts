@@ -72,21 +72,10 @@ const getWorkspaceResources = async (
 };
 
 function getHtmlForWebview(
-  documentUri: vscode.Uri,
-  workspaceFolder: vscode.WorkspaceFolder | undefined,
-  analyzer: Analyzer,
-  server: Server
+  uiServerPort: number,
+  initialState: IgnitionWebviewState
 ): string {
-  const modulePath = documentUri.fsPath as AbsolutePath;
-  const module = analyzer.getModule(modulePath);
-  const elements = module.getCustomElementExports();
-  const server2Address = server.address() as AddressInfo;
-  const {port} = server2Address;
-
-  const scriptUrl = `http://localhost:${port}/_src/${module.jsPath}`;
-  const uiScriptUrl = `http://localhost:${3333}/index.js`;
-
-  const initialState: IgnitionWebviewState = {modulePath};
+  const uiScriptUrl = `http://localhost:${uiServerPort}/index.js`;
 
   return /* html */ `
       <!DOCTYPE html>
@@ -107,23 +96,6 @@ function getHtmlForWebview(
         </head>
         <body>
           <h1>Lit Editor</h1>
-          <pre>
-            workspaceFolder: ${workspaceFolder?.uri}
-            fileName: ${documentUri.fsPath}
-            jsPath: ${module.jsPath}
-            scriptUrl: ${scriptUrl}
-            elements: ${elements.map((e) => e.tagname)}
-            server2: ${server2Address.address}:${server2Address.port}
-          </pre>
-          <test-element></test-element>
-          <main>
-            ${elements
-              .map(
-                (e) =>
-                  `<iframe srcdoc="&lt;!doctype html>&lt;script type='module' src='${scriptUrl}'>&lt;/script>&lt;${e.tagname}>&lt;/${e.tagname}>"></iframe>`
-              )
-              .join('')}
-          </main>
         </body>
       </html>
     `;
@@ -152,22 +124,36 @@ export const driveWebviewPanel = async (
   documentUri: vscode.Uri
 ) => {
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(documentUri);
-  const [{server, analyzer}] = await Promise.all([
-    getWorkspaceResources(workspaceFolder!),
+  if (workspaceFolder === undefined) {
+    throw new Error('No workspace folder found');
+  }
+  const [{server, analyzer}, uiServer] = await Promise.all([
+    getWorkspaceResources(workspaceFolder),
     ensureUiServerRunning(),
   ]);
+  const modulePath = documentUri.fsPath as AbsolutePath;
 
   const webview = webviewPanel.webview;
-  webview.html = getHtmlForWebview(
-    documentUri,
-    workspaceFolder,
-    analyzer,
-    server
-  );
+  const uiServerAddress = uiServer.server?.address() as AddressInfo;
+  webview.html = getHtmlForWebview(uiServerAddress.port, {modulePath});
 
   ComlinkEndpointToWebview.connect(webview).then((endpoint) => {
     const connection = comlink.wrap<ApiExposedToExtension>(endpoint);
     connection.displayText('The extension has connected to the webview.');
+
+    const server2Address = server.address() as AddressInfo;
+    const {port} = server2Address;
+    const module = analyzer.getModule(modulePath);
+    const elements = module.getCustomElementExports();
+    const scriptUrl = `http://localhost:${port}/_src/${module.jsPath}`;
+
+    for (const element of elements) {
+      connection.createStoryIframe({
+        tagname: element.tagname,
+        scriptUrl: scriptUrl,
+        id: element.tagname,
+      });
+    }
   });
   return webviewPanel;
 };

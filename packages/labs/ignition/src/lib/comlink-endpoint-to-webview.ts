@@ -30,7 +30,10 @@ export class ComlinkEndpointToWebview implements comlink.Endpoint {
     return new ComlinkEndpointToWebview(webview);
   }
 
-  postMessage(message: unknown, _t?: unknown): void {
+  postMessage(message: unknown, transferrables: unknown[] | undefined): void {
+    if (transferrables != null && transferrables.length > 0) {
+      throw new Error(`VSCode doesn't support transferrables.`);
+    }
     this.webview.postMessage(message);
   }
   addEventListener(

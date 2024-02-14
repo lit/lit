@@ -32,7 +32,8 @@
       ],
       "output": [
         "lib",
-        "index.{js|js.map|d.ts|d.ts.map}"
+        "index.{js|js.map|d.ts|d.ts.map}",
+        "in-user-iframe.{js|js.map|d.ts|d.ts.map}"
       ],
       "clean": "if-file-deleted"
     },
