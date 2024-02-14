@@ -4,72 +4,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import cors from 'koa-cors';
-import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
-import {createPackageAnalyzer} from '@lit-labs/analyzer/package-analyzer.js';
+import type {AbsolutePath} from '@lit-labs/analyzer';
 import {createRequire} from 'module';
-import type {Server} from 'http';
-import {startServer} from './project-server.js';
 import {AddressInfo} from 'net';
-import * as path from 'path';
 import * as comlink from 'comlink';
 import type {ApiExposedToExtension} from '@lit-labs/ignition-ui';
+import {ComlinkEndpointToWebview} from './comlink-endpoint-to-webview.js';
+import {getWorkspaceResources, ensureUiServerRunning} from './servers.js';
 
 const require = createRequire(import.meta.url);
-
 import vscode = require('vscode');
-import wds = require('@web/dev-server');
-import {DevServer} from './types.cjs';
-import {ComlinkEndpointToWebview} from './comlink-endpoint-to-webview.js';
-
-const {startDevServer} = wds;
-
-// Map of workspace folder to dev server and analyzer. This allows very fast
-// re-opening of a previous "Ignition" webview. Currently this map leaks, and is
-// only cleared by refreshing vscode.
-const workspaceResourcesCache = new Map<
-  string,
-  {server: Server; analyzer: Analyzer}
->();
-
-const uiRoot = path.dirname(require.resolve('@lit-labs/ignition-ui'));
-let _uiServer: DevServer;
-const ensureUiServerRunning = async () => {
-  return (_uiServer ??= await startDevServer({
-    config: {
-      rootDir: uiRoot,
-      nodeResolve: {
-        exportConditions: ['development', 'browser'],
-        extensions: ['.cjs', '.mjs', '.js'],
-        dedupe: () => true,
-        preferBuiltins: false,
-      },
-      port: 3333,
-      middleware: [cors({origin: '*', credentials: true})],
-    },
-    readCliArgs: false,
-    readFileConfig: false,
-  }));
-};
-
-const getWorkspaceResources = async (
-  workspaceFolder: vscode.WorkspaceFolder
-) => {
-  let workspaceResources = workspaceResourcesCache.get(
-    workspaceFolder.uri.fsPath
-  );
-  if (workspaceResources === undefined) {
-    const analyzer = createPackageAnalyzer(
-      workspaceFolder!.uri.fsPath as AbsolutePath
-    );
-
-    const server = await startServer(analyzer, 3334);
-
-    workspaceResources = {server, analyzer};
-    workspaceResourcesCache.set(workspaceFolder.uri.fsPath, workspaceResources);
-  }
-  return workspaceResources;
-};
 
 function getHtmlForWebview(
   uiServerPort: number,
@@ -118,7 +62,7 @@ export const createWebView = async () => {
   return driveWebviewPanel(webviewPanel, documentUri);
 };
 
-// Sets up the webview panel and starts any necessary services.
+// Sets up an already existing webview panel and starts any necessary services.
 export const driveWebviewPanel = async (
   webviewPanel: vscode.WebviewPanel,
   documentUri: vscode.Uri
@@ -127,25 +71,35 @@ export const driveWebviewPanel = async (
   if (workspaceFolder === undefined) {
     throw new Error('No workspace folder found');
   }
-  const [{server, analyzer}, uiServer] = await Promise.all([
+  const [workspace, uiServer] = await Promise.all([
     getWorkspaceResources(workspaceFolder),
     ensureUiServerRunning(),
   ]);
   const modulePath = documentUri.fsPath as AbsolutePath;
 
+  // If this becomes a hassle, we can just ask the webview to stay resident
+  // when we create it.
+  webviewPanel.onDidChangeViewState((e) => {
+    if (e.webviewPanel.active) {
+      vscode.window.showInformationMessage('Webview is active');
+      connectAndInitialize();
+    }
+  });
+
   const webview = webviewPanel.webview;
   const uiServerAddress = uiServer.server?.address() as AddressInfo;
   webview.html = getHtmlForWebview(uiServerAddress.port, {modulePath});
 
-  ComlinkEndpointToWebview.connect(webview).then((endpoint) => {
+  async function connectAndInitialize() {
+    const webview = webviewPanel.webview;
+    const endpoint = await ComlinkEndpointToWebview.connect(webview);
     const connection = comlink.wrap<ApiExposedToExtension>(endpoint);
     connection.displayText('The extension has connected to the webview.');
 
-    const server2Address = server.address() as AddressInfo;
-    const {port} = server2Address;
-    const module = analyzer.getModule(modulePath);
+    const workspaceServerAddress = workspace.server.address() as AddressInfo;
+    const module = workspace.analyzer.getModule(modulePath);
     const elements = module.getCustomElementExports();
-    const scriptUrl = `http://localhost:${port}/_src/${module.jsPath}`;
+    const scriptUrl = `http://localhost:${workspaceServerAddress.port}/_src/${module.jsPath}`;
 
     for (const element of elements) {
       connection.createStoryIframe({
@@ -154,6 +108,10 @@ export const driveWebviewPanel = async (
         id: element.tagname,
       });
     }
-  });
+  }
+
+  // It's initially visible, so connect immediately.
+  connectAndInitialize();
+
   return webviewPanel;
 };

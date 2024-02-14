@@ -16,7 +16,7 @@ import {logChannel} from './logging.js';
 const baseUrl = '/_src/';
 const jsBaseUrl = '/_js/';
 
-export const startServer = async (analyzer: Analyzer, port: number = 3334) => {
+export const startServer = async (analyzer: Analyzer) => {
   const app = new Koa();
   app.use(cors({origin: '*', credentials: true}));
   app.use(async (context) => {
@@ -81,7 +81,9 @@ export const startServer = async (analyzer: Analyzer, port: number = 3334) => {
     }
     context.body = 'Hello World';
   });
-  const server = app.listen(port);
-  logChannel.appendLine(`Ignition project server started on port ${port}`);
+  const server = app.listen();
+  logChannel.appendLine(
+    `Ignition project server started at ${server.address()}`
+  );
   return server;
 };

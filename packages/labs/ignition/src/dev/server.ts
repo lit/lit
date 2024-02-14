@@ -8,5 +8,5 @@ const analyzer = createPackageAnalyzer(
   '/Users/justin/Projects/Web/chessboard-element/' as AbsolutePath
 );
 
-await startServer(analyzer, 3335);
-console.log('server started');
+const server = await startServer(analyzer);
+console.log(`server started at ${server.address()}`);
