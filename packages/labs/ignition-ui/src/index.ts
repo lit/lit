@@ -41,15 +41,10 @@ interface LiveStory {
  * vscode.
  */
 class ApiToExtension {
-  private textContainer = (() => {
-    const div = document.createElement('div');
-    document.body.appendChild(div);
-    div.textContent = `Waiting to connect...`;
-    return div;
-  })();
-
-  displayText(text: string) {
-    this.textContainer.textContent = text;
+  private readonly container: HTMLElement;
+  constructor(container: HTMLElement) {
+    this.container = container;
+    container.textContent = `No stories found.`;
   }
 
   private readonly stories = new Map<string, LiveStory>();
@@ -58,6 +53,9 @@ class ApiToExtension {
    * Returns once the story has been created and is ready to be interacted with.
    */
   async createStoryIframe(storyInfo: StoryInfo) {
+    if (this.stories.size === 0) {
+      this.container.textContent = '';
+    }
     if (this.stories.has(storyInfo.id)) {
       throw new Error(`Story with id ${storyInfo.id} already exists`);
     }
@@ -84,7 +82,14 @@ class ApiToExtension {
         };
       }
     );
-    document.body.appendChild(iframe);
+    const heading = document.createElement('h2');
+    heading.textContent = storyInfo.tagname;
+    this.container.appendChild(heading);
+    this.container.appendChild(iframe);
+    iframe.style.border = 'none';
+    iframe.style.outline = 'none';
+    iframe.style.width = '100%';
+    iframe.style.height = '400px';
     const api = await connectedPromise;
     if (this.stories.has(storyInfo.id)) {
       throw new Error(`Story with id ${storyInfo.id} already exists`);
@@ -94,4 +99,6 @@ class ApiToExtension {
 }
 
 export type ApiExposedToExtension = ApiToExtension;
-expose(vscode, new ApiToExtension());
+const mainElement = document.createElement('main');
+document.body.appendChild(mainElement);
+expose(vscode, new ApiToExtension(mainElement));

@@ -3,7 +3,7 @@ import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
 import {createPackageAnalyzer} from '@lit-labs/analyzer/package-analyzer.js';
 import type {Server} from 'http';
 import {startServer} from './project-server.js';
-import * as path from 'path';
+import * as path from 'node:path';
 import wds = require('@web/dev-server');
 import {DevServer} from './types.cjs';
 import {createRequire} from 'node:module';

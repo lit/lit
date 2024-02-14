@@ -81,7 +81,6 @@ export const driveWebviewPanel = async (
   // when we create it.
   webviewPanel.onDidChangeViewState((e) => {
     if (e.webviewPanel.active) {
-      vscode.window.showInformationMessage('Webview is active');
       connectAndInitialize();
     }
   });
@@ -94,7 +93,6 @@ export const driveWebviewPanel = async (
     const webview = webviewPanel.webview;
     const endpoint = await ComlinkEndpointToWebview.connect(webview);
     const connection = comlink.wrap<ApiExposedToExtension>(endpoint);
-    connection.displayText('The extension has connected to the webview.');
 
     const workspaceServerAddress = workspace.server.address() as AddressInfo;
     const module = workspace.analyzer.getModule(modulePath);

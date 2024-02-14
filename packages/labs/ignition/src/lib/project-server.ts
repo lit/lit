@@ -8,13 +8,11 @@ import cors from 'koa-cors';
 import Koa from 'koa';
 import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
 import {bareSpecifierTransformer} from './bare-specifier-transformer.js';
-import type ts from 'typescript';
 import {getModulePathFromJsPath} from './paths.js';
 import * as path from 'path';
 import {logChannel} from './logging.js';
 
 const baseUrl = '/_src/';
-const jsBaseUrl = '/_js/';
 
 export const startServer = async (analyzer: Analyzer) => {
   const app = new Koa();
@@ -27,17 +25,12 @@ export const startServer = async (analyzer: Analyzer) => {
 
       if (modulePath) {
         const sourceFile = analyzer.program.getSourceFile(modulePath);
-        const result = analyzer.typescript.transform(sourceFile!, [
+        analyzer.typescript.transform(sourceFile!, [
           bareSpecifierTransformer(analyzer, baseUrl),
         ]);
-
-        const printer = analyzer.typescript.createPrinter();
-
-        const transformedFile = result.transformed[0];
-
         const emittedFiles: Array<{fileName: string; text: string}> = [];
 
-        const emitResult = analyzer.program.emit(
+        analyzer.program.emit(
           sourceFile,
           (fileName: string, text: string) => {
             emittedFiles.push({fileName, text});
@@ -63,7 +56,12 @@ export const startServer = async (analyzer: Analyzer) => {
         const pkg = analyzer.getPackage();
         const root = pkg.rootDir;
         const modulePath = path.resolve(root, '.' + jsPath);
-        const source = await analyzer.fs.readFile(modulePath, 'utf-8')!;
+        const source = await analyzer.fs.readFile(modulePath, 'utf-8');
+        if (source === undefined) {
+          context.status = 404;
+          context.body = `Could not read file at ${modulePath}`;
+          return;
+        }
         const result = analyzer.typescript.transpileModule(source, {
           fileName: modulePath,
           compilerOptions: {
