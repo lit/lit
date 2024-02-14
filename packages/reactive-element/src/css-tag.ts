@@ -186,6 +186,13 @@ export const unsafeCSS = (value: unknown) =>
     constructionToken
   );
 
+interface DebugLoggingWindow {
+  // Even in dev mode, we generally don't want to emit these events, as that's
+  // another level of cost, so only emit them when DEV_MODE is true _and_ when
+  // window.emitLitDebugEvents is true.
+  emitLitDebugLogEvents?: boolean;
+}
+
 /**
  * A template literal tag which can be used with LitElement's
  * {@linkcode LitElement.styles} property to set element styles.
@@ -210,7 +217,10 @@ export const css = (
     strings,
     constructionToken
   );
-  if (DEV_MODE) {
+  if (
+    DEV_MODE &&
+    (global as unknown as DebugLoggingWindow).emitLitDebugLogEvents
+  ) {
     const sourceLocationInfo = getSourceLocationFromStack(new Error().stack);
     if (sourceLocationInfo) {
       result.sourceLocationInfo = sourceLocationInfo;
