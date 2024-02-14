@@ -58,8 +58,11 @@ interface SourceLocationInfo {
 function getSourceLocationFromStack(
   stack: string | undefined
 ): undefined | SourceLocationInfo {
+  // TODO: test this and get it working cross browser.
+  // Also, this should probably not live here, but somewhere in the devlog
+  // package.
   const parsed = stack
-    ?.split('\n')[2]
+    ?.split('\n')?.[2]
     .match(/at (.*?)\((https?:\/\/.*?):(\d+):(\d+)\)/);
   if (!parsed) {
     return undefined;
