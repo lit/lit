@@ -5,6 +5,9 @@
  */
 
 import * as comlink from 'comlink';
+import {createRequire} from 'module';
+
+const require = createRequire(import.meta.url);
 import type vscode = require('vscode');
 
 /** Uses the vscode Webview API for sending comlink messages. */

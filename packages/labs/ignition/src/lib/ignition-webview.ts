@@ -4,13 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {AbsolutePath} from '@lit-labs/analyzer';
+import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
 import {createRequire} from 'module';
-import {AddressInfo} from 'net';
+import type {AddressInfo} from 'net';
 import * as comlink from 'comlink';
 import type {ApiExposedToExtension} from '@lit-labs/ignition-ui';
 import {ComlinkEndpointToWebview} from './comlink-endpoint-to-webview.js';
 import {getWorkspaceResources, ensureUiServerRunning} from './servers.js';
+import * as path from 'node:path';
+import {logChannel} from './logging.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
@@ -20,6 +22,7 @@ function getHtmlForWebview(
   initialState: IgnitionWebviewState
 ): string {
   const uiScriptUrl = `http://localhost:${uiServerPort}/index.js`;
+
 
   return /* html */ `
       <!DOCTYPE html>
@@ -44,6 +47,26 @@ function getHtmlForWebview(
       </html>
     `;
 }
+
+const getStoriesModule = (modulePath: AbsolutePath, analyzer: Analyzer) => {
+  // Look for a sibling module with the same name but ending in .stories.ts
+  const moduleDir = path.dirname(modulePath);
+  const moduleName = path.basename(modulePath, '.ts');
+  const storiesModulePath = path.join(
+    moduleDir,
+    `${moduleName}.stories.ts`
+  ) as AbsolutePath;
+  try {
+    logChannel.appendLine(
+      `Looking for stories module for ${modulePath} at ${storiesModulePath}`
+    );
+    const storiesModule = analyzer.getModule(storiesModulePath);
+    return storiesModule;
+  } catch (e) {
+    logChannel.appendLine(`Nor stories module found for ${modulePath}`);
+    return undefined;
+  }
+};
 
 export const createWebView = async () => {
   const documentUri = vscode.window.activeTextEditor?.document.uri;
@@ -77,6 +100,8 @@ export const driveWebviewPanel = async (
   ]);
   const modulePath = documentUri.fsPath as AbsolutePath;
 
+  const storiesModule = getStoriesModule(modulePath, workspace.analyzer);
+
   // If this becomes a hassle, we can just ask the webview to stay resident
   // when we create it.
   webviewPanel.onDidChangeViewState((e) => {
@@ -95,15 +120,10 @@ export const driveWebviewPanel = async (
     const connection = comlink.wrap<ApiExposedToExtension>(endpoint);
 
     const workspaceServerAddress = workspace.server.address() as AddressInfo;
-    const module = workspace.analyzer.getModule(modulePath);
-    const elements = module.getCustomElementExports();
-    const scriptUrl = `http://localhost:${workspaceServerAddress.port}/_src/${module.jsPath}`;
 
-    for (const element of elements) {
-      connection.createStoryIframe({
-        tagname: element.tagname,
-        scriptUrl: scriptUrl,
-      });
+    if (storiesModule !== undefined) {
+      const storyUrl = `http://localhost:${workspaceServerAddress.port}/story/${storiesModule.jsPath}`;
+      connection.setStoryUrl(storyUrl);
     }
   }
 

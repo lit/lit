@@ -5,7 +5,8 @@
  */
 
 import {expose} from './lib/comlink-endpoint-to-vscode.js';
-import {IgnitionUi, type StoryInfo} from './lib/ignition-ui.js';
+import type {IgnitionUi} from './lib/ignition-ui.js';
+import './lib/ignition-ui.js';
 
 // acquireVsCodeApi is automatically injected when running in a VS Code webview
 const vscode = acquireVsCodeApi();
@@ -33,12 +34,10 @@ class ApiToExtension {
   /**
    * Returns once the story has been created and is ready to be interacted with.
    */
-  async createStoryIframe(storyInfo: StoryInfo) {
-    await this.#ui.createStoryIframe(storyInfo);
+  setStoryUrl(storyUrl: string) {
+    this.#ui.storyUrl = storyUrl;
   }
 }
 
 export type ApiExposedToExtension = ApiToExtension;
-const mainElement = document.createElement('main');
-document.body.appendChild(mainElement);
 expose(vscode, new ApiToExtension());

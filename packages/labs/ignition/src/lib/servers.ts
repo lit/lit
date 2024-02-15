@@ -1,14 +1,21 @@
+/**
+ * @license
+ * Copyright 2023 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import cors from 'koa-cors';
 import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
 import {createPackageAnalyzer} from '@lit-labs/analyzer/package-analyzer.js';
 import type {Server} from 'http';
 import {startServer} from './project-server.js';
 import * as path from 'node:path';
-import wds = require('@web/dev-server');
 import {DevServer} from './types.cjs';
+import type {AddressInfo} from 'net';
 import {createRequire} from 'node:module';
 
 const require = createRequire(import.meta.url);
+import wds = require('@web/dev-server');
 import vscode = require('vscode');
 
 // Map of workspace folder to dev server and analyzer. This allows very fast
@@ -18,10 +25,12 @@ const workspaceResourcesCache = new Map<
   string,
   {server: Server; analyzer: Analyzer}
 >();
+
 const uiRoot = path.dirname(require.resolve('@lit-labs/ignition-ui'));
-let _uiServer: DevServer;
+let uiServerPromise: Promise<DevServer>;
+
 export const ensureUiServerRunning = async () => {
-  return (_uiServer ??= await wds.startDevServer({
+  return (uiServerPromise ??= wds.startDevServer({
     config: {
       rootDir: uiRoot,
       nodeResolve: {
@@ -48,7 +57,10 @@ export const getWorkspaceResources = async (
       workspaceFolder!.uri.fsPath as AbsolutePath
     );
 
-    const server = await startServer(analyzer);
+    const uiServer = await ensureUiServerRunning();
+    const uiServerAddress = uiServer.server?.address() as AddressInfo;
+
+    const server = await startServer(uiServerAddress.port, analyzer);
 
     workspaceResources = {server, analyzer};
     workspaceResourcesCache.set(workspaceFolder.uri.fsPath, workspaceResources);

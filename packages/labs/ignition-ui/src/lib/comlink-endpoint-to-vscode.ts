@@ -24,6 +24,7 @@ class ComlinkEndpointToVscode implements comlink.Endpoint {
     }
     this.webviewApi.postMessage(message);
   }
+
   addEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,
@@ -31,6 +32,7 @@ class ComlinkEndpointToVscode implements comlink.Endpoint {
   ): void {
     window.addEventListener(type, listener, options);
   }
+
   removeEventListener(
     type: string,
     listener: EventListenerOrEventListenerObject,

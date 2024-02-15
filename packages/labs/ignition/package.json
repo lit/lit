@@ -35,6 +35,7 @@
     "start:dev": "wireit"
   },
   "dependencies": {
+    "@koa/router": "^12.0.1",
     "@lit-labs/analyzer": "^0.11.1",
     "@types/koa": "^2.14.0",
     "@types/koa-cors": "^0.0.6",
@@ -46,6 +47,7 @@
   },
   "devDependencies": {
     "@lit-labs/ignition-ui": "^0.0.1",
+    "@types/koa__router": "^12.0.4",
     "@types/mocha": "^10.0.6",
     "@types/node": "^20.11.16",
     "@types/vscode": "^1.86.0",

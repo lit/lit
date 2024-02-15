@@ -4,8 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import vscode = require('vscode');
 import {logChannel} from './logging.js';
+import {createRequire} from 'node:module';
+
+const require = createRequire(import.meta.url);
+import vscode = require('vscode');
 
 export class WebviewSerializer
   implements vscode.WebviewPanelSerializer<IgnitionWebviewState>
@@ -17,6 +20,10 @@ export class WebviewSerializer
     logChannel.appendLine(
       `Restoring webview from state:\n${JSON.stringify(state)}`
     );
+    if (state === undefined) {
+      webviewPanel.dispose();
+      return;
+    }
 
     const {driveWebviewPanel} = await import('./ignition-webview.js');
     const path = state.modulePath;

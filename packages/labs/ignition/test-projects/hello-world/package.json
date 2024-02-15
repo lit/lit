@@ -1,0 +1,18 @@
+{
+  "name": "@lit-internal/hello-world",
+  "description": "A simple web component",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "lit": "^3.0.0"
+  },
+  "devDependencies": {
+    "@storybook/types": "^7.6.14",
+    "@storybook/web-components": "^7.6.14",
+    "typescript": "~5.3.0"
+  }
+}

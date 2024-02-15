@@ -9,6 +9,7 @@
     "test": "wireit"
   },
   "dependencies": {
+    "@lit/task": "^1.0.0",
     "comlink": "^4.4.1",
     "lit": "3.1.2",
     "lit-html": "3.1.2",
@@ -29,7 +30,8 @@
     "build": {
       "command": "tsc --pretty",
       "dependencies": [
-        "../../lit:build"
+        "../../lit:build",
+        "../../task:build"
       ],
       "files": [
         "src/**/*.ts",
@@ -38,7 +40,8 @@
       "output": [
         "lib",
         "index.{js|js.map|d.ts|d.ts.map}",
-        "in-user-iframe.{js|js.map|d.ts|d.ts.map}"
+        "in-user-iframe.{js|js.map|d.ts|d.ts.map}",
+        ".tsbuildinfo"
       ],
       "clean": "if-file-deleted"
     },
@@ -63,10 +66,12 @@
     }
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "^25.0.7",
-    "@types/vscode-webview": "^1.57.5",
-    "@lit-labs/testing": "^0.2.2",
     "@esm-bundle/chai": "^4.3.4-fix.0",
+    "@lit-labs/testing": "^0.2.2",
+    "@rollup/plugin-commonjs": "^25.0.7",
+    "@storybook/types": "^7.6.16",
+    "@storybook/web-components": "^7.6.16",
+    "@types/vscode-webview": "^1.57.5",
     "path-module": "^0.1.2"
   }
 }
