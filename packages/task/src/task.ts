@@ -180,7 +180,7 @@ export class Task<
   private _abortController?: AbortController;
   private _onComplete?: (result: R) => unknown;
   private _onError?: (error: unknown) => unknown;
-  status: TaskStatus = TaskStatus.INITIAL;
+  private _status: TaskStatus = TaskStatus.INITIAL;
 
   /**
    * Determines if the task is run automatically when arguments change after a
@@ -206,13 +206,13 @@ export class Task<
 
     // Generate an in-progress promise if the the status is pending and has been
     // cleared by .run().
-    if (this.status === TaskStatus.PENDING) {
+    if (this._status === TaskStatus.PENDING) {
       this._taskComplete = new Promise((res, rej) => {
         this._resolveTaskComplete = res;
         this._rejectTaskComplete = rej;
       });
       // If the status is error, return a rejected promise.
-    } else if (this.status === TaskStatus.ERROR) {
+    } else if (this._status === TaskStatus.ERROR) {
       this._taskComplete = Promise.reject(this._error);
       // Otherwise we are at a task run's completion or this is the first
       // request and we are not in the middle of a task (i.e. INITIAL).
@@ -251,7 +251,7 @@ export class Task<
     // args immediately so it only runs when they change again.
     if ('initialValue' in taskConfig) {
       this._value = taskConfig.initialValue;
-      this.status = TaskStatus.COMPLETE;
+      this._status = TaskStatus.COMPLETE;
       this._previousArgs = this._getArgs?.();
     }
   }
@@ -318,7 +318,7 @@ export class Task<
     // TODO (justinfagnani): add test
     this._previousArgs = args;
 
-    if (this.status === TaskStatus.PENDING) {
+    if (this._status === TaskStatus.PENDING) {
       this._abortController?.abort();
     } else {
       // Clear the last complete task run in INITIAL because it may be a resolved
@@ -329,7 +329,7 @@ export class Task<
       this._rejectTaskComplete = undefined;
     }
 
-    this.status = TaskStatus.PENDING;
+    this._status = TaskStatus.PENDING;
     let result!: R | typeof initialState;
     let error: unknown;
 
@@ -353,7 +353,7 @@ export class Task<
     // If this is the most recent task call, process this value.
     if (this._callId === key) {
       if (result === initialState) {
-        this.status = TaskStatus.INITIAL;
+        this._status = TaskStatus.INITIAL;
       } else {
         if (errored === false) {
           try {
@@ -361,7 +361,7 @@ export class Task<
           } catch {
             // Ignore user errors from onComplete.
           }
-          this.status = TaskStatus.COMPLETE;
+          this._status = TaskStatus.COMPLETE;
           this._resolveTaskComplete?.(result as R);
         } else {
           try {
@@ -369,7 +369,7 @@ export class Task<
           } catch {
             // Ignore user errors from onError.
           }
-          this.status = TaskStatus.ERROR;
+          this._status = TaskStatus.ERROR;
           this._rejectTaskComplete?.(error);
         }
         this._value = result as R;
@@ -399,7 +399,7 @@ export class Task<
    *     `AbortController.abort()`.
    */
   abort(reason?: unknown) {
-    if (this.status === TaskStatus.PENDING) {
+    if (this._status === TaskStatus.PENDING) {
       this._abortController?.abort(reason);
     }
   }
@@ -423,8 +423,12 @@ export class Task<
     return this._error;
   }
 
+  get status() {
+    return this._status;
+  }
+
   render<T extends StatusRenderer<R>>(renderer: T) {
-    switch (this.status) {
+    switch (this._status) {
       case TaskStatus.INITIAL:
         return renderer.initial?.() as MaybeReturnType<T['initial']>;
       case TaskStatus.PENDING:
@@ -436,7 +440,7 @@ export class Task<
       case TaskStatus.ERROR:
         return renderer.error?.(this.error) as MaybeReturnType<T['error']>;
       default:
-        throw new Error(`Unexpected status: ${this.status}`);
+        throw new Error(`Unexpected status: ${this._status}`);
     }
   }
 }
