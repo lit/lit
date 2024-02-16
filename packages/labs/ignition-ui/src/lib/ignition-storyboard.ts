@@ -6,22 +6,9 @@
 
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {ref} from 'lit/directives/ref.js';
 import {Task} from '@lit/task';
-import type {
-  ComponentAnnotations,
-  StoryContext,
-  WebRenderer,
-} from '@storybook/types';
-import type {StoryObj} from '@storybook/web-components';
-
-
-interface PlainWebRenderer extends WebRenderer {
-  component: string;
-  storyResult: void;
-}
-
-type Meta<T> = ComponentAnnotations<PlainWebRenderer, T>;
+import type {StoryModule} from './component-story-format.js';
+import './ignition-story.js';
 
 /**
  * Displays multiple stories from a stories file.
@@ -31,7 +18,8 @@ export class IgnitionStoryboard extends LitElement {
   static styles = css`
     :host {
       display: block;
-      color: #4444ff;
+      /* TODO: Use VS Code CSS variables */
+      color: white;
     }
   `;
 
@@ -48,41 +36,25 @@ export class IgnitionStoryboard extends LitElement {
 
   render() {
     return html`
-      <h2>Stories here</h2>
-      <h3>src: ${this.src}</h3>
       ${this.#importStoryTask.render({
-        complete: (mod: Record<string, unknown>) => {
-          const render = (mod.default as Meta<unknown>).render;
-          return html`
-            <div>Story exports: ${JSON.stringify(Object.keys(mod))}</div>
-            <ul>
-              ${Object.entries(mod).map(([name, _value]) => {
-                if (name === 'default') {
-                  return undefined;
-                }
-                return html`<li>${name}</li>`;
-              })}
-            </ul>
-            ${Object.entries(mod).map(([name, story]) => {
-              if (name === 'default') {
-                return undefined;
-              }
+        complete: (mod: StoryModule<unknown>) => {
+          return Object.keys(mod)
+            .filter((exportName) => {
+              // TODO (justinfagnani): respect CSF includeStories and
+              // excludeStories
+              return exportName !== 'default';
+            })
+            .map((storyName) => {
               return html`
                 <section>
-                  <h3>${name}</h3>
-                  <div
-                    ${ref((canvasElement?: Element) => {
-                      if (canvasElement) {
-                        render?.((story as StoryObj).args, {
-                          canvasElement: canvasElement as HTMLElement,
-                        } as StoryContext<PlainWebRenderer, unknown>);
-                      }
-                    })}
-                  ></div>
+                  <h3>${storyName}</h3>
+                  <ignition-story
+                    .storyModule=${mod}
+                    .storyName=${storyName}
+                  ></ignition-story>
                 </section>
               `;
-            })}
-          `;
+            });
         },
         pending: () => {
           return html`<h3>Loading stories...</h3>`;

@@ -23,7 +23,6 @@ function getHtmlForWebview(
 ): string {
   const uiScriptUrl = `http://localhost:${uiServerPort}/index.js`;
 
-
   return /* html */ `
       <!DOCTYPE html>
       <html lang="en">
