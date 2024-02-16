@@ -10,6 +10,8 @@ import * as comlink from 'comlink';
 import type {ApiToWebview} from '../in-user-iframe.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {Deferred} from './deferred.js';
+import './ignition-stage.js';
+
 /**
  * This represents the API that's accessible from the ignition extension in
  * vscode.
@@ -33,11 +35,13 @@ export class IgnitionUi extends LitElement {
   override render() {
     return html`
       <h1>Lit Editor</h1>
-      <iframe
-        src=${ifDefined(this.storyUrl)}
-        @onload=${this.#onFrameLoad}
-        @onerror=${this.#onFrameError}
-      ></iframe>
+      <ignition-stage>
+        <iframe
+          src=${ifDefined(this.storyUrl)}
+          @onload=${this.#onFrameLoad}
+          @onerror=${this.#onFrameError}
+        ></iframe
+      ></ignition-stage>
     `;
   }
 
