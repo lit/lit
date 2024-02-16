@@ -30,9 +30,15 @@ export class IgnitionStory extends LitElement {
   storyName?: string;
 
   render() {
-    html`<ignition-story-container
+    return html`<ignition-story-container
       .storyModule=${this.storyModule}
       .storyName=${this.storyName}
     ></ignition-story-container>`;
+  }
+}
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'ignition-story': IgnitionStory;
   }
 }

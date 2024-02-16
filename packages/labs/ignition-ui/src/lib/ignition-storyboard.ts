@@ -66,3 +66,9 @@ export class IgnitionStoryboard extends LitElement {
     `;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'ignition-storyboard': IgnitionStoryboard;
+  }
+}

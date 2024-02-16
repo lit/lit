@@ -54,3 +54,9 @@ export class IgnitionStoryContainer extends LitElement {
     ></div> `;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'ignition-story-container': IgnitionStoryContainer;
+  }
+}

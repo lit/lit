@@ -83,3 +83,9 @@ export class IgnitionUi extends LitElement {
     this.#frameLoadedDeferred!.reject(error);
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'ignition-ui': IgnitionUi;
+  }
+}
