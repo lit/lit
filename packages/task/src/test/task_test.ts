@@ -420,7 +420,7 @@ suite('Task', () => {
     assert.throws(() => {
       // @ts-expect-error for test
       el.task.status = TaskStatus.ERROR;
-    });
+    }, TypeError);
   });
 
   test('task runs when `run` called', async () => {
