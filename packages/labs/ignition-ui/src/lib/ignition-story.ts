@@ -6,16 +6,14 @@
 
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {ref} from 'lit/directives/ref.js';
-import type {
-  PlainWebRenderer,
-  StoryContext,
-  StoryObj,
-  StoryModule,
-} from './component-story-format.js';
+import './ignition-story-container.js';
+import type {StoryModule} from './component-story-format.js';
 
 /**
  * Displays a single story from a stories module.
+ *
+ * This element will eventually contain "chrome" for the story, such as
+ * displaying the story name, story code, allowing resizing, positioning, etc.
  */
 @customElement('ignition-story')
 export class IgnitionStory extends LitElement {
@@ -32,25 +30,9 @@ export class IgnitionStory extends LitElement {
   storyName?: string;
 
   render() {
-    if (this.storyModule === undefined || this.storyName === undefined) {
-      return;
-    }
-
-    const story = this.storyModule[this.storyName];
-
-    if (story === undefined) {
-      return;
-    }
-
-    const render = this.storyModule.default.render;
-    return html`<div
-      ${ref((canvasElement?: Element) => {
-        if (canvasElement) {
-          render?.((story as StoryObj).args, {
-            canvasElement: canvasElement as HTMLElement,
-          } as StoryContext<PlainWebRenderer, unknown>);
-        }
-      })}
-    ></div> `;
+    html`<ignition-story-container
+      .storyModule=${this.storyModule}
+      .storyName=${this.storyName}
+    ></ignition-story-container>`;
   }
 }
