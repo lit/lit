@@ -6,7 +6,7 @@
 
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import type {BoundingBox} from './iframe-api-to-webview.js';
+import type {ViewportBoundingBox} from './iframe-api-to-webview.js';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -48,7 +48,8 @@ class IgnitionStage extends LitElement {
     }
   `;
 
-  @property({attribute: false}) boxesInPageToHighlight: BoundingBox[] = [];
+  @property({attribute: false}) boxesInPageToHighlight: ViewportBoundingBox[] =
+    [];
 
   render() {
     return html`<div id="content">

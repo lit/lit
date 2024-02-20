@@ -11,7 +11,10 @@ import * as comlink from 'comlink';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {Deferred} from './deferred.js';
 import './ignition-stage.js';
-import type {BoundingBox, ApiToWebview} from './iframe-api-to-webview.js';
+import type {
+  ViewportBoundingBox,
+  ApiToWebview,
+} from './iframe-api-to-webview.js';
 
 /**
  * Renders the UI that runs in the webview and communicates with the stories
@@ -25,10 +28,6 @@ export class IgnitionUi extends LitElement {
       outline: none;
       width: 100%;
       height: 400px;
-      pointer-events: all;
-    }
-    ignition-stage {
-      pointer-events: none;
     }
   `;
 
@@ -37,7 +36,7 @@ export class IgnitionUi extends LitElement {
 
   #frameApi?: comlink.Remote<ApiToWebview>;
 
-  @state() private boxesInPageToHighlight: BoundingBox[] = [];
+  @state() private boxesInPageToHighlight: ViewportBoundingBox[] = [];
   #frameApiChanged = new Deferred<void>();
 
   override render() {
@@ -46,7 +45,10 @@ export class IgnitionUi extends LitElement {
       content = html`<p>No story URL provided.</p>`;
     } else {
       content = html`
-        <ignition-stage .boxesInPageToHighlight=${this.boxesInPageToHighlight}>
+        <ignition-stage
+          .boxesInPageToHighlight=${this.boxesInPageToHighlight}
+          @mousemove=${this.#onStageMouseMove}
+        >
           <iframe
             src=${ifDefined(this.storyUrl)}
             @load=${this.#onFrameLoad}
@@ -82,40 +84,6 @@ export class IgnitionUi extends LitElement {
       this.#frameApiChanged.resolve();
       this.#frameApiChanged = new Deferred();
       await frameApi.displayText('The webview has connected to the iframe.');
-
-      // Listen for bounding boxes from the iframe, pass them on to the stage.
-      (async () => {
-        const boxes = await frameApi.boundingBoxesOfMouseovered();
-        const reader = boxes.getReader();
-        // eslint-disable-next-line no-constant-condition
-        while (true) {
-          const result = await Promise.race([
-            reader.read(),
-            this.#frameApiChanged.promise,
-          ]);
-          if (this.#frameApi != frameApi) {
-            // The frame has changed, so we should stop listening to the old
-            // frame.
-            console.log(
-              'frameAPIChanged resolved, stopping listening to old frame'
-            );
-            reader.cancel();
-            return;
-          }
-          if (result === undefined) {
-            throw new Error(
-              `frameAPIChanged resolved but frameAPI didn't change`
-            );
-          }
-          const {value, done} = result;
-          if (done) {
-            console.log('no more boxes to read');
-            return;
-          }
-          console.log(`got ${value.length} boxes from the iframe`);
-          this.boxesInPageToHighlight = value;
-        }
-      })();
     }
   }
 
@@ -138,6 +106,27 @@ export class IgnitionUi extends LitElement {
 
   #onFrameError(error: Error) {
     this.#frameLoadedDeferred.reject(error);
+  }
+
+  #mouseMoveId = 0;
+  async #onStageMouseMove(mouseEvent: MouseEvent) {
+    if (this.#frameApi == null) {
+      return;
+    }
+    const id = ++this.#mouseMoveId;
+    const stage = mouseEvent.target as HTMLElementTagNameMap['ignition-stage'];
+    const windowX = mouseEvent.clientX;
+    const windowY = mouseEvent.clientY;
+    // Convert the mouse position to the stage's coordinate space.
+    const stageRect = stage.getBoundingClientRect();
+    const x = windowX - stageRect.left;
+    const y = windowY - stageRect.top;
+    const boxes = await this.#frameApi.boundingBoxesAtPoint(x, y);
+    // Handle race conditions
+    if (id !== this.#mouseMoveId) {
+      return;
+    }
+    this.boxesInPageToHighlight = boxes;
   }
 }
 

@@ -20,74 +20,73 @@ class ApiToWebviewClass {
     this.#textContainer.textContent = text;
   }
 
-  async boundingBoxesOfMouseovered(): Promise<BoundingBoxStream> {
-    return new BoundingBoxStream();
-  }
-
-  async boundingBoxesAtPoint(x: number, y: number): Promise<BoundingBox[]> {
-    const element = document.elementFromPoint(x, y);
+  async boundingBoxesAtPoint(
+    x: number,
+    y: number
+  ): Promise<ViewportBoundingBox[]> {
+    let element = document.elementFromPoint(x, y);
     if (element == null) {
       return [];
     }
-    const {
-      x: elementX,
-      y: elementY,
-      width,
-      height,
-    } = element.getBoundingClientRect();
-    return [{x: elementX, y: elementY, width, height}];
+    while (element.shadowRoot != null) {
+      const innerElement = element.shadowRoot.elementFromPoint(x, y);
+      if (innerElement == null || innerElement === element) {
+        break;
+      }
+      element = innerElement;
+    }
+    let boundingRects: Iterable<DOMRect> = [element.getBoundingClientRect()];
+    for (const child of element.childNodes) {
+      if (child.nodeType !== Node.TEXT_NODE) {
+        continue;
+      }
+      // We have to manually check to see if the point is in the text node
+      // because elementFromPoint only returns elements.
+      const range = document.createRange();
+      range.selectNodeContents(child);
+      const rects = range.getClientRects();
+      range.detach();
+      for (const rect of rects) {
+        if (
+          rect.left <= x &&
+          x <= rect.right &&
+          rect.top <= y &&
+          y <= rect.bottom
+        ) {
+          boundingRects = rects;
+          break;
+        }
+      }
+    }
+    return toViewportBoundingBoxes(boundingRects);
   }
 }
 export type ApiToWebview = ApiToWebviewClass;
 
-export interface BoundingBox {
+// A bounding box that's relative to the viewport, not the page.
+export interface ViewportBoundingBox {
   x: number;
   y: number;
   width: number;
   height: number;
+  __viewportBoundingBoxBrand: never;
 }
-interface Disposable {
-  dispose(): void;
-}
-class BoundingBoxStream extends ReadableStream<BoundingBox[]> {
-  constructor() {
-    const disposables: Disposable[] = [];
-    let previousElement: Element | null = null;
-    super({
-      async start(controller) {
-        const handler = (event: MouseEvent) => {
-          console.log('got a mousemove inside the iframe');
-          const element = document.elementFromPoint(
-            event.clientX,
-            event.clientY
-          );
-          if (element === previousElement) {
-            return;
-          }
-          previousElement = element;
-          const boxes = [];
-          if (element != null) {
-            const {x, y, width, height} = element.getBoundingClientRect();
-            boxes.push({x, y, width, height});
-          }
-          console.log(`sending ${boxes.length} boxes to the webview`);
-          controller.enqueue(boxes);
-        };
-        window.addEventListener('mousemove', handler);
-        console.log('added mousemove listener');
-        disposables.push({
-          dispose() {
-            window.removeEventListener('mousemove', handler);
-          },
-        });
-      },
-      cancel() {
-        for (const disposable of disposables) {
-          disposable.dispose();
-        }
-      },
-    });
+
+function toViewportBoundingBoxes(
+  pageSpaceRects: Iterable<DOMRect>
+): ViewportBoundingBox[] {
+  const result = [];
+  for (const rect of pageSpaceRects) {
+    // We want to return the bounding box of the element in the coordinate space
+    // of the viewport, not the page.
+    result.push({
+      x: rect.x - window.scrollX,
+      y: rect.y - window.scrollY,
+      width: rect.width,
+      height: rect.height,
+    } as unknown as ViewportBoundingBox);
   }
+  return result;
 }
 
 function getPortToWebview(): Promise<MessagePort> {
