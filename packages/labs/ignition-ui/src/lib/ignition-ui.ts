@@ -48,6 +48,7 @@ export class IgnitionUi extends LitElement {
         <ignition-stage
           .boxesInPageToHighlight=${this.boxesInPageToHighlight}
           @mousemove=${this.#onStageMouseMove}
+          @mouseout=${() => (this.boxesInPageToHighlight = [])}
         >
           <iframe
             src=${ifDefined(this.storyUrl)}
