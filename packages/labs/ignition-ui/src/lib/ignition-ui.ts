@@ -12,8 +12,8 @@ import {ifDefined} from 'lit/directives/if-defined.js';
 import {Deferred} from './deferred.js';
 import './ignition-stage.js';
 import type {
-  ViewportBoundingBox,
   ApiToWebview,
+  BoundingBoxWithDepth,
 } from './iframe-api-to-webview.js';
 
 /**
@@ -36,7 +36,7 @@ export class IgnitionUi extends LitElement {
 
   #frameApi?: comlink.Remote<ApiToWebview>;
 
-  @state() private boxesInPageToHighlight: ViewportBoundingBox[] = [];
+  @state() private boxesInPageToHighlight: BoundingBoxWithDepth[] = [];
   #frameApiChanged = new Deferred<void>();
 
   override render() {

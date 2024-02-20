@@ -6,13 +6,22 @@
 
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import type {ViewportBoundingBox} from './iframe-api-to-webview.js';
+import type {BoundingBoxWithDepth} from './iframe-api-to-webview.js';
 
 declare global {
   interface HTMLElementTagNameMap {
     'ignition-stage': IgnitionStage;
   }
 }
+
+const colors = [
+  '#ff0000',
+  '#00ff00',
+  '#0000ff',
+  '#800080',
+  '#da6ab8',
+  '#00ffff',
+];
 
 /**
  * Inspired by the prior work of `designer-stage`:
@@ -48,16 +57,18 @@ class IgnitionStage extends LitElement {
     }
   `;
 
-  @property({attribute: false}) boxesInPageToHighlight: ViewportBoundingBox[] =
+  @property({attribute: false}) boxesInPageToHighlight: BoundingBoxWithDepth[] =
     [];
 
   render() {
     return html`<div id="content">
       <div id="glass">
-        ${this.boxesInPageToHighlight.map((bb) => {
+        ${this.boxesInPageToHighlight.map((bbd) => {
+          const bb = bbd.boundingBox;
           const inset = `top: ${bb.y}px; left: ${bb.x}px; height: ${bb.height}px; width: ${bb.width}px`;
+          const color = colors[bbd.depth % colors.length];
           return html`<div
-            style="position: absolute; ${inset}; border: 1px solid red;"
+            style="position: absolute; ${inset}; border: 1px solid ${color};"
           ></div>`;
         })}
       </div>

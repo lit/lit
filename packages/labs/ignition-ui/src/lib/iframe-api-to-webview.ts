@@ -23,7 +23,7 @@ class ApiToWebviewClass {
   async boundingBoxesAtPoint(
     x: number,
     y: number
-  ): Promise<ViewportBoundingBox[]> {
+  ): Promise<BoundingBoxWithDepth[]> {
     // convert the x and y to page space from viewport space
     x += window.scrollX;
     y += window.scrollY;
@@ -31,12 +31,14 @@ class ApiToWebviewClass {
     if (element == null) {
       return [];
     }
+    let depth = 0;
     while (element.shadowRoot != null) {
       const innerElement = element.shadowRoot.elementFromPoint(x, y);
       if (innerElement == null || innerElement === element) {
         break;
       }
       element = innerElement;
+      depth++;
     }
     let boundingRects: Iterable<DOMRect> = [element.getBoundingClientRect()];
     for (const child of element.childNodes) {
@@ -61,7 +63,9 @@ class ApiToWebviewClass {
         }
       }
     }
-    return toViewportBoundingBoxes(boundingRects);
+    return toViewportBoundingBoxes(boundingRects).map((boundingBox) => {
+      return {boundingBox, depth};
+    });
   }
 }
 export type ApiToWebview = ApiToWebviewClass;
@@ -73,6 +77,11 @@ export interface ViewportBoundingBox {
   width: number;
   height: number;
   __viewportBoundingBoxBrand: never;
+}
+
+export interface BoundingBoxWithDepth {
+  boundingBox: ViewportBoundingBox;
+  depth: number;
 }
 
 function toViewportBoundingBoxes(
