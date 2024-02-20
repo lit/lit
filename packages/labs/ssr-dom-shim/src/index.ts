@@ -148,6 +148,17 @@ const CustomElementRegistryShim = class CustomElementRegistry {
         );
       }
     }
+    // Polyfill tagName and localName for the component.
+    Object.defineProperties(ctor.prototype, {
+      localName: {
+        value: name,
+        writable: false,
+      },
+      tagName: {
+        value: name.toUpperCase(),
+        writable: false,
+      },
+    });
     this.__definitions.set(name, {
       ctor,
       // Note it's important we read `observedAttributes` in case it is a getter

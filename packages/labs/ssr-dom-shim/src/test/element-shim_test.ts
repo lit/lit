@@ -7,7 +7,7 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {HTMLElement} from '@lit-labs/ssr-dom-shim';
+import {customElements, HTMLElement} from '@lit-labs/ssr-dom-shim';
 
 const test = suite('Element Shim');
 
@@ -43,6 +43,15 @@ test('setAttribute silently casts values to a string', () => {
   // silently convert it to a string.
   shimmedEl.setAttribute('tomato', {} as unknown as string);
   assert.equal(shimmedEl.getAttribute('tomato'), '[object Object]');
+});
+
+test('localName and tagName should be available', () => {
+  const elementName = 'lit-test';
+  customElements.define(elementName, class extends HTMLElement {});
+  const LitTest = customElements.get(elementName)!;
+  const shimmedEl = new LitTest();
+  assert.equal(shimmedEl.localName, elementName);
+  assert.equal(shimmedEl.tagName, elementName.toUpperCase());
 });
 
 test.run();
