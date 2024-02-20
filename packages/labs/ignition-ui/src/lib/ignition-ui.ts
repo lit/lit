@@ -6,13 +6,12 @@
 
 import './comlink-stream.js';
 import {LitElement, html, css, PropertyValues} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import * as comlink from 'comlink';
-import type {ApiToWebview} from '../in-user-iframe.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {Deferred} from './deferred.js';
 import './ignition-stage.js';
-import {streamAsyncIterator} from './comlink-stream.js';
+import type {BoundingBox, ApiToWebview} from './iframe-api-to-webview.js';
 
 /**
  * Renders the UI that runs in the webview and communicates with the stories
@@ -26,6 +25,10 @@ export class IgnitionUi extends LitElement {
       outline: none;
       width: 100%;
       height: 400px;
+      pointer-events: all;
+    }
+    ignition-stage {
+      pointer-events: none;
     }
   `;
 
@@ -34,13 +37,16 @@ export class IgnitionUi extends LitElement {
 
   #frameApi?: comlink.Remote<ApiToWebview>;
 
+  @state() private boxesInPageToHighlight: BoundingBox[] = [];
+  #frameApiChanged = new Deferred<void>();
+
   override render() {
     let content;
     if (this.storyUrl == null) {
       content = html`<p>No story URL provided.</p>`;
     } else {
       content = html`
-        <ignition-stage>
+        <ignition-stage .boxesInPageToHighlight=${this.boxesInPageToHighlight}>
           <iframe
             src=${ifDefined(this.storyUrl)}
             @load=${this.#onFrameLoad}
@@ -71,27 +77,43 @@ export class IgnitionUi extends LitElement {
       })();
       iframeWindow.postMessage('ignition-webview-port', '*', [theirPort]);
 
-      this.#frameApi = comlink.wrap<ApiToWebview>(ourPort);
-      await this.#frameApi.displayText(
-        'The webview has connected to the iframe.'
-      );
+      const frameApi = comlink.wrap<ApiToWebview>(ourPort);
+      this.#frameApi = frameApi;
+      this.#frameApiChanged.resolve();
+      this.#frameApiChanged = new Deferred();
+      await frameApi.displayText('The webview has connected to the iframe.');
 
-      const api = this.#frameApi;
+      // Listen for bounding boxes from the iframe, pass them on to the stage.
       (async () => {
-        console.log('Streaming a count to five, then disposing.');
-        try {
-          const counter = await api.countingStream();
-          for await (const num of streamAsyncIterator(counter)) {
-            console.log(`from iframe: `, num);
-            if (num >= 5) {
-              // Breaking early from the loop is enough to cancel the stream.
-              console.log('Breaking from counting loop');
-              break;
-            }
+        const boxes = await frameApi.boundingBoxesOfMouseovered();
+        const reader = boxes.getReader();
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+          const result = await Promise.race([
+            reader.read(),
+            this.#frameApiChanged.promise,
+          ]);
+          if (this.#frameApi != frameApi) {
+            // The frame has changed, so we should stop listening to the old
+            // frame.
+            console.log(
+              'frameAPIChanged resolved, stopping listening to old frame'
+            );
+            reader.cancel();
+            return;
           }
-          console.log('loop exited');
-        } catch (e) {
-          console.error('Error working with counter:', e);
+          if (result === undefined) {
+            throw new Error(
+              `frameAPIChanged resolved but frameAPI didn't change`
+            );
+          }
+          const {value, done} = result;
+          if (done) {
+            console.log('no more boxes to read');
+            return;
+          }
+          console.log(`got ${value.length} boxes from the iframe`);
+          this.boxesInPageToHighlight = value;
         }
       })();
     }

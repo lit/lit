@@ -5,7 +5,8 @@
  */
 
 import {LitElement, html, css} from 'lit';
-import {customElement} from 'lit/decorators.js';
+import {customElement, property} from 'lit/decorators.js';
+import type {BoundingBox} from './iframe-api-to-webview.js';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -46,9 +47,19 @@ class IgnitionStage extends LitElement {
       box-sizing: border-box;
     }
   `;
+
+  @property({attribute: false}) boxesInPageToHighlight: BoundingBox[] = [];
+
   render() {
     return html`<div id="content">
-      <div id="glass"></div>
+      <div id="glass">
+        ${this.boxesInPageToHighlight.map((bb) => {
+          const inset = `top: ${bb.y}px; left: ${bb.x}px; height: ${bb.height}px; width: ${bb.width}px`;
+          return html`<div
+            style="position: absolute; ${inset}; border: 1px solid red;"
+          ></div>`;
+        })}
+      </div>
       <slot></slot>
     </div>`;
   }
