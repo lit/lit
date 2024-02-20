@@ -7,7 +7,7 @@
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {Task} from '@lit/task';
-import type {StoryModule} from './component-story-format.js';
+import type {StoryModule} from '../protocol/component-story-format.js';
 import './ignition-story.js';
 
 /**

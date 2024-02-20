@@ -12,7 +12,7 @@ import type {
   StoryContext,
   StoryObj,
   StoryModule,
-} from './component-story-format.js';
+} from '../protocol/component-story-format.js';
 
 /**
  * Renders a single story, with no other DOM, from a stories module.

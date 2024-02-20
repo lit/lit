@@ -4,17 +4,17 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import './comlink-stream.js';
+import '../protocol/comlink-stream.js';
 import {LitElement, html, css, PropertyValues} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import * as comlink from 'comlink';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import {Deferred} from './deferred.js';
+import {Deferred} from '../util/deferred.js';
 import './ignition-stage.js';
 import type {
   ApiToWebview,
   BoundingBoxWithDepth,
-} from './iframe-api-to-webview.js';
+} from '../frame/iframe-api-to-webview.js';
 
 /**
  * Renders the UI that runs in the webview and communicates with the stories
