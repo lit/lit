@@ -33,6 +33,7 @@
     "test:lit-starter-ts": "wireit",
     "test:package-exports": "wireit",
     "test:windows": "wireit",
+    "test:ignition": "wireit",
     "prepare": "husky install",
     "changeset": "changeset",
     "version": "npm run changeset version && npm run update-version-vars",
@@ -251,6 +252,12 @@
     "rollup-config": {
       "files": [
         "rollup-common.js"
+      ]
+    },
+    "test:ignition": {
+      "dependencies": [
+        "./packages/labs/ignition:test",
+        "./packages/labs/ignition-ui:test"
       ]
     }
   },

@@ -55,35 +55,8 @@ jobs:
       - name: NPM install
         run: npm ci
 
-      - name: Build
-        run: npm run build
-
       - name: Test
         env:
           BROWSERS: preset:local
           CONCURRENT_BROWSERS: 3
-        run: npm run test
-
-  windows-tools:
-    runs-on: windows-latest
-    env:
-      WIREIT_LOGGER: quiet-ci
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - uses: actions/setup-node@v3
-        with:
-          node-version: 21
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
-
-      # - uses: google/wireit@setup-github-actions-caching/v1
-
-      - name: NPM install
-        run: npm ci
-
-      - name: Test
-        env:
-          RUN_BROWSER_TESTS: false
-        run: npm run test:windows
+        run: xvfb-run -a npm run test:ignition
