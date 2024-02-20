@@ -31,6 +31,17 @@ export async function activate(context: vscode.ExtensionContext) {
     new WebviewSerializer()
   );
   context.subscriptions.push(disposable);
+
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  const {ElementsDataProvider} = await import(
+    './lib/elements-data-provider.js'
+  );
+  const elementsDataProvider = new ElementsDataProvider();
+  disposable = vscode.window.registerTreeDataProvider(
+    'ignition-element-view',
+    elementsDataProvider
+  );
+  context.subscriptions.push(disposable);
 }
 
 export function deactivate() {}

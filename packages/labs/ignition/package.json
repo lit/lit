@@ -24,7 +24,25 @@
         "command": "ignition.createWebview",
         "title": "Start Ignition"
       }
-    ]
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "ignition",
+          "title": "Ignition",
+          "icon": "resources/flame.svg"
+        }
+      ]
+    },
+    "views": {
+      "ignition": [
+        {
+          "id": "ignition-element-view",
+          "name": "Elements",
+          "contextualTitle": "Ignition Elements"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run build",
