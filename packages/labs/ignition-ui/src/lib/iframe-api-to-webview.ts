@@ -24,6 +24,9 @@ class ApiToWebviewClass {
     x: number,
     y: number
   ): Promise<ViewportBoundingBox[]> {
+    // convert the x and y to page space from viewport space
+    x += window.scrollX;
+    y += window.scrollY;
     let element = document.elementFromPoint(x, y);
     if (element == null) {
       return [];
