@@ -20,10 +20,7 @@ class ApiToWebviewClass {
     this.#textContainer.textContent = text;
   }
 
-  async boundingBoxesAtPoint(
-    x: number,
-    y: number
-  ): Promise<BoundingBoxWithDepth[]> {
+  boundingBoxesAtPoint(x: number, y: number): BoundingBoxWithDepth[] {
     // convert the x and y to page space from viewport space
     x += window.scrollX;
     y += window.scrollY;
@@ -32,6 +29,8 @@ class ApiToWebviewClass {
       return [];
     }
     let depth = 0;
+    // elementFromPoint stops at shadow root boundaries, so we need to
+    // go deeper in order to find the most specific element at the point.
     while (element.shadowRoot != null) {
       const innerElement = element.shadowRoot.elementFromPoint(x, y);
       if (innerElement == null || innerElement === element) {
