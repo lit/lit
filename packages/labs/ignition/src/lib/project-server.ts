@@ -102,7 +102,7 @@ export const startServer = async (uiServerPort: number, analyzer: Analyzer) => {
       <html>
         <head>
           <script type='module' src='http://localhost:${uiServerPort}/in-user-iframe.js'></script>
-          <script type='module' src='http://localhost:${uiServerPort}/lib/ignition-storyboard.js'></script>
+          <script type='module' src='http://localhost:${uiServerPort}/lib/frame/ignition-storyboard.js'></script>
         </head>
         <body>
           <ignition-storyboard src=${storySrc}></ignition-storyboard>

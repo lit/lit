@@ -5,7 +5,7 @@
  */
 
 import * as comlink from 'comlink';
-import './lib/comlink-stream.js';
+import '../protocol/comlink-stream.js';
 
 // This is the API that's accessible from the webview (our direct parent).
 class ApiToWebviewClass {
