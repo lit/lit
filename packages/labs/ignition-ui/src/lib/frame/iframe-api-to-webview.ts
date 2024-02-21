@@ -7,19 +7,13 @@
 import * as comlink from 'comlink';
 import '../protocol/comlink-stream.js';
 
+// Container for styles copied from the webview
+const defautlStylesElement = document.createElement('style');
+defautlStylesElement.id = '_defaultStyles';
+document.head.appendChild(defautlStylesElement);
+
 // This is the API that's accessible from the webview (our direct parent).
 class ApiToWebviewClass {
-  #textContainer = (() => {
-    const div = document.createElement('div');
-    document.body.appendChild(div);
-    div.textContent = `Waiting to connect to webview...`;
-    return div;
-  })();
-
-  displayText(text: string) {
-    this.#textContainer.textContent = text;
-  }
-
   boundingBoxesAtPoint(x: number, y: number): BoundingBoxWithDepth[] {
     // convert the x and y to page space from viewport space
     x += window.scrollX;
@@ -65,6 +59,25 @@ class ApiToWebviewClass {
     return toViewportBoundingBoxes(boundingRects).map((boundingBox) => {
       return {boundingBox, depth};
     });
+  }
+
+  /**
+   * Sets the "environment styles" - styles that VS Code sets up in the webview
+   * for the base VS Code look and feel and the current theme
+   *
+   * @param rootStyle the contents of the style attribute on the root
+   *   <html> element.
+   * @param defaultStyles the style text for the <style id="_defaultStyles">
+   *   tag injected by VS Code into the webview's frame.
+   */
+  setEnvStyles(rootStyle: string | null, defaultStyles?: string | null) {
+    if (rootStyle === null) {
+      document.documentElement.removeAttribute('style');
+    } else {
+      document.documentElement.setAttribute('style', rootStyle);
+    }
+
+    defautlStylesElement.textContent = defaultStyles || '';
   }
 }
 export type ApiToWebview = ApiToWebviewClass;

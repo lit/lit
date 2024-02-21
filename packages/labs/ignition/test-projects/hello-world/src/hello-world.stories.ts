@@ -28,7 +28,12 @@ const meta: Meta<HelloWorld> = {
   },
 };
 export default meta;
-type Story = StoryObj<HelloWorld>;
+// TODO (justinfagnani): dedupe the bounds definition wtih the one in
+// component-story-format.js. We probably want our own storybaord package at
+// some point.
+type Story = StoryObj<HelloWorld> & {
+  bounds?: {left: number; top: number; width: number; height: number};
+};
 
 export const storyOne: Story = {
   name: 'Story One',
@@ -38,4 +43,5 @@ export const storyOne: Story = {
 export const storyTwo: Story = {
   name: 'Story Two',
   args: {name: 'Two'},
+  bounds: {left: 60, top: 200, width: 200, height: 140},
 };

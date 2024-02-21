@@ -80,11 +80,16 @@ export class IgnitionUi extends LitElement {
       })();
       iframeWindow.postMessage('ignition-webview-port', '*', [theirPort]);
 
-      const frameApi = comlink.wrap<ApiToWebview>(ourPort);
-      this.#frameApi = frameApi;
+      this.#frameApi = comlink.wrap<ApiToWebview>(ourPort);
       this.#frameApiChanged.resolve();
       this.#frameApiChanged = new Deferred();
-      await frameApi.displayText('The webview has connected to the iframe.');
+
+      // Grab the webview styles that VS Code injects and pass the into the
+      // Ignition iframe for consistent styling.
+      const rootStyle = document.documentElement.getAttribute('style');
+      const defaultStyles =
+        document.querySelector('#_defaultStyles')?.textContent;
+      this.#frameApi.setEnvStyles(rootStyle, defaultStyles);
     }
   }
 

@@ -21,4 +21,14 @@ export interface PlainWebRenderer extends WebRenderer {
 
 export type Meta<T> = ComponentAnnotations<PlainWebRenderer, T>;
 
-export type StoryModule<T> = Record<string, StoryObj> & {default: Meta<T>};
+export type StoryModule<T> = Record<string, StoryboardStoryObj> & {
+  default: Meta<T>;
+};
+
+/**
+ * A story object with additional properties for use in the storyboard, such
+ * as placing it on the storyboard canvas.
+ */
+export type StoryboardStoryObj = StoryObj & {
+  bounds?: {left: number; top: number; width: number; height: number};
+};

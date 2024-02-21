@@ -18,8 +18,12 @@ export class IgnitionStoryboard extends LitElement {
   static styles = css`
     :host {
       display: block;
-      /* TODO: Use VS Code CSS variables */
-      color: white;
+      /* Only matters for non-absolutely positioned stories */
+      margin: 8px;
+
+      /* TODO: Get size and position from story module metadata */
+      width: 100%;
+      height: 100%;
     }
   `;
 
@@ -46,13 +50,10 @@ export class IgnitionStoryboard extends LitElement {
             })
             .map((storyName) => {
               return html`
-                <section>
-                  <h3>${storyName}</h3>
-                  <ignition-story
-                    .storyModule=${mod}
-                    .storyName=${storyName}
-                  ></ignition-story>
-                </section>
+                <ignition-story
+                  .storyModule=${mod}
+                  .storyName=${storyName}
+                ></ignition-story>
               `;
             });
         },

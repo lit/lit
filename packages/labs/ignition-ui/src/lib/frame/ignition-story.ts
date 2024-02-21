@@ -20,6 +20,20 @@ export class IgnitionStory extends LitElement {
   static styles = css`
     :host {
       display: block;
+      /* Only matters for non-absolutely positioned stories */
+      margin: 8px;
+    }
+    header {
+      display: inline-block;
+      border: solid var(--vscode-widget-border, #ccc);
+      border-width: 1px 1px 0 1px;
+      padding: 4px;
+    }
+    header > h2 {
+      margin: 0;
+    }
+    ignition-story-container {
+      border: 1px solid var(--vscode-widget-border, #ccc);
     }
   `;
 
@@ -30,10 +44,37 @@ export class IgnitionStory extends LitElement {
   storyName?: string;
 
   render() {
-    return html`<ignition-story-container
-      .storyModule=${this.storyModule}
-      .storyName=${this.storyName}
-    ></ignition-story-container>`;
+    if (this.storyModule === undefined || this.storyName === undefined) {
+      return html`<div>No story module or story name provided</div>`;
+    }
+    const storyObj = this.storyModule[this.storyName];
+    const storyName = storyObj.name || this.storyName;
+    const bounds = storyObj.bounds;
+    // TODO (justinfagnani): replace this positioning with CSS
+    return html` <style>
+        ${bounds === undefined
+          ? css`
+              :host {
+                position: static;
+              }
+            `
+          : css`
+              :host {
+                position: absolute;
+                left: ${bounds.left}px;
+                top: ${bounds.top}px;
+                width: ${bounds.width}px;
+                height: ${bounds.height}px;
+              }
+            `}
+      </style>
+      <header>
+        <h2>${storyName}</h2>
+      </header>
+      <ignition-story-container
+        .storyModule=${this.storyModule}
+        .storyName=${this.storyName}
+      ></ignition-story-container>`;
   }
 }
 
