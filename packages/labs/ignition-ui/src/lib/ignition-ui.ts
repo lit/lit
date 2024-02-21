@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import './comlink-stream.js';
 import {LitElement, html, css, PropertyValues} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import * as comlink from 'comlink';
@@ -11,10 +12,11 @@ import type {ApiToWebview} from '../in-user-iframe.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {Deferred} from './deferred.js';
 import './ignition-stage.js';
+import {streamAsyncIterator} from './comlink-stream.js';
 
 /**
- * This represents the API that's accessible from the ignition extension in
- * vscode.
+ * Renders the UI that runs in the webview and communicates with the stories
+ * iframe.
  */
 @customElement('ignition-ui')
 export class IgnitionUi extends LitElement {
@@ -33,35 +35,65 @@ export class IgnitionUi extends LitElement {
   #frameApi?: comlink.Remote<ApiToWebview>;
 
   override render() {
+    let content;
+    if (this.storyUrl == null) {
+      content = html`<p>No story URL provided.</p>`;
+    } else {
+      content = html`
+        <ignition-stage>
+          <iframe
+            src=${ifDefined(this.storyUrl)}
+            @load=${this.#onFrameLoad}
+            @error=${this.#onFrameError}
+          ></iframe>
+        </ignition-stage>
+      `;
+    }
     return html`
       <h1>Lit Editor</h1>
-      <ignition-stage>
-        <iframe
-          src=${ifDefined(this.storyUrl)}
-          @onload=${this.#onFrameLoad}
-          @onerror=${this.#onFrameError}
-        ></iframe
-      ></ignition-stage>
+      ${content}
     `;
   }
 
   override update(changedProperties: PropertyValues<this>) {
     if (changedProperties.has('storyUrl')) {
-      this.#frameLoadedDeferred = new Deferred<void>();
+      this.#frameLoadedDeferred = new Deferred();
     }
     super.update(changedProperties);
   }
 
   override async updated(changedProperties: PropertyValues<this>) {
     if (changedProperties.has('storyUrl')) {
-      await this.#frameLoaded;
-      const iframeWindow = this.#frame!.contentWindow!;
+      const iframeWindow = await this.#frameLoaded;
+      const [ourPort, theirPort] = (() => {
+        const channel = new MessageChannel();
+        return [channel.port1, channel.port2];
+      })();
+      iframeWindow.postMessage('ignition-webview-port', '*', [theirPort]);
 
-      // get the ApiToWebview object from the iframe
-      this.#frameApi = comlink.wrap<ApiToWebview>(
-        comlink.windowEndpoint(iframeWindow)
+      this.#frameApi = comlink.wrap<ApiToWebview>(ourPort);
+      await this.#frameApi.displayText(
+        'The webview has connected to the iframe.'
       );
-      this.#frameApi.displayText('The webview has connected to the iframe.');
+
+      const api = this.#frameApi;
+      (async () => {
+        console.log('Streaming a count to five, then disposing.');
+        try {
+          const counter = await api.countingStream();
+          for await (const num of streamAsyncIterator(counter)) {
+            console.log(`from iframe: `, num);
+            if (num >= 5) {
+              // Breaking early from the loop is enough to cancel the stream.
+              console.log('Breaking from counting loop');
+              break;
+            }
+          }
+          console.log('loop exited');
+        } catch (e) {
+          console.error('Error working with counter:', e);
+        }
+      })();
     }
   }
 
@@ -69,18 +101,21 @@ export class IgnitionUi extends LitElement {
     return this.shadowRoot?.querySelector('iframe');
   }
 
-  #frameLoadedDeferred?: Deferred<void>;
+  #frameLoadedDeferred = new Deferred<Window>();
 
   get #frameLoaded() {
-    return this.#frameLoadedDeferred!.promise;
+    return this.#frameLoadedDeferred.promise;
   }
 
   #onFrameLoad() {
-    this.#frameLoadedDeferred!.resolve();
+    if (this.#frame?.contentWindow == null) {
+      throw new Error('iframe loaded but it has no contentWindow');
+    }
+    this.#frameLoadedDeferred.resolve(this.#frame.contentWindow);
   }
 
   #onFrameError(error: Error) {
-    this.#frameLoadedDeferred!.reject(error);
+    this.#frameLoadedDeferred.reject(error);
   }
 }
 

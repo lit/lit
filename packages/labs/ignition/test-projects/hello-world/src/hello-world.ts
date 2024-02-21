@@ -17,3 +17,9 @@ export class HelloWorld extends LitElement {
     return html`<h1>Hello, ${this.name}!</h1>`;
   }
 }
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'hello-world': HelloWorld;
+  }
+}

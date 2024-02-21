@@ -1091,7 +1091,7 @@ interface ClearHighlightFromCss {
 }
 
 function listenForMessagesFromEmbedder(
-  callback: (msg: MessageFromEmbedder) => void
+  _callback: (msg: MessageFromEmbedder) => void
 ): void {
   // needs implementing, e.g. for playground.
 }
