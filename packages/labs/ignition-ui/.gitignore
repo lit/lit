@@ -9,3 +9,7 @@
 /queries.d.ts
 /queries.d.ts.map
 /test
+/demo/*.js
+/demo/*.js.map
+/demo/*.d.ts
+/demo/*.d.ts.map

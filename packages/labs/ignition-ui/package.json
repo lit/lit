@@ -6,7 +6,8 @@
   "main": "./indexjs",
   "scripts": {
     "build": "wireit",
-    "test": "wireit"
+    "test": "wireit",
+    "start": "wireit"
   },
   "dependencies": {
     "@lit/task": "^1.0.0",
@@ -63,6 +64,17 @@
       },
       "files": [],
       "output": []
+    },
+    "start": {
+      "command": "web-dev-server --node-resolve --watch --open",
+      "service": true,
+      "dependencies": [
+        "build"
+      ],
+      "env": {
+        "PORT": "8080"
+      },
+      "files": []
     }
   },
   "devDependencies": {
@@ -72,6 +84,7 @@
     "@storybook/types": "^7.6.16",
     "@storybook/web-components": "^7.6.16",
     "@types/vscode-webview": "^1.57.5",
+    "@web/dev-server": "^0.4.2",
     "path-module": "^0.1.2"
   }
 }

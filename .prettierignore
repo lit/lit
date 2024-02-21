@@ -286,6 +286,10 @@ packages/labs/ignition-ui/queries.js.map
 packages/labs/ignition-ui/queries.d.ts
 packages/labs/ignition-ui/queries.d.ts.map
 packages/labs/ignition-ui/test
+packages/labs/ignition-ui/demo/*.js
+packages/labs/ignition-ui/demo/*.js.map
+packages/labs/ignition-ui/demo/*.d.ts
+packages/labs/ignition-ui/demo/*.d.ts.map
 
 packages/labs/motion/development/
 packages/labs/motion/test/
