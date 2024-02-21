@@ -6,7 +6,7 @@
 
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import type {BoundingBoxWithDepth} from './iframe-api-to-webview.js';
+import type {BoundingBoxWithDepth} from '../frame/iframe-api-to-webview.js';
 
 declare global {
   interface HTMLElementTagNameMap {

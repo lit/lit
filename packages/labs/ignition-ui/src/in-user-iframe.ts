@@ -6,7 +6,7 @@
 
 // This is the code that runs inside the user's iframe.
 
-import {exposeApiToWebview} from './lib/iframe-api-to-webview.js';
+import {exposeApiToWebview} from './lib/frame/iframe-api-to-webview.js';
 
 // Opt into Lit debug logging, causing Lit to keep track of more info about
 // its templates that we can use.

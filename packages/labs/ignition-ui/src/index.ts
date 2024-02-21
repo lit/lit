@@ -4,9 +4,9 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {expose} from './lib/comlink-endpoint-to-vscode.js';
-import type {IgnitionUi} from './lib/ignition-ui.js';
-import './lib/ignition-ui.js';
+import {expose} from './lib/webview/comlink-endpoint-to-vscode.js';
+import type {IgnitionUi} from './lib/webview/ignition-ui.js';
+import './lib/webview/ignition-ui.js';
 
 // acquireVsCodeApi is automatically injected when running in a VS Code webview
 const vscode = acquireVsCodeApi();

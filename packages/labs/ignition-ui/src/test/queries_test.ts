@@ -1,6 +1,6 @@
 import {render, html} from 'lit';
 import {assert} from '@esm-bundle/chai';
-import {locateLitTemplate} from '@lit-labs/ignition-ui/queries.js';
+import {locateLitTemplate} from '../lib/frame/queries.js';
 
 interface PublicTemplate {
   el: HTMLTemplateElement;

@@ -7,7 +7,7 @@
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import './ignition-story-container.js';
-import type {StoryModule} from './component-story-format.js';
+import type {StoryModule} from '../protocol/component-story-format.js';
 
 /**
  * Displays a single story from a stories module.
