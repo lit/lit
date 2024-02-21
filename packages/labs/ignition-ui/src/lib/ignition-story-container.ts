@@ -26,7 +26,7 @@ export class IgnitionStoryContainer extends LitElement {
   `;
 
   @property({attribute: false})
-  storyModule?: StoryModule<unknown>;
+  storyModule: StoryModule<unknown> | undefined;
 
   @property()
   storyName?: string;
