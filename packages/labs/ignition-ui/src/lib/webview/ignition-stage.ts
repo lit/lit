@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, html, css} from 'lit';
+import './ignition-toolbar.js';
+import {LitElement, html, css, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import type {BoundingBoxWithDepth} from '../frame/iframe-api-to-webview.js';
 
@@ -60,9 +61,12 @@ class IgnitionStage extends LitElement {
   @property({attribute: false}) boxesInPageToHighlight: BoundingBoxWithDepth[] =
     [];
 
+  @property({type: Boolean}) blockInput = true;
+
   render() {
-    return html`<div id="content">
-      <div id="glass">
+    let glass: unknown = nothing;
+    if (this.blockInput) {
+      glass = html`<div id="glass">
         ${this.boxesInPageToHighlight.map((bbd) => {
           const bb = bbd.boundingBox;
           const inset = `top: ${bb.y}px; left: ${bb.x}px; height: ${bb.height}px; width: ${bb.width}px`;
@@ -71,7 +75,10 @@ class IgnitionStage extends LitElement {
             style="position: absolute; ${inset}; border: 1px solid ${color};"
           ></div>`;
         })}
-      </div>
+      </div>`;
+    }
+    return html`<div id="content">
+      ${glass}
       <slot></slot>
     </div>`;
   }

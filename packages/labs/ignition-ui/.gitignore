@@ -13,3 +13,6 @@
 /demo/*.js.map
 /demo/*.d.ts
 /demo/*.d.ts.map
+/bundled/
+/unbundled/
+

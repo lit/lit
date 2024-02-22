@@ -21,7 +21,7 @@ function getHtmlForWebview(
   uiServerPort: number,
   initialState: IgnitionWebviewState
 ): string {
-  const uiScriptUrl = `http://localhost:${uiServerPort}/index.js`;
+  const uiScriptUrl = `http://localhost:${uiServerPort}/webview-entrypoint.js`;
 
   return /* html */ `
       <!DOCTYPE html>
@@ -34,15 +34,12 @@ function getHtmlForWebview(
           <style>
             html, body {
               min-height: 100%;
-            }
-            .element-container {
-              width: 640px;
+              padding: 0;
+              margin: 0;
             }
           </style>
         </head>
-        <body>
-          <ignition-ui></ignition-ui>
-        </body>
+        <body><ignition-ui></ignition-ui></body>
       </html>
     `;
 }

@@ -3,7 +3,6 @@
   "description": "Advanced workflows for Lit",
   "version": "0.0.1",
   "type": "module",
-  "main": "./indexjs",
   "scripts": {
     "build": "wireit",
     "test": "wireit",
@@ -11,6 +10,7 @@
   },
   "dependencies": {
     "@lit/task": "^1.0.0",
+    "@vscode/webview-ui-toolkit": "^1.4.0",
     "comlink": "^4.4.1",
     "lit": "3.1.2",
     "lit-html": "3.1.2",
@@ -19,40 +19,48 @@
   },
   "exports": {
     ".": {
-      "types": "./index.d.ts",
-      "default": "./index.js"
-    },
-    "./queries.js": {
-      "types": "./queries.d.ts",
-      "default": "./queries.js"
+      "types": "./unbundled/webview-entrypoint.d.ts",
+      "default": "./bundled/webview-entrypoint.js"
     }
   },
   "wireit": {
     "build": {
-      "command": "tsc --pretty",
       "dependencies": [
-        "../../lit:build",
-        "../../task:build"
+        "build:dependencies",
+        "build:bundled",
+        "build:unbundled"
+      ]
+    },
+    "build:bundled": {
+      "command": "node ./esbuild.js",
+      "dependencies": [
+        "build:dependencies"
       ],
       "files": [
-        "src/**/*.ts",
-        "tsconfig.json"
+        "src/",
+        "esbuild.js"
       ],
       "output": [
-        "lib",
-        "index.{js|js.map|d.ts|d.ts.map}",
-        "in-user-iframe.{js|js.map|d.ts|d.ts.map}",
+        "bundled"
+      ]
+    },
+    "build:unbundled": {
+      "command": "tsc --build",
+      "dependencies": [
+        "build:dependencies"
+      ],
+      "files": [
+        "src/",
+        "tsconfig.json",
         ".tsbuildinfo"
+      ],
+      "output": [
+        "unbundled"
       ],
       "clean": "if-file-deleted"
     },
     "test": {
-      "dependencies": [
-        "test:dev"
-      ]
-    },
-    "test:dev": {
-      "command": "MODE=dev node ../../tests/run-web-tests.js \"test/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "command": "MODE=dev node ../../tests/run-web-tests.js \"unbundled/test/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
         "build",
         "../../tests:build"
@@ -63,6 +71,23 @@
         }
       },
       "files": [],
+      "output": []
+    },
+    "build:dependencies": {
+      "dependencies": [
+        "../../lit:build",
+        "../../task:build"
+      ]
+    },
+    "test:types": {
+      "command": "tsc --noEmit",
+      "dependencies": [
+        "build:dependencies"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
       "output": []
     },
     "start": {
@@ -85,6 +110,7 @@
     "@storybook/web-components": "^7.6.16",
     "@types/vscode-webview": "^1.57.5",
     "@web/dev-server": "^0.4.2",
+    "esbuild": "^0.20.1",
     "path-module": "^0.1.2"
   }
 }

@@ -15,6 +15,8 @@ import type {
   ApiToWebview,
   BoundingBoxWithDepth,
 } from '../frame/iframe-api-to-webview.js';
+import type {ModeChangeEvent} from './ignition-toolbar.js';
+import './ignition-toolbar.js';
 
 /**
  * Renders the UI that runs in the webview and communicates with the stories
@@ -23,11 +25,23 @@ import type {
 @customElement('ignition-ui')
 export class IgnitionUi extends LitElement {
   static styles = css`
+    :host {
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    ignition-toolbar {
+      /* should not grow or shrink */
+      flex: 0 0 auto;
+    }
+    ignition-stage {
+      /* should flex to grow or shrink */
+      flex: 1;
+    }
     iframe {
       border: none;
       outline: none;
       width: 100%;
-      height: 400px;
     }
   `;
 
@@ -39,28 +53,29 @@ export class IgnitionUi extends LitElement {
   @state() private boxesInPageToHighlight: BoundingBoxWithDepth[] = [];
   #frameApiChanged = new Deferred<void>();
 
+  @state() private mode: 'interact' | 'select' = 'select';
+
   override render() {
-    let content;
     if (this.storyUrl == null) {
-      content = html`<p>No story URL provided.</p>`;
-    } else {
-      content = html`
-        <ignition-stage
-          .boxesInPageToHighlight=${this.boxesInPageToHighlight}
-          @mousemove=${this.#onStageMouseMove}
-          @mouseout=${() => (this.boxesInPageToHighlight = [])}
-        >
-          <iframe
-            src=${ifDefined(this.storyUrl)}
-            @load=${this.#onFrameLoad}
-            @error=${this.#onFrameError}
-          ></iframe>
-        </ignition-stage>
-      `;
+      return html`<p>No story URL provided.</p>`;
     }
     return html`
-      <h1>Lit Editor</h1>
-      ${content}
+      <ignition-toolbar
+        .mode=${this.mode}
+        @mode-change=${this.#modeChanged}
+      ></ignition-toolbar>
+      <ignition-stage
+        .boxesInPageToHighlight=${this.boxesInPageToHighlight}
+        .blockInput=${this.mode !== 'interact'}
+        @mousemove=${this.#onStageMouseMove}
+        @mouseout=${() => (this.boxesInPageToHighlight = [])}
+      >
+        <iframe
+          src=${ifDefined(this.storyUrl)}
+          @load=${this.#onFrameLoad}
+          @error=${this.#onFrameError}
+        ></iframe>
+      </ignition-stage>
     `;
   }
 
@@ -133,6 +148,10 @@ export class IgnitionUi extends LitElement {
       return;
     }
     this.boxesInPageToHighlight = boxes;
+  }
+
+  #modeChanged(event: ModeChangeEvent) {
+    this.mode = event.mode;
   }
 }
 

@@ -290,6 +290,9 @@ packages/labs/ignition-ui/demo/*.js
 packages/labs/ignition-ui/demo/*.js.map
 packages/labs/ignition-ui/demo/*.d.ts
 packages/labs/ignition-ui/demo/*.d.ts.map
+packages/labs/ignition-ui/bundled/
+packages/labs/ignition-ui/unbundled/
+
 
 packages/labs/motion/development/
 packages/labs/motion/test/

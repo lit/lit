@@ -10,7 +10,7 @@
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
-    "outDir": "./",
+    "outDir": "./unbundled",
     "rootDir": "./src",
     "strict": true,
     "noUnusedLocals": true,

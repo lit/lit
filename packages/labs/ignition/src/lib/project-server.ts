@@ -101,19 +101,16 @@ export const startServer = async (uiServerPort: number, analyzer: Analyzer) => {
       <!doctype html>
       <html>
         <head>
-          <script type='module' src='http://localhost:${uiServerPort}/in-user-iframe.js'></script>
-<<<<<<< HEAD
-          <script type='module' src='http://localhost:${uiServerPort}/lib/frame/ignition-storyboard.js'></script>
-=======
-          <script type='module' src='http://localhost:${uiServerPort}/lib/ignition-storyboard.js'></script>
+          <script type='module' src='http://localhost:${uiServerPort}/frame-entrypoint.js'></script>
           <style>
             body, html {
               margin: 0;
               width: 100%;
-              height: 100%;
+            }
+            * {
+              box-sizing: border-box;
             }
           </style>
->>>>>>> 624655e2 (Improve story styling)
         </head>
         <body>
           <ignition-storyboard src=${storySrc}></ignition-storyboard>

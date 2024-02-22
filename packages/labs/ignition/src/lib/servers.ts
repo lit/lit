@@ -32,13 +32,7 @@ let uiServerPromise: Promise<DevServer>;
 export const ensureUiServerRunning = async () => {
   return (uiServerPromise ??= wds.startDevServer({
     config: {
-      rootDir: uiRoot,
-      nodeResolve: {
-        exportConditions: ['development', 'browser'],
-        extensions: ['.cjs', '.mjs', '.js'],
-        dedupe: () => true,
-        preferBuiltins: false,
-      },
+      rootDir: path.join(uiRoot),
       middleware: [cors({origin: '*', credentials: true})],
     },
     readCliArgs: false,
