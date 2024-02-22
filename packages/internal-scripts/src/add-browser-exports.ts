@@ -40,7 +40,7 @@ interface Exports {
   };
 }
 
-const result = execSync(`find ./packages -name package.json`);
+const result = execSync(`find ./packages -name package.json -not -path '*/.*'`);
 
 const packageJsonFiles = result
   .toString()

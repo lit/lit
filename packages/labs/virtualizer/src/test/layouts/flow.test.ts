@@ -30,28 +30,30 @@ describe('flow layout', () => {
     items: T[];
     layout?: Layout | LayoutConstructor | LayoutSpecifier;
   }) {
-    const container = await fixture(html` <div>
-      <style>
-        lit-virtualizer {
-          height: 200px;
-          width: 200px;
-          margin: 0;
-          padding: 0;
-        }
-        .item {
-          width: 200px;
-          height: 50px;
-          margin: 0;
-          padding: 0;
-        }
-      </style>
-      <lit-virtualizer
-        scroller
-        .layout=${properties.layout || flow()}
-        .items=${properties.items}
-        .renderItem=${(item: T) => html`<div class="item">${item}</div>`}
-      ></lit-virtualizer>
-    </div>`);
+    const container = await fixture(
+      html` <div>
+        <style>
+          lit-virtualizer {
+            height: 200px;
+            width: 200px;
+            margin: 0;
+            padding: 0;
+          }
+          .item {
+            width: 200px;
+            height: 50px;
+            margin: 0;
+            padding: 0;
+          }
+        </style>
+        <lit-virtualizer
+          scroller
+          .layout=${properties.layout || flow()}
+          .items=${properties.items}
+          .renderItem=${(item: T) => html`<div class="item">${item}</div>`}
+        ></lit-virtualizer>
+      </div>`
+    );
     const virtualizer = (await until(() =>
       container.querySelector('lit-virtualizer')
     )) as LitVirtualizer;

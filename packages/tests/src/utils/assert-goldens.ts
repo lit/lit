@@ -12,6 +12,7 @@ import * as path from 'path';
 import * as diff from 'diff';
 import {execFileSync} from 'child_process';
 
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const red = '\x1b[31m';
 const green = '\x1b[32m';
 const reset = '\x1b[0m';
@@ -84,13 +85,19 @@ export const assertGoldensMatch = async (
   {formatGlob = '**/*.{ts,js}', noFormat = false} = {}
 ) => {
   if (!noFormat) {
-    // https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
-    execFileSync(/^win/.test(process.platform) ? 'npx.cmd' : 'npx', [
+    // We want to format the output even when it's ignored, so we use an empty
+    // ignore file.
+    const emptyIgnorePath = path.join(__dirname, '../../../.emptyignore');
+    const args = [
       '--no-install',
       'prettier',
+      '--ignore-path',
+      emptyIgnorePath,
       '--write',
       `${path.join(outputDir, formatGlob)}`,
-    ]);
+    ];
+    // https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
+    execFileSync(/^win/.test(process.platform) ? 'npx.cmd' : 'npx', args); //
   }
 
   if (process.env.UPDATE_TEST_GOLDENS) {

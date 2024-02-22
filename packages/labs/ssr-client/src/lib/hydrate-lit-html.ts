@@ -187,8 +187,8 @@ export const hydrate = (
       container instanceof ShadowRoot
         ? `{container.host.localName}'s shadow root`
         : container instanceof DocumentFragment
-        ? 'DocumentFragment'
-        : container.localName;
+          ? 'DocumentFragment'
+          : container.localName;
     console.error(
       `There should be exactly one root part in a render container, ` +
         `but we didn't find any in ${elementMessage}.`

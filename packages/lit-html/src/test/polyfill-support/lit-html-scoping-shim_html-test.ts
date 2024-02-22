@@ -26,13 +26,13 @@ suite('ShadyCSS scoping shim', () => {
     const container = document.createElement('scope-1');
     window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
       [':host { border-top: 2px solid black; }'],
-      'scope-1'
+      'scope-1',
     );
     document.body.appendChild(container);
     renderShadowRoot(undefined, container);
     assert.equal(
       getComputedStyle(container).getPropertyValue('border-top-width').trim(),
-      '2px'
+      '2px',
     );
     document.body.removeChild(container);
   });
@@ -41,24 +41,24 @@ suite('ShadyCSS scoping shim', () => {
     const container = document.createElement('scope-2');
     window.ShadyCSS!.ScopingShim!.prepareAdoptedCssText(
       [':host { border-top: 2px solid black; } button { font-size: 7px; } '],
-      'scope-2'
+      'scope-2',
     );
     document.body.appendChild(container);
     renderShadowRoot(undefined, container);
     assert.equal(
       getComputedStyle(container).getPropertyValue('border-top-width').trim(),
-      '2px'
+      '2px',
     );
     renderShadowRoot(html`<button>This is a button.</button>`, container);
     assert.equal(
       getComputedStyle(container).getPropertyValue('border-top-width').trim(),
-      '2px'
+      '2px',
     );
     assert.equal(
       getComputedStyle(container.shadowRoot!.querySelector('button')!)
         .getPropertyValue('font-size')
         .trim(),
-      '7px'
+      '7px',
     );
     document.body.removeChild(container);
   });
@@ -73,17 +73,17 @@ suite('ShadyCSS scoping shim', () => {
     document.body.appendChild(container);
     renderShadowRoot(
       html`${style}<button>This is a button.</button>`,
-      container
+      container,
     );
     assert.equal(
       getComputedStyle(container).getPropertyValue('border-top-width').trim(),
-      '2px'
+      '2px',
     );
     assert.equal(
       getComputedStyle(container.shadowRoot!.querySelector('button')!)
         .getPropertyValue('font-size')
         .trim(),
-      '7px'
+      '7px',
     );
     document.body.removeChild(container);
   });

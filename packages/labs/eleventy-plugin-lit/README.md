@@ -317,7 +317,7 @@ layout: default.html
 The file `_includes/default.html` would then contain the following:
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <!-- As an optimization, immediately begin fetching the JavaScript modules

@@ -42,7 +42,7 @@ class StyleMapDirective extends Directive {
     ) {
       throw new Error(
         'The `styleMap` directive must be used in the `style` attribute ' +
-          'and must be the only part in the attribute.'
+          'and must be the only part in the attribute.',
       );
     }
   }
@@ -104,7 +104,7 @@ class StyleMapDirective extends Directive {
             isImportant
               ? (value as string).slice(0, flagTrim)
               : (value as string),
-            isImportant ? important : ''
+            isImportant ? important : '',
           );
         } else {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any

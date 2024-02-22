@@ -25,7 +25,7 @@ class LiveDirective extends Directive {
       )
     ) {
       throw new Error(
-        'The `live` directive is not allowed on child or event bindings'
+        'The `live` directive is not allowed on child or event bindings',
       );
     }
     if (!isSingleExpression(partInfo)) {
