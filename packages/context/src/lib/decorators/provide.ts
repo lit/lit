@@ -123,7 +123,7 @@ type ProvideDecorator<ContextType> = {
   // legacy
   <
     K extends PropertyKey,
-    Proto extends Interface<Omit<ReactiveElement, 'renderRoot'>>
+    Proto extends Interface<Omit<ReactiveElement, 'renderRoot'>>,
   >(
     protoOrDescriptor: Proto,
     name?: K
@@ -132,7 +132,7 @@ type ProvideDecorator<ContextType> = {
   // standard
   <
     C extends Interface<Omit<ReactiveElement, 'renderRoot'>>,
-    V extends ContextType
+    V extends ContextType,
   >(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
@@ -156,18 +156,18 @@ type FieldMustMatchContextType<Obj, Key extends PropertyKey, ContextType> =
           provided: ProvidingType;
         }
     : // Next we check whether the object has the property as an optional field
-    Obj extends Partial<Record<Key, infer Providing>>
-    ? // Check assignability again. Note that we have to include undefined
-      // here on the providing type because it's optional.
-      [Providing | undefined] extends [ContextType]
-      ? DecoratorReturn
-      : {
-          message: 'providing field not assignable to context';
-          context: ContextType;
-          consuming: Providing | undefined;
-        }
-    : // Ok, the field isn't present, so either someone's using provide
-      // manually, i.e. not as a decorator (maybe don't do that! but if you do,
-      // you're on your own for your type checking, sorry), or the field is
-      // private, in which case we can't check it.
-      DecoratorReturn;
+      Obj extends Partial<Record<Key, infer Providing>>
+      ? // Check assignability again. Note that we have to include undefined
+        // here on the providing type because it's optional.
+        [Providing | undefined] extends [ContextType]
+        ? DecoratorReturn
+        : {
+            message: 'providing field not assignable to context';
+            context: ContextType;
+            consuming: Providing | undefined;
+          }
+      : // Ok, the field isn't present, so either someone's using provide
+        // manually, i.e. not as a decorator (maybe don't do that! but if you do,
+        // you're on your own for your type checking, sorry), or the field is
+        // private, in which case we can't check it.
+        DecoratorReturn;

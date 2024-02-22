@@ -69,21 +69,20 @@ export const template = (data: {
   prop: string;
   attr: string;
   wasUpdated: boolean;
-}) =>
-  html`
-    ${header(data.name)}
-    <p>${data.message}</p>
-    <h4>repeating:</h4>
-    <div>${data.items.map((item, i) => html` <p>${i}) ${item}</p> `)}</div>
-    ${Array(3)
-      .fill(1)
-      .map(
-        (_item, i) => html`
-          <my-element
-            ?wasUpdated=${data.wasUpdated}
-            .prop=${`${data.prop}: ${i}`}
-            attr=${`${data.attr}: ${i}`}
-          ></my-element>
-        `
-      )}
-  `;
+}) => html`
+  ${header(data.name)}
+  <p>${data.message}</p>
+  <h4>repeating:</h4>
+  <div>${data.items.map((item, i) => html` <p>${i}) ${item}</p> `)}</div>
+  ${Array(3)
+    .fill(1)
+    .map(
+      (_item, i) => html`
+        <my-element
+          ?wasUpdated=${data.wasUpdated}
+          .prop=${`${data.prop}: ${i}`}
+          attr=${`${data.attr}: ${i}`}
+        ></my-element>
+      `
+    )}
+`;

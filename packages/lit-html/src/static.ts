@@ -71,7 +71,7 @@ const textFromStatic = (value: StaticValue) => {
   } else {
     throw new Error(
       `Value passed to 'literal' function must be a 'literal' result: ${value}. Use 'unsafeStatic' to pass non-literal values, but
-            take care to ensure page security.`
+            take care to ensure page security.`,
     );
   }
 };
@@ -96,7 +96,7 @@ export const literal = (
 ): StaticValue => ({
   ['_$litStatic$']: values.reduce(
     (acc, v, idx) => acc + textFromStatic(v as StaticValue) + strings[idx + 1],
-    strings[0]
+    strings[0],
   ) as string,
   r: brand,
 });
@@ -155,7 +155,7 @@ export const withStatic =
         (staticStrings as any).raw = staticStrings;
         stringsCache.set(
           key,
-          (strings = staticStrings as unknown as TemplateStringsArray)
+          (strings = staticStrings as unknown as TemplateStringsArray),
         );
       }
       values = dynamicValues;

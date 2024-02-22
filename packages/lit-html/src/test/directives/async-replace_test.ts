@@ -43,13 +43,13 @@ suite('asyncReplace', () => {
     await iterable.push('foo');
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div class="foo"></div>'
+      '<div class="foo"></div>',
     );
 
     await iterable.push('bar');
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div class="bar"></div>'
+      '<div class="bar"></div>',
     );
   });
 
@@ -60,13 +60,13 @@ suite('asyncReplace', () => {
     await iterable.push('foo');
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div class="foo"></div>'
+      '<div class="foo"></div>',
     );
 
     await iterable.push('bar');
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div class="bar"></div>'
+      '<div class="bar"></div>',
     );
   });
 
@@ -77,7 +77,7 @@ suite('asyncReplace', () => {
     await iterable.push(true);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div hidden=""></div>'
+      '<div hidden=""></div>',
     );
 
     await iterable.push(false);
@@ -114,20 +114,20 @@ suite('asyncReplace', () => {
   test('uses the mapper function', async () => {
     render(
       html`<div>${asyncReplace(iterable, (v, i) => html`${i}: ${v} `)}</div>`,
-      container
+      container,
     );
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
     await iterable.push('foo');
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>0: foo </div>'
+      '<div>0: foo </div>',
     );
 
     await iterable.push('bar');
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>1: bar </div>'
+      '<div>1: bar </div>',
     );
   });
 
@@ -149,13 +149,13 @@ suite('asyncReplace', () => {
     await iterable2.push('hello');
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>hello</div>'
+      '<div>hello</div>',
     );
 
     await iterable.push('bar');
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>hello</div>'
+      '<div>hello</div>',
     );
   });
 
@@ -170,7 +170,7 @@ suite('asyncReplace', () => {
     await wait;
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>hello</div>'
+      '<div>hello</div>',
     );
 
     wait = iterable.push('bar');
@@ -187,19 +187,19 @@ suite('asyncReplace', () => {
     await iterable.push('hello');
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>hello</div>'
+      '<div>hello</div>',
     );
 
     render(t(iterable), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>hello</div>'
+      '<div>hello</div>',
     );
 
     render(t(iterable), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>hello</div>'
+      '<div>hello</div>',
     );
   });
 
@@ -216,13 +216,13 @@ suite('asyncReplace', () => {
     render(t('hello'), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>hello</div>'
+      '<div>hello</div>',
     );
 
     await iterable.push('bar');
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>hello</div>'
+      '<div>hello</div>',
     );
   });
 
@@ -287,14 +287,14 @@ suite('asyncReplace', () => {
       const part = render(component('static'), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<p>static</p>'
+        '<p>static</p>',
       );
       part.setConnected(false);
       render(component(asyncReplace(iterable)), container);
       await iterable.push('1');
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<p>static</p>'
+        '<p>static</p>',
       );
       part.setConnected(true);
       await nextFrame();
@@ -308,30 +308,30 @@ suite('asyncReplace', () => {
       const part = render(component('staticA'), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<p>staticA</p>'
+        '<p>staticA</p>',
       );
       part.setConnected(false);
       render(component(asyncReplace(iterable)), container);
       await iterable.push('1');
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<p>staticA</p>'
+        '<p>staticA</p>',
       );
       render(component('staticB'), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<p>staticB</p>'
+        '<p>staticB</p>',
       );
       part.setConnected(true);
       await nextFrame();
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<p>staticB</p>'
+        '<p>staticB</p>',
       );
       await iterable.push('2');
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<p>staticB</p>'
+        '<p>staticB</p>',
       );
     });
 
@@ -341,17 +341,17 @@ suite('asyncReplace', () => {
       render(component(iterable), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<p></p><p></p>'
+        '<p></p><p></p>',
       );
       await iterable.push('1');
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<p>1</p><p>1</p>'
+        '<p>1</p><p>1</p>',
       );
       await iterable.push('2');
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<p>2</p><p>2</p>'
+        '<p>2</p><p>2</p>',
       );
     });
   });
@@ -373,7 +373,7 @@ suite('asyncReplace', () => {
         // when DOM is not being gc'ed
         render(
           template(html`<span .p=${big()}>${asyncReplace(iterable)}</span>`),
-          container
+          container,
         );
         // Clear the `<span>` + directive
         render(template(nothing), container);
@@ -392,7 +392,7 @@ suite('asyncReplace', () => {
         // Allow a 30% margin of heap growth; due to the 10kb expando, an actual
         // DOM leak is orders of magnitude larger.
         0.3,
-        'memory leak detected'
+        'memory leak detected',
       );
     });
   });
