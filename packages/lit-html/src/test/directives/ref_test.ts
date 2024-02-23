@@ -89,7 +89,7 @@ suite('ref', () => {
     const go = (x: boolean) =>
       render(
         x ? html`<div ${ref(elRef)}></div>` : html`<span ${ref(elRef)}></span>`,
-        container
+        container,
       );
 
     go(true);
@@ -122,7 +122,7 @@ suite('ref', () => {
         x
           ? html`<div ${ref(elCallback)}></div>`
           : html`<span ${ref(elCallback)}></span>`,
-        container
+        container,
       );
 
     go(true);
@@ -160,14 +160,14 @@ suite('ref', () => {
             ? html`<div ${ref(this.elCallback)}></div>`
             : html`<span ${ref(this.elCallback)}></span>`,
           this.root,
-          {host: this}
+          {host: this},
         );
       }
     }
 
     const testRef = (
       host: Host,
-      initialCalls: Array<string | undefined> = []
+      initialCalls: Array<string | undefined> = [],
     ) => {
       let queriedEl: Element | null;
       host.bool = true;
@@ -243,7 +243,7 @@ suite('ref', () => {
         x
           ? html`<div ${ref(divCallback)}></div>`
           : html`<span ${ref(spanCallback)}></span>`,
-        container
+        container,
       );
 
     go(true);
@@ -280,7 +280,7 @@ suite('ref', () => {
         <div id="next" ${ref(elRef)}>
           ${html`<span id="last" ${ref(elRef)}></span>`}
         </div>`,
-        container
+        container,
       );
 
     go();
@@ -301,7 +301,7 @@ suite('ref', () => {
         <div id="next" ${ref(elCallback)}>
           ${html`<span id="last" ${ref(elCallback)}></span>`}
         </div>`,
-        container
+        container,
       );
 
     go();
@@ -359,7 +359,7 @@ suite('ref', () => {
     const go = () =>
       render(
         html`<div ${ref((el) => calls.push(el?.tagName))}></div>`,
-        container
+        container,
       );
     go();
     assert.deepEqual(calls, ['DIV']);

@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <!--
   @license
   Copyright 2021 Google LLC
@@ -162,40 +162,41 @@
             fill: 'both',
           };
           const d = keyframeOptions.duration / this.data.length;
-          const list = (completed) => html`<div
-            class="list ${classMap({completed})}"
-          >
-            <h3>${completed ? `Completed` : `Tasks`}</h3>
-            <ul tabindex="-1">
-              ${repeat(
-                this.data.filter((item) =>
-                  completed ? item.completed : !item.completed
-                ),
-                (item) => item.id,
-                (item) => html`<li
-                  ${animate({
-                    keyframeOptions,
-                    in: flyBelow,
-                    out: fadeOut,
-                    stabilizeOut: true,
-                    id: `${item.id}:${completed ? 'right' : 'left'}`,
-                    inId: `${item.id}:${completed ? 'left' : 'right'}`,
-                    skipInitial: true,
-                  })}
-                >
-                  <mwc-formfield label="${item.id}: ${item.value}"
-                    ><mwc-checkbox
-                      type="checkbox"
-                      ?checked=${completed}
-                      @change=${(e) => this.updateItem(item, e.target.checked)}
-                    ></mwc-checkbox></mwc-formfield
-                  ><button @click=${() => this.removeItem(item)}>
-                    <img src="delete.svg" title="Delete" alt="Delete" />
-                  </button>
-                </li>`
-              )}
-            </ul>
-          </div>`;
+          const list = (completed) =>
+            html`<div class="list ${classMap({completed})}">
+              <h3>${completed ? `Completed` : `Tasks`}</h3>
+              <ul tabindex="-1">
+                ${repeat(
+                  this.data.filter((item) =>
+                    completed ? item.completed : !item.completed
+                  ),
+                  (item) => item.id,
+                  (item) =>
+                    html`<li
+                      ${animate({
+                        keyframeOptions,
+                        in: flyBelow,
+                        out: fadeOut,
+                        stabilizeOut: true,
+                        id: `${item.id}:${completed ? 'right' : 'left'}`,
+                        inId: `${item.id}:${completed ? 'left' : 'right'}`,
+                        skipInitial: true,
+                      })}
+                    >
+                      <mwc-formfield label="${item.id}: ${item.value}"
+                        ><mwc-checkbox
+                          type="checkbox"
+                          ?checked=${completed}
+                          @change=${(e) =>
+                            this.updateItem(item, e.target.checked)}
+                        ></mwc-checkbox></mwc-formfield
+                      ><button @click=${() => this.removeItem(item)}>
+                        <img src="delete.svg" title="Delete" alt="Delete" />
+                      </button>
+                    </li>`
+                )}
+              </ul>
+            </div>`;
           return html`
             <mwc-textfield
               outlined

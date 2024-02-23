@@ -21,25 +21,27 @@ describe('VisibilityChanged event', () => {
   ignoreBenignErrors(beforeEach, afterEach);
 
   async function createVirtualizer<T>(properties: {items: T[]}) {
-    const container = await fixture(html` <div>
-      <style>
-        lit-virtualizer {
-          height: 200px;
-          width: 200px;
-        }
-        .item {
-          width: 200px;
-          height: 50px;
-          margin: 0;
-          padding: 0;
-        }
-      </style>
-      <lit-virtualizer
-        scroller
-        .items=${properties.items}
-        .renderItem=${(item: T) => html`<div class="item">${item}</div>`}
-      ></lit-virtualizer>
-    </div>`);
+    const container = await fixture(
+      html` <div>
+        <style>
+          lit-virtualizer {
+            height: 200px;
+            width: 200px;
+          }
+          .item {
+            width: 200px;
+            height: 50px;
+            margin: 0;
+            padding: 0;
+          }
+        </style>
+        <lit-virtualizer
+          scroller
+          .items=${properties.items}
+          .renderItem=${(item: T) => html`<div class="item">${item}</div>`}
+        ></lit-virtualizer>
+      </div>`
+    );
     const virtualizer = (await until(() =>
       container.querySelector('lit-virtualizer')
     )) as LitVirtualizer;
