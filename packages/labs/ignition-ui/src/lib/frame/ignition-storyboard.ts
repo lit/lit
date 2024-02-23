@@ -20,7 +20,6 @@ export class IgnitionStoryboard extends LitElement {
       display: block;
       /* Only matters for non-absolutely positioned stories */
       margin: 8px;
-
       /* TODO: Get size and position from story module metadata */
       width: 100%;
       height: 100%;

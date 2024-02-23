@@ -58,10 +58,11 @@ class IgnitionStage extends LitElement {
     }
   `;
 
-  @property({attribute: false}) boxesInPageToHighlight: BoundingBoxWithDepth[] =
-    [];
+  @property({attribute: false})
+  boxesInPageToHighlight: BoundingBoxWithDepth[] = [];
 
-  @property({type: Boolean}) blockInput = true;
+  @property({type: Boolean})
+  blockInput = true;
 
   render() {
     let glass: unknown = nothing;

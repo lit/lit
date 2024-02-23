@@ -102,10 +102,13 @@ export const startServer = async (uiServerPort: number, analyzer: Analyzer) => {
       <html>
         <head>
           <script type='module' src='http://localhost:${uiServerPort}/frame-entrypoint.js'></script>
+          <style id="_defaultStyles"></style>
           <style>
             body, html {
               margin: 0;
+              padding: 0;
               width: 100%;
+              height: 100%;
             }
             * {
               box-sizing: border-box;

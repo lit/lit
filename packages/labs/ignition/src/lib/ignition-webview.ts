@@ -31,17 +31,17 @@ function getHtmlForWebview(
         <script type="json" id="state">
           ${JSON.stringify(initialState)}
         </script>
-          <style>
-            html, body {
-              min-height: 100%;
-              padding: 0;
-              margin: 0;
-            }
-          </style>
-        </head>
-        <body><ignition-ui></ignition-ui></body>
-      </html>
-    `;
+        <style>
+          html, body {
+            min-height: 100%;
+            padding: 0;
+            margin: 0;
+          }
+        </style>
+      </head>
+      <body><ignition-ui></ignition-ui></body>
+    </html>
+  `;
 }
 
 const getStoriesModule = (modulePath: AbsolutePath, analyzer: Analyzer) => {
@@ -59,7 +59,7 @@ const getStoriesModule = (modulePath: AbsolutePath, analyzer: Analyzer) => {
     const storiesModule = analyzer.getModule(storiesModulePath);
     return storiesModule;
   } catch (e) {
-    logChannel.appendLine(`Nor stories module found for ${modulePath}`);
+    logChannel.appendLine(`No stories module found for ${modulePath}`);
     return undefined;
   }
 };

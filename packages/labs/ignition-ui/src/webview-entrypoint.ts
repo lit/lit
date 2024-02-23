@@ -32,7 +32,8 @@ class ApiToExtension {
   readonly #ui = document.querySelector('ignition-ui') as IgnitionUi;
 
   /**
-   * Returns once the story has been created and is ready to be interacted with.
+   * Sets the URL of the story module to edit. Returns once the story UI has
+   * been created and is ready to be interacted with.
    */
   setStoryUrl(storyUrl: string) {
     this.#ui.storyUrl = storyUrl;

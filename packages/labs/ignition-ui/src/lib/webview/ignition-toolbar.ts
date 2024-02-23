@@ -7,46 +7,48 @@
 import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import './vscode-elements.js';
+// The Chromium version in VS Code does not support the `with` keyword yet
+import codiconStyles from '@vscode/codicons/dist/codicon.css' assert {type: 'css'};
+
+// @font-face doesn't work in shadow roots! So we have to inject the styles into
+// the main document.
+document.adoptedStyleSheets.push(codiconStyles);
 
 @customElement('ignition-toolbar')
 export class IgnitionToolbar extends LitElement {
   @property() mode: 'select' | 'interact' = 'select';
 
-  static styles = css`
-    :host {
-      display: flex;
-      flex-direction: row;
-      gap: 8px;
-      top: 8px;
-      left: 8px;
-      z-index: 102;
-    }
-    vscode-button[disabled] {
-      /* No interaction, but not forbidden. */
-      cursor: default;
-      /* Semi-transparent doesn't look good over top of content */
-      opacity: 1;
-      /* Style the text color instead */
-      color: var(--vscode-button-secondary-disabledForeground, #8a8a8a);
-    }
-  `;
+  static styles = [
+    codiconStyles,
+    css`
+      :host {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        padding: 8px;
+        border-bottom: solid 1px var(--vscode-widget-border);
+      }
+      vscode-button[disabled] {
+        /* No interaction, but not forbidden. */
+        cursor: default;
+      }
+    `,
+  ];
 
   render() {
     return html`
       <vscode-button
-        appearance="secondary"
+        appearance="icon"
         @click=${() => this.#setMode('select')}
         ?disabled=${this.mode === 'select'}
-      >
-        Select
-      </vscode-button>
+        ><span class="codicon codicon-inspect"></span
+      ></vscode-button>
       <vscode-button
-        appearance="secondary"
+        appearance="icon"
         @click=${() => this.#setMode('interact')}
         ?disabled=${this.mode === 'interact'}
-      >
-        Interact
-      </vscode-button>
+        ><span class="codicon codicon-play"></span
+      ></vscode-button>
     `;
   }
 

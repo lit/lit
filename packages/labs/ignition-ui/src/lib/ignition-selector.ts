@@ -236,14 +236,14 @@ export class IgnitionSelector extends LitElement {
           const dw = direction.resizesLeft
             ? -dx
             : direction.resizesRight
-            ? dx
-            : 0;
+              ? dx
+              : 0;
 
           const dh = direction.resizesTop
             ? -dy
             : direction.resizesBottom
-            ? dy
-            : 0;
+              ? dy
+              : 0;
 
           const newBounds = {
             left: direction.resizesLeft ? bounds.left + dx : bounds.left,

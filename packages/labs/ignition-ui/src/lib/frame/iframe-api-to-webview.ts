@@ -8,9 +8,7 @@ import * as comlink from 'comlink';
 import '../protocol/comlink-stream.js';
 
 // Container for styles copied from the webview
-const defautlStylesElement = document.createElement('style');
-defautlStylesElement.id = '_defaultStyles';
-document.head.appendChild(defautlStylesElement);
+const defaultStylesElement = document.querySelector('#_defaultStyles')!;
 
 // This is the API that's accessible from the webview (our direct parent).
 class ApiToWebviewClass {
@@ -74,7 +72,7 @@ class ApiToWebviewClass {
       document.documentElement.setAttribute('style', rootStyle);
     }
 
-    defautlStylesElement.textContent = defaultStyles || '';
+    defaultStylesElement.textContent = defaultStyles || '';
   }
 }
 export type ApiToWebview = ApiToWebviewClass;

@@ -50,10 +50,13 @@ export class IgnitionUi extends LitElement {
 
   #frameApi?: comlink.Remote<ApiToWebview>;
 
-  @state() private boxesInPageToHighlight: BoundingBoxWithDepth[] = [];
-  #frameApiChanged = new Deferred<void>();
+  @state()
+  private boxesInPageToHighlight: BoundingBoxWithDepth[] = [];
 
-  @state() private mode: 'interact' | 'select' = 'select';
+  @state()
+  private selectionMode: 'interact' | 'select' = 'select';
+
+  #frameApiChanged = new Deferred<void>();
 
   override render() {
     if (this.storyUrl == null) {
@@ -61,12 +64,13 @@ export class IgnitionUi extends LitElement {
     }
     return html`
       <ignition-toolbar
-        .mode=${this.mode}
-        @mode-change=${this.#modeChanged}
+        .mode=${this.selectionMode}
+        @mode-change=${this.#selectionModeChanged}
       ></ignition-toolbar>
       <ignition-stage
+        .mode=${this.selectionMode}
         .boxesInPageToHighlight=${this.boxesInPageToHighlight}
-        .blockInput=${this.mode !== 'interact'}
+        .blockInput=${this.selectionMode !== 'interact'}
         @mousemove=${this.#onStageMouseMove}
         @mouseout=${() => (this.boxesInPageToHighlight = [])}
       >
@@ -150,8 +154,8 @@ export class IgnitionUi extends LitElement {
     this.boxesInPageToHighlight = boxes;
   }
 
-  #modeChanged(event: ModeChangeEvent) {
-    this.mode = event.mode;
+  #selectionModeChanged(event: ModeChangeEvent) {
+    this.selectionMode = event.mode;
   }
 }
 

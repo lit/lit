@@ -340,9 +340,11 @@ function summaryHtml(entries: Iterable<TreeEntry>) {
     return html`<span class="vocab" title=${explanation}>render()</span>`;
   })();
   if (renders > 0) {
-    summary.push(html`<span class="section"
-      >${renders} ${rendered} call${renders === 1 ? '' : 's'}</span
-    >`);
+    summary.push(
+      html`<span class="section"
+        >${renders} ${rendered} call${renders === 1 ? '' : 's'}</span
+      >`
+    );
   }
   const comparisons = (() => {
     const explanation = `The number of places Lit needed to compare the previously rendered value (if any) to the updated value.`;
@@ -366,46 +368,56 @@ function summaryHtml(entries: Iterable<TreeEntry>) {
       `When a template is first rendered it is parsed as HTML, ` +
       `and the locations of dynamic parts are determined in ` +
       `that parsed HTML`;
-    summary.push(html` <span class="section">
-      ${parsed.size}
-      <span class="vocab" title="${explanation}">parsed</span>
-      template${parsed.size === 1 ? '' : 's'}
-    </span>`);
+    summary.push(
+      html` <span class="section">
+        ${parsed.size}
+        <span class="vocab" title="${explanation}">parsed</span>
+        template${parsed.size === 1 ? '' : 's'}
+      </span>`
+    );
   }
   if (instantiated.length > 0) {
     const explanation =
       `When a template is being rendered into a fresh location, ` +
       `the template's HTML is cloned, and the dynamic parts are set up for fast updates.`;
-    summary.push(html` <span class="section">
-      ${instantiated.length}
-      <span class="vocab" title="${explanation}">instantiated</span>
-      template${instantiated.length === 1 ? '' : 's'}
-    </span>`);
+    summary.push(
+      html` <span class="section">
+        ${instantiated.length}
+        <span class="vocab" title="${explanation}">instantiated</span>
+        template${instantiated.length === 1 ? '' : 's'}
+      </span>`
+    );
   }
   if (unknown > 0) {
-    summary.push(html`<span class="section"
-      >${unknown} unknown entr${unknown === 1 ? 'y' : 'ies'} (version
-      mismatch?)</span
-    >`);
+    summary.push(
+      html`<span class="section"
+        >${unknown} unknown entr${unknown === 1 ? 'y' : 'ies'} (version
+        mismatch?)</span
+      >`
+    );
   }
   if (mutations > 0) {
     const detail =
       mutations === nodes
         ? nothing
         : html` (${nodes} total HTML node${nodes === 1 ? '' : 's'})`;
-    summary.push(html`<span class="section"
-      >${mutations} mutation${mutations === 1 ? '' : 's'}${detail}</span
-    >`);
+    summary.push(
+      html`<span class="section"
+        >${mutations} mutation${mutations === 1 ? '' : 's'}${detail}</span
+      >`
+    );
   }
   if (duplicatedRenders > 0) {
     const explanation =
       `When you render into the same container multiple times in a single frame, ` +
       `this is usually a sign of wasted work.`;
-    summary.push(html` <span class="section warning">
-      ${duplicatedRenders}
-      <span class="vocab" title="${explanation}">duplicated</span>
-      render${duplicatedRenders === 1 ? '' : 's'}
-    </span>`);
+    summary.push(
+      html` <span class="section warning">
+        ${duplicatedRenders}
+        <span class="vocab" title="${explanation}">duplicated</span>
+        render${duplicatedRenders === 1 ? '' : 's'}
+      </span>`
+    );
   }
   return summary;
 }
@@ -843,11 +855,11 @@ export class RenderEntryElement extends DebugLogLitElement {
           )}ms</span> -->
           ${summaryHtml(entry.events)}
           <!-- <span @mouseover=${this.displayBefore} @mouseout=${
-      this.restore
-    }>[Before]</span>
+            this.restore
+          }>[Before]</span>
           <span @mouseover=${this.displayAfter} @mouseout=${
-      this.restore
-    }>[After]</span> -->
+            this.restore
+          }>[After]</span> -->
         </div>
       </div>
       ${children}
