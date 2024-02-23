@@ -4,44 +4,19 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+// @ts-expect-error can't even import a type from a JS module?
+import type {Ignition} from './lib/ignition.js';
 import * as vscode from 'vscode';
 
+let ignition: Ignition;
+
 export async function activate(context: vscode.ExtensionContext) {
-  let disposable = vscode.commands.registerCommand('ignition.hello', () => {
-    vscode.window.showInformationMessage('Hello from Ignition!');
-  });
-  context.subscriptions.push(disposable);
-
-  disposable = vscode.commands.registerCommand(
-    'ignition.createWebview',
-    async () => {
-      const {createWebView} = await import('./lib/ignition-webview.js');
-      const disposable = await createWebView();
-      if (disposable) {
-        context.subscriptions.push(disposable);
-      }
-    }
-  );
-  context.subscriptions.push(disposable);
-
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  const {WebviewSerializer} = await import('./lib/webview-serializer.js');
-  disposable = vscode.window.registerWebviewPanelSerializer(
-    'ignition',
-    new WebviewSerializer()
-  );
-  context.subscriptions.push(disposable);
-
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  const {ElementsDataProvider} = await import(
-    './lib/elements-data-provider.js'
-  );
-  const elementsDataProvider = new ElementsDataProvider();
-  disposable = vscode.window.registerTreeDataProvider(
-    'ignition-element-view',
-    elementsDataProvider
-  );
-  context.subscriptions.push(disposable);
+  const {Ignition} = await import('./lib/ignition.js');
+  ignition = new Ignition(context);
+  await ignition.activate();
 }
 
-export function deactivate() {}
+export async function deactivate() {
+  await ignition.deactivate();
+}
