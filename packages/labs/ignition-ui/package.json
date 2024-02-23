@@ -52,10 +52,10 @@
       ],
       "files": [
         "src/",
-        "tsconfig.json",
-        ".tsbuildinfo"
+        "tsconfig.json"
       ],
       "output": [
+        ".tsbuildinfo",
         "unbundled"
       ],
       "clean": "if-file-deleted"
