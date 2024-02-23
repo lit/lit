@@ -5,36 +5,69 @@
  */
 
 import {createRequire} from 'node:module';
+import {getWorkspaceResources} from './servers.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
+import {LitElementDeclaration} from '@lit-labs/analyzer';
+import {logChannel} from './logging.js';
 
 export class ElementsDataProvider
-  implements vscode.TreeDataProvider<ElementTreeItem>
+  implements vscode.TreeDataProvider<ElementsPanelItem>
 {
-  constructor() {}
   onDidChangeTreeData?:
     | vscode.Event<
-        void | ElementTreeItem | ElementTreeItem[] | null | undefined
+        void | ElementsPanelItem | ElementsPanelItem[] | null | undefined
       >
     | undefined;
 
   getTreeItem(
-    element: ElementTreeItem
+    data: ElementsPanelItem
   ): vscode.TreeItem | Thenable<vscode.TreeItem> {
-    return element;
+    if (data instanceof WorkspaceItem) {
+      return new vscode.TreeItem(
+        `${data.folder.name} (Workspace)`,
+        vscode.TreeItemCollapsibleState.Collapsed
+      );
+    } else {
+      const label =
+        data.tagname === undefined ? data.name : `<${data.tagname}>`;
+      return new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
+    }
   }
 
-  getChildren(
-    element?: ElementTreeItem | undefined
-  ): vscode.ProviderResult<ElementTreeItem[]> {
-    if (element === undefined) {
-      return [rootItem];
-    } else if (element === rootItem) {
-      return [
-        new ElementTreeItem('child', vscode.TreeItemCollapsibleState.None),
-      ];
+  async getChildren(
+    data?: ElementsPanelItem | undefined
+  ): Promise<ElementsPanelItem[] | undefined> {
+    if (vscode.workspace.workspaceFolders === undefined) {
+      return undefined;
     }
+
+    if (data === undefined) {
+      return vscode.workspace.workspaceFolders.map(
+        (folder) => new WorkspaceItem(folder)
+      );
+    } else if (data instanceof WorkspaceItem) {
+      const {analyzer} = await getWorkspaceResources(data.folder);
+      // const modules = analyzer.
+      const pkg = analyzer.getPackage();
+      const litModules = pkg.getLitElementModules();
+      logChannel.appendLine(
+        `litModules: ${litModules.map((m) => m.module.sourcePath)}`
+      );
+      const litElementDeclarationss = litModules.flatMap((m) => m.declarations);
+      return litElementDeclarationss;
+    }
+  }
+}
+
+type ElementsPanelItem = WorkspaceItem | LitElementDeclaration;
+
+class WorkspaceItem {
+  folder: vscode.WorkspaceFolder;
+
+  constructor(folder: vscode.WorkspaceFolder) {
+    this.folder = folder;
   }
 }
 
