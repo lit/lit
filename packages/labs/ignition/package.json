@@ -55,13 +55,15 @@
   "dependencies": {
     "@koa/router": "^12.0.1",
     "@lit-labs/analyzer": "^0.11.1",
+    "@parse5/tools": "^0.4.0",
     "@types/koa": "^2.14.0",
     "@types/koa-cors": "^0.0.6",
     "@web/dev-server": "^0.3.7",
     "comlink": "^4.4.1",
     "import-meta-resolve": "^4.0.0",
     "koa": "^2.15.0",
-    "koa-cors": "^0.0.16"
+    "koa-cors": "^0.0.16",
+    "parse5": "^7.1.2"
   },
   "devDependencies": {
     "@lit-labs/ignition-ui": "^0.0.1",
