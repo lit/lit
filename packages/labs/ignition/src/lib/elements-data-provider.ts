@@ -32,7 +32,16 @@ export class ElementsDataProvider
     } else {
       const label =
         data.tagname === undefined ? data.name : `<${data.tagname}>`;
-      return new vscode.TreeItem(label, vscode.TreeItemCollapsibleState.None);
+      const treeItem = new vscode.TreeItem(
+        label,
+        vscode.TreeItemCollapsibleState.None
+      );
+      treeItem.command = {
+        title: 'Open Element',
+        command: 'ignition.openElement',
+        arguments: [data],
+      };
+      return treeItem;
     }
   }
 
