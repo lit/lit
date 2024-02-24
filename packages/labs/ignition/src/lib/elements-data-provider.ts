@@ -4,13 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import type {LitElementDeclaration} from '@lit-labs/analyzer';
 import {createRequire} from 'node:module';
-import {getWorkspaceResources} from './servers.js';
+import {getAnalyzer} from './analyzer.js';
+import {logChannel} from './logging.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
-import {LitElementDeclaration} from '@lit-labs/analyzer';
-import {logChannel} from './logging.js';
 
 export class ElementsDataProvider
   implements vscode.TreeDataProvider<ElementsPanelItem>
@@ -57,7 +57,7 @@ export class ElementsDataProvider
         (folder) => new WorkspaceItem(folder)
       );
     } else if (data instanceof WorkspaceItem) {
-      const {analyzer} = await getWorkspaceResources(data.folder);
+      const analyzer = await getAnalyzer(data.folder);
       // const modules = analyzer.
       const pkg = analyzer.getPackage();
       const litModules = pkg.getLitElementModules();

@@ -4,19 +4,22 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
+import type {AbsolutePath} from '@lit-labs/analyzer';
+import type {ApiExposedToExtension} from '@lit-labs/ignition-ui';
+import * as comlink from 'comlink';
+import cors from 'koa-cors';
 import {createRequire} from 'module';
 import type {AddressInfo} from 'net';
-import * as comlink from 'comlink';
-import type {ApiExposedToExtension} from '@lit-labs/ignition-ui';
-import {ComlinkEndpointToWebview} from './comlink-endpoint-to-webview.js';
-import {getWorkspaceResources, ensureUiServerRunning} from './servers.js';
 import * as path from 'node:path';
-import {logChannel} from './logging.js';
+import {getAnalyzer} from './analyzer.js';
+import {ComlinkEndpointToWebview} from './comlink-endpoint-to-webview.js';
+import {getProjectServer} from './project-server.js';
+import {getStoriesModule} from './stories.js';
+import type {DevServer} from './types.cjs';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
-import {getStoriesModule} from './stories.js';
+import wds = require('@web/dev-server');
 
 function getHtmlForWebview(
   uiServerPort: number,
@@ -71,13 +74,14 @@ export const driveWebviewPanel = async (
   if (workspaceFolder === undefined) {
     throw new Error('No workspace folder found');
   }
-  const [workspace, uiServer] = await Promise.all([
-    getWorkspaceResources(workspaceFolder),
-    ensureUiServerRunning(),
+  const [analyzer, uiServer, projectServer] = await Promise.all([
+    getAnalyzer(workspaceFolder),
+    getUiServer(),
+    getProjectServer(workspaceFolder),
   ]);
   const modulePath = documentUri.fsPath as AbsolutePath;
 
-  const storiesModule = getStoriesModule(modulePath, workspace.analyzer);
+  const storiesModule = getStoriesModule(modulePath, analyzer);
 
   // If this becomes a hassle, we can just ask the webview to stay resident
   // when we create it.
@@ -96,7 +100,7 @@ export const driveWebviewPanel = async (
     const endpoint = await ComlinkEndpointToWebview.connect(webview);
     const connection = comlink.wrap<ApiExposedToExtension>(endpoint);
 
-    const workspaceServerAddress = workspace.server.address() as AddressInfo;
+    const workspaceServerAddress = projectServer.address() as AddressInfo;
 
     if (storiesModule !== undefined) {
       const storyUrl = `http://localhost:${workspaceServerAddress.port}/story/${storiesModule.jsPath}`;
@@ -108,4 +112,19 @@ export const driveWebviewPanel = async (
   connectAndInitialize();
 
   return webviewPanel;
+};
+
+const uiRoot = path.dirname(require.resolve('@lit-labs/ignition-ui'));
+let uiServerPromise: Promise<DevServer>;
+
+export const getUiServer = async () => {
+  return (uiServerPromise ??= wds.startDevServer({
+    config: {
+      nodeResolve: true,
+      rootDir: path.join(uiRoot),
+      middleware: [cors({origin: '*', credentials: true})],
+    },
+    readCliArgs: false,
+    readFileConfig: false,
+  }));
 };

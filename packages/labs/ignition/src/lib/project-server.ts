@@ -4,21 +4,30 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import cors from 'koa-cors';
-import Koa from 'koa';
-import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
-import {bareSpecifierTransformer} from './bare-specifier-transformer.js';
-import {getModulePathFromJsPath} from './paths.js';
-import * as path from 'path';
-import {logChannel} from './logging.js';
 import Router from '@koa/router';
+import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
+import type {Server} from 'http';
+import Koa from 'koa';
+import cors from 'koa-cors';
+import {createRequire} from 'module';
+import type {AddressInfo} from 'net';
+import * as path from 'path';
+import {getAnalyzer} from './analyzer.js';
+import {bareSpecifierTransformer} from './bare-specifier-transformer.js';
+import {Deferred} from './deferred.js';
+import {getUiServer} from './ignition-webview.js';
+import {logChannel} from './logging.js';
+import {getModulePathFromJsPath} from './paths.js';
+
+const require = createRequire(import.meta.url);
+import vscode = require('vscode');
 
 // TODO (justinfagnani): /_src/ isn't a great name. Right now it's just a
 // prefix for all JS files. We're not requesting source from the server, but
 // built files.
 const baseUrl = '/_src/';
 
-export const startServer = async (uiServerPort: number, analyzer: Analyzer) => {
+const startServer = async (uiServerPort: number, analyzer: Analyzer) => {
   const app = new Koa();
   app.use(cors({origin: '*', credentials: true}));
 
@@ -130,4 +139,34 @@ export const startServer = async (uiServerPort: number, analyzer: Analyzer) => {
   const port = typeof address === 'string' ? address : address?.port;
   logChannel.appendLine(`Ignition project server started at ${port}`);
   return server;
+};
+
+const serverCache = new Map<string, Deferred<Server>>();
+
+export const getProjectServer = async (
+  workspaceFolder: vscode.WorkspaceFolder
+) => {
+  let serverDeferred = serverCache.get(workspaceFolder.uri.fsPath);
+  if (serverDeferred === undefined) {
+    serverDeferred = new Deferred<Server>();
+    // Must be before first await to avoid races
+    serverCache.set(workspaceFolder.uri.fsPath, serverDeferred);
+
+    try {
+      // Even though getWorkspaceAnalyzer() is synchronous, using Promise.all()
+      // lets it run while the server is starting.
+      const [uiServer, analyzer] = await Promise.all([
+        getUiServer(),
+        getAnalyzer(workspaceFolder),
+      ]);
+
+      const uiServerAddress = uiServer.server?.address() as AddressInfo;
+
+      const server = await startServer(uiServerAddress.port, analyzer);
+      serverDeferred.resolve(server);
+    } catch (e) {
+      serverDeferred.reject(e as Error);
+    }
+  }
+  return serverDeferred.promise;
 };

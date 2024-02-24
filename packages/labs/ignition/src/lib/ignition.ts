@@ -4,16 +4,16 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {AbsolutePath, LitElementDeclaration} from '@lit-labs/analyzer';
 import {createRequire} from 'module';
-import {logChannel} from './logging.js';
-import {WebviewSerializer} from './webview-serializer.js';
+import {getAnalyzer} from './analyzer.js';
 import {ElementsDataProvider} from './elements-data-provider.js';
+import {logChannel} from './logging.js';
+import {getStoriesModule} from './stories.js';
+import {WebviewSerializer} from './webview-serializer.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
-import {AbsolutePath, LitElementDeclaration} from '@lit-labs/analyzer';
-import {getWorkspaceResources} from './servers.js';
-import {getStoriesModule} from './stories.js';
 
 /**
  * Holds the shared state of the Ignition extension and manages its lifecycle.
@@ -77,7 +77,12 @@ export class Ignition {
 
     // Listen for active text editor changes and set up workspace resources
     disposable = vscode.window.onDidChangeActiveTextEditor(async (editor) => {
-      const documentUri = vscode.window.activeTextEditor?.document.uri;
+      // TODO (justinfagnani): only do this work - especially creating the
+      // analyzer - if there is some Ignition UI open. One way to organize this
+      // may be to only create an Ignition instance when the first Ignition UI
+      // is opened.
+
+      const documentUri = editor?.document.uri;
       if (documentUri === undefined) {
         this.#currentStoryPath = undefined;
         // TODO: notify all the panels... with an event?
@@ -89,7 +94,7 @@ export class Ignition {
         this.#currentStoryPath = undefined;
         throw new Error('No workspace folder found');
       }
-      const {analyzer} = await getWorkspaceResources(workspaceFolder);
+      const analyzer = await getAnalyzer(workspaceFolder);
 
       const modulePath = documentUri.fsPath as AbsolutePath;
       const storiesModule = getStoriesModule(modulePath, analyzer);
