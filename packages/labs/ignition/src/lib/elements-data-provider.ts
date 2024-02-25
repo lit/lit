@@ -27,7 +27,7 @@ export class ElementsDataProvider
     if (data instanceof WorkspaceItem) {
       return new vscode.TreeItem(
         `${data.folder.name} (Workspace)`,
-        vscode.TreeItemCollapsibleState.Collapsed
+        vscode.TreeItemCollapsibleState.Expanded
       );
     } else {
       const label =
@@ -79,12 +79,3 @@ class WorkspaceItem {
     this.folder = folder;
   }
 }
-
-// So far in this stub the element type is itself a TreeItem, but we actually
-// want the element type to be an Analyzer CustomElementDeclaration.
-export class ElementTreeItem extends vscode.TreeItem {}
-
-const rootItem = new ElementTreeItem(
-  'root',
-  vscode.TreeItemCollapsibleState.Expanded
-);

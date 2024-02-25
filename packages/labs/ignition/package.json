@@ -40,6 +40,11 @@
           "id": "ignition-element-view",
           "name": "Elements",
           "contextualTitle": "Ignition Elements"
+        },
+        {
+          "id": "ignition-template-outline",
+          "name": "Template Outline",
+          "contextualTitle": "Ignition Template Outline"
         }
       ]
     }

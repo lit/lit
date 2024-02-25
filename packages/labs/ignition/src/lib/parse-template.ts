@@ -14,13 +14,23 @@ import type ts from 'typescript';
 import {_$LH} from 'lit-html/private-ssr-support.js';
 import {parseFragment} from 'parse5';
 import {
-  Node,
-  CommentNode,
-  Element,
-  DocumentFragment,
+  type Node,
+  type CommentNode,
+  type Element,
+  type DocumentFragment,
   isCommentNode,
   isElementNode,
   traverse,
+} from '@parse5/tools';
+
+export {
+  type Node,
+  type CommentNode,
+  type Element,
+  type DocumentFragment,
+  isCommentNode,
+  isElementNode,
+  isDocumentFragment,
 } from '@parse5/tools';
 
 const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} = _$LH;

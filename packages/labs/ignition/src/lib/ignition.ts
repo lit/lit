@@ -14,12 +14,18 @@ import {WebviewSerializer} from './webview-serializer.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
+import {TemplateOutlineDataProvider} from './template-outline-data-provider.js';
 
 /**
  * Holds the shared state of the Ignition extension and manages its lifecycle.
  */
 export class Ignition {
   context: vscode.ExtensionContext;
+
+  #onDidChangeCurrentElement: vscode.EventEmitter<void> =
+    new vscode.EventEmitter<void>();
+  readonly onDidChangeCurrentElement: vscode.Event<void> =
+    this.#onDidChangeCurrentElement.event;
 
   #currentElement?: LitElementDeclaration;
 
@@ -29,6 +35,7 @@ export class Ignition {
 
   set currentElement(value: LitElementDeclaration | undefined) {
     this.#currentElement = value;
+    this.#onDidChangeCurrentElement.fire();
   }
 
   #currentStoryPath?: string;
@@ -68,10 +75,19 @@ export class Ignition {
     );
     context.subscriptions.push(disposable);
 
+    // Elements view
     const elementsDataProvider = new ElementsDataProvider();
     disposable = vscode.window.registerTreeDataProvider(
       'ignition-element-view',
       elementsDataProvider
+    );
+    context.subscriptions.push(disposable);
+
+    // Template outline view
+    const templateOutlineDataProvider = new TemplateOutlineDataProvider(this);
+    disposable = vscode.window.registerTreeDataProvider(
+      'ignition-template-outline',
+      templateOutlineDataProvider
     );
     context.subscriptions.push(disposable);
 
@@ -114,6 +130,15 @@ export class Ignition {
         logChannel.appendLine(
           `ignition.openElement ${declaration.tagname ?? declaration.name}`
         );
+        const elementDocumentUri = vscode.Uri.file(
+          declaration.node.getSourceFile().fileName
+        );
+        const workspaceFolder =
+          vscode.workspace.getWorkspaceFolder(elementDocumentUri);
+        logChannel.appendLine(
+          `workspaceFolder: ${workspaceFolder?.uri.fsPath}`
+        );
+        this.currentElement = declaration;
       }
     );
     context.subscriptions.push(disposable);
