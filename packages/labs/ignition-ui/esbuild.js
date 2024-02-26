@@ -29,4 +29,9 @@ await Promise.all([
     entryPoints: ['./src/editor-entrypoint.ts'],
     outfile: './bundled/editor-entrypoint.js',
   }),
+  esbuild.build({
+    ...config,
+    entryPoints: ['./src/element-palette-entrypoint.ts'],
+    outfile: './bundled/element-palette-entrypoint.js',
+  }),
 ]);

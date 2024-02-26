@@ -29,3 +29,24 @@ class ApiToExtension {
 
 export type ApiExposedToExtension = ApiToExtension;
 expose(vscode, new ApiToExtension());
+
+const dropTarget = document.body;
+
+dropTarget.addEventListener('dragenter', (event) => {
+  event.preventDefault();
+  (event.target as HTMLElement).classList.add('dragoverHighlight');
+});
+
+dropTarget.addEventListener('dragleave', (event) => {
+  (event.target as HTMLElement).classList.remove('dragoverHighlight');
+});
+
+dropTarget.addEventListener('dragover', (event) => {
+  // accept any DnD
+  event.preventDefault();
+});
+
+dropTarget.addEventListener('drop', (event) => {
+  (event.target as HTMLElement).classList.remove('dragoverHighlight');
+  console.log('drop', event.dataTransfer!.getData('ignition/add-element'));
+});

@@ -15,6 +15,7 @@ import {EditorWebviewSerializer} from './editor-webview-serializer.js';
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
 import {TemplateOutlineDataProvider} from './template-outline-data-provider.js';
+import {ElementPaletteViewProvider} from './element-palette.js';
 
 export interface StoryInfo {
   storyPath: string;
@@ -101,6 +102,7 @@ export class Ignition {
       };
     }
 
+    // ignition.createEditor command
     let disposable = vscode.commands.registerCommand(
       'ignition.createEditor',
       async () => {
@@ -115,6 +117,7 @@ export class Ignition {
     );
     context.subscriptions.push(disposable);
 
+    // Webview serializer
     disposable = vscode.window.registerWebviewPanelSerializer(
       'ignition',
       new EditorWebviewSerializer(this)
@@ -134,6 +137,14 @@ export class Ignition {
     disposable = vscode.window.registerTreeDataProvider(
       'ignition-template-outline',
       templateOutlineDataProvider
+    );
+    context.subscriptions.push(disposable);
+
+    // Element pallete
+    const elementPaletteViewProvider = new ElementPaletteViewProvider();
+    disposable = vscode.window.registerWebviewViewProvider(
+      'ignition-element-palette',
+      elementPaletteViewProvider
     );
     context.subscriptions.push(disposable);
 

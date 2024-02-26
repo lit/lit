@@ -31,6 +31,9 @@ function getHtmlForWebview(uiServerPort: number): string {
             padding: 0;
             margin: 0;
           }
+          .dragoverHighlight {
+            background-color: var(--vscode-inputValidation-warningBackground);
+          }
         </style>
       </head>
       <body><ignition-editor></ignition-editor></body>

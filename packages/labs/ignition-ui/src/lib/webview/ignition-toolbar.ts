@@ -12,7 +12,9 @@ import codiconStyles from '@vscode/codicons/dist/codicon.css' assert {type: 'css
 
 // @font-face doesn't work in shadow roots! So we have to inject the styles into
 // the main document.
-document.adoptedStyleSheets.push(codiconStyles);
+if (!document.adoptedStyleSheets.includes(codiconStyles)) {
+  document.adoptedStyleSheets.push(codiconStyles);
+}
 
 @customElement('ignition-toolbar')
 export class IgnitionToolbar extends LitElement {
