@@ -19,11 +19,10 @@ import type {ModeChangeEvent} from './ignition-toolbar.js';
 import './ignition-toolbar.js';
 
 /**
- * Renders the UI that runs in the webview and communicates with the stories
- * iframe.
+ * The Ignition story editor.
  */
-@customElement('ignition-ui')
-export class IgnitionUi extends LitElement {
+@customElement('ignition-editor')
+export class IgnitionEditor extends LitElement {
   static styles = css`
     :host {
       height: 100vh;
@@ -161,6 +160,6 @@ export class IgnitionUi extends LitElement {
 
 declare global {
   interface HTMLElementTagNameMap {
-    'ignition-ui': IgnitionUi;
+    'ignition-editor': IgnitionEditor;
   }
 }

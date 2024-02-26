@@ -36,7 +36,7 @@ function getHtmlForWebview(uiServerPort: number): string {
           }
         </style>
       </head>
-      <body><ignition-ui></ignition-ui></body>
+      <body><ignition-editor></ignition-editor></body>
     </html>
   `;
 }

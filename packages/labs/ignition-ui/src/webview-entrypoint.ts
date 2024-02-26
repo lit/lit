@@ -5,8 +5,8 @@
  */
 
 import {expose} from './lib/webview/comlink-endpoint-to-vscode.js';
-import type {IgnitionUi} from './lib/webview/ignition-ui.js';
-import './lib/webview/ignition-ui.js';
+import type {IgnitionEditor} from './lib/webview/ignition-editor.js';
+import './lib/webview/ignition-editor.js';
 
 // acquireVsCodeApi is automatically injected when running in a VS Code webview
 const vscode = acquireVsCodeApi();
@@ -16,7 +16,7 @@ const vscode = acquireVsCodeApi();
  * vscode.
  */
 class ApiToExtension {
-  readonly #ui = document.querySelector('ignition-ui') as IgnitionUi;
+  readonly #ui = document.querySelector('ignition-editor') as IgnitionEditor;
 
   /**
    * Sets the URL of the story module to edit. Returns once the story UI has
