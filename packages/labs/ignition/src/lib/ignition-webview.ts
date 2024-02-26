@@ -7,21 +7,18 @@
 import type {AbsolutePath} from '@lit-labs/analyzer';
 import type {ApiExposedToExtension} from '@lit-labs/ignition-ui';
 import * as comlink from 'comlink';
-import cors from 'koa-cors';
 import {createRequire} from 'module';
 import type {AddressInfo} from 'net';
-import * as path from 'node:path';
 import {getAnalyzer, getWorkspaceFolderForElement} from './analyzer.js';
 import {ComlinkEndpointToWebview} from './comlink-endpoint-to-webview.js';
 import {getProjectServer} from './project-server.js';
 import {getStoriesModule, getStoriesModuleForElement} from './stories.js';
-import type {DevServer} from './types.cjs';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
-import wds = require('@web/dev-server');
 import {Ignition} from './ignition.js';
 import {logChannel} from './logging.js';
+import {getUiServer} from './ui-server.js';
 
 function getHtmlForWebview(uiServerPort: number): string {
   const uiScriptUrl = `http://localhost:${uiServerPort}/webview-entrypoint.js`;
@@ -99,25 +96,4 @@ export const driveWebviewPanel = async (
   connectAndInitialize();
 
   return webviewPanel;
-};
-
-const uiRoot = path.dirname(require.resolve('@lit-labs/ignition-ui'));
-let uiServerPromise: Promise<DevServer>;
-
-export const getUiServer = async () => {
-  return (uiServerPromise ??= wds
-    .startDevServer({
-      config: {
-        nodeResolve: true,
-        rootDir: path.join(uiRoot),
-        middleware: [cors({origin: '*', credentials: true})],
-      },
-      readCliArgs: false,
-      readFileConfig: false,
-    })
-    .then((server) => {
-      const uiServerAddress = server.server?.address() as AddressInfo;
-      logChannel.appendLine(`UI server started on ${uiServerAddress.port}`);
-      return server;
-    }));
 };

@@ -15,7 +15,7 @@ import * as path from 'path';
 import {getAnalyzer} from './analyzer.js';
 import {bareSpecifierTransformer} from './bare-specifier-transformer.js';
 import {Deferred} from './deferred.js';
-import {getUiServer} from './ignition-webview.js';
+import {getUiServer} from './ui-server.js';
 import {logChannel} from './logging.js';
 import {getModulePathFromJsPath} from './paths.js';
 
