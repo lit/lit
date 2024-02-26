@@ -20,8 +20,8 @@
   },
   "exports": {
     ".": {
-      "types": "./unbundled/webview-entrypoint.d.ts",
-      "default": "./bundled/webview-entrypoint.js"
+      "types": "./unbundled/editor-entrypoint.d.ts",
+      "default": "./bundled/editor-entrypoint.js"
     }
   },
   "wireit": {

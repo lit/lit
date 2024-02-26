@@ -10,7 +10,7 @@ import {getAnalyzer, getWorkspaceFolderForElement} from './analyzer.js';
 import {ElementsDataProvider} from './elements-data-provider.js';
 import {logChannel} from './logging.js';
 import {getStoriesModule, getStoriesModuleForElement} from './stories.js';
-import {WebviewSerializer} from './webview-serializer.js';
+import {EditorWebviewSerializer} from './editor-webview-serializer.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
@@ -102,9 +102,11 @@ export class Ignition {
     }
 
     let disposable = vscode.commands.registerCommand(
-      'ignition.createWebview',
+      'ignition.createEditor',
       async () => {
-        const {createWebView} = await import('./ignition-webview.js');
+        const {createEditorView: createWebView} = await import(
+          './editor-panel.js'
+        );
         const disposable = await createWebView(this);
         if (disposable) {
           context.subscriptions.push(disposable);
@@ -115,7 +117,7 @@ export class Ignition {
 
     disposable = vscode.window.registerWebviewPanelSerializer(
       'ignition',
-      new WebviewSerializer(this)
+      new EditorWebviewSerializer(this)
     );
     context.subscriptions.push(disposable);
 

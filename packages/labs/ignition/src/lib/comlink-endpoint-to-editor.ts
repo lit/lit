@@ -11,7 +11,7 @@ const require = createRequire(import.meta.url);
 import type vscode = require('vscode');
 
 /** Uses the vscode Webview API for sending comlink messages. */
-export class ComlinkEndpointToWebview implements comlink.Endpoint {
+export class ComlinkEndpointToEditor implements comlink.Endpoint {
   private readonly webview: vscode.Webview;
   private readonly handlerToDisposable = new Map<
     EventListenerOrEventListenerObject,
@@ -30,7 +30,7 @@ export class ComlinkEndpointToWebview implements comlink.Endpoint {
         }
       });
     });
-    return new ComlinkEndpointToWebview(webview);
+    return new ComlinkEndpointToEditor(webview);
   }
 
   postMessage(message: unknown, transferrables: unknown[] | undefined): void {

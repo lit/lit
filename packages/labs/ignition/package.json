@@ -17,12 +17,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "ignition.hello",
-        "title": "Hello Ignition"
-      },
-      {
-        "command": "ignition.createWebview",
-        "title": "Start Ignition"
+        "command": "ignition.createEditor",
+        "title": "Open Ignition Editor"
       }
     ],
     "viewsContainers": {

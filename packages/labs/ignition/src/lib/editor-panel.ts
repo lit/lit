@@ -4,24 +4,21 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {AbsolutePath} from '@lit-labs/analyzer';
 import type {ApiExposedToExtension} from '@lit-labs/ignition-ui';
 import * as comlink from 'comlink';
 import {createRequire} from 'module';
 import type {AddressInfo} from 'net';
-import {getAnalyzer, getWorkspaceFolderForElement} from './analyzer.js';
-import {ComlinkEndpointToWebview} from './comlink-endpoint-to-webview.js';
+import {ComlinkEndpointToEditor} from './comlink-endpoint-to-editor.js';
+import {Ignition} from './ignition.js';
+import {logChannel} from './logging.js';
 import {getProjectServer} from './project-server.js';
-import {getStoriesModule, getStoriesModuleForElement} from './stories.js';
+import {getUiServer} from './ui-server.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
-import {Ignition} from './ignition.js';
-import {logChannel} from './logging.js';
-import {getUiServer} from './ui-server.js';
 
 function getHtmlForWebview(uiServerPort: number): string {
-  const uiScriptUrl = `http://localhost:${uiServerPort}/webview-entrypoint.js`;
+  const uiScriptUrl = `http://localhost:${uiServerPort}/editor-entrypoint.js`;
 
   return /* html */ `
       <!DOCTYPE html>
@@ -41,7 +38,7 @@ function getHtmlForWebview(uiServerPort: number): string {
   `;
 }
 
-export const createWebView = async (ignition: Ignition) => {
+export const createEditorView = async (ignition: Ignition) => {
   const webviewPanel = vscode.window.createWebviewPanel(
     'ignition',
     'Ignition',
@@ -74,7 +71,7 @@ export const driveWebviewPanel = async (
   webview.html = getHtmlForWebview(uiServerAddress.port);
 
   async function connectAndInitialize() {
-    const endpoint = await ComlinkEndpointToWebview.connect(webview);
+    const endpoint = await ComlinkEndpointToEditor.connect(webview);
     const connection = comlink.wrap<ApiExposedToExtension>(endpoint);
 
     const refreshStory = async () => {

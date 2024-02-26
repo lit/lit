@@ -26,7 +26,7 @@ await Promise.all([
   }),
   esbuild.build({
     ...config,
-    entryPoints: ['./src/webview-entrypoint.ts'],
-    outfile: './bundled/webview-entrypoint.js',
+    entryPoints: ['./src/editor-entrypoint.ts'],
+    outfile: './bundled/editor-entrypoint.js',
   }),
 ]);

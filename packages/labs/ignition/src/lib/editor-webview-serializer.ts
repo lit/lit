@@ -11,7 +11,9 @@ import {logChannel} from './logging.js';
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
 
-export class WebviewSerializer implements vscode.WebviewPanelSerializer<void> {
+export class EditorWebviewSerializer
+  implements vscode.WebviewPanelSerializer<void>
+{
   ignition: Ignition;
 
   constructor(ignition: Ignition) {
@@ -22,9 +24,9 @@ export class WebviewSerializer implements vscode.WebviewPanelSerializer<void> {
     webviewPanel: vscode.WebviewPanel,
     _state: void
   ) {
-    logChannel.appendLine(`Restoring webview`);
+    logChannel.appendLine(`Restoring editor webview`);
 
-    const {driveWebviewPanel} = await import('./ignition-webview.js');
+    const {driveWebviewPanel} = await import('./editor-panel.js');
 
     // This will read the state it needs from the Ignition instance
     await driveWebviewPanel(webviewPanel, this.ignition);
