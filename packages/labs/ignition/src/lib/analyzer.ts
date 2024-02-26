@@ -4,7 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
+import type {
+  AbsolutePath,
+  Analyzer,
+  LitElementDeclaration,
+} from '@lit-labs/analyzer';
 import {createPackageAnalyzer} from '@lit-labs/analyzer/package-analyzer.js';
 import {createRequire} from 'node:module';
 
@@ -24,4 +28,22 @@ export const getAnalyzer = (workspaceFolder: vscode.WorkspaceFolder) => {
     analyzerCache.set(workspaceFolder.uri.fsPath, analyzer);
   }
   return analyzer;
+};
+
+export const getDocumentUriForElement = (element: LitElementDeclaration) => {
+  return vscode.Uri.file(element.node.getSourceFile().fileName);
+};
+
+export const getWorkspaceFolderForElement = (
+  element: LitElementDeclaration
+) => {
+  const elementDocumentUri = getDocumentUriForElement(element);
+  const workspaceFolder =
+    vscode.workspace.getWorkspaceFolder(elementDocumentUri);
+  if (workspaceFolder === undefined) {
+    throw new Error(
+      `No workspace folder found for element ${elementDocumentUri}`
+    );
+  }
+  return workspaceFolder;
 };

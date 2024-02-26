@@ -4,31 +4,29 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {logChannel} from './logging.js';
 import {createRequire} from 'node:module';
+import {Ignition} from './ignition.js';
+import {logChannel} from './logging.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
 
-export class WebviewSerializer
-  implements vscode.WebviewPanelSerializer<IgnitionWebviewState>
-{
+export class WebviewSerializer implements vscode.WebviewPanelSerializer<void> {
+  ignition: Ignition;
+
+  constructor(ignition: Ignition) {
+    this.ignition = ignition;
+  }
+
   async deserializeWebviewPanel(
     webviewPanel: vscode.WebviewPanel,
-    state: IgnitionWebviewState
+    _state: void
   ) {
-    logChannel.appendLine(
-      `Restoring webview from state:\n${JSON.stringify(state)}`
-    );
-    if (state === undefined) {
-      webviewPanel.dispose();
-      return;
-    }
+    logChannel.appendLine(`Restoring webview`);
 
     const {driveWebviewPanel} = await import('./ignition-webview.js');
-    const path = state.modulePath;
-    // construct a vscode.Uri from the path
-    const documentUri = vscode.Uri.file(path);
-    await driveWebviewPanel(webviewPanel, documentUri);
+
+    // This will read the state it needs from the Ignition instance
+    await driveWebviewPanel(webviewPanel, this.ignition);
   }
 }

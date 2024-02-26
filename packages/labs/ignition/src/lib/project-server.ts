@@ -102,9 +102,7 @@ const startServer = async (uiServerPort: number, analyzer: Analyzer) => {
 
     const serverUrl = server.address();
 
-    logChannel.appendLine(`serverUrl: ${serverUrl}`);
-    logChannel.appendLine(`Story path: ${storyPath}`);
-    logChannel.appendLine(`Story path: ${storySrc}`);
+    logChannel.appendLine(`project-server /story/* storySrc: ${storySrc}`);
 
     context.body = /* html */ `
       <!doctype html>

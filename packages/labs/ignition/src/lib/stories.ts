@@ -4,9 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
+import type {
+  AbsolutePath,
+  Analyzer,
+  LitElementDeclaration,
+} from '@lit-labs/analyzer';
 import * as path from 'node:path';
 import {logChannel} from './logging.js';
+import {get} from 'node:http';
+import {getDocumentUriForElement} from './analyzer.js';
 
 export const getStoriesModule = (
   modulePath: AbsolutePath,
@@ -29,4 +35,14 @@ export const getStoriesModule = (
     logChannel.appendLine(`No stories module found for ${modulePath}`);
     return undefined;
   }
+};
+
+export const getStoriesModuleForElement = (
+  element: LitElementDeclaration,
+  analyzer: Analyzer
+) => {
+  const elementDocumentUri = getDocumentUriForElement(element);
+  const modulePath = elementDocumentUri.fsPath as AbsolutePath;
+  const storiesModule = getStoriesModule(modulePath, analyzer);
+  return storiesModule;
 };

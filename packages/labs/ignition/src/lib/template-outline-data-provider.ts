@@ -9,7 +9,7 @@ import {
   LitElementDeclaration,
 } from '@lit-labs/analyzer/lib/model.js';
 import {createRequire} from 'node:module';
-import {getAnalyzer} from './analyzer.js';
+import {getAnalyzer, getWorkspaceFolderForElement} from './analyzer.js';
 import {logChannel} from './logging.js';
 
 import {Analyzer} from '@lit-labs/analyzer';
@@ -98,15 +98,7 @@ export class TemplateOutlineDataProvider
       if (element === undefined) {
         return undefined;
       }
-      const elementDocumentUri = vscode.Uri.file(
-        element.node.getSourceFile().fileName
-      );
-      const workspaceFolder =
-        vscode.workspace.getWorkspaceFolder(elementDocumentUri);
-      if (workspaceFolder === undefined) {
-        logChannel.appendLine('No workspace folder found');
-        return undefined;
-      }
+      const workspaceFolder = getWorkspaceFolderForElement(element);
       const analyzer = getAnalyzer(workspaceFolder);
       return [{node: element, analyzer}];
     } else if (data.node instanceof LitElementDeclaration) {

@@ -6,15 +6,28 @@
 
 import {AbsolutePath, LitElementDeclaration} from '@lit-labs/analyzer';
 import {createRequire} from 'module';
-import {getAnalyzer} from './analyzer.js';
+import {getAnalyzer, getWorkspaceFolderForElement} from './analyzer.js';
 import {ElementsDataProvider} from './elements-data-provider.js';
 import {logChannel} from './logging.js';
-import {getStoriesModule} from './stories.js';
+import {getStoriesModule, getStoriesModuleForElement} from './stories.js';
 import {WebviewSerializer} from './webview-serializer.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
 import {TemplateOutlineDataProvider} from './template-outline-data-provider.js';
+
+export interface StoryInfo {
+  storyPath: string;
+  workspaceFolder: vscode.WorkspaceFolder;
+}
+
+// JSON object stored in the workspaceState Memento
+type StoryState =
+  | undefined
+  | {
+      storyPath: string;
+      workspaceFolderUri: string;
+    };
 
 /**
  * Holds the shared state of the Ignition extension and manages its lifecycle.
@@ -38,14 +51,28 @@ export class Ignition {
     this.#onDidChangeCurrentElement.fire();
   }
 
-  #currentStoryPath?: string;
+  #onDidChangeCurrentStory: vscode.EventEmitter<void> =
+    new vscode.EventEmitter<void>();
+  readonly onDidChangeCurrentStory: vscode.Event<void> =
+    this.#onDidChangeCurrentStory.event;
 
-  get currentStoryPath() {
-    return this.#currentStoryPath!;
+  #currentStory?: StoryInfo;
+
+  get currentStory() {
+    return this.#currentStory;
   }
 
-  set currentStoryPath(value: string | undefined) {
-    this.#currentStoryPath = value;
+  set currentStory(value: StoryInfo | undefined) {
+    this.#currentStory = value;
+    this.context.workspaceState.update(
+      'ignition.currentStoryState',
+      value &&
+        ({
+          storyPath: value.storyPath,
+          workspaceFolderUri: value.workspaceFolder.uri.toString(),
+        } satisfies StoryState)
+    );
+    this.#onDidChangeCurrentStory.fire();
   }
 
   constructor(context: vscode.ExtensionContext) {
@@ -57,11 +84,28 @@ export class Ignition {
 
     const {context} = this;
 
+    // Restore the current story state from the workspace state so that when
+    // the webview is restored, it can be load the current story.
+    const storyState = this.context.workspaceState.get(
+      'ignition.currentStoryState'
+    ) as StoryState;
+    logChannel.appendLine(
+      `ignition.currentStoryState = ${JSON.stringify(storyState)}`
+    );
+    if (storyState !== undefined) {
+      this.currentStory = {
+        storyPath: storyState.storyPath,
+        workspaceFolder: vscode.workspace.getWorkspaceFolder(
+          vscode.Uri.parse(storyState.workspaceFolderUri)
+        )!,
+      };
+    }
+
     let disposable = vscode.commands.registerCommand(
       'ignition.createWebview',
       async () => {
         const {createWebView} = await import('./ignition-webview.js');
-        const disposable = await createWebView();
+        const disposable = await createWebView(this);
         if (disposable) {
           context.subscriptions.push(disposable);
         }
@@ -71,7 +115,7 @@ export class Ignition {
 
     disposable = vscode.window.registerWebviewPanelSerializer(
       'ignition',
-      new WebviewSerializer()
+      new WebviewSerializer(this)
     );
     context.subscriptions.push(disposable);
 
@@ -93,33 +137,33 @@ export class Ignition {
 
     // Listen for active text editor changes and set up workspace resources
     disposable = vscode.window.onDidChangeActiveTextEditor(async (editor) => {
-      // TODO (justinfagnani): only do this work - especially creating the
-      // analyzer - if there is some Ignition UI open. One way to organize this
-      // may be to only create an Ignition instance when the first Ignition UI
-      // is opened.
+      // Note: VS Code only activates the extension if there is some Ignition UI
+      // open. So the expensive work here, like creating an analyzer, should
+      // only be happening when it's needed to drive that UI.
 
       const documentUri = editor?.document.uri;
+      logChannel.appendLine(
+        `onDidChangeActiveTextEditor documentUri: ${documentUri}`
+      );
       if (documentUri === undefined) {
-        this.#currentStoryPath = undefined;
-        // TODO: notify all the panels... with an event?
+        // Assume that we want to keep displaying the current story
         return;
       }
       const workspaceFolder = vscode.workspace.getWorkspaceFolder(documentUri);
       if (workspaceFolder === undefined) {
-        // When can this happen?
-        this.#currentStoryPath = undefined;
-        throw new Error('No workspace folder found');
+        // This can happen if the user focuses a non-source file, like the
+        // output pane. We'll just do nothing to not disturb the current state.
+        return;
       }
       const analyzer = await getAnalyzer(workspaceFolder);
 
       const modulePath = documentUri.fsPath as AbsolutePath;
       const storiesModule = getStoriesModule(modulePath, analyzer);
 
-      this.currentStoryPath = storiesModule?.jsPath;
-      logChannel.appendLine(
-        `Active text editor changed to ${this.currentStoryPath}`
-      );
-      logChannel.appendLine(`currentStoryPath: ${this.currentStoryPath}`);
+      this.currentStory =
+        storiesModule === undefined
+          ? undefined
+          : {storyPath: storiesModule.jsPath, workspaceFolder};
     });
     context.subscriptions.push(disposable);
 
@@ -130,15 +174,14 @@ export class Ignition {
         logChannel.appendLine(
           `ignition.openElement ${declaration.tagname ?? declaration.name}`
         );
-        const elementDocumentUri = vscode.Uri.file(
-          declaration.node.getSourceFile().fileName
-        );
-        const workspaceFolder =
-          vscode.workspace.getWorkspaceFolder(elementDocumentUri);
-        logChannel.appendLine(
-          `workspaceFolder: ${workspaceFolder?.uri.fsPath}`
-        );
+        const workspaceFolder = getWorkspaceFolderForElement(declaration);
+        const analyzer = await getAnalyzer(workspaceFolder);
+        const storiesModule = getStoriesModuleForElement(declaration, analyzer);
         this.currentElement = declaration;
+        this.currentStory =
+          storiesModule === undefined
+            ? undefined
+            : {storyPath: storiesModule.jsPath, workspaceFolder};
       }
     );
     context.subscriptions.push(disposable);
