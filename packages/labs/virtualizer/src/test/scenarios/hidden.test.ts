@@ -44,9 +44,9 @@ describe("Don't render any children if the virtualizer is hidden", () => {
   ignoreBenignErrors(beforeEach, afterEach);
 
   it('should not render any children when initially hidden', async () => {
-    const el = await fixture<VirtualizerHider>(
-      html` <virtualizer-hider hidden></virtualizer-hider> `
-    );
+    const el = await fixture<VirtualizerHider>(html`
+      <virtualizer-hider hidden></virtualizer-hider>
+    `);
     const virtualizer = el.shadowRoot!.querySelector('lit-virtualizer')!;
     // We can't await on layoutComplete when first render is empty.
     // See https://github.com/lit/lit/issues/4376
@@ -55,9 +55,9 @@ describe("Don't render any children if the virtualizer is hidden", () => {
   });
 
   it('should not render any children when subsequently hidden', async () => {
-    const el = await fixture<VirtualizerHider>(
-      html` <virtualizer-hider></virtualizer-hider> `
-    );
+    const el = await fixture<VirtualizerHider>(html`
+      <virtualizer-hider></virtualizer-hider>
+    `);
     const virtualizer = el.shadowRoot!.querySelector('lit-virtualizer')!;
     await virtualizer.layoutComplete;
     expect(virtualizer.children.length).to.be.greaterThan(0);

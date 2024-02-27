@@ -8,6 +8,8 @@ import {litProdConfig} from '../../rollup-common.js';
 import {createRequire} from 'module';
 import * as path from 'path';
 
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+
 /**
  * Takes a `relativeSourcePath` and `sourcemapPath` - with the same semantics as
  * those provided to the function given to Rollup's

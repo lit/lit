@@ -35,11 +35,11 @@ suite('until directive', () => {
     const defaultContent = html`<span>loading...</span>`;
     render(
       html`<div>${until(deferred.promise, defaultContent)}</div>`,
-      container
+      container,
     );
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div><span>loading...</span></div>'
+      '<div><span>loading...</span></div>',
     );
     deferred.resolve('foo');
     await deferred.promise;
@@ -50,13 +50,13 @@ suite('until directive', () => {
     const go = () =>
       render(
         html`<div>${until(deferred.promise, 'loading...')}</div>`,
-        container
+        container,
       );
 
     go();
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>loading...</div>'
+      '<div>loading...</div>',
     );
     deferred.resolve('foo');
     await deferred.promise;
@@ -70,13 +70,13 @@ suite('until directive', () => {
     const go = () =>
       render(
         html`<div>${until(deferred.promise, html`loading...`)}</div>`,
-        container
+        container,
       );
 
     go();
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>loading...</div>'
+      '<div>loading...</div>',
     );
     deferred.resolve('foo');
     await deferred.promise;
@@ -106,7 +106,7 @@ suite('until directive', () => {
     await promise;
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div test="foo"></div>'
+      '<div test="foo"></div>',
     );
   });
 
@@ -115,12 +115,12 @@ suite('until directive', () => {
     render(html`<div test=${until(promise, 'bar')}></div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div test="bar"></div>'
+      '<div test="bar"></div>',
     );
     await promise;
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div test="foo"></div>'
+      '<div test="foo"></div>',
     );
   });
 
@@ -129,12 +129,12 @@ suite('until directive', () => {
     render(html`<div test="value:${until(promise)}"></div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div test="value:"></div>'
+      '<div test="value:"></div>',
     );
     await promise;
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div test="value:foo"></div>'
+      '<div test="value:foo"></div>',
     );
   });
 
@@ -142,13 +142,13 @@ suite('until directive', () => {
     const promise = Promise.resolve('foo');
     render(
       html`<div test="value:${until(promise, nothing)}"></div>`,
-      container
+      container,
     );
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
     await promise;
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div test="value:foo"></div>'
+      '<div test="value:foo"></div>',
     );
   });
 
@@ -157,12 +157,12 @@ suite('until directive', () => {
     render(html`<div test="value:${until(promise, 'bar')}"></div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div test="value:bar"></div>'
+      '<div test="value:bar"></div>',
     );
     await promise;
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div test="value:foo"></div>'
+      '<div test="value:foo"></div>',
     );
   });
 
@@ -184,7 +184,7 @@ suite('until directive', () => {
     await promise;
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div test=""></div>'
+      '<div test=""></div>',
     );
   });
 
@@ -210,14 +210,14 @@ suite('until directive', () => {
     render(t(deferred.promise), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div><span>loading...</span></div>'
+      '<div><span>loading...</span></div>',
     );
 
     const deferred2 = new Deferred<string>();
     render(t(deferred2.promise), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div><span>loading...</span></div>'
+      '<div><span>loading...</span></div>',
     );
 
     deferred2.resolve('bar');
@@ -325,13 +325,13 @@ suite('until directive', () => {
     render(t('string', promise2), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>string</div>'
+      '<div>string</div>',
     );
     // Await a microtask to let both Promise then callbacks go
     await 0;
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>string</div>'
+      '<div>string</div>',
     );
 
     // Then render new Promises with the low-priority Promise already resolved
@@ -339,7 +339,7 @@ suite('until directive', () => {
     // Because they're Promises, nothing happens synchronously
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>string</div>'
+      '<div>string</div>',
     );
     await 0;
     // Low-priority renders
@@ -384,18 +384,18 @@ suite('until directive', () => {
     render(html`<div data-attr="${until('a')}"></div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div data-attr="a"></div>'
+      '<div data-attr="a"></div>',
     );
   });
 
   test('renders literals in an interpolated AttributePart', () => {
     render(
       html`<div data-attr="other ${until('a')} ${until('b')}"></div>`,
-      container
+      container,
     );
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div data-attr="other a b"></div>'
+      '<div data-attr="other a b"></div>',
     );
   });
 
@@ -403,7 +403,7 @@ suite('until directive', () => {
     render(html`<div ?data-attr="${until('a')}"></div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div data-attr=""></div>'
+      '<div data-attr=""></div>',
     );
   });
 
@@ -411,7 +411,7 @@ suite('until directive', () => {
     let callCount = 0;
     render(
       html`<div @some-event="${until(() => callCount++)}"></div>`,
-      container
+      container,
     );
     const div = container.querySelector('div') as HTMLDivElement;
     div.dispatchEvent(new Event('some-event'));
@@ -434,54 +434,54 @@ suite('until directive', () => {
   test('renders a Promise in a AttributePart', async () => {
     render(
       html`<div data-attr="${until(Promise.resolve('a'))}"></div>`,
-      container
+      container,
     );
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
     await laterTask();
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div data-attr="a"></div>'
+      '<div data-attr="a"></div>',
     );
   });
 
   test('renders Promises in an interpolated AttributePart', async () => {
     render(
       html`<div data-attr="other ${until(Promise.resolve('a'))} ${until(
-        Promise.resolve('b')
+        Promise.resolve('b'),
       )}"></div>`,
-      container
+      container,
     );
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div data-attr="other  "></div>'
+      '<div data-attr="other  "></div>',
     );
 
     await laterTask();
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div data-attr="other a b"></div>'
+      '<div data-attr="other a b"></div>',
     );
   });
 
   test('renders a Promise in a BooleanAttributePart', async () => {
     render(
       html`<div ?data-attr="${until(Promise.resolve('a'))}"></div>`,
-      container
+      container,
     );
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
 
     await laterTask();
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div data-attr=""></div>'
+      '<div data-attr=""></div>',
     );
   });
 
   test('renders a Promise in a PropertyPart', async () => {
     render(
       html`<div .someProp="${until(Promise.resolve('a'))}"></div>`,
-      container
+      container,
     );
     assert.equal((container.querySelector('div')! as any).someProp, undefined);
 
@@ -493,9 +493,9 @@ suite('until directive', () => {
     let callCount = 0;
     render(
       html`<div @some-event="${until(
-        Promise.resolve(() => callCount++)
+        Promise.resolve(() => callCount++),
       )}"></div>`,
-      container
+      container,
     );
     const div = container.querySelector('div') as HTMLDivElement;
     div.dispatchEvent(new Event('some-event'));
@@ -533,7 +533,7 @@ suite('until directive', () => {
     await laterTask();
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div data-attr="a"></div>'
+      '<div data-attr="a"></div>',
     );
   });
 
@@ -552,19 +552,19 @@ suite('until directive', () => {
 
     render(
       html`<div data-attr="other ${until(thenableA)} ${until(
-        thenableB
+        thenableB,
       )}"></div>`,
-      container
+      container,
     );
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div data-attr="other  "></div>'
+      '<div data-attr="other  "></div>',
     );
 
     await laterTask();
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div data-attr="other a b"></div>'
+      '<div data-attr="other a b"></div>',
     );
   });
 
@@ -581,7 +581,7 @@ suite('until directive', () => {
     await laterTask();
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div data-attr=""></div>'
+      '<div data-attr=""></div>',
     );
   });
 
@@ -655,7 +655,7 @@ suite('until directive', () => {
       resolvePromiseB!('B');
       await laterTask();
       assert.equal(stripExpressionMarkers(container.innerHTML), 'A');
-    }
+    },
   );
 
   test(
@@ -682,7 +682,7 @@ suite('until directive', () => {
       resolvePromiseA!('A');
       await laterTask();
       assert.equal(stripExpressionMarkers(container.innerHTML), 'A');
-    }
+    },
   );
 
   test(
@@ -700,7 +700,7 @@ suite('until directive', () => {
       resolvePromise!('resolved value');
       await laterTask();
       assert.equal(stripExpressionMarkers(container.innerHTML), 'default');
-    }
+    },
   );
 
   suite('disconnection', () => {
@@ -722,7 +722,7 @@ suite('until directive', () => {
       await laterTask();
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div>resolved</div>'
+        '<div>resolved</div>',
       );
     });
 
@@ -748,7 +748,7 @@ suite('until directive', () => {
       await laterTask();
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div>resolved</div>'
+        '<div>resolved</div>',
       );
     });
 
@@ -773,7 +773,7 @@ suite('until directive', () => {
       await laterTask();
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div>resolved</div>'
+        '<div>resolved</div>',
       );
     });
 
@@ -813,13 +813,13 @@ suite('until directive', () => {
       render(
         html`<div>${until(promise, 'unresolved1')}</div><span>${until(
           promise,
-          'unresolved2'
+          'unresolved2',
         )}</span>`,
-        container
+        container,
       );
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div>unresolved1</div><span>unresolved2</span>'
+        '<div>unresolved1</div><span>unresolved2</span>',
       );
 
       resolvePromise!('resolved');
@@ -827,7 +827,7 @@ suite('until directive', () => {
 
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div>resolved</div><span>resolved</span>'
+        '<div>resolved</div><span>resolved</span>',
       );
     });
   });
@@ -848,7 +848,7 @@ suite('until directive', () => {
         // when DOM is not being gc'ed
         render(
           template(html`<span .p=${big()}>${until(promise)}</span>`),
-          container
+          container,
         );
         // Clear the `<span>` + directive
         render(template(nothing), container);
@@ -867,7 +867,7 @@ suite('until directive', () => {
         // Allow a 20% margin of heap growth; due to the 10kb expando, an actual
         // DOM leak is orders of magnitude larger.
         0.2,
-        'memory leak detected'
+        'memory leak detected',
       );
     });
   });
