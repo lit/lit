@@ -110,18 +110,20 @@ suite('locateLitTemplate', () => {
   });
 
   test('query into custom element with its own render root', () => {
-    class XEl extends HTMLElement {
-      constructor() {
-        super();
-        const renderRoot = this.attachShadow({mode: 'open'});
-        render(
-          html`<span>In x-el</span>
-            <div></div>`,
-          renderRoot
-        );
+    customElements.define(
+      'x-el',
+      class extends HTMLElement {
+        constructor() {
+          super();
+          const renderRoot = this.attachShadow({mode: 'open'});
+          render(
+            html`<span>In x-el</span>
+              <div></div>`,
+            renderRoot
+          );
+        }
       }
-    }
-    customElements.define('x-el', XEl);
+    );
 
     render(html`<div class="parent">${html`<x-el></x-el>`}</div>`, container);
 
@@ -146,14 +148,16 @@ suite('locateLitTemplate', () => {
   });
 
   test('query into custom element without its own render root', () => {
-    class YEl extends HTMLElement {
-      constructor() {
-        super();
-        const renderRoot = this.attachShadow({mode: 'open'});
-        renderRoot.innerHTML = `<span>In y-el</span><div></div>`;
+    customElements.define(
+      'y-el',
+      class extends HTMLElement {
+        constructor() {
+          super();
+          const renderRoot = this.attachShadow({mode: 'open'});
+          renderRoot.innerHTML = `<span>In y-el</span><div></div>`;
+        }
       }
-    }
-    customElements.define('y-el', YEl);
+    );
 
     render(html`<div class="parent">${html`<y-el></y-el>`}</div>`, container);
 
@@ -167,24 +171,26 @@ suite('locateLitTemplate', () => {
   });
 
   test('query slotted elements', () => {
-    class TestSlotEl extends HTMLElement {
-      constructor() {
-        super();
-        const renderRoot = this.attachShadow({mode: 'open'});
-        render(
-          html`
-            ${html`<div id="in-div-template">
-              <slot name="child"></slot>
-            </div>`}
-            ${html`<slot
-              ><div id="default-content">Default Content</div></slot
-            >`}
-          `,
-          renderRoot
-        );
+    customElements.define(
+      `test-slot-el`,
+      class extends HTMLElement {
+        constructor() {
+          super();
+          const renderRoot = this.attachShadow({mode: 'open'});
+          render(
+            html`
+              ${html`<div id="in-div-template">
+                <slot name="child"></slot>
+              </div>`}
+              ${html`<slot
+                ><div id="default-content">Default Content</div></slot
+              >`}
+            `,
+            renderRoot
+          );
+        }
       }
-    }
-    customElements.define('test-slot-el', TestSlotEl);
+    );
 
     render(
       html`<test-slot-el>
