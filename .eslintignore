@@ -278,6 +278,7 @@ packages/labs/gen-wrapper-vue/*.d.ts
 packages/labs/gen-wrapper-vue/*.d.ts.map
 packages/labs/gen-wrapper-vue/gen-output/
 
+packages/labs/ignition/**/test_files
 packages/labs/ignition/lib/
 packages/labs/ignition/dev/
 packages/labs/ignition/test/

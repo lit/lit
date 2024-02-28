@@ -275,6 +275,8 @@ packages/labs/ignition/**/extension.cjs.map
 packages/labs/ignition/**/webview-serializer.cjs
 packages/labs/ignition/**/webview-serializer.cjs.map
 
+packages/labs/ignition/**/test_files
+
 packages/labs/ignition-ui/index.js
 packages/labs/ignition-ui/index.js.map
 packages/labs/ignition-ui/index.d.ts

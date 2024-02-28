@@ -93,6 +93,9 @@
     "pretest": "npm run build && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "wireit",
+    "test:unit": "wireit",
+    "test:update-goldens": "wireit",
+    "test:vscode": "wireit",
     "start:dev": "wireit"
   },
   "dependencies": {
@@ -144,10 +147,44 @@
       "clean": "if-file-deleted"
     },
     "test": {
-      "command": "node ./test/runTest.js",
+      "dependencies": [
+        "test:unit",
+        "test:vscode"
+      ]
+    },
+    "test:unit": {
+      "command": "node --enable-source-maps --test-reporter=spec --test test/lib/**/*_test.js",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "test_files/*.ts",
+        "test_files/*.golden.js"
+      ],
+      "output": []
+    },
+    "test:vscode": {
+      "command": "node ./test/runExtensionTest.js",
       "dependencies": [
         "build"
       ]
+    },
+    "test:update-goldens": {
+      "command": "node --enable-source-maps --test-reporter=spec --test test/lib/**/*_test.js",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "test_files/*.ts",
+        "test_files/*.js",
+        "!test_files/*.golden.js"
+      ],
+      "output": [
+        "test_files/*.golden.js"
+      ],
+      "env": {
+        "UPDATE_IGNITION_GOLDENS": "true"
+      }
     },
     "start:dev": {
       "command": "node ./dev/server.js",
