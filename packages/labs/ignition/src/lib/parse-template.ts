@@ -21,6 +21,8 @@ import {
   isCommentNode,
   isElementNode,
   traverse,
+  isDocumentFragment,
+  isDocument,
 } from '@parse5/tools';
 
 export {
@@ -233,6 +235,33 @@ export const hasChildPart = (
   return (node as LitTemplateCommentNode).litPart?.type === PartType.CHILD;
 };
 
+export const getChildPartExpression = (node: CommentNode, ts: TypeScript) => {
+  if (!hasChildPart(node)) {
+    return undefined;
+  }
+  const {valueIndex} = node.litPart!;
+
+  let parent = node.parentNode;
+  while (parent && !isDocumentFragment(parent) && !isDocument(parent)) {
+    parent = parent.parentNode;
+  }
+  if (parent === null || isDocument(parent)) {
+    // Template not found. Should be error
+    return undefined;
+  }
+  const template = parent as LitTemplate;
+  const taggedTemplate = template.tsNode;
+
+  if (ts.isNoSubstitutionTemplateLiteral(taggedTemplate.template)) {
+    // Invalid case!
+    return;
+  }
+  const {templateSpans} = taggedTemplate.template;
+  console.log('getChildPartExpression', valueIndex, templateSpans.length);
+  const span = templateSpans[valueIndex];
+  return span.expression;
+};
+
 export const hasAttributePart = (
   node: Attribute
 ): node is LitTemplateAttribute => {
@@ -244,6 +273,7 @@ export type LitTemplateNode = Node & {
 };
 
 export interface LitTemplate extends DocumentFragment {
+  tsNode: ts.TaggedTemplateExpression;
   strings: TemplateStringsArray;
   parts: Array<PartInfo>;
 }
@@ -293,7 +323,7 @@ export const parseLitTemplate = (
       if (isCommentNode(node)) {
         if (node.data === markerMatch) {
           // An child binding, like <div>${}</div>
-          const expression = values[valueIndex++];
+          const expression = values[valueIndex];
           parts.push(
             ((node as LitTemplateCommentNode).litPart = {
               type: PartType.CHILD,
@@ -301,6 +331,7 @@ export const parseLitTemplate = (
               expression,
             } as SinglePartInfo)
           );
+          valueIndex++;
         }
         (node as LitTemplateCommentNode).litNodeIndex = nodeIndex++;
         // TODO (justinfagnani): handle <!--${}--> (comment binding)
@@ -309,7 +340,7 @@ export const parseLitTemplate = (
           for (const attr of node.attrs) {
             if (attr.name.startsWith(marker)) {
               // An element binding, like <div ${}>
-              const expression = values[valueIndex++];
+              const expression = values[valueIndex];
               parts.push(
                 ((attr as LitTemplateAttribute).litPart = {
                   type: PartType.ELEMENT,
@@ -317,6 +348,7 @@ export const parseLitTemplate = (
                   expression,
                 } as SinglePartInfo)
               );
+              valueIndex++;
               boundAttributeIndex++;
               // TODO (justinfagnani): handle <div ${}="...">
             } else if (attr.name.endsWith(boundAttributeSuffix)) {
@@ -357,6 +389,7 @@ export const parseLitTemplate = (
   });
   (ast as LitTemplate).parts = parts;
   (ast as LitTemplate).strings = strings;
+  (ast as LitTemplate).tsNode = node;
   return ast as LitTemplate;
 };
 
