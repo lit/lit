@@ -9,10 +9,10 @@ import type {WebviewApi} from 'vscode-webview';
 
 /** Uses the weird vscode postmessage API to connect with the extension. */
 class ComlinkEndpointToVscode implements comlink.Endpoint {
-  private readonly webviewApi: WebviewApi<unknown>;
+  readonly #vscode: WebviewApi<unknown>;
 
   constructor(webviewApi: WebviewApi<unknown>) {
-    this.webviewApi = webviewApi;
+    this.#vscode = webviewApi;
   }
 
   postMessage(
@@ -22,15 +22,25 @@ class ComlinkEndpointToVscode implements comlink.Endpoint {
     if (transferrables != null && transferrables.length > 0) {
       throw new Error(`VSCode doesn't support transferrables.`);
     }
-    this.webviewApi.postMessage(message);
+    this.#vscode.postMessage(message);
   }
 
   addEventListener(
-    type: string,
+    _type: string,
     listener: EventListenerOrEventListenerObject,
     options?: {} | undefined
   ): void {
-    window.addEventListener(type, listener, options);
+    window.addEventListener(
+      'message',
+      (message) => {
+        if (typeof listener === 'function') {
+          listener(message);
+        } else {
+          listener.handleEvent(message);
+        }
+      },
+      options
+    );
   }
 
   removeEventListener(
@@ -42,7 +52,13 @@ class ComlinkEndpointToVscode implements comlink.Endpoint {
   }
 }
 
-export function expose(vscode: WebviewApi<unknown>, obj: unknown) {
-  comlink.expose(obj, new ComlinkEndpointToVscode(vscode));
+export const vscode = acquireVsCodeApi();
+const endpoint = new ComlinkEndpointToVscode(vscode);
+export function expose(obj: unknown) {
+  comlink.expose(obj, endpoint);
   vscode.postMessage({kind: 'ignition-webview-ready'});
+}
+
+export function wrap<T>() {
+  return comlink.wrap<T>(endpoint);
 }

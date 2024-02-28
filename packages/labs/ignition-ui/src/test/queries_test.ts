@@ -1,25 +1,21 @@
 import {render, html} from 'lit';
 import {assert} from '@esm-bundle/chai';
-import {locateLitTemplate} from '../lib/frame/queries.js';
+import {getPositionInLitTemplate} from '../lib/frame/queries.js';
 
-interface PublicTemplate {
-  el: HTMLTemplateElement;
-}
-
-const normalizeExpressionMarkers = (html: string) =>
-  html.replace(
+const normalizeExpressionMarkers = (html: string | undefined) =>
+  html?.replace(
     /<!--\?lit\$[0-9]+\$-->|<!--\??-->|lit\$[0-9]+\$/g,
     '<!--marker-->'
   );
 
 const assertTemplateInnerHtmlIs = (
-  tmpl: ReturnType<typeof locateLitTemplate>,
+  position: ReturnType<typeof getPositionInLitTemplate>,
   expectedHtml: string
 ) =>
   assert.equal(
-    normalizeExpressionMarkers((tmpl as unknown as PublicTemplate).el.innerHTML)
+    normalizeExpressionMarkers(position?.template?.el.innerHTML)
       // Normalize all whitespace to not be more than a single space.
-      .replace(/\s\s+/g, ' '),
+      ?.replace(/\s\s+/g, ' '),
     expectedHtml
   );
 
@@ -34,8 +30,8 @@ suite('locateLitTemplate', () => {
   test('simple query in a single Template', () => {
     render(html`<div id="queried-el"></div>`, container);
     const el = container.querySelector<HTMLDivElement>('#queried-el')!;
-    const template = locateLitTemplate(el)!;
-    assertTemplateInnerHtmlIs(template, '<div id="queried-el"></div>');
+    const position = getPositionInLitTemplate(el)!;
+    assertTemplateInnerHtmlIs(position, '<div id="queried-el"></div>');
   });
 
   test('query inner template in nested templates', () => {
@@ -48,9 +44,9 @@ suite('locateLitTemplate', () => {
       container
     );
     const el = container.querySelector<HTMLDivElement>('#queried-el')!;
-    const template = locateLitTemplate(el)!;
+    const position = getPositionInLitTemplate(el)!;
     assertTemplateInnerHtmlIs(
-      template,
+      position,
       '<div class="inner" id="queried-el"></div>'
     );
   });
@@ -65,9 +61,9 @@ suite('locateLitTemplate', () => {
       container
     );
     const el = container.querySelector<HTMLDivElement>('#queried-el')!;
-    const template = locateLitTemplate(el)!;
+    const position = getPositionInLitTemplate(el)!;
     assertTemplateInnerHtmlIs(
-      template,
+      position,
       '<div class="middle" id="queried-el"> <!--marker--> </div>'
     );
   });
@@ -80,9 +76,9 @@ suite('locateLitTemplate', () => {
       container
     );
     const el = container.querySelector<HTMLDivElement>('#queried-el')!;
-    const template = locateLitTemplate(el)!;
+    const position = getPositionInLitTemplate(el);
     assertTemplateInnerHtmlIs(
-      template,
+      position,
       '<div class="outer" id="queried-el"> <!--marker--> </div>'
     );
   });
@@ -108,8 +104,8 @@ suite('locateLitTemplate', () => {
     ];
     for (const [queryEl, expectHtml] of tests) {
       const el = container.querySelector<HTMLDivElement>(queryEl)!;
-      const template = locateLitTemplate(el)!;
-      assertTemplateInnerHtmlIs(template, expectHtml);
+      const position = getPositionInLitTemplate(el)!;
+      assertTemplateInnerHtmlIs(position, expectHtml);
     }
   });
 
@@ -135,8 +131,8 @@ suite('locateLitTemplate', () => {
     ];
     for (const [queryEl, expectHtml] of tests) {
       const el = container.querySelector<HTMLDivElement>(queryEl)!;
-      const template = locateLitTemplate(el)!;
-      assertTemplateInnerHtmlIs(template, expectHtml);
+      const position = getPositionInLitTemplate(el)!;
+      assertTemplateInnerHtmlIs(position, expectHtml);
     }
 
     // Show that we can query with multiple render roots. E.g., a LitElement
@@ -145,8 +141,8 @@ suite('locateLitTemplate', () => {
       .querySelector('x-el')!
       .shadowRoot?.querySelector('div');
     assert.instanceOf(queryElInShadowRoot, HTMLDivElement);
-    const template = locateLitTemplate(queryElInShadowRoot!)!;
-    assertTemplateInnerHtmlIs(template, '<span>In x-el</span> <div></div>');
+    const position = getPositionInLitTemplate(queryElInShadowRoot!)!;
+    assertTemplateInnerHtmlIs(position, '<span>In x-el</span> <div></div>');
   });
 
   test('query into custom element without its own render root', () => {
@@ -166,8 +162,8 @@ suite('locateLitTemplate', () => {
       .querySelector('y-el')!
       .shadowRoot?.querySelector('div');
     assert.instanceOf(queryElInShadowRoot, HTMLDivElement);
-    const template = locateLitTemplate(queryElInShadowRoot!)!;
-    assertTemplateInnerHtmlIs(template, '<y-el></y-el>');
+    const position = getPositionInLitTemplate(queryElInShadowRoot!)!;
+    assertTemplateInnerHtmlIs(position, '<y-el></y-el>');
   });
 
   test('query slotted elements', () => {
@@ -203,13 +199,13 @@ suite('locateLitTemplate', () => {
       shadowRoot.querySelector<HTMLDivElement>('#default-content');
     assert.isDefined(defaultContentEl);
     assertTemplateInnerHtmlIs(
-      locateLitTemplate(defaultContentEl!)!,
+      getPositionInLitTemplate(defaultContentEl!)!,
       '<slot><div id="default-content">Default Content</div></slot>'
     );
     const projectedEl = container.querySelector<HTMLDivElement>('#into-child');
     assert.isDefined(projectedEl);
     assertTemplateInnerHtmlIs(
-      locateLitTemplate(projectedEl!)!,
+      getPositionInLitTemplate(projectedEl!)!,
       '<test-slot-el> <!--marker--> </test-slot-el>'
     );
   });

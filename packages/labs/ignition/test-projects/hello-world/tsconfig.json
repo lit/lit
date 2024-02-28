@@ -15,6 +15,7 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "experimentalDecorators": true,
+    "useDefineForClassFields": false,
     "forceConsistentCasingInFileNames": true,
     "skipLibCheck": true
   },

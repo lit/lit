@@ -17,6 +17,7 @@ import type {
 } from '../frame/iframe-api-to-webview.js';
 import type {ModeChangeEvent} from './ignition-toolbar.js';
 import './ignition-toolbar.js';
+import {apiFromExtension} from './api-from-extension.js';
 
 /**
  * The Ignition story editor.
@@ -67,11 +68,11 @@ export class IgnitionEditor extends LitElement {
         @mode-change=${this.#selectionModeChanged}
       ></ignition-toolbar>
       <ignition-stage
-        .mode=${this.selectionMode}
         .boxesInPageToHighlight=${this.boxesInPageToHighlight}
         .blockInput=${this.selectionMode !== 'interact'}
         @mousemove=${this.#onStageMouseMove}
         @mouseout=${() => (this.boxesInPageToHighlight = [])}
+        @click=${this.#onStageClick}
       >
         <iframe
           src=${ifDefined(this.storyUrl)}
@@ -85,6 +86,7 @@ export class IgnitionEditor extends LitElement {
   override update(changedProperties: PropertyValues<this>) {
     if (changedProperties.has('storyUrl')) {
       this.#frameLoadedDeferred = new Deferred();
+      this.boxesInPageToHighlight = [];
     }
     super.update(changedProperties);
   }
@@ -151,6 +153,26 @@ export class IgnitionEditor extends LitElement {
       return;
     }
     this.boxesInPageToHighlight = boxes;
+  }
+
+  async #onStageClick(mouseEvent: MouseEvent) {
+    while (this.#frameApi == null) {
+      await this.#frameApiChanged.promise;
+    }
+    const stage = mouseEvent.target as HTMLElementTagNameMap['ignition-stage'];
+    const stageRect = stage.getBoundingClientRect();
+    const x = mouseEvent.clientX - stageRect.left;
+    const y = mouseEvent.clientY - stageRect.top;
+    const sourceLocation = await this.#frameApi.getSourceLocationFromPoint(
+      x,
+      y
+    );
+    if (sourceLocation == null) {
+      return;
+    }
+    const {path, line, column} = sourceLocation;
+    const api = await apiFromExtension;
+    await api.focusSourceAtLocation(path, line - 1, column - 1);
   }
 
   #selectionModeChanged(event: ModeChangeEvent) {

@@ -91,7 +91,11 @@
       "command": "tsc --pretty",
       "dependencies": [
         "../analyzer:build",
-        "../ignition-ui:build"
+        "../ignition-ui:build",
+        {
+          "script": "./test-projects/hello-world:build",
+          "cascade": false
+        }
       ],
       "files": [
         "src/**/*.ts",

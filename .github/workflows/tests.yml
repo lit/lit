@@ -55,6 +55,9 @@ jobs:
       - name: NPM install
         run: npm ci
 
+      - name: Install in ignition test project
+        run: (cd packages/labs/ignition/test-projects/hello-world/ && npm ci)
+
       - name: Test
         env:
           BROWSERS: preset:local

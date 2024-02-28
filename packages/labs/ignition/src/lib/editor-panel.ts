@@ -4,7 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {ApiExposedToExtension} from '@lit-labs/ignition-ui';
+import type {
+  ApiExposedToExtension,
+  MessageFromWebviewToExtension,
+} from '@lit-labs/ignition-ui';
 import * as comlink from 'comlink';
 import {createRequire} from 'module';
 import type {AddressInfo} from 'net';
@@ -13,6 +16,7 @@ import {Ignition} from './ignition.js';
 import {logChannel} from './logging.js';
 import {getProjectServer} from './project-server.js';
 import {getUiServer} from './ui-server.js';
+import * as path from 'node:path';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
@@ -72,6 +76,7 @@ export const driveWebviewPanel = async (
   const webview = webviewPanel.webview;
   const uiServerAddress = uiServer.server?.address() as AddressInfo;
   webview.html = getHtmlForWebview(uiServerAddress.port);
+  const api = new ApiExposedToWebview(ignition, webview);
 
   async function connectAndInitialize() {
     const endpoint = await ComlinkEndpointToEditor.connect(webview);
@@ -97,3 +102,34 @@ export const driveWebviewPanel = async (
 
   return webviewPanel;
 };
+
+class ApiExposedToWebview {
+  readonly #ignition: Ignition;
+  constructor(ignition: Ignition, webview: vscode.Webview) {
+    this.#ignition = ignition;
+    const listener = (message: MessageFromWebviewToExtension | undefined) => {
+      if (message?.kind === 'focus-source-at-location') {
+        // Why is MessageFromWebviewToExtension the `any` type??
+        this.focus(message.filename, message.line, message.column);
+      }
+    };
+    webview.onDidReceiveMessage(listener);
+  }
+  focus(filename: string, line: number, column: number) {
+    const story = this.#ignition.currentStory;
+    if (story === undefined) {
+      return;
+    }
+    const workspacePath = story.workspaceFolder.uri.fsPath;
+    vscode.window.showTextDocument(
+      vscode.Uri.file(path.join(workspacePath, filename)),
+      {
+        selection: new vscode.Range(
+          new vscode.Position(line, column),
+          new vscode.Position(line, column)
+        ),
+        viewColumn: vscode.ViewColumn.One,
+      }
+    );
+  }
+}

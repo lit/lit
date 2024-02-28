@@ -1,13 +1,17 @@
 import {ChildPart, TemplateInstance} from 'lit-html';
 
-type LitTemplate = InstanceType<typeof TemplateInstance>['_$template'];
+type LitTemplate = InstanceType<typeof TemplateInstance>['_$template'] & {
+  el: HTMLTemplateElement;
+};
 type MaybeRootLitContainer = Element & {_$litPart$: ChildPart | undefined};
 
 /**
  * Given an element `el`, this function will try and locate the lit-html
  * `Template` which contains `el`.
  */
-export function locateLitTemplate(el: HTMLElement): LitTemplate | null {
+export function getPositionInLitTemplate(
+  el: Element | Text
+): PositionWithinTemplate | null {
   let rootEl: MaybeRootLitContainer | null =
     el as unknown as MaybeRootLitContainer;
   while (rootEl != null && rootEl['_$litPart$'] == null) {
@@ -57,12 +61,58 @@ export function locateLitTemplate(el: HTMLElement): LitTemplate | null {
           `Expect ChildPart containing queried element to contain a committed TemplateInstance.`
         );
       }
-      return templateInstance._$template;
+      return {
+        template: templateInstance._$template as LitTemplate,
+        depthFirstIndex: getIndexInTemplate(templateInstance, el),
+      };
     }
   }
   return null;
 }
 
+interface PositionWithinTemplate {
+  template: LitTemplate;
+  // The index of the element in a depth-first traversal,
+  // considering elements, comments, and text nodes.
+  // This should just be a number, the `undefined` case seems to be a bug.
+  // TODO(rictic): remove the undefined case.
+  depthFirstIndex: number | undefined;
+}
+
+function getIndexInTemplate(
+  templateInstance: TemplateInstance,
+  el: Element | Text
+): number | undefined {
+  const node = templateInstance.parentNode;
+  const walker = document.createTreeWalker(
+    node,
+    NodeFilter.SHOW_ELEMENT | NodeFilter.SHOW_COMMENT | NodeFilter.SHOW_TEXT
+  );
+  let index = 0;
+  let partIndex = 0;
+  while (walker.nextNode() !== null) {
+    const current = walker.currentNode;
+    if (current === el) {
+      return index;
+    }
+    const part = templateInstance._$parts[partIndex];
+    if (part != null) {
+      if (part?.type === 2) {
+        if (part.startNode === current) {
+          partIndex++;
+          // If the part has an endNode, we should skip to it.
+          if (part.endNode != null) {
+            walker.currentNode = part.endNode;
+          }
+        }
+      } else if (part.element === current) {
+        partIndex++;
+      }
+      index++;
+    }
+  }
+  return undefined;
+}
 /**
  * This function traverses *only* ChildParts, and annotates the boundary Nodes
  * so we can traverse the DOM and know which ChildPart we are within.
