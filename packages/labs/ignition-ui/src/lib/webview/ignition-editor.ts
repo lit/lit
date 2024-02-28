@@ -5,7 +5,7 @@
  */
 
 import '../protocol/comlink-stream.js';
-import {LitElement, html, css, PropertyValues} from 'lit';
+import {LitElement, html, css, PropertyValues, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import * as comlink from 'comlink';
 import {ifDefined} from 'lit/directives/if-defined.js';
@@ -15,7 +15,10 @@ import type {
   ApiToWebview,
   BoundingBoxWithDepth,
 } from '../frame/iframe-api-to-webview.js';
-import type {ModeChangeEvent} from './ignition-toolbar.js';
+import type {
+  AutoChangeStoryUrlChangeEvent,
+  ModeChangeEvent,
+} from './ignition-toolbar.js';
 import './ignition-toolbar.js';
 import {apiFromExtension} from './api-from-extension.js';
 
@@ -45,8 +48,10 @@ export class IgnitionEditor extends LitElement {
     }
   `;
 
+  // Null means it hasn't been set yet. Undefined means we've heard from
+  // the extension that there is no story to display.
   @property()
-  storyUrl?: string;
+  storyUrl: string | null | undefined = null;
 
   #frameApi?: comlink.Remote<ApiToWebview>;
 
@@ -56,16 +61,25 @@ export class IgnitionEditor extends LitElement {
   @state()
   private selectionMode: 'interact' | 'select' = 'select';
 
+  @state()
+  private autoChangeStoryUrl = true;
+
   #frameApiChanged = new Deferred<void>();
 
   override render() {
-    if (this.storyUrl == null) {
+    if (this.storyUrl === null) {
+      // Display nothing until we hear from the extension.
+      return nothing;
+    }
+    if (this.storyUrl === undefined) {
       return html`<p>No story URL provided.</p>`;
     }
     return html`
       <ignition-toolbar
         .mode=${this.selectionMode}
+        .autoChangeStoryUrl=${this.autoChangeStoryUrl}
         @mode-change=${this.#selectionModeChanged}
+        @auto-change-story-url-change=${this.#autoChangeStoryUrlChanged}
       ></ignition-toolbar>
       <ignition-stage
         .boxesInPageToHighlight=${this.boxesInPageToHighlight}
@@ -177,6 +191,11 @@ export class IgnitionEditor extends LitElement {
 
   #selectionModeChanged(event: ModeChangeEvent) {
     this.selectionMode = event.mode;
+  }
+
+  #autoChangeStoryUrlChanged(event: AutoChangeStoryUrlChangeEvent) {
+    this.autoChangeStoryUrl = event.locked;
+    apiFromExtension.setAutoChangeStoryUrl(this.autoChangeStoryUrl);
   }
 }
 

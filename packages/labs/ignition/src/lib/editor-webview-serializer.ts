@@ -12,9 +12,10 @@ const require = createRequire(import.meta.url);
 import vscode = require('vscode');
 
 export class EditorWebviewSerializer
-  implements vscode.WebviewPanelSerializer<void>
+  implements vscode.WebviewPanelSerializer<void>, vscode.Disposable
 {
-  ignition: Ignition;
+  private readonly ignition: Ignition;
+  private readonly disposables: vscode.Disposable[] = [];
 
   constructor(ignition: Ignition) {
     this.ignition = ignition;
@@ -26,9 +27,20 @@ export class EditorWebviewSerializer
   ) {
     logChannel.appendLine(`Restoring editor webview`);
 
-    const {driveWebviewPanel} = await import('./editor-panel.js');
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    const {EditorPanel} = await import('./editor-panel.js');
 
     // This will read the state it needs from the Ignition instance
-    await driveWebviewPanel(webviewPanel, this.ignition);
+    const panel = await EditorPanel.fromExistingPanel(
+      webviewPanel,
+      this.ignition
+    );
+    this.disposables.push(panel);
+  }
+
+  dispose() {
+    for (const disposable of this.disposables) {
+      disposable.dispose();
+    }
   }
 }

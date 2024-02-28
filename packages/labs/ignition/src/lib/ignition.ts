@@ -16,6 +16,7 @@ const require = createRequire(import.meta.url);
 import vscode = require('vscode');
 import {TemplateOutlineDataProvider} from './template-outline-data-provider.js';
 import {ElementPaletteViewProvider} from './element-palette.js';
+import {EditorPanel} from './editor-panel.js';
 
 export interface StoryInfo {
   storyPath: string;
@@ -106,11 +107,10 @@ export class Ignition {
     let disposable = vscode.commands.registerCommand(
       'ignition.createEditor',
       async () => {
-        const {createEditorView} = await import('./editor-panel.js');
-        const disposable = await createEditorView(this);
-        if (disposable) {
-          context.subscriptions.push(disposable);
-        }
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const {EditorPanel} = await import('./editor-panel.js');
+        const disposable = await EditorPanel.create(this);
+        context.subscriptions.push(disposable);
       }
     );
     context.subscriptions.push(disposable);
@@ -136,11 +136,12 @@ export class Ignition {
     context.subscriptions.push(disposable);
 
     // Webview serializer
+    const serializer = new EditorWebviewSerializer(this);
     disposable = vscode.window.registerWebviewPanelSerializer(
-      'ignition',
-      new EditorWebviewSerializer(this)
+      EditorPanel.viewType,
+      serializer
     );
-    context.subscriptions.push(disposable);
+    context.subscriptions.push(serializer, disposable);
 
     // Elements view
     const elementsDataProvider = new ElementsDataProvider();

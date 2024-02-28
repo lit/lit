@@ -20,6 +20,13 @@ class ApiFromExtension {
       column,
     });
   }
+
+  setAutoChangeStoryUrl(autoChangeStoryUrl: boolean): void {
+    this.#sendMessage({
+      kind: 'set-auto-change-story-url',
+      autoChangeStoryUrl,
+    });
+  }
 }
 
 export const apiFromExtension = new ApiFromExtension();

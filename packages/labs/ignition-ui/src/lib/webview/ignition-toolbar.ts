@@ -20,6 +20,8 @@ if (!document.adoptedStyleSheets.includes(codiconStyles)) {
 export class IgnitionToolbar extends LitElement {
   @property() mode: 'select' | 'interact' = 'select';
 
+  @property({type: Boolean}) autoChangeStoryUrl = true;
+
   static styles = [
     codiconStyles,
     css`
@@ -40,16 +42,28 @@ export class IgnitionToolbar extends LitElement {
   render() {
     return html`
       <vscode-button
+        aria-label="Select Mode"
         appearance="icon"
         @click=${() => this.#setMode('select')}
         ?disabled=${this.mode === 'select'}
         ><span class="codicon codicon-inspect"></span
       ></vscode-button>
       <vscode-button
+        aria-label="Interact Mode"
         appearance="icon"
         @click=${() => this.#setMode('interact')}
         ?disabled=${this.mode === 'interact'}
         ><span class="codicon codicon-play"></span
+      ></vscode-button>
+      <vscode-button
+        aria-label="${this.autoChangeStoryUrl
+          ? 'Displayed stories change automatically as you navigate. Click to lock.'
+          : 'Locked to current change, click to unlock and automatically update displayed story.'}"
+        appearance="icon"
+        @click=${() => this.#setAutoChangeStoryUrl(!this.autoChangeStoryUrl)}
+        ><span
+          class="codicon codicon-${this.autoChangeStoryUrl ? 'unlock' : 'lock'}"
+        ></span
       ></vscode-button>
     `;
   }
@@ -58,12 +72,27 @@ export class IgnitionToolbar extends LitElement {
     this.mode = mode;
     this.dispatchEvent(new ModeChangeEvent(this.mode));
   }
+
+  #setAutoChangeStoryUrl(locked: boolean) {
+    this.autoChangeStoryUrl = locked;
+    this.dispatchEvent(
+      new AutoChangeStoryUrlChangeEvent(this.autoChangeStoryUrl)
+    );
+  }
 }
 export class ModeChangeEvent extends Event {
   readonly mode: 'select' | 'interact';
   constructor(mode: 'select' | 'interact') {
     super('mode-change');
     this.mode = mode;
+  }
+}
+
+export class AutoChangeStoryUrlChangeEvent extends Event {
+  readonly locked: boolean;
+  constructor(locked: boolean) {
+    super('auto-change-story-url-change');
+    this.locked = locked;
   }
 }
 
