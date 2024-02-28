@@ -33,6 +33,7 @@ export {
   isCommentNode,
   isElementNode,
   isDocumentFragment,
+  isTextNode,
 } from '@parse5/tools';
 
 const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} = _$LH;
@@ -426,4 +427,9 @@ type Mutable<T, K extends keyof T> = Omit<T, K> & {
 export interface LitTaggedTemplateExpression
   extends ts.TaggedTemplateExpression {
   litTemplate: LitTemplate;
+}
+
+export function isNode(node: object): node is Node {
+  const obj: {nodeName?: unknown} = node;
+  return typeof obj?.nodeName === 'string';
 }

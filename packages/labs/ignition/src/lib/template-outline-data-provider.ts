@@ -24,6 +24,8 @@ import {
   isDocumentFragment,
   isElementNode,
   isLitTaggedTemplateExpression,
+  isNode,
+  isTextNode,
   parseLitTemplate,
 } from './parse-template.js';
 
@@ -40,6 +42,11 @@ export class TemplateOutlineDataProvider
     ignition.onDidChangeCurrentElement(() => {
       logChannel.appendLine('onDidChangeCurrentElement');
       this.#onDidChangeTreeData.fire();
+    });
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration('ignition.showInvisibles')) {
+        this.#onDidChangeTreeData.fire();
+      }
     });
   }
 
@@ -89,6 +96,21 @@ export class TemplateOutlineDataProvider
           : vscode.TreeItemCollapsibleState.None;
       const treeItem = new vscode.TreeItem(label, collapsedState);
       return treeItem;
+    } else if (isTextNode(data.node)) {
+      const showInvisibles = vscode.workspace
+        .getConfiguration('ignition')
+        .get('showInvisibles');
+      let contents = data.node.value;
+      if (!showInvisibles) {
+        contents = contents.replace(/\s+/g, ' ');
+      }
+      if (contents.length > 200) {
+        contents = contents.slice(0, 199) + '…';
+      }
+      return new vscode.TreeItem(
+        JSON.stringify(contents),
+        vscode.TreeItemCollapsibleState.None
+      );
     } else {
       return new vscode.TreeItem(
         data.node.nodeName,
@@ -98,6 +120,30 @@ export class TemplateOutlineDataProvider
   }
 
   async getChildren(
+    data?: TemplateItem | undefined
+  ): Promise<TemplateItem[] | undefined> {
+    let children = await this.#getChildren(data);
+    if (children === undefined) {
+      return undefined;
+    }
+    const showInvisibles = vscode.workspace
+      .getConfiguration('ignition')
+      .get('showInvisibles');
+    if (!showInvisibles) {
+      children = children.filter((c) => {
+        if (!isNode(c.node)) {
+          return true;
+        }
+        if (!isTextNode(c.node)) {
+          return true;
+        }
+        return c.node.value.trim() !== '';
+      });
+    }
+    return children;
+  }
+
+  async #getChildren(
     data?: TemplateItem | undefined
   ): Promise<TemplateItem[] | undefined> {
     if (data === undefined) {

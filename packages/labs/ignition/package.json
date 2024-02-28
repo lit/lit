@@ -15,6 +15,16 @@
   ],
   "main": "./extension.cjs",
   "contributes": {
+    "configuration": {
+      "title": "Ignition",
+      "properties": {
+        "ignition.showInvisibles": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show text spans that are pure whitespace in the template outline, and leave all whitespace expanded in other text nodes."
+        }
+      }
+    },
     "commands": [
       {
         "command": "ignition.createEditor",
