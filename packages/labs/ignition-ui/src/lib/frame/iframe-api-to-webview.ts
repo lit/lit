@@ -14,7 +14,7 @@ const defaultStylesElement = document.querySelector('#_defaultStyles')!;
 // This is the API that's accessible from the webview (our direct parent).
 class ApiToWebviewClass {
   boundingBoxesAtPoint(x: number, y: number): BoundingBoxWithDepth[] {
-    const result = getMostSpecificNodeAtPoint(x, y);
+    const result = getMostSpecificNodeInStoryAtPoint(x, y);
     if (result === undefined) {
       return [];
     }
@@ -34,7 +34,7 @@ class ApiToWebviewClass {
     x: number,
     y: number
   ): undefined | {path: string; line: number; column: number} {
-    const result = getMostSpecificNodeAtPoint(x, y);
+    const result = getMostSpecificNodeInStoryAtPoint(x, y);
     if (result === undefined) {
       return;
     }
@@ -95,7 +95,7 @@ function rectsForText(textNode: Text): DOMRectList {
   return rects;
 }
 
-function getMostSpecificNodeAtPoint(
+function getMostSpecificNodeInStoryAtPoint(
   x: number,
   y: number
 ): undefined | {node: Element | Text; depth: number} {
@@ -113,6 +113,11 @@ function getMostSpecificNodeAtPoint(
     }
     element = innerElement;
     depth++;
+  }
+  // We only want to deal with the contents of a story. We want to ignore
+  // stuff like the story title, or document.body.
+  if (!isElementInStory(element)) {
+    return undefined;
   }
   for (const child of element.childNodes) {
     if (!isTextNode(child)) {
@@ -132,6 +137,23 @@ function getMostSpecificNodeAtPoint(
     }
   }
   return {node: element, depth};
+}
+
+function isElementInStory(element: Element): boolean {
+  // Walk up the ancestors, including through shadow roots looking for
+  // an ignition-story-container. If we find one, we're in a story.
+  let currentElement: Element | null = element;
+  while (currentElement !== null) {
+    if (currentElement.tagName === 'IGNITION-STORY-CONTAINER') {
+      return true;
+    }
+    if (currentElement.parentNode instanceof ShadowRoot) {
+      currentElement = currentElement.parentNode.host;
+    } else {
+      currentElement = currentElement.parentElement;
+    }
+  }
+  return false;
 }
 
 export type ApiToWebview = ApiToWebviewClass;
