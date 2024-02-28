@@ -106,13 +106,31 @@ export class Ignition {
     let disposable = vscode.commands.registerCommand(
       'ignition.createEditor',
       async () => {
-        const {createEditorView: createWebView} = await import(
-          './editor-panel.js'
-        );
-        const disposable = await createWebView(this);
+        const {createEditorView} = await import('./editor-panel.js');
+        const disposable = await createEditorView(this);
         if (disposable) {
           context.subscriptions.push(disposable);
         }
+      }
+    );
+    context.subscriptions.push(disposable);
+
+    // ignition.newComponent command
+    disposable = vscode.commands.registerCommand(
+      'ignition.newComponent',
+      async () => {
+        const {createComponent} = await import('./component-commands.js');
+        await createComponent();
+      }
+    );
+    context.subscriptions.push(disposable);
+
+    // ignition.newComponent command
+    disposable = vscode.commands.registerCommand(
+      'ignition.deleteComponent',
+      async (...args) => {
+        const {deleteComponent} = await import('./component-commands.js');
+        await deleteComponent(...args);
       }
     );
     context.subscriptions.push(disposable);

@@ -41,6 +41,7 @@ export class ElementsDataProvider
         command: 'ignition.openElement',
         arguments: [data],
       };
+      treeItem.contextValue = 'element';
       return treeItem;
     }
   }

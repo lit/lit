@@ -19,6 +19,16 @@
       {
         "command": "ignition.createEditor",
         "title": "Open Ignition Editor"
+      },
+      {
+        "command": "ignition.newComponent",
+        "title": "New Component",
+        "icon": "$(add)"
+      },
+      {
+        "command": "ignition.deleteComponent",
+        "title": "Delete Component",
+        "icon": "$(trash)"
       }
     ],
     "viewsContainers": {
@@ -47,6 +57,22 @@
           "name": "Palette",
           "type": "webview",
           "contextualTitle": "Ignition Palette"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "ignition.newComponent",
+          "when": "view == ignition-element-view",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "ignition.deleteComponent",
+          "when": "view == ignition-element-view && viewItem == element",
+          "group": "inline"
         }
       ]
     }
