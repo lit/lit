@@ -13,7 +13,7 @@ const sourceIdAttribute = '__ignition-source-id__';
 
 /**
  * Transforms lit-html templates in the TypeScript source to add
- * "source ID" attribtues to each element.
+ * "source ID" attributes to each element.
  */
 export const addSourceIds =
   (ts: TypeScript, checker: ts.TypeChecker) =>

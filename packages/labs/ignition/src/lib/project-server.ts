@@ -20,6 +20,7 @@ import type {Plugin} from '@web/dev-server-core';
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
 import {getModulePathFromJsPath} from './paths.js';
+import {addSourceIds} from './source-id-transform.js';
 
 // TODO (justinfagnani): /_src/ isn't a great name. Right now it's just a
 // prefix for all JS files. We're not requesting source from the server, but
@@ -34,6 +35,8 @@ const startServer = async (
   const rootDir = analyzer.getPackage().rootDir;
   const lazyAddress: LazyAddress = {port: 0};
 
+  const fileCache = new Map<string, string>();
+
   const passThroughPlugin: Plugin = {
     name: 'pass-through',
     serve(context) {
@@ -43,8 +46,57 @@ const startServer = async (
         return;
       }
       const filePath = (workspaceFolder.uri.fsPath + jsPath) as AbsolutePath;
+
+      // First, check the cache
+      let result = fileCache.get(filePath);
+      if (result !== undefined) {
+        return result;
+      }
+
+      // Find the SourceFile
       const modulePath = getModulePathFromJsPath(analyzer, filePath);
-      console.log('pass-through', context.path, modulePath);
+      if (modulePath === undefined) {
+        // File is not in TS project, so let WDS try to serve it
+        return;
+      }
+      const sourceFile = analyzer.program.getSourceFile(modulePath);
+      if (sourceFile === undefined) {
+        // Shouldn't be possible?
+        return;
+      }
+
+      // Emit
+      let emitted = false;
+      analyzer.program.emit(
+        sourceFile,
+        (
+          fileName: string,
+          text: string,
+          _writeByteOrderMark: boolean,
+          _onError?: (message: string) => void
+        ) => {
+          if (fileName === filePath) {
+            emitted = true;
+            result = text;
+          }
+        },
+        undefined,
+        undefined,
+        {
+          after: [
+            addSourceIds(
+              analyzer.typescript,
+              analyzer.program.getTypeChecker()
+            ),
+          ],
+        }
+      );
+
+      if (emitted) {
+        fileCache.set(filePath, result!);
+        return result;
+      }
+      // Unknown problem with emit?
     },
   };
 
