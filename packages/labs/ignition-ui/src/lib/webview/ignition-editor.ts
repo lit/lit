@@ -184,9 +184,9 @@ export class IgnitionEditor extends LitElement {
     if (sourceLocation == null) {
       return;
     }
-    const {path, line, column} = sourceLocation;
+    const {url, line, column} = sourceLocation;
     const api = await apiFromExtension;
-    await api.focusSourceAtLocation(path, line - 1, column - 1);
+    await api.focusSourceAtLocation(url, line - 1, column - 1);
   }
 
   #selectionModeChanged(event: ModeChangeEvent) {
