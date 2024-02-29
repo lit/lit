@@ -24,9 +24,10 @@ export const addSourceIds =
     let sourceId = 0;
 
     const transformTemplateText = (text: string) =>
-      text.replace(
-        /<([a-zA-Z0-9-]+)\s*/g,
-        (_, tagName) => `<${tagName} ${sourceIdAttribute}="${sourceId++}"`
+      text.replaceAll(
+        /<([a-zA-Z0-9-]+)(\s+|>)/g,
+        (_, tagName, rest) =>
+          `<${tagName} ${sourceIdAttribute}="${sourceId++}"${rest}`
       );
 
     const visitor = (node: ts.Node): ts.Node => {
