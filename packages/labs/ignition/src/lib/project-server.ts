@@ -35,8 +35,6 @@ const startServer = async (
   const rootDir = analyzer.getPackage().rootDir;
   const lazyAddress: LazyAddress = {port: 0};
 
-  const fileCache = new Map<string, string>();
-
   const passThroughPlugin: Plugin = {
     name: 'pass-through',
     serve(context) {
@@ -46,12 +44,6 @@ const startServer = async (
         return;
       }
       const filePath = (workspaceFolder.uri.fsPath + jsPath) as AbsolutePath;
-
-      // First, check the cache
-      let result = fileCache.get(filePath);
-      if (result !== undefined) {
-        return result;
-      }
 
       // Find the SourceFile
       const modulePath = getModulePathFromJsPath(analyzer, filePath);
@@ -66,6 +58,7 @@ const startServer = async (
       }
 
       // Emit
+      let result: string;
       let emitted = false;
       analyzer.program.emit(
         sourceFile,
@@ -93,8 +86,7 @@ const startServer = async (
       );
 
       if (emitted) {
-        fileCache.set(filePath, result!);
-        return result;
+        return result!;
       }
       // Unknown problem with emit?
     },
