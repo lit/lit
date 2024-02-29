@@ -12,25 +12,46 @@ import {Deferred} from './deferred.js';
 import {getUiServer} from './ui-server.js';
 import cors from 'koa-cors';
 import Koa from 'koa';
-import type {Analyzer} from '@lit-labs/analyzer';
+import type {AbsolutePath, Analyzer, PackagePath} from '@lit-labs/analyzer';
 import Router from '@koa/router';
 import * as wds from '@web/dev-server';
+import type {Plugin} from '@web/dev-server-core';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
+import {getModulePathFromJsPath} from './paths.js';
 
 // TODO (justinfagnani): /_src/ isn't a great name. Right now it's just a
 // prefix for all JS files. We're not requesting source from the server, but
 // built files.
 const baseUrl = '/_src/';
 
-const startServer = async (uiServerPort: number, analyzer: Analyzer) => {
+const startServer = async (
+  uiServerPort: number,
+  workspaceFolder: vscode.WorkspaceFolder,
+  analyzer: Analyzer
+) => {
   const rootDir = analyzer.getPackage().rootDir;
   const lazyAddress: LazyAddress = {port: 0};
+
+  const passThroughPlugin: Plugin = {
+    name: 'pass-through',
+    serve(context) {
+      const jsPath = context.path as PackagePath;
+      if (jsPath.startsWith('/node_modules/')) {
+        // TODO: exclude WDS path prefixes
+        return;
+      }
+      const filePath = (workspaceFolder.uri.fsPath + jsPath) as AbsolutePath;
+      const modulePath = getModulePathFromJsPath(analyzer, filePath);
+      console.log('pass-through', context.path, modulePath);
+    },
+  };
 
   const devServer = await wds.startDevServer({
     config: {
       rootDir,
+      plugins: [passThroughPlugin],
       middleware: [
         cors({origin: '*', credentials: true}),
         ...getMiddleware(uiServerPort, analyzer, lazyAddress),
@@ -113,7 +134,11 @@ export const getProjectServer = async (
 
       const uiServerAddress = uiServer.server?.address() as AddressInfo;
 
-      const server = await startServer(uiServerAddress.port, analyzer);
+      const server = await startServer(
+        uiServerAddress.port,
+        workspaceFolder,
+        analyzer
+      );
       serverDeferred.resolve(server);
     } catch (e) {
       serverDeferred.reject(e as Error);
