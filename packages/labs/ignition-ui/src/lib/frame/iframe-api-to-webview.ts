@@ -33,7 +33,7 @@ class ApiToWebviewClass {
   getSourceLocationFromPoint(
     x: number,
     y: number
-  ): undefined | {path: string; line: number; column: number} {
+  ): undefined | {url: string; line: number; column: number} {
     const result = getMostSpecificNodeInStoryAtPoint(x, y);
     if (result === undefined) {
       return;
@@ -48,14 +48,14 @@ class ApiToWebviewClass {
     const callStackLine = constructedAt.split('\n')[2];
     //      at HelloWorld.render (http://localhost:8002/hello-world.js:21:21)
     const match = callStackLine.match(
-      /http:\/\/localhost:\d+\/(.+):(\d+):(\d+)/
+      /(http:\/\/localhost:\d+\/.+):(\d+):(\d+)/
     );
     if (match === null) {
       console.error(`couldn't match callStackLine: `, callStackLine);
       return;
     }
-    const [, path, line, column] = match;
-    const templateLocation = {path, line: Number(line), column: Number(column)};
+    const [, url, line, column] = match;
+    const templateLocation = {url, line: Number(line), column: Number(column)};
     // Now to get the position _within_ the template, that node occupies.
     console.log(templateLocation);
     console.log(position);

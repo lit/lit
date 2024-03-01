@@ -16,7 +16,8 @@
     "lit": "3.1.2",
     "lit-html": "3.1.2",
     "package-json-type": "^1.0.3",
-    "typescript": "^5.3.3"
+    "typescript": "^5.3.3",
+    "vlq": "^2.0.4"
   },
   "exports": {
     ".": {
