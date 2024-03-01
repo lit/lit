@@ -154,7 +154,7 @@
       ]
     },
     "test:unit": {
-      "command": "node --enable-source-maps --test-reporter=spec --test test/lib/**/*_test.js",
+      "command": "node --enable-source-maps --test-reporter=spec --test test/lib/*_test.js",
       "dependencies": [
         "build"
       ],
