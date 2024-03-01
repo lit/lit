@@ -35,67 +35,10 @@ const startServer = async (
   const rootDir = analyzer.getPackage().rootDir;
   const lazyAddress: LazyAddress = {port: 0};
 
-  const passThroughPlugin: Plugin = {
-    name: 'pass-through',
-    serve(context) {
-      const jsPath = context.path as PackagePath;
-      if (jsPath.startsWith('/node_modules/')) {
-        // TODO: exclude WDS path prefixes
-        return;
-      }
-      const filePath = (workspaceFolder.uri.fsPath + jsPath) as AbsolutePath;
-
-      // Find the SourceFile
-      const modulePath = getModulePathFromJsPath(analyzer, filePath);
-      if (modulePath === undefined) {
-        // File is not in TS project, so let WDS try to serve it
-        return;
-      }
-      const sourceFile = analyzer.program.getSourceFile(modulePath);
-      if (sourceFile === undefined) {
-        // Shouldn't be possible?
-        return;
-      }
-
-      // Emit
-      let result: string;
-      let emitted = false;
-      analyzer.program.emit(
-        sourceFile,
-        (
-          fileName: string,
-          text: string,
-          _writeByteOrderMark: boolean,
-          _onError?: (message: string) => void
-        ) => {
-          if (fileName === filePath) {
-            emitted = true;
-            result = text;
-          }
-        },
-        undefined,
-        undefined,
-        {
-          after: [
-            addSourceIds(
-              analyzer.typescript,
-              analyzer.program.getTypeChecker()
-            ),
-          ],
-        }
-      );
-
-      if (emitted) {
-        return result!;
-      }
-      // Unknown problem with emit?
-    },
-  };
-
   const devServer = await wds.startDevServer({
     config: {
       rootDir,
-      plugins: [passThroughPlugin],
+      plugins: [new PassThroughTransform(analyzer, workspaceFolder)],
       middleware: [
         cors({origin: '*', credentials: true}),
         ...getMiddleware(uiServerPort, analyzer, lazyAddress),
@@ -110,6 +53,70 @@ const startServer = async (
   lazyAddress.port = port!;
   return devServer.server!;
 };
+
+export class PassThroughTransform implements Plugin {
+  readonly name = 'pass-through';
+  private readonly analyzer: Analyzer;
+  private readonly workspaceFolder: vscode.WorkspaceFolder;
+  constructor(analyzer: Analyzer, workspaceFolder: vscode.WorkspaceFolder) {
+    this.analyzer = analyzer;
+    this.workspaceFolder = workspaceFolder;
+  }
+
+  serve(context: Koa.Context) {
+    return this.getJSFromAnalyzer(context.path as PackagePath);
+  }
+
+  // Public for testing
+  getJSFromAnalyzer(jsPath: PackagePath): string | undefined {
+    if (jsPath.startsWith('/node_modules/')) {
+      // TODO: exclude WDS path prefixes
+      return;
+    }
+    const filePath = (this.workspaceFolder.uri.fsPath + jsPath) as AbsolutePath;
+
+    // Find the SourceFile
+    const modulePath = getModulePathFromJsPath(this.analyzer, filePath);
+    if (modulePath === undefined) {
+      // File is not in TS project, so let WDS try to serve it
+      return;
+    }
+    const sourceFile = this.analyzer.program.getSourceFile(modulePath);
+    if (sourceFile === undefined) {
+      // Shouldn't be possible?
+      return;
+    }
+
+    // Emit
+    let result: string | undefined;
+    this.analyzer.program.emit(
+      sourceFile,
+      (
+        fileName: string,
+        text: string,
+        _writeByteOrderMark: boolean,
+        _onError?: (message: string) => void
+      ) => {
+        if (fileName === filePath) {
+          result = text;
+        }
+      },
+      undefined,
+      undefined,
+      {
+        after: [
+          addSourceIds(
+            this.analyzer.typescript,
+            this.analyzer.program.getTypeChecker()
+          ),
+        ],
+      }
+    );
+
+    // If result is undefined… unknown problem with emit?
+    return result;
+  }
+}
 
 // This will have the port by the time it's accessed.
 interface LazyAddress {
