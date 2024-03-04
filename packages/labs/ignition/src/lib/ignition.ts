@@ -266,7 +266,7 @@ export class Ignition {
     fsWatcher.onDidDelete(() => {
       this.#fileChanged();
     });
-    context.subscriptions.push(disposable, fsWatcher);
+    context.subscriptions.push(fsWatcher);
   }
 
   async deactivate() {
