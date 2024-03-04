@@ -13,7 +13,7 @@ import {
   getWorkspaceFolderForElement,
 } from './analyzer.js';
 import {logChannel} from './logging.js';
-import {getStoriesModuleForElement} from './stories.js';
+import {getModuleInfoForElement} from './stories.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
@@ -80,7 +80,7 @@ export const deleteComponent = async (
   const workspaceFolder = getWorkspaceFolderForElement(data);
   const analyzer = getAnalyzer(workspaceFolder, filesystem);
   const fileUri = getDocumentUriForElement(data);
-  const storiesModule = getStoriesModuleForElement(data, analyzer);
+  const {storiesModule} = getModuleInfoForElement(data, analyzer);
   const storiesPath = storiesModule?.sourcePath;
   const storiesFileUri =
     storiesPath === undefined

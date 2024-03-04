@@ -9,7 +9,7 @@ import {createRequire} from 'module';
 import {getAnalyzer, getWorkspaceFolderForElement} from './analyzer.js';
 import {ElementsDataProvider} from './elements-data-provider.js';
 import {logChannel} from './logging.js';
-import {getStoriesModule, getStoriesModuleForElement} from './stories.js';
+import {getStoriesModule, getModuleInfoForElement} from './stories.js';
 import {EditorWebviewSerializer} from './editor-webview-serializer.js';
 import ts from 'typescript';
 
@@ -48,6 +48,8 @@ export class Ignition {
 
   readonly #buffers: InMemoryBuffers;
   readonly filesystem: OverlayFilesystem;
+
+  readonly #openIgnitionEditors = new Set<EditorPanel>();
 
   get currentElement() {
     return this.#currentElement!;
@@ -120,10 +122,8 @@ export class Ignition {
     let disposable = vscode.commands.registerCommand(
       'ignition.createEditor',
       async () => {
-        // eslint-disable-next-line @typescript-eslint/naming-convention
-        const {EditorPanel} = await import('./editor-panel.js');
-        const disposable = await EditorPanel.create(this);
-        context.subscriptions.push(disposable);
+        const editorPanel = await EditorPanel.create(this);
+        context.subscriptions.push(editorPanel);
       }
     );
     context.subscriptions.push(disposable);
@@ -221,12 +221,32 @@ export class Ignition {
         );
         const workspaceFolder = getWorkspaceFolderForElement(declaration);
         const analyzer = await getAnalyzer(workspaceFolder, this.filesystem);
-        const storiesModule = getStoriesModuleForElement(declaration, analyzer);
+        const {storiesModule, elementDocumentUri} = getModuleInfoForElement(
+          declaration,
+          analyzer
+        );
         this.currentElement = declaration;
         this.currentStory =
           storiesModule === undefined
             ? undefined
             : {storyPath: storiesModule.jsPath, workspaceFolder};
+        // Should we also show the element's souce? Well, if the user is
+        // focused in design mode, with the Ignition Editor open only, then
+        // no. If they have nothing open, or if they already have code open,
+        // then yes.
+        const hasCodeOpen = vscode.window.visibleTextEditors.length > 0;
+        if (hasCodeOpen || this.#openIgnitionEditors.size === 0) {
+          console.log(
+            `hasCodeOpen: ${hasCodeOpen} - openIgnitionEditors: ${this.#openIgnitionEditors.size}`
+          );
+          vscode.window.showTextDocument(elementDocumentUri, {
+            // Show the source in the same column as the first visible source
+            // viewer, otherwise just use the first column.
+            viewColumn:
+              vscode.window.visibleTextEditors[0]?.viewColumn ??
+              vscode.ViewColumn.One,
+          });
+        }
       }
     );
     context.subscriptions.push(disposable);
@@ -267,6 +287,13 @@ export class Ignition {
       this.#fileChanged();
     });
     context.subscriptions.push(fsWatcher);
+  }
+
+  registerIgnitionEditor(editorPanel: EditorPanel) {
+    this.#openIgnitionEditors.add(editorPanel);
+    editorPanel.onDidDispose(() => {
+      this.#openIgnitionEditors.delete(editorPanel);
+    });
   }
 
   async deactivate() {

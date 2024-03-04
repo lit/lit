@@ -37,12 +37,12 @@ export const getStoriesModule = (
   }
 };
 
-export const getStoriesModuleForElement = (
+export const getModuleInfoForElement = (
   element: LitElementDeclaration,
   analyzer: Analyzer
 ) => {
   const elementDocumentUri = getDocumentUriForElement(element);
   const modulePath = elementDocumentUri.fsPath as AbsolutePath;
   const storiesModule = getStoriesModule(modulePath, analyzer);
-  return storiesModule;
+  return {storiesModule, elementDocumentUri};
 };

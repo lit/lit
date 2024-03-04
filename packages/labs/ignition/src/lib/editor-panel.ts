@@ -59,6 +59,9 @@ export const createEditorView = async (ignition: Ignition) => {
 export class EditorPanel implements vscode.Disposable {
   static readonly viewType = 'ignition';
 
+  #onDidDispose: vscode.EventEmitter<void> = new vscode.EventEmitter<void>();
+  onDidDispose = this.#onDidDispose.event;
+
   static async create(ignition: Ignition) {
     const webviewPanel = vscode.window.createWebviewPanel(
       this.viewType,
@@ -113,6 +116,10 @@ export class EditorPanel implements vscode.Disposable {
       }
     });
     this.#connectAndInitialize();
+    webviewPanel.onDidDispose(() => {
+      this.#onDidDispose.fire();
+    });
+    ignition.registerIgnitionEditor(this);
   }
 
   dispose() {
