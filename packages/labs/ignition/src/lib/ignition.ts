@@ -63,6 +63,10 @@ export class Ignition {
   readonly onDidChangeCurrentStory: vscode.Event<void> =
     this.#onDidChangeCurrentStory.event;
 
+  #analyzerUpdated = new vscode.EventEmitter<void>();
+  // Fired when the analyzer might have new information.
+  readonly onAnalyzerMayHaveNewInfo = this.#analyzerUpdated.event;
+
   #currentStory?: StoryInfo;
 
   get currentStory() {
@@ -241,18 +245,67 @@ export class Ignition {
         event.document.uri.fsPath as AbsolutePath,
         event.document.getText()
       );
+      this.#fileChanged();
     });
     context.subscriptions.push(disposable);
 
     // And when the user closes a file, remove it from the overlay filesystem
     disposable = vscode.workspace.onDidCloseTextDocument((document) => {
       this.#buffers.close(document.uri.fsPath as AbsolutePath);
+      this.#fileChanged();
     });
     context.subscriptions.push(disposable);
+
+    const fsWatcher = vscode.workspace.createFileSystemWatcher('**/*.{js,ts}');
+    fsWatcher.onDidChange(() => {
+      this.#fileChanged();
+    });
+    fsWatcher.onDidCreate(() => {
+      this.#fileChanged();
+    });
+    fsWatcher.onDidDelete(() => {
+      this.#fileChanged();
+    });
+    context.subscriptions.push(disposable, fsWatcher);
   }
 
   async deactivate() {
     // Clean up any resources
     logChannel.appendLine('Deactivating Ignition');
+  }
+
+  #fileChanged() {
+    this.#tryToFindNewVersionOfElement();
+    this.#analyzerUpdated.fire();
+  }
+
+  #tryToFindNewVersionOfElement() {
+    if (this.#currentElement === undefined) {
+      return;
+    }
+    // Try to find this element in the updated analyzer.
+    const workspaceFolder = getWorkspaceFolderForElement(this.#currentElement);
+    const analyzer = getAnalyzer(workspaceFolder, this.filesystem);
+    const tagName = this.#currentElement.tagname;
+    try {
+      for (const moduleInfo of analyzer.getModuleInfos()) {
+        const module = analyzer.getModule(
+          analyzer.path.join(
+            analyzer.getPackage().rootDir,
+            moduleInfo.sourcePath
+          ) as AbsolutePath
+        );
+        for (const element of module.getCustomElementExports()) {
+          if (element.tagname === tagName) {
+            this.currentElement = element;
+            this.#onDidChangeCurrentElement.fire();
+            return;
+          }
+        }
+      }
+    } catch {}
+    // If we didn't find the element, it's been deleted.
+    this.currentElement = undefined;
+    this.#onDidChangeCurrentElement.fire();
   }
 }
