@@ -12,7 +12,7 @@ import {getPositionInLitTemplate} from './queries.js';
 const defaultStylesElement = document.querySelector('#_defaultStyles')!;
 
 // This is the API that's accessible from the webview (our direct parent).
-class ApiToWebviewClass {
+class ApiToWebview {
   boundingBoxesAtPoint(x: number, y: number): BoundingBoxWithDepth[] {
     const result = getMostSpecificNodeInStoryAtPoint(x, y);
     if (result === undefined) {
@@ -80,6 +80,10 @@ class ApiToWebviewClass {
     }
 
     defaultStylesElement.textContent = defaultStyles || '';
+  }
+
+  reload() {
+    window.location.reload();
   }
 }
 
@@ -156,7 +160,7 @@ function isElementInStory(element: Element): boolean {
   return false;
 }
 
-export type ApiToWebview = ApiToWebviewClass;
+export type {ApiToWebview};
 
 // A bounding box that's relative to the viewport, not the page.
 export interface ViewportBoundingBox {
@@ -205,7 +209,7 @@ export async function exposeApiToWebview() {
     throw new Error('Already exposed');
   }
   exposed = true;
-  const api = new ApiToWebviewClass();
+  const api = new ApiToWebview();
   const endpoint = await getPortToWebview();
   comlink.expose(api, endpoint);
 }

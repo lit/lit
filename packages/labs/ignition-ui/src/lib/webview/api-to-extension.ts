@@ -25,5 +25,9 @@ export class ApiToExtension {
   setStoryUrl(storyUrl: string | undefined) {
     this.#ui.storyUrl = storyUrl;
   }
+
+  reloadFrame() {
+    this.#ui.reloadFrame();
+  }
 }
 export type ApiExposedToExtension = ApiToExtension;
