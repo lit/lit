@@ -13,6 +13,33 @@ const defaultStylesElement = document.querySelector('#_defaultStyles')!;
 
 // This is the API that's accessible from the webview (our direct parent).
 class ApiToWebviewClass {
+  getElementAtPoint(x: number, y: number): ElementInfo | undefined {
+    const result = getMostSpecificNodeInStoryAtPoint(x, y);
+    if (result === undefined) {
+      return;
+    }
+    const el = isTextNode(result.node)
+      ? result.node.parentElement
+      : result.node;
+    if (el === null) {
+      // Must have clicked on a text child of the shadow root.
+      return;
+    }
+    const sourceId = el.getAttribute('__ignition-source-id__');
+    if (sourceId === null) {
+      // Must be a dynamic element not cloned from a template. Can't select.
+      return;
+    }
+    const bounds = el.getBoundingClientRect();
+    const computedStyle = getComputedStyle(el);
+    return {
+      kind: 'element',
+      sourceId,
+      bounds,
+      display: computedStyle.display,
+    };
+  }
+
   boundingBoxesAtPoint(x: number, y: number): BoundingBoxWithDepth[] {
     const result = getMostSpecificNodeInStoryAtPoint(x, y);
     if (result === undefined) {
@@ -157,6 +184,15 @@ function isElementInStory(element: Element): boolean {
 }
 
 export type ApiToWebview = ApiToWebviewClass;
+
+export type ElementInfo =
+  | {
+      kind: 'element';
+      sourceId: string;
+      bounds: DOMRect;
+      display: string;
+    }
+  | {kind: 'text'; bounds: DOMRect};
 
 // A bounding box that's relative to the viewport, not the page.
 export interface ViewportBoundingBox {

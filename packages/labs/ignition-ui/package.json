@@ -9,6 +9,7 @@
     "start": "wireit"
   },
   "dependencies": {
+    "@lit/context": "^1.1.0",
     "@lit/task": "^1.0.0",
     "@vscode/codicons": "^0.0.35",
     "@vscode/webview-ui-toolkit": "^1.4.0",
@@ -78,7 +79,8 @@
     "build:dependencies": {
       "dependencies": [
         "../../lit:build",
-        "../../task:build"
+        "../../task:build",
+        "../../context:build"
       ]
     },
     "test:types": {

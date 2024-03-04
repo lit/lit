@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, html, css} from 'lit';
+import {LitElement, css, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import './vscode-elements.js';
 // The Chromium version in VS Code does not support the `with` keyword yet
@@ -18,7 +18,7 @@ if (!document.adoptedStyleSheets.includes(codiconStyles)) {
 
 @customElement('ignition-toolbar')
 export class IgnitionToolbar extends LitElement {
-  @property() mode: 'select' | 'interact' = 'select';
+  @property() selectionMode: 'select' | 'interact' = 'select';
 
   @property({type: Boolean}) autoChangeStoryUrl = true;
 
@@ -45,14 +45,14 @@ export class IgnitionToolbar extends LitElement {
         aria-label="Select Mode"
         appearance="icon"
         @click=${() => this.#setMode('select')}
-        ?disabled=${this.mode === 'select'}
+        ?disabled=${this.selectionMode === 'select'}
         ><span class="codicon codicon-inspect"></span
       ></vscode-button>
       <vscode-button
         aria-label="Interact Mode"
         appearance="icon"
         @click=${() => this.#setMode('interact')}
-        ?disabled=${this.mode === 'interact'}
+        ?disabled=${this.selectionMode === 'interact'}
         ><span class="codicon codicon-play"></span
       ></vscode-button>
       <vscode-button
@@ -69,8 +69,8 @@ export class IgnitionToolbar extends LitElement {
   }
 
   #setMode(mode: 'select' | 'interact') {
-    this.mode = mode;
-    this.dispatchEvent(new ModeChangeEvent(this.mode));
+    this.selectionMode = mode;
+    this.dispatchEvent(new SelectionModeChangeEvent(this.selectionMode));
   }
 
   #setAutoChangeStoryUrl(locked: boolean) {
@@ -80,10 +80,10 @@ export class IgnitionToolbar extends LitElement {
     );
   }
 }
-export class ModeChangeEvent extends Event {
+export class SelectionModeChangeEvent extends Event {
   readonly mode: 'select' | 'interact';
   constructor(mode: 'select' | 'interact') {
-    super('mode-change');
+    super('selection-mode-change');
     this.mode = mode;
   }
 }
