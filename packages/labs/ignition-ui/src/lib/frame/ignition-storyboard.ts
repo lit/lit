@@ -24,6 +24,26 @@ export class IgnitionStoryboard extends LitElement {
       width: 100%;
       height: 100%;
     }
+
+    /*
+      Use a css animation to keep the .loading element hidden for
+      the first second. This is to avoid a flash of content when
+      reloading the iframe. If it takes longer than a second, then we do
+      want to show the loading message.
+    */
+    .loading {
+      opacity: 0;
+      visibility: hidden;
+      animation: show 0s forwards;
+      animation-delay: 1s;
+    }
+
+    @keyframes show {
+      to {
+        opacity: 1;
+        visibility: visible;
+      }
+    }
   `;
 
   @property()
@@ -57,7 +77,7 @@ export class IgnitionStoryboard extends LitElement {
             });
         },
         pending: () => {
-          return html`<h3>Loading stories...</h3>`;
+          return html`<h3 class="loading">Loading stories...</h3>`;
         },
         error: (error) => {
           return html`<h3>Error: ${error}</h3>`;
