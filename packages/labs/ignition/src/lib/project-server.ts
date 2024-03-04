@@ -12,15 +12,14 @@ import {Deferred} from './deferred.js';
 import {getUiServer} from './ui-server.js';
 import cors from 'koa-cors';
 import Koa from 'koa';
-import type {AbsolutePath, Analyzer, PackagePath} from '@lit-labs/analyzer';
+import type {Analyzer} from '@lit-labs/analyzer';
 import Router from '@koa/router';
 import * as wds from '@web/dev-server';
-import type {Plugin} from '@web/dev-server-core';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
-import {getModulePathFromJsPath} from './paths.js';
-import {addSourceIds} from './source-id-transform.js';
+import {PassThroughPlugin} from './pass-through-plugin.js';
+import {OverlayFilesystem} from './overlay-filesystem.js';
 
 // TODO (justinfagnani): /_src/ isn't a great name. Right now it's just a
 // prefix for all JS files. We're not requesting source from the server, but
@@ -38,7 +37,7 @@ const startServer = async (
   const devServer = await wds.startDevServer({
     config: {
       rootDir,
-      plugins: [new PassThroughTransform(analyzer, workspaceFolder)],
+      plugins: [new PassThroughPlugin(analyzer, workspaceFolder)],
       middleware: [
         cors({origin: '*', credentials: true}),
         ...getMiddleware(uiServerPort, analyzer, lazyAddress),
@@ -53,70 +52,6 @@ const startServer = async (
   lazyAddress.port = port!;
   return devServer.server!;
 };
-
-export class PassThroughTransform implements Plugin {
-  readonly name = 'pass-through';
-  private readonly analyzer: Analyzer;
-  private readonly workspaceFolder: vscode.WorkspaceFolder;
-  constructor(analyzer: Analyzer, workspaceFolder: vscode.WorkspaceFolder) {
-    this.analyzer = analyzer;
-    this.workspaceFolder = workspaceFolder;
-  }
-
-  serve(context: Koa.Context) {
-    return this.getJSFromAnalyzer(context.path as PackagePath);
-  }
-
-  // Public for testing
-  getJSFromAnalyzer(jsPath: PackagePath): string | undefined {
-    if (jsPath.startsWith('/node_modules/')) {
-      // TODO: exclude WDS path prefixes
-      return;
-    }
-    const filePath = (this.workspaceFolder.uri.fsPath + jsPath) as AbsolutePath;
-
-    // Find the SourceFile
-    const modulePath = getModulePathFromJsPath(this.analyzer, filePath);
-    if (modulePath === undefined) {
-      // File is not in TS project, so let WDS try to serve it
-      return;
-    }
-    const sourceFile = this.analyzer.program.getSourceFile(modulePath);
-    if (sourceFile === undefined) {
-      // Shouldn't be possible?
-      return;
-    }
-
-    // Emit
-    let result: string | undefined;
-    this.analyzer.program.emit(
-      sourceFile,
-      (
-        fileName: string,
-        text: string,
-        _writeByteOrderMark: boolean,
-        _onError?: (message: string) => void
-      ) => {
-        if (fileName === filePath) {
-          result = text;
-        }
-      },
-      undefined,
-      undefined,
-      {
-        after: [
-          addSourceIds(
-            this.analyzer.typescript,
-            this.analyzer.program.getTypeChecker()
-          ),
-        ],
-      }
-    );
-
-    // If result is undefined… unknown problem with emit?
-    return result;
-  }
-}
 
 // This will have the port by the time it's accessed.
 interface LazyAddress {
@@ -167,7 +102,8 @@ const getMiddleware = (
 const serverCache = new Map<string, Deferred<Server>>();
 
 export const getProjectServer = async (
-  workspaceFolder: vscode.WorkspaceFolder
+  workspaceFolder: vscode.WorkspaceFolder,
+  filesystem: OverlayFilesystem
 ) => {
   let serverDeferred = serverCache.get(workspaceFolder.uri.fsPath);
   if (serverDeferred === undefined) {
@@ -180,7 +116,7 @@ export const getProjectServer = async (
       // lets it run while the server is starting.
       const [uiServer, analyzer] = await Promise.all([
         getUiServer(),
-        getAnalyzer(workspaceFolder),
+        getAnalyzer(workspaceFolder, filesystem),
       ]);
 
       const uiServerAddress = uiServer.server?.address() as AddressInfo;

@@ -8,6 +8,7 @@ import ts from 'typescript';
 import {AbsolutePath} from './paths.js';
 import * as path from 'path';
 import {Analyzer} from './analyzer.js';
+import type {AnalyzerInterface} from './model.js';
 
 export interface AnalyzerOptions {
   /**
@@ -17,19 +18,14 @@ export interface AnalyzerOptions {
    * be included in a project's tsconfig.
    */
   exclude?: string[];
+  fs?: AnalyzerInterface['fs'];
 }
 
-/**
- * Returns an analyzer for a Lit npm package based on a filesystem path.
- *
- * The path may specify a package root folder, or a specific tsconfig file. When
- * specifying a folder, if no tsconfig.json file is found directly in the root
- * folder, the project will be analyzed as JavaScript.
- */
-export const createPackageAnalyzer = (
+const getCommandLine = (
   packagePath: AbsolutePath,
-  options: AnalyzerOptions = {}
-) => {
+  options: AnalyzerOptions,
+  fs: AnalyzerInterface['fs']
+): ts.ParsedCommandLine => {
   console.log('createPackageAnalyzer', packagePath);
   // This logic accepts either a path to folder containing a tsconfig.json
   // directly inside it or a path to a specific tsconfig file. If no tsconfig
@@ -38,27 +34,26 @@ export const createPackageAnalyzer = (
   const configFileName = isDirectory
     ? path.join(packagePath, 'tsconfig.json')
     : packagePath;
-  let commandLine: ts.ParsedCommandLine;
   console.log('configFileName', configFileName);
-  if (ts.sys.fileExists(configFileName)) {
+  if (fs.fileExists(configFileName)) {
     console.log('configFile exists');
 
-    const configFile = ts.readConfigFile(configFileName, ts.sys.readFile);
+    const configFile = ts.readConfigFile(configFileName, (path) =>
+      fs.readFile(path)
+    );
     if (options.exclude !== undefined) {
       (configFile.config.exclude ??= []).push(...options.exclude);
     }
-    commandLine = ts.parseJsonConfigFileContent(
+    return ts.parseJsonConfigFileContent(
       configFile.config /* json */,
-      ts.sys /* host */,
+      fs /* host */,
       isDirectory ? packagePath : path.dirname(packagePath) /* basePath */,
       {} /* existingOptions */,
       configFileName /* configFileName */
     );
-
-    console.log('parsed commandLine. errors:', commandLine.errors.length);
   } else if (isDirectory) {
     console.info(`No tsconfig.json found; assuming package is JavaScript.`);
-    commandLine = ts.parseJsonConfigFileContent(
+    return ts.parseJsonConfigFileContent(
       {
         compilerOptions: {
           // TODO(kschaaf): probably want to make this configurable
@@ -84,7 +79,7 @@ export const createPackageAnalyzer = (
         include: ['**/*.js'],
         exclude: options.exclude ?? [],
       },
-      ts.sys /* host */,
+      fs /* host */,
       packagePath /* basePath */
     );
   } else {
@@ -92,13 +87,33 @@ export const createPackageAnalyzer = (
       `The specified path '${packagePath}' was not a folder or a tsconfig file.`
     );
   }
+};
 
-  // Ensure that `parent` nodes are set in the AST by creating a compiler
-  // host with this configuration; without these, `getText()` and other
-  // API's that require crawling up the AST tree to find the source file
-  // text may fail
+/**
+ * Returns an analyzer for a Lit npm package based on a filesystem path.
+ *
+ * The path may specify a package root folder, or a specific tsconfig file. When
+ * specifying a folder, if no tsconfig.json file is found directly in the root
+ * folder, the project will be analyzed as JavaScript.
+ *
+ * The returned analyzer will be immutable and will not update as the filesystem
+ * changes. This is useful for analyzing a package at a specific point in time,
+ * for example as part of a build pipeline.
+ */
+export const createPackageAnalyzer = (
+  packagePath: AbsolutePath,
+  options: AnalyzerOptions = {}
+) => {
+  console.log('createPackageAnalyzer', packagePath);
+  const fs = options.fs ?? ts.sys;
+  const commandLine = getCommandLine(packagePath, options, fs);
+
   const compilerHost = ts.createCompilerHost(
     commandLine.options,
+    // Ensure that `parent` nodes are set in the AST by creating a compiler
+    // host with this configuration; without these, `getText()` and other
+    // API's that require crawling up the AST tree to find the source file
+    // text may fail
     /* setParentNodes */ true
   );
   const program = ts.createProgram(
@@ -117,6 +132,69 @@ export const createPackageAnalyzer = (
     commandLine,
   });
   for (const diagnostic of program.getSyntacticDiagnostics()) {
+    analyzer.addDiagnostic(diagnostic);
+  }
+
+  return analyzer;
+};
+
+/**
+ * Like createPackageAnalyzer, only it will filesystem mtimes to notice when
+ * files have updated, and will automatically return fresh results when queried.
+ */
+export const createUpdatingPackageAnalyzer = (
+  packagePath: AbsolutePath,
+  options: AnalyzerOptions = {}
+) => {
+  console.log('createPackageAnalyzer', packagePath);
+  const fs = options.fs ?? ts.sys;
+  const commandLine = getCommandLine(packagePath, options, fs);
+
+  const languageService = ts.createLanguageService({
+    getCompilationSettings: function (): ts.CompilerOptions {
+      return commandLine.options;
+    },
+    getScriptFileNames: function (): string[] {
+      return commandLine.fileNames;
+    },
+    getScriptVersion: function (fileName: string): string {
+      const mTime = fs.getModifiedTime?.(fileName)?.toISOString() ?? '0';
+      return mTime;
+    },
+    getScriptSnapshot: function (
+      fileName: string
+    ): ts.IScriptSnapshot | undefined {
+      const text = fs.readFile(fileName, 'utf-8');
+      if (text === undefined) {
+        return undefined;
+      }
+      return ts.ScriptSnapshot.fromString(text);
+    },
+    getCurrentDirectory: function (): string {
+      return packagePath;
+    },
+    getDefaultLibFileName: function (options: ts.CompilerOptions): string {
+      return ts.getDefaultLibFilePath(options);
+    },
+    readFile: function (
+      path: string,
+      encoding?: string | undefined
+    ): string | undefined {
+      return fs.readFile(path, encoding);
+    },
+    fileExists: function (path: string): boolean {
+      return fs.fileExists(path);
+    },
+  });
+
+  const analyzer = new Analyzer({
+    getProgram: () => languageService.getProgram()!,
+    typescript: ts,
+    fs,
+    path,
+    commandLine,
+  });
+  for (const diagnostic of analyzer.program.getSyntacticDiagnostics()) {
     analyzer.addDiagnostic(diagnostic);
   }
 

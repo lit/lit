@@ -125,7 +125,10 @@ export class EditorPanel implements vscode.Disposable {
       return;
     }
     const {storyPath, workspaceFolder} = this.#ignition.currentStory;
-    const projectServer = await getProjectServer(workspaceFolder);
+    const projectServer = await getProjectServer(
+      workspaceFolder,
+      this.#ignition.filesystem
+    );
     const projectServerAddress = projectServer.address() as AddressInfo;
     const storyUrl = `http://localhost:${projectServerAddress.port}/story/${storyPath}`;
     connection.setStoryUrl(storyUrl);
