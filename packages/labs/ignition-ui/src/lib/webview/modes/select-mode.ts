@@ -15,8 +15,13 @@ import type {
 } from '../../frame/iframe-api-to-webview.js';
 import '../../ignition-selector.js';
 import {ResizeDirection} from '../../resize-direction.js';
+import type {ApiFromExtension} from '../api-from-extension.js';
 import type {IgnitionStage} from '../ignition-stage.js';
-import {frameApiContext, stageContext} from './editor-mode.js';
+import {
+  extensionApiContext,
+  frameApiContext,
+  stageContext,
+} from './editor-mode.js';
 
 const colors = [
   '#ff0000',
@@ -47,6 +52,9 @@ export class SelectMode extends LitElement {
   @consume({context: frameApiContext, subscribe: true})
   frameApi?: Remote<ApiToWebview>;
 
+  @consume({context: extensionApiContext, subscribe: true})
+  extensionApi?: Remote<ApiFromExtension>;
+
   @property({attribute: false})
   boxesInPageToHighlight: BoundingBoxWithDepth[] = [];
 
@@ -61,6 +69,12 @@ export class SelectMode extends LitElement {
     this.addEventListener('mousemove', this.#onStageMouseMove);
     this.addEventListener('mouseout', this.#onStageMouseOut);
     this.addEventListener('click', this.#onStageClick);
+    this.addEventListener('keydown', this.#onKeyDown);
+  }
+
+  connectedCallback() {
+    super.connectedCallback();
+    this.setAttribute('tabindex', '0');
   }
 
   render() {
@@ -108,6 +122,7 @@ export class SelectMode extends LitElement {
   }
 
   async #onStageClick(mouseEvent: MouseEvent) {
+    this.focus();
     if (this.frameApi == null) {
       // await this.#frameApiChanged.promise;
       console.log('onStageClick: No frame API');
@@ -123,6 +138,24 @@ export class SelectMode extends LitElement {
 
   #onStageMouseOut() {
     this.boxesInPageToHighlight = [];
+  }
+
+  async #onKeyDown(event: KeyboardEvent) {
+    if (event.key === 'Backspace' || event.key === 'Delete') {
+      if (this.selectedElement?.kind === 'element') {
+        const sourceLocation = this.selectedElement.location;
+        if (sourceLocation === undefined) {
+          return;
+        }
+        await this.extensionApi?.applyEdit({
+          kind: 'delete-element',
+          url: sourceLocation.url,
+          sourceId: this.selectedElement.sourceId,
+        });
+        // TODO: only do this on confirmation of the delete
+        this.selectedElement = undefined;
+      }
+    }
   }
 }
 

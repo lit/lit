@@ -183,6 +183,9 @@ class ApiExposedToWebview {
         case 'set-auto-change-story-url':
           this.#setAutoChangeStoryUrl(message.autoChangeStoryUrl);
           break;
+        case 'edit':
+          this.#ignition.applyEdit(message.edit);
+          break;
       }
     };
     webview.onDidReceiveMessage(listener);

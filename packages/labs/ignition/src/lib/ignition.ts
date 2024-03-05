@@ -19,6 +19,7 @@ import {TemplateOutlineDataProvider} from './template-outline-data-provider.js';
 import {ElementPaletteViewProvider} from './element-palette.js';
 import {EditorPanel} from './editor-panel.js';
 import {InMemoryBuffers, OverlayFilesystem} from './overlay-filesystem.js';
+import {SourceEdit} from '@lit-labs/ignition-ui';
 
 export interface StoryInfo {
   storyPath: string;
@@ -346,5 +347,9 @@ export class Ignition {
     } catch {}
     // If we didn't find the element, it's been deleted.
     this.currentElement = undefined;
+  }
+
+  async applyEdit(edit: SourceEdit) {
+    logChannel.appendLine(`Ignition applyEdit: ${JSON.stringify(edit)}`);
   }
 }

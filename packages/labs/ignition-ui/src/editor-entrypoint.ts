@@ -7,7 +7,10 @@
 import './lib/webview/ignition-editor.js';
 import {ApiToExtension} from './lib/webview/api-to-extension.js';
 export type {ApiExposedToExtension} from './lib/webview/api-to-extension.js';
-export type {MessageFromWebviewToExtension} from './lib/protocol/extension-api-to-webview.js';
+export type {
+  MessageFromWebviewToExtension,
+  SourceEdit,
+} from './lib/protocol/extension-api-to-webview.js';
 
 ApiToExtension.expose();
 

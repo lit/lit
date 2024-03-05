@@ -4,7 +4,10 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {MessageFromWebviewToExtension} from '../protocol/extension-api-to-webview.js';
+import type {
+  MessageFromWebviewToExtension,
+  SourceEdit,
+} from '../protocol/extension-api-to-webview.js';
 import {vscode} from './comlink-endpoint-to-vscode.js';
 // @ts-expect-error Badly formatted package.json.
 import * as vlq from 'vlq';
@@ -49,7 +52,16 @@ class ApiFromExtension {
       autoChangeStoryUrl,
     });
   }
+
+  async applyEdit(edit: SourceEdit) {
+    this.#sendMessage({
+      kind: 'edit',
+      edit,
+    });
+  }
 }
+
+export type {ApiFromExtension};
 
 export const apiFromExtension = new ApiFromExtension();
 

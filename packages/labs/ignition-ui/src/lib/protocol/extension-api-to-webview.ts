@@ -6,7 +6,8 @@
 
 export type MessageFromWebviewToExtension =
   | FocusSourceAtLocation
-  | SetAutoChangeStoryUrl;
+  | SetAutoChangeStoryUrl
+  | Edit;
 
 interface FocusSourceAtLocation {
   kind: 'focus-source-at-location';
@@ -19,3 +20,14 @@ interface SetAutoChangeStoryUrl {
   kind: 'set-auto-change-story-url';
   autoChangeStoryUrl: boolean;
 }
+
+interface Edit {
+  kind: 'edit';
+  edit: SourceEdit;
+}
+
+export type SourceEdit = {
+  kind: 'delete-element';
+  url: string;
+  sourceId: string;
+};

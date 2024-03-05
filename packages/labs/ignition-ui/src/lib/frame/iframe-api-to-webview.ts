@@ -32,11 +32,14 @@ class ApiToWebview {
     }
     const bounds = el.getBoundingClientRect();
     const computedStyle = getComputedStyle(el);
+    const display = computedStyle.display;
+    const location = this.#getSourceLocationFromNode(el);
     return {
       kind: 'element',
       sourceId,
       bounds,
-      display: computedStyle.display,
+      display,
+      location,
     };
   }
 
@@ -57,15 +60,16 @@ class ApiToWebview {
     });
   }
 
-  getSourceLocationFromPoint(
-    x: number,
-    y: number
-  ): undefined | {url: string; line: number; column: number} {
+  getSourceLocationFromPoint(x: number, y: number): SourceLocation | undefined {
     const result = getMostSpecificNodeInStoryAtPoint(x, y);
     if (result === undefined) {
       return;
     }
     const node = result.node;
+    return this.#getSourceLocationFromNode(node);
+  }
+
+  #getSourceLocationFromNode(node: Element | Text): SourceLocation | undefined {
     const position = getPositionInLitTemplate(node);
     const template = position?.template;
     const constructedAt = template?.constructedAt;
@@ -84,9 +88,9 @@ class ApiToWebview {
     const [, url, line, column] = match;
     const templateLocation = {url, line: Number(line), column: Number(column)};
     // Now to get the position _within_ the template, that node occupies.
-    console.log(templateLocation);
-    console.log(position);
-    console.log(template?.el?.content);
+    // console.log(templateLocation);
+    // console.log(position);
+    // console.log(template?.el?.content);
     return templateLocation;
   }
 
@@ -194,9 +198,16 @@ export type ElementInfo =
       kind: 'element';
       sourceId: string;
       bounds: DOMRect;
+      location: SourceLocation | undefined;
       display: string;
     }
-  | {kind: 'text'; bounds: DOMRect};
+  | {kind: 'text'; bounds: DOMRect; location: SourceLocation | undefined};
+
+export interface SourceLocation {
+  url: string;
+  line: number;
+  column: number;
+}
 
 // A bounding box that's relative to the viewport, not the page.
 export interface ViewportBoundingBox {

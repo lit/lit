@@ -22,7 +22,7 @@ import type {
   AutoChangeStoryUrlChangeEvent,
   SelectionModeChangeEvent,
 } from './ignition-toolbar.js';
-import {frameApiContext} from './modes/editor-mode.js';
+import {extensionApiContext, frameApiContext} from './modes/editor-mode.js';
 import {SelectMode} from './modes/select-mode.js';
 
 /**
@@ -58,6 +58,9 @@ export class IgnitionEditor extends LitElement {
 
   @provide({context: frameApiContext})
   private _frameApi?: comlink.Remote<ApiToWebview>;
+
+  @provide({context: extensionApiContext})
+  private _apiFromExtension = apiFromExtension;
 
   @state()
   private boxesInPageToHighlight: BoundingBoxWithDepth[] = [];
@@ -148,7 +151,7 @@ export class IgnitionEditor extends LitElement {
 
   #autoChangeStoryUrlChanged(event: AutoChangeStoryUrlChangeEvent) {
     this.autoChangeStoryUrl = event.locked;
-    apiFromExtension.setAutoChangeStoryUrl(this.autoChangeStoryUrl);
+    this._apiFromExtension.setAutoChangeStoryUrl(this.autoChangeStoryUrl);
   }
 
   reloadFrame() {
