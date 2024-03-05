@@ -118,9 +118,6 @@ export class SelectMode extends LitElement {
     const x = mouseEvent.clientX - stageRect.left;
     const y = mouseEvent.clientY - stageRect.top;
     const elementInfo = await this.frameApi.getElementAtPoint(x, y);
-    if (elementInfo === undefined) {
-      return;
-    }
     this.selectedElement = elementInfo;
   }
 
@@ -138,3 +135,9 @@ const getResizeDirectionsForDisplay = (display: string) => {
   }
   return [];
 };
+
+declare global {
+  interface HTMLElementTagNameMap {
+    'ignition-mode-select': SelectMode;
+  }
+}
