@@ -262,9 +262,14 @@ export class Ignition {
     context.subscriptions.push(disposable);
 
     disposable = vscode.workspace.onDidChangeTextDocument((event) => {
+      const {document} = event;
+      if (document.uri.scheme !== 'file') {
+        // Scheme may be 'output' for log files, etc.
+        return;
+      }
       const changed = this.#buffers.set(
-        event.document.uri.fsPath as AbsolutePath,
-        event.document.getText()
+        document.uri.fsPath as AbsolutePath,
+        document.getText()
       );
       if (changed) {
         this.#fileChanged();
