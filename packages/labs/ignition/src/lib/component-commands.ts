@@ -17,6 +17,7 @@ import {getStoriesModuleForElement} from './stories.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
+import {OverlayFilesystem} from './overlay-filesystem.js';
 
 export const createComponent = async () => {
   const workspaceFolder = await vscode.window.showWorkspaceFolderPick();
@@ -65,7 +66,10 @@ export const createComponent = async () => {
   vscode.window.showInformationMessage(`Created component: ${componentName}`);
 };
 
-export const deleteComponent = async (data?: LitElementDeclaration) => {
+export const deleteComponent = async (
+  filesystem: OverlayFilesystem,
+  data?: LitElementDeclaration
+) => {
   logChannel.appendLine(`deleteComponent: ${data?.name}`);
 
   if (data === undefined) {
@@ -74,7 +78,7 @@ export const deleteComponent = async (data?: LitElementDeclaration) => {
   }
 
   const workspaceFolder = getWorkspaceFolderForElement(data);
-  const analyzer = getAnalyzer(workspaceFolder);
+  const analyzer = getAnalyzer(workspaceFolder, filesystem);
   const fileUri = getDocumentUriForElement(data);
   const storiesModule = getStoriesModuleForElement(data, analyzer);
   const storiesPath = storiesModule?.sourcePath;

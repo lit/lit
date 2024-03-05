@@ -11,12 +11,14 @@ import {ElementsDataProvider} from './elements-data-provider.js';
 import {logChannel} from './logging.js';
 import {getStoriesModule, getStoriesModuleForElement} from './stories.js';
 import {EditorWebviewSerializer} from './editor-webview-serializer.js';
+import ts from 'typescript';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
 import {TemplateOutlineDataProvider} from './template-outline-data-provider.js';
 import {ElementPaletteViewProvider} from './element-palette.js';
 import {EditorPanel} from './editor-panel.js';
+import {InMemoryBuffers, OverlayFilesystem} from './overlay-filesystem.js';
 
 export interface StoryInfo {
   storyPath: string;
@@ -43,6 +45,9 @@ export class Ignition {
     this.#onDidChangeCurrentElement.event;
 
   #currentElement?: LitElementDeclaration;
+
+  readonly #buffers: InMemoryBuffers;
+  readonly filesystem: OverlayFilesystem;
 
   get currentElement() {
     return this.#currentElement!;
@@ -79,6 +84,10 @@ export class Ignition {
 
   constructor(context: vscode.ExtensionContext) {
     this.context = context;
+    const {filesystem: fs, buffers} =
+      OverlayFilesystem.fromUnderlyingFilesystem(ts.sys);
+    this.filesystem = fs;
+    this.#buffers = buffers;
   }
 
   async activate() {
@@ -130,7 +139,7 @@ export class Ignition {
       'ignition.deleteComponent',
       async (...args) => {
         const {deleteComponent} = await import('./component-commands.js');
-        await deleteComponent(...args);
+        await deleteComponent(this.filesystem, ...args);
       }
     );
     context.subscriptions.push(disposable);
@@ -144,7 +153,7 @@ export class Ignition {
     context.subscriptions.push(serializer, disposable);
 
     // Elements view
-    const elementsDataProvider = new ElementsDataProvider();
+    const elementsDataProvider = new ElementsDataProvider(this);
     disposable = vscode.window.registerTreeDataProvider(
       'ignition-element-view',
       elementsDataProvider
@@ -187,7 +196,7 @@ export class Ignition {
         // output pane. We'll just do nothing to not disturb the current state.
         return;
       }
-      const analyzer = await getAnalyzer(workspaceFolder);
+      const analyzer = await getAnalyzer(workspaceFolder, this.filesystem);
 
       const modulePath = documentUri.fsPath as AbsolutePath;
       const storiesModule = getStoriesModule(modulePath, analyzer);
@@ -207,7 +216,7 @@ export class Ignition {
           `ignition.openElement ${declaration.tagname ?? declaration.name}`
         );
         const workspaceFolder = getWorkspaceFolderForElement(declaration);
-        const analyzer = await getAnalyzer(workspaceFolder);
+        const analyzer = await getAnalyzer(workspaceFolder, this.filesystem);
         const storiesModule = getStoriesModuleForElement(declaration, analyzer);
         this.currentElement = declaration;
         this.currentStory =
@@ -216,6 +225,29 @@ export class Ignition {
             : {storyPath: storiesModule.jsPath, workspaceFolder};
       }
     );
+    context.subscriptions.push(disposable);
+
+    // Track open files in this.#buffers, our in-memory overlay filesystem.
+    disposable = vscode.workspace.onDidOpenTextDocument((document) => {
+      this.#buffers.set(
+        document.uri.fsPath as AbsolutePath,
+        document.getText()
+      );
+    });
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.workspace.onDidChangeTextDocument((event) => {
+      this.#buffers.set(
+        event.document.uri.fsPath as AbsolutePath,
+        event.document.getText()
+      );
+    });
+    context.subscriptions.push(disposable);
+
+    // And when the user closes a file, remove it from the overlay filesystem
+    disposable = vscode.workspace.onDidCloseTextDocument((document) => {
+      this.#buffers.close(document.uri.fsPath as AbsolutePath);
+    });
     context.subscriptions.push(disposable);
   }
 

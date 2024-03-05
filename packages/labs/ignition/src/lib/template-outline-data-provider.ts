@@ -35,7 +35,7 @@ import vscode = require('vscode');
 export class TemplateOutlineDataProvider
   implements vscode.TreeDataProvider<TemplateItem>
 {
-  ignition: Ignition;
+  readonly ignition: Ignition;
 
   constructor(ignition: Ignition) {
     this.ignition = ignition;
@@ -152,7 +152,7 @@ export class TemplateOutlineDataProvider
         return undefined;
       }
       const workspaceFolder = getWorkspaceFolderForElement(element);
-      const analyzer = getAnalyzer(workspaceFolder);
+      const analyzer = getAnalyzer(workspaceFolder, this.ignition.filesystem);
       return [{node: element, analyzer}];
     } else if (data.node instanceof LitElementDeclaration) {
       // We want to return the render() method, and ideally, any other methods

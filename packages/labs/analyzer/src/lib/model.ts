@@ -810,6 +810,7 @@ export interface AnalyzerInterface {
     | 'realpath'
     | 'fileExists'
     | 'useCaseSensitiveFileNames'
+    | 'getModifiedTime'
   >;
   path: Pick<
     typeof import('path'),

@@ -11,10 +11,17 @@ import {logChannel} from './logging.js';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
+import {Ignition} from './ignition.js';
 
 export class ElementsDataProvider
   implements vscode.TreeDataProvider<ElementsPanelItem>
 {
+  readonly ignition: Ignition;
+
+  constructor(ignition: Ignition) {
+    this.ignition = ignition;
+  }
+
   onDidChangeTreeData?:
     | vscode.Event<
         void | ElementsPanelItem | ElementsPanelItem[] | null | undefined
@@ -58,7 +65,7 @@ export class ElementsDataProvider
         (folder) => new WorkspaceItem(folder)
       );
     } else if (data instanceof WorkspaceItem) {
-      const analyzer = await getAnalyzer(data.folder);
+      const analyzer = await getAnalyzer(data.folder, this.ignition.filesystem);
       // const modules = analyzer.
       const pkg = analyzer.getPackage();
       const litModules = pkg.getLitElementModules();
