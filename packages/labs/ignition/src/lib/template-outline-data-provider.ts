@@ -11,8 +11,8 @@ import {
 import {createRequire} from 'node:module';
 import {getAnalyzer, getWorkspaceFolderForElement} from './analyzer.js';
 import {logChannel} from './logging.js';
-
-import type ts from 'typescript';
+import * as parse5 from 'parse5';
+import ts from 'typescript';
 import {Analyzer} from '@lit-labs/analyzer';
 import type {Ignition} from './ignition.js';
 import {
@@ -24,6 +24,7 @@ import {
   isDocumentFragment,
   isElementNode,
   isLitTaggedTemplateExpression,
+  isLitTemplate,
   isNode,
   isTextNode,
   parseLitTemplate,
@@ -58,6 +59,19 @@ export class TemplateOutlineDataProvider
   > = this.#onDidChangeTreeData.event;
 
   getTreeItem(data: TemplateItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
+    const treeItem = this.#getTreeItem(data);
+    const location = getLocationForItem(data);
+    if (location !== undefined) {
+      treeItem.command = {
+        title: 'Highlight Source Code',
+        command: 'ignition.highlightSourceCode',
+        arguments: [location],
+      };
+    }
+    return treeItem;
+  }
+
+  #getTreeItem(data: TemplateItem): vscode.TreeItem {
     if (data.node instanceof LitElementDeclaration) {
       const element = data.node;
       const label =
@@ -153,7 +167,7 @@ export class TemplateOutlineDataProvider
       }
       const workspaceFolder = getWorkspaceFolderForElement(element);
       const analyzer = getAnalyzer(workspaceFolder, this.ignition.filesystem);
-      return [{node: element, analyzer}];
+      return [{node: element, analyzer, parent: data}];
     } else if (data.node instanceof LitElementDeclaration) {
       // We want to return the render() method, and ideally, any other methods
       // that return templates and are called in the render method.
@@ -163,7 +177,7 @@ export class TemplateOutlineDataProvider
       const renderMethod = [...node.methods].find((m) => m.name === 'render');
       return renderMethod === undefined
         ? undefined
-        : [{node: renderMethod, analyzer}];
+        : [{node: renderMethod, analyzer, parent: data}];
     } else if (data.node instanceof ClassMethod) {
       const {node, analyzer} = data;
       logChannel.appendLine(`getChildren ClassMethod: ${node.name}`);
@@ -190,14 +204,14 @@ export class TemplateOutlineDataProvider
           return undefined;
         }
         const template = parseLitTemplate(returnExpression, ts, checker);
-        return [{node: template, analyzer}];
+        return [{node: template, analyzer, parent: data}];
       }
       logChannel.appendLine('lastStatement is not a return statement');
       return undefined;
     } else if (data.node instanceof Binding) {
       const {type} = data.node;
       if (type === 'ternary') {
-        const {node, analyzer} = data;
+        const {analyzer} = data;
         const ts = analyzer.typescript;
         const checker = analyzer.program.getTypeChecker();
         const expression = data.node.tsNode as ts.ConditionalExpression;
@@ -206,21 +220,23 @@ export class TemplateOutlineDataProvider
 
         if (isLitTaggedTemplateExpression(expression.whenTrue, ts, checker)) {
           const template = parseLitTemplate(expression.whenTrue, ts, checker);
-          trueChild = {node: template, analyzer};
+          trueChild = {node: template, analyzer, parent: data};
         } else {
           trueChild = {
             node: new Expression(expression.whenTrue),
             analyzer: data.analyzer,
+            parent: data,
           };
         }
 
         if (isLitTaggedTemplateExpression(expression.whenFalse, ts, checker)) {
           const template = parseLitTemplate(expression.whenFalse, ts, checker);
-          falseChild = {node: template, analyzer};
+          falseChild = {node: template, analyzer, parent: data};
         } else {
           falseChild = {
             node: new Expression(expression.whenFalse),
             analyzer: data.analyzer,
+            parent: data,
           };
         }
 
@@ -232,7 +248,7 @@ export class TemplateOutlineDataProvider
       const checker = analyzer.program.getTypeChecker();
       if (isLitTaggedTemplateExpression(node.tsNode, ts, checker)) {
         const template = parseLitTemplate(node.tsNode, ts, checker);
-        return [{node: template, analyzer}];
+        return [{node: template, analyzer, parent: data}];
       }
       return [];
     } else if (isDocumentFragment(data.node) || isElementNode(data.node)) {
@@ -249,10 +265,15 @@ export class TemplateOutlineDataProvider
             return {
               node: new Binding('ternary', expression),
               analyzer: data.analyzer,
+              parent: data,
             };
           }
         }
-        return {node, analyzer: data.analyzer} as TemplateItem;
+        return {
+          node: node as TemplateNode,
+          analyzer: data.analyzer,
+          parent: data,
+        };
       });
     }
   }
@@ -292,4 +313,107 @@ class Binding extends Expression {
 interface TemplateItem<T extends TemplateNode = TemplateNode> {
   node: T;
   analyzer: Analyzer;
+  parent: TemplateItem | undefined;
+}
+
+function getLocationForItem(item: TemplateItem): undefined | vscode.Location {
+  if (
+    item.node instanceof LitElementDeclaration ||
+    item.node instanceof ClassMethod
+  ) {
+    return locationForTsNode(item.node.node);
+  }
+  if (isLitTemplate(item.node) || item.node instanceof Expression) {
+    return locationForTsNode(item.node.tsNode);
+  }
+  const locationInTemplate = item.node.sourceCodeLocation;
+  if (locationInTemplate == null) {
+    return undefined;
+  }
+  let containingTemplate: LitTemplate | undefined;
+  let curr = item.parent;
+  while (curr !== undefined) {
+    if (isLitTemplate(curr.node)) {
+      containingTemplate = curr.node;
+      break;
+    }
+    curr = curr.parent;
+  }
+  if (containingTemplate === undefined) {
+    return;
+  }
+  const template = containingTemplate.tsNode.template;
+  const start = getOffsetInTemplate(
+    template,
+    locationInTemplate.startOffset + 1
+  );
+  const end = getOffsetInTemplate(template, locationInTemplate.endOffset + 1);
+
+  const sourceFile: ts.SourceFile = containingTemplate.tsNode.getSourceFile();
+  const uri = vscode.Uri.file(sourceFile.fileName);
+  const tsPositionStart = sourceFile.getLineAndCharacterOfPosition(start);
+  const tsPositionEnd = sourceFile.getLineAndCharacterOfPosition(end);
+  return new vscode.Location(
+    uri,
+    new vscode.Range(
+      new vscode.Position(tsPositionStart.line, tsPositionStart.character),
+      new vscode.Position(tsPositionEnd.line, tsPositionEnd.character)
+    )
+  );
+}
+
+function locationForTsNode(node: ts.Node): vscode.Location {
+  const sourceFile = node.getSourceFile();
+  const start = node.getStart();
+  const end = node.getEnd();
+  const uri = vscode.Uri.file(sourceFile.fileName);
+  const tsPositionStart = sourceFile.getLineAndCharacterOfPosition(start);
+  const tsPositionEnd = sourceFile.getLineAndCharacterOfPosition(end);
+  return new vscode.Location(
+    uri,
+    new vscode.Range(
+      new vscode.Position(tsPositionStart.line, tsPositionStart.character),
+      new vscode.Position(tsPositionEnd.line, tsPositionEnd.character)
+    )
+  );
+}
+
+/**
+ * We've got a location in a template literal as its contents were
+ * parsed, ignoring its expressions. We want to get the location in the
+ * original source file.
+ *
+ * Things this may not yet account for:
+ *     - escapes that have a different length in the original source than the
+ *       actual value.
+ *     - inserted Lit binding content that isn't in the original source.
+ *       i.e. the comments and modifications to attributes that are inserted
+ *       as part of parseLitTemplate
+ */
+function getOffsetInTemplate(
+  template: ts.TemplateLiteral,
+  offsetInsideLiteral: number
+): number {
+  let offset = offsetInsideLiteral + template.getStart();
+  if (ts.isNoSubstitutionTemplateLiteral(template)) {
+    // The easy case!
+    return offset;
+  }
+  const head = template.head;
+  if (offset < head.end) {
+    // we're done
+    return offset;
+  }
+  let prevEnd = head.end;
+  for (const span of template.templateSpans) {
+    // The length of the ${...}. The +1 is because the TemplateMiddle /
+    // TemplateTail includes the closing }
+    const expressionLength = span.literal.getStart() + 1 - prevEnd;
+    offset += expressionLength;
+    if (offset < span.literal.end) {
+      return offset;
+    }
+    prevEnd = span.literal.end;
+  }
+  return offset;
 }
