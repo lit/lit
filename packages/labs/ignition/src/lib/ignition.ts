@@ -54,6 +54,9 @@ export class Ignition {
   }
 
   set currentElement(value: LitElementDeclaration | undefined) {
+    if (value === this.#currentElement) {
+      return; // nothing to do
+    }
     this.#currentElement = value;
     this.#onDidChangeCurrentElement.fire();
   }
@@ -241,11 +244,13 @@ export class Ignition {
     context.subscriptions.push(disposable);
 
     disposable = vscode.workspace.onDidChangeTextDocument((event) => {
-      this.#buffers.set(
+      const changed = this.#buffers.set(
         event.document.uri.fsPath as AbsolutePath,
         event.document.getText()
       );
-      this.#fileChanged();
+      if (changed) {
+        this.#fileChanged();
+      }
     });
     context.subscriptions.push(disposable);
 
@@ -256,8 +261,14 @@ export class Ignition {
     });
     context.subscriptions.push(disposable);
 
-    const fsWatcher = vscode.workspace.createFileSystemWatcher('**/*.{js,ts}');
-    fsWatcher.onDidChange(() => {
+    const fsWatcher =
+      vscode.workspace.createFileSystemWatcher('**/*.{js,ts,css}');
+    fsWatcher.onDidChange((e) => {
+      if (this.#buffers.isManaging(e.fsPath as AbsolutePath)) {
+        // We're already tracking this in our buffers, so we're ignoring its
+        // on-disk contents.
+        return;
+      }
       this.#fileChanged();
     });
     fsWatcher.onDidCreate(() => {
@@ -275,10 +286,16 @@ export class Ignition {
   }
 
   #fileChanged() {
+    // debounce?
     this.#tryToFindNewVersionOfElement();
     this.#analyzerUpdated.fire();
   }
 
+  /**
+   * Called when files have changed, and so the analyzer might have new info.
+   * Tries to set this.#currentElement to its analogous entry in the latest
+   * analysis.
+   */
   #tryToFindNewVersionOfElement() {
     if (this.#currentElement === undefined) {
       return;
@@ -298,7 +315,6 @@ export class Ignition {
         for (const element of module.getCustomElementExports()) {
           if (element.tagname === tagName) {
             this.currentElement = element;
-            this.#onDidChangeCurrentElement.fire();
             return;
           }
         }
@@ -306,6 +322,5 @@ export class Ignition {
     } catch {}
     // If we didn't find the element, it's been deleted.
     this.currentElement = undefined;
-    this.#onDidChangeCurrentElement.fire();
   }
 }

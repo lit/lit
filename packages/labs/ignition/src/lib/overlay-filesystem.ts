@@ -23,9 +23,12 @@ class InMemoryBuffers {
    * Until closeMemoryFile is called, the overlay contents will be used
    * instead of the underlying filesystem contents.
    */
-  set(path: AbsolutePath, contents: string) {
-    const mtime = new Date();
-    this.#buffers.set(path, {contents, mtime: new Date()});
+  set(path: AbsolutePath, contents: string): boolean {
+    let changed = contents !== this.#buffers.get(path)?.contents;
+    if (changed) {
+      this.#buffers.set(path, {contents, mtime: new Date()});
+    }
+    return changed;
   }
 
   /**
@@ -34,6 +37,10 @@ class InMemoryBuffers {
    */
   close(path: AbsolutePath) {
     this.#buffers.delete(path);
+  }
+
+  isManaging(path: AbsolutePath): boolean {
+    return this.#buffers.has(path);
   }
 }
 
