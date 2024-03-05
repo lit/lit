@@ -4,23 +4,26 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import '../protocol/comlink-stream.js';
-import {LitElement, html, css, PropertyValues, nothing} from 'lit';
-import {customElement, property, state} from 'lit/decorators.js';
+import {provide} from '@lit/context';
 import * as comlink from 'comlink';
+import {LitElement, PropertyValues, css, html, nothing} from 'lit';
+import {customElement, property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import {Deferred} from '../util/deferred.js';
-import './ignition-stage.js';
 import type {
   ApiToWebview,
   BoundingBoxWithDepth,
 } from '../frame/iframe-api-to-webview.js';
+import '../protocol/comlink-stream.js';
+import {Deferred} from '../util/deferred.js';
+import {apiFromExtension} from './api-from-extension.js';
+import './ignition-stage.js';
+import './ignition-toolbar.js';
 import type {
   AutoChangeStoryUrlChangeEvent,
-  ModeChangeEvent,
+  SelectionModeChangeEvent,
 } from './ignition-toolbar.js';
-import './ignition-toolbar.js';
-import {apiFromExtension} from './api-from-extension.js';
+import {frameApiContext} from './modes/editor-mode.js';
+import {SelectMode} from './modes/select-mode.js';
 
 /**
  * The Ignition story editor.
@@ -53,7 +56,8 @@ export class IgnitionEditor extends LitElement {
   @property()
   storyUrl: string | null | undefined = null;
 
-  #frameApi?: comlink.Remote<ApiToWebview>;
+  @provide({context: frameApiContext})
+  private _frameApi?: comlink.Remote<ApiToWebview>;
 
   @state()
   private boxesInPageToHighlight: BoundingBoxWithDepth[] = [];
@@ -66,6 +70,8 @@ export class IgnitionEditor extends LitElement {
 
   #frameApiChanged = new Deferred<void>();
 
+  #currentMode?: HTMLElement = new SelectMode();
+
   override render() {
     if (this.storyUrl === null) {
       // Display nothing until we hear from the extension.
@@ -76,20 +82,19 @@ export class IgnitionEditor extends LitElement {
     }
     return html`
       <ignition-toolbar
-        .mode=${this.selectionMode}
+        .selectionMode=${this.selectionMode}
         .autoChangeStoryUrl=${this.autoChangeStoryUrl}
-        @mode-change=${this.#selectionModeChanged}
+        @selection-mode-change=${this.#selectionModeChanged}
         @auto-change-story-url-change=${this.#autoChangeStoryUrlChanged}
         @reload-frame=${this.reloadFrame}
       ></ignition-toolbar>
       <ignition-stage
         .boxesInPageToHighlight=${this.boxesInPageToHighlight}
         .blockInput=${this.selectionMode !== 'interact'}
-        @mousemove=${this.#onStageMouseMove}
-        @mouseout=${() => (this.boxesInPageToHighlight = [])}
-        @click=${this.#onStageClick}
       >
+        <div slot="mode">${this.#currentMode}</div>
         <iframe
+          slot="frame"
           src=${ifDefined(this.storyUrl)}
           @load=${this.#onFrameLoad}
         ></iframe>
@@ -120,7 +125,7 @@ export class IgnitionEditor extends LitElement {
     })();
     iframeWindow.postMessage('ignition-webview-port', '*', [theirPort]);
 
-    this.#frameApi = comlink.wrap<ApiToWebview>(ourPort);
+    this._frameApi = comlink.wrap<ApiToWebview>(ourPort);
     this.#frameApiChanged.resolve();
     this.#frameApiChanged = new Deferred();
 
@@ -129,52 +134,16 @@ export class IgnitionEditor extends LitElement {
     const rootStyle = document.documentElement.getAttribute('style');
     const defaultStyles =
       document.querySelector('#_defaultStyles')?.textContent;
-    this.#frameApi.setEnvStyles(rootStyle, defaultStyles);
+    this._frameApi.setEnvStyles(rootStyle, defaultStyles);
   }
 
-  #mouseMoveId = 0;
-  async #onStageMouseMove(mouseEvent: MouseEvent) {
-    if (this.#frameApi == null) {
-      return;
+  #selectionModeChanged(event: SelectionModeChangeEvent) {
+    const selectionMode = (this.selectionMode = event.mode);
+    if (selectionMode === 'select') {
+      this.#currentMode = new SelectMode();
+    } else {
+      this.#currentMode = undefined;
     }
-    const id = ++this.#mouseMoveId;
-    const stage = mouseEvent.target as HTMLElementTagNameMap['ignition-stage'];
-    const windowX = mouseEvent.clientX;
-    const windowY = mouseEvent.clientY;
-    // Convert the mouse position to the stage's coordinate space.
-    const stageRect = stage.getBoundingClientRect();
-    const x = windowX - stageRect.left;
-    const y = windowY - stageRect.top;
-    const boxes = await this.#frameApi.boundingBoxesAtPoint(x, y);
-    // Handle race conditions
-    if (id !== this.#mouseMoveId) {
-      return;
-    }
-    this.boxesInPageToHighlight = boxes;
-  }
-
-  async #onStageClick(mouseEvent: MouseEvent) {
-    while (this.#frameApi == null) {
-      await this.#frameApiChanged.promise;
-    }
-    const stage = mouseEvent.target as HTMLElementTagNameMap['ignition-stage'];
-    const stageRect = stage.getBoundingClientRect();
-    const x = mouseEvent.clientX - stageRect.left;
-    const y = mouseEvent.clientY - stageRect.top;
-    const sourceLocation = await this.#frameApi.getSourceLocationFromPoint(
-      x,
-      y
-    );
-    if (sourceLocation == null) {
-      return;
-    }
-    const {url, line, column} = sourceLocation;
-    const api = await apiFromExtension;
-    await api.focusSourceAtLocation(url, line - 1, column - 1);
-  }
-
-  #selectionModeChanged(event: ModeChangeEvent) {
-    this.selectionMode = event.mode;
   }
 
   #autoChangeStoryUrlChanged(event: AutoChangeStoryUrlChangeEvent) {
@@ -183,11 +152,11 @@ export class IgnitionEditor extends LitElement {
   }
 
   reloadFrame() {
-    if (this.#frameApi == null) {
+    if (this._frameApi == null) {
       // not connected yet so nothing to reload
       return;
     }
-    this.#frameApi.reload();
+    this._frameApi.reload();
   }
 }
 
