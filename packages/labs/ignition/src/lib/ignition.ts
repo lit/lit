@@ -239,9 +239,6 @@ export class Ignition {
         // then yes.
         const hasCodeOpen = vscode.window.visibleTextEditors.length > 0;
         if (hasCodeOpen || this.#openIgnitionEditors.size === 0) {
-          console.log(
-            `hasCodeOpen: ${hasCodeOpen} - openIgnitionEditors: ${this.#openIgnitionEditors.size}`
-          );
           vscode.window.showTextDocument(elementDocumentUri, {
             // Show the source in the same column as the first visible source
             // viewer, otherwise just use the first column.
