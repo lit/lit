@@ -54,6 +54,9 @@ export class Ignition {
   }
 
   set currentElement(value: LitElementDeclaration | undefined) {
+    if (value === this.#currentElement) {
+      return; // nothing to do
+    }
     this.#currentElement = value;
     this.#onDidChangeCurrentElement.fire();
   }
@@ -62,6 +65,10 @@ export class Ignition {
     new vscode.EventEmitter<void>();
   readonly onDidChangeCurrentStory: vscode.Event<void> =
     this.#onDidChangeCurrentStory.event;
+
+  #analyzerUpdated = new vscode.EventEmitter<void>();
+  // Fired when the analyzer might have new information.
+  readonly onAnalyzerMayHaveNewInfo = this.#analyzerUpdated.event;
 
   #currentStory?: StoryInfo;
 
@@ -237,22 +244,83 @@ export class Ignition {
     context.subscriptions.push(disposable);
 
     disposable = vscode.workspace.onDidChangeTextDocument((event) => {
-      this.#buffers.set(
+      const changed = this.#buffers.set(
         event.document.uri.fsPath as AbsolutePath,
         event.document.getText()
       );
+      if (changed) {
+        this.#fileChanged();
+      }
     });
     context.subscriptions.push(disposable);
 
     // And when the user closes a file, remove it from the overlay filesystem
     disposable = vscode.workspace.onDidCloseTextDocument((document) => {
       this.#buffers.close(document.uri.fsPath as AbsolutePath);
+      this.#fileChanged();
     });
     context.subscriptions.push(disposable);
+
+    const fsWatcher =
+      vscode.workspace.createFileSystemWatcher('**/*.{js,ts,css}');
+    fsWatcher.onDidChange((e) => {
+      if (this.#buffers.isManaging(e.fsPath as AbsolutePath)) {
+        // We're already tracking this in our buffers, so we're ignoring its
+        // on-disk contents.
+        return;
+      }
+      this.#fileChanged();
+    });
+    fsWatcher.onDidCreate(() => {
+      this.#fileChanged();
+    });
+    fsWatcher.onDidDelete(() => {
+      this.#fileChanged();
+    });
+    context.subscriptions.push(fsWatcher);
   }
 
   async deactivate() {
     // Clean up any resources
     logChannel.appendLine('Deactivating Ignition');
+  }
+
+  #fileChanged() {
+    // debounce?
+    this.#tryToFindNewVersionOfElement();
+    this.#analyzerUpdated.fire();
+  }
+
+  /**
+   * Called when files have changed, and so the analyzer might have new info.
+   * Tries to set this.#currentElement to its analogous entry in the latest
+   * analysis.
+   */
+  #tryToFindNewVersionOfElement() {
+    if (this.#currentElement === undefined) {
+      return;
+    }
+    // Try to find this element in the updated analyzer.
+    const workspaceFolder = getWorkspaceFolderForElement(this.#currentElement);
+    const analyzer = getAnalyzer(workspaceFolder, this.filesystem);
+    const tagName = this.#currentElement.tagname;
+    try {
+      for (const moduleInfo of analyzer.getModuleInfos()) {
+        const module = analyzer.getModule(
+          analyzer.path.join(
+            analyzer.getPackage().rootDir,
+            moduleInfo.sourcePath
+          ) as AbsolutePath
+        );
+        for (const element of module.getCustomElementExports()) {
+          if (element.tagname === tagName) {
+            this.currentElement = element;
+            return;
+          }
+        }
+      }
+    } catch {}
+    // If we didn't find the element, it's been deleted.
+    this.currentElement = undefined;
   }
 }

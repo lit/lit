@@ -12,7 +12,7 @@ import {getPositionInLitTemplate} from './queries.js';
 const defaultStylesElement = document.querySelector('#_defaultStyles')!;
 
 // This is the API that's accessible from the webview (our direct parent).
-class ApiToWebviewClass {
+class ApiToWebview {
   getElementAtPoint(x: number, y: number): ElementInfo | undefined {
     const result = getMostSpecificNodeInStoryAtPoint(x, y);
     if (result === undefined) {
@@ -108,6 +108,10 @@ class ApiToWebviewClass {
 
     defaultStylesElement.textContent = defaultStyles || '';
   }
+
+  reload() {
+    window.location.reload();
+  }
 }
 
 function isTextNode(node: Node): node is Text {
@@ -183,7 +187,7 @@ function isElementInStory(element: Element): boolean {
   return false;
 }
 
-export type ApiToWebview = ApiToWebviewClass;
+export type {ApiToWebview};
 
 export type ElementInfo =
   | {
@@ -241,7 +245,7 @@ export async function exposeApiToWebview() {
     throw new Error('Already exposed');
   }
   exposed = true;
-  const api = new ApiToWebviewClass();
+  const api = new ApiToWebview();
   const endpoint = await getPortToWebview();
   comlink.expose(api, endpoint);
 }

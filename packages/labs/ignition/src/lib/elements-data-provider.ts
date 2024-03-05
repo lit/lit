@@ -20,13 +20,17 @@ export class ElementsDataProvider
 
   constructor(ignition: Ignition) {
     this.ignition = ignition;
+    this.ignition.onAnalyzerMayHaveNewInfo(() => {
+      this.#onDidChangeTreeData.fire();
+    });
   }
 
-  onDidChangeTreeData?:
-    | vscode.Event<
-        void | ElementsPanelItem | ElementsPanelItem[] | null | undefined
-      >
-    | undefined;
+  #onDidChangeTreeData: vscode.EventEmitter<
+    ElementsPanelItem | undefined | void
+  > = new vscode.EventEmitter<ElementsPanelItem | undefined | void>();
+  readonly onDidChangeTreeData: vscode.Event<
+    ElementsPanelItem | undefined | void
+  > = this.#onDidChangeTreeData.event;
 
   getTreeItem(
     data: ElementsPanelItem

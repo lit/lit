@@ -65,6 +65,12 @@ export class IgnitionToolbar extends LitElement {
           class="codicon codicon-${this.autoChangeStoryUrl ? 'unlock' : 'lock'}"
         ></span
       ></vscode-button>
+      <vscode-button
+        aria-label="Reload"
+        appearance="icon"
+        @click=${() => this.dispatchEvent(new ReloadFrameEvent())}
+        ><span class="codicon codicon-refresh"></span
+      ></vscode-button>
     `;
   }
 
@@ -93,6 +99,12 @@ export class AutoChangeStoryUrlChangeEvent extends Event {
   constructor(locked: boolean) {
     super('auto-change-story-url-change');
     this.locked = locked;
+  }
+}
+
+export class ReloadFrameEvent extends Event {
+  constructor() {
+    super('reload-frame');
   }
 }
 

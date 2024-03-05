@@ -103,6 +103,10 @@ export class EditorPanel implements vscode.Disposable {
     ignition.onDidChangeCurrentStory(() => {
       this.ignitionStoryChanged();
     });
+    ignition.onAnalyzerMayHaveNewInfo(() => {
+      // Reload the frame, allowing the project server to serve new content.
+      this.#connection?.reloadFrame();
+    });
     webviewPanel.onDidChangeViewState((e) => {
       if (e.webviewPanel.active) {
         this.#connectAndInitialize();

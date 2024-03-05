@@ -82,10 +82,11 @@ export class IgnitionEditor extends LitElement {
     }
     return html`
       <ignition-toolbar
-        .mode=${this.selectionMode}
+        .selectionMode=${this.selectionMode}
         .autoChangeStoryUrl=${this.autoChangeStoryUrl}
         @selection-mode-change=${this.#selectionModeChanged}
         @auto-change-story-url-change=${this.#autoChangeStoryUrlChanged}
+        @reload-frame=${this.reloadFrame}
       ></ignition-toolbar>
       <ignition-stage
         .boxesInPageToHighlight=${this.boxesInPageToHighlight}
@@ -96,7 +97,6 @@ export class IgnitionEditor extends LitElement {
           slot="frame"
           src=${ifDefined(this.storyUrl)}
           @load=${this.#onFrameLoad}
-          @error=${this.#onFrameError}
         ></iframe>
       </ignition-stage>
     `;
@@ -104,53 +104,37 @@ export class IgnitionEditor extends LitElement {
 
   override update(changedProperties: PropertyValues<this>) {
     if (changedProperties.has('storyUrl')) {
-      this.#frameLoadedDeferred = new Deferred();
       this.boxesInPageToHighlight = [];
     }
     super.update(changedProperties);
-  }
-
-  override async updated(changedProperties: PropertyValues<this>) {
-    if (changedProperties.has('storyUrl')) {
-      const iframeWindow = await this.#frameLoaded;
-      const [ourPort, theirPort] = (() => {
-        const channel = new MessageChannel();
-        return [channel.port1, channel.port2];
-      })();
-      iframeWindow.postMessage('ignition-webview-port', '*', [theirPort]);
-
-      this._frameApi = comlink.wrap<ApiToWebview>(ourPort);
-      this.#frameApiChanged.resolve();
-      this.#frameApiChanged = new Deferred();
-
-      // Grab the webview styles that VS Code injects and pass the into the
-      // Ignition iframe for consistent styling.
-      const rootStyle = document.documentElement.getAttribute('style');
-      const defaultStyles =
-        document.querySelector('#_defaultStyles')?.textContent;
-      this._frameApi.setEnvStyles(rootStyle, defaultStyles);
-    }
   }
 
   get #frame() {
     return this.shadowRoot?.querySelector('iframe');
   }
 
-  #frameLoadedDeferred = new Deferred<Window>();
-
-  get #frameLoaded() {
-    return this.#frameLoadedDeferred.promise;
-  }
-
   #onFrameLoad() {
     if (this.#frame?.contentWindow == null) {
-      throw new Error('iframe loaded but it has no contentWindow');
+      console.error('iframe loaded but it has no contentWindow');
+      return;
     }
-    this.#frameLoadedDeferred.resolve(this.#frame.contentWindow);
-  }
+    const iframeWindow = this.#frame.contentWindow;
+    const [ourPort, theirPort] = (() => {
+      const channel = new MessageChannel();
+      return [channel.port1, channel.port2];
+    })();
+    iframeWindow.postMessage('ignition-webview-port', '*', [theirPort]);
 
-  #onFrameError(error: Error) {
-    this.#frameLoadedDeferred.reject(error);
+    this._frameApi = comlink.wrap<ApiToWebview>(ourPort);
+    this.#frameApiChanged.resolve();
+    this.#frameApiChanged = new Deferred();
+
+    // Grab the webview styles that VS Code injects and pass the into the
+    // Ignition iframe for consistent styling.
+    const rootStyle = document.documentElement.getAttribute('style');
+    const defaultStyles =
+      document.querySelector('#_defaultStyles')?.textContent;
+    this._frameApi.setEnvStyles(rootStyle, defaultStyles);
   }
 
   #selectionModeChanged(event: SelectionModeChangeEvent) {
@@ -165,6 +149,14 @@ export class IgnitionEditor extends LitElement {
   #autoChangeStoryUrlChanged(event: AutoChangeStoryUrlChangeEvent) {
     this.autoChangeStoryUrl = event.locked;
     apiFromExtension.setAutoChangeStoryUrl(this.autoChangeStoryUrl);
+  }
+
+  reloadFrame() {
+    if (this._frameApi == null) {
+      // not connected yet so nothing to reload
+      return;
+    }
+    this._frameApi.reload();
   }
 }
 
