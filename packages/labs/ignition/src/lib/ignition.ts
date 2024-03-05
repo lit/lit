@@ -234,20 +234,29 @@ export class Ignition {
           storiesModule === undefined
             ? undefined
             : {storyPath: storiesModule.jsPath, workspaceFolder};
-        // Should we also show the element's souce? Well, if the user is
-        // focused in design mode, with the Ignition Editor open only, then
-        // no. If they have nothing open, or if they already have code open,
-        // then yes.
-        const hasCodeOpen = vscode.window.visibleTextEditors.length > 0;
-        if (hasCodeOpen || this.#openIgnitionEditors.size === 0) {
+        const whereToShowSourceCode = this.#viewColumnToShowSourceCodeIn();
+        if (whereToShowSourceCode !== undefined) {
           vscode.window.showTextDocument(elementDocumentUri, {
-            // Show the source in the same column as the first visible source
-            // viewer, otherwise just use the first column.
-            viewColumn:
-              vscode.window.visibleTextEditors[0]?.viewColumn ??
-              vscode.ViewColumn.One,
+            viewColumn: whereToShowSourceCode,
           });
         }
+      }
+    );
+    context.subscriptions.push(disposable);
+
+    disposable = vscode.commands.registerCommand(
+      'ignition.highlightSourceCode',
+      (location: vscode.Location) => {
+        const whereToShowSourceCode = this.#viewColumnToShowSourceCodeIn();
+        if (whereToShowSourceCode === undefined) {
+          return;
+        }
+        vscode.window.showTextDocument(location.uri, {
+          selection: location.range,
+          viewColumn: whereToShowSourceCode,
+          preview: true,
+          preserveFocus: true,
+        });
       }
     );
     context.subscriptions.push(disposable);
@@ -352,6 +361,25 @@ export class Ignition {
     } catch {}
     // If we didn't find the element, it's been deleted.
     this.currentElement = undefined;
+  }
+
+  /**
+   * Returns undefined if we shouldn't proactively show source code.
+   */
+  #viewColumnToShowSourceCodeIn(): vscode.ViewColumn | undefined {
+    // Should we also show the element's souce? Well, if the user is
+    // focused in design mode, with the Ignition Editor open only, then
+    // no. If they have nothing open, or if they already have code open,
+    // then yes.
+    const hasCodeOpen = vscode.window.visibleTextEditors.length > 0;
+    if (hasCodeOpen || this.#openIgnitionEditors.size === 0) {
+      // Show the source in the same column as the first visible source
+      // viewer, otherwise just use the first column.
+      return (
+        vscode.window.visibleTextEditors[0]?.viewColumn ?? vscode.ViewColumn.One
+      );
+    }
+    return undefined;
   }
 
   async applyEdit(edit: SourceEdit) {

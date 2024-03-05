@@ -433,3 +433,7 @@ export function isNode(node: object): node is Node {
   const obj: {nodeName?: unknown} = node;
   return typeof obj?.nodeName === 'string';
 }
+
+export function isLitTemplate(node: object): node is LitTemplate {
+  return isNode(node) && 'tsNode' in node;
+}
