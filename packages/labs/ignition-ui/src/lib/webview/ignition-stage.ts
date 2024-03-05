@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import './ignition-toolbar.js';
-import {LitElement, html, css, nothing} from 'lit';
+import {LitElement, css, html} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
+import {styleMap} from 'lit/directives/style-map.js';
 import type {BoundingBoxWithDepth} from '../frame/iframe-api-to-webview.js';
+import './ignition-toolbar.js';
 
 declare global {
   interface HTMLElementTagNameMap {
@@ -15,21 +16,12 @@ declare global {
   }
 }
 
-const colors = [
-  '#ff0000',
-  '#00ff00',
-  '#0000ff',
-  '#800080',
-  '#da6ab8',
-  '#00ffff',
-];
-
 /**
  * Inspired by the prior work of `designer-stage`:
  * https://github.com/PolymerLabs/ide/blob/grid-editor/packages/editor-client/src/lib/ui/designer-stage.ts
  */
 @customElement('ignition-stage')
-class IgnitionStage extends LitElement {
+export class IgnitionStage extends LitElement {
   static styles = css`
     :host {
       display: flex;
@@ -65,22 +57,13 @@ class IgnitionStage extends LitElement {
   blockInput = true;
 
   render() {
-    let glass: unknown = nothing;
-    if (this.blockInput) {
-      glass = html`<div id="glass">
-        ${this.boxesInPageToHighlight.map((bbd) => {
-          const bb = bbd.boundingBox;
-          const inset = `top: ${bb.y}px; left: ${bb.x}px; height: ${bb.height}px; width: ${bb.width}px`;
-          const color = colors[bbd.depth % colors.length];
-          return html`<div
-            style="position: absolute; ${inset}; border: 1px solid ${color};"
-          ></div>`;
-        })}
-      </div>`;
-    }
     return html`<div id="content">
-      ${glass}
-      <slot></slot>
+      <slot name="mode"></slot>
+      <div
+        id="glass"
+        style=${styleMap({display: this.blockInput ? 'none' : 'block'})}
+      ></div>
+      <slot name="frame"></slot>
     </div>`;
   }
 }

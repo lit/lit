@@ -26,7 +26,6 @@ const getCommandLine = (
   options: AnalyzerOptions,
   fs: AnalyzerInterface['fs']
 ): ts.ParsedCommandLine => {
-  console.log('createPackageAnalyzer', packagePath);
   // This logic accepts either a path to folder containing a tsconfig.json
   // directly inside it or a path to a specific tsconfig file. If no tsconfig
   // file is found, we fallback to creating a JavaScript program.
@@ -34,10 +33,7 @@ const getCommandLine = (
   const configFileName = isDirectory
     ? path.join(packagePath, 'tsconfig.json')
     : packagePath;
-  console.log('configFileName', configFileName);
   if (fs.fileExists(configFileName)) {
-    console.log('configFile exists');
-
     const configFile = ts.readConfigFile(configFileName, (path) =>
       fs.readFile(path)
     );
@@ -104,7 +100,6 @@ export const createPackageAnalyzer = (
   packagePath: AbsolutePath,
   options: AnalyzerOptions = {}
 ) => {
-  console.log('createPackageAnalyzer', packagePath);
   const fs = options.fs ?? ts.sys;
   const commandLine = getCommandLine(packagePath, options, fs);
 
@@ -139,14 +134,14 @@ export const createPackageAnalyzer = (
 };
 
 /**
- * Like createPackageAnalyzer, only it will filesystem mtimes to notice when
- * files have updated, and will automatically return fresh results when queried.
+ * Like createPackageAnalyzer, only it the returned analyzer uses filesystem
+ * mtimes to notice when files have updated, and will automatically give
+ * fresh results when queried.
  */
 export const createUpdatingPackageAnalyzer = (
   packagePath: AbsolutePath,
   options: AnalyzerOptions = {}
 ) => {
-  console.log('createPackageAnalyzer', packagePath);
   const fs = options.fs ?? ts.sys;
   const commandLine = getCommandLine(packagePath, options, fs);
 
@@ -158,7 +153,7 @@ export const createUpdatingPackageAnalyzer = (
       return commandLine.fileNames;
     },
     getScriptVersion: function (fileName: string): string {
-      const mTime = fs.getModifiedTime?.(fileName)?.toISOString() ?? '0';
+      const mTime = fs.getModifiedTime?.(fileName)?.valueOf().toString() ?? '0';
       return mTime;
     },
     getScriptSnapshot: function (
