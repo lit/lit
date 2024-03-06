@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, css, html} from 'lit';
+import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import {styleMap} from 'lit/directives/style-map.js';
 import type {BoundingBoxWithDepth} from '../frame/iframe-api-to-webview.js';
 import './ignition-toolbar.js';
 
@@ -42,8 +41,11 @@ export class IgnitionStage extends LitElement {
       inset: 0;
       z-index: 101;
     }
-    slot {
-      border: 10px solid red;
+    slot[name='mode'] {
+      display: block;
+      position: absolute;
+      inset: 0;
+      z-index: 102;
     }
     ::slotted(*) {
       box-sizing: border-box;
@@ -58,11 +60,12 @@ export class IgnitionStage extends LitElement {
 
   render() {
     return html`<div id="content">
-      <slot name="mode"></slot>
-      <div
-        id="glass"
-        style=${styleMap({display: this.blockInput ? 'none' : 'block'})}
-      ></div>
+      ${this.blockInput
+        ? html`
+            <slot name="mode"></slot>
+            <div id="glass"></div>
+          `
+        : nothing}
       <slot name="frame"></slot>
     </div>`;
   }
