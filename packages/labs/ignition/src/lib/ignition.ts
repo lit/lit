@@ -20,6 +20,7 @@ import {ElementPaletteViewProvider} from './element-palette.js';
 import {EditorPanel} from './editor-panel.js';
 import {InMemoryBuffers, OverlayFilesystem} from './overlay-filesystem.js';
 import {SourceEdit} from '@lit-labs/ignition-ui';
+import type {TemplatePiece} from '../../../ignition-ui/unbundled/lib/protocol/common.js';
 
 export interface StoryInfo {
   storyPath: string;
@@ -246,7 +247,10 @@ export class Ignition {
 
     disposable = vscode.commands.registerCommand(
       'ignition.highlightSourceCode',
-      (location: vscode.Location) => {
+      (location: vscode.Location, templatePiece: TemplatePiece | undefined) => {
+        for (const editor of this.#openIgnitionEditors) {
+          editor.hightlightTemplatePiece(templatePiece);
+        }
         const whereToShowSourceCode = this.#viewColumnToShowSourceCodeIn();
         if (whereToShowSourceCode === undefined) {
           return;

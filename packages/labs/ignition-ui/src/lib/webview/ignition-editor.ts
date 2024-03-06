@@ -9,10 +9,7 @@ import * as comlink from 'comlink';
 import {LitElement, PropertyValues, css, html, nothing} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
-import type {
-  ApiToWebview,
-  BoundingBoxWithDepth,
-} from '../frame/iframe-api-to-webview.js';
+import type {ApiToWebview} from '../frame/iframe-api-to-webview.js';
 import '../protocol/comlink-stream.js';
 import {Deferred} from '../util/deferred.js';
 import {apiFromExtension} from './api-from-extension.js';
@@ -24,6 +21,7 @@ import type {
 } from './ignition-toolbar.js';
 import {extensionApiContext, frameApiContext} from './modes/editor-mode.js';
 import {SelectMode} from './modes/select-mode.js';
+import type {TemplatePiece} from '../protocol/common.js';
 
 /**
  * The Ignition story editor.
@@ -63,9 +61,6 @@ export class IgnitionEditor extends LitElement {
   private _apiFromExtension = apiFromExtension;
 
   @state()
-  private boxesInPageToHighlight: BoundingBoxWithDepth[] = [];
-
-  @state()
   private selectionMode: 'interact' | 'select' = 'select';
 
   @state()
@@ -73,7 +68,7 @@ export class IgnitionEditor extends LitElement {
 
   #frameApiChanged = new Deferred<void>();
 
-  #currentMode?: HTMLElement = new SelectMode();
+  #currentMode: SelectMode | undefined = new SelectMode();
 
   override render() {
     if (this.storyUrl === null) {
@@ -91,10 +86,7 @@ export class IgnitionEditor extends LitElement {
         @auto-change-story-url-change=${this.#autoChangeStoryUrlChanged}
         @reload-frame=${this.reloadFrame}
       ></ignition-toolbar>
-      <ignition-stage
-        .boxesInPageToHighlight=${this.boxesInPageToHighlight}
-        .blockInput=${this.selectionMode !== 'interact'}
-      >
+      <ignition-stage .blockInput=${this.selectionMode !== 'interact'}>
         <div slot="mode">${this.#currentMode}</div>
         <iframe
           slot="frame"
@@ -107,7 +99,9 @@ export class IgnitionEditor extends LitElement {
 
   override update(changedProperties: PropertyValues<this>) {
     if (changedProperties.has('storyUrl')) {
-      this.boxesInPageToHighlight = [];
+      if (this.#currentMode instanceof SelectMode) {
+        this.#currentMode.boxesInPageToHighlight = [];
+      }
     }
     super.update(changedProperties);
   }
@@ -141,17 +135,44 @@ export class IgnitionEditor extends LitElement {
   }
 
   #selectionModeChanged(event: SelectionModeChangeEvent) {
-    const selectionMode = (this.selectionMode = event.mode);
-    if (selectionMode === 'select') {
-      this.#currentMode = new SelectMode();
+    this.#switchToMode(event.mode);
+  }
+
+  #switchToMode(mode: 'select'): SelectMode;
+  #switchToMode(mode: 'interact'): undefined;
+  #switchToMode(mode: 'select' | 'interact'): SelectMode | undefined;
+  #switchToMode(mode: 'select' | 'interact'): SelectMode | undefined {
+    if (this.selectionMode === mode) {
+      return this.#currentMode;
+    }
+    if (mode === 'select') {
+      this.selectionMode = 'select';
+      return (this.#currentMode = new SelectMode());
     } else {
-      this.#currentMode = undefined;
+      this.selectionMode = 'interact';
+      return (this.#currentMode = undefined);
     }
   }
 
   #autoChangeStoryUrlChanged(event: AutoChangeStoryUrlChangeEvent) {
     this.autoChangeStoryUrl = event.locked;
     this._apiFromExtension.setAutoChangeStoryUrl(this.autoChangeStoryUrl);
+  }
+
+  async highlightTemplatePiece(templatePiece: TemplatePiece | undefined) {
+    if (templatePiece === undefined) {
+      // Clear highlights.
+      if (this.#currentMode instanceof SelectMode) {
+        this.#currentMode.boxesInPageToHighlight = [];
+      }
+      return;
+    }
+    const highlights =
+      await this._frameApi?.highlightTemplatePiece(templatePiece);
+    const selectMode = this.#switchToMode('select');
+    selectMode.boxesInPageToHighlight = (highlights ?? []).map((box) => {
+      return {boundingBox: box, depth: 0};
+    });
   }
 
   reloadFrame() {

@@ -101,6 +101,12 @@ const getMiddleware = (
 
 const serverCache = new Map<string, Deferred<Server>>();
 
+export const getProjectServerIfRunning = (
+  workspaceFolder: vscode.WorkspaceFolder
+) => {
+  return serverCache.get(workspaceFolder.uri.fsPath)?.promise;
+};
+
 export const getProjectServer = async (
   workspaceFolder: vscode.WorkspaceFolder,
   filesystem: OverlayFilesystem

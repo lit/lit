@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import type {TemplatePiece} from '../protocol/common.js';
 import {expose} from './comlink-endpoint-to-vscode.js';
 import type {IgnitionEditor} from './ignition-editor.js';
 
@@ -29,5 +30,10 @@ export class ApiToExtension {
   reloadFrame() {
     this.#ui.reloadFrame();
   }
+
+  highlightTemplatePiece(templatePiece: TemplatePiece | undefined) {
+    this.#ui.highlightTemplatePiece(templatePiece);
+  }
 }
+
 export type ApiExposedToExtension = ApiToExtension;

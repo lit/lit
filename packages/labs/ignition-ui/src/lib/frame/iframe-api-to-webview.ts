@@ -6,7 +6,10 @@
 
 import * as comlink from 'comlink';
 import '../protocol/comlink-stream.js';
-import {getPositionInLitTemplate} from './queries.js';
+import {findAllTemplateInstances, getPositionInLitTemplate} from './queries.js';
+import type {TemplatePiece} from '../protocol/common.js';
+import {ChildPart, TemplateInstance} from 'lit-html';
+import {applySourceMap} from '../util/source-map.js';
 
 // Container for styles copied from the webview
 const defaultStylesElement = document.querySelector('#_defaultStyles')!;
@@ -71,22 +74,12 @@ class ApiToWebview {
 
   #getSourceLocationFromNode(node: Element | Text): SourceLocation | undefined {
     const position = getPositionInLitTemplate(node);
-    const template = position?.template;
-    const constructedAt = template?.constructedAt;
-    if (constructedAt === undefined) {
-      return;
-    }
-    const callStackLine = constructedAt.split('\n')[2];
-    //      at HelloWorld.render (http://localhost:8002/hello-world.js:21:21)
-    const match = callStackLine.match(
-      /(http:\/\/localhost:\d+\/.+):(\d+):(\d+)/
+    const templateLocation = parseConstructedAt(
+      position?.template.constructedAt
     );
-    if (match === null) {
-      console.error(`couldn't match callStackLine: `, callStackLine);
+    if (templateLocation == null) {
       return;
     }
-    const [, url, line, column] = match;
-    const templateLocation = {url, line: Number(line), column: Number(column)};
     // Now to get the position _within_ the template, that node occupies.
     // console.log(templateLocation);
     // console.log(position);
@@ -116,6 +109,72 @@ class ApiToWebview {
   reload() {
     window.location.reload();
   }
+
+  async highlightTemplatePiece(
+    templatePiece: TemplatePiece
+  ): Promise<ViewportBoundingBox[]> {
+    const boundingBoxes: ViewportBoundingBox[] = [];
+    switch (templatePiece.kind) {
+      case 'element': {
+        for (const {template, part} of findAllTemplateInstances()) {
+          const templateLocation = parseConstructedAt(
+            template._$template.constructedAt
+          );
+          if (templateLocation === undefined) {
+            continue;
+          }
+          const mappedLocation = await applySourceMap(
+            templateLocation.url,
+            templateLocation.line,
+            templateLocation.column
+          );
+          if (mappedLocation === undefined) {
+            continue;
+          }
+          if (mappedLocation.url !== templatePiece.url) {
+            continue;
+          }
+          for (const node of walkNodesRenderedByTemplateInstance(
+            template,
+            part
+          )) {
+            if (!(node instanceof Element)) {
+              continue;
+            }
+            if (
+              node.getAttribute('__ignition-source-id__') ===
+              templatePiece.sourceId
+            ) {
+              const bcr = node.getBoundingClientRect();
+              boundingBoxes.push(
+                ...toViewportBoundingBoxes([
+                  {x: bcr.x, y: bcr.y, width: bcr.width, height: bcr.height},
+                ])
+              );
+            }
+          }
+        }
+      }
+    }
+    return boundingBoxes;
+  }
+}
+
+function parseConstructedAt(
+  constructedAt: string | undefined
+): SourceLocation | undefined {
+  if (constructedAt === undefined) {
+    return;
+  }
+  const callStackLine = constructedAt.split('\n')[2];
+  //      at HelloWorld.render (http://localhost:8002/hello-world.js:21:21)
+  const match = callStackLine.match(/(http:\/\/localhost:\d+\/.+):(\d+):(\d+)/);
+  if (match === null) {
+    console.error(`couldn't match callStackLine: `, callStackLine);
+    return;
+  }
+  const [, url, line, column] = match;
+  return {url, line: Number(line), column: Number(column)};
 }
 
 function isTextNode(node: Node): node is Text {
@@ -224,7 +283,12 @@ export interface BoundingBoxWithDepth {
 }
 
 function toViewportBoundingBoxes(
-  pageSpaceRects: Iterable<DOMRect>
+  pageSpaceRects: Iterable<{
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+  }>
 ): ViewportBoundingBox[] {
   return [...pageSpaceRects] as unknown as ViewportBoundingBox[];
 }
@@ -259,4 +323,76 @@ export async function exposeApiToWebview() {
   const api = new ApiToWebview();
   const endpoint = await getPortToWebview();
   comlink.expose(api, endpoint);
+}
+
+function* walkNodesRenderedByTemplateInstance(
+  template: TemplateInstance,
+  part: ChildPart
+) {
+  let currentNode: Node | null;
+  if (part.startNode != null) {
+    currentNode = nextNodeInOrderOutwards(part.startNode);
+  } else {
+    currentNode = template.parentNode.childNodes[0];
+  }
+  let endNode: Node;
+  if (part.endNode != null) {
+    endNode = part.endNode;
+  } else {
+    endNode = template.parentNode;
+  }
+  let partIndex = 0;
+  function getNextChildPart() {
+    if (partIndex >= template._$parts.length) {
+      return;
+    }
+    const nextPart = template._$parts[partIndex];
+    partIndex++;
+    if (nextPart?.type === 2) {
+      return nextPart;
+    }
+    return getNextChildPart();
+  }
+  let nextChildPart = getNextChildPart();
+  while (currentNode !== endNode && currentNode != null) {
+    if (currentNode == null) {
+      throw new Error('internal error: currentNode is nullish');
+    }
+    if (nextChildPart?.startNode === currentNode) {
+      // skip over the part
+      currentNode =
+        nextChildPart.endNode ??
+        nextNodeInOrderOutwards(
+          nextChildPart.endNode ?? nextChildPart.parentNode
+        );
+      nextChildPart = getNextChildPart();
+      continue;
+    }
+    yield currentNode;
+    if (
+      nextChildPart != null &&
+      nextChildPart.startNode == null &&
+      nextChildPart.parentNode === currentNode
+    ) {
+      // this node is controlled by the current part, so don't descend into it.
+      currentNode = nextNodeInOrderOutwards(currentNode);
+      nextChildPart = getNextChildPart();
+      continue;
+    }
+    currentNode = nextNodeInOrderInwards(currentNode);
+  }
+}
+
+function nextNodeInOrderOutwards(node: Node | null): Node | null {
+  if (node == null) {
+    return null;
+  }
+  return node.nextSibling ?? nextNodeInOrderOutwards(node.parentNode);
+}
+
+function nextNodeInOrderInwards(node: Node | null): Node | null {
+  if (node == null) {
+    return null;
+  }
+  return node.firstChild ?? nextNodeInOrderOutwards(node);
 }
