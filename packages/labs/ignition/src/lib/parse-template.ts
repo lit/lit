@@ -437,3 +437,37 @@ export function isNode(node: object): node is Node {
 export function isLitTemplate(node: object): node is LitTemplate {
   return isNode(node) && 'tsNode' in node;
 }
+
+export const getTemplateNodeBySourceId = (
+  sourceFile: ts.SourceFile,
+  sourceId: number,
+  ts: TypeScript,
+  checker: ts.TypeChecker
+) => {
+  let currentSourceId = -1;
+  let targetNode: Node | undefined;
+  let targetTemplate: LitTemplate | undefined;
+  const visitor = (tsNode: ts.Node) => {
+    if (isLitTaggedTemplateExpression(tsNode, ts, checker)) {
+      const template = parseLitTemplate(tsNode, ts, checker);
+      traverse(template, {
+        ['pre:node'](parse5Node, _parent) {
+          if (isElementNode(parse5Node)) {
+            currentSourceId++;
+            if (currentSourceId === sourceId) {
+              targetTemplate = template;
+              targetNode = parse5Node;
+              // End traversal?
+              return false;
+            }
+          }
+        },
+      });
+    }
+    if (targetNode === undefined) {
+      ts.forEachChild(tsNode, visitor);
+    }
+  };
+  ts.forEachChild(sourceFile, visitor);
+  return {node: targetNode, template: targetTemplate};
+};
