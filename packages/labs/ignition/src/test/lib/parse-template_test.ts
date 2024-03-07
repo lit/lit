@@ -50,7 +50,7 @@ suite('getTemplateNodeBySourceId', () => {
   const {sourceFile, checker} = getTestSourceFile(testFilePath);
 
   test('0', async () => {
-    const {node} = getTemplateNodeBySourceId(sourceFile, 0, ts, checker);
+    const {node} = getTemplateNodeBySourceId(sourceFile, 0, ts, checker)!;
 
     // Node 0 should be <div>Hello, world!</div>
     assert.ok(node);
@@ -64,7 +64,7 @@ suite('getTemplateNodeBySourceId', () => {
   });
 
   test('9', async () => {
-    const {node} = getTemplateNodeBySourceId(sourceFile, 9, ts, checker);
+    const {node} = getTemplateNodeBySourceId(sourceFile, 9, ts, checker)!;
 
     // Node 9 should be <span>A</span>
     assert.ok(node);
