@@ -60,8 +60,12 @@ export class IgnitionEditor extends LitElement {
   @provide({context: extensionApiContext})
   private _apiFromExtension = apiFromExtension;
 
-  @state()
-  private selectionMode: 'interact' | 'select' = 'select';
+  get #selectionMode(): 'select' | 'interact' {
+    if (this.#currentMode instanceof SelectMode) {
+      return 'select';
+    }
+    return 'interact';
+  }
 
   @state()
   private autoChangeStoryUrl = true;
@@ -80,13 +84,13 @@ export class IgnitionEditor extends LitElement {
     }
     return html`
       <ignition-toolbar
-        .selectionMode=${this.selectionMode}
+        .selectionMode=${this.#selectionMode}
         .autoChangeStoryUrl=${this.autoChangeStoryUrl}
         @selection-mode-change=${this.#selectionModeChanged}
         @auto-change-story-url-change=${this.#autoChangeStoryUrlChanged}
         @reload-frame=${this.reloadFrame}
       ></ignition-toolbar>
-      <ignition-stage .blockInput=${this.selectionMode !== 'interact'}>
+      <ignition-stage .blockInput=${this.#selectionMode !== 'interact'}>
         <div slot="mode">${this.#currentMode}</div>
         <iframe
           slot="frame"
@@ -142,14 +146,13 @@ export class IgnitionEditor extends LitElement {
   #switchToMode(mode: 'interact'): undefined;
   #switchToMode(mode: 'select' | 'interact'): SelectMode | undefined;
   #switchToMode(mode: 'select' | 'interact'): SelectMode | undefined {
-    if (this.selectionMode === mode) {
+    if (this.#selectionMode === mode) {
       return this.#currentMode;
     }
+    this.requestUpdate('selectionMode', this.#selectionMode);
     if (mode === 'select') {
-      this.selectionMode = 'select';
       return (this.#currentMode = new SelectMode());
     } else {
-      this.selectionMode = 'interact';
       return (this.#currentMode = undefined);
     }
   }

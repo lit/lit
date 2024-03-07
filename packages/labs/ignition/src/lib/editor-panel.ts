@@ -127,7 +127,7 @@ export class EditorPanel implements vscode.Disposable {
     this.#webviewPanel.dispose();
   }
 
-  hightlightTemplatePiece(templatePiece: TemplatePiece | undefined) {
+  highlightTemplatePiece(templatePiece: TemplatePiece | undefined) {
     this.#connection?.highlightTemplatePiece(templatePiece);
   }
 

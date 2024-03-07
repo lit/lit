@@ -33,7 +33,10 @@ import * as path from 'node:path';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
-import type {TemplatePiece} from '../../../ignition-ui/unbundled/lib/protocol/common.js';
+import type {
+  ProjectServerSourceUrl,
+  TemplatePiece,
+} from '../../../ignition-ui/unbundled/lib/protocol/common.js';
 import {getProjectServerIfRunning} from './project-server.js';
 
 export class TemplateOutlineDataProvider
@@ -467,7 +470,7 @@ async function getTemplatePieceForItem(
 
 async function getServedUrlForFile(
   uri: vscode.Uri
-): Promise<string | undefined> {
+): Promise<ProjectServerSourceUrl | undefined> {
   const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
   if (workspaceFolder === undefined) {
     return;
@@ -486,5 +489,5 @@ async function getServedUrlForFile(
   const port = address.port;
   const url = new URL(`http://localhost:${port}`);
   url.pathname = path.relative(workspaceFolder.uri.fsPath, uri.fsPath);
-  return url.href;
+  return url.href as ProjectServerSourceUrl;
 }

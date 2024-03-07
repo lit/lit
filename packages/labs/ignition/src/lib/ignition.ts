@@ -249,7 +249,7 @@ export class Ignition {
       'ignition.highlightSourceCode',
       (location: vscode.Location, templatePiece: TemplatePiece | undefined) => {
         for (const editor of this.#openIgnitionEditors) {
-          editor.hightlightTemplatePiece(templatePiece);
+          editor.highlightTemplatePiece(templatePiece);
         }
         const whereToShowSourceCode = this.#viewColumnToShowSourceCodeIn();
         if (whereToShowSourceCode === undefined) {

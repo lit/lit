@@ -447,16 +447,23 @@ export function isLitTemplate(node: object): node is LitTemplate {
 }
 
 const elementToSourceIdCache = new WeakMap<Element, number>();
-const elementToSourceCached = new WeakSet<ts.SourceFile>();
+const fileToSourceIdToElementCache = new WeakMap<
+  ts.SourceFile,
+  Map<number, [Element, LitTemplate]>
+>();
 const annotateSourceFile = (
   sourceFile: ts.SourceFile,
   ts: TypeScript,
   checker: ts.TypeChecker
 ) => {
-  if (elementToSourceCached.has(sourceFile)) {
-    return;
+  let cached = fileToSourceIdToElementCache.get(sourceFile);
+  if (cached) {
+    // We've built the caches for this file already. Return the
+    // sourceIdToElementCache for it
+    return cached;
   }
   let currentSourceId = -1;
+  const sourceIdToElementCache = new Map<number, [Element, LitTemplate]>();
   const visitor = (tsNode: ts.Node) => {
     if (isLitTaggedTemplateExpression(tsNode, ts, checker)) {
       const template = parseLitTemplate(tsNode, ts, checker);
@@ -465,6 +472,7 @@ const annotateSourceFile = (
           if (isElementNode(parse5Node)) {
             currentSourceId++;
             elementToSourceIdCache.set(parse5Node, currentSourceId);
+            sourceIdToElementCache.set(currentSourceId, [parse5Node, template]);
           }
         },
       });
@@ -472,7 +480,8 @@ const annotateSourceFile = (
     ts.forEachChild(tsNode, visitor);
   };
   ts.forEachChild(sourceFile, visitor);
-  elementToSourceCached.add(sourceFile);
+  fileToSourceIdToElementCache.set(sourceFile, sourceIdToElementCache);
+  return sourceIdToElementCache;
 };
 
 export const getSourceIdForElement = (
@@ -491,30 +500,10 @@ export const getTemplateNodeBySourceId = (
   ts: TypeScript,
   checker: ts.TypeChecker
 ) => {
-  let currentSourceId = -1;
-  let targetNode: Node | undefined;
-  let targetTemplate: LitTemplate | undefined;
-  const visitor = (tsNode: ts.Node) => {
-    if (isLitTaggedTemplateExpression(tsNode, ts, checker)) {
-      const template = parseLitTemplate(tsNode, ts, checker);
-      traverse(template, {
-        ['pre:node'](parse5Node, _parent) {
-          if (isElementNode(parse5Node)) {
-            currentSourceId++;
-            if (currentSourceId === sourceId) {
-              targetTemplate = template;
-              targetNode = parse5Node;
-              // End traversal?
-              return false;
-            }
-          }
-        },
-      });
-    }
-    if (targetNode === undefined) {
-      ts.forEachChild(tsNode, visitor);
-    }
-  };
-  ts.forEachChild(sourceFile, visitor);
-  return {node: targetNode, template: targetTemplate};
+  const sourceIdToElementCache = annotateSourceFile(sourceFile, ts, checker);
+  const result = sourceIdToElementCache.get(sourceId);
+  if (result === undefined) {
+    return;
+  }
+  return {node: result[0], template: result[1]};
 };
