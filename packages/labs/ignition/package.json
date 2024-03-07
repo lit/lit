@@ -131,11 +131,7 @@
       "command": "tsc --pretty",
       "dependencies": [
         "../analyzer:build",
-        "../ignition-ui:build",
-        {
-          "script": "./test-projects/hello-world:build",
-          "cascade": false
-        }
+        "../ignition-ui:build"
       ],
       "files": [
         "src/**/*.ts",
@@ -150,7 +146,8 @@
     "test": {
       "dependencies": [
         "test:unit",
-        "test:vscode"
+        "test:vscode",
+        "./test-projects/hello-world:build"
       ]
     },
     "test:unit": {
