@@ -11,4 +11,10 @@ export const withUnquotedAttribute = () =>
 
 export const withChildren = () => html`<div class="a"><span>A</span></div>`;
 
-export const nested = () => html`<div class="a">${html`<span>A</span>`}</div>`;
+export const nested = () => html`
+  <div class="a">
+    ${html`<span>A</span>`}
+    <span></span>
+  </div>
+  <div class="b"></div>
+`;
