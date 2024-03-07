@@ -9,7 +9,7 @@ import '../protocol/comlink-stream.js';
 import {findAllTemplateInstances, getPositionInLitTemplate} from './queries.js';
 import type {TemplatePiece} from '../protocol/common.js';
 import {ChildPart, TemplateInstance} from 'lit-html';
-import {applySourceMap} from '../util/source-map.js';
+import {getSourceMap} from '../util/source-map.js';
 
 // Container for styles copied from the webview
 const defaultStylesElement = document.querySelector('#_defaultStyles')!;
@@ -123,15 +123,15 @@ class ApiToWebview {
           if (templateLocation === undefined) {
             continue;
           }
-          const mappedLocation = await applySourceMap(
-            templateLocation.url,
-            templateLocation.line,
-            templateLocation.column
-          );
-          if (mappedLocation === undefined) {
+          const sourceMap = await getSourceMap(templateLocation.url);
+          if (sourceMap === undefined) {
             continue;
           }
-          if (mappedLocation.url !== templatePiece.url) {
+          const fileMatches = sourceMap.sources.some(
+            (source) =>
+              new URL(source, templateLocation.url).href === templatePiece.url
+          );
+          if (!fileMatches) {
             continue;
           }
           for (const node of walkNodesRenderedByTemplateInstance(

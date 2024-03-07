@@ -65,7 +65,9 @@ interface SourceMap {
 
 // When we add HMR, we'll need to clear this cache on each HMR.
 const sourceMapCache = new Map<string, Promise<SourceMap | undefined>>();
-async function getSourceMap(url: string): Promise<SourceMap | undefined> {
+export async function getSourceMap(
+  url: string
+): Promise<SourceMap | undefined> {
   if (!sourceMapCache.has(url)) {
     sourceMapCache.set(url, loadSourceMap(url));
   }

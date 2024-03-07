@@ -18,6 +18,7 @@ import {
   LitTemplate,
   LitTemplateNode,
   getChildPartExpression,
+  getSourceIdForElement,
   hasChildPart,
   isCommentNode,
   isDocumentFragment,
@@ -431,12 +432,35 @@ async function getTemplatePieceForItem(
       return;
     }
     // Missing piece: looking up the source ID for the element.
-    const sourceId = '0';
-    return {
+    let template: LitTemplate | undefined;
+    let curr = data.parent;
+    while (curr !== undefined) {
+      if (isLitTemplate(curr.node)) {
+        template = curr.node;
+        break;
+      }
+      curr = curr.parent;
+    }
+    if (template === undefined) {
+      return;
+    }
+
+    const sourceId = getSourceIdForElement(
+      template.tsNode.getSourceFile(),
+      data.node,
+      data.analyzer.typescript,
+      data.analyzer.program.getTypeChecker()
+    );
+    if (sourceId === undefined) {
+      return;
+    }
+
+    const templatePiece = {
       kind: 'element',
       url,
-      sourceId,
-    };
+      sourceId: String(sourceId),
+    } as const;
+    return templatePiece;
   }
   return;
 }

@@ -292,11 +292,17 @@ export interface LitTemplateAttribute extends Attribute {
   litPart: PartInfo;
 }
 
+const cache = new WeakMap<ts.TaggedTemplateExpression, LitTemplate>();
+
 export const parseLitTemplate = (
   node: ts.TaggedTemplateExpression,
   ts: TypeScript,
   _checker: ts.TypeChecker
 ): LitTemplate => {
+  const cached = cache.get(node);
+  if (cached !== undefined) {
+    return cached;
+  }
   const strings = getTemplateStrings(node, ts);
   const values = ts.isNoSubstitutionTemplateLiteral(node.template)
     ? []
@@ -388,10 +394,12 @@ export const parseLitTemplate = (
       }
     },
   });
-  (ast as LitTemplate).parts = parts;
-  (ast as LitTemplate).strings = strings;
-  (ast as LitTemplate).tsNode = node;
-  return ast as LitTemplate;
+  const finalAst = ast as LitTemplate;
+  finalAst.parts = parts;
+  finalAst.strings = strings;
+  finalAst.tsNode = node;
+  cache.set(node, finalAst);
+  return finalAst;
 };
 
 // TODO (justinfagnani): export a traverse function that takes a visitor that
@@ -437,6 +445,45 @@ export function isNode(node: object): node is Node {
 export function isLitTemplate(node: object): node is LitTemplate {
   return isNode(node) && 'tsNode' in node;
 }
+
+const elementToSourceIdCache = new WeakMap<Element, number>();
+const elementToSourceCached = new WeakSet<ts.SourceFile>();
+const annotateSourceFile = (
+  sourceFile: ts.SourceFile,
+  ts: TypeScript,
+  checker: ts.TypeChecker
+) => {
+  if (elementToSourceCached.has(sourceFile)) {
+    return;
+  }
+  let currentSourceId = -1;
+  const visitor = (tsNode: ts.Node) => {
+    if (isLitTaggedTemplateExpression(tsNode, ts, checker)) {
+      const template = parseLitTemplate(tsNode, ts, checker);
+      traverse(template, {
+        ['pre:node'](parse5Node, _parent) {
+          if (isElementNode(parse5Node)) {
+            currentSourceId++;
+            elementToSourceIdCache.set(parse5Node, currentSourceId);
+          }
+        },
+      });
+    }
+    ts.forEachChild(tsNode, visitor);
+  };
+  ts.forEachChild(sourceFile, visitor);
+  elementToSourceCached.add(sourceFile);
+};
+
+export const getSourceIdForElement = (
+  sourceFile: ts.SourceFile,
+  element: Element,
+  ts: TypeScript,
+  checker: ts.TypeChecker
+): number | undefined => {
+  annotateSourceFile(sourceFile, ts, checker);
+  return elementToSourceIdCache.get(element);
+};
 
 export const getTemplateNodeBySourceId = (
   sourceFile: ts.SourceFile,
