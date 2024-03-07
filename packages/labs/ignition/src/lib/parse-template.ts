@@ -28,6 +28,7 @@ import {
 export {
   type Node,
   type CommentNode,
+  type TextNode,
   type Element,
   type DocumentFragment,
   isCommentNode,
@@ -39,7 +40,7 @@ export {
 const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} = _$LH;
 
 type TypeScript = typeof ts;
-type Attribute = Element['attrs'][number];
+export type Attribute = Element['attrs'][number];
 
 /**
  * Returns true if the specifier is known to export the Lit html template tag.
