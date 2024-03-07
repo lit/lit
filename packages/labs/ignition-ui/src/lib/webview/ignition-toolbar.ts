@@ -43,6 +43,7 @@ export class IgnitionToolbar extends LitElement {
     return html`
       <vscode-button
         aria-label="Select Mode"
+        title="Select Mode"
         appearance="icon"
         @click=${() => this.#setMode('select')}
         ?disabled=${this.selectionMode === 'select'}
@@ -50,6 +51,7 @@ export class IgnitionToolbar extends LitElement {
       ></vscode-button>
       <vscode-button
         aria-label="Interact Mode"
+        title="Interact Mode"
         appearance="icon"
         @click=${() => this.#setMode('interact')}
         ?disabled=${this.selectionMode === 'interact'}
@@ -58,7 +60,10 @@ export class IgnitionToolbar extends LitElement {
       <vscode-button
         aria-label="${this.autoChangeStoryUrl
           ? 'Displayed stories change automatically as you navigate. Click to lock.'
-          : 'Locked to current change, click to unlock and automatically update displayed story.'}"
+          : 'Locked to current story, click to unlock and automatically update displayed story.'}"
+        title=${this.autoChangeStoryUrl
+          ? 'Lock current story'
+          : 'Unlock current story'}
         appearance="icon"
         @click=${() => this.#setAutoChangeStoryUrl(!this.autoChangeStoryUrl)}
         ><span
@@ -67,6 +72,7 @@ export class IgnitionToolbar extends LitElement {
       ></vscode-button>
       <vscode-button
         aria-label="Reload"
+        title="Reload"
         appearance="icon"
         @click=${() => this.dispatchEvent(new ReloadFrameEvent())}
         ><span class="codicon codicon-refresh"></span
