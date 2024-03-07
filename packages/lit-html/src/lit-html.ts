@@ -336,7 +336,7 @@ const boundAttributeSuffix = '$lit$';
 // a valid element name and attribute name. We don't support dynamic names (yet)
 // but this at least ensures that the parse tree is closer to the template
 // intention.
-const marker = `lit$${String(Math.random()).slice(-9)}$`;
+const marker = `lit$${Math.random().toFixed(9).slice(2)}$`;
 
 // String used to tell if a comment is a marker comment
 const markerMatch = '?' + marker;
