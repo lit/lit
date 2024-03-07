@@ -292,11 +292,17 @@ export interface LitTemplateAttribute extends Attribute {
   litPart: PartInfo;
 }
 
+const cache = new WeakMap<ts.TaggedTemplateExpression, LitTemplate>();
+
 export const parseLitTemplate = (
   node: ts.TaggedTemplateExpression,
   ts: TypeScript,
   _checker: ts.TypeChecker
 ): LitTemplate => {
+  const cached = cache.get(node);
+  if (cached !== undefined) {
+    return cached;
+  }
   const strings = getTemplateStrings(node, ts);
   const values = ts.isNoSubstitutionTemplateLiteral(node.template)
     ? []
@@ -388,10 +394,12 @@ export const parseLitTemplate = (
       }
     },
   });
-  (ast as LitTemplate).parts = parts;
-  (ast as LitTemplate).strings = strings;
-  (ast as LitTemplate).tsNode = node;
-  return ast as LitTemplate;
+  const finalAst = ast as LitTemplate;
+  finalAst.parts = parts;
+  finalAst.strings = strings;
+  finalAst.tsNode = node;
+  cache.set(node, finalAst);
+  return finalAst;
 };
 
 // TODO (justinfagnani): export a traverse function that takes a visitor that
@@ -438,15 +446,24 @@ export function isLitTemplate(node: object): node is LitTemplate {
   return isNode(node) && 'tsNode' in node;
 }
 
-export const getTemplateNodeBySourceId = (
+const elementToSourceIdCache = new WeakMap<Element, number>();
+const fileToSourceIdToElementCache = new WeakMap<
+  ts.SourceFile,
+  Map<number, [Element, LitTemplate]>
+>();
+const annotateSourceFile = (
   sourceFile: ts.SourceFile,
-  sourceId: number,
   ts: TypeScript,
   checker: ts.TypeChecker
 ) => {
+  let cached = fileToSourceIdToElementCache.get(sourceFile);
+  if (cached) {
+    // We've built the caches for this file already. Return the
+    // sourceIdToElementCache for it
+    return cached;
+  }
   let currentSourceId = -1;
-  let targetNode: Node | undefined;
-  let targetTemplate: LitTemplate | undefined;
+  const sourceIdToElementCache = new Map<number, [Element, LitTemplate]>();
   const visitor = (tsNode: ts.Node) => {
     if (isLitTaggedTemplateExpression(tsNode, ts, checker)) {
       const template = parseLitTemplate(tsNode, ts, checker);
@@ -454,20 +471,39 @@ export const getTemplateNodeBySourceId = (
         ['pre:node'](parse5Node, _parent) {
           if (isElementNode(parse5Node)) {
             currentSourceId++;
-            if (currentSourceId === sourceId) {
-              targetTemplate = template;
-              targetNode = parse5Node;
-              // End traversal?
-              return false;
-            }
+            elementToSourceIdCache.set(parse5Node, currentSourceId);
+            sourceIdToElementCache.set(currentSourceId, [parse5Node, template]);
           }
         },
       });
     }
-    if (targetNode === undefined) {
-      ts.forEachChild(tsNode, visitor);
-    }
+    ts.forEachChild(tsNode, visitor);
   };
   ts.forEachChild(sourceFile, visitor);
-  return {node: targetNode, template: targetTemplate};
+  fileToSourceIdToElementCache.set(sourceFile, sourceIdToElementCache);
+  return sourceIdToElementCache;
+};
+
+export const getSourceIdForElement = (
+  sourceFile: ts.SourceFile,
+  element: Element,
+  ts: TypeScript,
+  checker: ts.TypeChecker
+): number | undefined => {
+  annotateSourceFile(sourceFile, ts, checker);
+  return elementToSourceIdCache.get(element);
+};
+
+export const getTemplateNodeBySourceId = (
+  sourceFile: ts.SourceFile,
+  sourceId: number,
+  ts: TypeScript,
+  checker: ts.TypeChecker
+) => {
+  const sourceIdToElementCache = annotateSourceFile(sourceFile, ts, checker);
+  const result = sourceIdToElementCache.get(sourceId);
+  if (result === undefined) {
+    return;
+  }
+  return {node: result[0], template: result[1]};
 };

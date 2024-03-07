@@ -11,7 +11,6 @@ import {
 import {createRequire} from 'node:module';
 import {getAnalyzer, getWorkspaceFolderForElement} from './analyzer.js';
 import {logChannel} from './logging.js';
-import * as parse5 from 'parse5';
 import ts from 'typescript';
 import {Analyzer} from '@lit-labs/analyzer';
 import type {Ignition} from './ignition.js';
@@ -19,6 +18,7 @@ import {
   LitTemplate,
   LitTemplateNode,
   getChildPartExpression,
+  getSourceIdForElement,
   hasChildPart,
   isCommentNode,
   isDocumentFragment,
@@ -29,9 +29,15 @@ import {
   isTextNode,
   parseLitTemplate,
 } from './parse-template.js';
+import * as path from 'node:path';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
+import type {
+  ProjectServerSourceUrl,
+  TemplatePiece,
+} from '../../../ignition-ui/unbundled/lib/protocol/common.js';
+import {getProjectServerIfRunning} from './project-server.js';
 
 export class TemplateOutlineDataProvider
   implements vscode.TreeDataProvider<TemplateItem>
@@ -58,14 +64,15 @@ export class TemplateOutlineDataProvider
     TemplateItem<TemplateNode> | undefined | void
   > = this.#onDidChangeTreeData.event;
 
-  getTreeItem(data: TemplateItem): vscode.TreeItem | Thenable<vscode.TreeItem> {
+  async getTreeItem(data: TemplateItem): Promise<vscode.TreeItem> {
     const treeItem = this.#getTreeItem(data);
     const location = getLocationForItem(data);
     if (location !== undefined) {
+      const templatePiece = await getTemplatePieceForItem(data, location);
       treeItem.command = {
         title: 'Highlight Source Code',
         command: 'ignition.highlightSourceCode',
-        arguments: [location],
+        arguments: [location, templatePiece],
       };
     }
     return treeItem;
@@ -416,4 +423,71 @@ function getOffsetInTemplate(
     prevEnd = span.literal.end;
   }
   return offset;
+}
+
+async function getTemplatePieceForItem(
+  data: TemplateItem<TemplateNode>,
+  location: vscode.Location
+): Promise<TemplatePiece | undefined> {
+  if (isNode(data.node) && isElementNode(data.node)) {
+    const url = await getServedUrlForFile(location.uri);
+    if (url === undefined) {
+      return;
+    }
+    // Missing piece: looking up the source ID for the element.
+    let template: LitTemplate | undefined;
+    let curr = data.parent;
+    while (curr !== undefined) {
+      if (isLitTemplate(curr.node)) {
+        template = curr.node;
+        break;
+      }
+      curr = curr.parent;
+    }
+    if (template === undefined) {
+      return;
+    }
+
+    const sourceId = getSourceIdForElement(
+      template.tsNode.getSourceFile(),
+      data.node,
+      data.analyzer.typescript,
+      data.analyzer.program.getTypeChecker()
+    );
+    if (sourceId === undefined) {
+      return;
+    }
+
+    const templatePiece = {
+      kind: 'element',
+      url,
+      sourceId: String(sourceId),
+    } as const;
+    return templatePiece;
+  }
+  return;
+}
+
+async function getServedUrlForFile(
+  uri: vscode.Uri
+): Promise<ProjectServerSourceUrl | undefined> {
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(uri);
+  if (workspaceFolder === undefined) {
+    return;
+  }
+  const projectServer = await getProjectServerIfRunning(workspaceFolder);
+  if (projectServer === undefined) {
+    return;
+  }
+  const address = projectServer.address();
+  if (address === null) {
+    throw new Error('Project server had no address?');
+  }
+  if (typeof address === 'string') {
+    throw new Error('Project server address was a string?');
+  }
+  const port = address.port;
+  const url = new URL(`http://localhost:${port}`);
+  url.pathname = path.relative(workspaceFolder.uri.fsPath, uri.fsPath);
+  return url.href as ProjectServerSourceUrl;
 }

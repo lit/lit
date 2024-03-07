@@ -1,9 +1,11 @@
 import {ChildPart, TemplateInstance} from 'lit-html';
 
-type LitTemplate = InstanceType<typeof TemplateInstance>['_$template'] & {
+export type LitTemplate = InstanceType<
+  typeof TemplateInstance
+>['_$template'] & {
   el: HTMLTemplateElement;
 };
-type MaybeRootLitContainer = Element & {_$litPart$: ChildPart | undefined};
+type MaybeRootLitContainer = Node & {_$litPart$?: ChildPart};
 
 /**
  * Given an element `el`, this function will try and locate the lit-html
@@ -184,9 +186,52 @@ function* piercingWalkNodes(
       yield* piercingWalkNodes(childNode);
     }
   }
-  const childNodes = node.shadowRoot?.childNodes ?? node.childNodes;
-  for (const childNode of childNodes) {
-    yield* piercingWalkNodes(childNode);
+  if (node.shadowRoot != null) {
+    yield* piercingWalkNodes(node.shadowRoot);
+  } else {
+    const childNodes = node.childNodes;
+    for (const childNode of childNodes) {
+      yield* piercingWalkNodes(childNode);
+    }
   }
   yield {node, type: 'closing'};
+}
+
+export function* findAllTemplateInstances(): IterableIterator<{
+  template: TemplateInstance;
+  part: ChildPart;
+}> {
+  for (const traversedNode of piercingWalkNodes(document.body)) {
+    if (traversedNode.type === 'closing') {
+      continue;
+    }
+    const rootEl: MaybeRootLitContainer = traversedNode.node;
+    if (rootEl._$litPart$ == null) {
+      continue;
+    }
+    const rootChildPart = rootEl._$litPart$;
+    if (!isTemplateInstance(rootChildPart?._$committedValue)) {
+      continue;
+    }
+    const templateInstance = rootChildPart._$committedValue;
+    yield {template: templateInstance, part: rootChildPart};
+    yield* findTemplateInstancesInsideParts(templateInstance._$parts);
+  }
+}
+
+function* findTemplateInstancesInsideParts(
+  _$parts: (import('lit-html').Part | undefined)[]
+): IterableIterator<{template: TemplateInstance; part: ChildPart}> {
+  for (const part of _$parts) {
+    if (part == null) {
+      continue;
+    }
+    if (part.type === 2) {
+      if (isTemplateInstance(part._$committedValue)) {
+        const templateInstance = part._$committedValue;
+        yield {template: templateInstance, part};
+        yield* findTemplateInstancesInsideParts(templateInstance._$parts);
+      }
+    }
+  }
 }

@@ -6,7 +6,6 @@
 
 import {LitElement, css, html, nothing} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
-import type {BoundingBoxWithDepth} from '../frame/iframe-api-to-webview.js';
 import './ignition-toolbar.js';
 
 declare global {
@@ -51,9 +50,6 @@ export class IgnitionStage extends LitElement {
       box-sizing: border-box;
     }
   `;
-
-  @property({attribute: false})
-  boxesInPageToHighlight: BoundingBoxWithDepth[] = [];
 
   @property({type: Boolean})
   blockInput = true;

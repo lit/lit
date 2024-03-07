@@ -19,6 +19,7 @@ import * as path from 'node:path';
 
 const require = createRequire(import.meta.url);
 import vscode = require('vscode');
+import type {TemplatePiece} from '../../../ignition-ui/unbundled/lib/protocol/common.js';
 
 function getHtmlForWebview(uiServerPort: number): string {
   const uiScriptUrl = `http://localhost:${uiServerPort}/editor-entrypoint.js`;
@@ -124,6 +125,10 @@ export class EditorPanel implements vscode.Disposable {
 
   dispose() {
     this.#webviewPanel.dispose();
+  }
+
+  highlightTemplatePiece(templatePiece: TemplatePiece | undefined) {
+    this.#connection?.highlightTemplatePiece(templatePiece);
   }
 
   private async refreshStory() {
