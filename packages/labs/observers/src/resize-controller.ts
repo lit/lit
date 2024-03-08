@@ -70,7 +70,7 @@ export class ResizeController<T = unknown> implements ReactiveController {
    * state and is performed async by requesting a host update and calling
    * `handleChanges` once by checking and then resetting this flag.
    */
-  private _unobservedUpdate = false;
+  // private _unobservedUpdate = false;
   /**
    * The result of processing the observer's changes via the `callback`
    * function.
@@ -129,10 +129,10 @@ export class ResizeController<T = unknown> implements ReactiveController {
     // Handle initial state as a set of 0 changes. This helps setup initial
     // state and promotes UI = f(state) since ideally the callback does not
     // rely on changes.
-    if (!this._skipInitial && this._unobservedUpdate) {
-      this.handleChanges([]);
-    }
-    this._unobservedUpdate = false;
+    // if (!this._skipInitial && this._unobservedUpdate) {
+    //   this.handleChanges([]);
+    // }
+    // this._unobservedUpdate = false;
   }
 
   /**
@@ -143,8 +143,11 @@ export class ResizeController<T = unknown> implements ReactiveController {
   observe(target: Element) {
     this._targets.add(target);
     this._observer.observe(target, this._config);
-    this._unobservedUpdate = true;
-    this._host.requestUpdate();
+    // this._unobservedUpdate = true;
+    // No public state is updated immediately when we observe an element,
+    // so we don't need to call `host.requestUpdate()`. If we add such
+    // state (like a count of observed elements), we'll need to call
+    // requestUpdate() here and unobserve().
   }
 
   /**
