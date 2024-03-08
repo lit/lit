@@ -33,3 +33,5 @@ if (process.env.NODE_ENV === 'production') {
     jsxDEV: wrapJsxDev(ReactJSXDevRuntime.jsxDEV),
   });
 }
+
+globalThis.litSsrReactEnabled = true;
