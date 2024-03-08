@@ -1,4 +1,4 @@
-# @lit-examples/nextjs
+# @lit-examples/nextjs-v13
 
 ## 0.1.1
 
