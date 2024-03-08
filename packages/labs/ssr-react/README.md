@@ -12,15 +12,9 @@ This package provides tools to integrate [`@lit-labs/ssr`](../ssr/README.md) wit
 
 To get React SSR to deeply render Lit components, we'll need React JSX code to call an enhanced version of `createElement()` provided by this package. The way to achieve this depends on your project configuration.
 
-### Using the Classic Runtime JSX Transform
+### Monkey patching React element creation (recommended)
 
-The classic JSX transform replaces JSX expressions with `React.createElement()` function calls. In the default mode, it requires that `React` is imported and available in the scope of the JSX file.
-
-This package provides a couple different ways to handle the classic runtime:
-
-#### Monkey patching `React.createElement()` (recommended)
-
-This package provides a module that, when imported in a server environment, has the side-effect of monkey patching `React.createElement()` to be enhanced to add the declarative shadow DOM output to registered custom elements. This can be imported at the entry point of the application before `React` is imported.
+This package provides the `@lit-labs/ssr-react/enable-lit-ssr.js` module which, when imported in a server environment, has the side-effect of monkey patching `React.createElement()` and runtime JSX functions to be enhanced to add the declarative shadow DOM output to registered custom elements. This can be imported at the entry point of the application before `React` is imported or any JSX containing Lit components is written.
 
 ```js
 // index.js
@@ -29,14 +23,16 @@ import '@lit-labs/ssr-react/enable-lit-ssr.js';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-...
+const App = () => {
+  return <my-element />;
+};
 ```
 
 In the browser environment, this module does not patch `React.createElement()` but instead imports `@lit-labs/ssr-client/lit-element-hydrate-support.js` which must be imported before the `lit` package to allow hydration of server-rendered Lit elements.
 
-This approach has the advantage of being compatible with Lit components wrapped as React components using the `@lit/react` package, which calls `React.createElement()` directly. It'll also work for any external React components pre-compiled with the classic JSX runtime transform.
+### Using the Classic Runtime JSX Transform
 
-#### Specifying an alternative `createElement()` function
+The classic JSX transform replaces JSX expressions with `React.createElement()` function calls. In the default mode, it requires that `React` is imported and available in the scope of the JSX file.
 
 If you wish to control which components use the enhanced `createElement()` function without a global monkey patch, you may do so by using a JSX pragma.
 
@@ -57,7 +53,7 @@ You may also set the compiler options to specify the function to use instead of 
 
 Note that the import line must still be present for every file that contains JSX expressions to transform in the classic runtime mode.
 
-This approach only works for server-rendering custom elements added to the project in JSX expressions. It will not affect any pre-compiled JSX expressions or direct calls to `React.createElement()`. You will also need to manually import the `@lit-labs/ssr-client/lit-element-hydrate-support.js` to your client JS. For those scenarios, use the [monkey patching](#monkey-patching-reactcreateelement-recommended) approach.
+This approach only works for server-rendering custom elements added to your project's JSX expressions. It will not affect any pre-compiled JSX expressions or direct calls to `React.createElement()`. You will also need to manually import the `@lit-labs/ssr-client/lit-element-hydrate-support.js` to your client JS. For those scenarios, use the [monkey patching](#monkey-patching-react-element-creation-recommended) approach.
 
 ### Using the Automatic Runtime JSX Transform
 
@@ -68,9 +64,7 @@ If your project is using the [runtime JSX transform](https://reactjs.org/blog/20
 
 These JSX runtime modules contain jsx functions enhanced to add the declarative shadow DOM output to registered custom elements when imported into server environemtns. They also automatically import `@lit-labs/ssr-client/lit-element-hydrate-support.js` in the browser environment.
 
-This method will not work for any pre-compiled JSX expressions or direct calls to `React.createElement()`, including those in the usage of the `@lit/react` package's `createComponent()`. Consider combining this with the [monkey patching](#monkey-patching-reactcreateelement-recommended) approach to handle such scenarios.
-
-In the unlikely event that you wish to use React components that are pre-compiled with the automatic transform, i.e. those already written using `jsx` or `jsxs` functions, that also contain Lit components you wish to SSR, a build tool will need to be used to replace the import source of those functions to be from `@lit-labs/ssr-react`.
+This method will not work for any pre-compiled JSX expressions or direct calls to `React.createElement()`, including those in the usage of the `@lit/react` package's `createComponent()`. Consider using the [monkey patching](#monkey-patching-react-element-creation-recommended) approach to handle such scenarios.
 
 ### Advanced Usage
 
@@ -91,7 +85,7 @@ The enhancements to `React.createElement()` or runtime JSX functions work by add
 
 For bare custom elements, all props provided by React are set as **attributes** on the element during server rendering, as is the default behavior for custom elements rendered by React on the client (as of version 18). This works for simple components whose properties can easily be represented as attributes, i.e. they are easily serialized/deserialized and the attribute name does not differ with the property name.
 
-For Lit elements wrapped with `@lit/react`'s `createComponent()`, properties present on the element will be set as **properties** instead of **attributes** for server rendering. Client side hydration will also be deferred such that it'll wait for element properties to be set before the first update happens. Note: this is only made available by the [monkey patching](#monkey-patching-reactcreateelement-recommended) approach.
+For Lit elements wrapped with `@lit/react`'s `createComponent()`, properties present on the element will be set as **properties** instead of **attributes** for server rendering. Client side hydration will also be deferred such that it'll wait for element properties to be set before the first update happens.
 
 ## Enabling Declarative Shadow DOM
 
