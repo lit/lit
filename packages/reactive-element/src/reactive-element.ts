@@ -1110,6 +1110,10 @@ export abstract class ReactiveElement
     this.__controllers?.forEach((c) => c.hostConnected?.());
   }
 
+  serverCallback() {
+    this.__controllers?.forEach((c) => c.hostConnected?.());
+  }
+
   /**
    * Note, this method should be considered final and not overridden. It is
    * overridden on the element instance with a function that triggers the first

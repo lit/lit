@@ -19,6 +19,10 @@
   "exports": {
     ".": {
       "types": "./development/index.d.ts",
+      "node": {
+        "development": "./node/development/index.js",
+        "default": "./node/index.js"
+      },
       "development": "./development/index.js",
       "default": "./index.js"
     }
@@ -27,6 +31,7 @@
     "/src/",
     "!/src/test/",
     "/lib/",
+    "/node/",
     "/development/",
     "!/development/test/",
     "/index.{d.ts,d.ts.map,js,js.map}"
@@ -209,7 +214,8 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/reactive-element": "^1.6.2 || ^2.0.0"
+    "@lit/reactive-element": "^1.6.2 || ^2.0.0",
+    "@lit-labs/ssr-dom-shim": "^1.0.0"
   },
   "devDependencies": {
     "@esm-bundle/chai": "^4.3.4-fix.0",
