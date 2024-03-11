@@ -15,4 +15,6 @@ import {wrapJsxDev} from '../lib/node/wrap-jsx.js';
 
 export const Fragment = ReactJSXDevRuntime.Fragment;
 
-export const jsxDEV = wrapJsxDev(ReactJSXDevRuntime.jsxDEV);
+export const jsxDEV = globalThis.litSsrReactEnabled
+  ? ReactJSXDevRuntime.jsxDEV
+  : wrapJsxDev(ReactJSXDevRuntime.jsxDEV);

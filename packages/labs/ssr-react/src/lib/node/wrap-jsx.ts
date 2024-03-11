@@ -10,116 +10,115 @@ import {createElement, type ReactNode, type ElementType} from 'react';
 import {renderCustomElement} from './render-custom-element.js';
 import {isCustomElement} from '../utils.js';
 
-export const wrapJsx = (originalJsx: typeof jsx, originalJsxs: typeof jsxs) =>
-  originalJsx.name !== 'litPatchedJsx'
-    ? function litPatchedJsx<P extends {children?: ReactNode}>(
-        type: ElementType<P>,
-        props: P,
-        key: string | undefined
-      ) {
-        if (isCustomElement(type)) {
-          const {shadowContents, elementAttributes, templateAttributes} =
-            renderCustomElement(type, props);
+export function wrapJsx(originalJsx: typeof jsx, originalJsxs: typeof jsxs) {
+  return function litPatchedJsx<P extends {children?: ReactNode}>(
+    type: ElementType<P>,
+    props: P,
+    key: string | undefined
+  ) {
+    if (isCustomElement(type)) {
+      const {shadowContents, elementAttributes, templateAttributes} =
+        renderCustomElement(type, props);
 
-          if (shadowContents) {
-            const templateShadowRoot = createElement('template', {
-              ...templateAttributes,
-              dangerouslySetInnerHTML: {
-                __html: [...shadowContents].join(''),
-              },
-            });
+      if (shadowContents) {
+        const templateShadowRoot = createElement('template', {
+          ...templateAttributes,
+          dangerouslySetInnerHTML: {
+            __html: [...shadowContents].join(''),
+          },
+        });
 
-            // Call `jsxs` instead of `jsx` so that React doesn't incorrectly
-            // interpret that the children array was dynamically made and warn about
-            // missing keys
-            return originalJsxs(type, {
-              ...props,
-              ...elementAttributes,
-              children: [templateShadowRoot, props.children],
-            });
-          }
-        }
-
-        return originalJsx(type, props, key);
+        // Call `jsxs` instead of `jsx` so that React doesn't incorrectly
+        // interpret that the children array was dynamically made and warn about
+        // missing keys
+        return originalJsxs(type, {
+          ...props,
+          ...elementAttributes,
+          children: [templateShadowRoot, props.children],
+        });
       }
-    : originalJsx;
+    }
 
-export const wrapJsxs = (originalJsxs: typeof jsxs) =>
-  originalJsxs.name !== 'litPatchedJsxs'
-    ? function litPatchedJsxs<P extends {children: ReactNode[]}>(
-        type: ElementType<P>,
-        props: P,
-        key: string | undefined
-      ) {
-        if (isCustomElement(type)) {
-          const {shadowContents, elementAttributes, templateAttributes} =
-            renderCustomElement(type, props);
+    return originalJsx(type, props, key);
+  };
+}
 
-          if (shadowContents) {
-            const templateShadowRoot = createElement('template', {
-              ...templateAttributes,
-              dangerouslySetInnerHTML: {
-                __html: [...shadowContents].join(''),
-              },
-            });
+export function wrapJsxs(originalJsxs: typeof jsxs) {
+  return function litPatchedJsxs<P extends {children: ReactNode[]}>(
+    type: ElementType<P>,
+    props: P,
+    key: string | undefined
+  ) {
+    if (isCustomElement(type)) {
+      const {shadowContents, elementAttributes, templateAttributes} =
+        renderCustomElement(type, props);
 
-            return originalJsxs(
-              type,
-              {
-                ...props,
-                ...elementAttributes,
-                children: [templateShadowRoot, ...props.children],
-              },
-              key
-            );
-          }
-        }
-        return originalJsxs(type, props, key);
+      if (shadowContents) {
+        const templateShadowRoot = createElement('template', {
+          ...templateAttributes,
+          dangerouslySetInnerHTML: {
+            __html: [...shadowContents].join(''),
+          },
+        });
+
+        return originalJsxs(
+          type,
+          {
+            ...props,
+            ...elementAttributes,
+            children: [templateShadowRoot, ...props.children],
+          },
+          key
+        );
       }
-    : originalJsxs;
+    }
+    return originalJsxs(type, props, key);
+  };
+}
 
-export const wrapJsxDev = (originalJsxDEV: typeof jsxDEV) =>
-  originalJsxDEV.name !== 'litPatchedJsxDev'
-    ? function litPatchedJsxDev<P extends {children?: ReactNode[] | ReactNode}>(
-        type: ElementType<P>,
-        props: P,
-        key: string | undefined,
-        isStaticChildren: boolean,
-        source: Object,
-        self: Object
-      ) {
-        if (isCustomElement(type)) {
-          const {shadowContents, elementAttributes, templateAttributes} =
-            renderCustomElement(type, props);
+export function wrapJsxDev(originalJsxDEV: typeof jsxDEV) {
+  return function litPatchedJsxDev<
+    P extends {children?: ReactNode[] | ReactNode},
+  >(
+    type: ElementType<P>,
+    props: P,
+    key: string | undefined,
+    isStaticChildren: boolean,
+    source: Object,
+    self: Object
+  ) {
+    if (isCustomElement(type)) {
+      const {shadowContents, elementAttributes, templateAttributes} =
+        renderCustomElement(type, props);
 
-          if (shadowContents) {
-            const templateShadowRoot = createElement('template', {
-              ...templateAttributes,
-              dangerouslySetInnerHTML: {
-                __html: [...shadowContents].join(''),
-              },
-            });
+      if (shadowContents) {
+        const templateShadowRoot = createElement('template', {
+          ...templateAttributes,
+          dangerouslySetInnerHTML: {
+            __html: [...shadowContents].join(''),
+          },
+        });
 
-            return originalJsxDEV(
-              type,
-              {
-                ...props,
-                ...elementAttributes,
-                children: [
-                  templateShadowRoot,
-                  ...(isStaticChildren
-                    ? (props.children as ReactNode[])
-                    : [props.children]),
-                ],
-              },
-              key,
-              true, // hard-code to true so React won't warn about missing key
-              source,
-              self
-            );
-          }
-        }
-
-        return originalJsxDEV(type, props, key, isStaticChildren, source, self);
+        return originalJsxDEV(
+          type,
+          {
+            ...props,
+            ...elementAttributes,
+            children: [
+              templateShadowRoot,
+              ...(isStaticChildren
+                ? (props.children as ReactNode[])
+                : [props.children]),
+            ],
+          },
+          key,
+          true, // hard-code to true so React won't warn about missing key
+          source,
+          self
+        );
       }
-    : originalJsxDEV;
+    }
+
+    return originalJsxDEV(type, props, key, isStaticChildren, source, self);
+  };
+}
