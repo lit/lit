@@ -22,6 +22,7 @@ import '@lit-labs/ssr-react/enable-lit-ssr.js';
 
 import React from 'react';
 import ReactDOM from 'react-dom';
+import './my-element.js';
 
 const App = () => {
   return <my-element />;

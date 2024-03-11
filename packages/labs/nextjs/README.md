@@ -48,7 +48,7 @@ The plugin has been tested with Next.js versions 13 and 14.
 
 If you are using Next.js App Router, you must make sure any Lit components you wish to use are beyond the `'use client';` boundary. These will still be server rendered for the initial page load just like they did for the Pages Router.
 
-Components in the App Router are by default React Server Components and deep SSR of Lit components does **not** work within server components as they result in React hydration mismatch due to the presence of the `<template>` element in React Flight serialized server component data, and the custom element definitions will not be included with the client bundle either.
+By default, components in the App Router are React Server Components (RSCs). Deep SSR of Lit components does **not** work within server components as they result in React hydration mismatch due to the presence of the `<template>` element in the RSC payload containing the serialized server component tree, and the custom element definitions will not be included with the client bundle either when imported in server component files.
 
 ## Contributing
 
