@@ -34,7 +34,7 @@ suite('@apply', () => {
     const computedStyle = getComputedStyle(div!);
     assert.equal(
       computedStyle.getPropertyValue('border-top-width').trim(),
-      '3px'
+      '3px',
     );
     assert.equal(computedStyle.getPropertyValue('padding-top').trim(), '4px');
     document.body.removeChild(container);
@@ -64,7 +64,7 @@ suite('@apply', () => {
       const applyUserStyle = getComputedStyle(applyUserDiv!);
       assert.equal(
         applyUserStyle.getPropertyValue('border-top-width').trim(),
-        '2px'
+        '2px',
       );
       assert.equal(applyUserStyle.getPropertyValue('margin-top').trim(), '4px');
       document.body.removeChild(applyUser);
@@ -107,26 +107,26 @@ suite('@apply', () => {
       renderShadowRoot(applyUserContent, usersInProducer[1]);
       window.ShadyCSS?.styleElement(usersInProducer[1] as HTMLElement);
       const userInProducerStyle1 = getComputedStyle(
-        usersInProducer[0].shadowRoot!.querySelector('div')!
+        usersInProducer[0].shadowRoot!.querySelector('div')!,
       );
       const userInProducerStyle2 = getComputedStyle(
-        usersInProducer[1].shadowRoot!.querySelector('div')!
+        usersInProducer[1].shadowRoot!.querySelector('div')!,
       );
       assert.equal(
         userInProducerStyle1.getPropertyValue('border-top-width').trim(),
-        '10px'
+        '10px',
       );
       assert.equal(
         userInProducerStyle1.getPropertyValue('padding-top').trim(),
-        '20px'
+        '20px',
       );
       assert.equal(
         userInProducerStyle2.getPropertyValue('border-top-width').trim(),
-        '10px'
+        '10px',
       );
       assert.equal(
         userInProducerStyle2.getPropertyValue('padding-top').trim(),
-        '20px'
+        '20px',
       );
       document.body.removeChild(applyProducer);
     };
@@ -179,27 +179,27 @@ suite('@apply', () => {
     renderShadowRoot(producerContent, applyProducer);
     const user1 = applyProducer.shadowRoot!.querySelector('apply-user-ce1')!;
     const userInProducerStyle1 = getComputedStyle(
-      user1.shadowRoot!.querySelector('div')!
+      user1.shadowRoot!.querySelector('div')!,
     );
     const user2 = applyProducer.shadowRoot!.querySelector('apply-user-ce2')!;
     const userInProducerStyle2 = getComputedStyle(
-      user2.shadowRoot!.querySelector('div')!
+      user2.shadowRoot!.querySelector('div')!,
     );
     assert.equal(
       userInProducerStyle1.getPropertyValue('border-top-width').trim(),
-      '10px'
+      '10px',
     );
     assert.equal(
       userInProducerStyle1.getPropertyValue('padding-top').trim(),
-      '20px'
+      '20px',
     );
     assert.equal(
       userInProducerStyle2.getPropertyValue('border-top-width').trim(),
-      '5px'
+      '5px',
     );
     assert.equal(
       userInProducerStyle2.getPropertyValue('padding-top').trim(),
-      '10px'
+      '10px',
     );
     document.body.removeChild(applyProducer);
   });

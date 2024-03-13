@@ -25,7 +25,7 @@ const IMPORT_LIT = `import { html } from "lit";\n`;
  * litLocalizeTransformer with the given translations. Check that there are no errors and
  * that the output matches (prettier-formatted).
  */
-function checkTransform(
+async function checkTransform(
   inputTs: string,
   expectedJs: string,
   opts?: {
@@ -66,13 +66,15 @@ function checkTransform(
     ],
   }));
 
-  let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
+  let formattedExpected = await prettier.format(expectedJs, {
+    parser: 'typescript',
+  });
   // TypeScript >= 4 will add an empty export statement if there are no imports
   // or exports to ensure this is a module. We don't care about checking this.
   const unformattedActual = (result.code || '').replace('export {};', '');
   let formattedActual;
   try {
-    formattedActual = prettier.format(unformattedActual, {
+    formattedActual = await prettier.format(unformattedActual, {
       parser: 'typescript',
     });
   } catch {
@@ -85,55 +87,67 @@ function checkTransform(
   assert.equal(result.diagnostics, []);
 }
 
-test('unchanged const', () => {
+async function assertRejects(
+  promise: Promise<unknown>,
+  expected: string | RegExp
+) {
+  try {
+    await promise;
+    assert.unreachable('Expected promise to reject');
+  } catch (e) {
+    assert.match(String(e), expected);
+  }
+}
+
+test('unchanged const', async () => {
   const src = 'const foo = "foo";';
-  checkTransform(src, src);
+  await checkTransform(src, src);
 });
 
-test('unchanged html', () => {
+test('unchanged html', async () => {
   const src =
     'const foo = "foo"; const bar = "bar"; html`Hello ${foo} and ${bar}!`;';
-  checkTransform(src, src);
+  await checkTransform(src, src);
 });
 
-test('msg(string)', () => {
-  checkTransform('msg("Hello World", {id: "foo"});', '"Hello World";');
+test('msg(string)', async () => {
+  await checkTransform('msg("Hello World", {id: "foo"});', '"Hello World";');
 });
 
-test('msg(string) unnecessarily tagged with str', () => {
-  checkTransform('msg(str`Hello World`, {id: "foo"});', '`Hello World`;');
+test('msg(string) unnecessarily tagged with str', async () => {
+  await checkTransform('msg(str`Hello World`, {id: "foo"});', '`Hello World`;');
 });
 
-test('msg(string) translated', () => {
-  checkTransform('msg("Hello World", {id: "foo"});', '`Hola Mundo`;', {
+test('msg(string) translated', async () => {
+  await checkTransform('msg("Hello World", {id: "foo"});', '`Hola Mundo`;', {
     messages: [{name: 'foo', contents: ['Hola Mundo']}],
   });
 });
 
-test('html(msg(string))', () => {
-  checkTransform(
+test('html(msg(string))', async () => {
+  await checkTransform(
     'html`<b>${msg("Hello World", {id: "foo"})}</b>`;',
     'html`<b>Hello World</b>`;'
   );
 });
 
-test('html(msg(string)) translated', () => {
-  checkTransform(
+test('html(msg(string)) translated', async () => {
+  await checkTransform(
     'html`<b>${msg("Hello World", {id: "foo"})}</b>`;',
     'html`<b>Hola Mundo</b>`;',
     {messages: [{name: 'foo', contents: ['Hola Mundo']}]}
   );
 });
 
-test('html(msg(html))', () => {
-  checkTransform(
+test('html(msg(html))', async () => {
+  await checkTransform(
     'html`<b>${msg(html`Hello <i>World</i>`, {id: "foo"})}</b>`;',
     'html`<b>Hello <i>World</i></b>`;'
   );
 });
 
-test('html(msg(html)) translated', () => {
-  checkTransform(
+test('html(msg(html)) translated', async () => {
+  await checkTransform(
     'html`<b>${msg(html`Hello <i>World</i>`, {id: "foo"})}</b>`;',
     'html`<b>Hola <i>Mundo</i></b>`;',
     {
@@ -152,15 +166,15 @@ test('html(msg(html)) translated', () => {
   );
 });
 
-test('msg(string(expr))', () => {
-  checkTransform(
+test('msg(string(expr))', async () => {
+  await checkTransform(
     'const name = "World";' + 'msg(str`Hello ${name}!`, {id: "foo"});',
     'const name = "World";' + '`Hello ${name}!`;'
   );
 });
 
-test('msg(string(expr)) translated', () => {
-  checkTransform(
+test('msg(string(expr)) translated', async () => {
+  await checkTransform(
     'const name = "World";' + 'msg(str`Hello ${name}!`, {id: "foo"});',
     'const name = "World";' + '`Hola ${name}!`;',
     {
@@ -174,15 +188,15 @@ test('msg(string(expr)) translated', () => {
   );
 });
 
-test('msg(string(string))', () => {
-  checkTransform(
+test('msg(string(string))', async () => {
+  await checkTransform(
     'msg(str`Hello ${"World"}!`, {id: "foo"});',
     '`Hello World!`;'
   );
 });
 
-test('msg(string(string)) translated', () => {
-  checkTransform(
+test('msg(string(string)) translated', async () => {
+  await checkTransform(
     'msg(str`Hello ${"World"}!`, {id: "foo"});',
     '`Hola World!`;',
     {
@@ -196,15 +210,15 @@ test('msg(string(string)) translated', () => {
   );
 });
 
-test('msg(html(expr))', () => {
-  checkTransform(
+test('msg(html(expr))', async () => {
+  await checkTransform(
     'const name = "World";' + 'msg(html`Hello <b>${name}</b>!`, {id: "foo"});',
     'const name = "World";' + 'html`Hello <b>${name}</b>!`;'
   );
 });
 
-test('msg(html(expr)) translated', () => {
-  checkTransform(
+test('msg(html(expr)) translated', async () => {
+  await checkTransform(
     'const name = "World";' + 'msg(html`Hello <b>${name}</b>!`, {id: "foo"});',
     'const name = "World";' + 'html`Hola <b>${name}</b>!`;',
     {
@@ -222,15 +236,15 @@ test('msg(html(expr)) translated', () => {
   );
 });
 
-test('msg(html(string))', () => {
-  checkTransform(
+test('msg(html(string))', async () => {
+  await checkTransform(
     'msg(html`Hello <b>${"World"}</b>!`, {id: "foo"});',
     'html`Hello <b>World</b>!`;'
   );
 });
 
-test('msg(html(string)) translated', () => {
-  checkTransform(
+test('msg(html(string)) translated', async () => {
+  await checkTransform(
     'msg(html`Hello <b>${"World"}</b>!`, {id: "foo"});',
     'html`Hola <b>World</b>!`;',
     {
@@ -248,8 +262,8 @@ test('msg(html(string)) translated', () => {
   );
 });
 
-test('multiple expression-placeholders and order switching', () => {
-  checkTransform(
+test('multiple expression-placeholders and order switching', async () => {
+  await checkTransform(
     `const x = 'x';
     const y = 'y';
     const z = 'z';
@@ -274,15 +288,15 @@ test('multiple expression-placeholders and order switching', () => {
   );
 });
 
-test('msg(html(html))', () => {
-  checkTransform(
+test('msg(html(html))', async () => {
+  await checkTransform(
     'msg(html`Hello <b>${html`<i>World</i>`}</b>!`, {id: "foo"});',
     'html`Hello <b><i>World</i></b>!`;'
   );
 });
 
-test('msg(html(html)) translated', () => {
-  checkTransform(
+test('msg(html(html)) translated', async () => {
+  await checkTransform(
     'msg(html`Hello <b>${html`<i>World</i>`}</b>!`, {id: "foo"});',
     'html`Hola <b><i>World</i></b>!`;',
     {
@@ -300,15 +314,15 @@ test('msg(html(html)) translated', () => {
   );
 });
 
-test('msg(string(msg(string)))', () => {
-  checkTransform(
+test('msg(string(msg(string)))', async () => {
+  await checkTransform(
     'msg(str`Hello ${msg("World", {id: "bar"})}!`, {id: "foo"});',
     '`Hello World!`;'
   );
 });
 
-test('msg(string(msg(string))) translated', () => {
-  checkTransform(
+test('msg(string(msg(string))) translated', async () => {
+  await checkTransform(
     'msg(str`Hello ${msg("World", {id: "bar"})}!`, {id: "foo"});',
     '`Hola Mundo!`;',
     {
@@ -330,8 +344,8 @@ test('msg(string(msg(string))) translated', () => {
   );
 });
 
-test('msg(string(<b>msg(string)</b>)) translated', () => {
-  checkTransform(
+test('msg(string(<b>msg(string)</b>)) translated', async () => {
+  await checkTransform(
     'msg(str`Hello <b>${msg("World", {id: "bar"})}</b>!`, {id: "foo"});',
     '`Hola &lt;b&gt;Mundo&lt;/b&gt;!`;',
     {
@@ -353,15 +367,15 @@ test('msg(string(<b>msg(string)</b>)) translated', () => {
   );
 });
 
-test('html(msg(string)) with msg as attr value', () => {
-  checkTransform(
+test('html(msg(string)) with msg as attr value', async () => {
+  await checkTransform(
     'html`Hello <b bar=${msg("World", {id: "bar"})}>${"World"}</b>!`;',
     'html`Hello <b bar=${"World"}>World</b>!`;'
   );
 });
 
-test('html(msg(string)) with msg as attr value translated', () => {
-  checkTransform(
+test('html(msg(string)) with msg as attr value translated', async () => {
+  await checkTransform(
     'html`Hello <b bar=${msg("world", {id: "bar"})}>${"World"}</b>!`;',
     'html`Hello <b bar=${`Mundo`}>World</b>!`;',
     {
@@ -375,16 +389,16 @@ test('html(msg(string)) with msg as attr value translated', () => {
   );
 });
 
-test('html(msg(string)) with multiple msg as attr value', () => {
-  checkTransform(
+test('html(msg(string)) with multiple msg as attr value', async () => {
+  await checkTransform(
     'html`<b foo=${msg("Hello", {id: "foo"})}>${"Hello"}</b>' +
       '<b bar=${msg("World", {id: "bar"})}>${"World"}</b>!`;',
     'html`<b foo=${"Hello"}>Hello</b><b bar=${"World"}>World</b>!`;'
   );
 });
 
-test('html(msg(string)) with multiple msg as attr value translated', () => {
-  checkTransform(
+test('html(msg(string)) with multiple msg as attr value translated', async () => {
+  await checkTransform(
     'html`<b foo=${msg("Hello", {id: "foo"})}>${"Hello"}</b>' +
       '<b bar=${msg("World", {id: "bar"})}>${"World"}</b>!`;',
     'html`<b foo=${`Hola`}>Hello</b><b bar=${`Mundo`}>World</b>!`;',
@@ -403,15 +417,15 @@ test('html(msg(string)) with multiple msg as attr value translated', () => {
   );
 });
 
-test('html(msg(string)) with msg as property attr value', () => {
-  checkTransform(
+test('html(msg(string)) with msg as property attr value', async () => {
+  await checkTransform(
     'html`Hello <b .bar=${msg("World", {id: "bar"})}>${"World"}</b>!`;',
     'html`Hello <b .bar=${"World"}>World</b>!`;'
   );
 });
 
-test('html(msg(string)) with msg as property attr value translated', () => {
-  checkTransform(
+test('html(msg(string)) with msg as property attr value translated', async () => {
+  await checkTransform(
     'html`Hello <b .bar=${msg("World", {id: "bar"})}>${"World"}</b>!`;',
     'html`Hello <b .bar=${`Mundo`}>World</b>!`;',
     {
@@ -425,8 +439,8 @@ test('html(msg(string)) with msg as property attr value translated', () => {
   );
 });
 
-test('import * as litLocalize', () => {
-  checkTransform(
+test('import * as litLocalize', async () => {
+  await checkTransform(
     `
     import * as litLocalize from '@lit/localize';
     litLocalize.msg("Hello World", {id: "foo"});
@@ -436,8 +450,8 @@ test('import * as litLocalize', () => {
   );
 });
 
-test('import {msg as foo}', () => {
-  checkTransform(
+test('import {msg as foo}', async () => {
+  await checkTransform(
     `
     import {msg as foo} from '@lit/localize';
     foo("Hello World", {id: "foo"});
@@ -447,8 +461,8 @@ test('import {msg as foo}', () => {
   );
 });
 
-test('exclude different msg function', () => {
-  checkTransform(
+test('exclude different msg function', async () => {
+  await checkTransform(
     `function msg(template: string, options?: {id?: string}) { return template; }
     msg("Hello World", {id: "foo"});`,
     `function msg(template, options) { return template; }
@@ -457,8 +471,8 @@ test('exclude different msg function', () => {
   );
 });
 
-test('configureTransformLocalization() -> {getLocale: () => "es-419"}', () => {
-  checkTransform(
+test('configureTransformLocalization() -> {getLocale: () => "es-419"}', async () => {
+  await checkTransform(
     `import {configureTransformLocalization} from '@lit/localize';
      const {getLocale} = configureTransformLocalization({
        sourceLocale: 'en',
@@ -470,40 +484,39 @@ test('configureTransformLocalization() -> {getLocale: () => "es-419"}', () => {
   );
 });
 
-test('configureLocalization() throws', () => {
-  assert.throws(
-    () =>
-      checkTransform(
-        `import {configureLocalization} from '@lit/localize';
+test('configureLocalization() throws', async () => {
+  assertRejects(
+    checkTransform(
+      `import {configureLocalization} from '@lit/localize';
          configureLocalization({
            sourceLocale: 'en',
            targetLocales: ['es-419'],
            loadLocale: (locale: string) => import(\`/\${locale}.js\`),
          });`,
-        ``
-      ),
+      ``
+    ),
     'Cannot use configureLocalization in transform mode'
   );
 });
 
-test('LOCALE_STATUS_EVENT => "lit-localize-status"', () => {
-  checkTransform(
+test('LOCALE_STATUS_EVENT => "lit-localize-status"', async () => {
+  await checkTransform(
     `import {LOCALE_STATUS_EVENT} from '@lit/localize';
      window.addEventListener(LOCALE_STATUS_EVENT, () => console.log('ok'));`,
     `window.addEventListener('lit-localize-status', () => console.log('ok'));`
   );
 });
 
-test('litLocalize.LOCALE_STATUS_EVENT => "lit-localize-status"', () => {
-  checkTransform(
+test('litLocalize.LOCALE_STATUS_EVENT => "lit-localize-status"', async () => {
+  await checkTransform(
     `import * as litLocalize from '@lit/localize';
      window.addEventListener(litLocalize.LOCALE_STATUS_EVENT, () => console.log('ok'));`,
     `window.addEventListener('lit-localize-status', () => console.log('ok'));`
   );
 });
 
-test('re-assigned LOCALE_STATUS_EVENT', () => {
-  checkTransform(
+test('re-assigned LOCALE_STATUS_EVENT', async () => {
+  await checkTransform(
     `import {LOCALE_STATUS_EVENT} from '@lit/localize';
      const event = LOCALE_STATUS_EVENT;
      window.addEventListener(event, () => console.log('ok'));`,
@@ -512,19 +525,22 @@ test('re-assigned LOCALE_STATUS_EVENT', () => {
   );
 });
 
-test('different LOCALE_STATUS_EVENT variable unchanged', () => {
-  checkTransform(
+test('different LOCALE_STATUS_EVENT variable unchanged', async () => {
+  await checkTransform(
     `const LOCALE_STATUS_EVENT = "x";`,
     `const LOCALE_STATUS_EVENT = "x";`
   );
 });
 
-test('different variable cast to "lit-localize-status" unchanged', () => {
-  checkTransform(`const x = "x" as "lit-localize-status";`, `const x = "x";`);
+test('different variable cast to "lit-localize-status" unchanged', async () => {
+  await checkTransform(
+    `const x = "x" as "lit-localize-status";`,
+    `const x = "x";`
+  );
 });
 
-test('updateWhenLocaleChanges -> undefined', () => {
-  checkTransform(
+test('updateWhenLocaleChanges -> undefined', async () => {
+  await checkTransform(
     `import {LitElement, html} from 'lit';
      import {msg, updateWhenLocaleChanges} from '@lit/localize';
      class MyElement extends LitElement {
@@ -550,8 +566,8 @@ test('updateWhenLocaleChanges -> undefined', () => {
   );
 });
 
-test('@localized removed', () => {
-  checkTransform(
+test('@localized removed', async () => {
+  await checkTransform(
     `import {LitElement, html} from 'lit';
      import {msg, localized} from '@lit/localize';
      @localized()

@@ -19,11 +19,11 @@ suite('unsafeHTML directive', () => {
   test('renders HTML', () => {
     render(
       html`<div>before${unsafeHTML('<span>inner</span>after')}</div>`,
-      container
+      container,
     );
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>before<span>inner</span>after</div>'
+      '<div>before<span>inner</span>after</div>',
     );
   });
 
@@ -31,7 +31,7 @@ suite('unsafeHTML directive', () => {
     render(html`<div>before${unsafeHTML(nothing)}after</div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>beforeafter</div>'
+      '<div>beforeafter</div>',
     );
   });
 
@@ -41,12 +41,12 @@ suite('unsafeHTML directive', () => {
     render(template('<p>Hi</p>'), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>before<p>Hi</p>after</div>'
+      '<div>before<p>Hi</p>after</div>',
     );
     render(template(noChange), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>before<p>Hi</p>after</div>'
+      '<div>before<p>Hi</p>after</div>',
     );
   });
 
@@ -54,7 +54,7 @@ suite('unsafeHTML directive', () => {
     render(html`<div>before${unsafeHTML(undefined)}after</div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>beforeafter</div>'
+      '<div>beforeafter</div>',
     );
   });
 
@@ -62,7 +62,7 @@ suite('unsafeHTML directive', () => {
     render(html`<div>before${unsafeHTML(null)}after</div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div>beforeafter</div>'
+      '<div>beforeafter</div>',
     );
   });
 
@@ -82,7 +82,7 @@ suite('unsafeHTML directive', () => {
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
       '<div>bbb</div>',
-      'A'
+      'A',
     );
 
     // Re-render with the same value
@@ -91,7 +91,7 @@ suite('unsafeHTML directive', () => {
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
       '<div>bbb</div>',
-      'B'
+      'B',
     );
     const text2 = container.querySelector('div')!.childNodes[1] as Text;
     assert.strictEqual(text, text2);
@@ -112,7 +112,7 @@ suite('unsafeHTML directive', () => {
     render(t(unsafeHTML(value)), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div><span></span></div>'
+      '<div><span></span></div>',
     );
 
     // Re-render with a non-unsafeHTML value
@@ -123,7 +123,7 @@ suite('unsafeHTML directive', () => {
     render(t(unsafeHTML(value)), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div><span></span></div>'
+      '<div><span></span></div>',
     );
   });
 });

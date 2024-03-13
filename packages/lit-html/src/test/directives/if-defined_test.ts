@@ -20,7 +20,7 @@ suite('ifDefined directive', () => {
     render(html`<div foo="${ifDefined('a')}"></div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div foo="a"></div>'
+      '<div foo="a"></div>',
     );
   });
 
@@ -34,7 +34,7 @@ suite('ifDefined directive', () => {
     render(html`<div foo="${ifDefined('a')}"></div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div foo="a"></div>'
+      '<div foo="a"></div>',
     );
   });
 
@@ -71,7 +71,7 @@ suite('ifDefined directive', () => {
       html`<div
         foo="they're both: ${ifDefined(undefined)}${ifDefined(undefined)}"
       ></div>`,
-      container
+      container,
     );
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
   });
@@ -81,7 +81,7 @@ suite('ifDefined directive', () => {
       html`<div
         foo="only one is: ${ifDefined('a')}${ifDefined(undefined)}"
       ></div>`,
-      container
+      container,
     );
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
   });
@@ -91,7 +91,7 @@ suite('ifDefined directive', () => {
       html`<div
         foo="only one is: ${ifDefined(undefined)}${ifDefined('a')}"
       ></div>`,
-      container
+      container,
     );
     assert.equal(stripExpressionMarkers(container.innerHTML), '<div></div>');
   });
@@ -110,7 +110,7 @@ suite('ifDefined directive', () => {
 
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div foo="1a"></div>'
+      '<div foo="1a"></div>',
     );
     assert.equal(setCount, 0);
 
@@ -118,7 +118,7 @@ suite('ifDefined directive', () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div foo="1a"></div>'
+      '<div foo="1a"></div>',
     );
     assert.equal(setCount, 0);
   });
@@ -137,7 +137,7 @@ suite('ifDefined directive', () => {
     };
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div foo="1a"></div>'
+      '<div foo="1a"></div>',
     );
     assert.equal(removeCount, 0);
 

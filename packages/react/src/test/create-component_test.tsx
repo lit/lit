@@ -514,6 +514,18 @@ suite('createComponent', () => {
     assert.equal(fooEvent2, undefined);
   });
 
+  // Regression test for https://github.com/lit/lit/issues/4569
+  test('event prop should not be set on instance', async () => {
+    const handler = () => {};
+    render(<BasicElementComponent onFoo={handler} />);
+    const el = container.querySelector(tagName)!;
+    assert.notProperty(el, 'onFoo');
+
+    // Render again with the same handler
+    render(<BasicElementComponent onFoo={handler} />);
+    assert.notProperty(el, 'onFoo');
+  });
+
   test('can listen to native events', async () => {
     let clickEvent!: React.MouseEvent;
     render(

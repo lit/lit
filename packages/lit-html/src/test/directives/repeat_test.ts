@@ -12,7 +12,7 @@ import {assert} from '@esm-bundle/chai';
 function assertItemIdentity(
   oldChildren: HTMLElement[],
   newChildren: HTMLElement[],
-  newOrder: number[]
+  newOrder: number[],
 ) {
   newOrder.forEach((o, n) => {
     if (o >= 0 && o < oldChildren.length) {
@@ -39,7 +39,7 @@ suite('repeat', () => {
         `
             <li>item: 1</li>
             <li>item: 2</li>
-            <li>item: 3</li>`
+            <li>item: 3</li>`,
       );
     });
 
@@ -55,7 +55,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 1</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
       const children1 = Array.from(container.querySelectorAll('li'));
 
@@ -65,7 +65,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 1</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -83,7 +83,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 1</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
       const children1 = Array.from(container.querySelectorAll('li'));
 
@@ -94,7 +94,7 @@ suite('repeat', () => {
         `
             <li>item: 2</li>
             <li>item: 1</li>
-            <li>item: 0</li>`
+            <li>item: 0</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -114,7 +114,7 @@ suite('repeat', () => {
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>
-            <li>item: 4</li>`
+            <li>item: 4</li>`,
       );
       const children1 = Array.from(container.querySelectorAll('li'));
 
@@ -128,7 +128,7 @@ suite('repeat', () => {
             <li>item: 3</li>
             <li>item: 5</li>
             <li>item: 1</li>
-            <li>item: 4</li>`
+            <li>item: 4</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -150,7 +150,7 @@ suite('repeat', () => {
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>
-            <li>item: 4</li>`
+            <li>item: 4</li>`,
       );
       const children1 = Array.from(container.querySelectorAll('li'));
 
@@ -163,7 +163,7 @@ suite('repeat', () => {
             <li>item: 4</li>
             <li>item: 2</li>
             <li>item: 3</li>
-            <li>item: 1</li>`
+            <li>item: 1</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -185,7 +185,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 1</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
 
       items = [2, 1, 0];
@@ -196,7 +196,7 @@ suite('repeat', () => {
         `
             <li>item: 2</li>
             <li>item: 1</li>
-            <li>item: 0</li>`
+            <li>item: 0</li>`,
       );
 
       render(t(items), container);
@@ -221,7 +221,7 @@ suite('repeat', () => {
             <li>item: -1</li>
             <li>item: 0</li>
             <li>item: 1</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -245,7 +245,7 @@ suite('repeat', () => {
             <li>item: 0</li>
             <li>item: 1</li>
             <li>item: 2</li>
-            <li>item: 3</li>`
+            <li>item: 3</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -276,7 +276,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 1</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
       const children1 = Array.from(container.querySelectorAll('li'));
 
@@ -286,7 +286,7 @@ suite('repeat', () => {
         stripExpressionMarkers(container.innerHTML),
         `
             <li>item: 1</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -308,7 +308,7 @@ suite('repeat', () => {
         stripExpressionMarkers(container.innerHTML),
         `
             <li>item: 0</li>
-            <li>item: 1</li>`
+            <li>item: 1</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -330,7 +330,7 @@ suite('repeat', () => {
         stripExpressionMarkers(container.innerHTML),
         `
             <li>item: 0</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -353,7 +353,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 3</li>
-            <li>item: 6</li>`
+            <li>item: 6</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -380,7 +380,7 @@ suite('repeat', () => {
             <li>item: 3</li>
             <li>item: 2</li>
             <li>item: 1</li>
-            <li>item: 6</li>`
+            <li>item: 6</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -407,7 +407,7 @@ suite('repeat', () => {
             <li>item: 2</li>
             <li>item: 3</li>
             <li>item: 6</li>
-            <li>item: 4</li>`
+            <li>item: 4</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
       assertItemIdentity(children1, children2, items);
@@ -425,7 +425,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 1</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
     });
 
@@ -440,7 +440,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 1</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
 
       items = [2, 1, 0];
@@ -450,7 +450,7 @@ suite('repeat', () => {
         `
             <li>item: 2</li>
             <li>item: 1</li>
-            <li>item: 0</li>`
+            <li>item: 0</li>`,
       );
     });
 
@@ -481,7 +481,7 @@ suite('repeat', () => {
             <li>item: 1</li>
             <li>item: 2</li>
             <li>item: 3</li>
-            <li>item: 4</li>`
+            <li>item: 4</li>`,
       );
     });
 
@@ -496,7 +496,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 1</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
       const children1 = Array.from(container.querySelectorAll('li'));
 
@@ -507,7 +507,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 1*</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
       assertItemIdentity(children1, children2, [0, 1, 2]);
@@ -524,7 +524,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 1</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
       const children1 = Array.from(container.querySelectorAll('li'));
 
@@ -535,7 +535,7 @@ suite('repeat', () => {
         `
             <li>item: 0</li>
             <li>item: 1*</li>
-            <li>item: 2</li>`
+            <li>item: 2</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
       assertItemIdentity(children1, children2, [0, 1, 2]);
@@ -602,7 +602,7 @@ suite('repeat', () => {
             <li>item: 2</li>
             <li>item: 2</li>
             <li>item: 3</li>
-            <li>item: 4</li>`
+            <li>item: 4</li>`,
       );
     });
 
@@ -626,7 +626,7 @@ suite('repeat', () => {
             <li>item: 2</li>
             <li>item: 2</li>
             <li>item: 3</li>
-            <li>item: 4</li>`
+            <li>item: 4</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 
@@ -650,7 +650,7 @@ suite('repeat', () => {
             <li>item: 2</li>
             <li>item: 42</li>
             <li>item: 3</li>
-            <li>item: 4</li>`
+            <li>item: 4</li>`,
       );
     });
 
@@ -675,7 +675,7 @@ suite('repeat', () => {
             <li>item: 5</li>
             <li>item: 2</li>
             <li>item: 4</li>
-            <li>item: 3</li>`
+            <li>item: 3</li>`,
       );
       const children2 = Array.from(container.querySelectorAll('li'));
 

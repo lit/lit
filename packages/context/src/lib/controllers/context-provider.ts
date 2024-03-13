@@ -23,7 +23,7 @@ declare global {
 }
 
 export class ContextProviderEvent<
-  C extends Context<unknown, unknown>
+  C extends Context<unknown, unknown>,
 > extends Event {
   readonly context: C;
 
@@ -59,7 +59,7 @@ type ReactiveElementHost = Partial<ReactiveControllerHost> & HTMLElement;
  */
 export class ContextProvider<
     T extends Context<unknown, unknown>,
-    HostElement extends ReactiveElementHost = ReactiveElementHost
+    HostElement extends ReactiveElementHost = ReactiveElementHost,
   >
   extends ValueNotifier<ContextType<T>>
   implements ReactiveController
