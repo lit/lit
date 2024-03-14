@@ -16,6 +16,14 @@ import {Package} from '@lit-labs/analyzer/lib/model.js';
 import {EOL} from 'os';
 import * as ts from 'typescript';
 
+const angularCommand: Command = {
+  name: 'angular',
+  description: 'Generate Angular wrapper for a LitElement',
+  kind: 'reference',
+  installFrom: '@lit-labs/gen-wrapper-angular',
+  importSpecifier: '@lit-labs/gen-wrapper-angular/index.js',
+};
+
 const reactCommand: Command = {
   name: 'react',
   description: 'Generate React wrapper for a LitElement',
@@ -46,6 +54,7 @@ interface GenerateCommand extends Omit<ResolvedCommand, 'run'> {
 }
 
 const frameworkCommands = {
+  angular: angularCommand,
   react: reactCommand,
   vue: vueCommand,
 };
