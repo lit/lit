@@ -153,9 +153,8 @@ export class LitCli {
       if (!commandName || command == null || command == '') {
         return {invalidCommand: commandName ?? 'unknown command'};
       }
-      const maybeCommand = await this.resolveCommandAndMaybeInstallNeededDeps(
-        command
-      );
+      const maybeCommand =
+        await this.resolveCommandAndMaybeInstallNeededDeps(command);
       if (maybeCommand === undefined) {
         return {commandNotInstalled: true};
       }

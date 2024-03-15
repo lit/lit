@@ -16,7 +16,7 @@
  */
 export const forAwaitOf = async <T>(
   iterable: AsyncIterable<T>,
-  callback: (value: T) => Promise<boolean>
+  callback: (value: T) => Promise<boolean>,
 ) => {
   for await (const v of iterable) {
     if ((await callback(v)) === false) {

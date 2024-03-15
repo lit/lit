@@ -19,21 +19,21 @@ suite('map', () => {
   test('with array', () => {
     assertRender(
       map(['a', 'b', 'c'], (v) => html`<p>${v}</p>`),
-      '<p>a</p><p>b</p><p>c</p>'
+      '<p>a</p><p>b</p><p>c</p>',
     );
   });
 
   test('with empty array', () => {
     assertRender(
       map([], (v) => html`<p>${v}</p>`),
-      ''
+      '',
     );
   });
 
   test('with undefined', () => {
     assertRender(
       map(undefined, (v) => html`<p>${v}</p>`),
-      ''
+      '',
     );
   });
 
@@ -45,14 +45,14 @@ suite('map', () => {
     }
     assertRender(
       map(iterate(['a', 'b', 'c']), (v) => html`<p>${v}</p>`),
-      '<p>a</p><p>b</p><p>c</p>'
+      '<p>a</p><p>b</p><p>c</p>',
     );
   });
 
   test('passes index', () => {
     assertRender(
       map(['a', 'b', 'c'], (v, i) => html`<p>${v}:${i}</p>`),
-      '<p>a:0</p><p>b:1</p><p>c:2</p>'
+      '<p>a:0</p><p>b:1</p><p>c:2</p>',
     );
   });
 });
