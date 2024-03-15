@@ -1,7 +1,7 @@
 {
   "name": "eslint-plugin-lit",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "Lit support for ESLint",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
@@ -30,7 +30,15 @@
         "index.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
-      "clean": "if-file-deleted"
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:deps"
+      ]
+    },
+    "build:deps": {
+      "dependencies": [
+        "../analyzer:build"
+      ]
     },
     "test": {
       "command": "node --enable-source-maps --test-reporter=spec --test test/**/*_test.js",
@@ -56,6 +64,7 @@
     "eslint": "^8.56.0"
   },
   "dependencies": {
+    "@lit-labs/analyzer": "^0.12.0",
     "@typescript-eslint/utils": "^6.19.0",
     "typescript": "~5.3.3"
   }

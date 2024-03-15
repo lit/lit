@@ -33,7 +33,7 @@ import {
  * only use the returned template strings array as a cache key.
  */
 const getStringsFromTemplateResult = (
-  result: TemplateResult | CompiledTemplateResult
+  result: TemplateResult | CompiledTemplateResult,
 ): TemplateStringsArray =>
   isCompiledTemplateResult(result) ? result['_$litType$'].h : result.strings;
 
@@ -84,7 +84,7 @@ class CacheDirective extends Directive {
         if (cachedContainerPart !== undefined) {
           // Move the cached part back into the container part value
           const partValue = getCommittedValue(
-            cachedContainerPart
+            cachedContainerPart,
           ) as Array<ChildPart>;
           const cachedPart = partValue.pop()!;
           // Move cached part back into DOM

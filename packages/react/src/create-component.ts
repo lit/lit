@@ -45,7 +45,7 @@ export type WebComponentProps<I extends HTMLElement> = React.DetailedHTMLProps<
  */
 export type ReactWebComponent<
   I extends HTMLElement,
-  E extends EventNames = {}
+  E extends EventNames = {},
 > = React.ForwardRefExoticComponent<
   // TODO(augustjk): Remove and use `React.PropsWithoutRef` when
   // https://github.com/preactjs/preact/issues/4124 is fixed.
@@ -165,8 +165,10 @@ const setProperty = <E extends Element>(
 ) => {
   const event = events?.[name];
   // Dirty check event value.
-  if (event !== undefined && value !== old) {
-    addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+  if (event !== undefined) {
+    if (value !== old) {
+      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+    }
     return;
   }
   // But don't dirty check properties; elements are assumed to do this.
@@ -214,7 +216,7 @@ const setProperty = <E extends Element>(
  */
 export const createComponent = <
   I extends HTMLElement,
-  E extends EventNames = {}
+  E extends EventNames = {},
 >({
   react: React,
   tagName,

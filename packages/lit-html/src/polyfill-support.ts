@@ -99,7 +99,7 @@ var DEV_MODE = true;
  */
 const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
   Template: PatchableTemplateConstructor,
-  ChildPart: PatchableChildPartConstructor
+  ChildPart: PatchableChildPartConstructor,
 ) => {
   // polyfill-support is only needed if ShadyCSS or the ApplyShim is in use
   // We test at the point of patching, which makes it safe to load
@@ -189,7 +189,7 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
         const scopeCss = cssForScope(scope);
         // Remove styles and store textContent.
         const styles = element.content.querySelectorAll(
-          'style'
+          'style',
         ) as NodeListOf<HTMLStyleElement>;
         // Store the css in this template in the scope css and remove the <style>
         // from the template _before_ the node-walk captures part indices
@@ -197,7 +197,7 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
           ...Array.from(styles).map((style) => {
             style.parentNode?.removeChild(style);
             return style.textContent!;
-          })
+          }),
         );
       }
     }
@@ -215,7 +215,7 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
   childPartProto._$setValue = function (
     this: PatchableChildPart,
     value: unknown,
-    directiveParent: DirectiveParent = this
+    directiveParent: DirectiveParent = this,
   ) {
     const container = wrap(this._$startNode).parentNode!;
     const scope = this.options?.scope;
@@ -272,7 +272,7 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
    */
   childPartProto._$getTemplate = function (
     this: PatchableChildPart,
-    result: ShadyTemplateResult
+    result: ShadyTemplateResult,
   ) {
     const scope = this.options?.scope;
     let templateCache = scopedTemplateCache.get(scope);
@@ -283,7 +283,7 @@ const polyfillSupport: NonNullable<typeof litHtmlPolyfillSupport> = (
     if (template === undefined) {
       templateCache.set(
         result.strings,
-        (template = new Template(result, this.options))
+        (template = new Template(result, this.options)),
       );
     }
     return template;
