@@ -42,7 +42,7 @@ export interface Options<C extends Context<unknown, unknown>> {
   initialValue?: ContextType<C>;
 }
 
-type ReactiveElementHost = Partial<ReactiveControllerHost> & HTMLElement;
+export type ReactiveElementHost = Partial<ReactiveControllerHost> & HTMLElement;
 
 /**
  * A ReactiveController which adds context provider behavior to a
@@ -162,5 +162,9 @@ export class ContextProvider<
   hostConnected(): void {
     // emit an event to signal a provider is available for this context
     this.host.dispatchEvent(new ContextProviderEvent(this.context));
+  }
+
+  isSameContext(context: unknown): boolean {
+    return this.context === context;
   }
 }

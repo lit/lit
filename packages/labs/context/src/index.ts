@@ -46,6 +46,14 @@ export {
    */
   ContextProvider,
 } from '@lit/context';
+
+export {
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
+  MultiContextProvider,
+} from '@lit/context';
+
 export {
   /**
    * @deprecated import from `@lit/context` instead

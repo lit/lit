@@ -18,6 +18,7 @@ export {
 
 export {ContextConsumer} from './lib/controllers/context-consumer.js';
 export {ContextProvider} from './lib/controllers/context-provider.js';
+export {MultiContextProvider} from './lib/controllers/multi-context-provider.js';
 export {ContextRoot} from './lib/context-root.js';
 
 export {provide} from './lib/decorators/provide.js';
