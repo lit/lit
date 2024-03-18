@@ -93,6 +93,54 @@ const canTest =
     assert.include(el.shadowRoot!.innerHTML, '<h2>Root</h2>');
   });
 
+  test('Hash routing', async () => {
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-1'
+    ) as Test1;
+    const {contentWindow, contentDocument} = container;
+
+    //
+    // Initial location
+    //
+
+    // Set the iframe URL to / before appending the element
+    contentWindow!.history.pushState({}, '', '/#hash');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+
+    // Verify the root route rendered
+    assert.include(el.shadowRoot!.innerHTML, '<h2>Hash</h2>');
+
+    //
+    // Link navigation
+    //
+    const test1Link = el.shadowRoot!.querySelector(
+      '#test1'
+    ) as HTMLAnchorElement;
+    test1Link.click();
+    await el.updateComplete;
+    assert.include(
+      stripExpressionComments(el.shadowRoot!.innerHTML),
+      '<h2>Test 1: abc</h2>'
+    );
+
+    //
+    // Back navigation
+    //
+    contentWindow!.history.back();
+    await new Promise<void>((res) => {
+      const listener = () => {
+        contentWindow!.removeEventListener('popstate', listener);
+        res();
+      };
+      contentWindow!.addEventListener('popstate', listener);
+    });
+    await el.updateComplete;
+    // Verify the root route rendered
+    assert.include(el.shadowRoot!.innerHTML, '<h2>Hash</h2>');
+  });
+
   test('Nested routing', async () => {
     await loadTestModule('./router_test.html');
     const el = container.contentDocument!.createElement(
