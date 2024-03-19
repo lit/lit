@@ -1,0 +1,35 @@
+{
+  "name": "@lit-examples/redux",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "wireit",
+    "build": "wireit",
+    "test": "wireit"
+  },
+  "dependencies": {
+    "@lit-labs/redux": "^0.0.0",
+    "@reduxjs/toolkit": "^2.1.0",
+    "lit": "^3.0.0"
+  },
+  "devDependencies": {
+    "vite": "^5.1.6"
+  },
+  "wireit": {
+    "dev": {
+      "command": "vite",
+      "service": true,
+      "files": [
+        "./src/",
+        "./index.html"
+      ]
+    },
+    "build": {
+      "command": "tsc && vite build"
+    },
+    "test": {
+      "command": "echo \"TODO\""
+    }
+  }
+}
