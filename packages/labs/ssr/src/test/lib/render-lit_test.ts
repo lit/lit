@@ -13,6 +13,7 @@ import {RenderInfo} from '../../index.js';
 import {FallbackRenderer} from '../../lib/element-renderer.js';
 import type * as testModule from '../test-files/render-test-module.js';
 import {collectResultSync} from '../../lib/render-result.js';
+import * as heapdump from 'heapdump';
 
 /**
  * An empty VM context global. In more recent versions, when running in Node,
@@ -29,9 +30,10 @@ const emptyVmGlobal = {};
 const shimmedVmGlobal = getWindow({
   includeJSBuiltIns: true,
 });
+console.log(shimmedVmGlobal);
 
-for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
-  const loader = new ModuleLoader({global});
+for (const shimmedGlobals of [emptyVmGlobal]) {
+  const loader = new ModuleLoader({global: shimmedGlobals});
 
   /**
    * Promise for importing the "app module". This is a module that implements the
@@ -823,6 +825,100 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     assert.throws(() => {
       render(renderServerOnlyElementPart);
     }, /Server-only templates don't support element parts/);
+  });
+
+  test('server-only template with element part', async () => {
+    if (global.gc === undefined) {
+      assert.unreachable(
+        "global.gc() is not defined, pass '--expose-gc' as a node option."
+      );
+      return;
+    }
+
+    /**
+     * `emptyVmGlobal` growth does not increase no matter what iterations.
+     *
+     * - iterations: 5000, heap growth is 0.37
+     * - iterations: 10000, heap growth is 0.73
+     * - iterations: 15000, heap growth is 1.10
+     *
+     * `shimmedVmGlobal` results:
+     * - iterations: 5000, heap growth is 0.26
+     * - iterations: 10000, heap growth is 0.41
+     * - iterations: 15000, heap growth is 0.50
+     *
+     */
+    const iterations = 5000;
+    for (let i = 0; i < 1000; i++) {
+      if (i % 10 === 0) {
+        global.gc();
+      }
+    }
+
+    heapdump.writeSnapshot(function (_, filename) {
+      console.log('dump one written to', filename);
+    });
+
+    const initialHeap = process.memoryUsage().heapUsed;
+    for (let i = 0; i < iterations; i++) {
+      // const {render, templateWithTextExpression} = await setup();
+      // const result = await render(templateWithTextExpression('foo'));
+      // assert.is(
+      //   result,
+      //   `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->foo<!--/lit-part--></div><!--/lit-part-->`
+      // );
+      const {render, repeatDirectiveWithTemplateResult} = await setup();
+      const result = await render(repeatDirectiveWithTemplateResult);
+      assert.is(
+        result,
+        '<!--lit-part AEmR7W+R0Ak=-->' +
+          '<div>' +
+          '<!--lit-part-->' + // part that wraps the directive
+          '<!--lit-part AgkKByTWdnw=-->' + // part for child template 0
+          '<p><!--lit-part-->0<!--/lit-part-->) <!--lit-part-->foo<!--/lit-part--></p>' +
+          '<!--/lit-part-->' +
+          '<!--lit-part AgkKByTWdnw=-->' + // part for child template 1
+          '<p><!--lit-part-->1<!--/lit-part-->) <!--lit-part-->bar<!--/lit-part--></p>' +
+          '<!--/lit-part-->' +
+          '<!--lit-part AgkKByTWdnw=-->' + // part for child template 2
+          '<p><!--lit-part-->2<!--/lit-part-->) <!--lit-part-->qux<!--/lit-part--></p>' +
+          '<!--/lit-part-->' +
+          '<!--/lit-part-->' +
+          '</div>' +
+          '<!--/lit-part-->'
+      );
+      // Periodically force a GC to prevent the heap size from expanding
+      // too much.
+      // If we're leaking memory this is a noop. But if we aren't, this makes
+      // it easier for the browser's GC to keep the heap size similar to the
+      // actual amount of memory we're using.
+      if (i % 30 === 0) {
+        global.gc();
+      }
+    }
+    // Give a lot of opportunity to garbage collect.
+    for (let i = 0; i < 1000; i++) {
+      if (i % 10 === 0) {
+        global.gc();
+      }
+    }
+    const heapUsedAfter = process.memoryUsage().heapUsed;
+    console.log();
+    console.log('memory before:', initialHeap);
+    console.log('memory after:', heapUsedAfter);
+
+    console.log('growth is', heapUsedAfter / initialHeap - 1);
+    console.log();
+
+    heapdump.writeSnapshot(function (_, filename) {
+      console.log('dump two written to', filename);
+    });
+
+    assert.ok(
+      // Allow a 10% margin of heap growth; an actual DOM leak should be larger.
+      heapUsedAfter / initialHeap - 1 < 0.1,
+      'ssr memory leak detected'
+    );
   });
 }
 
