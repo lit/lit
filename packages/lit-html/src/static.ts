@@ -9,6 +9,13 @@
 
 import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
 
+const NODE_MODE = false;
+// This is an approximation of how many characters the cache can hold. Because
+// JavaScript strings are UTF-16, each character is __at least__ 2 bytes.
+// Allowing 1 million characters means the cache will max out at around 2-6mb.
+const maxCacheSize = 1_000_000;
+let currentCacheSize = 0;
+
 export interface StaticValue {
   /** The value to interpolate as-is into the template. */
   _$litStatic$: string;
@@ -157,6 +164,28 @@ export const withStatic =
           key,
           (strings = staticStrings as unknown as TemplateStringsArray),
         );
+        if (NODE_MODE) {
+          currentCacheSize += strings.length;
+        }
+      } else {
+        if (NODE_MODE) {
+          // JavaScript maps are ordered data structures. By removing and
+          // re-adding a key, we shift the order of the key to the end of the
+          // ordered list of keys. This maintains the invariant that the first
+          // key was the least-recently-used, and makes it cheap to evict least
+          // recently used keys.
+          stringsCache.delete(key);
+          stringsCache.set(key, strings);
+        }
+      }
+      if (NODE_MODE) {
+        while (currentCacheSize > maxCacheSize) {
+          const lruKey = stringsCache.keys().next().value;
+          const value = stringsCache.get(lruKey);
+          // Evict the LRU key.
+          currentCacheSize -= value!.length;
+          stringsCache.delete(lruKey);
+        }
       }
       values = dynamicValues;
     }
