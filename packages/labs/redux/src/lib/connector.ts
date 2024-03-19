@@ -13,30 +13,31 @@ import {ContextConsumer} from '@lit/context';
 import {storeContext} from './store-context.js';
 
 export type EqualityCheck = (a: unknown, b: unknown) => boolean;
-export type SelectorFunction<S, V> = (state: S) => V;
+export type Selector<S, V> = (state: S) => V;
 
-export type SelectorOptions<S extends Store, V> = {
-  selector: SelectorFunction<ReturnType<S['getState']>, V>;
+export type ConnectorOptions<S extends Store, V> = {
+  selector?: Selector<ReturnType<S['getState']>, V>;
   equalityCheck?: EqualityCheck;
 };
 
-export class Selector<S extends Store, V> implements ReactiveController {
+export class Connector<S extends Store, V> implements ReactiveController {
   private _host: ReactiveControllerHost & HTMLElement;
   private _store!: S;
-  private _selector: SelectorOptions<S, V>['selector'];
+  private _selector: ConnectorOptions<S, V>['selector'];
   private _equalityCheck: EqualityCheck;
   private _unsubscribe!: () => void;
-  private _value!: V;
+  private _selected?: V;
 
   static withStoreType<S extends Store>(): new <V>(
     host: ReactiveControllerHost & HTMLElement,
-    options: SelectorOptions<S, V>
-  ) => Selector<S, V> {
+    options?: ConnectorOptions<S, V>
+  ) => Connector<S, V> {
     return this;
   }
 
-  get value(): V {
-    return this._value;
+  get selected() {
+    // Type V will be unknown of no selector was provided to the constructor.
+    return this._selected as V;
   }
 
   get dispatch(): S['dispatch'] {
@@ -45,12 +46,11 @@ export class Selector<S extends Store, V> implements ReactiveController {
 
   constructor(
     host: ReactiveControllerHost & HTMLElement,
-    options: SelectorOptions<S, V>
+    options?: ConnectorOptions<S, V>
   ) {
-    const {selector, equalityCheck = tripleEquals} = options;
     this._host = (host.addController(this), host);
-    this._selector = selector;
-    this._equalityCheck = equalityCheck;
+    this._selector = options?.selector;
+    this._equalityCheck = options?.equalityCheck ?? tripleEquals;
   }
 
   hostConnected() {
@@ -63,16 +63,18 @@ export class Selector<S extends Store, V> implements ReactiveController {
     });
     if (this._store === undefined) {
       throw new Error(
-        'Selector must be used in a component below a context provider that ' +
+        'Connector must be used in a component below a context provider that ' +
           'provides a Redux store.'
       );
     }
-    this._value = this._selector(this._store.getState());
+    this._selected = this._selector?.(this._store.getState());
     this._unsubscribe = this._store.subscribe(() => {
-      const selected = this._selector(this._store.getState());
-      if (!this._equalityCheck(this.value, selected)) {
-        this._value = selected;
-        this._host.requestUpdate();
+      if (this._selector !== undefined) {
+        const selected = this._selector(this._store.getState());
+        if (!this._equalityCheck(this._selected, selected)) {
+          this._selected = selected;
+          this._host.requestUpdate();
+        }
       }
     });
   }
