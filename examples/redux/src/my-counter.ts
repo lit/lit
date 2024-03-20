@@ -8,7 +8,6 @@ import {html, css, LitElement} from 'lit';
 import {customElement} from 'lit/decorators.js';
 import {AppConnector} from './app-connector.js';
 import {increment, decrement} from './counter-slice.js';
-import './my-incrementor.js';
 
 @customElement('my-counter')
 export class MyCounter extends LitElement {
@@ -27,30 +26,16 @@ export class MyCounter extends LitElement {
 
   render() {
     return html`
-      <div class="container">
-        <div class="row">
-          <button @click=${this._incrementCount}>+</button>
-          <span>${this._connector.selected}</span>
-          <button @click=${this._decrementCount}>−</button>
-        </div>
-        <my-incrementor></my-incrementor>
+      <div>
+        <button @click=${this._incrementCount}>+</button>
+        <span>${this._connector.selected}</span>
+        <button @click=${this._decrementCount}>−</button>
       </div>
     `;
   }
 
   static styles = css`
-    :host {
-      font-size: 2rem;
-    }
-
-    .container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      gap: 1rem;
-    }
-
-    .row {
+    div {
       display: flex;
       justify-content: center;
       align-items: center;

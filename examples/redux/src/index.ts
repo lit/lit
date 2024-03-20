@@ -9,6 +9,8 @@ import {customElement} from 'lit/decorators.js';
 import {provide, storeContext} from '@lit-labs/redux';
 import {store} from './store.js';
 import './my-counter.js';
+import './count-incrementor.js';
+import './count-display.js';
 
 @customElement('my-app')
 export class MyApp extends LitElement {
@@ -20,25 +22,33 @@ export class MyApp extends LitElement {
 
   render() {
     return html`
-      <div>
-        <img alt="Lit Logo" src="/assets/lit.svg" />
-        <img alt="Redux Logo" src="/assets/redux.svg" />
-      </div>
-      <my-counter></my-counter>
+      <main>
+        <div>
+          <img alt="Lit Logo" src="/assets/lit.svg" />
+          <img alt="Redux Logo" src="/assets/redux.svg" />
+        </div>
+        <my-counter></my-counter>
+        <count-incrementor></count-incrementor>
+        <count-display></count-display>
+      </main>
     `;
   }
 
   static styles = css`
-    div {
+    :host {
+      font-size: 2rem;
+    }
+
+    main {
       display: flex;
-      justify-content: center;
+      flex-direction: column;
+      align-items: center;
       gap: 2rem;
-      padding: 2rem;
     }
 
     img {
-      max-height: 150px;
-      max-width: 150px;
+      height: 150px;
+      width: 150px;
     }
   `;
 }
