@@ -6,13 +6,14 @@
 
 import {html, css, LitElement} from 'lit';
 import {customElement, state} from 'lit/decorators.js';
-import {AppConnector} from './app-connector.js';
 import {incrementByAmount} from './counter-slice.js';
+import {dispatch} from '@lit-labs/redux';
+import type {AppDispatch} from './store.js';
 
-@customElement('my-incrementor')
-export class MyIncrementor extends LitElement {
-  // Instantiate connector without selector to just access dispatch.
-  _connector = new AppConnector(this);
+@customElement('count-incrementor')
+export class CountIncrementor extends LitElement {
+  @dispatch()
+  _dispatch!: AppDispatch;
 
   @state()
   _incrementAmount = '2';
@@ -22,9 +23,7 @@ export class MyIncrementor extends LitElement {
   }
 
   _incrementCountByAmount() {
-    this._connector.dispatch(
-      incrementByAmount(Number(this._incrementAmount) || 0)
-    );
+    this._dispatch(incrementByAmount(Number(this._incrementAmount) || 0));
   }
 
   render() {
