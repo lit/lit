@@ -276,4 +276,24 @@ const canTest =
 
     assert.equal(routes.length, 4);
   });
+
+  test('Check navigation using anchor tags', async () => {
+    const $anchor = document.createElement('a');
+    $anchor.href = '/about';
+
+    document.body.appendChild($anchor);
+    $anchor.click();
+
+    await _delay(1000);
+
+    $anchor.remove();
+
+    const $aboutPage = $router.querySelector('about-page');
+
+    assert.isDefined($aboutPage);
+    assert.equal(
+      stripExpressionComments($aboutPage!.shadowRoot!.innerHTML),
+      '<h1>About Page</h1>'
+    );
+  });
 });

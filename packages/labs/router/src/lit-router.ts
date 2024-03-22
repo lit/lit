@@ -49,17 +49,17 @@ export class LitRouter extends LitElement {
   override connectedCallback(): void {
     super.connectedCallback();
 
-    window.addEventListener('popstate', this._onHandlePopState.bind(this));
+    window.addEventListener('popstate', this._onHandlePopState);
 
-    window.addEventListener('click', this._onHandleAnchorClick.bind(this));
+    window.addEventListener('click', this._onHandleAnchorClick);
   }
 
   override disconnectedCallback(): void {
     super.disconnectedCallback();
 
-    window.removeEventListener('popstate', this._onHandlePopState.bind(this));
+    window.removeEventListener('popstate', this._onHandlePopState);
 
-    window.removeEventListener('click', this._onHandleAnchorClick.bind(this));
+    window.removeEventListener('click', this._onHandleAnchorClick);
   }
 
   /**
@@ -395,7 +395,7 @@ export class LitRouter extends LitElement {
    *
    * @param ev The click event.
    */
-  private _onHandleAnchorClick(ev: MouseEvent): void {
+  private _onHandleAnchorClick = (ev: MouseEvent): void => {
     const isNonNavigationClick =
       ev.button !== 0 || ev.metaKey || ev.ctrlKey || ev.shiftKey;
 
@@ -429,13 +429,13 @@ export class LitRouter extends LitElement {
     if (href === location.href) return;
 
     this.navigate({href});
-  }
+  };
 
-  private async _onHandlePopState(_ev: PopStateEvent): Promise<void> {
+  private _onHandlePopState = async (_ev: PopStateEvent): Promise<void> => {
     const {href} = window.location;
 
     this.navigate({href}, {enableHistoryPushState: false});
-  }
+  };
 
   protected override createRenderRoot() {
     return this;
