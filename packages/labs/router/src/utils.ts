@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {Navigation, TAG_NAME_ROUTER} from './declarations.js';
 import {RouterNotFoundError} from './errors.js';
 

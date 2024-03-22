@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {LitRouter} from './lit-router.js';
 
 export const TAG_NAME_ROUTER = 'lit-router' as const;
