@@ -1,5 +1,11 @@
 # @lit-labs/analyzer
 
+## 0.12.0
+
+### Minor Changes
+
+- [#4261](https://github.com/lit/lit/pull/4261) [`1b17a369`](https://github.com/lit/lit/commit/1b17a369f3ecf54d2617fe08b0d52fd0f993074b) - Add lib/lit-html/template.js module with initial template utilities.
+
 ## 0.11.1
 
 ### Patch Changes
