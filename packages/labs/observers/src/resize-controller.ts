@@ -3,7 +3,7 @@
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {isServer} from 'lit';
+import {isServer} from 'lit-html/is-server.js';
 import {
   ReactiveController,
   ReactiveControllerHost,
