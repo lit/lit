@@ -264,22 +264,29 @@ Creating a single-page application with Lit + Lit Router is a piece of cake! üç
 
 **HTML**
 
+Import the `<lit-router>` component in your `index.html` file.
+
 ```html
 <lit-router></lit-router>
 ```
 
 **JavaScript/Typescript**
 
-```ts
-// Import Lit Router.
-import {Route} from '@lit-labs/router';
+Now, let's create a simple example of how to use **Lit Router** in your application.
 
-// Import your pages.
+```ts
+// Import package.
+import '@lit-labs/router';
+
+// Import your static pages.
 import {HomePage} from './pages/home-page.js';
 import './pages/about-page.js';
 
-// Define your routes.
-const routes: Route[] = [
+// Get a router.
+const $router = document.querySelector('lit-router');
+
+// Register your routes.
+$router.setRoutes([
   {path: '/', component: HomePage},
   {path: '/about', component: 'about-page'},
   {
@@ -287,13 +294,7 @@ const routes: Route[] = [
     component: () =>
       import('./pages/terms-page.js').then((module) => module.TermsPage),
   },
-];
-
-// Get a router.
-const router = document.querySelector('lit-router');
-
-// Register your routes.
-router.setRoutes(routes);
+]);
 ```
 
 ### Dynamic Routes
@@ -305,6 +306,9 @@ import {UserPage} from './pages/user-page.js';
 
 const routes: Route[] = [{path: '/users/:id', component: UserPage}];
 ```
+
+> [!NOTE]
+> To capture route parameters, you can see it in the section [Route Params & Query](#route-params--query).
 
 > [!WARNING]
 > This package requires either a native [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) implementation (which is currently only implemented in Chrome, Edge, and other Chromium browsers) or a URLPattern polyfill, like [`urlpattern-polyfill`](https://github.com/kenchris/urlpattern-polyfill).
