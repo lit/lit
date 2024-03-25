@@ -165,8 +165,10 @@ const setProperty = <E extends Element>(
 ) => {
   const event = events?.[name];
   // Dirty check event value.
-  if (event !== undefined && value !== old) {
-    addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+  if (event !== undefined) {
+    if (value !== old) {
+      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+    }
     return;
   }
   // But don't dirty check properties; elements are assumed to do this.
