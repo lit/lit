@@ -45,7 +45,7 @@ export type WebComponentProps<I extends HTMLElement> = React.DetailedHTMLProps<
  */
 export type ReactWebComponent<
   I extends HTMLElement,
-  E extends EventNames = {},
+  E extends EventNames = {}
 > = React.ForwardRefExoticComponent<
   // TODO(augustjk): Remove and use `React.PropsWithoutRef` when
   // https://github.com/preactjs/preact/issues/4124 is fixed.
@@ -214,7 +214,7 @@ const setProperty = <E extends Element>(
  */
 export const createComponent = <
   I extends HTMLElement,
-  E extends EventNames = {},
+  E extends EventNames = {}
 >({
   react: React,
   tagName,

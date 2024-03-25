@@ -34,7 +34,8 @@ import {ScrollerController} from './ScrollerController.js';
 // polyfill in the package; this bit of module state facilitates
 // a simple mechanism (see ./polyfillLoaders/ResizeObserver.js.)
 // for loading the polyfill.
-let _ResizeObserver: typeof ResizeObserver | undefined = globalThis?.ResizeObserver;
+let _ResizeObserver: typeof ResizeObserver | undefined =
+  globalThis?.ResizeObserver;
 
 /**
  * Call this function to provide a `ResizeObserver` polyfill for Virtualizer to use.

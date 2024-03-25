@@ -472,10 +472,10 @@ const getTemplateOpcodes = (result: TemplateResult) => {
                   prefix === '.'
                     ? PropertyPart
                     : prefix === '?'
-                      ? BooleanAttributePart
-                      : prefix === '@'
-                        ? EventPart
-                        : AttributePart,
+                    ? BooleanAttributePart
+                    : prefix === '@'
+                    ? EventPart
+                    : AttributePart,
                 strings,
                 tagName: tagName.toUpperCase(),
                 useCustomElementInstance: node.isDefinedCustomElement,
@@ -878,8 +878,8 @@ function throwErrorForPartIndexMismatch(
 ) {
   const errorMsg = `
     Unexpected final partIndex: ${partIndex} !== ${
-      result.values.length
-    } while processing the following template:
+    result.values.length
+  } while processing the following template:
 
     ${displayTemplateResult(result)}
 

@@ -328,7 +328,7 @@ export const serverOnlyBindAttributeOnHtml = serverhtml`
 `;
 
 export const nonServerTemplateBindAttributeOnHtmlShouldError = html`
-  <!doctype html>
+  <!DOCTYPE html>
   <html lang="${'ko'}"></html>
 `;
 

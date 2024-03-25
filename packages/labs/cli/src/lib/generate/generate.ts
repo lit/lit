@@ -108,8 +108,9 @@ export const run = async (
       // This must be one by one in case we need to ask for permission.
       const generators: GenerateCommand[] = [];
       for (const reference of generatorReferences) {
-        const resolved =
-          await cli.resolveCommandAndMaybeInstallNeededDeps(reference);
+        const resolved = await cli.resolveCommandAndMaybeInstallNeededDeps(
+          reference
+        );
         if (resolved == null) {
           throw new Error(`Could not load generator for ${reference.name}`);
         }

@@ -22,7 +22,7 @@
  */
 export function* map<T>(
   items: Iterable<T> | undefined,
-  f: (value: T, index: number) => unknown,
+  f: (value: T, index: number) => unknown
 ) {
   if (items !== undefined) {
     let i = 0;

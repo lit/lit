@@ -24,7 +24,7 @@ export function range(end: number): Iterable<number>;
 export function range(
   start: number,
   end: number,
-  step?: number,
+  step?: number
 ): Iterable<number>;
 export function* range(startOrEnd: number, end?: number, step = 1) {
   const start = end === undefined ? 0 : startOrEnd;

@@ -41,7 +41,7 @@ export type MethodInterceptorTeardown = () => void;
 export function interceptMethod<
   T extends object,
   K extends keyof T,
-  F extends AnyFunction,
+  F extends AnyFunction
 >(
   target: T,
   methodName: K,

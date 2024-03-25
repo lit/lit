@@ -258,10 +258,10 @@ export const setupTest = async (
         testSetup.skip || skipSSRTests
           ? test.skip
           : // eslint-disable-next-line no-only-tests/no-only-tests
-            testSetup.only
-            ? // eslint-disable-next-line no-only-tests/no-only-tests
-              test.only
-            : test;
+          testSetup.only
+          ? // eslint-disable-next-line no-only-tests/no-only-tests
+            test.only
+          : test;
 
       testFn(testName, async () => {
         // Get the SSR result from the server.

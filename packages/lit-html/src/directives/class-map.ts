@@ -37,7 +37,7 @@ class ClassMapDirective extends Directive {
     ) {
       throw new Error(
         '`classMap()` can only be used in the `class` attribute ' +
-          'and must be the only part in the attribute.',
+          'and must be the only part in the attribute.'
       );
     }
   }
@@ -62,7 +62,7 @@ class ClassMapDirective extends Directive {
           part.strings
             .join(' ')
             .split(/\s/)
-            .filter((s) => s !== ''),
+            .filter((s) => s !== '')
         );
       }
       for (const name in classInfo) {

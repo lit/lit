@@ -341,10 +341,10 @@ class CompiledTemplatePass {
                       prefix === '.'
                         ? PartType.PROPERTY
                         : prefix === '?'
-                          ? PartType.BOOLEAN_ATTRIBUTE
-                          : prefix === '@'
-                            ? PartType.EVENT
-                            : PartType.ATTRIBUTE,
+                        ? PartType.BOOLEAN_ATTRIBUTE
+                        : prefix === '@'
+                        ? PartType.EVENT
+                        : PartType.ATTRIBUTE,
                   });
                 } else {
                   parts.push({
