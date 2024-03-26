@@ -1,5 +1,13 @@
 # @lit-labs/testing
 
+## 0.2.4
+
+### Patch Changes
+
+- [#4541](https://github.com/lit/lit/pull/4541) [`d128391b`](https://github.com/lit/lit/commit/d128391b2713ec431a5ca3763266f95ed214d67c) - Fix declarative shadowroot detection and parsing to use the correct spec behavior.
+
+- [#4516](https://github.com/lit/lit/pull/4516) [`c51bc182`](https://github.com/lit/lit/commit/c51bc1824b150bb06499887d16938ff8670bf90c) - Update @web/test-runner-commands dependency
+
 ## 0.2.3
 
 ### Patch Changes
