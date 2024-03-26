@@ -1,5 +1,21 @@
 # Change Log
 
+## 1.0.4
+
+### Patch Changes
+
+- [#4572](https://github.com/lit/lit/pull/4572) [`5ed30d47`](https://github.com/lit/lit/commit/5ed30d47f7c2d5574293a9caf73cdf13a1907dcd) - Fix issue where event handler prop was incorrectly being set on the underlying custom element instance and potentially overriding an existing method/property.
+
+- [#4534](https://github.com/lit/lit/pull/4534) [`d68f5c70`](https://github.com/lit/lit/commit/d68f5c705484b9f6ea1f553d4851a9aa6a440db0) - Wrapped components will now keep track of JSX props from previous render that were set as a property on the element, but are now missing, and set the property to `undefined`. Note, wrapped components still do not have "default props" and missing props will be treated the same as explicitly passing in `undefined`.
+
+  This fixes the previously unexpected behavior where the following JSX when first rendered with a truthy condition
+
+  ```jsx
+  return condition ? <WrappedInput disabled /> : <WrappedInput />;
+  ```
+
+  would leave the `disabled` property and reflected attribute to be `true` even when the condition turns falsey.
+
 ## 1.0.3
 
 ### Patch Changes
