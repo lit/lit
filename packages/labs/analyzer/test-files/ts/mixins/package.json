@@ -1,0 +1,6 @@
+{
+  "name": "@lit-internal/test-mixins-ts",
+  "dependencies": {
+    "lit": "^3.0.0"
+  }
+}

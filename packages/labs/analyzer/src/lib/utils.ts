@@ -67,3 +67,15 @@ export const getPrivacy = (ts: TypeScript, node: ts.Node): Privacy => {
       ? 'protected'
       : 'public';
 };
+
+export const getBaseTypes = (type: ts.Type): ts.BaseType[] => {
+  if (type.isClassOrInterface()) {
+    return type.getBaseTypes() ?? [];
+  }
+
+  if (type.isIntersection()) {
+    return type.types.map(getBaseTypes).flat();
+  }
+
+  return [];
+};

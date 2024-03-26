@@ -21,7 +21,7 @@ import {hasExportModifier} from '../utils.js';
 import {getTypeForNode} from '../types.js';
 import {parseNodeJSDocInfo} from './jsdoc.js';
 import {getFunctionDeclaration} from './functions.js';
-import {getClassDeclaration} from './classes.js';
+import {getClassDeclaration, maybeGetAppliedMixin} from './classes.js';
 import {createDiagnostic} from '../errors.js';
 import {DiagnosticCode} from '../diagnostic-code.js';
 
@@ -70,6 +70,13 @@ const getVariableDeclaration = (
         analyzer,
         statement
       );
+    } else {
+      // This supports const assignments of mixins applied to classes, ala:
+      // `export const MyClassWithSomeMixin = SomeMixin(MyClass);`
+      const classDec = maybeGetAppliedMixin(initializer, name, analyzer);
+      if (classDec !== undefined) {
+        return classDec;
+      }
     }
   }
   return new VariableDeclaration({

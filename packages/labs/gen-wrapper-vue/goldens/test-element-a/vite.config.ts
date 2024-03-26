@@ -12,6 +12,7 @@ export default {
       input: [
         './src/ElementA.vue',
         './src/ElementEvents.vue',
+        './src/ElementMixins.vue',
         './src/ElementProps.vue',
         './src/ElementSlots.vue',
         './src/ElementWithoutProps.vue',

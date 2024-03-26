@@ -24,6 +24,7 @@ import {
   parseNodeJSDocInfo,
   parseNamedTypedJSDocInfo,
 } from '../javascript/jsdoc.js';
+import {getBaseTypes} from '../utils.js';
 
 const _isCustomElementClassDeclaration = (
   t: ts.BaseType,
@@ -55,8 +56,9 @@ export const isCustomElementSubclass = (
     return true;
   }
   const checker = analyzer.program.getTypeChecker();
-  const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
-  const baseTypes = checker.getBaseTypes(type);
+  const type = checker.getTypeAtLocation(node);
+  const baseTypes = getBaseTypes(type);
+
   for (const t of baseTypes) {
     if (_isCustomElementClassDeclaration(t, analyzer)) {
       return true;
@@ -170,14 +172,15 @@ export const getJSDocData = (
 
 export const getCustomElementDeclaration = (
   node: CustomElementClassDeclaration,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  isMixinClass?: boolean
 ): CustomElementDeclaration => {
   return new CustomElementDeclaration({
     tagname: getTagName(node, analyzer),
     name: node.name?.text ?? '',
     node,
     ...getJSDocData(node, analyzer),
-    getHeritage: () => getHeritage(node, analyzer),
+    getHeritage: () => getHeritage(node, analyzer, isMixinClass),
     ...getClassMembers(node, analyzer),
   });
 };
