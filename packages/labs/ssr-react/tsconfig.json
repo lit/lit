@@ -22,7 +22,7 @@
     "skipLibCheck": true,
     "noImplicitOverride": true,
     "jsx": "react",
-    "types": []
+    "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": []
