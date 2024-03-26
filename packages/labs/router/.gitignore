@@ -5,3 +5,8 @@
 /index.*
 /router.*
 /routes.*
+/route.*
+/lit-router.*
+/declarations.*
+/errors.*
+/utils.*
