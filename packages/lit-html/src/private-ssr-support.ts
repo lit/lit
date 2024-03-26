@@ -49,13 +49,13 @@ export const _$LH = {
   getTemplateHtml: p._getTemplateHtml,
   overrideDirectiveResolve: (
     directiveClass: new (part: PartInfo) => Directive & {render(): unknown},
-    resolveOverrideFn: (directive: Directive, values: unknown[]) => unknown,
+    resolveOverrideFn: (directive: Directive, values: unknown[]) => unknown
   ) =>
     class extends directiveClass {
       override _$resolve(
         this: Directive,
         _part: Part,
-        values: unknown[],
+        values: unknown[]
       ): unknown {
         return resolveOverrideFn(this, values);
       }
@@ -65,8 +65,8 @@ export const _$LH = {
     resolveOverrideFn: (
       this: Directive,
       _part: Part,
-      values: unknown[],
-    ) => unknown,
+      values: unknown[]
+    ) => unknown
   ) => {
     if (directiveClass.prototype._$resolve !== resolveOverrideFn) {
       resolveMethodName ??= directiveClass.prototype._$resolve
@@ -90,7 +90,7 @@ export const _$LH = {
       throw new Error(
         `Internal error: It is possible that both dev mode and production mode` +
           ` Lit was mixed together during SSR. Please comment on the issue: ` +
-          `https://github.com/lit/lit/issues/4527`,
+          `https://github.com/lit/lit/issues/4527`
       );
     }
   },
@@ -101,7 +101,7 @@ export const _$LH = {
   getAttributePartCommittedValue: (
     part: AttributePart,
     value: unknown,
-    index: number | undefined,
+    index: number | undefined
   ) => {
     // Use the part setter to resolve directives/concatenate multiple parts
     // into a final value (captured by passing in a commitValue override)

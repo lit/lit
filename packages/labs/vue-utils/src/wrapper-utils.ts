@@ -50,7 +50,7 @@ export const assignSlotNodes = (slots: Slots) =>
       name === 'default'
         ? v
         : isElementNode(v)
-          ? assignNode(v, name)
-          : assignWrappedNode(v, name)
+        ? assignNode(v, name)
+        : assignWrappedNode(v, name)
     )
   );

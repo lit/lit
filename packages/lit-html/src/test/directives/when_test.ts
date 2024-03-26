@@ -22,16 +22,16 @@ suite('when', () => {
       when(
         true,
         () => html`X`,
-        () => html`Y`,
+        () => html`Y`
       ),
-      'X',
+      'X'
     );
   });
 
   test('true condition without false case', () => {
     assertRender(
       when(true, () => html`X`),
-      'X',
+      'X'
     );
   });
 
@@ -40,16 +40,16 @@ suite('when', () => {
       when(
         false,
         () => html`X`,
-        () => html`Y`,
+        () => html`Y`
       ),
-      'Y',
+      'Y'
     );
   });
 
   test('false condition without false case', () => {
     assertRender(
       when(false, () => html`X`),
-      '',
+      ''
     );
   });
 });

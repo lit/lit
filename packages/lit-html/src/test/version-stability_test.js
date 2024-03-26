@@ -55,7 +55,7 @@ const version2 = [litHtml2, directive2, asyncDirective2, repeat2];
             const {tagName, name, strings} = this.partInfo;
             return `[${v}:${tagName}:${name}:${strings.join(':')}]`;
           }
-        },
+        }
       );
 
       const dirB = directiveB(
@@ -71,7 +71,7 @@ const version2 = [litHtml2, directive2, asyncDirective2, repeat2];
             const {tagName, name, strings} = this.partInfo;
             return `[${v}:${tagName}:${name}:${strings.join(':')}]`;
           }
-        },
+        }
       );
 
       const passthruB = directiveB(
@@ -79,7 +79,7 @@ const version2 = [litHtml2, directive2, asyncDirective2, repeat2];
           render(v) {
             return v;
           }
-        },
+        }
       );
 
       const asyncA = directiveA(
@@ -95,7 +95,7 @@ const version2 = [litHtml2, directive2, asyncDirective2, repeat2];
           reconnected() {
             this.cb(true);
           }
-        },
+        }
       );
 
       const asyncB = directiveB(
@@ -111,7 +111,7 @@ const version2 = [litHtml2, directive2, asyncDirective2, repeat2];
           reconnected() {
             this.cb(true);
           }
-        },
+        }
       );
 
       setup(() => {
@@ -147,7 +147,7 @@ const version2 = [litHtml2, directive2, asyncDirective2, repeat2];
       test('renderA with directiveA nested in passthruB', () => {
         renderA(
           htmlB`<div title="a${passthruB(dirA('A'))}b"></div>`,
-          container,
+          container
         );
         assertContent('<div title="a[A:DIV:title:a:b]b"></div>');
       });
@@ -184,9 +184,9 @@ const version2 = [litHtml2, directive2, asyncDirective2, repeat2];
         renderA(
           htmlA`<div>${repeatB(
             items,
-            (item) => htmlA`<p>${passthruB(`B${item}`)}</p>`,
+            (item) => htmlA`<p>${passthruB(`B${item}`)}</p>`
           )}</div>`,
-          container,
+          container
         );
         assertContent('<div><p>B0</p><p>B1</p><p>B2</p></div>');
       });
@@ -200,7 +200,7 @@ const version2 = [litHtml2, directive2, asyncDirective2, repeat2];
             bool
               ? repeatB(
                   items,
-                  (item) => htmlA`<p>${asyncA(`A${item}`, cb)}</p>`,
+                  (item) => htmlA`<p>${asyncA(`A${item}`, cb)}</p>`
                 )
               : nothingB
           }</div>`;
@@ -227,5 +227,5 @@ const version2 = [litHtml2, directive2, asyncDirective2, repeat2];
         assertContent('<div><p>A0</p></div>');
       });
     });
-  },
+  }
 );

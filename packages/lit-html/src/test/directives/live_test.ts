@@ -94,7 +94,7 @@ suite('live directive', () => {
         render(
           html`<div x="${live(x)}"></div>
             }`,
-          container,
+          container
         );
       go('a');
       const el = container.firstElementChild as LiveTester;
@@ -143,7 +143,7 @@ suite('live directive', () => {
       render(
         html`<div x="${live(x)}"></div>
           }`,
-        container,
+        container
       );
     go(1);
     const el = container.firstElementChild as LiveTester;
@@ -168,7 +168,7 @@ suite('live directive', () => {
         render(
           html`<div ?hidden="${live(x)}"></div>
             }`,
-          container,
+          container
         );
 
       go(true);
@@ -194,7 +194,7 @@ suite('live directive', () => {
         render(
           html`<div ?hidden="${live(x)}"></div>
             }`,
-          container,
+          container
         );
 
       go(true);

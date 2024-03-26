@@ -122,8 +122,8 @@ const renderItem: any = (data: Data) => html`
     ${data.text}
     <!-- Comment binding ${data.text} -->
     <div .property=${data.property} attr=${data.text} multi="~${data.text}~${
-      data.text
-    }~${data.text}~"></div>
+  data.text
+}~${data.text}~"></div>
     <div @click=${data.handler}></div>
     ${data.node}
     <!-- Make sure to have a decent ratio of static:dynamic nodes  -->

@@ -22,7 +22,7 @@ suite('unsafeSVG', () => {
       html`<svg>before${unsafeSVG(
           '<line x1="0" y1="0" x2="10" y2="10" stroke="black"/>'
         )}</svg>`,
-      container,
+      container
     );
     assert.oneOf(stripExpressionMarkers(container.innerHTML), [
       '<svg>before<line x1="0" y1="0" x2="10" y2="10" stroke="black"></line></svg>',
@@ -37,7 +37,7 @@ suite('unsafeSVG', () => {
     render(html`<svg>before${unsafeSVG(nothing)}after</svg>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<svg>beforeafter</svg>',
+      '<svg>beforeafter</svg>'
     );
   });
 
@@ -47,12 +47,12 @@ suite('unsafeSVG', () => {
     render(template('<g>Hi</g>'), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<svg>before<g>Hi</g>after</svg>',
+      '<svg>before<g>Hi</g>after</svg>'
     );
     render(template(noChange), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<svg>before<g>Hi</g>after</svg>',
+      '<svg>before<g>Hi</g>after</svg>'
     );
   });
 
@@ -60,7 +60,7 @@ suite('unsafeSVG', () => {
     render(html`<svg>before${unsafeSVG(undefined)}after</svg>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<svg>beforeafter</svg>',
+      '<svg>beforeafter</svg>'
     );
   });
 
@@ -68,7 +68,7 @@ suite('unsafeSVG', () => {
     render(html`<svg>before${unsafeSVG(null)}after</svg>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<svg>beforeafter</svg>',
+      '<svg>beforeafter</svg>'
     );
   });
 

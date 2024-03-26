@@ -69,8 +69,8 @@ export function observeScroll(
         events.length === 0
           ? null
           : events.length === 1
-            ? 0
-            : last(events).timeStamp - first(events).timeStamp;
+          ? 0
+          : last(events).timeStamp - first(events).timeStamp;
       const distance = {
         top: endPos.top - startPos.top,
         left: endPos.left - startPos.left,
@@ -134,7 +134,7 @@ export interface DefaultItem {
 const defaultItemGenFn: ItemGenFn<DefaultItem> = (
   _s: emptyString,
   index: number
-) => ({index, text: `Item ${index}`}) as DefaultItem;
+) => ({index, text: `Item ${index}`} as DefaultItem);
 
 // Explicitly sizing the container element (<section>) to
 // enable easy testing of horizontal scrolling in the default
@@ -214,21 +214,21 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
           ></lit-virtualizer>
         `
     : layout
-      ? html`
-          <lit-virtualizer
-            ?scroller=${scroller}
-            .items=${items}
-            .renderItem=${renderItem}
-            .layout=${layout}
-          ></lit-virtualizer>
-        `
-      : html`
-          <lit-virtualizer
-            ?scroller=${scroller}
-            .items=${items}
-            .renderItem=${renderItem}
-          ></lit-virtualizer>
-        `;
+    ? html`
+        <lit-virtualizer
+          ?scroller=${scroller}
+          .items=${items}
+          .renderItem=${renderItem}
+          .layout=${layout}
+        ></lit-virtualizer>
+      `
+    : html`
+        <lit-virtualizer
+          ?scroller=${scroller}
+          .items=${items}
+          .renderItem=${renderItem}
+        ></lit-virtualizer>
+      `;
 };
 
 export interface VirtualizerFixtureOptions<T = unknown> {
@@ -307,8 +307,8 @@ export async function virtualizerFixture<T = unknown>(
   const scrollerNode = scroller
     ? host
     : options.scrollerSelector
-      ? container.querySelector(options.scrollerSelector)!
-      : window;
+    ? container.querySelector(options.scrollerSelector)!
+    : window;
   expect(scrollerNode).not.to.equal(null);
   expect(scrollerNode.scrollTo).not.to.equal(undefined);
   const scrollerController = new Scroller(scrollerNode);

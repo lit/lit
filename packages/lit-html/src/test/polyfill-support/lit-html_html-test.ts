@@ -39,7 +39,7 @@ suite('polyfill-support rendering', () => {
     const div = shadowRoot(container)!.querySelector('div');
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-      '2px',
+      '2px'
     );
     wrap(document.body).removeChild(container);
   });
@@ -67,12 +67,12 @@ suite('polyfill-support rendering', () => {
     const div = shadowRoot(container)!.querySelector('div');
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-      '4px',
+      '4px'
     );
     const span = shadowRoot(container)!.querySelector('span');
     assert.equal(
       getComputedStyle(span!).getPropertyValue('border-top-width').trim(),
-      '5px',
+      '5px'
     );
     // all styles are removed
     const styles = shadowRoot(container)!.querySelectorAll('style');
@@ -103,14 +103,14 @@ suite('polyfill-support rendering', () => {
     const div = shadowRoot(container)!.querySelector('div');
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-      '4px',
+      '4px'
     );
     renderShadowRoot(getResult(true), container);
     // The late style applies but the rule has lower precedence so the the
     // correctly scoped style still rules.
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-      '4px',
+      '4px'
     );
     // if ShadyDOM is in use, the late added style should leak
     if (window.ShadyDOM?.inUse) {
@@ -121,7 +121,7 @@ suite('polyfill-support rendering', () => {
       document.body.appendChild(d);
       assert.equal(
         getComputedStyle(d).getPropertyValue('border-top-width').trim(),
-        '5px',
+        '5px'
       );
       document.body.removeChild(d);
     }
@@ -182,7 +182,7 @@ suite('polyfill-support rendering', () => {
     const div = shadowRoot(container)!.querySelector('div');
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-      '2px',
+      '2px'
     );
     wrap(document.body).removeChild(container);
   });
@@ -219,7 +219,7 @@ suite('polyfill-support rendering', () => {
     }
     assert.equal(
       getComputedStyle(e).getPropertyValue('border-top-width').trim(),
-      '2px',
+      '2px'
     );
     wrap(document.body).removeChild(container);
   });
@@ -247,7 +247,7 @@ suite('polyfill-support rendering', () => {
         <scope-4b-sub></scope-4b-sub>
         <scope-4b-sub></scope-4b-sub>
       `,
-      container,
+      container
     );
     const elements = shadowRoot(container)!.querySelectorAll('scope-4b-sub');
     renderShadowRoot(nestedContent, elements[0]);
@@ -260,11 +260,11 @@ suite('polyfill-support rendering', () => {
     }
     assert.equal(
       getComputedStyle(elements[0]).getPropertyValue('border-top-width').trim(),
-      '2px',
+      '2px'
     );
     assert.equal(
       getComputedStyle(elements[1]).getPropertyValue('border-top-width').trim(),
-      '2px',
+      '2px'
     );
     wrap(document.body).removeChild(container);
   });
@@ -294,7 +294,7 @@ suite('polyfill-support rendering', () => {
     const div = root.querySelector('div');
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-      '1px',
+      '1px'
     );
     renderTemplate('a1', 'b1', 'c1');
     assert.equal(root.querySelector('#a')!.textContent, `a1`);
@@ -303,7 +303,7 @@ suite('polyfill-support rendering', () => {
     // Style parts do not update.
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-      '1px',
+      '1px'
     );
     wrap(document.body).removeChild(container);
   });
@@ -315,7 +315,7 @@ suite('polyfill-support rendering', () => {
       a: string,
       b: string,
       c: string,
-      host = container,
+      host = container
     ) => {
       const result = html`<style></style>
         <div id="a">${a}</div>
@@ -341,7 +341,7 @@ suite('polyfill-support rendering', () => {
     const div = root.querySelector('div');
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-      '1px',
+      '1px'
     );
     renderTemplate('a1', 'b1', 'c1');
     assert.equal(root.querySelector('#a')!.textContent, `a1`);
@@ -350,7 +350,7 @@ suite('polyfill-support rendering', () => {
     // Style parts do not update.
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-      '1px',
+      '1px'
     );
     wrap(document.body).removeChild(container);
   });
@@ -367,22 +367,22 @@ suite('polyfill-support rendering', () => {
     renderTemplate('foo', container1);
     assert.equal(
       shadowRoot(container1)!.querySelector('#a')!.textContent,
-      `foo`,
+      `foo`
     );
     assert.equal(
       shadowRoot(container1)!.querySelector('#b')!.textContent,
-      `foo`,
+      `foo`
     );
     const container2 = document.createElement('scope-empty-style');
     wrap(document.body).appendChild(container2);
     renderTemplate('bar', container2);
     assert.equal(
       shadowRoot(container2)!.querySelector('#a')!.textContent,
-      `bar`,
+      `bar`
     );
     assert.equal(
       shadowRoot(container2)!.querySelector('#b')!.textContent,
-      `bar`,
+      `bar`
     );
     wrap(document.body).removeChild(container1);
     wrap(document.body).removeChild(container2);
@@ -410,13 +410,13 @@ suite('polyfill-support rendering', () => {
     let div = shadowRoot(container)!.querySelector('div');
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-      '1px',
+      '1px'
     );
     renderTemplate('2px solid black');
     div = shadowRoot(container)!.querySelector('div');
     assert.equal(
       getComputedStyle(div!).getPropertyValue('border-top-width').trim(),
-      '1px',
+      '1px'
     );
     wrap(document.body).removeChild(container);
   });
@@ -427,7 +427,7 @@ suite('polyfill-support rendering', () => {
     const render = (title: string) => {
       renderShadowRoot(
         html`<slot name="before"> </slot>${title}<slot name="after"></slot>`,
-        el,
+        el
       );
     };
     render('foo');
@@ -465,7 +465,7 @@ suite('polyfill-support rendering', () => {
         data,
         (i) => i,
         // prettier-ignore
-        (i: number) => html`<span ${ref(listRefs[i])}>${i}</span>`,
+        (i: number) => html`<span ${ref(listRefs[i])}>${i}</span>`
       );
       renderShadowRoot(html`<span>[</span>${list}<span>]</span>`, el);
     };
@@ -492,45 +492,45 @@ suite('polyfill-support rendering', () => {
         data,
         (i) => i,
         // prettier-ignore
-        (s: string, i: number) => html`<span slot="${s}" ${ref(listRefs[i])}>item: ${i}</span>`,
+        (s: string, i: number) => html`<span slot="${s}" ${ref(listRefs[i])}>item: ${i}</span>`
       );
       litRender(html`<div ${ref(shadowHostRef)}>${list}</div>`, el);
       renderShadowRoot(
         html`<slot name="before" ${ref(
-          beforeSlotRef,
+          beforeSlotRef
         )}></slot> ${title}<slot name="after" ${ref(afterSlotRef)}></slot>`,
-        shadowHostRef.value!,
+        shadowHostRef.value!
       );
     };
     render('foo', ['before', 'after', 'nope']);
     assert.equal(shadowRoot(shadowHostRef.value!)?.textContent, ' foo');
     assert.deepEqual(
       (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [listRefs[0].value!],
+      [listRefs[0].value!]
     );
     assert.deepEqual(
       (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [listRefs[1].value!],
+      [listRefs[1].value!]
     );
     render('bar', ['after', 'after', 'nope', 'before', 'nope']);
     assert.equal(shadowRoot(shadowHostRef.value!)?.textContent, ' bar');
     assert.deepEqual(
       (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [listRefs[3].value!],
+      [listRefs[3].value!]
     );
     assert.deepEqual(
       (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [listRefs[0].value!, listRefs[1].value!],
+      [listRefs[0].value!, listRefs[1].value!]
     );
     render('zot', []);
     assert.equal(shadowRoot(shadowHostRef.value!)?.textContent, ' zot');
     assert.deepEqual(
       (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [],
+      []
     );
     assert.deepEqual(
       (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [],
+      []
     );
     wrap(document.body).removeChild(el);
   });
@@ -582,9 +582,9 @@ suite('polyfill-support rendering', () => {
       litRender(html`<div ${ref(shadowHostRef)}>${cache(value)}</div>`, el);
       renderShadowRoot(
         html`<slot name="before" ${ref(
-          beforeSlotRef,
+          beforeSlotRef
         )}></slot>|<slot name="after" ${ref(afterSlotRef)}></slot>`,
-        shadowHostRef.value!,
+        shadowHostRef.value!
       );
     };
     //
@@ -593,32 +593,32 @@ suite('polyfill-support rendering', () => {
     const aNode = aRef.value!;
     assert.deepEqual(
       (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [aNode],
+      [aNode]
     );
     assert.deepEqual(
       (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [],
+      []
     );
 
     render();
     assert.equal(wrap(shadowHostRef.value!).textContent, '');
     assert.deepEqual(
       (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [],
+      []
     );
     assert.deepEqual(
       (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [],
+      []
     );
     render(aTemplate('after'));
     assert.equal(wrap(shadowHostRef.value!).textContent, 'A');
     assert.deepEqual(
       (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [],
+      []
     );
     assert.deepEqual(
       (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [aNode],
+      [aNode]
     );
     assert.equal(aNode, aRef.value);
     render(bTemplate('before'));
@@ -626,22 +626,22 @@ suite('polyfill-support rendering', () => {
     const bNode = bRef.value!;
     assert.deepEqual(
       (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [bNode],
+      [bNode]
     );
     assert.deepEqual(
       (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [],
+      []
     );
     render(aTemplate(''));
     assert.equal(wrap(shadowHostRef.value!).textContent, 'A');
     assert.equal(aNode, aRef.value);
     assert.deepEqual(
       (wrap(beforeSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [],
+      []
     );
     assert.deepEqual(
       (wrap(afterSlotRef.value!) as HTMLSlotElement).assignedNodes(),
-      [],
+      []
     );
     wrap(document.body).removeChild(el);
   });

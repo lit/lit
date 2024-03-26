@@ -22,7 +22,7 @@ export class UnsafeHTMLDirective extends Directive {
       throw new Error(
         `${
           (this.constructor as typeof UnsafeHTMLDirective).directiveName
-        }() can only be used in child bindings`,
+        }() can only be used in child bindings`
       );
     }
   }
@@ -39,7 +39,7 @@ export class UnsafeHTMLDirective extends Directive {
       throw new Error(
         `${
           (this.constructor as typeof UnsafeHTMLDirective).directiveName
-        }() called with a non-string value`,
+        }() called with a non-string value`
       );
     }
     if (value === this._value) {

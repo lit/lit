@@ -22,7 +22,7 @@ suite('templateContent', () => {
     render(html`<div>${templateContent(template)}</div>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div><div>aaa</div></div>',
+      '<div><div>aaa</div></div>'
     );
   });
 
@@ -32,7 +32,7 @@ suite('templateContent', () => {
     go();
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div><div>aaa</div></div>',
+      '<div><div>aaa</div></div>'
     );
     const templateDiv = container.querySelector('div > div') as HTMLDivElement;
 
@@ -47,7 +47,7 @@ suite('templateContent', () => {
     go(template);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div><div>aaa</div></div>',
+      '<div><div>aaa</div></div>'
     );
 
     const newTemplate = document.createElement('template');
@@ -55,7 +55,7 @@ suite('templateContent', () => {
     go(newTemplate);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div><span>bbb</span></div>',
+      '<div><span>bbb</span></div>'
     );
   });
 
@@ -64,7 +64,7 @@ suite('templateContent', () => {
     go(templateContent(template));
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div><div>aaa</div></div>',
+      '<div><div>aaa</div></div>'
     );
 
     go('ccc');
@@ -73,7 +73,7 @@ suite('templateContent', () => {
     go(templateContent(template));
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<div><div>aaa</div></div>',
+      '<div><div>aaa</div></div>'
     );
   });
 });
