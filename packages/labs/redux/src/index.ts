@@ -5,6 +5,7 @@
  */
 
 export * from './lib/connector.js';
+export * from './lib/equality.js';
 export * from './lib/store-context.js';
 export * from './lib/decorators.js';
 export {provide, ContextProvider} from '@lit/context';

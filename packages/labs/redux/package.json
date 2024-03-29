@@ -101,7 +101,7 @@
       ]
     },
     "test:dev": {
-      "command": "MODE=dev node ../tests/run-web-tests.js \"development/**/*_test.js\" --config ../tests/web-test-runner.config.js",
+      "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ./web-test-runner.config.js",
       "dependencies": [
         "build",
         "../../tests:build"
@@ -109,13 +109,14 @@
       "env": {
         "BROWSERS": {
           "external": true
-        }
+        },
+        "MODE": "dev"
       },
       "files": [],
       "output": []
     },
     "test:prod": {
-      "command": "MODE=prod node ../tests/run-web-tests.js \"development/**/*_test.js\" --config ../tests/web-test-runner.config.js",
+      "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ./web-test-runner.config.js",
       "dependencies": [
         "build",
         "../../tests:build"
@@ -123,7 +124,8 @@
       "env": {
         "BROWSERS": {
           "external": true
-        }
+        },
+        "MODE": "prod"
       },
       "files": [],
       "output": []

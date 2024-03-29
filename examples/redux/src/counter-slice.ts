@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {PayloadAction, createSlice} from '@reduxjs/toolkit';
+import {type PayloadAction, createSlice} from '@reduxjs/toolkit';
 
 export type CounterState = {
   value: number;

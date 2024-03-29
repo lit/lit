@@ -11,8 +11,8 @@ import type {
 import type {Store} from '@reduxjs/toolkit';
 import {ContextConsumer} from '@lit/context';
 import {storeContext} from './store-context.js';
+import {type EqualityCheck, tripleEquals} from './equality.js';
 
-export type EqualityCheck = (a: unknown, b: unknown) => boolean;
 export type Selector<S, V> = (state: S) => V;
 
 export type ConnectorOptions<S extends Store, V> = {
@@ -83,35 +83,3 @@ export class Connector<S extends Store, V> implements ReactiveController {
     this._unsubscribe();
   }
 }
-
-export const tripleEquals: EqualityCheck = (a, b) => a === b;
-
-export const shallowEquals: EqualityCheck = (a, b) => {
-  if (a === b) {
-    return true;
-  }
-
-  if (
-    typeof a !== 'object' ||
-    typeof b !== 'object' ||
-    a === null ||
-    b === null
-  ) {
-    return false;
-  }
-
-  const keys = Object.keys(a);
-  if (keys.length !== Object.keys(b).length) {
-    return false;
-  }
-
-  for (const k of keys) {
-    if (
-      (a as Record<string, unknown>)[k] !== (b as Record<string, unknown>)[k]
-    ) {
-      return false;
-    }
-  }
-
-  return true;
-};
