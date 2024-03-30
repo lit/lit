@@ -37,11 +37,11 @@ export const initialState = Symbol();
 
 export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
 
-export type StatusRenderer<R> = {
-  initial?: () => unknown;
-  pending?: () => unknown;
-  complete?: (value: R) => unknown;
-  error?: (error: unknown) => unknown;
+export type StatusRenderer<R, D extends ReadonlyArray<unknown>> = {
+  initial?: (args?: D) => unknown;
+  pending?: (args?: D) => unknown;
+  complete?: (value: R, args?: D) => unknown;
+  error?: (error: unknown, args?: D) => unknown;
 };
 
 export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
@@ -423,18 +423,26 @@ export class Task<
     return this._error;
   }
 
-  render<T extends StatusRenderer<R>>(renderer: T) {
+  render<S extends StatusRenderer<R, T>>(renderer: S) {
     switch (this.status) {
       case TaskStatus.INITIAL:
-        return renderer.initial?.() as MaybeReturnType<T['initial']>;
-      case TaskStatus.PENDING:
-        return renderer.pending?.() as MaybeReturnType<T['pending']>;
-      case TaskStatus.COMPLETE:
-        return renderer.complete?.(this.value!) as MaybeReturnType<
-          T['complete']
+        return renderer.initial?.(this._previousArgs) as MaybeReturnType<
+          S['initial']
         >;
+      case TaskStatus.PENDING:
+        return renderer.pending?.(this._previousArgs) as MaybeReturnType<
+          S['pending']
+        >;
+      case TaskStatus.COMPLETE:
+        return renderer.complete?.(
+          this.value!,
+          this._previousArgs
+        ) as MaybeReturnType<S['complete']>;
       case TaskStatus.ERROR:
-        return renderer.error?.(this.error) as MaybeReturnType<T['error']>;
+        return renderer.error?.(
+          this.error,
+          this._previousArgs
+        ) as MaybeReturnType<S['error']>;
       default:
         throw new Error(`Unexpected status: ${this.status}`);
     }
