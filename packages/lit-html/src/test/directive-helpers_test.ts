@@ -95,7 +95,7 @@ suite('directive-helpers', () => {
       isTemplateResult({
         _$litType$: _$lit_template_1,
         values: [],
-      })
+      }),
     );
     assert.isFalse(
       isTemplateResult(
@@ -103,8 +103,8 @@ suite('directive-helpers', () => {
           _$litType$: _$lit_template_1,
           values: [],
         },
-        TemplateResultType.HTML
-      )
+        TemplateResultType.HTML,
+      ),
     );
     assert.isFalse(
       isTemplateResult(
@@ -112,8 +112,8 @@ suite('directive-helpers', () => {
           _$litType$: _$lit_template_1,
           values: [],
         },
-        TemplateResultType.SVG
-      )
+        TemplateResultType.SVG,
+      ),
     );
   });
 
@@ -123,13 +123,13 @@ suite('directive-helpers', () => {
     function acceptUncompiledTemplateResult(_v: UncompiledTemplateResult) {}
 
     function acceptTemplateOrCompiledTemplateResult(
-      _v: TemplateResult | CompiledTemplateResult
+      _v: TemplateResult | CompiledTemplateResult,
     ) {}
     function acceptTemplateResultHtml(
-      _v: TemplateResult<typeof TemplateResultType.HTML>
+      _v: TemplateResult<typeof TemplateResultType.HTML>,
     ) {}
     function acceptTemplateResultSvg(
-      _v: TemplateResult<typeof TemplateResultType.SVG>
+      _v: TemplateResult<typeof TemplateResultType.SVG>,
     ) {}
 
     const v = html`` as TemplateResult | CompiledTemplateResult;
@@ -158,7 +158,7 @@ suite('directive-helpers', () => {
       isCompiledTemplateResult({
         _$litType$: _$lit_template_1,
         values: [],
-      })
+      }),
     );
 
     if (isTestFileNotCompiled) {
@@ -230,7 +230,7 @@ suite('directive-helpers', () => {
           assert.equal(connected, this.isConnected);
           this.setValue(connected);
         }
-      }
+      },
     );
 
     const container1 = container.appendChild(document.createElement('div'));

@@ -246,8 +246,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     return idx === 0
       ? this._metricsCache.getMarginSize(0) ?? averageMarginSize
       : item
-      ? item.pos
-      : this._estimatePosition(idx);
+        ? item.pos
+        : this._estimatePosition(idx);
   }
 
   _calculateAnchor(lower: number, upper: number): number {

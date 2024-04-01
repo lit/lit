@@ -948,10 +948,10 @@ export abstract class ReactiveElement
     return attribute === false
       ? undefined
       : typeof attribute === 'string'
-      ? attribute
-      : typeof name === 'string'
-      ? name.toLowerCase()
-      : undefined;
+        ? attribute
+        : typeof name === 'string'
+          ? name.toLowerCase()
+          : undefined;
   }
 
   // Initialize to an unresolved Promise so we can make sure the element has
@@ -1211,8 +1211,8 @@ export abstract class ReactiveElement
         typeof options.converter === 'function'
           ? {fromAttribute: options.converter}
           : options.converter?.fromAttribute !== undefined
-          ? options.converter
-          : defaultConverter;
+            ? options.converter
+            : defaultConverter;
       // mark state reflecting
       this.__reflectingProperty = propName;
       this[propName as keyof this] = converter.fromAttribute!(

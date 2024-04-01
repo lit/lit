@@ -80,7 +80,7 @@ type Gaps = {[key in gap]: number};
 type Padding = {[key in side]: number};
 
 export abstract class SizeGapPaddingBaseLayout<
-  C extends SizeGapPaddingBaseLayoutConfig
+  C extends SizeGapPaddingBaseLayoutConfig,
 > extends BaseLayout<C> {
   protected _itemSize: Size | {} = {};
   protected _gaps: Gaps | {} = {};

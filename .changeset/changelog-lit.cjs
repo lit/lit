@@ -106,8 +106,8 @@ const changelogFunctions = {
           )
           .join(', ')
       : containsLitTeamMemberUsername(links.user)
-      ? null
-      : links.user;
+        ? null
+        : links.user;
 
     /**
      * containsLitTeamMemberUsername lets us only congratulate community
