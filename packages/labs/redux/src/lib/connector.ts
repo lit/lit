@@ -25,7 +25,7 @@ export class Connector<S extends Store, V> implements ReactiveController {
   private _store!: S;
   private _selector: ConnectorOptions<S, V>['selector'];
   private _equalityCheck: EqualityCheck;
-  private _unsubscribe!: () => void;
+  private _unsubscribe?: () => void;
   private _selected?: V;
 
   static withStoreType<S extends Store>(): new <V>(
@@ -36,7 +36,6 @@ export class Connector<S extends Store, V> implements ReactiveController {
   }
 
   get selected() {
-    // Type V will be unknown of no selector was provided to the constructor.
     return this._selected as V;
   }
 
@@ -67,19 +66,19 @@ export class Connector<S extends Store, V> implements ReactiveController {
           'provides a Redux store.'
       );
     }
-    this._selected = this._selector?.(this._store.getState());
-    this._unsubscribe = this._store.subscribe(() => {
-      if (this._selector !== undefined) {
-        const selected = this._selector(this._store.getState());
+    if (this._selector !== undefined) {
+      this._selected = this._selector(this._store.getState());
+      this._unsubscribe = this._store.subscribe(() => {
+        const selected = this._selector!(this._store.getState());
         if (!this._equalityCheck(this._selected, selected)) {
           this._selected = selected;
           this._host.requestUpdate();
         }
-      }
-    });
+      });
+    }
   }
 
   hostDisconnected() {
-    this._unsubscribe();
+    this._unsubscribe?.();
   }
 }

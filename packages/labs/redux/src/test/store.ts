@@ -9,10 +9,13 @@ import {configureStore} from '@reduxjs/toolkit';
 
 const counterSlice = createSlice({
   name: 'counter',
-  initialState: {value: 0},
+  initialState: {value: 0, flag: false},
   reducers: {
     increment: (state) => {
       state.value += 1;
+    },
+    toggle: (state) => {
+      state.flag = !state.flag;
     },
     reset: (state) => {
       state.value = 0;
@@ -20,7 +23,7 @@ const counterSlice = createSlice({
   },
 });
 
-export const {increment, reset} = counterSlice.actions;
+export const {increment, toggle, reset} = counterSlice.actions;
 
 export const store = configureStore({
   reducer: {

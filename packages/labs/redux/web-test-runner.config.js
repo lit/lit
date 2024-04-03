@@ -31,7 +31,7 @@ const config = {
     },
   },
   plugins: [
-    // TODO(augustjk) Remove when we can sort out version conflicts
+    // TODO(augustjk) Remove ts-ignore when we can sort out version conflicts.
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore innocuous type error due to `@web/dev-server-core` conflict
     replace({

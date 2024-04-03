@@ -4,7 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export type EqualityCheck = (a: unknown, b: unknown) => boolean;
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type EqualityCheck<T = any> = (a: T, b: T) => boolean;
 
 export const tripleEquals: EqualityCheck = (a, b) => a === b;
 
