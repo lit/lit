@@ -1431,28 +1431,21 @@ export abstract class ReactiveElement
         }
       }
     }
-    let shouldUpdate = false;
+    // let shouldUpdate = false;
     const changedProperties = this._$changedProperties;
     try {
-      shouldUpdate = this.shouldUpdate(changedProperties);
-      if (shouldUpdate) {
+      if (this.shouldUpdate(changedProperties)) {
         this.willUpdate(changedProperties);
         this.__controllers?.forEach((c) => c.hostUpdate?.());
         this.update(changedProperties);
+        this._$didUpdate(changedProperties);
       } else {
         this.__markUpdated();
       }
     } catch (e) {
-      // Prevent `firstUpdated` and `updated` from running when there's an
-      // update exception.
-      shouldUpdate = false;
       // Ensure element can accept additional updates after an exception.
       this.__markUpdated();
       throw e;
-    }
-    // The update is no longer considered pending and further updates are now allowed.
-    if (shouldUpdate) {
-      this._$didUpdate(changedProperties);
     }
   }
 

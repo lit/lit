@@ -2910,9 +2910,9 @@ suite('ReactiveElement', () => {
         threw = true;
       }
       assert.isTrue(threw);
-      assert.equal(a.changedProps.get('foo'), 50);
-      assert.equal(a.foo, 51);
-      assert.equal(a.updatedFoo, 51);
+      assert.equal(a.foo, 51, 'A');
+      assert.equal(a.updatedFoo, 51, 'B');
+      assert.equal(a.changedProps.get('foo'), 50, 'C');
     });
 
     test('exceptions in `performUpdate` do not prevent further updates', async () => {
