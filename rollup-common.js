@@ -37,6 +37,7 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit/task': '_$P',
   '@lit/context': '_$Q',
   '@lit/react': '_$R',
+  '@lit-labs/signals': '_$S',
 };
 
 // Validate prefix uniqueness

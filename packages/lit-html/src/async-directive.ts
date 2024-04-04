@@ -362,6 +362,7 @@ export abstract class AsyncDirective extends Directive {
    * @param value The value to set
    */
   setValue(value: unknown) {
+    // this.__part.options?.host
     if (isSingleExpression(this.__part as unknown as PartInfo)) {
       this.__part._$setValue(value, this);
     } else {
