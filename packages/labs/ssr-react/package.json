@@ -47,8 +47,8 @@
     "/jsx-runtime.{d.ts,d.ts.map,js,js.map}"
   ],
   "dependencies": {
-    "@lit-labs/ssr": "^3.2.0",
-    "@lit-labs/ssr-client": "^1.1.4"
+    "@lit-labs/ssr": "^3.2.2",
+    "@lit-labs/ssr-client": "^1.1.7"
   },
   "peerDependencies": {
     "@types/react": "17 || 18",
@@ -99,10 +99,10 @@
     }
   },
   "devDependencies": {
-    "@lit/react": "1.0.2",
+    "@lit/react": "1.0.4",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",
-    "lit": "^3.1.0",
+    "lit": "^3.1.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "uvu": "^0.5.6"

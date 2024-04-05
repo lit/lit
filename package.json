@@ -3,7 +3,7 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=16.0.0",
+    "node": ">=18.15.0",
     "npm": ">=7.0.0"
   },
   "workspaces": [
@@ -31,6 +31,7 @@
     "test:not-starter-kits": "wireit",
     "test:lit-starter-js": "wireit",
     "test:lit-starter-ts": "wireit",
+    "test:package-exports": "wireit",
     "test:windows": "wireit",
     "prepare": "husky install",
     "changeset": "changeset",
@@ -151,6 +152,7 @@
         "See ./packages/tests/src/web-test-runner.config.ts"
       ],
       "dependencies": [
+        "test:package-exports",
         "./packages/localize:test",
         "./packages/localize-tools:test",
         "./packages/react:test",
@@ -169,9 +171,9 @@
         "./packages/labs/gen-wrapper-vue:test",
         "./packages/labs/nextjs:test",
         "./packages/labs/preact-signals:test",
-        "./packages/labs/react:test",
         "./packages/labs/rollup-plugin-minify-html-literals:test",
         "./packages/labs/ssr:test",
+        "./packages/labs/ssr-dom-shim:test",
         "./packages/labs/ssr-react:test",
         "./packages/labs/testing:test",
         "./packages/labs/virtualizer:test",
@@ -198,6 +200,12 @@
         "./packages/lit-starter-ts/web-test-runner.config.js"
       ],
       "output": []
+    },
+    "test:package-exports": {
+      "command": "add-browser-exports test",
+      "dependencies": [
+        "./packages/internal-scripts:build"
+      ]
     },
     "test:windows": {
       "dependencies": [
@@ -234,10 +242,11 @@
         ".eslintignore",
         ".eslintrc.json",
         "!**/examples/**/*.{js,ts}",
+        "!**/example/**/*.{js,ts}",
         "!node_modules/"
       ],
       "output": [],
-      "command": "eslint --ignore-pattern=examples/ \"**/*.{js,ts}\""
+      "command": "eslint --ignore-pattern \"examples/\" --ignore-pattern \"example/\" \"**/*.{js,ts}\""
     },
     "rollup-config": {
       "files": [
@@ -250,11 +259,12 @@
     "@changesets/cli": "^2.24.4",
     "@changesets/get-github-info": "^0.5.0",
     "@esm-bundle/chai": "^4.3.4-fix.0",
-    "@rollup/plugin-commonjs": "^22.0.0",
-    "@rollup/plugin-inject": "^5.0.2",
-    "@rollup/plugin-node-resolve": "^13.2.1",
-    "@rollup/plugin-replace": "^5.0.2",
-    "@rollup/plugin-virtual": "^2.1.0",
+    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-inject": "^5.0.5",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-terser": "^0.4.4",
+    "@rollup/plugin-virtual": "^3.0.2",
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
     "@types/node": "^16.11.44",
@@ -274,13 +284,12 @@
     "ignore-sync": "^5.0.1",
     "lint-staged": "^13.0.3",
     "mocha": "^10.0.0",
-    "prettier": "^2.7.1",
-    "rollup": "^2.76.0",
-    "rollup-plugin-copy": "^3.3.0",
-    "rollup-plugin-sourcemaps": "^0.6.2",
-    "rollup-plugin-summary": "^1.4.3",
-    "rollup-plugin-terser": "^7.0.2",
-    "typescript": "~5.2.0",
+    "prettier": "^3.2.5",
+    "rollup": "^3.0.0",
+    "rollup-plugin-copy": "^3.5.0",
+    "rollup-plugin-sourcemaps": "^0.6.3",
+    "rollup-plugin-summary": "^2.0.0",
+    "typescript": "~5.3.3",
     "uvu": "^0.5.6",
     "wireit": "^0.14.0"
   },

@@ -1,5 +1,30 @@
 # Change Log
 
+## 3.2.2
+
+### Patch Changes
+
+- [#4515](https://github.com/lit/lit/pull/4515) [`dca963f7`](https://github.com/lit/lit/commit/dca963f7f5d2f7be91f2f073ebabe92d033b3a25) - Fix a memory leak when patching directive constructors for SSR.
+
+- [#4519](https://github.com/lit/lit/pull/4519) [`8d3e3057`](https://github.com/lit/lit/commit/8d3e3057d5d7835a7088457b04a5b6b13af98def) - Fix a bug where server templates with attribute bindings on certain element tags like `<td>` used top-level would throw an error during server render.
+
+- Updated dependencies [[`1a32b61e`](https://github.com/lit/lit/commit/1a32b61ecf09c2c2e6efac2735c2c627af793286), [`e901c582`](https://github.com/lit/lit/commit/e901c5829b50b38db9c434e979a8fd215adafea8), [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf), [`dca963f7`](https://github.com/lit/lit/commit/dca963f7f5d2f7be91f2f073ebabe92d033b3a25)]:
+  - lit-html@3.1.2
+  - lit@3.1.2
+  - @lit-labs/ssr-dom-shim@1.2.0
+  - @lit/reactive-element@2.0.4
+  - @lit-labs/ssr-client@1.1.7
+  - lit-element@4.0.4
+
+## 3.2.1
+
+### Patch Changes
+
+- [#4421](https://github.com/lit/lit/pull/4421) [`c7134a40`](https://github.com/lit/lit/commit/c7134a40f38d9db6adbb2c499431cf616f793f04) - Fix server template throwing when encountering an attribute binding on the
+  `html` tag. This is now handled correctly.
+
+- [#4479](https://github.com/lit/lit/pull/4479) [`ee97d089`](https://github.com/lit/lit/commit/ee97d089a209b70527118c9dcd730440ccaf51b2) - Fix incorrect attribute names being matched to values when attribute expressions are followed by element expressions such as using the `ref` directive.
+
 ## 3.2.0
 
 ### Minor Changes

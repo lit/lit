@@ -948,10 +948,10 @@ export abstract class ReactiveElement
     return attribute === false
       ? undefined
       : typeof attribute === 'string'
-      ? attribute
-      : typeof name === 'string'
-      ? name.toLowerCase()
-      : undefined;
+        ? attribute
+        : typeof name === 'string'
+          ? name.toLowerCase()
+          : undefined;
   }
 
   // Initialize to an unresolved Promise so we can make sure the element has
@@ -1136,7 +1136,7 @@ export abstract class ReactiveElement
    * overridden, `super.attributeChangedCallback(name, _old, value)` must be
    * called.
    *
-   * See [using the lifecycle callbacks](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements#using_the_lifecycle_callbacks)
+   * See [responding to attribute changes](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements#responding_to_attribute_changes)
    * on MDN for more information about the `attributeChangedCallback`.
    * @category attributes
    */
@@ -1211,8 +1211,8 @@ export abstract class ReactiveElement
         typeof options.converter === 'function'
           ? {fromAttribute: options.converter}
           : options.converter?.fromAttribute !== undefined
-          ? options.converter
-          : defaultConverter;
+            ? options.converter
+            : defaultConverter;
       // mark state reflecting
       this.__reflectingProperty = propName;
       this[propName as keyof this] = converter.fromAttribute!(
@@ -1669,7 +1669,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(global.reactiveElementVersions ??= []).push('2.0.2');
+(global.reactiveElementVersions ??= []).push('2.0.4');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

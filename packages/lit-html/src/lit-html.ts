@@ -202,7 +202,7 @@ const debugLogEvent = DEV_MODE
       global.dispatchEvent(
         new CustomEvent<LitUnstable.DebugLog.Entry>('lit-debug', {
           detail: event,
-        })
+        }),
       );
     }
   : undefined;
@@ -229,7 +229,7 @@ if (DEV_MODE) {
 
   issueWarning(
     'dev-mode',
-    `Lit is in dev mode. Not recommended for production!`
+    `Lit is in dev mode. Not recommended for production!`,
   );
 }
 
@@ -280,7 +280,7 @@ const policy = trustedTypes
 export type SanitizerFactory = (
   node: Node,
   name: string,
-  type: 'property' | 'attribute'
+  type: 'property' | 'attribute',
 ) => ValueSanitizer;
 
 /**
@@ -300,7 +300,7 @@ const identityFunction: ValueSanitizer = (value: unknown) => value;
 const noopSanitizer: SanitizerFactory = (
   _node: Node,
   _name: string,
-  _type: 'property' | 'attribute'
+  _type: 'property' | 'attribute',
 ) => identityFunction;
 
 /** Sets the global sanitizer factory. */
@@ -311,7 +311,7 @@ const setSanitizer = (newSanitizer: SanitizerFactory) => {
   if (sanitizerFactoryInternal !== noopSanitizer) {
     throw new Error(
       `Attempted to overwrite existing lit-html security policy.` +
-        ` setSanitizeDOMValueFactory should be called at most once.`
+        ` setSanitizeDOMValueFactory should be called at most once.`,
     );
   }
   sanitizerFactoryInternal = newSanitizer;
@@ -336,7 +336,7 @@ const boundAttributeSuffix = '$lit$';
 // a valid element name and attribute name. We don't support dynamic names (yet)
 // but this at least ensures that the parse tree is closer to the template
 // intention.
-const marker = `lit$${String(Math.random()).slice(9)}$`;
+const marker = `lit$${Math.random().toFixed(9).slice(2)}$`;
 
 // String used to tell if a comment is a marker comment
 const markerMatch = '?' + marker;
@@ -420,7 +420,7 @@ const comment2EndRegex = />/g;
  */
 const tagEndRegex = new RegExp(
   `>|${SPACE_CHAR}(?:(${NAME_CHAR}+)(${SPACE_CHAR}*=${SPACE_CHAR}*(?:${ATTR_VALUE_CHAR}|("|')|))|$)`,
-  'g'
+  'g',
 );
 const ENTIRE_MATCH = 0;
 const ATTRIBUTE_NAME = 1;
@@ -546,7 +546,7 @@ const tag =
     if (DEV_MODE && strings.some((s) => s === undefined)) {
       console.warn(
         'Some template strings are undefined.\n' +
-          'This is probably caused by illegal octal escape sequences.'
+          'This is probably caused by illegal octal escape sequences.',
       );
     }
     if (DEV_MODE) {
@@ -559,7 +559,7 @@ const tag =
         issueWarning(
           '',
           `Static values 'literal' or 'unsafeStatic' cannot be used as values to non-static templates.\n` +
-            `Please use the static 'html' tag function. See https://lit.dev/docs/templates/expressions/#static-expressions`
+            `Please use the static 'html' tag function. See https://lit.dev/docs/templates/expressions/#static-expressions`,
         );
       }
     }
@@ -684,7 +684,7 @@ export interface RenderOptions {
 
 const walker = d.createTreeWalker(
   d,
-  129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */
+  129 /* NodeFilter.SHOW_{ELEMENT|COMMENT} */,
 );
 
 let sanitizerFactoryInternal: SanitizerFactory = noopSanitizer;
@@ -707,7 +707,7 @@ export interface DirectiveParent {
 
 function trustFromTemplateString(
   tsa: TemplateStringsArray,
-  stringFromTSA: string
+  stringFromTSA: string,
 ): TrustedHTML {
   // A security check to prevent spoofing of Lit template results.
   // In the future, we may be able to replace this with Array.isTemplateObject,
@@ -752,7 +752,7 @@ function trustFromTemplateString(
  */
 const getTemplateHtml = (
   strings: TemplateStringsArray,
-  type: ResultType
+  type: ResultType,
 ): [TrustedHTML, Array<string>] => {
   // Insert makers into the template HTML to represent the position of
   // bindings. The following code scans the template strings to determine the
@@ -815,7 +815,7 @@ const getTemplateHtml = (
           if (DEV_MODE) {
             throw new Error(
               'Bindings in tag names are not supported. Please use static templates instead. ' +
-                'See https://lit.dev/docs/templates/expressions/#static-expressions'
+                'See https://lit.dev/docs/templates/expressions/#static-expressions',
             );
           }
           regex = tagEndRegex;
@@ -838,8 +838,8 @@ const getTemplateHtml = (
             match[QUOTE_CHAR] === undefined
               ? tagEndRegex
               : match[QUOTE_CHAR] === '"'
-              ? doubleQuoteAttrEndRegex
-              : singleQuoteAttrEndRegex;
+                ? doubleQuoteAttrEndRegex
+                : singleQuoteAttrEndRegex;
         }
       } else if (
         regex === doubleQuoteAttrEndRegex ||
@@ -865,7 +865,7 @@ const getTemplateHtml = (
           regex === tagEndRegex ||
           regex === singleQuoteAttrEndRegex ||
           regex === doubleQuoteAttrEndRegex,
-        'unexpected parse state B'
+        'unexpected parse state B',
       );
     }
 
@@ -888,13 +888,13 @@ const getTemplateHtml = (
       regex === textEndRegex
         ? s + nodeMarker
         : attrNameEndIndex >= 0
-        ? (attrNames.push(attrName!),
-          s.slice(0, attrNameEndIndex) +
-            boundAttributeSuffix +
-            s.slice(attrNameEndIndex)) +
-          marker +
-          end
-        : s + marker + (attrNameEndIndex === -2 ? i : end);
+          ? (attrNames.push(attrName!),
+            s.slice(0, attrNameEndIndex) +
+              boundAttributeSuffix +
+              s.slice(attrNameEndIndex)) +
+            marker +
+            end
+          : s + marker + (attrNameEndIndex === -2 ? i : end);
   }
 
   const htmlResult: string | TrustedHTML =
@@ -915,7 +915,7 @@ class Template {
   constructor(
     // This property needs to remain unminified.
     {strings, ['_$litType$']: type}: UncompiledTemplateResult,
-    options?: RenderOptions
+    options?: RenderOptions,
   ) {
     let node: Node | null;
     let nodeIndex = 0;
@@ -975,10 +975,10 @@ class Template {
                   m[1] === '.'
                     ? PropertyPart
                     : m[1] === '?'
-                    ? BooleanAttributePart
-                    : m[1] === '@'
-                    ? EventPart
-                    : AttributePart,
+                      ? BooleanAttributePart
+                      : m[1] === '@'
+                        ? EventPart
+                        : AttributePart,
               });
               (node as Element).removeAttribute(name);
             } else if (name.startsWith(marker)) {
@@ -1036,6 +1036,28 @@ class Template {
       }
       nodeIndex++;
     }
+
+    if (DEV_MODE) {
+      // If there was a duplicate attribute on a tag, then when the tag is
+      // parsed into an element the attribute gets de-duplicated. We can detect
+      // this mismatch if we haven't precisely consumed every attribute name
+      // when preparing the template. This works because `attrNames` is built
+      // from the template string and `attrNameIndex` comes from processing the
+      // resulting DOM.
+      if (attrNames.length !== attrNameIndex) {
+        throw new Error(
+          `Detected duplicate attribute bindings. This occurs if your template ` +
+            `has duplicate attributes on an element tag. For example ` +
+            `"<input ?disabled=\${true} ?disabled=\${false}>" contains a ` +
+            `duplicate "disabled" attribute. The error was detected in ` +
+            `the following template: \n` +
+            '`' +
+            strings.join('${...}') +
+            '`',
+        );
+      }
+    }
+
     // We could set walker.currentNode to another node here to prevent a memory
     // leak, but every time we prepare a template, we immediately render it
     // and re-use the walker in new TemplateInstance._clone().
@@ -1075,7 +1097,7 @@ function resolveDirective(
   part: ChildPart | AttributePart | ElementPart,
   value: unknown,
   parent: DirectiveParent = part,
-  attributeIndex?: number
+  attributeIndex?: number,
 ): unknown {
   // Bail early if the value is explicitly noChange. Note, this means any
   // nested directive is still attached and is not run.
@@ -1111,7 +1133,7 @@ function resolveDirective(
       part,
       currentDirective._$resolve(part, (value as DirectiveResult).values),
       currentDirective,
-      attributeIndex
+      attributeIndex,
     );
   }
   return value;
@@ -1169,7 +1191,7 @@ class TemplateInstance implements Disconnectable {
             node as HTMLElement,
             node.nextSibling,
             this,
-            options
+            options,
           );
         } else if (templatePart.type === ATTRIBUTE_PART) {
           part = new templatePart.ctor(
@@ -1177,7 +1199,7 @@ class TemplateInstance implements Disconnectable {
             templatePart.name,
             templatePart.strings,
             this,
-            options
+            options,
           );
         } else if (templatePart.type === ELEMENT_PART) {
           part = new ElementPart(node as HTMLElement, this, options);
@@ -1307,7 +1329,7 @@ class ChildPart implements Disconnectable {
   _$notifyConnectionChanged?(
     isConnected: boolean,
     removeFromParent?: boolean,
-    from?: number
+    from?: number,
   ): void;
   /** @internal */
   _$reparentDisconnectables?(parent: Disconnectable): void;
@@ -1316,7 +1338,7 @@ class ChildPart implements Disconnectable {
     startNode: ChildNode,
     endNode: ChildNode | null,
     parent: TemplateInstance | ChildPart | undefined,
-    options: RenderOptions | undefined
+    options: RenderOptions | undefined,
   ) {
     this._$startNode = startNode;
     this._$endNode = endNode;
@@ -1384,7 +1406,7 @@ class ChildPart implements Disconnectable {
   _$setValue(value: unknown, directiveParent: DirectiveParent = this): void {
     if (DEV_MODE && this.parentNode === null) {
       throw new Error(
-        `This \`ChildPart\` has no \`parentNode\` and therefore cannot accept a value. This likely means the element containing the part was manipulated in an unsupported way outside of Lit's control such that the part's marker nodes were ejected from DOM. For example, setting the element's \`innerHTML\` or \`textContent\` can do this.`
+        `This \`ChildPart\` has no \`parentNode\` and therefore cannot accept a value. This likely means the element containing the part was manipulated in an unsupported way outside of Lit's control such that the part's marker nodes were ejected from DOM. For example, setting the element's \`innerHTML\` or \`textContent\` can do this.`,
       );
     }
     value = resolveDirective(this, value, directiveParent);
@@ -1415,7 +1437,7 @@ class ChildPart implements Disconnectable {
       if (DEV_MODE && this.options?.host === value) {
         this._commitText(
           `[probable mistake: rendered a template's host in itself ` +
-            `(commonly caused by writing \${this} in a template]`
+            `(commonly caused by writing \${this} in a template]`,
         );
         console.warn(
           `Attempted to render the template host`,
@@ -1423,7 +1445,7 @@ class ChildPart implements Disconnectable {
           `inside itself. This is almost always a mistake, and in dev mode `,
           `we render some warning text. In production however, we'll `,
           `render it, which will usually result in an error, and sometimes `,
-          `in the element disappearing from the DOM.`
+          `in the element disappearing from the DOM.`,
         );
         return;
       }
@@ -1439,7 +1461,7 @@ class ChildPart implements Disconnectable {
   private _insert<T extends Node>(node: T) {
     return wrap(wrap(this._$startNode).parentNode!).insertBefore(
       node,
-      this._$endNode
+      this._$endNode,
     );
   }
 
@@ -1543,7 +1565,7 @@ class ChildPart implements Disconnectable {
   }
 
   private _commitTemplateResult(
-    result: TemplateResult | CompiledTemplateResult
+    result: TemplateResult | CompiledTemplateResult,
   ): void {
     // This property needs to remain unminified.
     const {values, ['_$litType$']: type} = result;
@@ -1557,7 +1579,7 @@ class ChildPart implements Disconnectable {
         : (type.el === undefined &&
             (type.el = Template.createElement(
               trustFromTemplateString(type.h, type.h[0]),
-              this.options
+              this.options,
             )),
           type);
 
@@ -1644,8 +1666,8 @@ class ChildPart implements Disconnectable {
             this._insert(createMarker()),
             this._insert(createMarker()),
             this,
-            this.options
-          ))
+            this.options,
+          )),
         );
       } else {
         // Reuse an existing part
@@ -1659,7 +1681,7 @@ class ChildPart implements Disconnectable {
       // itemParts always have end nodes
       this._$clear(
         itemPart && wrap(itemPart._$endNode!).nextSibling,
-        partIndex
+        partIndex,
       );
       // Truncate the parts array so _value reflects the current state
       itemParts.length = partIndex;
@@ -1679,7 +1701,7 @@ class ChildPart implements Disconnectable {
    */
   _$clear(
     start: ChildNode | null = wrap(this._$startNode).nextSibling,
-    from?: number
+    from?: number,
   ) {
     this._$notifyConnectionChanged?.(false, true, from);
     while (start && start !== this._$endNode) {
@@ -1702,7 +1724,7 @@ class ChildPart implements Disconnectable {
     } else if (DEV_MODE) {
       throw new Error(
         'part.setConnected() may only be called on a ' +
-          'RootPart returned from render().'
+          'RootPart returned from render().',
       );
     }
   }
@@ -1773,7 +1795,7 @@ class AttributePart implements Disconnectable {
     name: string,
     strings: ReadonlyArray<string>,
     parent: Disconnectable,
-    options: RenderOptions | undefined
+    options: RenderOptions | undefined,
   ) {
     this.element = element;
     this.name = name;
@@ -1816,7 +1838,7 @@ class AttributePart implements Disconnectable {
     value: unknown | Array<unknown>,
     directiveParent: DirectiveParent = this,
     valueIndex?: number,
-    noCommit?: boolean
+    noCommit?: boolean,
   ) {
     const strings = this.strings;
 
@@ -1872,7 +1894,7 @@ class AttributePart implements Disconnectable {
           this._sanitizer = sanitizerFactoryInternal(
             this.element,
             this.name,
-            'attribute'
+            'attribute',
           );
         }
         value = this._sanitizer(value ?? '');
@@ -1887,7 +1909,7 @@ class AttributePart implements Disconnectable {
         });
       (wrap(this.element) as Element).setAttribute(
         this.name,
-        (value ?? '') as string
+        (value ?? '') as string,
       );
     }
   }
@@ -1904,7 +1926,7 @@ class PropertyPart extends AttributePart {
         this._sanitizer = sanitizerFactoryInternal(
           this.element,
           this.name,
-          'property'
+          'property',
         );
       }
       value = this._sanitizer(value);
@@ -1938,7 +1960,7 @@ class BooleanAttributePart extends AttributePart {
       });
     (wrap(this.element) as Element).toggleAttribute(
       this.name,
-      !!value && value !== nothing
+      !!value && value !== nothing,
     );
   }
 }
@@ -1966,7 +1988,7 @@ class EventPart extends AttributePart {
     name: string,
     strings: ReadonlyArray<string>,
     parent: Disconnectable,
-    options: RenderOptions | undefined
+    options: RenderOptions | undefined,
   ) {
     super(element, name, strings, parent, options);
 
@@ -1974,7 +1996,7 @@ class EventPart extends AttributePart {
       throw new Error(
         `A \`<${element.localName}>\` has a \`@${name}=...\` listener with ` +
           'invalid content. Event listeners in templates must have exactly ' +
-          'one expression and no surrounding text.'
+          'one expression and no surrounding text.',
       );
     }
   }
@@ -1984,7 +2006,7 @@ class EventPart extends AttributePart {
   /** @internal */
   override _$setValue(
     newListener: unknown,
-    directiveParent: DirectiveParent = this
+    directiveParent: DirectiveParent = this,
   ) {
     newListener =
       resolveDirective(this, newListener, directiveParent, 0) ?? nothing;
@@ -2025,7 +2047,7 @@ class EventPart extends AttributePart {
       this.element.removeEventListener(
         this.name,
         this,
-        oldListener as EventListenerWithOptions
+        oldListener as EventListenerWithOptions,
       );
     }
     if (shouldAddListener) {
@@ -2035,7 +2057,7 @@ class EventPart extends AttributePart {
       this.element.addEventListener(
         this.name,
         this,
-        newListener as EventListenerWithOptions
+        newListener as EventListenerWithOptions,
       );
     }
     this._$committedValue = newListener;
@@ -2071,7 +2093,7 @@ class ElementPart implements Disconnectable {
   constructor(
     public element: Element,
     parent: Disconnectable,
-    options: RenderOptions | undefined
+    options: RenderOptions | undefined,
   ) {
     this._$parent = parent;
     this.options = options;
@@ -2139,12 +2161,12 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(global.litHtmlVersions ??= []).push('3.1.0');
+(global.litHtmlVersions ??= []).push('3.1.2');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',
     `Multiple versions of Lit loaded. ` +
-      `Loading multiple versions is not recommended.`
+      `Loading multiple versions is not recommended.`,
   );
 }
 
@@ -2176,7 +2198,7 @@ if (DEV_MODE && global.litHtmlVersions.length > 1) {
 export const render = (
   value: unknown,
   container: HTMLElement | DocumentFragment,
-  options?: RenderOptions
+  options?: RenderOptions,
 ): RootPart => {
   if (DEV_MODE && container == null) {
     // Give a clearer error message than
@@ -2207,7 +2229,7 @@ export const render = (
       container.insertBefore(createMarker(), endNode),
       endNode,
       undefined,
-      options ?? {}
+      options ?? {},
     );
   }
   part._$setValue(value);

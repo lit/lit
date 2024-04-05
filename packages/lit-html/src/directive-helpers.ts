@@ -53,7 +53,7 @@ type IsTemplateResult = {
   (val: unknown): val is MaybeCompiledTemplateResult;
   <T extends TemplateResultType>(
     val: unknown,
-    type: T
+    type: T,
   ): val is UncompiledTemplateResult<T>;
 };
 
@@ -62,7 +62,7 @@ type IsTemplateResult = {
  */
 export const isTemplateResult: IsTemplateResult = (
   value: unknown,
-  type?: TemplateResultType
+  type?: TemplateResultType,
 ): value is UncompiledTemplateResult =>
   type === undefined
     ? // This property needs to remain unminified.
@@ -73,7 +73,7 @@ export const isTemplateResult: IsTemplateResult = (
  * Tests if a value is a CompiledTemplateResult.
  */
 export const isCompiledTemplateResult = (
-  value: unknown
+  value: unknown,
 ): value is CompiledTemplateResult => {
   return (value as CompiledTemplateResult)?.['_$litType$']?.h != null;
 };
@@ -120,7 +120,7 @@ const createMarker = () => document.createComment('');
 export const insertPart = (
   containerPart: ChildPart,
   refPart?: ChildPart,
-  part?: ChildPart
+  part?: ChildPart,
 ): ChildPart => {
   const container = wrap(containerPart._$startNode).parentNode!;
 
@@ -134,7 +134,7 @@ export const insertPart = (
       startNode,
       endNode,
       containerPart,
-      containerPart.options
+      containerPart.options,
     );
   } else {
     const endNode = wrap(part._$endNode!).nextSibling;
@@ -191,7 +191,7 @@ export const insertPart = (
 export const setChildPartValue = <T extends ChildPart>(
   part: T,
   value: unknown,
-  directiveParent: DirectiveParent = part
+  directiveParent: DirectiveParent = part,
 ): T => {
   part._$setValue(value, directiveParent);
   return part;

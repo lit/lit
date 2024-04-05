@@ -15,7 +15,7 @@
     "@types/react": "^17 || ^18"
   },
   "devDependencies": {
-    "typescript": "~5.2.0"
+    "typescript": "~5.3.3"
   },
   "files": [
     "element-a.{js,js.map,d.ts,d.ts.map}",

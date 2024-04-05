@@ -7,6 +7,7 @@
 import {html, svg, nothing} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {ref, createRef} from 'lit/directives/ref.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
 import {html as serverhtml} from '../../lib/server-template.js';
@@ -35,6 +36,11 @@ export const templateWithMultipleAttributeExpressions = (
   x: string,
   y: string
 ) => html`<div x=${x} y=${y} z="not-dynamic"></div>`;
+// prettier-ignore
+export const templateWithElementAndMultipleAttributeExpressions = (
+  x: string,
+  y: string
+) => html`<div ${ref(createRef())} x=${x} y=${y} z="not-dynamic"></div>`;
 // prettier-ignore
 export const templateWithMultiBindingAttributeExpression = (
   x: string,
@@ -321,6 +327,11 @@ export const serverOnlyBindAttributeOnHtml = serverhtml`
 <html lang="${'ko'}"></html>
 `;
 
+export const nonServerTemplateBindAttributeOnHtmlShouldError = html`
+  <!doctype html>
+  <html lang="${'ko'}"></html>
+`;
+
 export const serverOnlyDocumentTemplatesCompose = serverhtml`
 ${serverhtml`<!DOCTYPE html>`}
 ${serverhtml`<html lang="${'ko'}">
@@ -333,6 +344,37 @@ ${serverhtml`<html lang="${'ko'}">
   </body>`}
 </html>`}
 `;
+
+export const serverOnlyPageElementsSupportBindings = serverhtml`
+<!-- A multi
+     line comment -->
+<html lang="${'ko'}">
+  <p>${'Hello, world!'}</p>
+</html>`;
+
+export const serverOnlyBodyElementSupportsBindings = serverhtml`
+<!-- A multi
+     line comment -->
+<body class="${'testClass'}">
+  <p>${'Body Contents!'}</p>
+</body>
+`;
+
+export const serverOnlyHeadWithComment = serverhtml`
+<!-- Head content -->
+<head attr-key=${'attrValue'}>
+</head>
+`;
+
+export const serverOnlyHeadTagComposition = serverhtml`
+<head attr-key=${'attrValue'}>
+  ${serverhtml`<title attr-key=${'attrValue'}>${'Document title!'}</title>`}
+</head>
+`;
+
+export const serverOnlyTdTag = serverhtml`<td colspan=${2}>${'Table content'}</td>`;
+
+export const serverOnlyTdTagWithCommentPrefix = serverhtml`<!-- HTML comment --><td colspan=${3}>${'Table content'}</td>`;
 
 export const serverOnlyArray = serverhtml`<div>${[
   'one',

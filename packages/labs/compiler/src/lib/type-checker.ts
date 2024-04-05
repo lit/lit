@@ -5,6 +5,7 @@
  */
 
 import ts from 'typescript';
+import {isLitTaggedTemplateExpression} from '@lit-labs/analyzer/lib/lit-html/template.js';
 
 const compilerOptions = {
   target: ts.ScriptTarget.ESNext,
@@ -52,129 +53,7 @@ class TypeChecker {
    * compiled.
    */
   isLitTaggedTemplateExpression(node: ts.TaggedTemplateExpression): boolean {
-    if (ts.isIdentifier(node.tag)) {
-      return this.isResolvedIdentifierLitHtmlTemplate(node.tag);
-    }
-    if (ts.isPropertyAccessExpression(node.tag)) {
-      return this.isResolvedPropertyAccessExpressionLitHtmlNamespace(node.tag);
-    }
-    return false;
-  }
-
-  /**
-   * Resolve the tag function identifier back to an import, returning true if
-   * the original reference was the `html` export from `lit` or `lit-html`.
-   *
-   * This check handles: aliasing and reassigning the import.
-   *
-   * ```ts
-   * import {html as h} from 'lit';
-   * h``;
-   * // isResolvedIdentifierLitHtmlTemplate(<h ast node>) returns true
-   * ```
-   *
-   * ```ts
-   * import {html} from 'lit-html/static.js';
-   * html`false`;
-   * // isResolvedIdentifierLitHtmlTemplate(<html ast node>) returns false
-   * ```
-   *
-   * @param node a TaggedTemplateExpression tag
-   */
-  private isResolvedIdentifierLitHtmlTemplate(node: ts.Identifier): boolean {
-    const checker = this.checker;
-
-    const symbol = checker.getSymbolAtLocation(node);
-    if (!symbol) {
-      return false;
-    }
-    const templateImport = symbol.declarations?.[0];
-    if (!templateImport || !ts.isImportSpecifier(templateImport)) {
-      return false;
-    }
-
-    // An import specifier has the following structures:
-    //
-    // `import {<propertyName> as <name>} from <moduleSpecifier>;`
-    // `import {<name>} from <moduleSpecifier>;`
-    //
-    // This check allows aliasing `html` by ensuring propertyName is `html`.
-    // Thus `{html as myHtml}` is a valid template that can be compiled.
-    // Otherwise a compilable template must be a direct import of lit's `html`
-    // tag function.
-    if (
-      (templateImport.propertyName &&
-        templateImport.propertyName.text !== 'html') ||
-      (!templateImport.propertyName && templateImport.name.text !== 'html')
-    ) {
-      return false;
-    }
-    const namedImport = templateImport.parent;
-    if (!ts.isNamedImports(namedImport)) {
-      return false;
-    }
-    const importClause = namedImport.parent;
-    if (!ts.isImportClause(importClause)) {
-      return false;
-    }
-    const importDeclaration = importClause.parent;
-    if (!ts.isImportDeclaration(importDeclaration)) {
-      return false;
-    }
-    const specifier = importDeclaration.moduleSpecifier;
-    if (!ts.isStringLiteral(specifier)) {
-      return false;
-    }
-    return this.isLitTemplateModuleSpecifier(specifier.text);
-  }
-
-  /**
-   * Resolve a common pattern of using the `html` identifier of a lit namespace
-   * import.
-   *
-   * E.g.:
-   *
-   * ```ts
-   * import * as identifier from 'lit';
-   * identifier.html`<p>I am compiled!</p>`;
-   * ```
-   */
-  private isResolvedPropertyAccessExpressionLitHtmlNamespace(
-    node: ts.PropertyAccessExpression
-  ): boolean {
-    // Ensure propertyAccessExpression ends with `.html`.
-    if (ts.isIdentifier(node.name) && node.name.text !== 'html') {
-      return false;
-    }
-    // Expect a namespace preceding `html`, `<namespace>.html`.
-    if (!ts.isIdentifier(node.expression)) {
-      return false;
-    }
-
-    // Resolve the namespace if it has been aliased.
-    const checker = this.checker;
-    const symbol = checker.getSymbolAtLocation(node.expression);
-    if (!symbol) {
-      return false;
-    }
-    const namespaceImport = symbol.declarations?.[0];
-    if (!namespaceImport || !ts.isNamespaceImport(namespaceImport)) {
-      return false;
-    }
-    const importDeclaration = namespaceImport.parent.parent;
-    const specifier = importDeclaration.moduleSpecifier;
-    if (!ts.isStringLiteral(specifier)) {
-      return false;
-    }
-    return this.isLitTemplateModuleSpecifier(specifier.text);
-  }
-
-  private isLitTemplateModuleSpecifier(specifier: string): boolean {
-    return (
-      specifier === 'lit' ||
-      specifier === 'lit-html' ||
-      specifier === 'lit-element'
-    );
+    return isLitTaggedTemplateExpression(node, ts, this.checker);
   }
 }
 

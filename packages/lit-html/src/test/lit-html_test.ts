@@ -63,7 +63,7 @@ class FireEventDirective extends Directive {
     part.element.dispatchEvent(
       new CustomEvent('test-event', {
         bubbles: true,
-      })
+      }),
     );
     return nothing;
   }
@@ -81,7 +81,7 @@ suite('lit-html', () => {
   const assertRender = (
     r: TemplateResult | CompiledTemplateResult,
     expected: string,
-    options?: RenderOptions
+    options?: RenderOptions,
   ) => {
     const part = render(r, container, options);
     assert.equal(stripExpressionComments(container.innerHTML), expected);
@@ -132,7 +132,7 @@ suite('lit-html', () => {
       assertRender(html`<input />${'A'}`, '<input>A');
       assertRender(
         html`<!-- @ts-ignore --><x-foo />${'A'}`,
-        '<!-- @ts-ignore --><x-foo>A</x-foo>'
+        '<!-- @ts-ignore --><x-foo>A</x-foo>',
       );
     });
 
@@ -145,7 +145,7 @@ suite('lit-html', () => {
           '<script a="b" type="foo">d</script>',
           '<script type="foo" a="b">d</script>',
         ],
-        stripExpressionComments(container.innerHTML)
+        stripExpressionComments(container.innerHTML),
       );
     });
 
@@ -158,7 +158,7 @@ suite('lit-html', () => {
           '<script a="b" type="foo">d</script>',
           '<script type="foo" a="b">d</script>',
         ],
-        stripExpressionComments(container.innerHTML)
+        stripExpressionComments(container.innerHTML),
       );
     });
 
@@ -187,7 +187,7 @@ suite('lit-html', () => {
           <!-- this is a comment -->
           <h1 class="foo">title</h1>
           <p>foo</p>
-        </div>`
+        </div>`,
       );
     });
 
@@ -198,7 +198,7 @@ suite('lit-html', () => {
     test('renders next templates with preceding elements', () => {
       assertRender(
         html`<a>${'foo'}</a>${html`<h1>${'bar'}</h1>`}`,
-        '<a>foo</a><h1>bar</h1>'
+        '<a>foo</a><h1>bar</h1>',
       );
     });
 
@@ -211,7 +211,7 @@ suite('lit-html', () => {
     test('text in raw text elements', () => {
       assertRender(
         html`<script type="foo">${'A'}</script>`,
-        '<script type="foo">A</script>'
+        '<script type="foo">A</script>',
       );
       assertRender(html`<style>${'A'}</style>`, '<style>A</style>');
       assertRender(html`<title>${'A'}</title>`, '<title>A</title>');
@@ -224,56 +224,56 @@ suite('lit-html', () => {
       // anyway.
       assertRender(
         html`<script type="foo">i < j ${'A'}</script>`,
-        '<script type="foo">i < j A</script>'
+        '<script type="foo">i < j A</script>',
       );
     });
 
     test('text in raw text element after >', () => {
       assertRender(
         html`<script type="foo">i > j ${'A'}</script>`,
-        '<script type="foo">i > j A</script>'
+        '<script type="foo">i > j A</script>',
       );
     });
 
     test('text in raw text element inside tag-like string', () => {
       assertRender(
         html`<script type="foo">"<div a=${'A'}></div>";</script>`,
-        '<script type="foo">"<div a=A></div>";</script>'
+        '<script type="foo">"<div a=A></div>";</script>',
       );
     });
 
     test('renders inside <script>: only node', () => {
       assertRender(
         html`<script type="foo">${'foo'}</script>`,
-        '<script type="foo">foo</script>'
+        '<script type="foo">foo</script>',
       );
     });
 
     test('renders inside <script>: first node', () => {
       assertRender(
         html`<script type="foo">${'foo'}A</script>`,
-        '<script type="foo">fooA</script>'
+        '<script type="foo">fooA</script>',
       );
     });
 
     test('renders inside <script>: last node', () => {
       assertRender(
         html`<script type="foo">A${'foo'}</script>`,
-        '<script type="foo">Afoo</script>'
+        '<script type="foo">Afoo</script>',
       );
     });
 
     test('renders inside <script>: multiple bindings', () => {
       assertRender(
         html`<script type="foo">A${'foo'}B${'bar'}C</script>`,
-        '<script type="foo">AfooBbarC</script>'
+        '<script type="foo">AfooBbarC</script>',
       );
     });
 
     test('renders inside <script>: attribute-like', () => {
       assertRender(
         html`<script type="foo">a=${'foo'}</script>`,
-        '<script type="foo">a=foo</script>'
+        '<script type="foo">a=foo</script>',
       );
     });
 
@@ -284,23 +284,23 @@ suite('lit-html', () => {
     test('text after script element with binding', () => {
       assertRender(
         html`<script type="foo">${'A'}</script>${'B'}`,
-        '<script type="foo">A</script>B'
+        '<script type="foo">A</script>B',
       );
       assertRender(
         html`<script type="foo">1${'A'}</script>${'B'}`,
-        '<script type="foo">1A</script>B'
+        '<script type="foo">1A</script>B',
       );
       assertRender(
         html`<script type="foo">${'A'}1</script>${'B'}`,
-        '<script type="foo">A1</script>B'
+        '<script type="foo">A1</script>B',
       );
       assertRender(
         html`<script type="foo">${'A'}${'B'}</script>${'C'}`,
-        '<script type="foo">AB</script>C'
+        '<script type="foo">AB</script>C',
       );
       assertRender(
         html`<script type="foo">${'A'}</script><p>${'B'}</p>`,
-        '<script type="foo">A</script><p>B</p>'
+        '<script type="foo">A</script><p>B</p>',
       );
     });
 
@@ -311,14 +311,14 @@ suite('lit-html', () => {
     test('text inside raw text element, after different raw tag', () => {
       assertRender(
         html`<script type="foo"><style></style>"<div a=${'A'}></div>"</script>`,
-        '<script type="foo"><style></style>"<div a=A></div>"</script>'
+        '<script type="foo"><style></style>"<div a=A></div>"</script>',
       );
     });
 
     test('text inside raw text element, after different raw end tag', () => {
       assertRender(
         html`<script type="foo"></style>"<div a=${'A'}></div>"</script>`,
-        '<script type="foo"></style>"<div a=A></div>"</script>'
+        '<script type="foo"></style>"<div a=A></div>"</script>',
       );
     });
 
@@ -329,7 +329,7 @@ suite('lit-html', () => {
     test('attribute after raw text element', () => {
       assertRender(
         html`<script></script><div a=${'A'}></div>`,
-        '<script></script><div a="A"></div>'
+        '<script></script><div a="A"></div>',
       );
     });
 
@@ -352,21 +352,21 @@ suite('lit-html', () => {
     test('second quoted attribute', () => {
       assertRender(
         html`<div a="b" c="${'A'}"></div>`,
-        '<div a="b" c="A"></div>'
+        '<div a="b" c="A"></div>',
       );
     });
 
     test('two quoted attributes', () => {
       assertRender(
         html`<div a="${'A'}" b="${'A'}"></div>`,
-        '<div a="A" b="A"></div>'
+        '<div a="A" b="A"></div>',
       );
     });
 
     test('two unquoted attributes', () => {
       assertRender(
         html`<div a=${'A'} b=${'A'}></div>`,
-        '<div a="A" b="A"></div>'
+        '<div a="A" b="A"></div>',
       );
     });
 
@@ -377,7 +377,7 @@ suite('lit-html', () => {
     test('quoted attribute with markup', () => {
       assertRender(
         html`<div a="<table>${'A'}"></div>`,
-        '<div a="<table>A"></div>'
+        '<div a="<table>A"></div>',
       );
     });
 
@@ -385,7 +385,7 @@ suite('lit-html', () => {
       assertRender(html`<div a="${'A'}">${'A'}</div>`, '<div a="A">A</div>');
       assertRender(
         html`<script type="foo" a="${'A'}">${'A'}</script>`,
-        '<script type="foo" a="A">A</script>'
+        '<script type="foo" a="A">A</script>',
       );
     });
 
@@ -393,7 +393,7 @@ suite('lit-html', () => {
       assertRender(html`<div a=${'A'}>${'A'}</div>`, '<div a="A">A</div>');
       assertRender(
         html`<script type="foo" a=${'A'}>${'A'}</script>`,
-        '<script type="foo" a="A">A</script>'
+        '<script type="foo" a="A">A</script>',
       );
     });
 
@@ -411,7 +411,7 @@ suite('lit-html', () => {
       assertRender(html`<div a="b" ${`c`}></div>`, '<div a="b"></div>');
       assertRender(
         html`<script a="b" ${`c`}></script>`,
-        '<script a="b"></script>'
+        '<script a="b"></script>',
       );
     });
 
@@ -453,7 +453,7 @@ suite('lit-html', () => {
         render(template, container);
         assert.equal(
           stripExpressionMarkers(container.innerHTML),
-          '<><!-- --></>'
+          '<><!-- --></>',
         );
       }
     });
@@ -473,7 +473,7 @@ suite('lit-html', () => {
       // compiled templates.
       assert.equal(
         container.innerHTML.replace(/lit\$[0-9]+\$/g, ''),
-        '<!----><!---->'
+        '<!----><!---->',
       );
     });
 
@@ -486,7 +486,7 @@ suite('lit-html', () => {
       render(html`<!-- <div>${'A'}</div> -->`, container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<!-- <div></div> -->'
+        '<!-- <div></div> -->',
       );
     });
 
@@ -515,10 +515,10 @@ suite('lit-html', () => {
 
     test('renders/updates same template before different `renderBefore` nodes', () => {
       const renderBefore1 = container.appendChild(
-        document.createElement('div')
+        document.createElement('div'),
       );
       const renderBefore2 = container.appendChild(
-        document.createElement('div')
+        document.createElement('div'),
       );
       const template = html`<span></span>`;
       assertRender(template, '<span></span><div></div><div></div>', {
@@ -530,7 +530,7 @@ suite('lit-html', () => {
         '<span></span><div></div><span></span><div></div>',
         {
           renderBefore: renderBefore2,
-        }
+        },
       );
       const renderedNode2 = container.querySelector('span:last-of-type');
       // Ensure updates are handled as expected.
@@ -539,7 +539,7 @@ suite('lit-html', () => {
         '<span></span><div></div><span></span><div></div>',
         {
           renderBefore: renderBefore1,
-        }
+        },
       );
       assert.equal(container.querySelector('span'), renderedNode1);
       assert.equal(container.querySelector('span:last-of-type'), renderedNode2);
@@ -548,7 +548,7 @@ suite('lit-html', () => {
         '<span></span><div></div><span></span><div></div>',
         {
           renderBefore: renderBefore2,
-        }
+        },
       );
       assert.equal(container.querySelector('span'), renderedNode1);
       assert.equal(container.querySelector('span:last-of-type'), renderedNode2);
@@ -567,7 +567,7 @@ suite('lit-html', () => {
       assertRender(template, '<span></span><div></div><span></span>');
       assert.equal(
         container.querySelector('span:last-of-type'),
-        containerRenderedNode
+        containerRenderedNode,
       );
       assert.equal(container.querySelector('span'), beforeRenderedNode);
       assertRender(template, '<span></span><div></div><span></span>', {
@@ -575,7 +575,7 @@ suite('lit-html', () => {
       });
       assert.equal(
         container.querySelector('span:last-of-type'),
-        containerRenderedNode
+        containerRenderedNode,
       );
       assert.equal(container.querySelector('span'), beforeRenderedNode);
     });
@@ -594,7 +594,7 @@ suite('lit-html', () => {
     const assertNoRenderedNodes = () => {
       const children = Array.from(container.querySelector('div')!.childNodes);
       assert.isEmpty(
-        children.filter((node) => node.nodeType !== Node.COMMENT_NODE)
+        children.filter((node) => node.nodeType !== Node.COMMENT_NODE),
       );
     };
 
@@ -637,7 +637,7 @@ suite('lit-html', () => {
       render(html`<div>${Symbol('A')}</div>`, container);
       assert.include(
         container.querySelector('div')!.textContent!.toLowerCase(),
-        'symbol'
+        'symbol',
       );
     });
 
@@ -804,18 +804,18 @@ suite('lit-html', () => {
       assertRender(html`<div foo=${'bar'}></div>`, '<div foo="bar"></div>');
       assertRender(
         html`<div foo=${'bar'}/baz></div>`,
-        '<div foo="bar/baz"></div>'
+        '<div foo="bar/baz"></div>',
       );
     });
 
     test('renders to an unquoted attribute after an unbound unquoted attribute', () => {
       assertRender(
         html`<div foo=bar baz=${'qux'}></div>`,
-        '<div foo="bar" baz="qux"></div>'
+        '<div foo="bar" baz="qux"></div>',
       );
       assertRender(
         html`<div foo=a/b baz=${'qux'}></div>`,
-        '<div foo="a/b" baz="qux"></div>'
+        '<div foo="a/b" baz="qux"></div>',
       );
     });
 
@@ -836,21 +836,21 @@ suite('lit-html', () => {
     test('renders interpolation to an unquoted attribute with nbsp character', () => {
       assertRender(
         html`<div a=${'A'}\u00a0${'B'}></div>`,
-        '<div a="A&nbsp;B"></div>'
+        '<div a="A&nbsp;B"></div>',
       );
     });
 
     test('renders interpolation to a quoted attribute with nbsp character', () => {
       assertRender(
         html`<div a="${'A'}\u00a0${'B'}"></div>`,
-        '<div a="A&nbsp;B"></div>'
+        '<div a="A&nbsp;B"></div>',
       );
     });
 
     test('renders non-latin attribute name and interpolated unquoted non-latin values', () => {
       assertRender(
         html`<div ふ=ふ${'ふ'}ふ フ=フ${'フ'}フ></div>`,
-        '<div ふ="ふふふ" フ="フフフ"></div>'
+        '<div ふ="ふふふ" フ="フフフ"></div>',
       );
     });
 
@@ -868,7 +868,7 @@ suite('lit-html', () => {
     test('renders multiple bindings in two attributes', () => {
       render(
         html`<div foo="a${'b'}c${'d'}e" bar="a${'b'}c${'d'}e"></div>`,
-        container
+        container,
       );
       assertContent('<div foo="abcde" bar="abcde"></div>');
     });
@@ -919,14 +919,14 @@ suite('lit-html', () => {
       render(html`<svg viewBox="0 0 ${size} ${size}"></svg>`, container);
       assert.include(
         stripExpressionComments(container.innerHTML),
-        'viewBox="0 0 100 100"'
+        'viewBox="0 0 100 100"',
       );
 
       // Make sure non-alpha valid attribute name characters are handled
       render(html`<svg view_Box="0 0 ${size} ${size}"></svg>`, container);
       assert.include(
         stripExpressionComments(container.innerHTML),
-        'view_Box="0 0 100 100"'
+        'view_Box="0 0 100 100"',
       );
     });
 
@@ -935,7 +935,7 @@ suite('lit-html', () => {
       // IE and Edge can switch attribute order!
       assert.include(
         ['<div a="b" foo="bar"></div>', '<div foo="bar" a="b"></div>'],
-        stripExpressionComments(container.innerHTML)
+        stripExpressionComments(container.innerHTML),
       );
     });
 
@@ -944,7 +944,7 @@ suite('lit-html', () => {
       // IE and Edge can switch attribute order!
       assert.include(
         ['<div a="b" foo="bar"></div>', '<div foo="bar" a="b"></div>'],
-        stripExpressionComments(container.innerHTML)
+        stripExpressionComments(container.innerHTML),
       );
     });
 
@@ -953,7 +953,7 @@ suite('lit-html', () => {
     test('renders attribute binding after attribute binding that moved', () => {
       render(
         html`<a href="${'foo'}" class="bar"><div id=${'a'}></div></a>`,
-        container
+        container,
       );
       assertContent(`<a class="bar" href="foo"><div id="a"></div></a>`);
     });
@@ -966,7 +966,7 @@ suite('lit-html', () => {
     test('renders multiple bound attributes', () => {
       render(
         html`<div foo="${'Foo'}" bar="${'Bar'}" baz=${'Baz'}></div>`,
-        container
+        container,
       );
       assert.oneOf(stripExpressionComments(container.innerHTML), [
         '<div foo="Foo" bar="Bar" baz="Baz"></div>',
@@ -978,7 +978,7 @@ suite('lit-html', () => {
     test('renders multiple bound attributes without quotes', () => {
       render(
         html`<div foo=${'Foo'} bar=${'Bar'} baz=${'Baz'}></div>`,
-        container
+        container,
       );
       assert.oneOf(stripExpressionComments(container.innerHTML), [
         '<div foo="Foo" bar="Bar" baz="Baz"></div>',
@@ -1025,7 +1025,7 @@ suite('lit-html', () => {
       render(html`<div attribute="it's ${undefined}"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
-        '<div attribute="it\'s "></div>'
+        '<div attribute="it\'s "></div>',
       );
     });
 
@@ -1092,7 +1092,7 @@ suite('lit-html', () => {
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="A"></div>',
-        'A'
+        'A',
       );
       const observer = new MutationObserver(() => {});
       observer.observe(container, {attributes: true, subtree: true});
@@ -1101,7 +1101,7 @@ suite('lit-html', () => {
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="A"></div>',
-        'B'
+        'B',
       );
       assert.isEmpty(observer.takeRecords());
     });
@@ -1114,20 +1114,20 @@ suite('lit-html', () => {
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="A:"></div>',
-        'A'
+        'A',
       );
 
       go('A', 'B');
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="A:B"></div>',
-        'A'
+        'A',
       );
       go(noChange, 'C');
       assert.equal(
         stripExpressionComments(container.innerHTML),
         '<div foo="A:C"></div>',
-        'B'
+        'B',
       );
     });
   });
@@ -1199,6 +1199,17 @@ suite('lit-html', () => {
 
       go(nothing);
       assert.strictEqual((div as any).foo, undefined);
+    });
+
+    test('noChange does not set property', () => {
+      const go = (v: any) =>
+        render(html`<div id="a" .tabIndex=${v}></div>`, container);
+
+      go(noChange);
+      const div = container.querySelector('div')!;
+
+      // If noChange has been interpreted as undefined, tabIndex would be 0
+      assert.strictEqual(div.tabIndex, -1);
     });
 
     test('null sets null', () => {
@@ -1412,7 +1423,7 @@ suite('lit-html', () => {
             <div id="inner"><div></div></div>
           </div>
         `,
-        container
+        container,
       );
       const inner = container.querySelector('#inner')!;
       inner.dispatchEvent(new Event('test'));
@@ -1428,7 +1439,7 @@ suite('lit-html', () => {
           this.dispatchEvent(
             new CustomEvent('test-event', {
               bubbles: true,
-            })
+            }),
           );
         }
       }
@@ -1443,7 +1454,7 @@ suite('lit-html', () => {
         html`<div @test-event=${listener}>
           ${html`<test-element-1></test-element-1>`}
         </div>`,
-        container
+        container,
       );
       assert.isOk(event);
     });
@@ -1493,8 +1504,8 @@ suite('lit-html', () => {
       for (const record of mutationRecords) {
         elementNodes.push(
           ...Array.from(record.addedNodes).filter(
-            (n) => n.nodeType === Node.ELEMENT_NODE
-          )
+            (n) => n.nodeType === Node.ELEMENT_NODE,
+          ),
         );
       }
       assert.equal(elementNodes.length, 1);
@@ -1611,7 +1622,7 @@ suite('lit-html', () => {
         assert.equal(barDiv.textContent, 'bar');
 
         assert.notEqual(fooDiv, barDiv);
-      }
+      },
     );
   });
 
@@ -1630,7 +1641,7 @@ suite('lit-html', () => {
           ['_$litType$']: _$lit_template_1,
           values: ['A'],
         },
-        'A'
+        'A',
       );
     });
 
@@ -1739,12 +1750,12 @@ suite('lit-html', () => {
           render(v: unknown) {
             return v;
           }
-        }
+        },
       );
       render(html`<div>${testDirective('test')}</div>`, container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div>test</div>'
+        '<div>test</div>',
       );
       assert.equal(partInfo!.type, PartType.CHILD);
     });
@@ -1762,7 +1773,7 @@ suite('lit-html', () => {
 
         override update(
           part: ChildPart,
-          [parentId, done]: DirectiveParameters<this>
+          [parentId, done]: DirectiveParameters<this>,
         ) {
           this.part = part;
           // eslint-disable-next-line
@@ -1840,8 +1851,8 @@ suite('lit-html', () => {
         });
         const asyncCheckDiv = Promise.resolve(
           checkPart('div', (e?: unknown) =>
-            e === undefined ? resolve() : reject(e)
-          )
+            e === undefined ? resolve() : reject(e),
+          ),
         );
         const makeTemplate = () =>
           html`
@@ -1931,12 +1942,12 @@ suite('lit-html', () => {
       render(go(), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div foo="A:1"></div>'
+        '<div foo="A:1"></div>',
       );
       render(go(), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div foo="A:2"></div>'
+        '<div foo="A:2"></div>',
       );
     });
 
@@ -1945,12 +1956,12 @@ suite('lit-html', () => {
       render(go(), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div foo="a:A:1:b:B:1"></div>'
+        '<div foo="a:A:1:b:B:1"></div>',
       );
       render(go(), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div foo="a:A:2:b:B:2"></div>'
+        '<div foo="a:A:2:b:B:2"></div>',
       );
     });
 
@@ -1965,12 +1976,12 @@ suite('lit-html', () => {
           render(v: unknown) {
             return v;
           }
-        }
+        },
       );
       render(html`<div title="a ${testDirective(1)} b"></div>`, container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div title="a 1 b"></div>'
+        '<div title="a 1 b"></div>',
       );
       if (partInfo!.type !== PartType.ATTRIBUTE) {
         throw new Error('Expected attribute PartInfo');
@@ -1997,12 +2008,12 @@ suite('lit-html', () => {
           render(v: unknown) {
             return v;
           }
-        }
+        },
       );
       render(html`<div .title="a ${testDirective(1)} b"></div>`, container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div title="a 1 b"></div>'
+        '<div title="a 1 b"></div>',
       );
       if (partInfo!.type !== PartType.PROPERTY) {
         throw new Error('Expected property PartInfo');
@@ -2021,7 +2032,7 @@ suite('lit-html', () => {
               (e.target as any).__clicked = `${value}:${++this.count}`;
             };
           }
-        }
+        },
       );
       const template = (value: string) =>
         html`<div @click=${handle(value)}></div>`;
@@ -2045,7 +2056,7 @@ suite('lit-html', () => {
       };
       render(
         html`<div @test-event=${listener} b=${fireEvent()}></div>`,
-        container
+        container,
       );
       assert.isOk(event);
     });
@@ -2057,7 +2068,7 @@ suite('lit-html', () => {
       };
       render(
         html`<div @test-event=${listener} ${fireEvent()}></div>`,
-        container
+        container,
       );
       assert.isOk(event);
     });
@@ -2071,35 +2082,35 @@ suite('lit-html', () => {
       assertRender(
         // Purposefully adds a self-closing tag slash
         html`<div a=${'a'} ${count('x', log)}/></div>`,
-        `<div a="a"></div>`
+        `<div a="a"></div>`,
       );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
       assertRender(
         html`<div ${count('x', log)} a=${'a'}>${'A'}</div>${'B'}`,
-        `<div a="a">A</div>B`
+        `<div a="a">A</div>B`,
       );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
       assertRender(
         html`<div a=${'a'} ${count('x', log)} b=${'b'}></div>`,
-        `<div a="a" b="b"></div>`
+        `<div a="a" b="b"></div>`,
       );
       assert.deepEqual(log, ['x:1']);
 
       log.length = 0;
       assertRender(
         html`<div ${count('x', log)} ${count('y', log)}></div>`,
-        `<div></div>`
+        `<div></div>`,
       );
       assert.deepEqual(log, ['x:1', 'y:1']);
 
       log.length = 0;
       const template = html`<div ${count('x', log)} a=${'a'} ${count(
         'y',
-        log
+        log,
       )}></div>`;
       assertRender(template, `<div a="a"></div>`);
       assert.deepEqual(log, ['x:1', 'y:1']);
@@ -2127,7 +2138,7 @@ suite('lit-html', () => {
         assert.throws(() => {
           render(
             html`<div @click="${listener}EXTRA_TEXT${listener}"></div>`,
-            container
+            container,
           );
         });
       });
@@ -2149,7 +2160,7 @@ suite('lit-html', () => {
             html`<template>
             <div><div><div><div>${'test'}</div></div></div></div>
             </template>`,
-            container
+            container,
           );
         });
 
@@ -2159,7 +2170,7 @@ suite('lit-html', () => {
             html`<template>
             <div><div><div><div class="${'test'}"></div></div></div></div>
             </template>`,
-            container
+            container,
           );
         });
 
@@ -2169,7 +2180,7 @@ suite('lit-html', () => {
             html`<template>
             <div><div><div><div ${'test'}></div></div></div></div>
             </template>`,
-            container
+            container,
           );
         });
 
@@ -2178,8 +2189,26 @@ suite('lit-html', () => {
           html`<template id=${'test'}>
           <div>Static content is ok</div>
             </template>`,
-          container
+          container,
         );
+      });
+
+      skipTestIfCompiled('Duplicate attributes throw', () => {
+        assert.throws(() => {
+          render(
+            html`<input ?disabled=${true} ?disabled=${false} fooAttribute=${'potato'}>`,
+            container,
+          );
+        }, `Detected duplicate attribute bindings. This occurs if your template has duplicate attributes on an element tag. For example "<input ?disabled=\${true} ?disabled=\${false}>" contains a duplicate "disabled" attribute. The error was detected in the following template: \n\`<input ?disabled=\${...} ?disabled=\${...} fooAttribute=\${...}>\``);
+      });
+
+      test('Matching attribute bindings across elements should not throw', () => {
+        assert.doesNotThrow(() => {
+          render(
+            html`<input ?disabled=${true}><input ?disabled=${false}>`,
+            container,
+          );
+        });
       });
 
       test('Expressions inside nested templates throw in dev mode', () => {
@@ -2187,7 +2216,7 @@ suite('lit-html', () => {
         assert.throws(() => {
           render(
             html`<template><template>${'test'}</template></template>`,
-            container
+            container,
           );
         });
 
@@ -2195,7 +2224,7 @@ suite('lit-html', () => {
         assert.throws(() => {
           render(
             html`<template><div><template>${'test'}</template></template></div>`,
-            container
+            container,
           );
         });
 
@@ -2205,7 +2234,7 @@ suite('lit-html', () => {
             html`<template><template>
             <div><div><div><div>${'test'}</div></div></div></div>
             </template></template>`,
-            container
+            container,
           );
         });
 
@@ -2215,7 +2244,7 @@ suite('lit-html', () => {
             html`<template><template>
             <div><div><div><div class="${'test'}"></div></div></div></div>
             </template></template>`,
-            container
+            container,
           );
         });
 
@@ -2225,7 +2254,7 @@ suite('lit-html', () => {
             html`<template><template>
             <div><div><div><div ${'test'}></div></div></div></div>
             </template></template>`,
-            container
+            container,
           );
         });
 
@@ -2234,7 +2263,7 @@ suite('lit-html', () => {
           html`<template id=${'test'}><template>
           <div>Static content is ok</div>
             </template></template>`,
-          container
+          container,
         );
       });
     }
@@ -2260,7 +2289,7 @@ suite('lit-html', () => {
       render(
         html`<div attr=${hostDirective('attr')}>${hostDirective('node')}</div>`,
         container,
-        {host: hostEl}
+        {host: hostEl},
       );
       assertContent('<div attr="host:attr">host:node</div>');
     });
@@ -2271,7 +2300,7 @@ suite('lit-html', () => {
           render(bool: boolean, v: unknown) {
             return bool ? v : nothing;
           }
-        }
+        },
       );
 
       let bDirectiveCount = 0;
@@ -2285,7 +2314,7 @@ suite('lit-html', () => {
           render(v: unknown) {
             return `[B:${this.count++}:${v}]`;
           }
-        }
+        },
       );
 
       test('nested directives in ChildPart', () => {
@@ -2316,7 +2345,7 @@ suite('lit-html', () => {
             render(bool: boolean, v: unknown) {
               return bool ? v : noChange;
             }
-          }
+          },
         );
 
         test('nested directives in ChildPart', () => {
@@ -2372,7 +2401,7 @@ suite('lit-html', () => {
         render(v: unknown) {
           return `[B:${this.count++}:${v}]`;
         }
-      }
+      },
     );
 
     const syncAsyncDirective = directive(
@@ -2381,15 +2410,15 @@ suite('lit-html', () => {
           this.setValue(x);
           return noChange;
         }
-      }
+      },
     );
 
     test('async directive can call setValue synchronously', () => {
       assertRender(
         html`<div foo=${syncAsyncDirective('test')}>${syncAsyncDirective(
-          'test'
+          'test',
         )}</div>`,
-        '<div foo="test">test</div>'
+        '<div foo="test">test</div>',
       );
     });
 
@@ -2443,7 +2472,7 @@ suite('lit-html', () => {
         html`<div>${aDirective(promise)}</div>`;
       // Async render a TemplateResult containing a AsyncDirective
       let promise: Promise<unknown> = Promise.resolve(
-        html`${disconnectingDirective(log, 'dd', 'dd')}`
+        html`${disconnectingDirective(log, 'dd', 'dd')}`,
       );
       const part = assertRender(template(promise), `<div>initial</div>`);
       await promise;
@@ -2500,7 +2529,7 @@ suite('lit-html', () => {
       const promise = Promise.resolve('resolved1');
       const part = assertRender(
         template(promise),
-        `<div a="**initial##"></div>`
+        `<div a="**initial##"></div>`,
       );
       part.setConnected(false);
       assert.isFalse(aDirectiveInst.isConnected);
@@ -2541,7 +2570,7 @@ suite('lit-html', () => {
         override reconnected() {
           this.log.push('reconnected' + (this.id ? `-${this.id}` : ''));
         }
-      }
+      },
     );
 
     const passthroughDirective = directive(
@@ -2549,7 +2578,7 @@ suite('lit-html', () => {
         render(value: unknown, bool = true) {
           return bool ? value : nothing;
         }
-      }
+      },
     );
 
     test('directives can be disconnected from ChildParts', () => {
@@ -2577,7 +2606,7 @@ suite('lit-html', () => {
       const go = (x: boolean) =>
         render(
           x ? html`${html`${disconnectingDirective(log)}`}` : nothing,
-          container
+          container,
         );
       go(true);
       assert.isEmpty(log);
@@ -2597,7 +2626,7 @@ suite('lit-html', () => {
               right ? disconnectingDirective(log, 'right') : nothing
             }`}`}
           `,
-          container
+          container,
         );
       go(true, true);
       assert.isEmpty(log);
@@ -2625,14 +2654,14 @@ suite('lit-html', () => {
             : html`
             ${html`${html`${passthroughDirective(
               disconnectingDirective(log, 'left'),
-              left
+              left,
             )}`}`}
             ${html`${html`${passthroughDirective(
               disconnectingDirective(log, 'right'),
-              right
+              right,
             )}`}`}
           `,
-          container
+          container,
         );
       go(false, true, true);
       assert.isEmpty(log);
@@ -2663,7 +2692,7 @@ suite('lit-html', () => {
         leftOuter: boolean,
         leftInner: boolean,
         rightOuter: boolean,
-        rightInner: boolean
+        rightInner: boolean,
       ) =>
         render(
           clearAll
@@ -2675,7 +2704,7 @@ suite('lit-html', () => {
                     log,
                     'left-outer',
                     disconnectingDirective(log, 'left-inner'),
-                    leftInner
+                    leftInner,
                   )
                 : nothing
             }`}`}
@@ -2685,12 +2714,12 @@ suite('lit-html', () => {
                     log,
                     'right-outer',
                     disconnectingDirective(log, 'right-inner'),
-                    rightInner
+                    rightInner,
                   )
                 : nothing
             }`}`}
           `,
-          container
+          container,
         );
       go(false, true, true, true, true);
       assert.isEmpty(log);
@@ -2732,7 +2761,7 @@ suite('lit-html', () => {
       const go = (x: boolean) =>
         render(
           x ? html`<div foo=${disconnectingDirective(log)}></div>` : nothing,
-          container
+          container,
         );
       go(true);
       assert.isEmpty(log);
@@ -2747,7 +2776,7 @@ suite('lit-html', () => {
           x
             ? html`${html`<div foo=${disconnectingDirective(log)}></div>`}`
             : nothing,
-          container
+          container,
         );
       go(true);
       assert.isEmpty(log);
@@ -2762,10 +2791,10 @@ suite('lit-html', () => {
           items
             ? items.map(
                 (item) =>
-                  html`<div foo=${disconnectingDirective(log, item)}></div>`
+                  html`<div foo=${disconnectingDirective(log, item)}></div>`,
               )
             : nothing,
-          container
+          container,
         );
       go(['0', '1', '2', '3']);
       assert.isEmpty(log);
@@ -2785,10 +2814,10 @@ suite('lit-html', () => {
                 items,
                 (item) => item,
                 (item) =>
-                  html`<div foo=${disconnectingDirective(log, item)}></div>`
+                  html`<div foo=${disconnectingDirective(log, item)}></div>`,
               )
             : nothing,
-          container
+          container,
         );
       go(['0', '1', '2', '3']);
       assert.isEmpty(log);
@@ -2811,7 +2840,7 @@ suite('lit-html', () => {
               right ? disconnectingDirective(log, 'right') : nothing
             }`}`}
           `,
-          container
+          container,
         );
       };
       const part = go(true, true);
@@ -2844,7 +2873,7 @@ suite('lit-html', () => {
               right ? disconnectingDirective(log, 'right') : nothing
             }></div>`}`}
           `,
-          container
+          container,
         );
       };
       const part = go(true, true);
@@ -2872,14 +2901,14 @@ suite('lit-html', () => {
           html`
             ${html`${html`${left.map(
               (i) =>
-                html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
+                html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`,
             )}`}`}
             ${html`${html`${right.map(
               (i) =>
-                html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
+                html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`,
             )}`}`}
           `,
-          container
+          container,
         );
       };
       const part = go([0, 1], [0, 1]);
@@ -2922,15 +2951,15 @@ suite('lit-html', () => {
             ${html`${html`${repeat(
               left,
               (i) =>
-                html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`
+                html`<div>${disconnectingDirective(log, `left-${i}`)}</div>`,
             )}`}`}
             ${html`${html`${repeat(
               right,
               (i) =>
-                html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`
+                html`<div>${disconnectingDirective(log, `right-${i}`)}</div>`,
             )}`}`}
           `,
-          container
+          container,
         );
       };
       const part = go([0, 1], [0, 1]);
@@ -3039,14 +3068,14 @@ suite('lit-html', () => {
       render(getTemplate('foo'), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div>safeString</div>'
+        '<div>safeString</div>',
       );
 
       const safeFoo = new FakeSanitizedWrapper('foo');
       render(getTemplate(safeFoo), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div>foo</div>'
+        '<div>foo</div>',
       );
 
       assert.deepEqual(sanitizerCalls, [
@@ -3065,7 +3094,7 @@ suite('lit-html', () => {
       render(getTemplate('big'), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div>hello safeString world</div>'
+        '<div>hello safeString world</div>',
       );
 
       const safeBig = new FakeSanitizedWrapper('big');
@@ -3073,7 +3102,7 @@ suite('lit-html', () => {
       render(getTemplate(safeBig), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div>hello big world</div>'
+        '<div>hello big world</div>',
       );
 
       assert.deepEqual(sanitizerCalls, [
@@ -3091,14 +3120,14 @@ suite('lit-html', () => {
       render(getTemplate('bad'), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div attrib="safeString"></div>'
+        '<div attrib="safeString"></div>',
       );
 
       const safe = new FakeSanitizedWrapper('good');
       render(getTemplate(safe), container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div attrib="good"></div>'
+        '<div attrib="good"></div>',
       );
 
       assert.deepEqual(sanitizerCalls, [
@@ -3115,7 +3144,7 @@ suite('lit-html', () => {
       render(html`<div attrib="hello ${'big'} world"></div>`, container);
       assert.equal(
         stripExpressionMarkers(container.innerHTML),
-        '<div attrib="safeString"></div>'
+        '<div attrib="safeString"></div>',
       );
 
       assert.deepEqual(sanitizerCalls, [
@@ -3161,7 +3190,7 @@ suite('lit-html', () => {
     assert.equal(stripExpressionMarkers(container.innerHTML), '');
     assert.isTrue(
       threwError,
-      `Expected an error when rendering a spoofed template result`
+      `Expected an error when rendering a spoofed template result`,
     );
   });
 
@@ -3221,7 +3250,7 @@ suite('lit-html', () => {
         html`<textarea>
         <div><div><div><div>${'test'}</div></div></div></div>
         </textarea>`,
-        container
+        container,
       );
       assertWarning('textarea');
 
@@ -3230,7 +3259,7 @@ suite('lit-html', () => {
         html`<textarea>
         <div><div><div><div class="${'test'}"></div></div></div></div>
         </textarea>`,
-        container
+        container,
       );
       assertWarning('textarea');
 
@@ -3239,7 +3268,7 @@ suite('lit-html', () => {
         html`<textarea>
         <div><div><div><div ${'test'}></div></div></div></div>
         </textarea>`,
-        container
+        container,
       );
       assertWarning('textarea');
 
@@ -3248,7 +3277,7 @@ suite('lit-html', () => {
         html`<textarea id=${'test'}>
         <div>Static content is ok</div>
           </textarea>`,
-        container
+        container,
       );
       assertNoWarning();
     });
@@ -3264,7 +3293,7 @@ suite('lit-html', () => {
 
         html`<h1 attribute="${unsafeStatic('test')}"></h1>`;
         assertWarning('static');
-      }
+      },
     );
   });
 });

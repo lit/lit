@@ -1,5 +1,11 @@
 # @lit-labs/virtualizer
 
+## 2.0.12
+
+### Patch Changes
+
+- [#4427](https://github.com/lit/lit/pull/4427) [`a19a60b8`](https://github.com/lit/lit/commit/a19a60b84c092ed974e5d294a2ece46f4b43dcd4) Thanks [@pdesoyres-cc](https://github.com/pdesoyres-cc)! - Now correctly include `/support/method-interception.js` and `/support/resize-observer-errors.js` artifacts to the published package. Previously these were listed in the package exports but not actually included with the npm published package.
+
 ## 2.0.11
 
 ### Patch Changes

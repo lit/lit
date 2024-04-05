@@ -187,8 +187,8 @@ export const hydrate = (
       container instanceof ShadowRoot
         ? `{container.host.localName}'s shadow root`
         : container instanceof DocumentFragment
-        ? 'DocumentFragment'
-        : container.localName;
+          ? 'DocumentFragment'
+          : container.localName;
     console.error(
       `There should be exactly one root part in a render container, ` +
         `but we didn't find any in ${elementMessage}.`
@@ -437,7 +437,13 @@ const createAttributeParts = (
       state.templatePartIndex++;
     }
   } else {
-    throw new Error('internal error');
+    // TODO(augustjk): This message may need to be updated based on
+    // hydration strategy. See https://github.com/lit/lit/issues/1434
+    throw new Error(
+      `Hydration value mismatch: Primitive found where TemplateResult expected.` +
+        ` This usually occurs due to conditional rendering that resulted in a ` +
+        `different value or template being rendered between the server and client.`
+    );
   }
 };
 

@@ -3926,6 +3926,20 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['div', 'span', 'p'],
   },
 
+  'ElementPart followed by Multiple AttributeParts': {
+    render(x, y) {
+      const ref1 = createRef();
+      return html` <div ${ref(ref1)} x=${x} y=${y}></div> `;
+    },
+    expectations: [
+      {
+        args: ['x', 'y'],
+        html: '<div x="x" y="y"></div>',
+      },
+    ],
+    stableSelectors: ['div'],
+  },
+
   'All part types with at various depths': () => {
     const handler1 = (e: Event) => ((e.target as any).triggered1 = true);
     const handler2 = (e: Event) => ((e.target as any).triggered2 = true);

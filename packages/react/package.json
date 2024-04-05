@@ -1,6 +1,6 @@
 {
   "name": "@lit/react",
-  "version": "1.0.2",
+  "version": "1.0.4",
   "description": "A React component wrapper for web components.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -19,6 +19,10 @@
   "exports": {
     ".": {
       "types": "./development/index.d.ts",
+      "browser": {
+        "development": "./development/index.js",
+        "default": "./index.js"
+      },
       "node": {
         "development": "./node/development/index.js",
         "default": "./node/index.js"
@@ -28,6 +32,10 @@
     },
     "./use-controller.js": {
       "types": "./development/use-controller.d.ts",
+      "browser": {
+        "development": "./development/use-controller.js",
+        "default": "./use-controller.js"
+      },
       "node": {
         "development": "./node/development/use-controller.js",
         "default": "./node/use-controller.js"
@@ -179,7 +187,7 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@lit/reactive-element": "^2.0.0",
+    "@lit/reactive-element": "^2.0.4",
     "@lit-internal/scripts": "^1.0.1",
     "@types/react-dom": "^18.2.6",
     "@types/trusted-types": "^2.0.2",

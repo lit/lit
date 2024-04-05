@@ -64,8 +64,8 @@ export const getPrivacy = (ts: TypeScript, node: ts.Node): Privacy => {
   return isPrivate(ts, node)
     ? 'private'
     : isProtected(ts, node)
-    ? 'protected'
-    : 'public';
+      ? 'protected'
+      : 'public';
 };
 
 export const getBaseTypes = (type: ts.Type): ts.BaseType[] => {

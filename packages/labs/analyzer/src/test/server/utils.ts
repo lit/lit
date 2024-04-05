@@ -206,6 +206,7 @@ export class InMemoryAnalyzer extends Analyzer {
 
 export interface AnalyzerTestContext {
   analyzer: Analyzer;
+  typescript: typeof ts;
   packagePath: AbsolutePath;
   getModule: (name: string) => Module;
 }
@@ -216,30 +217,37 @@ export const setupAnalyzerForTest = (
   pkg: string
 ) => {
   try {
-    const packagePath = fileURLToPath(
-      new URL(`../../test-files/${lang}/${pkg}`, import.meta.url).href
-    ) as AbsolutePath;
-    const analyzer = createPackageAnalyzer(packagePath);
-    const diagnostics = [...analyzer.getDiagnostics()];
-    if (diagnostics.length > 0) {
-      throw makeDiagnosticError(diagnostics);
-    }
-    const getModule = (name: string) =>
-      analyzer.getModule(
-        getSourceFilename(
-          analyzer.path.join(packagePath, name),
-          lang
-        ) as AbsolutePath
-      );
-    ctx.packagePath = packagePath;
-    ctx.analyzer = analyzer;
-    ctx.getModule = getModule;
+    Object.assign(ctx, setupAnalyzerForNodeTest(lang, pkg));
   } catch (error) {
     // Uvu has a bug where it silently ignores failures in before and after,
     // see https://github.com/lukeed/uvu/issues/191.
     console.error('uvu before error', error);
     process.exit(1);
   }
+};
+
+export const setupAnalyzerForNodeTest = (lang: Language, pkg: string) => {
+  const packagePath = fileURLToPath(
+    new URL(`../../test-files/${lang}/${pkg}`, import.meta.url).href
+  ) as AbsolutePath;
+  const analyzer = createPackageAnalyzer(packagePath);
+  const diagnostics = [...analyzer.getDiagnostics()];
+  if (diagnostics.length > 0) {
+    throw makeDiagnosticError(diagnostics);
+  }
+  const getModule = (name: string) =>
+    analyzer.getModule(
+      getSourceFilename(
+        analyzer.path.join(packagePath, name),
+        lang
+      ) as AbsolutePath
+    );
+  return {
+    packagePath,
+    analyzer,
+    typescript: analyzer.typescript,
+    getModule,
+  };
 };
 
 export interface AnalyzerModuleTestContext extends AnalyzerTestContext {

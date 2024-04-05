@@ -26,7 +26,7 @@ const cache = new CompilerHostCache();
  * decorator transform. Check that there are no errors and that the output
  * matches (prettier-formatted).
  */
-function checkTransform(
+async function checkTransform(
   inputTs: string,
   expectedJs: string,
   options: ts.CompilerOptions
@@ -56,7 +56,9 @@ function checkTransform(
     []
   );
 
-  let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
+  let formattedExpected = await prettier.format(expectedJs, {
+    parser: 'typescript',
+  });
   // TypeScript >= 4 will add an empty export statement if there are no imports
   // or exports to ensure this is a module. We don't care about checking this.
   const unformattedActual = (result.code || '')
@@ -64,7 +66,7 @@ function checkTransform(
     .replace(BLANK_LINE_PLACEHOLDER_COMMENT_REGEXP, '\n');
   let formattedActual;
   try {
-    formattedActual = prettier.format(unformattedActual, {
+    formattedActual = await prettier.format(unformattedActual, {
       parser: 'typescript',
     });
   } catch {
@@ -76,8 +78,17 @@ function checkTransform(
   assert.is(formattedActual, formattedExpected, formattedActual);
 }
 
+async function assertRejects(v: Promise<unknown>, message: string | RegExp) {
+  try {
+    await v;
+    assert.unreachable('expected to reject');
+  } catch (e) {
+    assert.match(String(e), message);
+  }
+}
+
 const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
-  test('@customElement', () => {
+  test('@customElement', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {customElement} from 'lit/decorators.js';
@@ -100,10 +111,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     }
     customElements.define('my-element', MyElement);
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@property (no existing constructor)', () => {
+  test('@property (no existing constructor)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {property} from 'lit/decorators.js';
@@ -222,10 +233,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       };
       `;
     }
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@property (existing constructor)', () => {
+  test('@property (existing constructor)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {property} from 'lit/decorators.js';
@@ -339,10 +350,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       };
       `;
     }
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@property (do not create constructor if just getter)', () => {
+  test('@property (do not create constructor if just getter)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {property} from 'lit/decorators.js';
@@ -383,10 +394,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       };
       `;
     }
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@property (merge with existing static properties field)', () => {
+  test('@property (merge with existing static properties field)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {property} from 'lit/decorators.js';
@@ -451,10 +462,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       };
       `;
     }
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@property (merge with existing static properties getter)', () => {
+  test('@property (merge with existing static properties getter)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {property} from 'lit/decorators.js';
@@ -500,10 +511,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@state', () => {
+  test('@state', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {state} from 'lit/decorators.js';
@@ -558,10 +569,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       };
       `;
     }
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@query (non-caching)', () => {
+  test('@query (non-caching)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {query} from 'lit/decorators.js';
@@ -591,10 +602,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       unrelated2() {}
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@query (caching)', () => {
+  test('@query (caching)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {query} from 'lit/decorators.js';
@@ -616,10 +627,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAll', () => {
+  test('@queryAll', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAll} from 'lit/decorators.js';
@@ -649,10 +660,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       unrelated2() {}
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAsync', () => {
+  test('@queryAsync', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAsync} from 'lit/decorators.js';
@@ -683,10 +694,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       unrelated2() {}
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedElements (default slot)', () => {
+  test('@queryAssignedElements (default slot)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedElements} from 'lit/decorators.js';
@@ -718,10 +729,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       unrelated2() {}
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedElements (with slot name)', () => {
+  test('@queryAssignedElements (with slot name)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedElements} from 'lit/decorators.js';
@@ -745,10 +756,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedElements (with flatten)', () => {
+  test('@queryAssignedElements (with flatten)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedElements} from 'lit/decorators.js';
@@ -772,10 +783,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedElements (with selector)', () => {
+  test('@queryAssignedElements (with selector)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedElements} from 'lit/decorators.js';
@@ -801,10 +812,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedElements (with assignedElements identifier)', () => {
+  test('@queryAssignedElements (with assignedElements identifier)', async () => {
     // It doesn't matter if the HTMLSlotElement.assignedElements options are
     // using an identifer as we don't need to extract them.
     const input = `
@@ -836,10 +847,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedElements (with slot and selector identifiers)', () => {
+  test('@queryAssignedElements (with slot and selector identifiers)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedElements} from 'lit/decorators.js';
@@ -871,10 +882,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedElements (shorthand properties)', () => {
+  test('@queryAssignedElements (shorthand properties)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedElements} from 'lit/decorators.js';
@@ -908,10 +919,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedElements (arbitrary inline expressions)', () => {
+  test('@queryAssignedElements (arbitrary inline expressions)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedElements} from 'lit/decorators.js';
@@ -937,10 +948,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedElements (fails if not object literal)', () => {
+  test('@queryAssignedElements (fails if not object literal)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedElements} from 'lit/decorators.js';
@@ -953,13 +964,13 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       listItems: HTMLElement[];
     }
     `;
-    assert.throws(
-      () => checkTransform(input, '', options),
+    await assertRejects(
+      checkTransform(input, '', options),
       /expected to be an inlined object literal/
     );
   });
 
-  test('@queryAssignedElements (fails if not property assignment - spread)', () => {
+  test('@queryAssignedElements (fails if not property assignment - spread)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedElements} from 'lit/decorators.js';
@@ -970,13 +981,13 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       listItems: HTMLElement[];
     }
     `;
-    assert.throws(
-      () => checkTransform(input, '', options),
+    await assertRejects(
+      checkTransform(input, '', options),
       /argument can only include property assignment/
     );
   });
 
-  test('@queryAssignedNodes (with slot name)', () => {
+  test('@queryAssignedNodes (with slot name)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedNodes} from 'lit/decorators.js';
@@ -1000,10 +1011,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedNodes (with flatten)', () => {
+  test('@queryAssignedNodes (with flatten)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedNodes} from 'lit/decorators.js';
@@ -1027,10 +1038,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedNodes (with assignedNodes identifier)', () => {
+  test('@queryAssignedNodes (with assignedNodes identifier)', async () => {
     // It doesn't matter if the HTMLSlotElement.assignedNodes options are
     // using an identifer as we don't need to extract them.
     const input = `
@@ -1060,10 +1071,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedNodes (with slot and selector identifiers)', () => {
+  test('@queryAssignedNodes (with slot and selector identifiers)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedNodes} from 'lit/decorators.js';
@@ -1091,10 +1102,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedNodes (shorthand properties)', () => {
+  test('@queryAssignedNodes (shorthand properties)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedNodes} from 'lit/decorators.js';
@@ -1124,10 +1135,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedNodes (arbitrary inline expressions)', () => {
+  test('@queryAssignedNodes (arbitrary inline expressions)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedNodes} from 'lit/decorators.js';
@@ -1151,10 +1162,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@queryAssignedNodes (fails if not object literal)', () => {
+  test('@queryAssignedNodes (fails if not object literal)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedNodes} from 'lit/decorators.js';
@@ -1167,13 +1178,13 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       listItems: HTMLElement[];
     }
     `;
-    assert.throws(
-      () => checkTransform(input, '', options),
+    await assertRejects(
+      checkTransform(input, '', options),
       /expected to be an inlined object literal/
     );
   });
 
-  test('@queryAssignedNodes (fails if not property assignment - spread)', () => {
+  test('@queryAssignedNodes (fails if not property assignment - spread)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedNodes} from 'lit/decorators.js';
@@ -1184,13 +1195,13 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       listItems: HTMLElement[];
     }
     `;
-    assert.throws(
-      () => checkTransform(input, '', options),
+    await assertRejects(
+      checkTransform(input, '', options),
       /argument can only include property assignment/
     );
   });
 
-  test('@queryAssignedNodes (default slot)', () => {
+  test('@queryAssignedNodes (default slot)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {queryAssignedNodes} from 'lit/decorators.js';
@@ -1222,10 +1233,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       unrelated2() {}
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('private @eventOptions', () => {
+  test('private @eventOptions', async () => {
     const input = `
     import {eventOptions} from 'lit/decorators.js';
     import {LitElement, html} from 'lit';
@@ -1274,10 +1285,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('private @eventOptions with reversed import order', () => {
+  test('private @eventOptions with reversed import order', async () => {
     // Regression test for a bug where import order mattered.
     const input = `
     import {LitElement, html} from 'lit';
@@ -1317,10 +1328,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('private @eventOptions but not an event binding', () => {
+  test('private @eventOptions but not an event binding', async () => {
     const input = `
     import {LitElement, html, svg} from 'lit';
     import {eventOptions} from 'lit/decorators.js';
@@ -1362,10 +1373,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('private @eventOptions but different html tag', () => {
+  test('private @eventOptions but different html tag', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {eventOptions} from 'lit/decorators.js';
@@ -1397,10 +1408,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('public @eventOptions', () => {
+  test('public @eventOptions', async () => {
     const input = `
     import {LitElement, html} from 'lit';
     import {eventOptions} from 'lit/decorators.js';
@@ -1441,10 +1452,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       passive: true
     });
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('public and private @eventOptions', () => {
+  test('public and private @eventOptions', async () => {
     const input = `
     import {LitElement, html} from 'lit';
     import {eventOptions} from 'lit/decorators.js';
@@ -1490,10 +1501,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     }
     Object.assign(MyElement.prototype._public, { capture: true });
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@eventOptions and @property', () => {
+  test('@eventOptions and @property', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {property, eventOptions} from 'lit/decorators.js';
@@ -1551,7 +1562,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       };
       `;
     }
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
   for (const specifier of [
@@ -1561,7 +1572,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     '@lit/reactive-element/decorators/custom-element.js',
     'lit-element/decorators.js',
   ]) {
-    test(`various valid import specifiers [${specifier}]`, () => {
+    test(`various valid import specifiers [${specifier}]`, async () => {
       const input = `
       import {LitElement} from 'lit';
       import {customElement} from '${specifier}';
@@ -1578,7 +1589,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
       customElements.define('my-element', MyElement);
       `;
-      checkTransform(input, expected, options);
+      await checkTransform(input, expected, options);
     });
   }
 
@@ -1589,7 +1600,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     '@lit/reactive-element/decorators/custom-element',
     'lit-element/decorators',
   ]) {
-    test(`various invalid import specifiers [${specifier}]`, () => {
+    test(`various invalid import specifiers [${specifier}]`, async () => {
       const input = `
       import {LitElement} from 'lit';
       import {customElement} from '${specifier}';
@@ -1598,14 +1609,14 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       class MyElement extends LitElement {
       }
       `;
-      assert.throws(
-        () => checkTransform(input, '', options),
+      await assertRejects(
+        checkTransform(input, '', options),
         `Invalid Lit import style. Did you mean '${specifier}.js'?`
       );
     });
   }
 
-  test('only remove imports that will be transformed', () => {
+  test('only remove imports that will be transformed', async () => {
     const input = `
     import {LitElement} from 'lit-element';
     import {customElement} from 'lit-element/decorators.js';
@@ -1622,10 +1633,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     }
     customElements.define('my-element', MyElement);
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test("don't remove existing no-binding import", () => {
+  test("don't remove existing no-binding import", async () => {
     const input = `
     import {LitElement} from 'lit-element';
     import {customElement} from 'lit-element/decorators.js';
@@ -1644,10 +1655,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     }
     customElements.define('my-element', MyElement);
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('ignore non-lit class decorator', () => {
+  test('ignore non-lit class decorator', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {customElement} from './not-lit.js';
@@ -1666,10 +1677,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
 
     MyElement = __decorate([customElement("my-element")], MyElement);
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('ignore non-lit method decorator', () => {
+  test('ignore non-lit method decorator', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {property} from './not-lit.js';
@@ -1703,10 +1714,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       __decorate([property()], MyElement.prototype, "foo", void 0);
       `;
     }
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('aliased class decorator import', () => {
+  test('aliased class decorator import', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {customElement as cabbage} from 'lit/decorators.js';
@@ -1725,10 +1736,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     }
     customElements.define('my-element', MyElement);
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('aliased property decorator import', () => {
+  test('aliased property decorator import', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {property as potato} from 'lit/decorators.js';
@@ -1783,10 +1794,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       };
       `;
     }
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@localized', () => {
+  test('@localized', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {localized} from '@lit/localize';
@@ -1807,10 +1818,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       }
     }
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('@localized (with property)', () => {
+  test('@localized (with property)', async () => {
     const input = `
     import {LitElement} from 'lit';
     import {property} from 'lit/decorators.js';
@@ -1861,20 +1872,20 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       };
       `;
     }
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('unrelated import with no bindings', () => {
+  test('unrelated import with no bindings', async () => {
     const input = `
       import './not-lit.js';
     `;
     const expected = `
       import './not-lit.js';
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('unrelated import with default import', () => {
+  test('unrelated import with default import', async () => {
     const input = `
       import notLit from './not-lit.js';
       console.log(notLit);
@@ -1883,10 +1894,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
       import notLit from './not-lit.js';
       console.log(notLit);
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('related + unrelated import with no bindings', () => {
+  test('related + unrelated import with no bindings', async () => {
     const input = `
       import './not-lit.js';
       import {customElement} from 'lit/decorators.js';
@@ -1894,10 +1905,10 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     const expected = `
       import './not-lit.js';
       `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
-  test('related + unrelated import with default import', () => {
+  test('related + unrelated import with default import', async () => {
     const input = `
     import notLit from './not-lit.js';
     import {customElement} from 'lit/decorators.js';
@@ -1907,7 +1918,7 @@ const tests = (test: uvu.Test<uvu.Context>, options: ts.CompilerOptions) => {
     import notLit from './not-lit.js';
     console.log(notLit);
     `;
-    checkTransform(input, expected, options);
+    await checkTransform(input, expected, options);
   });
 
   test.run();
