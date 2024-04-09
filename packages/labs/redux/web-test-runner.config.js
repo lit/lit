@@ -16,7 +16,9 @@ const replace = fromRollup(rollupReplace);
 const config = {
   rootDir: '.',
   files: ['./test/**/*_test.js'],
-  nodeResolve: true,
+  nodeResolve: {
+    exportConditions: process.env.MODE === 'dev' ? ['development'] : [],
+  },
   preserveSymlinks: true,
   browsers: [
     playwrightLauncher({product: 'chromium'}),
@@ -39,7 +41,7 @@ const config = {
       // Needed for immer.js used by Redux Toolkit.
       // See https://github.com/immerjs/immer/issues/557
       'process.env.NODE_ENV': JSON.stringify(
-        process.env.MODE === 'prod' ? 'production' : 'development'
+        process.env.MODE === 'dev' ? 'development' : 'production'
       ),
     }),
   ],

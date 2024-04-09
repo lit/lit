@@ -57,11 +57,13 @@
       "clean": "if-file-deleted",
       "files": [
         "src/**/*.ts",
-        "tsconfig.json"
+        "tsconfig.json",
+        "tsconfig-std-decorators-test.json"
       ],
       "output": [
         "development/",
         "tsconfig.tsbuildinfo",
+        "tsconfig-std-decorators-test.tsbuildinfo",
         "index.d.ts{,.map}",
         "lib/**/*.d.ts{,.map}",
         "test/**/*.d.ts{,.map}"
@@ -103,7 +105,7 @@
     "test:dev": {
       "command": "node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ./web-test-runner.config.js",
       "dependencies": [
-        "build",
+        "build:ts",
         "../../tests:build"
       ],
       "env": {

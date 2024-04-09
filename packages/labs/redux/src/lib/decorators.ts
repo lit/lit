@@ -11,20 +11,20 @@ import type {Store} from '@reduxjs/toolkit';
 export function select<S extends Store, V>(
   selector: NonNullable<ConnectorOptions<S, V>['selector']>,
   equalityCheck?: ConnectorOptions<S, V>['equalityCheck']
-): ConnectorDecorator;
+): SelectDecorator;
 export function select<S extends Store, V>(
   options: ConnectorOptions<S, V>
-): ConnectorDecorator;
+): SelectDecorator;
 export function select<S extends Store, V>(
   selectorOrOptions:
     | NonNullable<ConnectorOptions<S, V>['selector']>
     | ConnectorOptions<S, V>,
   equalityCheck?: ConnectorOptions<S, V>['equalityCheck']
-): ConnectorDecorator {
-  return <C extends ReactiveElement>(
+): SelectDecorator {
+  return function <C extends ReactiveElement>(
     protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
     nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
-  ) => {
+  ) {
     let options: ConnectorOptions<S, V> = {};
     if (typeof selectorOrOptions === 'object') {
       options = selectorOrOptions;
@@ -46,51 +46,64 @@ export function select<S extends Store, V>(
       };
     } else {
       // Experimental decorators branch
-      (protoOrTarget.constructor as typeof ReactiveElement).addInitializer(
+      (protoOrTarget!.constructor as typeof ReactiveElement).addInitializer(
         (element: ReactiveElement): void => {
           controllerMap.set(element, new Connector(element, options));
         }
       );
-      Object.defineProperty(protoOrTarget, nameOrContext, {
+      const descriptor = {
         get(this: ReactiveElement) {
           return controllerMap.get(this)!.selected;
         },
-      });
-      return;
+      };
+      Object.defineProperty(protoOrTarget, nameOrContext, descriptor);
+      return descriptor;
     }
   };
 }
 
-export function dispatch<S extends Store>(): ConnectorDecorator {
-  return <C extends ReactiveElement>(
-    protoOrTarget: ClassAccessorDecoratorTarget<C, S['dispatch']>,
-    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, S['dispatch']>
-  ) => {
+export function dispatch<S extends Store>(): DispatchDecorator {
+  return function <C extends ReactiveElement>(
+    protoOrTarget: ClassAccessorDecoratorTarget<C, S['dispatch']> | undefined,
+    nameOrContext:
+      | PropertyKey
+      | ClassAccessorDecoratorContext<C, S['dispatch']>
+      | ClassFieldDecoratorContext<C, S['dispatch']>
+  ) {
     // Map of instances to controllers
     const controllerMap = new WeakMap<ReactiveElement, Connector<S, never>>();
     if (typeof nameOrContext === 'object') {
       // Standard decorators branch
-      nameOrContext.addInitializer(function (this: ReactiveElement) {
-        controllerMap.set(this, new Connector(this));
-      });
-      return {
-        get(this: ReactiveElement) {
+      if (nameOrContext.kind === 'field') {
+        return function (this: ReactiveElement) {
+          controllerMap.set(this, new Connector(this));
           return controllerMap.get(this)!.dispatch;
-        },
-      };
+        };
+      } else {
+        // accessor
+        nameOrContext.addInitializer(function (this: ReactiveElement) {
+          controllerMap.set(this, new Connector(this));
+        });
+        return {
+          get(this: ReactiveElement) {
+            return controllerMap.get(this)!.dispatch;
+          },
+        };
+      }
     } else {
       // Experimental decorators branch
-      (protoOrTarget.constructor as typeof ReactiveElement).addInitializer(
+      (protoOrTarget!.constructor as typeof ReactiveElement).addInitializer(
         (element: ReactiveElement): void => {
           controllerMap.set(element, new Connector(element));
         }
       );
-      Object.defineProperty(protoOrTarget, nameOrContext, {
+      const descriptor = {
         get(this: ReactiveElement) {
           return controllerMap.get(this)!.dispatch;
         },
-      });
-      return;
+      };
+      Object.defineProperty(protoOrTarget, nameOrContext, descriptor);
+      return descriptor;
     }
   };
 }
@@ -104,14 +117,15 @@ type Interface<T> = {
   [K in keyof T]: T[K];
 };
 
-type ConnectorDecorator = {
+type SelectDecorator = {
   // legacy
   <
     K extends PropertyKey,
     Proto extends Interface<Omit<ReactiveElement, 'renderRoot'>>,
   >(
     protoOrDescriptor: Proto,
-    name?: K
+    name: K,
+    descriptor?: PropertyDescriptor
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): any;
 
@@ -119,5 +133,26 @@ type ConnectorDecorator = {
   <C extends Interface<Omit<ReactiveElement, 'renderRoot'>>, V>(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
+  ): void;
+};
+
+type DispatchDecorator = {
+  // legacy
+  <
+    K extends PropertyKey,
+    Proto extends Interface<Omit<ReactiveElement, 'renderRoot'>>,
+  >(
+    protoOrDescriptor: Proto,
+    name: K,
+    descriptor?: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any;
+
+  // standard
+  <C extends Interface<Omit<ReactiveElement, 'renderRoot'>>, V>(
+    value: ClassAccessorDecoratorTarget<C, V> | undefined,
+    context:
+      | ClassAccessorDecoratorContext<C, V>
+      | ClassFieldDecoratorContext<C, V>
   ): void;
 };

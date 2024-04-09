@@ -20,15 +20,14 @@
     "noImplicitThis": true,
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": true,
-    "useDefineForClassFields": false,
+    "experimentalDecorators": false,
+    "useDefineForClassFields": true,
     "noImplicitOverride": true,
     "paths": {
       "@esm-bundle/chai": ["../../../local-types/@esm-bundle/chai/index.d.ts"]
     },
     "types": ["mocha"]
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/test/std-decorators/**/*.ts"],
-  "references": [{"path": "./tsconfig-std-decorators-test.json"}]
+  "include": ["src/test/std-decorators/**/*.ts", "src/test/store.ts"],
+  "exclude": []
 }
