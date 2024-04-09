@@ -7,7 +7,7 @@
 import {assert} from '@esm-bundle/chai';
 import {html, LitElement} from 'lit';
 import {ContextProvider} from '@lit/context';
-import {store, increment, toggle, reset} from './store.js';
+import {store, increment, toggle, reset, AppStore} from './store.js';
 
 import {storeContext, Connector} from '@lit-labs/redux';
 
@@ -264,5 +264,23 @@ suite('Connector without provider', () => {
     );
 
     document.body.removeChild(div);
+  });
+});
+
+suite('Connector.withStoreType', () => {
+  test('returns itself', () => {
+    assert.equal(Connector, Connector.withStoreType());
+  });
+
+  // type only test to be checked at compile time
+  test('correctly type checks selector with provided store type', () => {
+    const TypedConnector = Connector.withStoreType<AppStore>();
+    class WithTypedSelector extends LitElement {
+      connector = new TypedConnector(this, {
+        // @ts-expect-error `foo` does not exist on state
+        selector: (state) => state.foo,
+      });
+    }
+    return WithTypedSelector;
   });
 });
