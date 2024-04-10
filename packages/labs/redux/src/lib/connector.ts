@@ -26,7 +26,7 @@ export type ConnectorOptions<S extends Store, V> = {
    * Selector function that takes state and returns a selected value. May use a
    * memoized selector like one created with `reselect`.
    *
-   * If none is provided, the controller will not subscribe the Redux store
+   * If none is provided, the controller will not subscribe to Redux store
    * changes nor provide any selected value. Do this if you only wish to bring
    * in the `dispatch` method to the component.
    */
@@ -66,17 +66,14 @@ export class Connector<S extends Store, V> implements ReactiveController {
    * This allows type checking for the `selector` option, the selected value, as
    * well as the `dispatch` method provided by the connector.
    *
-   * @returns `Connector` constructor with a set store type.
-   *
    * @example
    *
    * ```ts
    * // `AppStore` type gotten from created Redux store
-   * export const TypedConnector = Connector.withStoreType<AppStore>();
+   * export const AppConnector = Connector.withStoreType<AppStore>();
    *
-   * // Usage within compoennt
-   * // `state` will already be typed
-   * new TypedConnector(this, {selector: (state) => state.counter.value});
+   * // Usage within component – `state` will already be typed
+   * new AppConnector(this, {selector: (state) => state.counter.value});
    * ```
    */
   static withStoreType<S extends Store>(): new <V>(
