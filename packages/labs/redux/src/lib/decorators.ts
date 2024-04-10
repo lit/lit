@@ -8,19 +8,49 @@ import {ReactiveElement} from '@lit/reactive-element';
 import {Connector, type ConnectorOptions} from './connector.js';
 import type {Store} from '@reduxjs/toolkit';
 
-export function select<S extends Store, V>(
-  selector: NonNullable<ConnectorOptions<S, V>['selector']>,
-  equalityCheck?: ConnectorOptions<S, V>['equalityCheck']
-): SelectDecorator;
-export function select<S extends Store, V>(
-  options: ConnectorOptions<S, V>
-): SelectDecorator;
-export function select<S extends Store, V>(
+type Select = {
+  /**
+   * Decorator for subscribing to a Redux store and select a value from it. On
+   * state change resulting in a new value, the decorated property will contain
+   * the new value and the component will re-render. Must use in a component
+   * that has the store provided in a context.
+   *
+   * @param selector Function that takes state and returns a selected value to
+   * be accessable.
+   * @param equalityCheck Function that compares selected value with a previous
+   * one. Defaults to triple equals. Provide a custom function if the selector
+   * returns a computed value that requires bespoke checking and is not
+   * memoized.
+   */
+  <S extends Store, V>(
+    selector: NonNullable<ConnectorOptions<S, V>['selector']>,
+    equalityCheck?: ConnectorOptions<S, V>['equalityCheck']
+  ): SelectDecorator;
+
+  /**
+   * Decorator for subscribing  to a Redux store and select a value from it. On
+   * state change resulting in a new value, the decorated property will contain
+   * the new value and the component will re-render. Must use in a component
+   * that has the store provided in a context.
+   *
+   * @param {ConnectorOptions} options Options passed to underlying `Connector`
+   * controller.
+   * @param options.selector Function that takes state and returns a selected
+   * value to be accessable.
+   * @param options.equalityCheck Function that compares selected value with a
+   * previous one. Defaults to triple equals. Provide a custom function if the
+   * selector returns a computed value that requires bespoke checking and is not
+   * memoized.
+   */
+  <S extends Store, V>(options: ConnectorOptions<S, V>): SelectDecorator;
+};
+
+export const select: Select = <S extends Store, V>(
   selectorOrOptions:
     | NonNullable<ConnectorOptions<S, V>['selector']>
     | ConnectorOptions<S, V>,
   equalityCheck?: ConnectorOptions<S, V>['equalityCheck']
-): SelectDecorator {
+): SelectDecorator => {
   return function <C extends ReactiveElement>(
     protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
     nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
@@ -60,9 +90,13 @@ export function select<S extends Store, V>(
       return descriptor;
     }
   };
-}
+};
 
-export function dispatch<S extends Store>(): DispatchDecorator {
+/**
+ * Decorator to obtain a dispatch method from the Redux store. Must use in a
+ * component that has the store provided in a context.
+ */
+export const dispatch = <S extends Store>(): DispatchDecorator => {
   return function <C extends ReactiveElement>(
     protoOrTarget: ClassAccessorDecoratorTarget<C, S['dispatch']> | undefined,
     nameOrContext:
@@ -106,7 +140,7 @@ export function dispatch<S extends Store>(): DispatchDecorator {
       return descriptor;
     }
   };
-}
+};
 
 /**
  * Generates a public interface type that removes private and protected fields.

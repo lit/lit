@@ -13,13 +13,46 @@ import {ContextConsumer} from '@lit/context';
 import {storeContext} from './store-context.js';
 import {type EqualityCheck, tripleEquals} from './equality.js';
 
+/**
+ * Selector function that takes state and returns a selected value.
+ */
 export type Selector<S, V> = (state: S) => V;
 
+/**
+ * Options for thet Connector reactive controller.
+ */
 export type ConnectorOptions<S extends Store, V> = {
+  /**
+   * Selector function that takes state and returns a selected value. May use a
+   * memoized selector like one created with `reselect`.
+   *
+   * If none is provided, the controller will not subscribe the Redux store
+   * changes nor provide any selected value. Do this if you only wish to bring
+   * in the `dispatch` method to the component.
+   */
   selector?: Selector<ReturnType<S['getState']>, V>;
+  /**
+   * Function used to check whether a selected value is different from
+   * previously selected value.
+   *
+   * Defaults to triple equals which will suffice for directly selecting values
+   * out of the state that's updating with immutable pattern, or if using a
+   * memoized selector using a library like `reselect`.
+   *
+   * Provide a custom function here if the selector returns derived data
+   * that's not memoized.
+   */
   equalityCheck?: EqualityCheck;
 };
 
+/**
+ * Reactive controller which subscribes to a Redux store and ties changes to a
+ * custom element's reactive life cycle.
+ *
+ * This controller must be used with a provider that supplies the Redux store
+ * using the `storeContext` from this package using the [Context
+ * Protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md).
+ */
 export class Connector<S extends Store, V> implements ReactiveController {
   private _host: ReactiveControllerHost & HTMLElement;
   private _store!: S;
@@ -28,6 +61,24 @@ export class Connector<S extends Store, V> implements ReactiveController {
   private _unsubscribe?: () => void;
   private _selected?: V;
 
+  /**
+   * Static method to create a typed version of the `Connector` constructor.
+   * This allows type checking for the `selector` option, the selected value, as
+   * well as the `dispatch` method provided by the connector.
+   *
+   * @returns `Connector` constructor with a set store type.
+   *
+   * @example
+   *
+   * ```ts
+   * // `AppStore` type gotten from created Redux store
+   * export const TypedConnector = Connector.withStoreType<AppStore>();
+   *
+   * // Usage within compoennt
+   * // `state` will already be typed
+   * new TypedConnector(this, {selector: (state) => state.counter.value});
+   * ```
+   */
   static withStoreType<S extends Store>(): new <V>(
     host: ReactiveControllerHost & HTMLElement,
     options?: ConnectorOptions<S, V>
@@ -35,10 +86,16 @@ export class Connector<S extends Store, V> implements ReactiveController {
     return this;
   }
 
+  /**
+   * Selected value.
+   */
   get selected() {
     return this._selected as V;
   }
 
+  /**
+   * Method to dispatch an action to the store.
+   */
   get dispatch(): S['dispatch'] {
     return (action) => this._store.dispatch(action);
   }

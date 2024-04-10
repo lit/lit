@@ -7,8 +7,15 @@
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type EqualityCheck<T = any> = (a: T, b: T) => boolean;
 
+/**
+ * Equality function that compares strict equality with `===`.
+ */
 export const tripleEquals: EqualityCheck = (a, b) => a === b;
 
+/**
+ * Equality function that shallowly compares members of complex data types such
+ * as arrays and objects for strict equality.
+ */
 export const shallowEquals: EqualityCheck = (a, b) => {
   if (a === b) {
     return true;
