@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "@lit-labs/redux",
   "version": "0.0.0",
   "description": "A reactive controller for subscribing to a Redux store.",
