@@ -44,14 +44,16 @@
         "build:ts",
         "build:rollup",
         "../../lit:build",
-        "../../reactive-element:build"
+        "../../reactive-element:build",
+        "../../context:build"
       ]
     },
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
         "../../lit:build:ts:types",
-        "../../reactive-element:build:ts:types"
+        "../../reactive-element:build:ts:types",
+        "../../context:build:ts:types"
       ],
       "clean": "if-file-deleted",
       "files": [
