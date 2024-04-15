@@ -1,5 +1,11 @@
 # @lit-labs/context
 
+## 1.1.1
+
+### Patch Changes
+
+- [#4614](https://github.com/lit/lit/pull/4614) [`ab77cc9c`](https://github.com/lit/lit/commit/ab77cc9c83a67b60b42e77cf736fefbc6503f824) - Fix context types to be compatible with WCCG context protocol types.
+
 ## 1.1.0
 
 ### Minor Changes

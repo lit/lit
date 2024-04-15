@@ -1,5 +1,11 @@
 # @lit-labs/cli
 
+## 0.6.4
+
+### Patch Changes
+
+- [#4616](https://github.com/lit/lit/pull/4616) [`e90dd627`](https://github.com/lit/lit/commit/e90dd6274cf702f09c46e622746fc752800e3fe3) - Use a shell when spawning a child process to install packages. This fixes an error that would happen when command is run in Windows with the latest Node.js security fix in v21.7.3.
+
 ## 0.6.3
 
 ### Patch Changes
