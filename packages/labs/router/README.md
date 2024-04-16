@@ -4,7 +4,11 @@ A router for Lit.
 
 ## Status
 
-🚧 `@lit-labs/router` is part of the Lit Labs set of packages - it is published in order to get feedback on the design and not ready for production. Breaking changes are likely to happen frequently. 🚧
+> [!WARNING]
+> 🚧 `@lit-labs/router` is part of the Lit Labs set of packages - it is published in order to get feedback on the design and not ready for production. Breaking changes are likely to happen frequently. 🚧
+
+> [!TIP]
+> [**Lit Router**](#lit-router) is a new Router API for Lit that is designed to be more intuitive and powerful than the current API.
 
 This package requires either a native [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) implementation (which is currently only implemented in Chrome, Edge, and other Chromium browsers) or a URLPattern polyfill, like [`urlpattern-polyfill`](https://github.com/kenchris/urlpattern-polyfill).
 
@@ -243,6 +247,230 @@ In this example, the page can handle URLs `/foo`, `/child/foo` and `/child/bar`.
 ### `routes` Array
 
 `Routes` (and `Router`) have a property named `routes` that is an array of the route configurations. This array is mutable, so code an dynamically add and remove routes. Routes match in order of the array, so the array defines the route precedence.
+
+## Lit Router
+
+**Lit Router** is a new **Router API** for Lit that is designed to be more intuitive and powerful than the current API. This new API contains a number of features that are not present in the current API, such as:
+
+- 🛣️ Basic routing.
+- 🚀 Programmatic navigation.
+- 🌳 Nested routing
+- ⏳ Lazy loading.
+- 🔄🔍 Route params & query.
+- 🚧 Route guards.
+
+### Usage
+
+Creating a single-page application with Lit + Lit Router is a piece of cake! 🍰 With Lit, we're building our application using components, and when we add Lit Router to the mix, all we have to do is assign our components to the routes and let Lit Router work its magic to render them in the right place. ✨ Here's a simple example for you:
+
+**HTML**
+
+Import the `<lit-router>` component in your `index.html` file.
+
+```html
+<lit-router></lit-router>
+```
+
+**JavaScript/Typescript**
+
+Now, let's create a simple example of how to use **Lit Router** in your application.
+
+```ts
+// Import package.
+import '@lit-labs/router';
+
+// Import your static pages.
+import {HomePage} from './pages/home-page.js';
+import './pages/about-page.js';
+
+// Get a router.
+const $router = document.querySelector('lit-router');
+
+// Register your routes.
+$router.setRoutes([
+  {path: '/', component: HomePage},
+  {path: '/about', component: 'about-page'},
+  {
+    path: '/terms',
+    component: () =>
+      import('./pages/terms-page.js').then((module) => module.TermsPage),
+  },
+]);
+```
+
+### Dynamic Routes
+
+Lit Router also provides a simple API to define dynamic routes. We can define dynamic routes of many types. Below are some examples:
+
+```ts
+import {UserPage} from './pages/user-page.js';
+
+const routes: Route[] = [{path: '/users/:id', component: UserPage}];
+```
+
+> [!NOTE]
+> To capture route parameters, you can see it in the section [Route Params & Query](#route-params--query).
+
+> [!WARNING]
+> This package requires either a native [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) implementation (which is currently only implemented in Chrome, Edge, and other Chromium browsers) or a URLPattern polyfill, like [`urlpattern-polyfill`](https://github.com/kenchris/urlpattern-polyfill).
+
+### Lazy Loading
+
+Lazy loading is a technique for loading pages on demand. This means that we only load the page when the user navigates to it. This is very useful when we have a large application and we want to improve the performance of our application. Here's an example:
+
+```ts
+const routes: Route[] = [
+  {
+    path: '/',
+    component: () => import('./pages/home-page.js').then((m) => m.HomePage),
+  },
+];
+```
+
+### Nested Routes
+
+Many times we need to define nested because we have a page that has a sidebar and we want to render the content of the sidebar in a specific place. For this we can use the children property. Here's an example:
+
+```ts
+const routes: Route[] = [
+  {
+    path: '/',
+    component: DashboardPage,
+    children: [{path: '/settings', component: SettingsPage}],
+  },
+];
+```
+
+### Displayed 404 Page
+
+When a user navigates to a page that does not exist, we can display a 404 page. This is very useful because it helps the user understand that the page they are looking for does not exist. Here's an example:
+
+```ts
+const routes: Route[] = [
+  {path: '/', component: HomePage},
+  {path: '/about', component: AboutPage},
+  {path: '*', component: NotFoundPage},
+];
+```
+
+### Programmatic Navigation
+
+Lit Router also provides a simple API for programmatic navigation. You can use the navigate method to `navigate()` to a specific route. Here's an example:
+
+```ts
+// First option.
+import {navigate} from '@lit-labs/router';
+
+navigate({path: '/about'});
+
+// Second option.
+const $router = document.querySelector('lit-router');
+
+$router.navigate({path: '/about'});
+```
+
+### Navigate for History
+
+You can also use the `forward()` & `back()` method to navigate for history. Here's an example:
+
+```ts
+// First option.
+import {forward, back} from '@lit-labs/router';
+
+forward();
+back();
+
+// Second option.
+const $router = document.querySelector('lit-router');
+
+$router.forward();
+$router.back();
+
+// Third option.
+window.history.forward();
+window.history.back();
+```
+
+### Route Params & Query
+
+Lit Router also provides a simple API to get route params and query. You can use the `params()` and `query()` property to get route params and query. Here's an example:
+
+```ts
+// Get all queries.
+// Example: /users?name=Ivan&age=23
+$router.qs(); // { name: 'Ivan', age: '23' }
+
+// Get a specific query.
+// Example: /users?name=Ivan&age=23
+$router.qs('name'); // Ivan
+
+// Get all params.
+// Example: /users/1
+$router.params(); // { id: '1' }
+
+// Get a specific param.
+// Example: /users/1
+$router.params('id'); // 1
+```
+
+### Route Guards
+
+The guards are functions that are executed before entering a route. They are very useful when we want to validate that the user has the necessary permissions to enter a route. Here's an example:
+
+```ts
+// Define your guard
+const isAdminGuard = ({navigate}) => {
+  const user = localStorage.getItem('user');
+
+  if (user && user.role === 'admin') {
+    return true;
+  }
+
+  navigate({path: '/login'});
+  return false;
+};
+
+const routes: Route[] = [
+  {
+    path: '/admin',
+    component: AdminPage,
+    // Execute the guard before entering the route
+    beforeEnter: [isAdminGuard],
+  },
+];
+```
+
+### API
+
+Below is a list of all the methods available on the `Lit Router` API.
+
+#### `.routes()`
+
+Returns the list of routes.
+
+#### `.setRoutes(routes: Partial<RouteConfig>[])`
+
+Method responsible for setting application routes. It receives an array of type `RouteConfig` as a parameter.
+
+#### `.navigate(navigation: Partial<Navigation>, options?: Partial<NavigationOptions>)`
+
+Method responsible for navigating to a specific route. It receives an object of type `Navigation` as a parameter.
+
+#### `.forward()`
+
+Method responsible for navigating forward.
+
+#### `.back()`
+
+Method responsible for navigating back.
+
+#### `.qs(name?: string)`
+
+Method responsible for returning all queries or a specific query.
+
+#### `.params(name?: string)`
+
+Method responsible for returning all params or a specific param.
 
 ## TODO
 

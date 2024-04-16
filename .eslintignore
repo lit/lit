@@ -324,6 +324,11 @@ packages/labs/router/lib/
 packages/labs/router/index.*
 packages/labs/router/router.*
 packages/labs/router/routes.*
+packages/labs/router/route.*
+packages/labs/router/lit-router.*
+packages/labs/router/declarations.*
+packages/labs/router/errors.*
+packages/labs/router/utils.*
 
 packages/labs/scoped-registry-mixin/development/
 packages/labs/scoped-registry-mixin/test/
