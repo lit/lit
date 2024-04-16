@@ -53,7 +53,7 @@ export class ContextRequestEvent<C extends Context<unknown, unknown>>
 {
   readonly context: C;
   readonly callback: ContextCallback<ContextType<C>>;
-  readonly subscribe: boolean;
+  readonly subscribe?: boolean;
 
   /**
    *
