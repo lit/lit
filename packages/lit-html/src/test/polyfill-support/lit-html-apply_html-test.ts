@@ -8,7 +8,7 @@ import 'lit-html/polyfill-support.js';
 // @apply syntax
 import {html as htmlWithApply} from 'lit-html';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('@apply', () => {
   test('styles with css custom properties using @apply render', function () {

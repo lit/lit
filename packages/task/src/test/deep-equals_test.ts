@@ -4,7 +4,7 @@
  * Portions Copyright 2017 Evgeny Poberezkin
  * SPDX-License-Identifier: MIT
  */
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {deepEquals} from '@lit/task/deep-equals.js';
 
 // Test cases copied from fast-deep-equals

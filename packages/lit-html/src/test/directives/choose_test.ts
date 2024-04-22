@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {choose} from 'lit-html/directives/choose.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('choose', () => {
   test('no cases', () => {

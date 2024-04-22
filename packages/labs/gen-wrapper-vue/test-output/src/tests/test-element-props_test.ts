@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {createApp, reactive, h, nextTick} from 'vue';
 import {
   default as ElementProps,

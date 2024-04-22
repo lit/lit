@@ -27,7 +27,7 @@ import {
   DirectiveParameters,
 } from 'lit-html/directive.js';
 import {isCompiledTemplateResult} from 'lit-html/directive-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {
   stripExpressionComments,
   stripExpressionMarkers,
