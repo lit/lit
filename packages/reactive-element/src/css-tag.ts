@@ -161,7 +161,7 @@ export const css = (
 /**
  * Applies the given styles to a `shadowRoot`. When Shadow DOM is
  * available but `adoptedStyleSheets` is not, styles are appended to the
- * `shadowRoot` to [mimic spec behavior](https://github.com/WICG/construct-stylesheets/blob/main/explainer.md#example-usage).
+ * `shadowRoot` to [mimic the native feature](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/adoptedStyleSheets).
  * Note, when shimming is used, any styles that are subsequently placed into
  * the shadowRoot should be placed *before* any shimmed adopted styles. This
  * will match spec behavior that gives adopted sheets precedence over styles in
