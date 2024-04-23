@@ -20,7 +20,6 @@
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "paths": {},
     "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],

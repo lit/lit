@@ -21,7 +21,6 @@
     "allowSyntheticDefaultImports": true,
     "stripInternal": true,
     "noImplicitOverride": true,
-    "paths": {},
     "types": ["mocha", "node", "trusted-types"]
   },
   "include": [

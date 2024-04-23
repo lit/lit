@@ -21,7 +21,6 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "noImplicitOverride": true,
-    "paths": {},
     "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],
