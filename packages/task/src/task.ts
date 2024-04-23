@@ -37,11 +37,14 @@ export const initialState = Symbol();
 
 export type TaskStatus = (typeof TaskStatus)[keyof typeof TaskStatus];
 
-export type StatusRenderer<R, D extends ReadonlyArray<unknown>> = {
-  initial?: (args?: D) => unknown;
-  pending?: (args?: D) => unknown;
-  complete?: (value: R, args?: D) => unknown;
-  error?: (error: unknown, args?: D) => unknown;
+export type StatusRenderer<
+  R,
+  T extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
+> = {
+  initial?: (args?: T) => unknown;
+  pending?: (args?: T) => unknown;
+  complete?: (value: R, args?: T) => unknown;
+  error?: (error: unknown, args?: T) => unknown;
 };
 
 export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
@@ -169,7 +172,7 @@ export class Task<
   T extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
   R = unknown,
 > {
-  private _previousArgs?: T;
+  private _latestArgs?: T;
   private _task: TaskFunction<T, R>;
   private _argsFn?: ArgsFunction<T>;
   private _argsEqual: (oldArgs: T, newArgs: T) => boolean;
@@ -252,7 +255,7 @@ export class Task<
     if ('initialValue' in taskConfig) {
       this._value = taskConfig.initialValue;
       this.status = TaskStatus.COMPLETE;
-      this._previousArgs = this._getArgs?.();
+      this._latestArgs = this._getArgs?.();
     }
   }
 
@@ -290,8 +293,8 @@ export class Task<
    */
   private async _performTask() {
     const args = this._getArgs();
-    const prev = this._previousArgs;
-    this._previousArgs = args;
+    const prev = this._latestArgs;
+    this._latestArgs = args;
     if (
       args !== prev &&
       args !== undefined &&
@@ -316,7 +319,7 @@ export class Task<
 
     // Remember the args for potential future automatic runs.
     // TODO (justinfagnani): add test
-    this._previousArgs = args;
+    this._latestArgs = args;
 
     if (this.status === TaskStatus.PENDING) {
       this._abortController?.abort();
@@ -426,22 +429,22 @@ export class Task<
   render<S extends StatusRenderer<R, T>>(renderer: S) {
     switch (this.status) {
       case TaskStatus.INITIAL:
-        return renderer.initial?.(this._previousArgs) as MaybeReturnType<
+        return renderer.initial?.(this._latestArgs) as MaybeReturnType<
           S['initial']
         >;
       case TaskStatus.PENDING:
-        return renderer.pending?.(this._previousArgs) as MaybeReturnType<
+        return renderer.pending?.(this._latestArgs) as MaybeReturnType<
           S['pending']
         >;
       case TaskStatus.COMPLETE:
         return renderer.complete?.(
           this.value!,
-          this._previousArgs
+          this._latestArgs
         ) as MaybeReturnType<S['complete']>;
       case TaskStatus.ERROR:
         return renderer.error?.(
           this.error,
-          this._previousArgs
+          this._latestArgs
         ) as MaybeReturnType<S['error']>;
       default:
         throw new Error(`Unexpected status: ${this.status}`);
