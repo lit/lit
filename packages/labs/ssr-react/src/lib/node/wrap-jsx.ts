@@ -9,7 +9,17 @@ import type {jsxDEV} from 'react/jsx-dev-runtime';
 import {createElement, type ReactNode, type ElementType} from 'react';
 import {renderCustomElement} from './render-custom-element.js';
 import {isCustomElement} from '../utils.js';
+import {collectResultSync} from '@lit-labs/ssr/lib/render-result.js';
 
+/**
+ * Produces a wrapped jsx-runtime `jsx` function that will server render Lit
+ * components' shadow DOM.
+ *
+ * @param originalJsx The original `jsx` function to wrap.
+ * @param originalJsxs The original `jsxs` function to be used for creating
+ * React elements with static children.
+ * @returns Wrapped `jsx` function to be used for production builds.
+ */
 export function wrapJsx(originalJsx: typeof jsx, originalJsxs: typeof jsxs) {
   return function litPatchedJsx<P extends {children?: ReactNode}>(
     type: ElementType<P>,
@@ -24,7 +34,7 @@ export function wrapJsx(originalJsx: typeof jsx, originalJsxs: typeof jsxs) {
         const templateShadowRoot = createElement('template', {
           ...templateAttributes,
           dangerouslySetInnerHTML: {
-            __html: [...shadowContents].join(''),
+            __html: collectResultSync(shadowContents),
           },
         });
 
@@ -43,6 +53,13 @@ export function wrapJsx(originalJsx: typeof jsx, originalJsxs: typeof jsxs) {
   };
 }
 
+/**
+ * Produces a wrapped jsx-runtime `jsxs` function that will server render Lit
+ * components' shadow DOM.
+ *
+ * @param originalJsxs The original `jsxs` function to wrap.
+ * @returns Wrapped `jsxs` function to be used for production builds.
+ */
 export function wrapJsxs(originalJsxs: typeof jsxs) {
   return function litPatchedJsxs<P extends {children: ReactNode[]}>(
     type: ElementType<P>,
@@ -76,6 +93,13 @@ export function wrapJsxs(originalJsxs: typeof jsxs) {
   };
 }
 
+/**
+ * Produces a wrapped jsx-dev-runtime `jsxDEV` function that will server render
+ * Lit components' shadow DOM.
+ *
+ * @param originalJsxDEV The original `jsxDEV` function to wrap.
+ * @returns Wrapped `jsxs` function to be used for development builds.
+ */
 export function wrapJsxDev(originalJsxDEV: typeof jsxDEV) {
   return function litPatchedJsxDev<
     P extends {children?: ReactNode[] | ReactNode},

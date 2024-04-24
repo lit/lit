@@ -14,7 +14,7 @@ To get React SSR to deeply render Lit components, we'll need React JSX code to c
 
 ### Monkey patching React element creation (recommended)
 
-This package provides the `@lit-labs/ssr-react/enable-lit-ssr.js` module which, when imported in a server environment, has the side-effect of monkey patching `React.createElement()` and runtime JSX functions to be enhanced to add the declarative shadow DOM output to registered custom elements. This can be imported at the entry point of the application before `React` is imported or any JSX containing Lit components is written.
+This package provides the `@lit-labs/ssr-react/enable-lit-ssr.js` module which, when imported in a server environment, has the side-effect of monkey patching `React.createElement()` and runtime JSX functions to be enhanced to add the declarative shadow DOM output to registered custom elements. This can be imported at the entry point of the application before `React` is imported or any JSX containing Lit components is evaluated.
 
 ```js
 // index.js

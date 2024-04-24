@@ -18,18 +18,18 @@ import {wrapCreateElement} from '../lib/node/wrap-create-element.js';
 import {wrapJsx, wrapJsxDev, wrapJsxs} from '../lib/node/wrap-jsx.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// The `.default ||` is used to get around inconsistent behavior with how
+// The `.default ??` is used to get around inconsistent behavior with how
 // tools like webpack seem to do es module interop.
-Object.assign((React as any).default || React, {
+Object.assign((React as any).default ?? React, {
   createElement: wrapCreateElement(React.createElement),
 });
 if (process.env.NODE_ENV === 'production') {
-  Object.assign((ReactJSXRuntime as any).default || ReactJSXRuntime, {
+  Object.assign((ReactJSXRuntime as any).default ?? ReactJSXRuntime, {
     jsx: wrapJsx(ReactJSXRuntime.jsx, ReactJSXRuntime.jsxs),
     jsxs: wrapJsxs(ReactJSXRuntime.jsxs),
   });
 } else {
-  Object.assign((ReactJSXDevRuntime as any).default || ReactJSXDevRuntime, {
+  Object.assign((ReactJSXDevRuntime as any).default ?? ReactJSXDevRuntime, {
     jsxDEV: wrapJsxDev(ReactJSXDevRuntime.jsxDEV),
   });
 }
