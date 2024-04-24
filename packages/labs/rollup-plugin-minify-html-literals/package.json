@@ -79,7 +79,7 @@
     "all": true
   },
   "dependencies": {
-    "clean-css": "^4.2.1",
+    "clean-css": "^5.3.3",
     "html-minifier": "^4.0.0",
     "magic-string": "^0.25.0",
     "rollup-pluginutils": "^2.8.2",
