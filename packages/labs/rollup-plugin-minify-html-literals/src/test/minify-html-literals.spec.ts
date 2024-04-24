@@ -85,6 +85,10 @@ describe('minify-html-literals', () => {
           font-size: 24px;
         }
 
+        .footer {
+          margin: \${marginSize2} 0;
+        }
+
         \${extra}
       \`;
     }
