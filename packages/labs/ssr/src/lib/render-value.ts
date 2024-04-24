@@ -269,7 +269,7 @@ const REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG =
  *   - Call `renderer.connectedCallback()`
  *   - Emit `renderer.renderAttributes()`
  * - `text`
- *   - Emit end of of open tag `>`
+ *   - Emit end of open tag `>`
  * - `custom-element-shadow`
  *   - Emit `renderer.renderShadow()` (emits `<template shadowroot>` +
  *     recurses to emit `render()`)

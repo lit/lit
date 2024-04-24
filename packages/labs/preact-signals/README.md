@@ -24,7 +24,7 @@ Preact Signals are a good place to start. It has integrations with other librari
 
 `SignalWatcher` is a mixin that makes an element watch all signal accesses during the element's reactive update lifecycle, then triggers an element update when signals change. This includes signals read in `shouldUpdate()`, `willUpdate()`, `update()`, `render()`, `updated()`, `firstUpdated()`, and reactive controller's `hostUpdate()` and `hostUpdated()`.
 
-This effectively makes the the return result of `render()` a computed signal.
+This effectively makes the return result of `render()` a computed signal.
 
 ```ts
 import {LitElement, html} from 'lit';
