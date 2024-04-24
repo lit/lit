@@ -85,11 +85,11 @@ describe('minify-html-literals', () => {
           font-size: 24px;
         }
 
+        \${extra}
+
         .footer {
           margin: \${marginSize2} 0;
         }
-
-        \${extra}
       \`;
     }
 
@@ -131,7 +131,7 @@ describe('minify-html-literals', () => {
     }
 
     function taggedCSSMinify(extra) {
-      return css\`.heading{font-size:24px}\${extra}\`;
+      return css\`.heading{font-size:24px}\${extra} .footer{margin:\${marginSize2} 0}\`;
     }
 
     function cssProperty(property) {
