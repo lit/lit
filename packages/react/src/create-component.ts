@@ -262,6 +262,7 @@ export const createComponent = <
 
     // Props to be passed to React.createElement
     const reactProps: Record<string, unknown> = {};
+    // Props to be set on element with setProperty
     const elementProps: Record<string, unknown> = {};
     // A map of element properties with meta information.
     const elementProperties: Map<PropertyKey, PropertyDeclaration> | undefined =
@@ -273,11 +274,9 @@ export const createComponent = <
         // coerce it to `class` so it's handled correctly.
         reactProps[k === 'className' ? 'class' : k] = v;
         continue;
-      }
-
-      if (eventProps.has(k) || k in elementClass.prototype) {
-        elementProps[k] = v;
+      } else if (eventProps.has(k) || k in elementClass.prototype) {
         if (!renderAttributesOnCreate) {
+          elementProps[k] = v;
           continue;
         }
 
@@ -293,6 +292,7 @@ export const createComponent = <
           elementProperty.attribute === false ||
           (typeof v === 'object' && !toAttribute)
         ) {
+          elementProps[k] = v;
           continue;
         }
 
@@ -307,6 +307,12 @@ export const createComponent = <
         } else if (v) {
           // Only render boolean properties/attributes if they evaluate to true.
           reactProps[attributeName] = '';
+          // Some boolean props like `checked` don't react to mutations after user interaction.
+          // To ensure expectation from React/JSX, we set also the corresponding property in this case.
+          elementProps[k] = v;
+        } else {
+          // We set false for falsy values as we know it is a boolean
+          elementProps[k] = false;
         }
         continue;
       }
