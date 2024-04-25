@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.5
+
+### Patch Changes
+
+- [#4575](https://github.com/lit/lit/pull/4575) [`aa4fc3ef`](https://github.com/lit/lit/commit/aa4fc3eff349b202861e597ef7554934b9eaa19a) - Use a global flag to detect whether `@lit-labs/ssr-react/enable-lit-ssr.js` was used for coordinating props when server rendering components made with `@lit/react`.
+
 ## 1.0.4
 
 ### Patch Changes

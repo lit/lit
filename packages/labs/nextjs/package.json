@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/nextjs",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -20,7 +20,7 @@
     "/lib/"
   ],
   "dependencies": {
-    "@lit-labs/ssr-react": "^0.2.1",
+    "@lit-labs/ssr-react": "^0.3.0",
     "@webcomponents/template-shadowroot": "^0.2.1",
     "imports-loader": "^4.0.1"
   },
