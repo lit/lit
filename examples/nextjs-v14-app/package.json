@@ -1,6 +1,6 @@
 {
   "name": "@lit-examples/nextjs-v14-app",
-  "version": "0.0.0",
+  "version": "0.0.1",
   "private": true,
   "scripts": {
     "dev": "next dev",
@@ -9,7 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
-    "@lit-labs/nextjs": "^0.1.2",
+    "@lit-labs/nextjs": "^0.2.0",
     "@lit/react": "^1.0.0",
     "@types/node": "^18.11.11",
     "@types/react": "^18.0.26",

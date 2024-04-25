@@ -1,5 +1,20 @@
 # @lit-labs/nextjs
 
+## 0.2.0
+
+### Minor Changes
+
+- [#4575](https://github.com/lit/lit/pull/4575) [`aa4fc3ef`](https://github.com/lit/lit/commit/aa4fc3eff349b202861e597ef7554934b9eaa19a) - Add support for Next.js 14 and App Router. No longer support Next.js 12.
+
+  Note: By default, components in the App Router are React Server Components (RSCs). Deep SSR of Lit components does **not** work within server components as they result in React hydration mismatch due to the presence of the `<template>` element in the RSC payload containing the serialized server component tree, and the custom element definitions will not be included with the client bundle either when imported in server component files.
+
+  Make sure any Lit components you wish to use are beyond the `'use client';` boundary. These will still be server rendered for the initial page load just like they did for the Pages Router.
+
+### Patch Changes
+
+- Updated dependencies [[`aa4fc3ef`](https://github.com/lit/lit/commit/aa4fc3eff349b202861e597ef7554934b9eaa19a), [`aa4fc3ef`](https://github.com/lit/lit/commit/aa4fc3eff349b202861e597ef7554934b9eaa19a)]:
+  - @lit-labs/ssr-react@0.3.0
+
 ## 0.1.4
 
 ### Patch Changes
