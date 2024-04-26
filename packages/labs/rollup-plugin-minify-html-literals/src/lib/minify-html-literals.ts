@@ -294,32 +294,48 @@ export function minifyHTMLLiterals(
   templates.forEach((template) => {
     const minifyHTML = shouldMinify(template);
     const minifyCSS = !!strategy.minifyCSS && shouldMinifyCSS(template);
-    if (minifyHTML || minifyCSS) {
+    if (minifyHTML) {
       const placeholder = strategy.getPlaceholder(template.parts);
       if (validate) {
         validate.ensurePlaceholderValid(placeholder);
       }
 
       const combined = strategy.combineHTMLStrings(template.parts, placeholder);
-      let min: string;
-      if (minifyCSS) {
-        const minifyCSSOptions = (
-          (options as DefaultOptions).minifyOptions || {}
-        ).minifyCSS;
-        if (typeof minifyCSSOptions === 'function') {
-          min = minifyCSSOptions(combined);
-        } else if (minifyCSSOptions === false) {
-          min = combined;
-        } else {
-          const cssOptions =
-            typeof minifyCSSOptions === 'object' ? minifyCSSOptions : undefined;
-          min = strategy.minifyCSS!(combined, cssOptions);
+      const min = strategy.minifyHTML(combined, options.minifyOptions);
+
+      const minParts = strategy.splitHTMLByPlaceholder(min, placeholder);
+      if (validate) {
+        validate.ensureHTMLPartsValid(template.parts, minParts);
+      }
+
+      template.parts.forEach((part, index) => {
+        if (part.start < part.end) {
+          // Only overwrite if the literal part has text content
+          ms.overwrite(part.start, part.end, minParts[index]);
         }
+      });
+    } else if (minifyCSS) {
+      const placeholder = 'TEMPLATE_EXPRESSION';
+      if (validate) {
+        validate.ensurePlaceholderValid(placeholder);
+      }
+
+      const combined = strategy.combineHTMLStrings(template.parts, placeholder);
+      let min: string;
+      const minifyCSSOptions = ((options as DefaultOptions).minifyOptions || {})
+        .minifyCSS;
+      if (typeof minifyCSSOptions === 'function') {
+        min = minifyCSSOptions(combined);
+      } else if (minifyCSSOptions === false) {
+        min = combined;
       } else {
-        min = strategy.minifyHTML(combined, options.minifyOptions);
+        const cssOptions =
+          typeof minifyCSSOptions === 'object' ? minifyCSSOptions : undefined;
+        min = strategy.minifyCSS!(combined, cssOptions);
       }
 
       const minParts = strategy.splitHTMLByPlaceholder(min, placeholder);
+
       if (validate) {
         validate.ensureHTMLPartsValid(template.parts, minParts);
       }
