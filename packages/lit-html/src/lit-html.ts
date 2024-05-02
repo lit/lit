@@ -629,14 +629,14 @@ export const svg = tag(SVG_RESULT);
  * ```
  *
  * The `math` *tag function* should only be used for MathML fragments, or
- * elements that would be contained **inside** an `<math>` HTML element. A
- * common error is placing an `<math>` *element* in a template tagged with the
- * `math` tag function. The `<math>` element is an HTML element and should be
- * used within a template tagged with the {@linkcode html} tag function.
+ * elements that would be contained **inside** a `<math>` HTML element. A common
+ * error is placing a `<math>` *element* in a template tagged with the `math`
+ * tag function. The `<math>` element is an HTML element and should be used
+ * within a template tagged with the {@linkcode html} tag function.
  *
  * In LitElement usage, it's invalid to return an MathML fragment from the
  * `render()` method, as the MathML fragment will be contained within the
- * element's shadow root and thus not be properly contained within an `<math>`
+ * element's shadow root and thus not be properly contained within a `<math>`
  * HTML element.
  */
 export const math = tag(MATHML_RESULT);
