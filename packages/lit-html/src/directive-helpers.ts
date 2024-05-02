@@ -44,6 +44,7 @@ export const isPrimitive = (value: unknown): value is Primitive =>
 export const TemplateResultType = {
   HTML: 1,
   SVG: 2,
+  MATHML: 3,
 } as const;
 
 export type TemplateResultType =

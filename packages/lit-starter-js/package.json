@@ -46,7 +46,7 @@
     "@11ty/eleventy-plugin-syntaxhighlight": "^4.0.0",
     "@babel/eslint-parser": "^7.17.0",
     "@custom-elements-manifest/analyzer": "^0.6.3",
-    "@open-wc/testing": "^3.1.5",
+    "@open-wc/testing": "^4.0.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@rollup/plugin-replace": "^5.0.2",
     "@web/dev-server": "^0.1.31",
