@@ -120,18 +120,18 @@ suite('unsafeMath', () => {
       '<math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math>',
     ]);
 
-    // Re-render with a non-unsafemath value
+    // Re-render with a non-unsafeMath value
     render(t(primitive), container);
     assert.oneOf(stripExpressionMarkers(container.innerHTML), [
       '<math>aaa</math>',
       '<math xmlns="http://www.w3.org/1998/Math/MathML">aaa</math>',
     ]);
 
-    // Re-render with unsafemath again
+    // Re-render with unsafeMath again
     render(t(unsafeMath(value)), container);
     assert.oneOf(stripExpressionMarkers(container.innerHTML), [
-      '<math><mi></mi></math>',
-      '<math xmlns="http://www.w3.org/1998/Math/MathML"><mi /></math>',
+      '<math><mi>x</mi></math>',
+      '<math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math>',
     ]);
   });
 });
