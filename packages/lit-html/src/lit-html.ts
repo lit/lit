@@ -961,7 +961,7 @@ class Template {
     this.el = Template.createElement(html, options);
     walker.currentNode = this.el.content;
 
-    // Re-parent SVG nodes into template root
+    // Re-parent SVG or MathML nodes into template root
     if (type === SVG_RESULT || type === MATHML_RESULT) {
       const wrapper = this.el.content.firstChild!;
       wrapper.replaceWith(...wrapper.childNodes);
