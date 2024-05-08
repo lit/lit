@@ -309,7 +309,8 @@ export const createComponent = <
       // element properties in a special bag to be set by the server-side
       // element renderer.
       if (
-        React.createElement.name === 'litPatchedCreateElement' &&
+        (React.createElement.name === 'litPatchedCreateElement' ||
+          globalThis.litSsrReactEnabled) &&
         Object.keys(elementProps).length
       ) {
         // This property needs to remain unminified.

@@ -10,6 +10,7 @@
 import ReactDOMServer from 'react-dom/server';
 
 import '../test-element.js';
+import '../parent-element.js';
 
 import {test} from 'uvu';
 // eslint-disable-next-line import/extensions
