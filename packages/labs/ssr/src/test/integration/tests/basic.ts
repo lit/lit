@@ -30,7 +30,7 @@ import {until} from 'lit/directives/until.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {live} from 'lit/directives/live.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
-import {unsafeMath} from 'lit/directives/unsafe-math.js';
+import {unsafeMathML} from 'lit/directives/unsafe-mathml.js';
 import {unsafeSVG} from 'lit/directives/unsafe-svg.js';
 import {createRef, ref} from 'lit/directives/ref.js';
 
@@ -976,7 +976,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts directive: unsafeMath': {
     render(v) {
-      return html` <math>${unsafeMath(v)}</math> `;
+      return html` <math>${unsafeMathML(v)}</math> `;
     },
     expectations: [
       {

@@ -28,7 +28,7 @@ export const defaultConfig = (options = {}) =>
       'directives/style-map',
       'directives/template-content',
       'directives/unsafe-html',
-      'directives/unsafe-math',
+      'directives/unsafe-mathml',
       'directives/unsafe-svg',
       'directives/until',
       'directives/when',

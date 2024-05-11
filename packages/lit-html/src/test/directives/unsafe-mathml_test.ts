@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {unsafeMath} from 'lit-html/directives/unsafe-math.js';
+import {unsafeMathML} from 'lit-html/directives/unsafe-mathml.js';
 import {render, html, nothing, noChange} from 'lit-html';
 import {stripExpressionMarkers} from '@lit-labs/testing';
 import {assert} from '@esm-bundle/chai';
 
-suite('unsafeMath', () => {
+suite('unsafeMathML', () => {
   let container: HTMLElement;
 
   setup(() => {
@@ -19,7 +19,7 @@ suite('unsafeMath', () => {
   test('renders MathML', () => {
     render(
       // prettier-ignore
-      html`<math>${unsafeMath(
+      html`<math>${unsafeMathML(
           '<mi>x</mi>'
         )}</math>`,
       container,
@@ -33,7 +33,7 @@ suite('unsafeMath', () => {
   });
 
   test('rendering `nothing` renders empty string to content', () => {
-    render(html`<math>before${unsafeMath(nothing)}after</math>`, container);
+    render(html`<math>before${unsafeMathML(nothing)}after</math>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
       '<math>beforeafter</math>',
@@ -42,7 +42,7 @@ suite('unsafeMath', () => {
 
   test('rendering `noChange` does not change the previous content', () => {
     const template = (v: string | typeof noChange) =>
-      html`<math>before${unsafeMath(v)}after</math>`;
+      html`<math>before${unsafeMathML(v)}after</math>`;
     render(template('<mi>Hi</mi>'), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
@@ -56,7 +56,7 @@ suite('unsafeMath', () => {
   });
 
   test('rendering `undefined` renders empty string to content', () => {
-    render(html`<math>before${unsafeMath(undefined)}after</math>`, container);
+    render(html`<math>before${unsafeMathML(undefined)}after</math>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
       '<math>beforeafter</math>',
@@ -64,7 +64,7 @@ suite('unsafeMath', () => {
   });
 
   test('rendering `null` renders empty string to content', () => {
-    render(html`<math>before${unsafeMath(null)}after</math>`, container);
+    render(html`<math>before${unsafeMathML(null)}after</math>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
       '<math>beforeafter</math>',
@@ -73,7 +73,7 @@ suite('unsafeMath', () => {
 
   test('dirty checks primitive values', () => {
     const value = 'aaa';
-    const t = () => html`<math>${unsafeMath(value)}</math>`;
+    const t = () => html`<math>${unsafeMathML(value)}</math>`;
 
     // Initial render
     render(t(), container);
@@ -104,7 +104,7 @@ suite('unsafeMath', () => {
 
   test('throws on non-string values', () => {
     const value = ['aaa'];
-    const t = () => html`<div>${unsafeMath(value as any)}</div>`;
+    const t = () => html`<div>${unsafeMathML(value as any)}</div>`;
     assert.throws(() => render(t(), container));
   });
 
@@ -114,7 +114,7 @@ suite('unsafeMath', () => {
     const t = (content: any) => html`<math>${content}</math>`;
 
     // Initial unsafeMath render
-    render(t(unsafeMath(value)), container);
+    render(t(unsafeMathML(value)), container);
     assert.oneOf(stripExpressionMarkers(container.innerHTML), [
       '<math><mi>x</mi></math>',
       '<math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math>',
@@ -128,7 +128,7 @@ suite('unsafeMath', () => {
     ]);
 
     // Re-render with unsafeMath again
-    render(t(unsafeMath(value)), container);
+    render(t(unsafeMathML(value)), container);
     assert.oneOf(stripExpressionMarkers(container.innerHTML), [
       '<math><mi>x</mi></math>',
       '<math xmlns="http://www.w3.org/1998/Math/MathML"><mi>x</mi></math>',

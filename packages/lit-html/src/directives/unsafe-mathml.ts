@@ -9,7 +9,7 @@ import {UnsafeHTMLDirective} from './unsafe-html.js';
 
 const MATHML_RESULT = 3;
 
-class UnsafeMathDirective extends UnsafeHTMLDirective {
+class UnsafeMathMLDirective extends UnsafeHTMLDirective {
   static override directiveName = 'unsafeMath';
   static override resultType = MATHML_RESULT;
 }
@@ -24,10 +24,10 @@ class UnsafeMathDirective extends UnsafeHTMLDirective {
  * sanitized or escaped, as it may lead to cross-site-scripting
  * vulnerabilities.
  */
-export const unsafeMath = directive(UnsafeMathDirective);
+export const unsafeMathML = directive(UnsafeMathMLDirective);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
  * directive's return type.
  */
-export type {UnsafeMathDirective};
+export type {UnsafeMathMLDirective as UnsafeMathDirective};

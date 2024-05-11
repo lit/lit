@@ -4,4 +4,4 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export * from 'lit-html/directives/unsafe-math.js';
+export * from 'lit-html/directives/unsafe-mathml.js';
