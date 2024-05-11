@@ -4,4 +4,4 @@
 'lit-element': minor
 ---
 
-Add MathML support with the `math` template tag
+Add MathML support with the `mathml` template tag
