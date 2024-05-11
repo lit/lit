@@ -6,7 +6,7 @@
 
 import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
 
-import {html, math, svg, noChange, nothing, Part} from 'lit';
+import {html, mathml, svg, noChange, nothing, Part} from 'lit';
 import {html as staticHtml, literal} from 'lit/static-html.js';
 import {
   directive,
@@ -323,7 +323,7 @@ export const tests: {[name: string]: SSRTest} = {
 
   'ChildPart accepts TemplateResult with MATHML type': {
     render(x: unknown) {
-      return html` <math>${math`<mi>${x}</mi>`}</math> `;
+      return html` <math>${mathml`<mi>${x}</mi>`}</math> `;
     },
     expectations: [
       {

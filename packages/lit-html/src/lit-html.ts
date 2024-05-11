@@ -620,7 +620,7 @@ export const svg = tag(SVG_RESULT);
  * to and update a container.
  *
  * ```ts
- * const num = math`<mn>1</mn>`;
+ * const num = mathml`<mn>1</mn>`;
  *
  * const eq = html`
  *   <math>
@@ -628,9 +628,9 @@ export const svg = tag(SVG_RESULT);
  *   </math>`;
  * ```
  *
- * The `math` *tag function* should only be used for MathML fragments, or
+ * The `mathml` *tag function* should only be used for MathML fragments, or
  * elements that would be contained **inside** a `<math>` HTML element. A common
- * error is placing a `<math>` *element* in a template tagged with the `math`
+ * error is placing a `<math>` *element* in a template tagged with the `mathml`
  * tag function. The `<math>` element is an HTML element and should be used
  * within a template tagged with the {@linkcode html} tag function.
  *
@@ -639,7 +639,7 @@ export const svg = tag(SVG_RESULT);
  * element's shadow root and thus not be properly contained within a `<math>`
  * HTML element.
  */
-export const math = tag(MATHML_RESULT);
+export const mathml = tag(MATHML_RESULT);
 
 /**
  * A sentinel value that signals that a value was handled by a directive and

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html, math, svg, nothing} from 'lit';
+import {html, mathml, svg, nothing} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ref, createRef} from 'lit/directives/ref.js';
@@ -59,7 +59,7 @@ export const svgTemplate = (x: number, y: number, r: number) => svg`<circle cx="
 // prettier-ignore
 export const templateWithSvgTemplate = (x: number, y: number, r: number) => html`<svg>${svgTemplate(x, y, r)}</svg>`;
 // prettier-ignore
-export const mathTemplate = (x: number) => math`<mn>${x}</mn>`;
+export const mathTemplate = (x: number) => mathml`<mn>${x}</mn>`;
 // prettier-ignore
 export const templateWithMathTemplate = (x: number) => html`<math>${mathTemplate(x)}</math>`;
 

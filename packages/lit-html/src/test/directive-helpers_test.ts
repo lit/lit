@@ -12,7 +12,7 @@ import {
   CompiledTemplateResult,
   CompiledTemplate,
   UncompiledTemplateResult,
-  math,
+  mathml,
 } from 'lit-html';
 import {assert} from '@esm-bundle/chai';
 import {stripExpressionComments} from '@lit-labs/testing';
@@ -74,7 +74,7 @@ suite('directive-helpers', () => {
   test('isTemplateResult', () => {
     assert.isTrue(isTemplateResult(html``));
     assert.isTrue(isTemplateResult(svg``));
-    assert.isTrue(isTemplateResult(math``));
+    assert.isTrue(isTemplateResult(mathml``));
     if (isTestFileNotCompiled) {
       assert.isTrue(isTemplateResult(html``, TemplateResultType.HTML));
     } else {
@@ -83,7 +83,7 @@ suite('directive-helpers', () => {
       assert.isFalse(isTemplateResult(html``, TemplateResultType.HTML));
     }
     assert.isTrue(isTemplateResult(svg``, TemplateResultType.SVG));
-    assert.isTrue(isTemplateResult(math``, TemplateResultType.MATHML));
+    assert.isTrue(isTemplateResult(mathml``, TemplateResultType.MATHML));
 
     assert.isFalse(isTemplateResult(null));
     assert.isFalse(isTemplateResult(undefined));

@@ -7,7 +7,7 @@ import {
   ChildPart,
   CompiledTemplateResult,
   html,
-  math,
+  mathml,
   noChange,
   nothing,
   render,
@@ -799,7 +799,7 @@ suite('lit-html', () => {
   suite('MathML', () => {
     test('renders MathML', () => {
       const container = document.createElement('math');
-      const t = math`<mi>x</mi>`;
+      const t = mathml`<mi>x</mi>`;
       render(t, container);
       const mi = container.firstElementChild!;
       assert.equal(mi.tagName, 'mi');
@@ -812,8 +812,8 @@ suite('lit-html', () => {
       staticAssertExtends<TemplateResult, MathMLTemplateResult>();
     });
 
-    test('`math` returns a `MathMLTemplateResult`', () => {
-      staticAssertExtends<MathMLTemplateResult, ReturnType<typeof math>>();
+    test('`mathml` returns a `MathMLTemplateResult`', () => {
+      staticAssertExtends<MathMLTemplateResult, ReturnType<typeof mathml>>();
     });
   });
 
