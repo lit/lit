@@ -948,10 +948,10 @@ export abstract class ReactiveElement
     return attribute === false
       ? undefined
       : typeof attribute === 'string'
-      ? attribute
-      : typeof name === 'string'
-      ? name.toLowerCase()
-      : undefined;
+        ? attribute
+        : typeof name === 'string'
+          ? name.toLowerCase()
+          : undefined;
   }
 
   // Initialize to an unresolved Promise so we can make sure the element has
@@ -1136,7 +1136,7 @@ export abstract class ReactiveElement
    * overridden, `super.attributeChangedCallback(name, _old, value)` must be
    * called.
    *
-   * See [using the lifecycle callbacks](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements#using_the_lifecycle_callbacks)
+   * See [responding to attribute changes](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements#responding_to_attribute_changes)
    * on MDN for more information about the `attributeChangedCallback`.
    * @category attributes
    */
@@ -1211,8 +1211,8 @@ export abstract class ReactiveElement
         typeof options.converter === 'function'
           ? {fromAttribute: options.converter}
           : options.converter?.fromAttribute !== undefined
-          ? options.converter
-          : defaultConverter;
+            ? options.converter
+            : defaultConverter;
       // mark state reflecting
       this.__reflectingProperty = propName;
       this[propName as keyof this] = converter.fromAttribute!(
@@ -1246,6 +1246,12 @@ export abstract class ReactiveElement
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
+      if (DEV_MODE && (name as unknown) instanceof Event) {
+        issueWarning(
+          ``,
+          `The requestUpdate() method was called with an Event as the property name. This is probably a mistake caused by binding this.requestUpdate as an event listener. Instead bind a function that will call it with no arguments: () => this.requestUpdate()`
+        );
+      }
       options ??= (
         this.constructor as typeof ReactiveElement
       ).getPropertyOptions(name);
@@ -1574,7 +1580,7 @@ export abstract class ReactiveElement
    * @category updates
    */
   protected update(_changedProperties: PropertyValues) {
-    // The forEach() expression will only run when when __reflectingProperties is
+    // The forEach() expression will only run when __reflectingProperties is
     // defined, and it returns undefined, setting __reflectingProperties to
     // undefined
     this.__reflectingProperties &&= this.__reflectingProperties.forEach((p) =>
@@ -1663,7 +1669,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(global.reactiveElementVersions ??= []).push('2.0.2');
+(global.reactiveElementVersions ??= []).push('2.0.4');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

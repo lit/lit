@@ -1,0 +1,15 @@
+{
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      // See: https://github.com/microsoft/TypeScript/wiki/Debugging-Language-Service-in-VS-Code
+      "type": "node",
+      "request": "attach",
+      "name": "Attach to VS Code TS Server via Port",
+      "processId": "${command:PickProcess}"
+    }
+  ]
+}

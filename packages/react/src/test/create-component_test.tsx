@@ -334,10 +334,7 @@ suite('createComponent', () => {
       assert.equal(el.getAttribute('id'), 'foo');
       assert.equal(el.id, 'foo');
 
-      // We currently require passing `undefined` to "unset" rather than
-      // omitting the prop
-      // See https://github.com/lit/lit/issues/4227
-      render(<Tag id={undefined} />);
+      render(<Tag />);
       assert.equal(el.getAttribute('id'), null);
       assert.equal(el.id, '');
 
@@ -383,7 +380,7 @@ suite('createComponent', () => {
       assert.equal(el.getAttribute('hidden'), '');
       assert.equal(el.hidden, true);
 
-      render(<Tag hidden={undefined} />);
+      render(<Tag />);
       assert.equal(el.getAttribute('hidden'), null);
       assert.equal(el.hidden, false);
 
@@ -419,7 +416,7 @@ suite('createComponent', () => {
       assert.equal(el.getAttribute('draggable'), 'true');
       assert.equal(el.draggable, true);
 
-      render(<Tag draggable={undefined} />);
+      render(<Tag />);
       assert.equal(el.getAttribute('draggable'), null);
       assert.equal(el.draggable, false);
 
@@ -457,7 +454,7 @@ suite('createComponent', () => {
       render(<Tag aria-checked />);
       assert.equal(el.getAttribute('aria-checked'), 'true');
 
-      render(<Tag aria-checked={undefined} />);
+      render(<Tag />);
       assert.equal(el.getAttribute('aria-checked'), null);
     });
   }
@@ -486,12 +483,12 @@ suite('createComponent', () => {
     barEvent = undefined;
 
     // Clear listener
+    // Explicitly setting `undefined` or omitting prop will clear listeners
     render(<BasicElementComponent onFoo={undefined} />);
     el.fire('foo');
     assert.equal(fooEvent, undefined);
     el.fire('bar');
-    // We do not clear event listeners unless undefined is explicitly passed in
-    assert.equal(barEvent!.type, 'bar');
+    assert.equal(barEvent, undefined);
     fooEvent = undefined;
     barEvent = undefined;
 
@@ -499,8 +496,6 @@ suite('createComponent', () => {
     render(<BasicElementComponent onFoo={onFoo} />);
     el.fire('foo');
     assert.equal(fooEvent!.type, 'foo');
-    el.fire('bar');
-    assert.equal(barEvent!.type, 'bar');
 
     // Replace listener
     render(<BasicElementComponent onFoo={onFoo2} />);
@@ -517,6 +512,18 @@ suite('createComponent', () => {
     el.fire('foo');
     assert.equal(fooEvent!.type, 'foo');
     assert.equal(fooEvent2, undefined);
+  });
+
+  // Regression test for https://github.com/lit/lit/issues/4569
+  test('event prop should not be set on instance', async () => {
+    const handler = () => {};
+    render(<BasicElementComponent onFoo={handler} />);
+    const el = container.querySelector(tagName)!;
+    assert.notProperty(el, 'onFoo');
+
+    // Render again with the same handler
+    render(<BasicElementComponent onFoo={handler} />);
+    assert.notProperty(el, 'onFoo');
   });
 
   test('can listen to native events', async () => {

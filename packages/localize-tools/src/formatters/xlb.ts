@@ -130,14 +130,13 @@ class XlbFormatter implements Formatter {
       }
       indent(messagesNode, 2);
       messagesNode.appendChild(messageNode);
-      let phIdx = 0;
       for (const content of contents) {
         if (typeof content === 'string') {
           messageNode.appendChild(doc.createTextNode(content));
         } else {
-          const {untranslatable} = content;
+          const {untranslatable, index} = content;
           const ph = doc.createElement('ph');
-          ph.setAttribute('name', String(phIdx++));
+          ph.setAttribute('name', String(index));
           ph.appendChild(doc.createTextNode(untranslatable));
           messageNode.appendChild(ph);
         }

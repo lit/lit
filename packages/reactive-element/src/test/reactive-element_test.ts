@@ -3078,7 +3078,7 @@ suite('ReactiveElement', () => {
           }
         > & {
           observedAttributes?: string[];
-        }
+        },
       >(superclass: B) {
         class E extends superclass {
           static override get observedAttributes(): string[] {
@@ -3192,7 +3192,7 @@ suite('ReactiveElement', () => {
           }
         > & {
           observedAttributes?: string[];
-        }
+        },
       >(superclass: B) {
         class E extends superclass {
           static override get observedAttributes(): string[] {

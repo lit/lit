@@ -637,6 +637,7 @@ export interface LitElementExport extends LitElementDeclaration {
 
 export interface PropertyLike extends DeprecatableDescribed {
   name: string;
+  node: ts.Node;
   type: Type | undefined;
   default?: string | undefined;
 }
@@ -648,11 +649,23 @@ export interface Return {
 }
 
 export interface Parameter extends PropertyLike {
+  node: ts.ParameterDeclaration;
   optional?: boolean | undefined;
   rest?: boolean | undefined;
 }
 
 export interface ReactiveProperty extends PropertyLike {
+  /**
+   * The property declaration.
+   *
+   * A ts.PropertyDeclaration if the property was declared as a class field,
+   * or a ts.PropertyAssignment if the property was declared in a static
+   * properties block.
+   */
+  node: ts.PropertyDeclaration | ts.PropertyAssignment;
+
+  optionsNode: ts.ObjectLiteralExpression | undefined;
+
   reflect: boolean;
 
   // TODO(justinfagnani): should we convert into attribute name?

@@ -167,7 +167,7 @@ export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
  */
 export class Task<
   T extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
-  R = unknown
+  R = unknown,
 > {
   private _previousArgs?: T;
   private _task: TaskFunction<T, R>;
@@ -204,7 +204,7 @@ export class Task<
       return this._taskComplete;
     }
 
-    // Generate an in-progress promise if the the status is pending and has been
+    // Generate an in-progress promise if the status is pending and has been
     // cleared by .run().
     if (this.status === TaskStatus.PENDING) {
       this._taskComplete = new Promise((res, rej) => {

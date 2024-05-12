@@ -143,6 +143,7 @@ const getParameter = (
   )[0];
   const p: Parameter = {
     name: param.name.getText(),
+    node: param,
     type: getTypeForNode(param, analyzer),
     ...(paramTag ? parseJSDocDescription(paramTag, analyzer) : {}),
     optional: false,

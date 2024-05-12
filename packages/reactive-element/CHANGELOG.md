@@ -1,5 +1,23 @@
 # Change Log
 
+## 2.0.4
+
+### Patch Changes
+
+- [#4485](https://github.com/lit/lit/pull/4485) [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf) - Add "browser" export condition entrypoints to any package.json files with "node"
+  export conditions. This fixes Node test runners emulating browser environments that were incorrectly loading the
+  "node" entrypoints instead of the browser code.
+- Updated dependencies [[`e901c582`](https://github.com/lit/lit/commit/e901c5829b50b38db9c434e979a8fd215adafea8)]:
+  - @lit-labs/ssr-dom-shim@1.2.0
+
+## 2.0.3
+
+### Patch Changes
+
+- [#4473](https://github.com/lit/lit/pull/4473) [`9a4d569f`](https://github.com/lit/lit/commit/9a4d569f710a3c49409dcc778b71a71a04c4916a) - Add a warning in dev mode when binding this.requestUpdate directly as an event listener.
+
+- [#4413](https://github.com/lit/lit/pull/4413) [`f60a3a2c`](https://github.com/lit/lit/commit/f60a3a2c994f41fc3df1bd8a76451ea185b66e11) - Remove unused internal parameters to `requestUpdate()`
+
 ## 2.0.2
 
 ### Patch Changes

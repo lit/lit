@@ -1,0 +1,31 @@
+{
+  "compilerOptions": {
+    // This matches the package name given in this package.json
+    "plugins": [
+      {
+        "name": "@lit-labs/tsserver-plugin"
+      }
+    ],
+    "target": "es2022",
+    "lib": ["ES2022", "DOM"],
+    "module": "NodeNext",
+    "rootDir": "./",
+    "moduleResolution": "NodeNext",
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "outDir": "./",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "exactOptionalPropertyTypes": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitOverride": true,
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": []
+}

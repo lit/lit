@@ -1,5 +1,29 @@
 # Change Log
 
+## 3.1.3
+
+### Patch Changes
+
+- [#4570](https://github.com/lit/lit/pull/4570) [`bd881370`](https://github.com/lit/lit/commit/bd881370b83d366f7654dd510731242a68949a20) - Fix the lit-html marker length to be consistently 9 characters.
+
+## 3.1.2
+
+### Patch Changes
+
+- [#4523](https://github.com/lit/lit/pull/4523) [`1a32b61e`](https://github.com/lit/lit/commit/1a32b61ecf09c2c2e6efac2735c2c627af793286) - Add a DEV_MODE error to catch duplicate attribute bindings that otherwise create silent errors.
+
+- [#4485](https://github.com/lit/lit/pull/4485) [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf) - Add "browser" export condition entrypoints to any package.json files with "node"
+  export conditions. This fixes Node test runners emulating browser environments that were incorrectly loading the
+  "node" entrypoints instead of the browser code.
+
+- [#4515](https://github.com/lit/lit/pull/4515) [`dca963f7`](https://github.com/lit/lit/commit/dca963f7f5d2f7be91f2f073ebabe92d033b3a25) - Fix a memory leak when patching directive constructors for SSR.
+
+## 3.1.1
+
+### Patch Changes
+
+- [#4409](https://github.com/lit/lit/pull/4409) [`1af7991c`](https://github.com/lit/lit/commit/1af7991c27456c7e6073a3ee6f18f102c2adc026) - asyncReplace correctly re-renders when value is unchanged (#4408)
+
 ## 3.1.0
 
 ### Minor Changes
@@ -306,7 +330,7 @@
 - `render()` no longer clears the container it's rendered to. It now appends to the container by default.
 - Expressions in comments are no longer rendered or updated. See [Valid expression locations](https://lit.dev/docs/templates/expressions/#expression-locations) for more details.
 - Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.
-- Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that `` html`<div class=${['a', 'b']}> `` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
+- Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that ``html`<div class=${['a', 'b']}>`` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
 - Multiple bindings in a single attribute value don't require the attribute value is quoted, as long as there is no whitespace or other attribute-ending character in the attribute value. `` html`<div id=${a}-${b}>` ``
 - The directive and part APIs are significantly different. See [Custom Directives](https://lit.dev/docs/templates/custom-directives/) and the [Upgrade Guide](https://lit.dev/docs/releases/upgrade/#update-custom-directive-implementations) for more details.
 - The `Directive` base class and `directive()` factory function are
@@ -614,8 +638,8 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 - `render()` no longer clears the container it's rendered to. It now appends to the container by default.
 - Expressions in comments are not rendered or updated.
 - Template caching happens per callsite, not per template-tag/callsize pair. This means some rare forms of highly dynamic template tags are no longer supported.
-- Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that `` html`<div class=${['a', 'b']}> `` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
-- Multiple bindings in a single attribute value don't require the attribute value is quoted, as long as there is no whitespace or other attribute-ending character in the attribute value. `` html`<div id=${a}-${b}> ``
+- Arrays and other iterables passed to attribute bindings are not specially handled. Arrays will be rendered with their default toString representation. This means that ``html`<div class=${['a', 'b']}>`` will render `<div class="a,b">` instead of `<div class="a b">`. To get the old behavior, use `array.join(' ')`.
+- Multiple bindings in a single attribute value don't require the attribute value is quoted, as long as there is no whitespace or other attribute-ending character in the attribute value. ``html`<div id=${a}-${b}>``
 - The directive and part APIs are significantly different. See the [README](README.md) for more details.
 
 ### Added

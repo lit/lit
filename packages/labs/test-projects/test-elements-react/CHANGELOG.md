@@ -1,5 +1,26 @@
 # @lit-internal/test-elements-react
 
+## 1.0.6
+
+### Patch Changes
+
+- Updated dependencies [[`aa4fc3ef`](https://github.com/lit/lit/commit/aa4fc3eff349b202861e597ef7554934b9eaa19a)]:
+  - @lit/react@1.0.5
+
+## 1.0.5
+
+### Patch Changes
+
+- Updated dependencies [[`5ed30d47`](https://github.com/lit/lit/commit/5ed30d47f7c2d5574293a9caf73cdf13a1907dcd), [`d68f5c70`](https://github.com/lit/lit/commit/d68f5c705484b9f6ea1f553d4851a9aa6a440db0)]:
+  - @lit/react@1.0.4
+
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies [[`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf)]:
+  - @lit/react@1.0.3
+
 ## 1.0.3
 
 ### Patch Changes

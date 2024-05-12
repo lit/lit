@@ -34,7 +34,7 @@ export interface Options<C extends Context<unknown, unknown>> {
  */
 export class ContextConsumer<
   C extends Context<unknown, unknown>,
-  HostElement extends ReactiveControllerHost & HTMLElement
+  HostElement extends ReactiveControllerHost & HTMLElement,
 > implements ReactiveController
 {
   protected host: HostElement;

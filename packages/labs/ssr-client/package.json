@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/ssr-client",
-  "version": "1.1.5",
+  "version": "1.1.7",
   "description": "Client package for @lit-labs/ssr.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -19,6 +19,10 @@
   "exports": {
     ".": {
       "types": "./development/index.d.ts",
+      "browser": {
+        "development": "./development/index.js",
+        "default": "./index.js"
+      },
       "node": {
         "development": "./node/development/index.js",
         "default": "./node/index.js"
@@ -28,6 +32,10 @@
     },
     "./lit-element-hydrate-support.js": {
       "types": "./development/lit-element-hydrate-support.d.ts",
+      "browser": {
+        "development": "./development/lit-element-hydrate-support.js",
+        "default": "./lit-element-hydrate-support.js"
+      },
       "node": {
         "development": "./node/development/lit-element-hydrate-support.js",
         "default": "./node/lit-element-hydrate-support.js"
@@ -128,9 +136,9 @@
     "@lit-internal/scripts": "^1.0.1"
   },
   "dependencies": {
-    "@lit/reactive-element": "^1.6.1 || ^2.0.0",
-    "lit": "^2.7.0 || ^3.0.0",
-    "lit-html": "^2.7.0 || ^3.0.0"
+    "@lit/reactive-element": "^2.0.4",
+    "lit": "^3.1.2",
+    "lit-html": "^3.1.2"
   },
   "publishConfig": {
     "access": "public"

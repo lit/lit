@@ -210,6 +210,7 @@ packages/labs/eleventy-plugin-lit/test/
 !packages/labs/eleventy-plugin-lit/test/package.json
 
 packages/labs/eslint-plugin/lib/
+packages/labs/eslint-plugin/rules/
 packages/labs/eslint-plugin/test/
 
 packages/labs/eslint-plugin/**/index.js
@@ -336,6 +337,7 @@ packages/labs/ssr-client/lit-element-hydrate-support.*
 
 packages/labs/ssr-dom-shim/index.*
 packages/labs/ssr-dom-shim/lib/
+packages/labs/ssr-dom-shim/test/
 
 packages/labs/ssr-react/node/
 packages/labs/ssr-react/lib/
@@ -358,6 +360,14 @@ packages/labs/testing/web-test-runner-ssr-plugin.*
 packages/labs/testing/lib
 packages/labs/testing/test
 packages/labs/testing/**/.tsbuildinfo-utils
+
+packages/labs/tsserver-plugin/lib/
+packages/labs/tsserver-plugin/test/
+
+packages/labs/tsserver-plugin/**/index.js
+packages/labs/tsserver-plugin/**/index.js.map
+packages/labs/tsserver-plugin/**/index.d.ts
+packages/labs/tsserver-plugin/**/index.d.ts.map
 
 packages/labs/virtualizer/layouts/
 packages/labs/virtualizer/polyfillLoaders/
