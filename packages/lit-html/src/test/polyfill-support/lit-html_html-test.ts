@@ -8,7 +8,7 @@ import {html, render as litRender} from 'lit-html';
 import {ref, createRef} from 'lit-html/directives/ref.js';
 import {repeat} from 'lit-html/directives/repeat.js';
 import {cache} from 'lit-html/directives/cache.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {renderShadowRoot, wrap, shadowRoot} from '../test-utils/shadow-root.js';
 import {html as staticHtml, unsafeStatic} from 'lit-html/static.js';
 

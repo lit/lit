@@ -11,7 +11,7 @@ import {
 } from '@lit/reactive-element';
 import {property} from '@lit/reactive-element/decorators/property.js';
 import {generateElementName} from '../test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('@property', () => {
   let container: HTMLElement;

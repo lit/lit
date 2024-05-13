@@ -23,7 +23,7 @@ import {
   flyAbove,
   flyBelow,
 } from '@lit-labs/motion';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
 // by checking if warning API is available.

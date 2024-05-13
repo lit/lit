@@ -8,7 +8,7 @@ import {LitElement, html, TemplateResult} from 'lit';
 import {property} from 'lit/decorators/property.js';
 
 import {Context, consume, provide} from '@lit/context';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 const simpleContext = 'simple-context' as Context<'simple-context', number>;
 

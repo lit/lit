@@ -15,7 +15,7 @@ import {
 } from '@lit-labs/task';
 import {deepArrayEquals} from '@lit-labs/task/deep-equals.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 // Safari didn't support reasons until 15.4
 const supportsAbortSignalReason = (() => {
