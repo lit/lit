@@ -310,6 +310,12 @@ packages/labs/react/index.*
 packages/labs/react/create-component.*
 packages/labs/react/use-controller.*
 
+packages/labs/redux/development/
+packages/labs/redux/lib/
+packages/labs/redux/test/
+packages/labs/redux/node_modules/
+packages/labs/redux/index.*
+
 packages/labs/rollup-plugin-minify-html-literals/node_modules
 packages/labs/rollup-plugin-minify-html-literals/coverage
 packages/labs/rollup-plugin-minify-html-literals/.nyc_output
