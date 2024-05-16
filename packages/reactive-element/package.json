@@ -220,6 +220,7 @@
     "build:ts:types": "wireit",
     "build:rollup": "wireit",
     "build:babel": "wireit",
+    "build:esbuild": "wireit",
     "check-version": "wireit",
     "checksize": "wireit",
     "prepublishOnly": "npm run check-version",
@@ -326,6 +327,15 @@
         "development/test/decorators-babel"
       ]
     },
+    "build:esbuild": {
+      "command": "esbuild src/test/decorators-modern/**/*.ts --outdir=development/test/decorators-esbuild --target=es2022",
+      "files": [
+        "src/test/decorators-modern/**/*.ts"
+      ],
+      "output": [
+        "development/test/decorators-esbuild"
+      ]
+    },
     "checksize": {
       "command": "rollup -c --environment=CHECKSIZE",
       "dependencies": [
@@ -362,6 +372,7 @@
       "dependencies": [
         "build:ts",
         "build:babel",
+        "build:esbuild",
         "build:ts:std-decorators-tests",
         "../tests:build"
       ],
@@ -454,7 +465,8 @@
     "@lit-internal/scripts": "^1.0.1",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.8.0"
+    "@webcomponents/webcomponentsjs": "^2.8.0",
+    "esbuild": "^0.21.3"
   },
   "typings": "reactive-element.d.ts",
   "directories": {
