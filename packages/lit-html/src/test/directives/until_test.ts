@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {until} from 'lit-html/directives/until.js';
 import {html, nothing, render} from 'lit-html';
 import {Deferred} from '../test-utils/deferred.js';
