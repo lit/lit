@@ -317,10 +317,10 @@
       ]
     },
     "build:babel": {
-      "command": "babel --extensions .ts src/test/std-decorators --out-dir development/test/decorators-babel",
+      "command": "babel --extensions .ts src/test/decorators-modern --out-dir development/test/decorators-babel",
       "files": [
         ".babelrc",
-        "src/test/decorators/**/*.ts"
+        "src/test/decorators-modern/**/*.ts"
       ],
       "output": [
         "development/test/decorators-babel"
@@ -361,6 +361,7 @@
       "command": "MODE=dev node ../tests/run-web-tests.js \"development/test/**/*_test.js\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
+        "build:babel",
         "build:ts:std-decorators-tests",
         "../tests:build"
       ],
