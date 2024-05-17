@@ -10,7 +10,7 @@ import {
   ReactiveController,
 } from '@lit/reactive-element';
 import {generateElementName} from './test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('Reactive controllers', () => {
   class MyController implements ReactiveController {

@@ -12,7 +12,7 @@ import {
   RenderingElement,
   html,
 } from '../test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 const flush =
   window.ShadyDOM && window.ShadyDOM.flush ? window.ShadyDOM.flush : () => {};

@@ -5,7 +5,7 @@
  */
 import {html, render} from 'lit-html';
 import {ref, createRef, RefOrCallback} from 'lit-html/directives/ref.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('ref', () => {
   let container: HTMLDivElement;

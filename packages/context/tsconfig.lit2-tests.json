@@ -4,7 +4,6 @@
     "outDir": "./lit2/",
     "rootDir": "./src",
     "paths": {
-      "@esm-bundle/chai": ["../../local-types/@esm-bundle/chai/index.d.ts"],
       "@lit/context": ["./lit2/lit2-scope/context/index.d.ts"]
     }
   },

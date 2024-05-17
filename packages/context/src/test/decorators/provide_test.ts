@@ -5,7 +5,7 @@
  */
 
 import {Context, consume, provide} from '@lit/context';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {LitElement, TemplateResult, html} from 'lit';
 import {property} from 'lit/decorators.js';
 
