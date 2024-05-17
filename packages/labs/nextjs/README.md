@@ -44,13 +44,11 @@ The following options are supported:
 
 ## Considerations
 
-The plugin has been tested with Next.js versions 12 and 13. It currently does not support usage with the beta `app` directory introduced with version 13. Follow this [issue](https://github.com/lit/lit/issues/3657) for updates on supporting this feature.
+The plugin has been tested with Next.js versions 13 and 14.
 
-The plugin may not work properly if you are providing a custom webpack configuration that modifies `config.externals`. Please file an issue if you find a particular configuration is not working.
+If you are using Next.js App Router, you must make sure any Lit components you wish to use are beyond the `'use client';` boundary. These will still be server rendered for the initial page load just like they did for the Pages Router.
 
-The server rendered output contains HTML with declarative shadow DOM which may require a polyfill for some browsers. See [Enabling Declarative Shadow DOM from `@lit-labs/ssr-react`](../ssr-react/README.md#enabling-declarative-shadow-dom) for more information.
-
-While running the dev server, modifying any module that contains a custom element registration can cause an error that can only be fixed by restarting the dev server. See [issue #3672](https://github.com/lit/lit/issues/3672).
+By default, components in the App Router are React Server Components (RSCs). Deep SSR of Lit components does **not** work within server components as they result in React hydration mismatch due to the presence of the `<template>` element in the RSC payload containing the serialized server component tree, and the custom element definitions will not be included with the client bundle either when imported in server component files.
 
 ## Contributing
 

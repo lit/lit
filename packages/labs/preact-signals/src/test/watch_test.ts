@@ -7,7 +7,7 @@
 import {LitElement, html} from 'lit';
 import {property} from 'lit/decorators.js';
 import {cache} from 'lit/directives/cache.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 import {watch, signal, computed, SignalWatcher} from '../index.js';
 

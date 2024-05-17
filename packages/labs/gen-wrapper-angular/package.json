@@ -62,7 +62,7 @@
     "@lit-labs/gen-utils": "^0.3.0"
   },
   "devDependencies": {
-    "@esm-bundle/chai": "^4.3.4-fix.0",
+    "chai": "^5.1.0",
     "@lit-internal/tests": "0.0.1",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^9.0.0"

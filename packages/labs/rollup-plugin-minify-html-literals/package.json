@@ -89,13 +89,13 @@
     "rollup": "^0.65.2 || ^1.0.0 || ^2.0.0 || ^3.0.0"
   },
   "devDependencies": {
-    "@types/chai": "^4.1.4",
     "@types/clean-css": "^4.2.0",
     "@types/html-minifier": "^3.5.3",
     "@types/mocha": "^5.2.5",
     "@types/node": "^14.14.32",
     "@types/sinon": "^5.0.1",
-    "chai": "^4.1.2",
+    "chai": "^5.1.0",
+    "@types/chai": "^4.3.1",
     "husky": "^0.14.3",
     "mocha": "^7.2.0",
     "nyc": "^15.0.0",

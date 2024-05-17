@@ -5,7 +5,7 @@
  */
 
 import {CSSValues} from '@lit-labs/motion';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 let count = 0;
 export const generateElementName = () => `x-${count++}`;
