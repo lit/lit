@@ -4,4 +4,4 @@
 'lit': patch
 ---
 
-ref value always undefined when disconnected
+The value provided by the `ref()` directive will always be `undefined` when the element is disconnected.
