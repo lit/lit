@@ -53,6 +53,12 @@ const ElementShim = class Element {
     }
     return this.__shadowRoot;
   }
+  get localName() {
+    return (this.constructor as NamedCustomHTMLElementConstructor).__localName;
+  }
+  get tagName() {
+    return this.localName?.toUpperCase();
+  }
   setAttribute(name: string, value: unknown): void {
     // Emulate browser behavior that silently casts all values to string. E.g.
     // `42` becomes `"42"` and `{}` becomes `"[object Object]""`.
@@ -123,6 +129,11 @@ interface CustomHTMLElementConstructor {
   observedAttributes?: string[];
 }
 
+interface NamedCustomHTMLElementConstructor
+  extends CustomHTMLElementConstructor {
+  __localName: string;
+}
+
 type CustomElementRegistration = {
   ctor: {new (): HTMLElement};
   observedAttributes: string[];
@@ -148,17 +159,8 @@ const CustomElementRegistryShim = class CustomElementRegistry {
         );
       }
     }
-    // Polyfill tagName and localName for the component.
-    Object.defineProperties(ctor.prototype, {
-      localName: {
-        value: name,
-        writable: false,
-      },
-      tagName: {
-        value: name.toUpperCase(),
-        writable: false,
-      },
-    });
+    // Provide tagName and localName for the component.
+    (ctor as NamedCustomHTMLElementConstructor).__localName = name;
     this.__definitions.set(name, {
       ctor,
       // Note it's important we read `observedAttributes` in case it is a getter

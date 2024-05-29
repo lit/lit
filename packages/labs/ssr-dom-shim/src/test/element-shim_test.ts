@@ -45,13 +45,32 @@ test('setAttribute silently casts values to a string', () => {
   assert.equal(shimmedEl.getAttribute('tomato'), '[object Object]');
 });
 
-test('localName and tagName should be available', () => {
-  const elementName = 'lit-test';
+test('localName and tagName should be available with constructor from customElements registry', () => {
+  const elementName = 'lit-test-registry';
   customElements.define(elementName, class extends HTMLElement {});
-  const LitTest = customElements.get(elementName)!;
-  const shimmedEl = new LitTest();
+  const LitTestRegistry = customElements.get(elementName)!;
+
+  const shimmedEl = new LitTestRegistry();
   assert.equal(shimmedEl.localName, elementName);
   assert.equal(shimmedEl.tagName, elementName.toUpperCase());
+});
+
+test('localName and tagName should be available when registering with customElements', () => {
+  const elementName = 'lit-test-local';
+  class LitTestLocal extends HTMLElement {}
+  customElements.define(elementName, LitTestLocal);
+
+  const shimmedEl = new LitTestLocal();
+  assert.equal(shimmedEl.localName, elementName);
+  assert.equal(shimmedEl.tagName, elementName.toUpperCase());
+});
+
+test('localName and tagName usage should return undefined if not registered', () => {
+  class LitTestUnregistered extends HTMLElement {}
+
+  const shimmedEl = new LitTestUnregistered();
+  assert.equal(shimmedEl.localName, undefined);
+  assert.equal(shimmedEl.tagName, undefined);
 });
 
 test.run();
