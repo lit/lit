@@ -7,7 +7,7 @@
 import {html, render, nothing, CompiledTemplate} from 'lit-html';
 import {cache} from 'lit-html/directives/cache.js';
 import {stripExpressionComments} from '@lit-labs/testing';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {directive, AsyncDirective} from 'lit-html/async-directive.js';
 
 // For compiled template tests

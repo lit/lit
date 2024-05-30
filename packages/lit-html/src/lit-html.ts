@@ -336,7 +336,7 @@ const boundAttributeSuffix = '$lit$';
 // a valid element name and attribute name. We don't support dynamic names (yet)
 // but this at least ensures that the parse tree is closer to the template
 // intention.
-const marker = `lit$${String(Math.random()).slice(9)}$`;
+const marker = `lit$${Math.random().toFixed(9).slice(2)}$`;
 
 // String used to tell if a comment is a marker comment
 const markerMatch = '?' + marker;
@@ -2161,7 +2161,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(global.litHtmlVersions ??= []).push('3.1.2');
+(global.litHtmlVersions ??= []).push('3.1.3');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

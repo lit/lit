@@ -311,7 +311,7 @@ class RepeatDirective extends Directive {
     //   come first (to ensure we're always working on valid old
     //   parts) and that the final else clause comes last (since
     //   that's where the expensive moves occur). The order of
-    //   remaining clauses is is just a simple guess at which cases
+    //   remaining clauses is just a simple guess at which cases
     //   will be most common.
     //
     // * Note, we could calculate the longest

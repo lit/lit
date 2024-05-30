@@ -5,7 +5,7 @@
  */
 
 import {LitElement} from 'lit';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 import {html, signal} from '../index.js';
 

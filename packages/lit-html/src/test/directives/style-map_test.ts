@@ -7,7 +7,7 @@
 import {AttributePart, html, render} from 'lit-html';
 import {directive} from 'lit-html/directive.js';
 import {StyleInfo, styleMap} from 'lit-html/directives/style-map.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 const ua = window.navigator.userAgent;
 const isChrome41 = ua.indexOf('Chrome/41') > 0;

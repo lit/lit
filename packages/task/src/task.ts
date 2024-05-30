@@ -204,7 +204,7 @@ export class Task<
       return this._taskComplete;
     }
 
-    // Generate an in-progress promise if the the status is pending and has been
+    // Generate an in-progress promise if the status is pending and has been
     // cleared by .run().
     if (this._status === TaskStatus.PENDING) {
       this._taskComplete = new Promise((res, rej) => {

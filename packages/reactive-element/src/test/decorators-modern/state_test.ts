@@ -7,7 +7,7 @@
 import {ReactiveElement, PropertyValues} from '@lit/reactive-element';
 import {state} from '@lit/reactive-element/decorators/state.js';
 import {generateElementName} from '../test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('@state', () => {
   let container: HTMLElement;
