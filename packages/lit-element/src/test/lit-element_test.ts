@@ -12,7 +12,7 @@ import {
   nextFrame,
 } from './test-helpers.js';
 import {stripExpressionComments} from '@lit-labs/testing';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 import {createRef, ref} from 'lit-html/directives/ref.js';
 
