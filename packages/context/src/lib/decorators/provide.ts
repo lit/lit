@@ -40,9 +40,11 @@ export function provide<ValueType>({
 }: {
   context: Context<unknown, ValueType>;
 }): ProvideDecorator<ValueType> {
-  return (<C extends ReactiveElement, V extends ValueType>(
-    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
-    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
+  return ((
+    protoOrTarget: ClassAccessorDecoratorTarget<ReactiveElement, ValueType>,
+    nameOrContext:
+      | PropertyKey
+      | ClassAccessorDecoratorContext<ReactiveElement, ValueType>
   ) => {
     // Map of instances to controllers
     const controllerMap = new WeakMap<
@@ -51,18 +53,18 @@ export function provide<ValueType>({
     >();
     if (typeof nameOrContext === 'object') {
       // Standard decorators branch
-      nameOrContext.addInitializer(function (this: ReactiveElement) {
+      nameOrContext.addInitializer(function () {
         controllerMap.set(this, new ContextProvider(this, {context}));
       });
       return {
         get(this: ReactiveElement) {
-          return protoOrTarget.get.call(this as unknown as C);
+          return protoOrTarget.get.call(this);
         },
-        set(this: ReactiveElement, value: V) {
+        set(this: ReactiveElement, value: ValueType) {
           controllerMap.get(this)?.setValue(value);
-          return protoOrTarget.set.call(this as unknown as C, value);
+          return protoOrTarget.set.call(this, value);
         },
-        init(this: ReactiveElement, value: V) {
+        init(this: ReactiveElement, value: ValueType) {
           controllerMap.get(this)?.setValue(value);
           return value;
         },
@@ -84,10 +86,10 @@ export function provide<ValueType>({
       if (descriptor === undefined) {
         const valueMap = new WeakMap<ReactiveElement, ValueType>();
         newDescriptor = {
-          get: function (this: ReactiveElement) {
+          get(this: ReactiveElement) {
             return valueMap.get(this);
           },
-          set: function (this: ReactiveElement, value: ValueType) {
+          set(this: ReactiveElement, value: ValueType) {
             controllerMap.get(this)!.setValue(value);
             valueMap.set(this, value);
           },
@@ -98,7 +100,7 @@ export function provide<ValueType>({
         const oldSetter = descriptor.set;
         newDescriptor = {
           ...descriptor,
-          set: function (this: ReactiveElement, value: ValueType) {
+          set(this: ReactiveElement, value: ValueType) {
             controllerMap.get(this)!.setValue(value);
             oldSetter?.call(this, value);
           },

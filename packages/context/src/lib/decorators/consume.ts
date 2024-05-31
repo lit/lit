@@ -55,7 +55,7 @@ export function consume<ValueType>({
   ) => {
     if (typeof nameOrContext === 'object') {
       // Standard decorators branch
-      nameOrContext.addInitializer(function (): void {
+      nameOrContext.addInitializer(function () {
         new ContextConsumer(this, {
           context,
           callback: (value) => {
