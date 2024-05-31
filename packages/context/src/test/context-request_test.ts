@@ -14,7 +14,7 @@ import {
   createContext,
   consume,
 } from '@lit/context';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {stripExpressionComments} from '@lit-labs/testing';
 
 const simpleContext = createContext<number>('simple-context');

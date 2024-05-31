@@ -10,7 +10,7 @@ import {createRoot, Root} from 'react-dom/client';
 // eslint-disable-next-line import/extensions
 import {act} from 'react-dom/test-utils';
 import {useController} from '@lit/react/use-controller.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {
   ReactiveController,
   ReactiveControllerHost,
