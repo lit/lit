@@ -2,4 +2,4 @@
 '@lit/context': patch
 ---
 
-Use `target.set` instead of member assignment
+Use `target.set` instead of member assignment in `@consume()` decorator.
