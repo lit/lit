@@ -24,6 +24,7 @@
   "files": [
     "ElementA.*",
     "ElementEvents.*",
+    "ElementMixins.*",
     "ElementProps.*",
     "ElementSlots.*",
     "ElementWithoutProps.*",
