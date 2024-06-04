@@ -1,5 +1,11 @@
 # @lit-labs/virtualizer
 
+## 2.0.13
+
+### Patch Changes
+
+- [#4564](https://github.com/lit/lit/pull/4564) [`6b4b45ff`](https://github.com/lit/lit/commit/6b4b45ffee88e546110a31f946f27eafe364fa42) Thanks [@IMinchev64](https://github.com/IMinchev64)! - Guard top-level `window` with `typeof` check so that importing the code will not throw when imported in non-browser environments without a global `window` defined. Note, this on its own will not server render items inside the virtualizer, but it will no longer error when attempting to do so.
+
 ## 2.0.12
 
 ### Patch Changes
