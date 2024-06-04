@@ -1,5 +1,11 @@
 # @lit-labs/context
 
+## 1.1.2
+
+### Patch Changes
+
+- [#4598](https://github.com/lit/lit/pull/4598) [`7cfb2274`](https://github.com/lit/lit/commit/7cfb2274d8903c5be40ca4dcaf5167a57bb36a32) Thanks [@jun-sheaf](https://github.com/jun-sheaf)! - Use `target.set` instead of member assignment in `@consume()` decorator.
+
 ## 1.1.1
 
 ### Patch Changes
