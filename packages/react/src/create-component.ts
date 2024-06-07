@@ -46,10 +46,11 @@ export type WebComponentProps<I extends HTMLElement> = React.DetailedHTMLProps<
 export type ReactWebComponent<
   I extends HTMLElement,
   E extends EventNames = {},
+  P extends ReactProps = {},
 > = React.ForwardRefExoticComponent<
   // TODO(augustjk): Remove and use `React.PropsWithoutRef` when
   // https://github.com/preactjs/preact/issues/4124 is fixed.
-  PropsWithoutRef<ComponentProps<I, E>> & React.RefAttributes<I>
+  PropsWithoutRef<ComponentProps<I, E, P>> & React.RefAttributes<I>
 >;
 
 // Props derived from custom element class. Currently has limitations of making
@@ -59,14 +60,19 @@ export type ReactWebComponent<
 type ElementProps<I> = Partial<Omit<I, keyof HTMLElement>>;
 
 // Acceptable props to the React component.
-type ComponentProps<I, E extends EventNames = {}> = Omit<
+type ComponentProps<
+  I,
+  E extends EventNames = {},
+  P extends ReactProps = {},
+> = Omit<
   React.HTMLAttributes<I>,
   // Prefer type of provided event handler props or those on element over
   // built-in HTMLAttributes
-  keyof E | keyof ElementProps<I>
+  keyof E | keyof ElementProps<I> | keyof P
 > &
   EventListeners<E> &
-  ElementProps<I>;
+  Omit<ElementProps<I>, keyof P> &
+  P;
 
 /**
  * Type used to cast an event name with an event type when providing the
@@ -93,6 +99,9 @@ export type EventName<T extends Event = Event> = string & {
 // A key value map matching React prop names to event names.
 type EventNames = Record<string, EventName | string>;
 
+// A map with valid react props
+type ReactProps = Record<string, string | number | undefined | never>;
+
 // A map of expected event listener types based on EventNames.
 type EventListeners<R extends EventNames> = {
   [K in keyof R]?: R[K] extends EventName
@@ -100,8 +109,13 @@ type EventListeners<R extends EventNames> = {
     : (e: Event) => void;
 };
 
-export interface Options<I extends HTMLElement, E extends EventNames = {}> {
+export interface Options<
+  I extends HTMLElement,
+  E extends EventNames = {},
+  P extends ReactProps = {},
+> {
   react: typeof React;
+  reactProps?: Array<keyof P>;
   tagName: string;
   elementClass: Constructor<I>;
   events?: E;
@@ -213,18 +227,23 @@ const setProperty = <E extends Element>(
  * @param options.displayName A React component display name, used in debugging
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
+ * @param options.reactProps List of property names that should always be passed
+ * as properties rather than attributes.
  */
 export const createComponent = <
   I extends HTMLElement,
   E extends EventNames = {},
+  P extends ReactProps = {},
 >({
   react: React,
   tagName,
   elementClass,
   events,
+  reactProps: forceReactProps,
   displayName,
-}: Options<I, E>): ReactWebComponent<I, E> => {
+}: Options<I, E, P>): ReactWebComponent<I, E, P> => {
   const eventProps = new Set(Object.keys(events ?? {}));
+  const forceReactPropsList = new Set(forceReactProps);
 
   if (DEV_MODE) {
     for (const p of reservedReactProperties) {
@@ -242,7 +261,7 @@ export const createComponent = <
     }
   }
 
-  type Props = ComponentProps<I, E>;
+  type Props = ComponentProps<I, E, P>;
 
   const ReactComponent = React.forwardRef<I, Props>((props, ref) => {
     const prevElemPropsRef = React.useRef(new Map());
@@ -254,7 +273,7 @@ export const createComponent = <
     const elementProps: Record<string, unknown> = {};
 
     for (const [k, v] of Object.entries(props)) {
-      if (reservedReactProperties.has(k)) {
+      if (reservedReactProperties.has(k) || forceReactPropsList.has(k)) {
         // React does *not* handle `className` for custom elements so
         // coerce it to `class` so it's handled correctly.
         reactProps[k === 'className' ? 'class' : k] = v;

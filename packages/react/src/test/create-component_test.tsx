@@ -25,6 +25,7 @@ const DEV_MODE = !!ReactiveElement.enableWarning;
 declare global {
   interface HTMLElementTagNameMap {
     [tagName]: BasicElement;
+    'basic-button': BasicButton,
     'x-foo': XFoo;
   }
 }
@@ -112,6 +113,22 @@ const BasicElementComponent = createComponent({
   events: basicElementEvents,
   tagName,
 });
+
+class BasicButton extends HTMLButtonElement {
+
+}
+const BasicButtonComponent = createComponent<BasicButton, {
+  onClick: EventName<MouseEvent>,
+}, {
+  form?: string,
+  id?: never,
+}>({
+  react: React,
+  elementClass: BasicButton,
+  tagName: 'basic-button',
+  reactProps: ['form']
+})
+
 
 const render = (children: React.ReactNode) => {
   act(() => {
@@ -559,4 +576,21 @@ suite('createComponent', () => {
     assert.equal(el.style.display, 'block');
     assert.equal(el.getAttribute('class'), 'foo bar');
   });
+
+  test('can force "form" to be a property', async () => {
+    render(
+      <BasicButtonComponent form="the-form-id" />
+    );
+    const el = document.querySelector('basic-button')!;
+    assert.equal(el.outerHTML, '<basic-button form="the-form-id"></basic-button>')
+  })
+
+  test('forbid the use of a specific attribute', async () => {
+    render(
+      // @ts-expect-error Usage of the id property is explicitly forbidden
+      <BasicButtonComponent id="the-form-id" />
+    );
+    const el = document.querySelector('basic-button')!;
+    assert.equal(el.tagName, 'BASIC-BUTTON');
+  })
 });
