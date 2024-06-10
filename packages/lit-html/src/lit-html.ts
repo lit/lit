@@ -440,8 +440,9 @@ const rawTextElement = /^(?:script|style|textarea|title)$/i;
 /** TemplateResult types */
 const HTML_RESULT = 1;
 const SVG_RESULT = 2;
+const MATHML_RESULT = 3;
 
-type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
+type ResultType = typeof HTML_RESULT | typeof SVG_RESULT | typeof MATHML_RESULT;
 
 // TemplatePart types
 // IMPORTANT: these must match the values in PartType
@@ -510,6 +511,8 @@ export type TemplateResult<T extends ResultType = ResultType> =
 export type HTMLTemplateResult = TemplateResult<typeof HTML_RESULT>;
 
 export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
+
+export type MathMLTemplateResult = TemplateResult<typeof MATHML_RESULT>;
 
 /**
  * A TemplateResult that has been compiled by @lit-labs/compiler, skipping the
@@ -587,8 +590,8 @@ const tag =
 export const html = tag(HTML_RESULT);
 
 /**
- * Interprets a template literal as an SVG fragment that can efficiently
- * render to and update a container.
+ * Interprets a template literal as an SVG fragment that can efficiently render
+ * to and update a container.
  *
  * ```ts
  * const rect = svg`<rect width="10" height="10"></rect>`;
@@ -607,9 +610,36 @@ export const html = tag(HTML_RESULT);
  *
  * In LitElement usage, it's invalid to return an SVG fragment from the
  * `render()` method, as the SVG fragment will be contained within the element's
- * shadow root and thus cannot be used within an `<svg>` HTML element.
+ * shadow root and thus not be properly contained within an `<svg>` HTML
+ * element.
  */
 export const svg = tag(SVG_RESULT);
+
+/**
+ * Interprets a template literal as MathML fragment that can efficiently render
+ * to and update a container.
+ *
+ * ```ts
+ * const num = mathml`<mn>1</mn>`;
+ *
+ * const eq = html`
+ *   <math>
+ *     ${num}
+ *   </math>`;
+ * ```
+ *
+ * The `mathml` *tag function* should only be used for MathML fragments, or
+ * elements that would be contained **inside** a `<math>` HTML element. A common
+ * error is placing a `<math>` *element* in a template tagged with the `mathml`
+ * tag function. The `<math>` element is an HTML element and should be used
+ * within a template tagged with the {@linkcode html} tag function.
+ *
+ * In LitElement usage, it's invalid to return an MathML fragment from the
+ * `render()` method, as the MathML fragment will be contained within the
+ * element's shadow root and thus not be properly contained within a `<math>`
+ * HTML element.
+ */
+export const mathml = tag(MATHML_RESULT);
 
 /**
  * A sentinel value that signals that a value was handled by a directive and
@@ -765,7 +795,8 @@ const getTemplateHtml = (
   // parts. ElementParts are also reflected in this array as undefined
   // rather than a string, to disambiguate from attribute bindings.
   const attrNames: Array<string> = [];
-  let html = type === SVG_RESULT ? '<svg>' : '';
+  let html =
+    type === SVG_RESULT ? '<svg>' : type === MATHML_RESULT ? '<math>' : '';
 
   // When we're inside a raw text tag (not it's text content), the regex
   // will still be tagRegex so we can find attributes, but will switch to
@@ -898,7 +929,9 @@ const getTemplateHtml = (
   }
 
   const htmlResult: string | TrustedHTML =
-    html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : '');
+    html +
+    (strings[l] || '<?>') +
+    (type === SVG_RESULT ? '</svg>' : type === MATHML_RESULT ? '</math>' : '');
 
   // Returned as an array for terseness
   return [trustFromTemplateString(strings, htmlResult), attrNames];
@@ -928,10 +961,10 @@ class Template {
     this.el = Template.createElement(html, options);
     walker.currentNode = this.el.content;
 
-    // Re-parent SVG nodes into template root
-    if (type === SVG_RESULT) {
-      const svgElement = this.el.content.firstChild!;
-      svgElement.replaceWith(...svgElement.childNodes);
+    // Re-parent SVG or MathML nodes into template root
+    if (type === SVG_RESULT || type === MATHML_RESULT) {
+      const wrapper = this.el.content.firstChild!;
+      wrapper.replaceWith(...wrapper.childNodes);
     }
 
     // Walk the template to find binding markers and create TemplateParts

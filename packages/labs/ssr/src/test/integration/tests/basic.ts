@@ -6,7 +6,7 @@
 
 import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
 
-import {html, svg, noChange, nothing, Part} from 'lit';
+import {html, mathml, svg, noChange, nothing, Part} from 'lit';
 import {html as staticHtml, literal} from 'lit/static-html.js';
 import {
   directive,
@@ -30,6 +30,7 @@ import {until} from 'lit/directives/until.js';
 import {ifDefined} from 'lit/directives/if-defined.js';
 import {live} from 'lit/directives/live.js';
 import {unsafeHTML} from 'lit/directives/unsafe-html.js';
+import {unsafeMathML} from 'lit/directives/unsafe-mathml.js';
 import {unsafeSVG} from 'lit/directives/unsafe-svg.js';
 import {createRef, ref} from 'lit/directives/ref.js';
 
@@ -318,6 +319,24 @@ export const tests: {[name: string]: SSRTest} = {
       },
     ],
     stableSelectors: ['svg', 'circle'],
+  },
+
+  'ChildPart accepts TemplateResult with MATHML type': {
+    render(x: unknown) {
+      return html` <math>${mathml`<mi>${x}</mi>`}</math> `;
+    },
+    expectations: [
+      {
+        args: ['a'],
+        html: '<math><mi>a</mi></math>',
+        check(assert: Chai.Assert, dom: HTMLElement) {
+          const mathElements = dom.querySelectorAll('math');
+          // Expect only a single math element to have been rendered.
+          assert.lengthOf(mathElements, 1);
+        },
+      },
+    ],
+    stableSelectors: ['math', 'mi'],
   },
 
   'multiple ChildParts, adjacent primitive values': {
@@ -952,7 +971,24 @@ export const tests: {[name: string]: SSRTest} = {
         html: '<svg><ellipse cx="100" cy="50" rx="100" ry="50"></ellipse></svg>',
       },
     ],
-    stableSelectors: ['div'],
+    stableSelectors: ['svg'],
+  },
+
+  'ChildPart accepts directive: unsafeMath': {
+    render(v) {
+      return html` <math>${unsafeMathML(v)}</math> `;
+    },
+    expectations: [
+      {
+        args: ['<mi>a</mi>'],
+        html: '<math><mi>a</mi></math>',
+      },
+      {
+        args: ['<mn>1</mn>'],
+        html: '<math><mn>1</mn></math>',
+      },
+    ],
+    stableSelectors: ['math'],
   },
 
   /******************************************************

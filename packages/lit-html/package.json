@@ -286,6 +286,19 @@
       "development": "./development/directives/unsafe-html.js",
       "default": "./directives/unsafe-html.js"
     },
+    "./directives/unsafe-mathml.js": {
+      "types": "./development/directives/unsafe-mathml.d.ts",
+      "browser": {
+        "development": "./development/directives/unsafe-mathml.js",
+        "default": "./directives/unsafe-mathml.js"
+      },
+      "node": {
+        "development": "./node/development/directives/unsafe-mathml.js",
+        "default": "./node/directives/unsafe-mathml.js"
+      },
+      "development": "./development/directives/unsafe-mathml.js",
+      "default": "./directives/unsafe-mathml.js"
+    },
     "./directives/unsafe-svg.js": {
       "types": "./development/directives/unsafe-svg.d.ts",
       "browser": {

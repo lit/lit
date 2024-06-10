@@ -62,6 +62,7 @@ export default litProdConfig({
     'directives/style-map',
     'directives/template-content',
     'directives/unsafe-html',
+    'directives/unsafe-mathml',
     'directives/unsafe-svg',
     'directives/until',
     'directives/when',

@@ -7,6 +7,7 @@ import {
   ChildPart,
   CompiledTemplateResult,
   html,
+  mathml,
   noChange,
   nothing,
   render,
@@ -17,6 +18,7 @@ import {
   SanitizerFactory,
   Part,
   CompiledTemplate,
+  MathMLTemplateResult,
 } from 'lit-html';
 
 import {
@@ -791,6 +793,27 @@ suite('lit-html', () => {
 
     test('`svg` returns an `SVGTemplateResult`', () => {
       staticAssertExtends<SVGTemplateResult, ReturnType<typeof svg>>();
+    });
+  });
+
+  suite('MathML', () => {
+    test('renders MathML', () => {
+      const container = document.createElement('math');
+      const t = mathml`<mi>x</mi>`;
+      render(t, container);
+      const mi = container.firstElementChild!;
+      assert.equal(mi.tagName, 'mi');
+      assert.equal(mi.namespaceURI, 'http://www.w3.org/1998/Math/MathML');
+    });
+
+    const staticAssertExtends = <T, U extends T>(_?: [T, U]) => {};
+
+    test('`MathMLTemplateResult` is a subtype of `TemplateResult`', () => {
+      staticAssertExtends<TemplateResult, MathMLTemplateResult>();
+    });
+
+    test('`mathml` returns a `MathMLTemplateResult`', () => {
+      staticAssertExtends<MathMLTemplateResult, ReturnType<typeof mathml>>();
     });
   });
 

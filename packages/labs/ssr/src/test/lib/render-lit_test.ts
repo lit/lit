@@ -407,6 +407,24 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('math fragment template', async () => {
+    const {render, mathTemplate} = await setup();
+    const result = await render(mathTemplate(0));
+    assert.is(
+      result,
+      `<!--lit-part eIU1B9cAcXw=--><mn><!--lit-part-->0<!--/lit-part--></mn><!--/lit-part-->`
+    );
+  });
+
+  test('html template type with math template type ChildPart', async () => {
+    const {render, templateWithMathTemplate} = await setup();
+    const result = await render(templateWithMathTemplate(0));
+    assert.is(
+      result,
+      `<!--lit-part q5ZurYRhi1g=--><math><!--lit-part eIU1B9cAcXw=--><mn><!--lit-part-->0<!--/lit-part--></mn><!--/lit-part--></math><!--/lit-part-->`
+    );
+  });
+
   test('element with reflected properties', async () => {
     const {render, elementWithReflectedProperties} = await setup();
     const result = await render(elementWithReflectedProperties);
