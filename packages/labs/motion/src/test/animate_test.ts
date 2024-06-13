@@ -499,6 +499,8 @@ const testSkipSafari = isSafari ? test.skip : test;
     shiftGChild = false;
     await el.updateComplete;
     await gChildAnimate!.finished;
+    // Try to let the animation settle. Safari seems to need it.
+    await new Promise((res) => setTimeout(res));
     assertDeepCloseTo(childAnimateProps!, {
       left: -100,
       top: 40,
