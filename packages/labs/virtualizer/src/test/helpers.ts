@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+export type Rect = {top: number; left: number; bottom: number; right: number};
+
 import {
   ignoreWindowOnError,
   setupIgnoreWindowResizeObserverLoopErrors,
@@ -73,6 +75,134 @@ function getClippingAncestors(el: Element, includeSelf = false) {
   );
 }
 
+export function pluck(item: {[key: string]: unknown}, keys: string[]): {} {
+  const result: {[key: string]: unknown} = {};
+  for (const key of keys) {
+    result[key] = item[key];
+  }
+  return result;
+}
+
+function isObject(item: unknown): item is object {
+  return typeof item === 'object' && item !== null;
+}
+
+/**
+ * Returns true if all items in the array are the same value or
+ * are objects with equal properties.  This is very similar to the
+ * "deep.equal" mocha assertion, but it simply returns true or false.
+ * @param items Some array of items
+ * @returns true if they are all the same.
+ */
+export function deepEqual<T>(...items: T[]): boolean {
+  // If there is one or fewer items, we will say they are all the same.
+  if (items.length < 2) {
+    return true;
+  }
+  const [first, ...rest] = items;
+  // If they are all Arrays of the same length...
+  if (
+    items.every(Array.isArray) &&
+    deepEqual(...items.map((i) => (i as unknown as unknown[]).length))
+  ) {
+    // Compare the item at each index across all arrays.
+    for (let i = 0; i < (first as unknown as unknown[]).length; ++i) {
+      // If any of the items at the index are not equal, return false.
+      if (
+        !deepEqual(...items.map((item) => (item as unknown as unknown[])[i]))
+      ) {
+        return false;
+      }
+    }
+    return true;
+  }
+  if (
+    !Array.isArray(first) &&
+    isObject(first) &&
+    rest.every(isObject) &&
+    deepEqual(...items.map((i) => Object.keys(i as unknown as object)))
+  ) {
+    for (const key of Object.keys(first)) {
+      if (
+        !deepEqual(
+          ...items.map(
+            (item) => (item as unknown as {[key: string]: unknown})[key]
+          )
+        )
+      ) {
+        return false;
+      }
+    }
+    return true;
+  }
+  if (rest.every((item) => item === first)) {
+    return true;
+  }
+  return false;
+}
+
+/**
+ * For a given element and its ancestor, returns a relative DOMRect
+ * @param el
+ * @param ancestor
+ * @returns
+ */
+export function getRelativeClientRect(el: Element, ancestor: Element): Rect {
+  const ancestorRect = ancestor.getBoundingClientRect();
+  const elementRect = el.getBoundingClientRect();
+  return getRelativeRect(elementRect, ancestorRect);
+}
+
+function getVisibleElements(el: Element): Element[] {
+  const visibleElements: Element[] = [];
+  for (const currentElement of el.querySelectorAll('*')) {
+    if (currentElement['getBoundingClientRect']) {
+      if (isInViewport(currentElement, el)) {
+        visibleElements.push(currentElement);
+      }
+    }
+  }
+  return visibleElements;
+}
+
+function getElementDetails(el: Element, ancestor?: Element) {
+  const rect = ancestor
+    ? getRelativeClientRect(el, ancestor)
+    : el.getBoundingClientRect();
+  const details = {
+    tagName: el.tagName,
+    top: rect.top,
+    left: rect.left,
+    bottom: rect.bottom,
+    right: rect.right,
+    children: el.children.length,
+    textContent: el.textContent?.trim(),
+  };
+  return details;
+}
+
+export function getVisibleElementDetails(ancestor: Element) {
+  return getVisibleElements(ancestor).map((el) =>
+    getElementDetails(el, ancestor)
+  );
+}
+
+/**
+ * Returns a new Rect object which has represents the descendant's coordinates,
+ * as if the ancestor upper-left corner represents a new 0,0 origin.
+ * @param ancestor Rect
+ * @param descendant Rect
+ * @returns new adjusted descendant Rect
+ */
+export function getRelativeRect(descendant: Rect, ancestor: Rect): Rect {
+  return {
+    top: descendant.top - ancestor.top,
+    bottom: descendant.bottom - ancestor.top,
+    left: descendant.left - ancestor.left,
+    right: descendant.right - ancestor.left,
+  };
+}
+
 /**
  * Given an element and an optional viewport element, returns true if the
  * element would be visible in the viewport.  If no viewport is provided,
@@ -81,10 +211,9 @@ function getClippingAncestors(el: Element, includeSelf = false) {
 export function isInViewport(element: Element, viewport?: Element) {
   const elementRect = element.getBoundingClientRect();
 
-  let top = 0;
-  let left = 0;
-  let bottom = window.innerHeight;
-  let right = window.innerWidth;
+  let {top, left, bottom, right} = viewport
+    ? viewport.getBoundingClientRect()
+    : {top: 0, left: 0, bottom: window.innerHeight, right: window.innerWidth};
 
   if (viewport) {
     const clippingAncestors = getClippingAncestors(viewport, true);
