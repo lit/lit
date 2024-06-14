@@ -618,12 +618,13 @@ export const svg = tag(SVG_RESULT);
 export const noChange = Symbol.for('lit-noChange');
 
 /**
- * A sentinel value that signals a ChildPart to fully clear its content.
+ * A sentinel value that signals a ChildPart to fully clear its content and
+ * signals an AttributePart to remove the attribute.
  *
  * ```ts
  * const button = html`${
  *  user.isAdmin
- *    ? html`<button>DELETE</button>`
+ *    ? html`<button type=${shouldSubmit ? 'submit' : nothing}>DELETE</button>`
  *    : nothing
  * }`;
  * ```
