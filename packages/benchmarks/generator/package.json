@@ -39,7 +39,7 @@
     "table": "^5.4.6"
   },
   "devDependencies": {
-    "puppeteer": "^15.4.0",
+    "puppeteer": "^22.11.2",
     "tachometer": "^0.7.0",
     "typescript": "~4.7.4"
   }
