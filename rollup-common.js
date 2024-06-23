@@ -5,7 +5,7 @@
  */
 
 import {summary} from 'rollup-plugin-summary';
-import {terser} from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 import copy from 'rollup-plugin-copy';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import sourcemaps from 'rollup-plugin-sourcemaps';
