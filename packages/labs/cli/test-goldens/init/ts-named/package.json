@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@web/dev-server": "^0.1.32",
-    "typescript": "~5.3.3"
+    "typescript": "~5.5.0"
   },
   "exports": {
     "./lib/el-element.js": {
