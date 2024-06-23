@@ -6,6 +6,7 @@
 
 // IMPORTANT: these imports must be type-only
 import type {Directive, DirectiveResult, PartInfo} from './directive.js';
+import type {TrustedHTML, TrustedTypesWindow} from 'trusted-types/lib';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -240,7 +241,7 @@ const wrap =
     ? (global.ShadyDOM!.wrap as <T extends Node>(node: T) => T)
     : <T extends Node>(node: T) => node;
 
-const trustedTypes = (global as unknown as Window).trustedTypes;
+const trustedTypes = (global as unknown as TrustedTypesWindow).trustedTypes;
 
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
