@@ -460,9 +460,7 @@
         "tsconfig.compiled-tests.json"
       ],
       "output": [
-        "compiled/**/*.{js,js.map,d.ts,d.ts.map}",
-        "tsconfig.tsbuildinfo",
-        "tsconfig.compiled-tests.tsbuildinfo"
+        "compiled/**/*.{js,js.map,d.ts,d.ts.map}"
       ]
     },
     "build:rollup": {
