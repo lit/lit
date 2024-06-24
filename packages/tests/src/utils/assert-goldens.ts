@@ -10,7 +10,7 @@ import fsExtra from 'fs-extra';
 import * as dirCompare from 'dir-compare';
 import * as path from 'path';
 import * as diff from 'diff';
-import {execSync} from 'child_process';
+import {execSync, execFileSync} from 'child_process';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const red = '\x1b[31m';
@@ -96,7 +96,13 @@ export const assertGoldensMatch = async (
       '--write',
       `${path.join(outputDir, formatGlob)}`,
     ];
-    execSync(`npx ${args.join(' ')}`);
+    // Windows cannot find file `npx` and it's no longer possible to specify
+    // `npx.cmd` https://github.com/nodejs/node/commit/9095c914ed
+    if (/^win/.test(process.platform)) {
+      execSync(`npx ${args.join(' ')}`);
+    } else {
+      execFileSync('npx', args);
+    }
   }
 
   if (process.env.UPDATE_TEST_GOLDENS) {
