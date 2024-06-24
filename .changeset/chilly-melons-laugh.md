@@ -1,5 +1,5 @@
 ---
-"@lit/localize": patch
+'@lit/localize': patch
 ---
 
 Move localize setup to resolve import loop

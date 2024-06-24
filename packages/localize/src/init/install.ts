@@ -1,7 +1,6 @@
 import type {MsgFn} from '../internal/types.js';
 import {defaultMsg} from '../internal/default-msg.js';
 
-
 /**
  * Make a string or lit-html template localizable.
  *
@@ -13,7 +12,6 @@ import {defaultMsg} from '../internal/default-msg.js';
  *   - desc: Optional description
  */
 export let msg: MsgFn = defaultMsg;
-
 
 let installed = false;
 

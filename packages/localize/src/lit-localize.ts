@@ -7,7 +7,7 @@
 export * from './internal/locale-status-event.js';
 export * from './internal/str-tag.js';
 export * from './internal/types.js';
-export { msg } from './init/install.js';
+export {msg} from './init/install.js';
 
 // TODO(aomarks) In a future breaking version, remove these imports so that the
 // bulk of the code isn't included in bundles by default. In particular imagine
