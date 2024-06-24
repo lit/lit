@@ -15,7 +15,7 @@
     "declaration": true,
     "sourceMap": true,
     "skipLibCheck": true,
-    "types": []
+    "types": ["node"]
   },
   "include": ["src/**/*"],
   "exclude": []
