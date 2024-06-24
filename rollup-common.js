@@ -597,7 +597,7 @@ const litMonoBundleConfig = ({
       exportConditions: ['development'],
     }),
     replace({
-      preventAssignment: true,
+      preventAssignment: false,
       values: {
         'const DEV_MODE = true': 'const DEV_MODE = false',
         'const ENABLE_EXTRA_SECURITY_HOOKS = true':
