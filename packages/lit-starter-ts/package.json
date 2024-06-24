@@ -48,8 +48,9 @@
     "@11ty/eleventy-plugin-syntaxhighlight": "^4.0.0",
     "@custom-elements-manifest/analyzer": "^0.6.3",
     "@open-wc/testing": "^3.1.5",
-    "@rollup/plugin-node-resolve": "^13.3.0",
-    "@rollup/plugin-replace": "^5.0.2",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-replace": "^5.0.7",
+    "@rollup/plugin-terser": "^0.4.4",
     "@typescript-eslint/eslint-plugin": "^5.25.0",
     "@typescript-eslint/parser": "^5.25.0",
     "@web/dev-server": "^0.1.31",
@@ -61,9 +62,8 @@
     "lit-analyzer": "^1.2.1",
     "prettier": "^2.6.2",
     "rimraf": "^3.0.2",
-    "rollup": "^2.73.0",
-    "rollup-plugin-summary": "^1.4.3",
-    "rollup-plugin-terser": "^7.0.2",
+    "rollup": "^4.18.0",
+    "rollup-plugin-summary": "^2.0.1",
     "typescript": "~5.3.3"
   },
   "customElements": "custom-elements.json"
