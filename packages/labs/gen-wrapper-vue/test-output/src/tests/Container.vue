@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ElementA from '@lit-internal/test-element-a-vue/ElementA.js';
+import ElementA from '@lit-internal/test-element-a-vue/ElementA.vue.js';
 
 // TODO(sorvell): add an invalidate property type and test that it fails
 // to type check.

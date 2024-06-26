@@ -61,7 +61,7 @@ test('basic wrapper generation', async () => {
   // that runtime tests of this generated package are run as a separate `npm run
   // test` command in `test-output` using `@web/test-runner`.
   const wrapperJsFile = fs.readFileSync(
-    path.join(outputPackage, 'ElementA.js')
+    path.join(outputPackage, 'ElementA.vue.js')
   );
   assert.ok(wrapperJsFile.length > 0);
 });

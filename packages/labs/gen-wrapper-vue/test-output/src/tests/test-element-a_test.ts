@@ -6,7 +6,7 @@
 
 import {assert} from 'chai';
 import {createApp} from 'vue';
-import ElementA from '@lit-internal/test-element-a-vue/ElementA.js';
+import ElementA from '@lit-internal/test-element-a-vue/ElementA.vue.js';
 import {ElementA as ElementAElement} from '@lit-internal/test-element-a/element-a.js';
 import Container from './Container.vue';
 
