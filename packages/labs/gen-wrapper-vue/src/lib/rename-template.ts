@@ -43,5 +43,5 @@ function traverseRename(directoryPath) {
   }
 }
 
-traverseRename(root);
+// traverseRename(root);
 `;
