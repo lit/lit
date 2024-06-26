@@ -68,8 +68,7 @@ export class Router extends Routes {
     e.preventDefault();
     if (href !== location.href) {
       window.history.pushState({}, '', href);
-      anchor
-      this.goto(new URL(origin + anchor.pathname + anchor.search + window.location.hash));
+      this.goto(new URL(origin + anchor.pathname + anchor.search + anchor.hash));
     }
   };
 
