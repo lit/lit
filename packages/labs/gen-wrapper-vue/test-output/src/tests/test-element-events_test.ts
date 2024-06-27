@@ -12,7 +12,7 @@ import {
   MyDetail,
   EventSubclass,
   TemplateResult,
-} from '@lit-internal/test-element-a-vue/ElementEvents.js';
+} from '@lit-internal/test-element-a-vue/ElementEvents.vue.js';
 import {ElementEvents as ElementEventsElement} from '@lit-internal/test-element-a/element-events.js';
 
 suite('test-element-events', () => {
