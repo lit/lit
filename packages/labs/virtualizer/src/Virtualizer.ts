@@ -543,7 +543,7 @@ export class Virtualizer {
   }
 
   _finishDOMUpdate() {
-    this._children.forEach((child) => this._childrenRO!.observe(child));
+    this._children.forEach((child) => this._childrenRO?.observe(child));
     this._checkScrollIntoViewTarget(this._childrenPos);
     this._positionChildren(this._childrenPos);
     this._sizeHostElement(this._scrollSize);
