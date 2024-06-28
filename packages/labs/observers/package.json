@@ -168,6 +168,7 @@
     "@types/trusted-types": "^2.0.2"
   },
   "dependencies": {
+    "lit-html": "^2.4.0 || ^3.0.0",
     "@lit/reactive-element": "^1.0.0 || ^2.0.0"
   },
   "publishConfig": {
