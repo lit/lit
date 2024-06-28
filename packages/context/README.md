@@ -97,7 +97,7 @@ export class MyApp extends LitElement {
     log: (msg) => {
       console.log(`[my-app] ${msg}`);
     },
-  });
+  };
 
   protected render(): TemplateResult {
     return html`<my-thing></my-thing>`;
