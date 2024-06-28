@@ -15,6 +15,22 @@ import {tsconfigTemplate} from './lib/tsconfig-template.js';
 import {wrapperModuleTemplate} from './lib/wrapper-module-template.js';
 import * as path from 'path';
 
+/**
+ * Our command for the Lit CLI.
+ *
+ * See ../../cli/src/lib/generate/generate.ts
+ */
+export const getCommand = () => {
+  return {
+    name: 'angular',
+    description: 'Generate Angular wrapper components from Lit elements',
+    kind: 'resolved',
+    async generate(options: {package: Package}): Promise<FileTree> {
+      return await generateAngularWrapper(options.package);
+    },
+  };
+};
+
 export const generateAngularWrapper = async (
   pkg: Package
 ): Promise<FileTree> => {
