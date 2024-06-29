@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult, ChildPart, html, noChange} from 'lit';
+import {ChildPart, html, noChange} from 'lit';
 import {directive, DirectiveResult, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {repeat, KeyFn} from 'lit/directives/repeat.js';
@@ -40,7 +40,7 @@ export interface VirtualizeDirectiveConfig<T> {
 export type RenderItemFunction<T = unknown> = (
   item: T,
   index: number
-) => TemplateResult;
+) => unknown;
 
 export const defaultKeyFunction: KeyFn<unknown> = (item: unknown) => item;
 export const defaultRenderItem: RenderItemFunction<unknown> = (

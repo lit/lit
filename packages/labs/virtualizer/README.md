@@ -427,9 +427,12 @@ The types of values you use to represent your items are entirely up to you, as l
 
 ### `renderItem` property
 
-Type: `(item: T, index?: number) => TemplateResult`
+Type: `(item: T, index: number) => unknown`
+Generic type name: `RenderItemFunction`
 
-A function that returns a Lit `TemplateResult`. It will be used to generate a child element for each item in the `items` array.
+A function which the return value can be rendered by lit. It will be used to generate a child element for each item in the `items` array.
+
+The generic type name may be used to provide a type value for `item`. This helps TypeScript in stricter configurations.
 
 ### `scroller` attribute / property
 
