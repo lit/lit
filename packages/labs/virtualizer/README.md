@@ -154,7 +154,145 @@ html`
 
 ### Using the `grid` layout
 
-TODO
+The grid layout lays out uniformly sized items in a regular grid. You specify an `itemSize`, which is either strictly observed or (if you use the flex option) matched as closely as possible while taking up all space along the layout's inline axis. [You can view an example of the grid layout here](https://lit.dev/playground/#gist=a5960ffd0cb67c61083b4df0f9372eeb).
+
+_Note: When using the grid layout, Virtualizer explicitly sets the dimensions of its child elements. This differs from the behavior of the default flow layout._
+
+```js
+  render() {
+    return html`
+      <lit-virtualizer
+        .layout=${grid({
+          itemSize: {width: '100px', height: '100px'}
+        })}
+        .items=${this.photos}
+        .renderItem=${photos => html`<img src=${photo.url}>`}
+      ></lit-virtualizer>
+    `;
+  }
+```
+
+#### Options
+
+The following options for available for the `grid` layout.
+
+#### gap
+
+The `gap` property determines spacing between items and can be either a single pixel value such as `8px` (the default), or by applying both a vertical and horizontal pair such as `8px 0`.
+
+```js
+  render() {
+    return html`
+      <lit-virtualizer
+        .layout=${grid({
+          itemSize: {width: '100px', height: '100px'},
+          gap: '0 16px'
+        })}
+        .items=${this.photos}
+        .renderItem=${photos => html`<img src=${photo.url}>`}
+      ></lit-virtualizer>
+    `;
+  }
+```
+
+Additionally `auto` can be used to split available space evenly between items, however this may only make sense for inline axis. The `auto` value can only be used when a `justify` property is set to `space-evenly` | `space-around` | `space-between`.
+
+```js
+  render() {
+    return html`
+      <lit-virtualizer
+        .layout=${grid({
+          itemSize: {width: '100px', height: '100px'},
+          gap: '0 auto',
+          justify: 'space-between'
+        })}
+        .items=${this.photos}
+        .renderItem=${photos => html`<img src=${photo.url}>`}
+      ></lit-virtualizer>
+    `;
+  }
+```
+
+#### padding 
+
+The `padding` property determines the spaces around each item and can either be a single value pair such as `8px 16px`, or four values to specify top, right, bottom, and left independently, for example `8px 12px 16px 24px`. 
+
+
+```js
+  render() {
+    return html`
+      <lit-virtualizer
+        .layout=${grid({
+          itemSize: {width: '100px', height: '100px'},
+          padding: '8px 12px'
+        })}
+        .items=${this.photos}
+        .renderItem=${photos => html`<img src=${photo.url}>`}
+      ></lit-virtualizer>
+    `;
+  }
+```
+
+You can also set `padding` to `match-gap` to make the outer spacing match the inner spacing.
+
+```js
+  render() {
+    return html`
+      <lit-virtualizer
+        .layout=${grid({
+          itemSize: {width: '100px', height: '100px'},
+          gap: '8px',
+          padding: 'match-gap'
+        })}
+        .items=${this.photos}
+        .renderItem=${photos => html`<img src=${photo.url}>`}
+      ></lit-virtualizer>
+    `;
+  }
+```
+
+#### justify
+
+The `justify` property defines how space is distributed between and around each item. Setting `justify` overrides any `gap` values provided for the inline axis.
+
+The available options for `justify` are `start` | `center` | `end` | `space-evenly` | `space-around` | `space-between`.
+
+```js
+  render() {
+    return html`
+      <lit-virtualizer
+        .layout=${grid({
+          itemSize: {width: '100px', height: '100px'},
+          justify: 'space-around'
+        })}
+        .items=${this.photos}
+        .renderItem=${photos => html`<img src=${photo.url}>`}
+      ></lit-virtualizer>
+    `;
+  }
+```
+
+#### flex
+
+When `flex` is specified, item size will be auto-adjusted so that items take up all available space along the inline axis while maintaining the provided `gap` value. `flex: true` is equivalent to `flex: {preserve: 'area'}`.
+
+The available options for `flex` are `true`| `false`| `{preserve: 'aspect-ratio' | 'area' | 'width' | 'height'}`
+
+```js
+  render() {
+    return html`
+      <lit-virtualizer
+        .layout=${grid({
+          itemSize: {width: '100px', height: '100px'},
+          flex: true
+        })}
+        .items=${this.photos}
+        .renderItem=${photos => html`<img src=${photo.url}>`}
+      ></lit-virtualizer>
+    `;
+  }
+```
+
 
 ### Scrolling
 
