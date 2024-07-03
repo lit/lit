@@ -141,6 +141,10 @@
       "types": "./development/directives/unsafe-html.d.ts",
       "default": "./directives/unsafe-html.js"
     },
+    "./directives/unsafe-mathml.js": {
+      "types": "./development/directives/unsafe-mathml.d.ts",
+      "default": "./directives/unsafe-mathml.js"
+    },
     "./directives/unsafe-svg.js": {
       "types": "./development/directives/unsafe-svg.d.ts",
       "default": "./directives/unsafe-svg.js"
