@@ -8,7 +8,7 @@ import {asyncAppend} from 'lit-html/directives/async-append.js';
 import {render, html, nothing} from 'lit-html';
 import {TestAsyncIterable} from './test-async-iterable.js';
 import {stripExpressionMarkers} from '@lit-labs/testing';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {memorySuite} from '../test-utils/memory.js';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */

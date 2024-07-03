@@ -14,7 +14,7 @@ import {
   UncompiledTemplateResult,
   mathml,
 } from 'lit-html';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {stripExpressionComments} from '@lit-labs/testing';
 import {
   getDirectiveClass,

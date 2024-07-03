@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {createApp} from 'vue';
 import SlotContainer from './SlotContainer.vue';
 import {ElementSlots as ElementSlotsElement} from '@lit-internal/test-element-a/element-slots.js';

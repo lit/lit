@@ -58,12 +58,11 @@
   },
   "devDependencies": {
     "@lit/localize-tools": "^0.7.0",
-    "@rollup/plugin-node-resolve": "^13.0.4",
-    "@rollup/plugin-typescript": "^8.2.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
     "@web/dev-server": "^0.1.22",
-    "rollup": "^2.70.2",
-    "rollup-plugin-summary": "^1.4.3",
-    "rollup-plugin-terser": "^7.0.2",
-    "typescript": "~5.3.3"
+    "rollup": "^4.18.0",
+    "rollup-plugin-summary": "^2.0.1",
+    "typescript": "~5.5.0"
   }
 }

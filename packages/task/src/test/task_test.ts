@@ -15,7 +15,7 @@ import {
 } from '@lit/task';
 import {deepArrayEquals} from '@lit/task/deep-equals.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 // Safari didn't support reasons until 15.4
 const supportsAbortSignalReason = (() => {
@@ -409,6 +409,18 @@ suite('Task', () => {
     await tasksUpdateComplete();
     assert.equal(el.task.status, TaskStatus.COMPLETE);
     assert.equal(el.taskValue, `a1,b`);
+  });
+
+  test('task `status` is not settable', async () => {
+    const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
+    await renderElement(el);
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.INITIAL);
+
+    assert.throws(() => {
+      // @ts-expect-error for test
+      el.task.status = TaskStatus.ERROR;
+    }, TypeError);
   });
 
   test('task runs when `run` called', async () => {

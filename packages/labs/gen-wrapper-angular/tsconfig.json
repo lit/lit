@@ -18,5 +18,6 @@
     "types": []
   },
   "include": ["src/**/*"],
-  "exclude": []
+  "exclude": [],
+  "references": [{"path": "../../tests"}]
 }
