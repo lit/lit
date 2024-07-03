@@ -7,7 +7,7 @@
 import {unsafeMathML} from 'lit-html/directives/unsafe-mathml.js';
 import {render, html, nothing, noChange} from 'lit-html';
 import {stripExpressionMarkers} from '@lit-labs/testing';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('unsafeMathML', () => {
   let container: HTMLElement;
