@@ -435,7 +435,7 @@ A function that returns a Lit `TemplateResult`. It will be used to generate a ch
 
 Type: `(item: T, index: number) => unknown`
 
-A function given to the `repeat` directive. This is given the item value and it should return a guaranteed unique key. The unique key helps the repeat directive optimize rendering of large lists.
+A function given to the `repeat` directive. This should return a guaranteed unique key. The key enables reuse of previously generated elements when rendering an item.
 
 ### `scroller` attribute / property
 
