@@ -47,18 +47,19 @@ export function consume<ValueType>({
   context: Context<unknown, ValueType>;
   subscribe?: boolean;
 }): ConsumeDecorator<ValueType> {
-  return (<C extends ReactiveElement, V extends ValueType>(
-    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
-    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
+  return ((
+    protoOrTarget: ClassAccessorDecoratorTarget<ReactiveElement, ValueType>,
+    nameOrContext:
+      | PropertyKey
+      | ClassAccessorDecoratorContext<ReactiveElement, ValueType>
   ) => {
     if (typeof nameOrContext === 'object') {
       // Standard decorators branch
-      nameOrContext.addInitializer(function (this: ReactiveElement): void {
+      nameOrContext.addInitializer(function () {
         new ContextConsumer(this, {
           context,
-          callback: (value: ValueType) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this as any)[nameOrContext.name] = value;
+          callback: (value) => {
+            protoOrTarget.set.call(this, value);
           },
           subscribe,
         });
@@ -69,7 +70,7 @@ export function consume<ValueType>({
         (element: ReactiveElement): void => {
           new ContextConsumer(element, {
             context,
-            callback: (value: ValueType) => {
+            callback: (value) => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (element as any)[nameOrContext] = value;
             },

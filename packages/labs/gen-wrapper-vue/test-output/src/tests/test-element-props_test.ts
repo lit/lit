@@ -4,12 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {createApp, reactive, h, nextTick} from 'vue';
 import {
   default as ElementProps,
   Props as PropsType,
-} from '@lit-internal/test-element-a-vue/ElementProps.js';
+} from '@lit-internal/test-element-a-vue/ElementProps.vue.js';
 import {ElementProps as ElementPropsElement} from '@lit-internal/test-element-a/element-props.js';
 
 suite('test-element-props', () => {

@@ -24,8 +24,7 @@ export const packageJsonTemplate = (
         dev: 'vite',
         build: 'npm run build:declarations && vite build',
         typecheck: 'vue-tsc --noEmit',
-        'build:declarations':
-          'vue-tsc --declaration --emitDeclarationOnly && node ./scripts/rename.js',
+        'build:declarations': 'vue-tsc --declaration --emitDeclarationOnly',
         preview: 'vite preview',
       },
       // TODO(kschaaf): Version in lock-step with source?
@@ -38,11 +37,11 @@ export const packageJsonTemplate = (
       },
       devDependencies: {
         // Use typescript from source package, assuming it exists
-        typescript: pkgJson?.devDependencies?.typescript ?? '~5.2.0',
-        '@vitejs/plugin-vue': '^3.1.2',
-        '@rollup/plugin-typescript': '^9.0.1',
-        vite: '^3.1.8',
-        'vue-tsc': '^1.8.8',
+        typescript: pkgJson?.devDependencies?.typescript ?? '~5.5.0',
+        '@vitejs/plugin-vue': '^5.0.5',
+        '@rollup/plugin-typescript': '^11.1.6',
+        vite: '^5.3.1',
+        'vue-tsc': '^2.0.22',
       },
       files: [...moduleNames.map((f) => `${f}.*`)],
     },

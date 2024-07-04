@@ -21,7 +21,7 @@
     "lit": "^3.0.0"
   },
   "devDependencies": {
-    "typescript": "~5.3.3"
+    "typescript": "~5.5.0"
   },
   "wireit": {
     "build": {

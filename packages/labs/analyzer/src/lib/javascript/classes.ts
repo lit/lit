@@ -21,6 +21,7 @@ import {
   Reference,
   ClassField,
   ClassMethod,
+  MixinDeclaration,
 } from '../model.js';
 import {
   isLitElementSubclass,
@@ -55,18 +56,19 @@ export const getClassDeclaration = (
   declaration: ts.ClassLikeDeclaration,
   name: string,
   analyzer: AnalyzerInterface,
-  docNode?: ts.Node
+  docNode?: ts.Node,
+  isMixinClass?: boolean
 ) => {
   if (isLitElementSubclass(declaration, analyzer)) {
-    return getLitElementDeclaration(declaration, analyzer);
+    return getLitElementDeclaration(declaration, analyzer, isMixinClass);
   }
   if (isCustomElementSubclass(declaration, analyzer)) {
-    return getCustomElementDeclaration(declaration, analyzer);
+    return getCustomElementDeclaration(declaration, analyzer, isMixinClass);
   }
   return new ClassDeclaration({
     name,
     node: declaration,
-    getHeritage: () => getHeritage(declaration, analyzer),
+    getHeritage: () => getHeritage(declaration, analyzer, isMixinClass),
     ...parseNodeJSDocInfo(docNode ?? declaration, analyzer),
     ...getClassMembers(declaration, analyzer),
   });
@@ -278,7 +280,8 @@ export const getClassDeclarationInfo = (
  */
 export const getHeritage = (
   declaration: ts.ClassLikeDeclarationBase,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  isMixinClass?: boolean
 ): ClassHeritage => {
   const extendsClause = declaration.heritageClauses?.find(
     (c) => c.token === analyzer.typescript.SyntaxKind.ExtendsKeyword
@@ -287,7 +290,8 @@ export const getHeritage = (
     if (extendsClause.types.length === 1) {
       return getHeritageFromExpression(
         extendsClause.types[0].expression,
-        analyzer
+        analyzer,
+        isMixinClass
       );
     }
     analyzer.addDiagnostic(
@@ -308,31 +312,76 @@ export const getHeritage = (
 
 export const getHeritageFromExpression = (
   expression: ts.Expression,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  isMixinClass?: boolean
 ): ClassHeritage => {
-  // TODO(kschaaf): Support for extracting mixing applications from the heritage
-  // expression https://github.com/lit/lit/issues/2998
   const mixins: Reference[] = [];
-  const superClass = getSuperClass(expression, analyzer);
+  const superClass = getSuperClassAndMixins(expression, mixins, analyzer);
   return {
-    superClass,
+    superClass: isMixinClass ? undefined : superClass,
     mixins,
   };
 };
 
-export const getSuperClass = (
+export const getSuperClassAndMixins = (
   expression: ts.Expression,
+  foundMixins: Reference[],
   analyzer: AnalyzerInterface
 ): Reference | undefined => {
   // TODO(kschaaf) Could add support for inline class expressions here as well
   if (analyzer.typescript.isIdentifier(expression)) {
     return getReferenceForIdentifier(expression, analyzer);
+  } else if (
+    analyzer.typescript.isCallExpression(expression) &&
+    analyzer.typescript.isIdentifier(expression.expression)
+  ) {
+    // FYI we purposely restrict to identifiers since we represent mixins
+    // as references. If we want to support complex expressions in future,
+    // we will need to rework that in the model.
+    const mixinRef = getReferenceForIdentifier(expression.expression, analyzer);
+    // We need to eagerly dereference a mixin ref to know what argument the
+    // super class is passed into
+    let mixin;
+
+    try {
+      mixin = mixinRef?.dereference(MixinDeclaration);
+    } catch (_err) {
+      // It wasn't a MixinDeclaration for whatever reason
+      mixin = undefined;
+    }
+
+    // TODO (43081j): consider supporting external mixins properly at some point
+    // An external mixin is one which we discovered via analysis (e.g. CEM)
+    // but don't have a reference to in sources. In future, we should support
+    // those as it is likely we will pull most dependencies from manifest
+    // analysis rather than source.
+    // See issue #4492
+    if (mixinRef === undefined || mixin === undefined) {
+      analyzer.addDiagnostic(
+        createDiagnostic({
+          typescript: analyzer.typescript,
+          node: expression,
+          message:
+            `This is presumed to be a mixin but it could not be found ` +
+            `in the current project. Mixins imported from outside the ` +
+            `project are not yet supported ` +
+            `(see https://github.com/lit/lit/issues/4492).`,
+          code: DiagnosticCode.UNSUPPORTED,
+          category: analyzer.typescript.DiagnosticCategory.Warning,
+        })
+      );
+      return undefined;
+    }
+    foundMixins.push(mixinRef);
+    const superArg = expression.arguments[mixin.superClassArgIndex];
+    const superClass = getSuperClassAndMixins(superArg, foundMixins, analyzer);
+    return superClass;
   }
   analyzer.addDiagnostic(
     createDiagnostic({
       typescript: analyzer.typescript,
       node: expression,
-      message: `Expected expression to be a concrete superclass. Mixins are not yet supported.`,
+      message: `Expected expression to be a concrete superclass or mixin.`,
       code: DiagnosticCode.UNSUPPORTED,
       category: analyzer.typescript.DiagnosticCategory.Warning,
     })
@@ -354,4 +403,34 @@ export const isConstructorFieldInitializer = (
 
 type ConstructorFieldInitializer = ts.AssignmentExpression<ts.EqualsToken> & {
   left: ts.PropertyAccessExpression & {expression: ts.ThisExpression};
+};
+
+export const maybeGetAppliedMixin = (
+  expression: ts.Expression,
+  identifier: ts.Identifier,
+  analyzer: AnalyzerInterface
+): ClassDeclaration | undefined => {
+  if (
+    analyzer.typescript.isCallExpression(expression) &&
+    analyzer.typescript.isIdentifier(expression.expression)
+  ) {
+    const mixinRef = getReferenceForIdentifier(expression.expression, analyzer);
+
+    try {
+      mixinRef?.dereference(MixinDeclaration);
+    } catch (_err) {
+      return undefined;
+    }
+
+    const heritage = getHeritageFromExpression(expression, analyzer);
+
+    if (heritage.superClass) {
+      return new ClassDeclaration({
+        name: identifier.text,
+        node: expression,
+        getHeritage: () => heritage,
+      });
+    }
+  }
+  return undefined;
 };

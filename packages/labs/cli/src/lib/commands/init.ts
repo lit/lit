@@ -48,7 +48,7 @@ export const makeInitCommand = (cli: LitCli): Command => {
           const name = options.name as string;
           /*
            * This is a basic check to ensure that the name is a valid custom
-           * element name. Will make sure you you start off with a character and
+           * element name. Will make sure you start off with a character and
            * at least one hyphen plus more characters. Will not check for the
            * following invalid use cases:
            *   - starting with a digit

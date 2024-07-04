@@ -33,6 +33,11 @@ Pull requests are greatly appreciated! To ensure a smooth review process, please
 5.  When addressing review comments, try to add new commits, rather than modifying previous commits. This makes it easier for reviewers to see what changed since the last review. `git commit --fixup {SHA}` is really useful for this. Obviously, requests like "Please rebase onto master" require changing commits.
 6.  If you [allow changes to be committed to your PR branches](https://help.github.com/articles/allowing-changes-to-a-pull-request-branch-created-from-a-fork/) we can fix some small things in the PR for you, speeding up the review process. This is especially useful if you're new to TypeScript and need help with type annotations.
 7.  Please run `npm run lint` and `npm run format` before submitting PRs. PRs that don't lint and aren't formatted will fail continuous integration tests.
+8.  This repo uses [changesets](https://github.com/changesets/changesets). All PRs _must_ have a changeset file. Run `npm run changeset` to create one.
+
+    If you change one of the "core" libraries, (`lit-html`, `@lit/reactive-element`, `lit-element` and `lit`), include the other core libraries that depend on it in the change. For example, if you change lit-html, include lit-element and lit in the change. This will ensure that there's a version of the dependant library that can be used to guarentee that the dependent library is updated.
+
+    If you made a change that doesn't require the release of a package - like adding tests - you can generate an empty changeset with `npm run changeset -- --empty`.
 
 ## Discord Chat
 

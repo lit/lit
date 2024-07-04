@@ -551,6 +551,96 @@
     },
     {
       "kind": "javascript-module",
+      "path": "element-mixins.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "name": "mixin",
+          "description": "Some generic mixin",
+          "parameters": [
+            {
+              "name": "superClass",
+              "type": {
+                "text": "T",
+                "references": [
+                  {
+                    "name": "T",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-mixins.js",
+                    "start": 0,
+                    "end": 1
+                  }
+                ]
+              }
+            }
+          ],
+          "return": {
+            "type": {
+              "text": "T",
+              "references": [
+                {
+                  "name": "T",
+                  "package": "@lit-internal/test-element-a",
+                  "module": "element-mixins.js",
+                  "start": 0,
+                  "end": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "class",
+          "name": "ElementMixins",
+          "description": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "mixins": [
+            {
+              "name": "mixin",
+              "package": "@lit-internal/test-element-a",
+              "module": "element-mixins.js"
+            }
+          ],
+          "members": [
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "tagName": "element-mixins",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {"kind": "js", "name": "mixin", "declaration": {"name": "mixin"}},
+        {
+          "kind": "js",
+          "name": "ElementMixins",
+          "declaration": {"name": "ElementMixins"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-mixins",
+          "declaration": {"name": "ElementMixins"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "element-props.js",
       "declarations": [
         {

@@ -10,7 +10,7 @@ import fsExtra from 'fs-extra';
 import * as dirCompare from 'dir-compare';
 import * as path from 'path';
 import * as diff from 'diff';
-import {execFileSync} from 'child_process';
+import {execSync, execFileSync} from 'child_process';
 
 const __dirname = path.dirname(new URL(import.meta.url).pathname);
 const red = '\x1b[31m';
@@ -23,7 +23,8 @@ const reset = '\x1b[0m';
  */
 export function formatDirDiff(result: dirCompare.Result): string {
   const lines = [];
-  for (const diff of result.diffSet || []) {
+  // Only show the first 10 diffs.
+  for (const diff of result.diffSet?.slice(0, 10) || []) {
     if (diff.state === 'equal') {
       continue;
     }
@@ -96,8 +97,13 @@ export const assertGoldensMatch = async (
       '--write',
       `${path.join(outputDir, formatGlob)}`,
     ];
-    // https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
-    execFileSync(/^win/.test(process.platform) ? 'npx.cmd' : 'npx', args); //
+    // Windows cannot find file `npx` and it's no longer possible to specify
+    // `npx.cmd` https://github.com/nodejs/node/commit/9095c914ed
+    if (/^win/.test(process.platform)) {
+      execSync(`npx ${args.join(' ')}`);
+    } else {
+      execFileSync('npx', args);
+    }
   }
 
   if (process.env.UPDATE_TEST_GOLDENS) {

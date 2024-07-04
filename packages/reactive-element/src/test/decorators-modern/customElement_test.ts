@@ -6,7 +6,7 @@
 
 import {customElement} from '@lit/reactive-element/decorators/custom-element.js';
 import {generateElementName} from '../test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('@customElement', () => {
   test('defines an element', () => {

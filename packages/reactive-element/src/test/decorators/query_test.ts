@@ -11,7 +11,7 @@ import {
   RenderingElement,
   html,
 } from '../test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 (canTestReactiveElement ? suite : suite.skip)('@query', () => {
   let container: HTMLElement;

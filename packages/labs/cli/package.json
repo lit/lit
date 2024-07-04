@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/cli",
   "description": "Tooling for Lit development",
-  "version": "0.6.3",
+  "version": "0.6.4",
   "publishConfig": {
     "access": "public"
   },
@@ -87,7 +87,7 @@
     "command-line-commands": "^3.0.2",
     "command-line-usage": "^6.1.1",
     "tslib": "^2.0.3",
-    "typescript": "~5.3.3"
+    "typescript": "~5.5.0"
   },
   "devDependencies": {
     "@lit-internal/tests": "^0.0.1",

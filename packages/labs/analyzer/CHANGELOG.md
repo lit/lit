@@ -1,5 +1,11 @@
 # @lit-labs/analyzer
 
+## 0.12.1
+
+### Patch Changes
+
+- [#4147](https://github.com/lit/lit/pull/4147) [`634d8624`](https://github.com/lit/lit/commit/634d86248d8943f15930d2b1d281991c174970b7) Thanks [@43081j](https://github.com/43081j)! - Support for mixin classes/functions as super classes of analyzed classes
+
 ## 0.12.0
 
 ### Minor Changes

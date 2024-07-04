@@ -1136,7 +1136,7 @@ export abstract class ReactiveElement
    * overridden, `super.attributeChangedCallback(name, _old, value)` must be
    * called.
    *
-   * See [using the lifecycle callbacks](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements#using_the_lifecycle_callbacks)
+   * See [responding to attribute changes](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements#responding_to_attribute_changes)
    * on MDN for more information about the `attributeChangedCallback`.
    * @category attributes
    */
@@ -1580,7 +1580,7 @@ export abstract class ReactiveElement
    * @category updates
    */
   protected update(_changedProperties: PropertyValues) {
-    // The forEach() expression will only run when when __reflectingProperties is
+    // The forEach() expression will only run when __reflectingProperties is
     // defined, and it returns undefined, setting __reflectingProperties to
     // undefined
     this.__reflectingProperties &&= this.__reflectingProperties.forEach((p) =>

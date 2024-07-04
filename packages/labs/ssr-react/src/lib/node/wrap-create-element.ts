@@ -6,6 +6,7 @@
 
 import {isCustomElement} from '../utils.js';
 import {renderCustomElement} from './render-custom-element.js';
+import {collectResultSync} from '@lit-labs/ssr/lib/render-result.js';
 
 import type {
   createElement as ReactCreateElement,
@@ -37,7 +38,7 @@ export function wrapCreateElement(
         const templateShadowRoot = originalCreateElement('template', {
           ...templateAttributes,
           dangerouslySetInnerHTML: {
-            __html: [...shadowContents].join(''),
+            __html: collectResultSync(shadowContents),
           },
         });
 

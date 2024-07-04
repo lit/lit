@@ -1,5 +1,17 @@
 # Change Log
 
+## 4.0.6
+
+### Patch Changes
+
+- [#4646](https://github.com/lit/lit/pull/4646) [`abf30b3e`](https://github.com/lit/lit/commit/abf30b3e895ea5d833f6d9559612e2b1ba47580d) - The value provided by the `ref()` directive will always be `undefined` when the element is disconnected.
+
+## 4.0.5
+
+### Patch Changes
+
+- [#4570](https://github.com/lit/lit/pull/4570) [`bd881370`](https://github.com/lit/lit/commit/bd881370b83d366f7654dd510731242a68949a20) - Fix the lit-html marker length to be consistently 9 characters.
+
 ## 4.0.4
 
 ### Patch Changes
@@ -480,7 +492,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 ### Changed
 
-- Added a static `getPropertyDescriptor` method to allow easier customization of property accessors. This method should return a a `PropertyDescriptor` to install on the property. If no descriptor is returned, no property accessor is created. ([#911](https://github.com/Polymer/lit-element/issues/911))
+- Added a static `getPropertyDescriptor` method to allow easier customization of property accessors. This method should return a `PropertyDescriptor` to install on the property. If no descriptor is returned, no property accessor is created. ([#911](https://github.com/Polymer/lit-element/issues/911))
 - The value returned by `render` is always rendered, even if it isn't a `TemplateResult`. ([#712](https://github.com/Polymer/lit-element/issues/712))
 
 ### Added
