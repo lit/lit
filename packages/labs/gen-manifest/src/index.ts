@@ -25,6 +25,7 @@ import {
 } from '@lit-labs/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
+import {ReactiveProperty} from '@lit-labs/analyzer/lib/model.js';
 
 /**
  * For optional entries in the manifest, if the value has no meaningful value
@@ -172,7 +173,9 @@ const convertLitElementDeclaration = (
     ...convertClassDeclaration(declaration),
     tagName: declaration.tagname,
     customElement: true,
-    // attributes: [], // TODO
+    attributes: transformIfNotEmpty(declaration.reactiveProperties, (v) =>
+      Array.from(v.values()).map(convertAttribute)
+    ),
     events: transformIfNotEmpty(declaration.events, (v) =>
       Array.from(v.values()).map(convertEvent)
     ),
@@ -313,6 +316,23 @@ const convertEvent = (event: Event): cem.Event => {
     type: transformIfNotEmpty(event.type, convertType) ?? {text: 'Event'}, // TODO(kschaaf) type isn't optional in CEM
     description: ifNotEmpty(event.description),
     summary: ifNotEmpty(event.summary),
+  };
+};
+
+const convertAttribute = (
+  reactiveProperty: ReactiveProperty
+): cem.Attribute => {
+  return {
+    name:
+      typeof reactiveProperty.attribute === 'string'
+        ? reactiveProperty.attribute
+        : reactiveProperty.name,
+    type: transformIfNotEmpty(reactiveProperty.type, convertType),
+    summary: reactiveProperty.summary,
+    deprecated: reactiveProperty.deprecated,
+    description: reactiveProperty.description,
+    default: reactiveProperty.default,
+    fieldName: reactiveProperty.name,
   };
 };
 
