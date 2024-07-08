@@ -25,10 +25,9 @@ export interface VirtualizeDirectiveConfig<T> {
   renderItem?: RenderItemFunction<T>;
 
   /**
-   * A function given to the `repeat` directive. This is
-   * given the item value and it should return a guaranteed
-   * unique key. The unique key helps the repeat directive
-   * optimize rendering of large lists.
+   * A function that is given the item being rendered and
+   * the index of the item in the `items` array. This must
+   * return a unique identifier for the item itself.
    */
   keyFunction?: KeyFn<T>;
 
