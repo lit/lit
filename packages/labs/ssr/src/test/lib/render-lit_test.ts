@@ -151,11 +151,20 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
-  test('render into a <script>', async () => {
+  test('render into a <script> tag', async () => {
     const {render, renderScript} = await setup();
     assert.throws(() => {
       render(renderScript);
     }, "This could be because you're attempting to render an expression in an invalid location.");
+  });
+
+  test('render into a <style> tag', async () => {
+    const {render, templateWithStyleTag} = await setup();
+    const result = await render(templateWithStyleTag('blue'));
+    assert.is(
+      result,
+      `<!--lit-part sbGtsT5oBc0=--><style>:host {color: <!--lit-part-->blue<!--/lit-part-->;}</style><!--/lit-part-->`
+    );
   });
 
   /* Attribute Expressions */
@@ -802,24 +811,11 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       await setup();
     assert.throws(
       () => render(renderServerOnlyScript),
-      /Found binding inside an executable <script> tag in a server-only template\./
+      /Found a binding inside an executable <script> tag\./
     );
     assert.throws(
       () => render(renderServerOnlyScriptDeep),
-      /Found binding inside an executable <script> tag in a server-only template\./
-    );
-  });
-
-  test('server-only template into a <style>', async () => {
-    const {render, renderServerOnlyStyle, renderServerOnlyStyleDeep} =
-      await setup();
-    assert.throws(
-      () => render(renderServerOnlyStyle),
-      /Found binding inside a <style> tag in a server-only template\./
-    );
-    assert.throws(
-      () => render(renderServerOnlyStyleDeep),
-      /Found binding inside a <style> tag in a server-only template\./
+      /Found a binding inside an executable <script> tag\./
     );
   });
 

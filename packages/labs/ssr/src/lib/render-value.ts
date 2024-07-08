@@ -517,10 +517,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           ops.push({
             type: 'custom-element-shadow',
           });
-        } else if (
-          !hydratable &&
-          /^(title|textarea|script|style)$/.test(node.tagName)
-        ) {
+        } else if (/^(title|textarea|script|style)$/.test(node.tagName)) {
           const dangerous = isJavaScriptScriptTag(node);
           // Marker comments in a rawtext element will be parsed as text,
           // so we need to look at the text value of childnodes to try to
@@ -539,16 +536,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               flushTo(textStart + mark.index!);
               if (dangerous) {
                 throw new Error(
-                  `Found binding inside an executable <script> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to execute arbitrary JavaScript. If you do need to create a script element with dynamic contents, you can use the unsafeHTML directive to make one, as that way the code is clearly marked as unsafe and needing careful handling. The template with the dangerous binding is:
-
-    ${displayTemplateResult(result)}`
-                );
-              }
-              if (node.tagName === 'style') {
-                throw new Error(
-                  `Found binding inside a <style> tag in a server-only template. For security reasons, this is not supported, as it could allow an attacker to exfiltrate information from the page. If you do need to create a style element with dynamic contents, you can use the unsafeHTML directive to make one, as that way the code is clearly marked as unsafe and needing careful handling. The template with the dangerous binding is:
-
-    ${displayTemplateResult(result)}`
+                  `Found a binding inside an executable <script> tag. For security reasons, this is not supported, as it could allow an attacker to execute arbitrary JavaScript. If you do need to create a script element with dynamic contents, you can use the unsafeHTML directive to make one, as that way the code is clearly marked as unsafe and needing careful handling. The template with the dangerous binding is:
+${displayTemplateResult(result)}`
                 );
               }
               ops.push({

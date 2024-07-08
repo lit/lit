@@ -62,6 +62,8 @@ export const templateWithSvgTemplate = (x: number, y: number, r: number) => html
 export const mathTemplate = (x: number) => mathml`<mn>${x}</mn>`;
 // prettier-ignore
 export const templateWithMathTemplate = (x: number) => html`<math>${mathTemplate(x)}</math>`;
+// prettier-ignore
+export const templateWithStyleTag = (color: string) => html`<style>:host {color: ${color};}</style>`;
 
 /* Reflected Property Expressions */
 
