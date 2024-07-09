@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ElementSub from '@lit-internal/test-element-a-vue/sub/ElementSub.js';
+import ElementSub from '@lit-internal/test-element-a-vue/sub/ElementSub.vue.js';
 
 // TODO(sorvell): add an invalidate property type and test that it fails
 // to type check.

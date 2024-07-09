@@ -23,7 +23,8 @@ const reset = '\x1b[0m';
  */
 export function formatDirDiff(result: dirCompare.Result): string {
   const lines = [];
-  for (const diff of result.diffSet || []) {
+  // Only show the first 10 diffs.
+  for (const diff of result.diffSet?.slice(0, 10) || []) {
     if (diff.state === 'equal') {
       continue;
     }

@@ -3,6 +3,7 @@
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
+import {isServer} from 'lit-html/is-server.js';
 import {
   ReactiveController,
   ReactiveControllerHost,
@@ -94,6 +95,9 @@ export class MutationController<T = unknown> implements ReactiveController {
     this._config = config;
     this._skipInitial = skipInitial ?? this._skipInitial;
     this.callback = callback;
+    if (isServer) {
+      return;
+    }
     // Check browser support.
     if (!window.MutationObserver) {
       console.warn(
