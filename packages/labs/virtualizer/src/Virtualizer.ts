@@ -553,12 +553,12 @@ export class Virtualizer {
     if (this._connected) {
       // _childrenRO should be non-null if we're connected
       this._children.forEach((child) => this._childrenRO!.observe(child));
-        this._checkScrollIntoViewTarget(this._childrenPos);
-        this._positionChildren(this._childrenPos);
-        this._sizeHostElement(this._scrollSize);
-        this._correctScrollError();
-        if (this._benchmarkStart && 'mark' in window.performance) {
-          window.performance.mark('uv-end');
+      this._checkScrollIntoViewTarget(this._childrenPos);
+      this._positionChildren(this._childrenPos);
+      this._sizeHostElement(this._scrollSize);
+      this._correctScrollError();
+      if (this._benchmarkStart && 'mark' in window.performance) {
+        window.performance.mark('uv-end');
       }
     }
   }
