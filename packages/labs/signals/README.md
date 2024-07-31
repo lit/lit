@@ -120,7 +120,7 @@ subscribing to updates and updating the DOM when the signal changes.
 The `watch()` directive allows for very targeted updates of the DOM, which can
 be good for performance (but as always, measure!).
 
-Updates from `watch()` directives are batches and commited during the next
+Updates from `watch()` directives are batched and commited during the next
 reactive update. If there are only updates from `watch()` directives, then those
 updates are commited without a full render - preserving both DOM coherence and
 targetted updates. If there is another reactive update pending, then the whole
