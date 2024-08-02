@@ -11,7 +11,8 @@
     "packages/labs/*",
     "packages/labs/test-projects/*",
     "packages/localize/examples/*",
-    "examples/*"
+    "examples/*",
+    "playground"
   ],
   "scripts": {
     "benchmarks": "cd packages/benchmarks && npm run benchmarks",
