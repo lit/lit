@@ -43,34 +43,36 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
     private __watcher?: Signal.subtle.Watcher;
 
     private __watch() {
-      if (this.__watcher === undefined) {
-        // We create a fresh computed instead of just re-using the existing one
-        // because of https://github.com/proposal-signals/signal-polyfill/issues/27
-        this.__performUpdateSignal = new Signal.Computed(() => {
-          this.__forceUpdateSignal.get();
-          super.performUpdate();
-        });
-        const watcher = (this.__watcher = new Signal.subtle.Watcher(() => {
-          if (this.__forcingUpdate === false) {
-            this.requestUpdate();
-          }
-          watcher.watch();
-        }));
-        this.__watcher.watch(this.__performUpdateSignal);
+      if (this.__watcher !== undefined) {
+        return;
       }
+      // We create a fresh computed instead of just re-using the existing one
+      // because of https://github.com/proposal-signals/signal-polyfill/issues/27
+      this.__performUpdateSignal = new Signal.Computed(() => {
+        this.__forceUpdateSignal.get();
+        super.performUpdate();
+      });
+      const watcher = (this.__watcher = new Signal.subtle.Watcher(() => {
+        if (this.__forcingUpdate === false) {
+          this.requestUpdate();
+        }
+        watcher.watch();
+      }));
+      this.__watcher.watch(this.__performUpdateSignal);
     }
 
     private __unwatch() {
-      if (this.__watcher !== undefined) {
-        this.__watcher!.unwatch(this.__performUpdateSignal!);
-        this.__performUpdateSignal = undefined;
-        this.__watcher = undefined;
+      if (this.__watcher === undefined) {
+        return;
       }
+      this.__watcher!.unwatch(this.__performUpdateSignal!);
+      this.__performUpdateSignal = undefined;
+      this.__watcher = undefined;
     }
 
     /**
-     * Used to force an uncached read of the __updateSignal when we need to read
-     * the current value during an update.
+     * Used to force an uncached read of the __performUpdateSignal when we need
+     * to read the current value during an update.
      *
      * If https://github.com/tc39/proposal-signals/issues/151 is resolved, we
      * won't need this.
@@ -113,6 +115,13 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
     private __pendingWatches = new Set<WatchDirective<unknown>>();
 
     protected override performUpdate() {
+      if (!this.isUpdatePending) {
+        // super.performUpdate() performs this check, so we bail early so that
+        // we don't read the __performUpdateSignal when it's not going to access
+        // any signals. This keeps the last signals read as the sources so that
+        // we'll get notified of changes to them.
+        return;
+      }
       // Always enable watching before an update, even if disconnected, so that
       // we can track signals that are accessed during the update.
       this.__watch();
@@ -156,7 +165,6 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
     }
 
     override connectedCallback(): void {
-      this.__watch();
       super.connectedCallback();
       // Because we might have missed some signal accesses while disconnected,
       // we need to force a full render on the next update.
