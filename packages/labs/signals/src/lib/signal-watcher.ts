@@ -19,6 +19,8 @@ export interface SignalWatcher extends ReactiveElement {
 
 type SignalWatcherInterface = SignalWatcher;
 
+const signalWatcherBrand: unique symbol = Symbol('SignalWatcherBrand');
+
 /**
  * Adds the ability for a LitElement or other ReactiveElement class to
  * watch for access to signals during the update lifecycle and trigger a new
@@ -27,7 +29,17 @@ type SignalWatcherInterface = SignalWatcher;
 export function SignalWatcher<T extends ReactiveElementConstructor>(
   Base: T
 ): T {
+  // Only apply the mixin once
+  if ((Base as typeof SignalWatcher)[signalWatcherBrand] === true) {
+    console.warn(
+      'SignalWatcher should not be applied to the same class more than once.'
+    );
+    return Base;
+  }
+
   abstract class SignalWatcher extends Base implements SignalWatcherInterface {
+    static [signalWatcherBrand]: true;
+
     private __watcher?: Signal.subtle.Watcher;
 
     private __watch() {
@@ -115,16 +127,22 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
     protected override update(
       changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>
     ): void {
-      if (this.__doFullRender) {
-        // Force future updates to not perform full renders by default.
-        this.__doFullRender = false;
-        super.update(changedProperties);
-      } else {
-        // For a partial render, just commit the pending watches.
-        this.__pendingWatches.forEach((d) => d.commmit());
-        this.__pendingWatches.clear();
-        // Since we don't call super.update(), we need to set this to false
+      // We need a try block because both super.update() and
+      // WatchDirective.commit() can throw, and we need to ensure that post-
+      // update cleanup happens.
+      try {
+        if (this.__doFullRender) {
+          // Force future updates to not perform full renders by default.
+          this.__doFullRender = false;
+          super.update(changedProperties);
+        } else {
+          // For a partial render, just commit the pending watches.
+          this.__pendingWatches.forEach((d) => d.commit());
+        }
+      } finally {
+        // If we didn't call super.update(), we need to set this to false
         this.isUpdatePending = false;
+        this.__pendingWatches.clear();
       }
     }
 

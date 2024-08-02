@@ -84,7 +84,7 @@ This effectively makes the the return result of `render()` a computed signal.
 ```ts
 import {LitElement, html} from 'lit';
 import {customElement, property} from 'lit';
-import {SignalWatcher, signal} from '@lit-labs/preact-signals';
+import {SignalWatcher, signal} from '@lit-labs/signals';
 
 const count = signal(0);
 
@@ -131,7 +131,7 @@ template is re-rendered, along with the latest signal values.
 ```ts
 import {LitElement, html} from 'lit';
 import {customElement, property} from 'lit';
-import {SignalWatcher, watch, signal} from '@lit-labs/preact-signals';
+import {SignalWatcher, watch, signal} from '@lit-labs/signals';
 
 const count = signal(0);
 
@@ -168,7 +168,7 @@ Lit's default `html` tag and automatically wraps any signals in `watch()`.
 ```ts
 import {LitElement} from 'lit';
 import {customElement, property} from 'lit';
-import {SignalWatcher, html, signal} from '@lit-labs/preact-signals';
+import {SignalWatcher, html, signal} from '@lit-labs/signals';
 
 const count = signal(0);
 

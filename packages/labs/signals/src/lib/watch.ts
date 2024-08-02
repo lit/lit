@@ -26,6 +26,8 @@ export class WatchDirective<T> extends AsyncDirective {
         return this.__signal?.get();
       });
       const watcher = (this.__watcher = new Signal.subtle.Watcher(() => {
+        // TODO: If we're not running inside a SignalWatcher, we can commit to
+        // the DOM independently.
         this.__host?.updateWatchDirective(this as WatchDirective<unknown>);
         watcher.watch();
       }));
@@ -41,7 +43,7 @@ export class WatchDirective<T> extends AsyncDirective {
     }
   }
 
-  commmit() {
+  commit() {
     this.setValue(Signal.subtle.untrack(() => this.__computed?.get()));
   }
 
