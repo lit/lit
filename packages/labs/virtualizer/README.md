@@ -452,7 +452,7 @@ Example usage:
 ```js
 // Where `myVirtualizer` is a reference to a <lit-virtualizer> instance, this
 // will scroll to the 100th item and put it in the center of the viewport.
-myVirtualizer.scrollToIndex(100, 'center');
+myVirtualizer.scrollToIndex(99, 'center');
 ```
 
 ### `visibilityChanged` event
