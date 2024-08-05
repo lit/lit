@@ -329,12 +329,12 @@ After:
 class HomePage {
   hello() {
     return msg(html`Hello World`, {
-      desc: "Home page / Greeting to Earth",
+      desc: 'Home page / Greeting to Earth',
     });
   }
   goodbye() {
     return msg(html`Goodbye World`, {
-      desc: "Home page / Farewell to Earth",
+      desc: 'Home page / Farewell to Earth',
     });
   }
 }

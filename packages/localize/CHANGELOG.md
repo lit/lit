@@ -161,8 +161,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   #### Before
 
   ```ts
-  import { LitElement } from "lit-element";
-  import { Localized } from "@lit/localize/localized-element.js";
+  import {LitElement} from 'lit-element';
+  import {Localized} from '@lit/localize/localized-element.js';
 
   class MyElement extends Localized(LitElement) {}
   ```
@@ -183,8 +183,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ###### Without decorators
 
   ```ts
-  import { LitElement } from "lit";
-  import { updateWhenLocaleChanges } from "@lit/localize";
+  import {LitElement} from 'lit';
+  import {updateWhenLocaleChanges} from '@lit/localize';
 
   class MyElement extends LitElement {
     constructor() {
@@ -223,12 +223,12 @@ After:
 class HomePage {
   hello() {
     return msg(html`Hello World`, {
-      desc: "Home page / Greeting to Earth",
+      desc: 'Home page / Greeting to Earth',
     });
   }
   goodbye() {
     return msg(html`Goodbye World`, {
-      desc: "Home page / Farewell to Earth",
+      desc: 'Home page / Farewell to Earth',
     });
   }
 }
@@ -251,7 +251,7 @@ class HomePage {
   Before:
 
   ```ts
-  msg((name) => html`Hello <b>${name}</b>!`, { args: [getUsername()] });
+  msg((name) => html`Hello <b>${name}</b>!`, {args: [getUsername()]});
   ```
 
   After:
@@ -264,7 +264,7 @@ class HomePage {
   tag. This allows lit-localize to access dynamic values at runtime.
 
   ```ts
-  import { msg, str } from "lit-localize";
+  import {msg, str} from 'lit-localize';
   msg(str`Hello ${name}`);
   ```
 
@@ -418,11 +418,11 @@ class HomePage {
 
   ```typescript
   msg(
-    "hello",
+    'hello',
     (url: string, name: string) =>
       html`Hello ${name}, click <a href="${url}">here</a>!`,
-    "World",
-    "https://www.example.com/",
+    'World',
+    'https://www.example.com/'
   );
   ```
 
