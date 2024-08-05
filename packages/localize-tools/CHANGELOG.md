@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.8.0
+
+### Minor Changes
+
+- [#4682](https://github.com/lit/lit/pull/4682) [`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c) - Update typescript to 5.5.0
+
+### Patch Changes
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98)]:
+  - lit@3.2.0
+
 ## 0.7.2
 
 ### Patch Changes
@@ -318,12 +329,12 @@ After:
 class HomePage {
   hello() {
     return msg(html`Hello World`, {
-      desc: 'Home page / Greeting to Earth',
+      desc: "Home page / Greeting to Earth",
     });
   }
   goodbye() {
     return msg(html`Goodbye World`, {
-      desc: 'Home page / Farewell to Earth',
+      desc: "Home page / Farewell to Earth",
     });
   }
 }

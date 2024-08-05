@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.12.2
+
+### Patch Changes
+
+- [#4679](https://github.com/lit/lit/pull/4679) [`eb84bebc`](https://github.com/lit/lit/commit/eb84bebcf8d3cd6d3ce6731a9fa754f5ae6e445c) Thanks [@codingjoe](https://github.com/codingjoe)! - Move localize setup to resolve import loop
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98)]:
+  - lit@3.2.0
+
 ## 0.12.1
 
 ### Patch Changes
@@ -152,8 +161,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   #### Before
 
   ```ts
-  import {LitElement} from 'lit-element';
-  import {Localized} from '@lit/localize/localized-element.js';
+  import { LitElement } from "lit-element";
+  import { Localized } from "@lit/localize/localized-element.js";
 
   class MyElement extends Localized(LitElement) {}
   ```
@@ -174,8 +183,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   ###### Without decorators
 
   ```ts
-  import {LitElement} from 'lit';
-  import {updateWhenLocaleChanges} from '@lit/localize';
+  import { LitElement } from "lit";
+  import { updateWhenLocaleChanges } from "@lit/localize";
 
   class MyElement extends LitElement {
     constructor() {
@@ -214,12 +223,12 @@ After:
 class HomePage {
   hello() {
     return msg(html`Hello World`, {
-      desc: 'Home page / Greeting to Earth',
+      desc: "Home page / Greeting to Earth",
     });
   }
   goodbye() {
     return msg(html`Goodbye World`, {
-      desc: 'Home page / Farewell to Earth',
+      desc: "Home page / Farewell to Earth",
     });
   }
 }
@@ -242,7 +251,7 @@ class HomePage {
   Before:
 
   ```ts
-  msg((name) => html`Hello <b>${name}</b>!`, {args: [getUsername()]});
+  msg((name) => html`Hello <b>${name}</b>!`, { args: [getUsername()] });
   ```
 
   After:
@@ -255,7 +264,7 @@ class HomePage {
   tag. This allows lit-localize to access dynamic values at runtime.
 
   ```ts
-  import {msg, str} from 'lit-localize';
+  import { msg, str } from "lit-localize";
   msg(str`Hello ${name}`);
   ```
 
@@ -409,11 +418,11 @@ class HomePage {
 
   ```typescript
   msg(
-    'hello',
+    "hello",
     (url: string, name: string) =>
       html`Hello ${name}, click <a href="${url}">here</a>!`,
-    'World',
-    'https://www.example.com/'
+    "World",
+    "https://www.example.com/",
   );
   ```
 
