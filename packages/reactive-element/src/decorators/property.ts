@@ -127,6 +127,9 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
   if (properties === undefined) {
     globalThis.litPropertyMetadata.set(metadata, (properties = new Map()));
   }
+  if (kind === 'setter') {
+    options = {...options, wrapped: true};
+  }
   properties.set(context.name, options);
 
   if (kind === 'accessor') {
