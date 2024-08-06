@@ -193,6 +193,46 @@ suite('@property', () => {
     assert.equal(el.getAttribute('foo'), '7');
   });
 
+  test('reports initial changes to properties', async () => {
+    let changedProperties: PropertyValues | undefined;
+
+    class E extends ReactiveElement {
+      @property() accessor unValued = undefined;
+      @property() accessor valued = 'valued';
+      _valuedAccessor = 'valuedAccessor';
+      @property()
+      set valuedAccessor(v) {
+        this._valuedAccessor = v;
+      }
+      get valuedAccessor() {
+        return this._valuedAccessor;
+      }
+
+      _unValuedAccessor?: string;
+      @property()
+      set unValuedAccessor(v) {
+        this._unValuedAccessor = v;
+      }
+      get unValuedAccessor() {
+        return this._unValuedAccessor;
+      }
+
+      override update(changed: PropertyValues) {
+        changedProperties = changed;
+        super.update(changed);
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    const expectedChanges = new Map([
+      ['valued', undefined],
+      ['valuedAccessor', undefined],
+    ]);
+    assert.deepEqual(changedProperties, expectedChanges);
+  });
+
   test('can mix property options via decorator and via getter', async () => {
     const hasChanged = (value: any, old: any) =>
       old === undefined || value > old;
