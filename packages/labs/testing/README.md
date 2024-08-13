@@ -38,6 +38,15 @@ export default {
 };
 ```
 
+Signature
+
+`litSsrPlugin(options: LitSsrPluginOptions = {}): TestRunnerPlugin<Payload>`
+
+- `options: object` - Options object containing the following properties
+  - `initScript: string` - Relative paths to a script, which would be imported
+    inside the worker for server-side rendering before importing the modules.
+    This allows registering e.g. Node.js ESM hooks to directly import .ts files.
+
 ### Fixtures
 
 The package exports functions that will generate fixtures by passing the

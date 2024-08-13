@@ -7,13 +7,18 @@
 import {parentPort, workerData} from 'worker_threads';
 import {render} from '@lit-labs/ssr';
 
-import type {Payload} from './lit-ssr-plugin.js';
+import type {LitSsrPluginOptions, Payload} from './lit-ssr-plugin.js';
 
 if (parentPort === null) {
   throw new Error('worker.js must only be run in a worker thread');
 }
 
-const {template, modules} = workerData as Payload;
+const {template, modules, initScript} = workerData as Payload &
+  LitSsrPluginOptions;
+
+if (initScript) {
+  await import(initScript);
+}
 
 await Promise.all(modules.map((module) => import(module)));
 

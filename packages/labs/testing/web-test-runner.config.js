@@ -28,7 +28,7 @@ const config = {
       timeout: '60000',
     },
   },
-  plugins: [litSsrPlugin()],
+  plugins: [litSsrPlugin({initScript: './test/init-script.js'})],
 };
 
 export default config;
