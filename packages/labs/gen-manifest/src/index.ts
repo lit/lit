@@ -327,10 +327,10 @@ const convertAttribute = (
       typeof reactiveProperty.attribute === 'string'
         ? reactiveProperty.attribute
         : reactiveProperty.name,
-    type: transformIfNotEmpty(reactiveProperty.type, convertType),
-    summary: reactiveProperty.summary,
-    deprecated: reactiveProperty.deprecated,
-    description: reactiveProperty.description,
+    type: transformIfNotEmpty(reactiveProperty.type, convertType) ?? {
+      text: 'unknown',
+    },
+    ...convertCommonInfo(reactiveProperty),
     default: reactiveProperty.default,
     fieldName: reactiveProperty.name,
   };

@@ -18,6 +18,7 @@ import {getPropertyDecorator, getPropertyOptions} from './decorators.js';
 import {hasStaticModifier} from '../utils.js';
 import {DiagnosticCode} from '../diagnostic-code.js';
 import {createDiagnostic} from '../errors.js';
+import {parseNodeJSDocInfo} from '../javascript/jsdoc.js';
 
 export type TypeScript = typeof ts;
 
@@ -62,6 +63,7 @@ export const getProperties = (
         name,
         node: prop,
         optionsNode: options,
+        ...parseNodeJSDocInfo(prop, analyzer),
         type: getTypeForNode(prop, analyzer),
         attribute: getPropertyAttribute(ts, options, name),
         typeOption: getPropertyType(ts, options),
