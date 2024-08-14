@@ -1,5 +1,11 @@
 # @lit-labs/ssr-dom-shim
 
+## 1.2.1
+
+### Patch Changes
+
+- [#4553](https://github.com/lit/lit/pull/4553) [`65bc240c`](https://github.com/lit/lit/commit/65bc240c91e39163a4debd59351410667b2e0ce9) Thanks [@kyubisation](https://github.com/kyubisation)! - Implement Element.localName and Element.tagName. Fixes [3375](https://github.com/lit/lit/issues/3375).
+
 ## 1.2.0
 
 ### Minor Changes

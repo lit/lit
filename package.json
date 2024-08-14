@@ -291,7 +291,7 @@
     "rollup-plugin-summary": "^2.0.1",
     "typescript": "~5.5.0",
     "uvu": "^0.5.6",
-    "wireit": "^0.14.0"
+    "wireit": "^0.14.7"
   },
   "overrides": {
     "@rollup/pluginutils": "^5.1.0"

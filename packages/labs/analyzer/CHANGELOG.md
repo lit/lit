@@ -1,5 +1,11 @@
 # @lit-labs/analyzer
 
+## 0.13.0
+
+### Minor Changes
+
+- [#4682](https://github.com/lit/lit/pull/4682) [`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c) - Update typescript to 5.5.0
+
 ## 0.12.1
 
 ### Patch Changes

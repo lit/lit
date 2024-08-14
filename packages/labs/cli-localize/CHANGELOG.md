@@ -1,5 +1,12 @@
 # @lit-labs/cli
 
+## 0.2.1
+
+### Patch Changes
+
+- Updated dependencies [[`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c)]:
+  - @lit/localize-tools@0.8.0
+
 ## 0.2.0
 
 ### Minor Changes

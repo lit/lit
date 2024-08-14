@@ -672,7 +672,7 @@ export const nothing = Symbol.for('lit-nothing');
 /**
  * The cache of prepared templates, keyed by the tagged TemplateStringsArray
  * and _not_ accounting for the specific template tag used. This means that
- * template tags cannot be dynamic - the must statically be one of html, svg,
+ * template tags cannot be dynamic - they must statically be one of html, svg,
  * or attr. This restriction simplifies the cache lookup, which is on the hot
  * path for rendering.
  */
@@ -745,7 +745,7 @@ function trustFromTemplateString(
   // though we might need to make that check inside of the html and svg
   // functions, because precompiled templates don't come in as
   // TemplateStringArray objects.
-  if (!Array.isArray(tsa) || !tsa.hasOwnProperty('raw')) {
+  if (!isArray(tsa) || !tsa.hasOwnProperty('raw')) {
     let message = 'invalid template strings array';
     if (DEV_MODE) {
       message = `
@@ -1339,8 +1339,8 @@ class ChildPart implements Disconnectable {
   _$parent: Disconnectable | undefined;
   /**
    * Connection state for RootParts only (i.e. ChildPart without _$parent
-   * returned from top-level `render`). This field is unsed otherwise. The
-   * intention would clearer if we made `RootPart` a subclass of `ChildPart`
+   * returned from top-level `render`). This field is unused otherwise. The
+   * intention would be clearer if we made `RootPart` a subclass of `ChildPart`
    * with this field (and a different _$isConnected getter), but the subclass
    * caused a perf regression, possibly due to making call sites polymorphic.
    * @internal
@@ -1516,7 +1516,7 @@ class ChildPart implements Disconnectable {
                 `This is a security risk, as style injection attacks can ` +
                 `exfiltrate data and spoof UIs. ` +
                 `Consider instead using css\`...\` literals ` +
-                `to compose styles, and make do dynamic styling with ` +
+                `to compose styles, and do dynamic styling with ` +
                 `css custom properties, ::parts, <slot>s, ` +
                 `and by mutating the DOM rather than stylesheets.`;
             } else {
@@ -1745,7 +1745,7 @@ class ChildPart implements Disconnectable {
     }
   }
   /**
-   * Implementation of RootPart's `isConnected`. Note that this metod
+   * Implementation of RootPart's `isConnected`. Note that this method
    * should only be called on `RootPart`s (the `ChildPart` returned from a
    * top-level `render()` call). It has no effect on non-root ChildParts.
    * @param isConnected Whether to set
@@ -1789,11 +1789,11 @@ export interface RootPart extends ChildPart {
 
 export type {AttributePart};
 class AttributePart implements Disconnectable {
-  readonly type = ATTRIBUTE_PART as
+  readonly type:
     | typeof ATTRIBUTE_PART
     | typeof PROPERTY_PART
     | typeof BOOLEAN_ATTRIBUTE_PART
-    | typeof EVENT_PART;
+    | typeof EVENT_PART = ATTRIBUTE_PART;
   readonly element: HTMLElement;
   readonly name: string;
   readonly options: RenderOptions | undefined;
@@ -2157,7 +2157,7 @@ class ElementPart implements Disconnectable {
  * external users.
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
- * to keep a number of (otherwise private) top-level exports  mangled in the
+ * to keep a number of (otherwise private) top-level exports mangled in the
  * client side code, we export a _$LH object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
@@ -2195,7 +2195,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(global.litHtmlVersions ??= []).push('3.1.4');
+(global.litHtmlVersions ??= []).push('3.2.0');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

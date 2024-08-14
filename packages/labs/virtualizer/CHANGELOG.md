@@ -1,5 +1,14 @@
 # @lit-labs/virtualizer
 
+## 2.0.14
+
+### Patch Changes
+
+- [#4687](https://github.com/lit/lit/pull/4687) [`8ecf3c03`](https://github.com/lit/lit/commit/8ecf3c03d73486e2529c553e92ef4f044c49aab9) Thanks [@alanbuzek](https://github.com/alanbuzek)! - Fix a null pointer exception when virtulizer component is destroyed and then recreated again quickly.
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98)]:
+  - lit@3.2.0
+
 ## 2.0.13
 
 ### Patch Changes

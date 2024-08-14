@@ -1009,7 +1009,7 @@ export abstract class ReactiveElement
       (res) => (this.enableUpdating = res)
     );
     this._$changedProperties = new Map();
-    // This enqueues a microtask that ust run before the first update, so it
+    // This enqueues a microtask that must run before the first update, so it
     // must be called before requestUpdate()
     this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
