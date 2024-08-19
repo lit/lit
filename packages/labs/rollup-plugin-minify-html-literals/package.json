@@ -53,11 +53,13 @@
       ]
     },
     "test": {
-      "command": "nyc mocha -r ts-node/register -r source-map-support/register test/*.js",
+      "command": "nyc mocha -r source-map-support/register test/*.js",
       "dependencies": [
         "build"
       ],
-      "files": [],
+      "files": [
+        "package.json"
+      ],
       "output": [
         ".nyc_output/"
       ]
@@ -81,28 +83,27 @@
   "dependencies": {
     "clean-css": "^4.2.1",
     "html-minifier": "^4.0.0",
-    "magic-string": "^0.25.0",
+    "magic-string": "^0.30.11",
     "rollup-pluginutils": "^2.8.2",
     "typescript": "^2.9.2 || ^3.0.0 || ^4.0.0 || ^5.0.0"
   },
   "peerDependencies": {
-    "rollup": "^0.65.2 || ^1.0.0 || ^2.0.0 || ^3.0.0"
+    "rollup": "^0.65.2 || ^1.0.0 || ^2.0.0 || ^3.0.0 || ^4.0.0"
   },
   "devDependencies": {
+    "@types/chai": "^4.3.1",
     "@types/clean-css": "^4.2.0",
-    "@types/html-minifier": "^3.5.3",
+    "@types/html-minifier": "^4.0.5",
     "@types/mocha": "^5.2.5",
     "@types/node": "^14.14.32",
     "@types/sinon": "^5.0.1",
     "chai": "^5.1.0",
-    "@types/chai": "^4.3.1",
     "husky": "^0.14.3",
     "mocha": "^7.2.0",
     "nyc": "^15.0.0",
-    "rollup": "^3.5.1",
+    "rollup": "^4.21.0",
     "sinon": "^6.1.4",
     "source-map-support": "^0.5.6",
-    "standard-version": "^9.0.0",
-    "ts-node": "^7.0.0"
+    "standard-version": "^9.0.0"
   }
 }
