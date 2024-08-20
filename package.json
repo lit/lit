@@ -281,7 +281,7 @@
     "eslint-plugin-import": "^2.28.1",
     "eslint-plugin-no-only-tests": "^3.1.0",
     "husky": "^8.0.1",
-    "ignore-sync": "^5.0.1",
+    "ignore-sync": "^7.0.1",
     "lint-staged": "^13.0.3",
     "mocha": "^10.0.0",
     "prettier": "^3.2.5",
