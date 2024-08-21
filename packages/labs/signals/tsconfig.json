@@ -3,7 +3,7 @@
     "composite": true,
     "target": "es2019",
     "module": "NodeNext",
-    "lib": ["es2020", "DOM", "DOM.Iterable"],
+    "lib": ["es2023", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,

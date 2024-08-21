@@ -17,9 +17,20 @@ export interface SignalWatcher extends ReactiveElement {
   updateWatchDirective(d: WatchDirective<unknown>): void;
 }
 
-type SignalWatcherInterface = SignalWatcher;
+interface SignalWatcherInterface extends SignalWatcher {}
+interface SignalWatcherInternal extends SignalWatcher {
+  __forcingUpdate: boolean;
+}
 
 const signalWatcherBrand: unique symbol = Symbol('SignalWatcherBrand');
+
+// const watcherFinalizationRegistry = new FinalizationRegistry(
+//   (element: SignalWatcher) => {
+//     element.__unwatch();
+//   }
+// );
+
+const elementForWatcher = new WeakMap<Signal.subtle.Watcher, SignalWatcher>();
 
 /**
  * Adds the ability for a LitElement or other ReactiveElement class to
@@ -52,13 +63,21 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
         this.__forceUpdateSignal.get();
         super.performUpdate();
       });
-      const watcher = (this.__watcher = new Signal.subtle.Watcher(() => {
-        if (this.__forcingUpdate === false) {
-          this.requestUpdate();
+      const watcher = (this.__watcher = new Signal.subtle.Watcher(function (
+        this: Signal.subtle.Watcher
+      ) {
+        // All top-level references in this function body must either be `this`
+        // or a module global to prevent this closure from keeping the enclosing
+        // scopes alive.
+        const el = elementForWatcher.get(this) as
+          | SignalWatcherInternal
+          | undefined;
+        if (el?.__forcingUpdate === false) {
+          el.requestUpdate();
         }
-        watcher.watch();
+        this.watch();
       }));
-      this.__watcher.watch(this.__performUpdateSignal);
+      watcher.watch(this.__performUpdateSignal);
     }
 
     private __unwatch() {
@@ -79,6 +98,7 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
      */
     private __forceUpdateSignal = new Signal.State(0);
 
+    // @ts-expect-error This field
     private __forcingUpdate = false;
 
     /**
