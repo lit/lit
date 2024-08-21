@@ -1,11 +1,12 @@
-import {expect} from 'chai';
+import {test, describe as suite, beforeEach} from 'node:test';
+import * as assert from 'node:assert/strict';
 import * as path from 'path';
 import {TransformPluginContext} from 'rollup';
 import sinon from 'sinon';
 import * as minify from '../lib/minify-html-literals.js';
 import minifyHTML, {Options} from '../index.js';
 
-describe('rollup-plugin-minify-html-literals', () => {
+suite('rollup-plugin-minify-html-literals', () => {
   const fileName = path.resolve('test.js');
   let context: {warn: sinon.SinonSpy; error: sinon.SinonSpy};
   beforeEach(() => {
@@ -15,26 +16,26 @@ describe('rollup-plugin-minify-html-literals', () => {
     };
   });
 
-  it('should return a plugin with a transform function', () => {
+  test('should return a plugin with a transform function', () => {
     const plugin = minifyHTML();
-    expect(plugin).to.be.an('object');
-    expect(plugin.name).to.be.a('string');
-    expect(plugin.transform).to.be.a('function');
+    assert.equal(typeof plugin, 'object');
+    assert.equal(typeof plugin.name, 'string');
+    assert.equal(typeof plugin.transform, 'function');
   });
 
-  it('should call minifyHTMLLiterals()', () => {
+  test('should call minifyHTMLLiterals()', () => {
     const options: Options = {};
     const plugin = minifyHTML(options);
-    expect(options.minifyHTMLLiterals).to.be.a('function');
+    assert.equal(typeof options.minifyHTMLLiterals, 'function');
     const minifySpy = sinon.spy(options, 'minifyHTMLLiterals');
     plugin.transform.apply(context as unknown as TransformPluginContext, [
       'return',
       fileName,
     ]);
-    expect(minifySpy.called).to.be.true;
+    assert.ok(minifySpy.called);
   });
 
-  it('should pass id and options to minifyHTMLLiterals()', () => {
+  test('should pass id and options to minifyHTMLLiterals()', () => {
     const options: Options = {
       options: {
         minifyOptions: {
@@ -49,7 +50,7 @@ describe('rollup-plugin-minify-html-literals', () => {
       'return',
       fileName,
     ]);
-    expect(
+    assert.ok(
       minifySpy.calledWithMatch(
         sinon.match.string,
         sinon.match({
@@ -59,10 +60,10 @@ describe('rollup-plugin-minify-html-literals', () => {
           },
         })
       )
-    ).to.be.true;
+    );
   });
 
-  it('should allow custom minifyHTMLLiterals', () => {
+  test('should allow custom minifyHTMLLiterals', () => {
     const customMinify = sinon.spy(
       (source: string, options: minify.Options) => {
         return minify.minifyHTMLLiterals(source, options);
@@ -80,10 +81,10 @@ describe('rollup-plugin-minify-html-literals', () => {
       'return',
       fileName,
     ]);
-    expect(customMinify.called).to.be.true;
+    assert.ok(customMinify.called);
   });
 
-  it('should warn errors', () => {
+  test('should warn errors', () => {
     const plugin = minifyHTML({
       minifyHTMLLiterals: () => {
         throw new Error('failed');
@@ -94,11 +95,11 @@ describe('rollup-plugin-minify-html-literals', () => {
       'return',
       fileName,
     ]);
-    expect(context.warn.calledWith('failed')).to.be.true;
-    expect(context.error.called).to.be.false;
+    assert.ok(context.warn.calledWith('failed'));
+    assert.equal(context.error.called, false);
   });
 
-  it('should fail is failOnError is true', () => {
+  test('should fail is failOnError is true', () => {
     const plugin = minifyHTML({
       minifyHTMLLiterals: () => {
         throw new Error('failed');
@@ -110,26 +111,26 @@ describe('rollup-plugin-minify-html-literals', () => {
       'return',
       fileName,
     ]);
-    expect(context.error.calledWith('failed')).to.be.true;
-    expect(context.warn.called).to.be.false;
+    assert.ok(context.error.calledWith('failed'));
+    assert.equal(context.warn.called, false);
   });
 
-  it('should filter ids', () => {
+  test('should filter ids', () => {
     let options: Options = {};
     minifyHTML(options);
-    expect(options.filter).to.be.a('function');
-    expect(options.filter!(fileName)).to.be.true;
+    assert.equal(typeof options.filter, 'function');
+    assert.ok(options.filter!(fileName));
     options = {
       include: '*.ts',
     };
 
     minifyHTML(options);
-    expect(options.filter).to.be.a('function');
-    expect(options.filter!(fileName)).to.be.false;
-    expect(options.filter!(path.resolve('test.ts'))).to.be.true;
+    assert.equal(typeof options.filter, 'function');
+    assert.equal(options.filter!(fileName), false);
+    assert.ok(options.filter!(path.resolve('test.ts')));
   });
 
-  it('should allow custom filter', () => {
+  test('should allow custom filter', () => {
     const options = {
       filter: sinon.spy(() => false),
     };
@@ -139,6 +140,6 @@ describe('rollup-plugin-minify-html-literals', () => {
       'return',
       fileName,
     ]);
-    expect(options.filter.calledWith()).to.be.true;
+    assert.ok(options.filter.calledWith());
   });
 });
