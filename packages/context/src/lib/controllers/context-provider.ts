@@ -99,9 +99,11 @@ export class ContextProvider<
     }
     // Also, in case an element is a consumer AND a provider
     // of the same context, we want to avoid the element to self-register.
-    // The check on composedPath (as opposed to ev.target) is to cover cases
-    // where the consumer is in the shadowDom of the provider (in which case,
-    // event.target === this.host because of event retargeting).
+    if (ev.target === this.host) {
+      return;
+    }
+    // The check on composedPath (on top of ev.target) is to cover cases
+    // where the consumer is in the shadowDom of the provider.
     const consumerHost = ev.composedPath()[0] as Element;
     if (consumerHost === this.host) {
       return;
@@ -125,9 +127,11 @@ export class ContextProvider<
     }
     // Also, in case an element is a consumer AND a provider
     // of the same context it shouldn't provide to itself.
-    // We use composedPath (as opposed to ev.target) to cover cases
-    // where the consumer is in the shadowDom of the provider (in which case,
-    // event.target === this.host because of event retargeting).
+    if (ev.target === this.host) {
+      return;
+    }
+    // We use composedPath (on top of ev.target) to cover cases
+    // where the consumer is in the shadowDom of the provider.
     const childProviderHost = ev.composedPath()[0] as Element;
     if (childProviderHost === this.host) {
       return;
