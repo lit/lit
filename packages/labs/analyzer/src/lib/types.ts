@@ -209,6 +209,7 @@ const getSpecifierFromTypeImport = (
       'ts',
       'mts',
       'tsx',
+      'jsx',
       'd.ts',
       'd.mts',
     ])
