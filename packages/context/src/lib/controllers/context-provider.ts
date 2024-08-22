@@ -26,14 +26,17 @@ export class ContextProviderEvent<
   C extends Context<unknown, unknown>,
 > extends Event {
   readonly context: C;
+  readonly contextTarget: Element;
 
   /**
    *
    * @param context the context which this provider can provide
+   * @param contextTarget the original context target of the provider
    */
-  constructor(context: C) {
+  constructor(context: C, contextTarget: Element) {
     super('context-provider', {bubbles: true, composed: true});
     this.context = context;
+    this.contextTarget = contextTarget;
   }
 }
 
@@ -121,13 +124,7 @@ export class ContextProvider<
     }
     // Also, in case an element is a consumer AND a provider
     // of the same context it shouldn't provide to itself.
-    if (ev.target === this.host) {
-      return;
-    }
-    // We use composedPath (on top of ev.target) to cover cases
-    // where the consumer is in the shadowDom of the provider.
-    const childProviderHost = ev.composedPath()[0] as Element;
-    if (childProviderHost === this.host) {
+    if (ev.contextTarget === this.host) {
       return;
     }
     // Re-parent all of our subscriptions in case this new child provider
@@ -165,6 +162,6 @@ export class ContextProvider<
 
   hostConnected(): void {
     // emit an event to signal a provider is available for this context
-    this.host.dispatchEvent(new ContextProviderEvent(this.context));
+    this.host.dispatchEvent(new ContextProviderEvent(this.context, this.host));
   }
 }
