@@ -94,10 +94,10 @@ export class ContextRoot {
       return;
     }
 
-    // Note, it's important to use the initial target via composedPath()
+    // Note, it's important to use the initial target
     // since that's the requesting element and the event may be re-targeted
     // to an outer host element.
-    const element = event.composedPath()[0] as HTMLElement;
+    const element = event.contextTarget as HTMLElement;
     const callback = event.callback;
 
     let pendingContextRequests = this.pendingContextRequests.get(event.context);
