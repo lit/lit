@@ -97,23 +97,13 @@ export class ContextProvider<
     if (ev.context !== this.context) {
       return;
     }
-    let consumerHost: Element | undefined;
     // Also, in case an element is a consumer AND a provider
     // of the same context, we want to avoid the element to self-register.
-    if (ev.target === this.host) {
-      // The check on composedPath (on top of ev.target) is to cover cases
-      // where the consumer is in the shadowDom of the provider.
-      consumerHost = ev.composedPath()[0] as Element;
-      if (consumerHost === this.host) {
-        return;
-      }
+    if (ev.contextTarget === this.host) {
+      return;
     }
     ev.stopPropagation();
-    this.addCallback(
-      ev.callback,
-      consumerHost ?? (ev.target as Element),
-      ev.subscribe
-    );
+    this.addCallback(ev.callback, ev.contextTarget, ev.subscribe);
   };
 
   /**
@@ -162,7 +152,7 @@ export class ContextProvider<
       }
       seen.add(callback);
       consumerHost.dispatchEvent(
-        new ContextRequestEvent(this.context, callback, true)
+        new ContextRequestEvent(this.context, consumerHost, callback, true)
       );
     }
     ev.stopPropagation();

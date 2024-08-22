@@ -80,7 +80,7 @@ export class ContextRoot {
       } else {
         // Re-dispatch if we still have the element and callback
         element.dispatchEvent(
-          new ContextRequestEvent(event.context, callback, true)
+          new ContextRequestEvent(event.context, element, callback, true)
         );
       }
     }
