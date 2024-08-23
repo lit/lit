@@ -45,7 +45,8 @@ export const getProperties = (
           message:
             '@lit-labs/analyzer only supports analyzing class properties ' +
             'named with plain identifiers, or private class fields. This ' +
-            'property was ignored.',
+            'property was ignored: ' +
+            prop.name.getText(),
           category: ts.DiagnosticCategory.Warning,
           code: DiagnosticCode.UNSUPPORTED,
         })
