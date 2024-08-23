@@ -37,14 +37,16 @@ export const getProperties = (
   let staticProperties;
 
   for (const prop of propertyDeclarations) {
-    if (!ts.isIdentifier(prop.name)) {
+    if (!ts.isIdentifier(prop.name) && !ts.isPrivateIdentifier(prop.name)) {
       analyzer.addDiagnostic(
         createDiagnostic({
           typescript: ts,
           node: prop,
           message:
-            '@lit-labs/analyzer only supports analyzing class properties named with plain identifiers. This ' +
-            'property was ignored.',
+            '@lit-labs/analyzer only supports analyzing class properties ' +
+            'named with plain identifiers, or private class fields. This ' +
+            'property was ignored: ' +
+            prop.name.getText(),
           category: ts.DiagnosticCategory.Warning,
           code: DiagnosticCode.UNSUPPORTED,
         })
