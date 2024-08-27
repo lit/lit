@@ -32,7 +32,7 @@
 export const choose = <T, V, K extends T = T>(
   value: T,
   cases: Array<[K, () => V]>,
-  defaultCase?: () => V,
+  defaultCase?: () => V
 ) => {
   for (const c of cases) {
     const caseValue = c[0];

@@ -41,7 +41,7 @@ suite('join', () => {
   test('passes index', () => {
     assertRender(
       join(['a', 'b', 'c'], (i) => html`<p>${i}</p>`),
-      'a<p>0</p>b<p>1</p>c',
+      'a<p>0</p>b<p>1</p>c'
     );
   });
 });
