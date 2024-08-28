@@ -124,7 +124,7 @@ export abstract class Directive implements Disconnectable {
   _$initialize(
     part: Part,
     parent: Disconnectable,
-    attributeIndex: number | undefined,
+    attributeIndex: number | undefined
   ) {
     this.__part = part;
     this._$parent = parent;

@@ -25,7 +25,7 @@ suite('static', () => {
     render(html`<div class="${literal`cool`}"></div>`, container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div class="cool"></div>',
+      '<div class="cool"></div>'
     );
     // TODO: test that this is actually static. It's not currently possible with
     // the public API
@@ -41,13 +41,13 @@ suite('static', () => {
     render(html`<div ${literal`foo`}="${'bar'}"></div>`, container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div foo="bar"></div>',
+      '<div foo="bar"></div>'
     );
 
     render(html`<div x-${literal`foo`}="${'bar'}"></div>`, container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div x-foo="bar"></div>',
+      '<div x-foo="bar"></div>'
     );
   });
 
@@ -55,7 +55,7 @@ suite('static', () => {
     render(html`<div ${literal`foo`}="${literal`bar`}"></div>`, container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div foo="bar"></div>',
+      '<div foo="bar"></div>'
     );
   });
 
@@ -63,7 +63,7 @@ suite('static', () => {
     render(html`${literal`<p>Hello</p>`}${'<p>World</p>'}`, container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<p>Hello</p>&lt;p&gt;World&lt;/p&gt;',
+      '<p>Hello</p>&lt;p&gt;World&lt;/p&gt;'
     );
 
     // Make sure `null` is handled
@@ -81,7 +81,7 @@ suite('static', () => {
     render(t('div', 'abc'), container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div>abc</div>',
+      '<div>abc</div>'
     );
     const div = container.querySelector('div');
     assert.isNotNull(div);
@@ -89,7 +89,7 @@ suite('static', () => {
     render(t('div', 'def'), container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div>def</div>',
+      '<div>def</div>'
     );
     const div2 = container.querySelector('div');
     // Static values are stable between renders like static template strings
@@ -100,7 +100,7 @@ suite('static', () => {
     // since we have a new template.
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<span>abc</span>',
+      '<span>abc</span>'
     );
     const span = container.querySelector('span');
     assert.isNotNull(span);
@@ -108,7 +108,7 @@ suite('static', () => {
     render(t('span', 'def'), container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<span>def</span>',
+      '<span>def</span>'
     );
     const span2 = container.querySelector('span');
     assert.strictEqual(span2, span);
@@ -116,7 +116,7 @@ suite('static', () => {
     render(t('div', 'abc'), container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div>abc</div>',
+      '<div>abc</div>'
     );
     const div3 = container.querySelector('div');
     // Static values do not have any caching behavior. Re-rendering with a
@@ -130,7 +130,7 @@ suite('static', () => {
     render(html`<div>a${start}b${end}c</div>`, container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div>a<span>b</span>c</div>',
+      '<div>a<span>b</span>c</div>'
     );
   });
 
@@ -146,7 +146,7 @@ suite('static', () => {
       render(html`<${tagName}>${'A'}</${tagName}>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
-        '<div>A</div>',
+        '<div>A</div>'
       );
     });
 
@@ -154,13 +154,13 @@ suite('static', () => {
       render(html`<div ${unsafeStatic('foo')}="${'bar'}"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
-        '<div foo="bar"></div>',
+        '<div foo="bar"></div>'
       );
 
       render(html`<div x-${unsafeStatic('foo')}="${'bar'}"></div>`, container);
       assert.equal(
         stripExpressionComments(container.innerHTML),
-        '<div x-foo="bar"></div>',
+        '<div x-foo="bar"></div>'
       );
     });
   });
@@ -174,7 +174,7 @@ suite('static', () => {
     render(template, container);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div>[object Object]</div>',
+      '<div>[object Object]</div>'
     );
   });
 

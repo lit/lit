@@ -26,7 +26,7 @@ suite('styleMap', () => {
   function renderStyleMapStatic(cssInfo: StyleInfo) {
     render(
       html`<div style="height: 1px; ${styleMap(cssInfo)} color: red"></div>`,
-      container,
+      container
     );
   }
 
@@ -44,7 +44,7 @@ suite('styleMap', () => {
     class TestStyleMapDirective extends StyleMapDirective {
       override update(
         _part: AttributePart,
-        [styleInfo]: Parameters<this['render']>,
+        [styleInfo]: Parameters<this['render']>
       ) {
         return this.render(styleInfo);
       }
@@ -60,7 +60,7 @@ suite('styleMap', () => {
           '--fooBar': 'red',
         })}
       ></div>`,
-      container,
+      container
     );
     const div = container.firstElementChild as HTMLDivElement;
     const style = div.style;
@@ -205,7 +205,7 @@ suite('styleMap', () => {
     assert.throws(() => {
       render(
         html`<div style="${'height: 2px;'} ${styleMap({})}"></div>`,
-        container,
+        container
       );
     });
   });

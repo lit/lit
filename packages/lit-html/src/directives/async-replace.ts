@@ -27,7 +27,7 @@ export class AsyncReplaceDirective extends AsyncDirective {
 
   override update(
     _part: ChildPart,
-    [value, mapper]: DirectiveParameters<this>,
+    [value, mapper]: DirectiveParameters<this>
   ) {
     // If our initial render occurs while disconnected, ensure that the pauser
     // and weakThis are in the disconnected state

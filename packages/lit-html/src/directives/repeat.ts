@@ -41,7 +41,7 @@ class RepeatDirective extends Directive {
   private _getValuesAndKeys<T>(
     items: Iterable<T>,
     keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
-    template?: ItemTemplate<T>,
+    template?: ItemTemplate<T>
   ) {
     let keyFn: KeyFn<T> | undefined;
     if (template === undefined) {
@@ -67,12 +67,12 @@ class RepeatDirective extends Directive {
   render<T>(
     items: Iterable<T>,
     keyFn: KeyFn<T> | ItemTemplate<T>,
-    template: ItemTemplate<T>,
+    template: ItemTemplate<T>
   ): Array<unknown>;
   render<T>(
     items: Iterable<T>,
     keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
-    template?: ItemTemplate<T>,
+    template?: ItemTemplate<T>
   ) {
     return this._getValuesAndKeys(items, keyFnOrTemplate, template).values;
   }
@@ -83,17 +83,17 @@ class RepeatDirective extends Directive {
       Iterable<T>,
       KeyFn<T> | ItemTemplate<T>,
       ItemTemplate<T>,
-    ],
+    ]
   ) {
     // Old part & key lists are retrieved from the last update (which may
     // be primed by hydration)
     const oldParts = getCommittedValue(
-      containerPart,
+      containerPart
     ) as Array<ChildPart | null>;
     const {values: newValues, keys: newKeys} = this._getValuesAndKeys(
       items,
       keyFnOrTemplate,
-      template,
+      template
     );
 
     // We check that oldParts, the committed value, is an Array as an
@@ -340,7 +340,7 @@ class RepeatDirective extends Directive {
         // Old head matches new head; update in place
         newParts[newHead] = setChildPartValue(
           oldParts[oldHead]!,
-          newValues[newHead],
+          newValues[newHead]
         );
         oldHead++;
         newHead++;
@@ -348,7 +348,7 @@ class RepeatDirective extends Directive {
         // Old tail matches new tail; update in place
         newParts[newTail] = setChildPartValue(
           oldParts[oldTail]!,
-          newValues[newTail],
+          newValues[newTail]
         );
         oldTail--;
         newTail--;
@@ -356,7 +356,7 @@ class RepeatDirective extends Directive {
         // Old head matches new tail; update and move to new tail
         newParts[newTail] = setChildPartValue(
           oldParts[oldHead]!,
-          newValues[newTail],
+          newValues[newTail]
         );
         insertPart(containerPart, newParts[newTail + 1], oldParts[oldHead]!);
         oldHead++;
@@ -365,7 +365,7 @@ class RepeatDirective extends Directive {
         // Old tail matches new head; update and move to new head
         newParts[newHead] = setChildPartValue(
           oldParts[oldTail]!,
-          newValues[newHead],
+          newValues[newHead]
         );
         insertPart(containerPart, oldParts[oldHead]!, oldParts[oldTail]!);
         oldTail--;
@@ -437,13 +437,13 @@ export interface RepeatDirectiveFn {
   <T>(
     items: Iterable<T>,
     keyFnOrTemplate: KeyFn<T> | ItemTemplate<T>,
-    template?: ItemTemplate<T>,
+    template?: ItemTemplate<T>
   ): unknown;
   <T>(items: Iterable<T>, template: ItemTemplate<T>): unknown;
   <T>(
     items: Iterable<T>,
     keyFn: KeyFn<T> | ItemTemplate<T>,
-    template: ItemTemplate<T>,
+    template: ItemTemplate<T>
   ): unknown;
 }
 
