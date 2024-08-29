@@ -5,7 +5,7 @@
  */
 
 import {LitElement} from 'lit';
-import {customElement, property} from 'lit/decorators.js';
+import {customElement, property, state} from 'lit/decorators.js';
 import {ImportedClass} from './external.js';
 
 export class LocalClass {
@@ -98,6 +98,11 @@ export class ElementA extends LitElement {
 
   @property()
   union: LocalClass | HTMLElement | ImportedClass;
+
+  @state()
+  private _stateField: number;
+
+  #privateField = 0;
 
   /**
    * This signature only works with strings.

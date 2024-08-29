@@ -22,7 +22,7 @@ suite('unsafeMathML', () => {
       html`<math>${unsafeMathML(
           '<mi>x</mi>'
         )}</math>`,
-      container,
+      container
     );
     assert.oneOf(stripExpressionMarkers(container.innerHTML), [
       '<math><mi>x</mi></math>',
@@ -36,7 +36,7 @@ suite('unsafeMathML', () => {
     render(html`<math>before${unsafeMathML(nothing)}after</math>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<math>beforeafter</math>',
+      '<math>beforeafter</math>'
     );
   });
 
@@ -46,12 +46,12 @@ suite('unsafeMathML', () => {
     render(template('<mi>Hi</mi>'), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<math>before<mi>Hi</mi>after</math>',
+      '<math>before<mi>Hi</mi>after</math>'
     );
     render(template(noChange), container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<math>before<mi>Hi</mi>after</math>',
+      '<math>before<mi>Hi</mi>after</math>'
     );
   });
 
@@ -59,7 +59,7 @@ suite('unsafeMathML', () => {
     render(html`<math>before${unsafeMathML(undefined)}after</math>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<math>beforeafter</math>',
+      '<math>beforeafter</math>'
     );
   });
 
@@ -67,7 +67,7 @@ suite('unsafeMathML', () => {
     render(html`<math>before${unsafeMathML(null)}after</math>`, container);
     assert.equal(
       stripExpressionMarkers(container.innerHTML),
-      '<math>beforeafter</math>',
+      '<math>beforeafter</math>'
     );
   });
 

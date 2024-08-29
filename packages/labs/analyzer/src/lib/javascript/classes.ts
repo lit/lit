@@ -165,7 +165,9 @@ export const getClassMembers = (
             node: member,
             message:
               '@lit-labs/analyzer only supports analyzing class properties ' +
-              'named with plain identifiers. This property was ignored.',
+              'named with plain identifiers, or private class fields. This ' +
+              'property was ignored: ' +
+              member.name.getText(),
             category: typescript.DiagnosticCategory.Warning,
             code: DiagnosticCode.UNSUPPORTED,
           })

@@ -1,4 +1,5 @@
-import {expect} from 'chai';
+import * as assert from 'node:assert/strict';
+import {test, describe as suite, afterEach, beforeEach} from 'node:test';
 import MagicString, {SourceMapOptions} from 'magic-string';
 import {Options as HTMLOptions} from 'html-minifier';
 import {ParseLiteralsOptions, parseLiterals} from '../lib/parse-literals.js';
@@ -42,7 +43,7 @@ class MagicStringLike {
   }
 }
 
-describe('minify-html-literals', () => {
+suite('minify-html-literals', () => {
   const SOURCE = `
     function render(title, items, styles) {
       return html\`
@@ -238,68 +239,69 @@ describe('minify-html-literals', () => {
     }
   `;
 
-  it('should minify "html" and "css" tagged templates', () => {
+  test('should minify "html" and "css" tagged templates', () => {
     const result = minifyHTMLLiterals(SOURCE, {fileName: 'test.js'});
-    expect(result).to.be.an('object');
-    expect(result!.code).to.equal(SOURCE_MIN);
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, SOURCE_MIN);
   });
 
-  it('should minify "svg" tagged templates', () => {
+  test('should minify "svg" tagged templates', () => {
     const result = minifyHTMLLiterals(SVG_SOURCE, {fileName: 'test.js'});
-    expect(result).to.be.an('object');
-    expect(result!.code).to.equal(SVG_SOURCE_MIN);
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, SVG_SOURCE_MIN);
   });
 
-  it('should minify html with attribute placeholders that have no quotes and JS comments', () => {
+  test('should minify html with attribute placeholders that have no quotes and JS comments', () => {
     const result = minifyHTMLLiterals(COMMENT_SOURCE, {fileName: 'test.js'});
-    expect(result).to.be.an('object');
-    expect(result!.code).to.equal(COMMENT_SOURCE_MIN);
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, COMMENT_SOURCE_MIN);
   });
 
-  it('should minify html tagged with a member expression ending in html', () => {
+  test('should minify html tagged with a member expression ending in html', () => {
     const result = minifyHTMLLiterals(MEMBER_EXPRESSION_LITERAL_SOURCE, {
       fileName: 'test.js',
     });
-    expect(result).to.be.an('object');
-    expect(result!.code).to.equal(MEMBER_EXPRESSION_LITERAL_SOURCE_MIN);
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, MEMBER_EXPRESSION_LITERAL_SOURCE_MIN);
   });
 
-  it('should minify multiline svg elements', () => {
+  test('should minify multiline svg elements', () => {
     const result = minifyHTMLLiterals(SVG_MULTILINE_SOURCE, {
       fileName: 'test.js',
     });
-    expect(result).to.be.an('object');
-    expect(result!.code).to.equal(SVG_MULTILINE_SOURCE_MIN);
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, SVG_MULTILINE_SOURCE_MIN);
   });
 
-  it('should not remove spaces in ::part()', () => {
+  test('should not remove spaces in ::part()', () => {
     const result = minifyHTMLLiterals(SHADOW_PARTS_SOURCE, {
       fileName: 'test.js',
     });
-    expect(result).to.be.an('object');
-    expect(result!.code).to.equal(SHADOW_PARTS_SOURCE_MIN);
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, SHADOW_PARTS_SOURCE_MIN);
   });
 
-  it('should return null if source is already minified', () => {
+  test('should return null if source is already minified', () => {
     const result = minifyHTMLLiterals(SOURCE_MIN, {fileName: 'test.js'});
-    expect(result).to.be.null;
+    assert.equal(result, null);
   });
 
-  it('should return a v3 source map', () => {
+  test('should return a v3 source map', () => {
     const result = minifyHTMLLiterals(SOURCE, {fileName: 'test.js'});
-    expect(result).to.be.an('object');
-    expect(result!.map).to.be.an('object');
-    expect(result!.map!.version).to.equal(3);
-    expect(result!.map!.mappings).to.be.a('string');
+    assert.equal(typeof result, 'object');
+    assert.equal(typeof result!.map, 'object');
+    assert.equal(result!.map!.version, 3);
+    assert.equal(typeof result!.map!.mappings, 'string');
   });
 
   // TODO: fix this case
-  it('fails to minify static html templates', () => {
-    expect(() => minifyHTMLLiterals(STATIC_SOURCE, {fileName: 'test.js'})).to
-      .throw;
+  test('fails to minify static html templates', () => {
+    assert.throws(() =>
+      minifyHTMLLiterals(STATIC_SOURCE, {fileName: 'test.js'})
+    );
   });
 
-  describe('options', () => {
+  suite('options', () => {
     let minifyHTMLSpy: Sinon.SinonSpy;
 
     beforeEach(() => {
@@ -310,19 +312,19 @@ describe('minify-html-literals', () => {
       minifyHTMLSpy.restore();
     });
 
-    it('should use defaultMinifyOptions', () => {
+    test('should use defaultMinifyOptions', () => {
       minifyHTMLLiterals(SOURCE, {fileName: 'test.js'});
       const parts = parseLiterals(SOURCE)[1].parts;
       const html = defaultStrategy.combineHTMLStrings(
         parts,
         defaultStrategy.getPlaceholder(parts)
       );
-      expect(
+      assert.ok(
         minifyHTMLSpy.lastCall.calledWithExactly(html, defaultMinifyOptions)
-      ).to.be.true;
+      );
     });
 
-    it('should allow custom partial minifyOptions', () => {
+    test('should allow custom partial minifyOptions', () => {
       const minifyOptions = {caseSensitive: false};
       minifyHTMLLiterals(SOURCE, {fileName: 'test.js', minifyOptions});
       const parts = parseLiterals(SOURCE)[1].parts;
@@ -330,16 +332,16 @@ describe('minify-html-literals', () => {
         parts,
         defaultStrategy.getPlaceholder(parts)
       );
-      expect(
+      assert.ok(
         minifyHTMLSpy.lastCall.calledWithExactly(html, {
           ...defaultMinifyOptions,
           ...minifyOptions,
         })
-      ).to.be.true;
+      );
     });
 
-    it('should use MagicString constructor', () => {
-      let msUsed;
+    test('should use MagicString constructor', () => {
+      let msUsed: unknown;
       minifyHTMLLiterals(SOURCE, {
         fileName: 'test.js',
         generateSourceMap(ms) {
@@ -348,11 +350,11 @@ describe('minify-html-literals', () => {
         },
       });
 
-      expect(msUsed).to.be.an.instanceof(MagicString);
+      assert.ok(msUsed instanceof MagicString);
     });
 
-    it('should allow custom MagicStringLike constructor', () => {
-      let msUsed;
+    test('should allow custom MagicStringLike constructor', () => {
+      let msUsed: unknown;
       minifyHTMLLiterals(SOURCE, {
         fileName: 'test.js',
         MagicString: MagicStringLike,
@@ -362,10 +364,10 @@ describe('minify-html-literals', () => {
         },
       });
 
-      expect(msUsed).to.be.an.instanceof(MagicStringLike);
+      assert.ok(msUsed instanceof MagicStringLike);
     });
 
-    it('should allow custom parseLiterals()', () => {
+    test('should allow custom parseLiterals()', () => {
       const customParseLiterals = Sinon.spy(
         (source: string, options?: ParseLiteralsOptions) => {
           return parseLiterals(source, options);
@@ -376,10 +378,10 @@ describe('minify-html-literals', () => {
         fileName: 'test.js',
         parseLiterals: customParseLiterals,
       });
-      expect(customParseLiterals.called).to.be.true;
+      assert.ok(customParseLiterals.called);
     });
 
-    it('should allow custom shouldMinify()', () => {
+    test('should allow custom shouldMinify()', () => {
       const customShouldMinify = Sinon.spy((template: Template) => {
         return defaultShouldMinify(template);
       });
@@ -388,10 +390,10 @@ describe('minify-html-literals', () => {
         fileName: 'test.js',
         shouldMinify: customShouldMinify,
       });
-      expect(customShouldMinify.called).to.be.true;
+      assert.ok(customShouldMinify.called);
     });
 
-    it('should allow custom strategy', () => {
+    test('should allow custom strategy', () => {
       const customStrategy = {
         getPlaceholder: Sinon.spy((parts: TemplatePart[]) => {
           return defaultStrategy.getPlaceholder(parts);
@@ -415,14 +417,14 @@ describe('minify-html-literals', () => {
         fileName: 'test.js',
         strategy: customStrategy,
       });
-      expect(customStrategy.getPlaceholder.called).to.be.true;
-      expect(customStrategy.combineHTMLStrings.called).to.be.true;
-      expect(customStrategy.minifyHTML.called).to.be.true;
-      expect(customStrategy.splitHTMLByPlaceholder.called).to.be.true;
+      assert.ok(customStrategy.getPlaceholder.called);
+      assert.ok(customStrategy.combineHTMLStrings.called);
+      assert.ok(customStrategy.minifyHTML.called);
+      assert.ok(customStrategy.splitHTMLByPlaceholder.called);
     });
 
-    it('should use defaultValidation', () => {
-      expect(() => {
+    test('should use defaultValidation', () => {
+      assert.throws(() => {
         minifyHTMLLiterals(SOURCE, {
           fileName: 'test.js',
           strategy: {
@@ -434,9 +436,9 @@ describe('minify-html-literals', () => {
             splitHTMLByPlaceholder: defaultStrategy.splitHTMLByPlaceholder,
           },
         });
-      }).to.throw;
+      });
 
-      expect(() => {
+      assert.throws(() => {
         minifyHTMLLiterals(SOURCE, {
           fileName: 'test.js',
           strategy: {
@@ -448,11 +450,11 @@ describe('minify-html-literals', () => {
             },
           },
         });
-      }).to.throw;
+      });
     });
 
-    it('should allow disabling validation', () => {
-      expect(() => {
+    test('should allow disabling validation', () => {
+      assert.doesNotThrow(() => {
         minifyHTMLLiterals(SOURCE, {
           fileName: 'test.js',
           strategy: {
@@ -465,10 +467,10 @@ describe('minify-html-literals', () => {
           },
           validate: false,
         });
-      }).not.to.throw;
+      });
     });
 
-    it('should allow custom validation', () => {
+    test('should allow custom validation', () => {
       const customValidation = {
         ensurePlaceholderValid: Sinon.spy((placeholder: unknown) => {
           return defaultValidation.ensurePlaceholderValid(placeholder);
@@ -484,20 +486,20 @@ describe('minify-html-literals', () => {
         fileName: 'test.js',
         validate: customValidation,
       });
-      expect(customValidation.ensurePlaceholderValid.called).to.be.true;
-      expect(customValidation.ensureHTMLPartsValid.called).to.be.true;
+      assert.ok(customValidation.ensurePlaceholderValid.called);
+      assert.ok(customValidation.ensureHTMLPartsValid.called);
     });
 
-    it('should allow disabling generateSourceMap', () => {
+    test('should allow disabling generateSourceMap', () => {
       const result = minifyHTMLLiterals(SOURCE, {
         fileName: 'test.js',
         generateSourceMap: false,
       });
-      expect(result).to.be.an('object');
-      expect(result!.map).to.be.undefined;
+      assert.equal(typeof result, 'object');
+      assert.equal(result!.map, undefined);
     });
 
-    it('should allow custom generateSourceMap()', () => {
+    test('should allow custom generateSourceMap()', () => {
       const customGenerateSourceMap = Sinon.spy(
         (ms: MagicStringLike, fileName: string) => {
           return defaultGenerateSourceMap(ms, fileName);
@@ -508,89 +510,87 @@ describe('minify-html-literals', () => {
         fileName: 'test.js',
         generateSourceMap: customGenerateSourceMap,
       });
-      expect(customGenerateSourceMap.called).to.be.true;
+      assert.ok(customGenerateSourceMap.called);
     });
   });
 
-  describe('defaultGenerateSourceMap()', () => {
-    it('should call generateMap() on MagicStringLike with .map file, source name, and hires', () => {
+  suite('defaultGenerateSourceMap()', () => {
+    test('should call generateMap() on MagicStringLike with .map file, source name, and hires', () => {
       const ms = new MagicStringLike();
       const generateMapSpy = Sinon.spy(ms, 'generateMap');
       defaultGenerateSourceMap(ms, 'test.js');
-      expect(
+      assert.ok(
         generateMapSpy.calledWith({
           file: 'test.js.map',
           source: 'test.js',
           hires: true,
         })
-      ).to.be.true;
+      );
     });
   });
 
-  describe('defaultShouldMinify()', () => {
-    it('should return true if the template is tagged with any "html" text', () => {
-      expect(defaultShouldMinify({tag: 'html', parts: []})).to.be.true;
-      expect(defaultShouldMinify({tag: 'HTML', parts: []})).to.be.true;
-      expect(defaultShouldMinify({tag: 'hTML', parts: []})).to.be.true;
-      expect(defaultShouldMinify({tag: 'getHTML()', parts: []})).to.be.true;
-      expect(defaultShouldMinify({tag: 'templateHtml()', parts: []})).to.be
-        .true;
+  suite('defaultShouldMinify()', () => {
+    test('should return true if the template is tagged with any "html" text', () => {
+      assert.ok(defaultShouldMinify({tag: 'html', parts: []}));
+      assert.ok(defaultShouldMinify({tag: 'HTML', parts: []}));
+      assert.ok(defaultShouldMinify({tag: 'hTML', parts: []}));
+      assert.ok(defaultShouldMinify({tag: 'getHTML()', parts: []}));
+      assert.ok(defaultShouldMinify({tag: 'templateHtml()', parts: []}));
     });
 
-    it('should return false if the template is not tagged or does not contain "html"', () => {
-      expect(defaultShouldMinify({parts: []})).to.be.false;
-      expect(defaultShouldMinify({tag: 'css', parts: []})).to.be.false;
+    test('should return false if the template is not tagged or does not contain "html"', () => {
+      assert.equal(defaultShouldMinify({parts: []}), false);
+      assert.equal(defaultShouldMinify({tag: 'css', parts: []}), false);
     });
 
-    it('should return true if the template is tagged with any "svg" text', () => {
-      expect(defaultShouldMinify({tag: 'svg', parts: []})).to.be.true;
-      expect(defaultShouldMinify({tag: 'SVG', parts: []})).to.be.true;
-      expect(defaultShouldMinify({tag: 'sVg', parts: []})).to.be.true;
-      expect(defaultShouldMinify({tag: 'getSVG()', parts: []})).to.be.true;
-      expect(defaultShouldMinify({tag: 'templateSvg()', parts: []})).to.be.true;
-    });
-  });
-
-  describe('defaultShouldMinifyCSS()', () => {
-    it('should return true if the template is tagged with any "css" text', () => {
-      expect(defaultShouldMinifyCSS({tag: 'css', parts: []})).to.be.true;
-      expect(defaultShouldMinifyCSS({tag: 'CSS', parts: []})).to.be.true;
-      expect(defaultShouldMinifyCSS({tag: 'csS', parts: []})).to.be.true;
-      expect(defaultShouldMinifyCSS({tag: 'getCSS()', parts: []})).to.be.true;
-      expect(defaultShouldMinifyCSS({tag: 'templateCss()', parts: []})).to.be
-        .true;
-    });
-
-    it('should return false if the template is not tagged or does not contain "css"', () => {
-      expect(defaultShouldMinifyCSS({parts: []})).to.be.false;
-      expect(defaultShouldMinifyCSS({tag: 'html', parts: []})).to.be.false;
+    test('should return true if the template is tagged with any "svg" text', () => {
+      assert.ok(defaultShouldMinify({tag: 'svg', parts: []}));
+      assert.ok(defaultShouldMinify({tag: 'SVG', parts: []}));
+      assert.ok(defaultShouldMinify({tag: 'sVg', parts: []}));
+      assert.ok(defaultShouldMinify({tag: 'getSVG()', parts: []}));
+      assert.ok(defaultShouldMinify({tag: 'templateSvg()', parts: []}));
     });
   });
 
-  describe('defaultValidation', () => {
-    describe('ensurePlaceholderValid()', () => {
-      it('should throw an error if the placeholder is not a string', () => {
-        expect(() => {
+  suite('defaultShouldMinifyCSS()', () => {
+    test('should return true if the template is tagged with any "css" text', () => {
+      assert.ok(defaultShouldMinifyCSS({tag: 'css', parts: []}));
+      assert.ok(defaultShouldMinifyCSS({tag: 'CSS', parts: []}));
+      assert.ok(defaultShouldMinifyCSS({tag: 'csS', parts: []}));
+      assert.ok(defaultShouldMinifyCSS({tag: 'getCSS()', parts: []}));
+      assert.ok(defaultShouldMinifyCSS({tag: 'templateCss()', parts: []}));
+    });
+
+    test('should return false if the template is not tagged or does not contain "css"', () => {
+      assert.equal(defaultShouldMinifyCSS({parts: []}), false);
+      assert.equal(defaultShouldMinifyCSS({tag: 'html', parts: []}), false);
+    });
+  });
+
+  suite('defaultValidation', () => {
+    suite('ensurePlaceholderValid()', () => {
+      test('should throw an error if the placeholder is not a string', () => {
+        assert.throws(() => {
           defaultValidation.ensurePlaceholderValid(undefined);
-        }).to.throw;
-        expect(() => {
+        });
+        assert.throws(() => {
           defaultValidation.ensurePlaceholderValid(true);
-        }).to.throw;
-        expect(() => {
+        });
+        assert.throws(() => {
           defaultValidation.ensurePlaceholderValid({});
-        }).to.throw;
+        });
       });
 
-      it('should throw an error if the placeholder is an empty string', () => {
-        expect(() => {
+      test('should throw an error if the placeholder is an empty string', () => {
+        assert.throws(() => {
           defaultValidation.ensurePlaceholderValid('');
-        }).to.throw;
+        });
       });
 
-      it('should not throw an error if the placeholder is a non-empty string', () => {
-        expect(() => {
+      test('should not throw an error if the placeholder is a non-empty string', () => {
+        assert.doesNotThrow(() => {
           defaultValidation.ensurePlaceholderValid('EXP');
-        }).not.to.throw;
+        });
       });
     });
   });
