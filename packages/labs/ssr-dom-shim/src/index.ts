@@ -4,12 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {ElementInternalsShim} from './lib/element-internals.js';
+import {EventTargetShim, EventShim, CustomEventShim} from './lib/events.js';
 
 export {
   ariaMixinAttributes,
   ElementInternals,
   HYDRATE_INTERNALS_ATTR_PREFIX,
 } from './lib/element-internals.js';
+export {CustomEvent, Event, EventTarget} from './lib/events.js';
+
+// In an empty vm, we need to patch the global context.
+globalThis.Event ??= EventShim;
+globalThis.CustomEvent ??= CustomEventShim;
 
 const attributes = new WeakMap<
   InstanceType<typeof HTMLElementShim>,
@@ -36,7 +42,7 @@ const attributesForElement = (
 //    `const ElementShimWithRealType = ElementShim as object as typeof Element;`.
 // 4. We want the exported names to match the real ones, hence e.g.
 //    `export {ElementShimWithRealType as Element}`.
-const ElementShim = class Element {
+const ElementShim = class Element extends EventTargetShim {
   get attributes() {
     return Array.from(attributesForElement(this)).map(([name, value]) => ({
       name,
@@ -46,6 +52,7 @@ const ElementShim = class Element {
   private __shadowRootMode: null | ShadowRootMode = null;
   protected __shadowRoot: null | ShadowRoot = null;
   protected __internals: null | ElementInternals = null;
+  __slots: Map<string, Element> | undefined;
 
   get shadowRoot() {
     if (this.__shadowRootMode === 'closed') {

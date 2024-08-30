@@ -1111,6 +1111,16 @@ export abstract class ReactiveElement
   }
 
   /**
+   * On first connection when using server side rendering (@lit-labs/ssr).
+   * As connectedCallback is currently not called with SSR, this lifecycle method
+   * provides an alternative for SSR (e.g. allowing to dispatch events).
+   * @category lifecycle
+   */
+  serverConnectedCallback(): void {
+    this.__controllers?.forEach((c) => c.hostConnected?.());
+  }
+
+  /**
    * Note, this method should be considered final and not overridden. It is
    * overridden on the element instance with a function that triggers the first
    * update.

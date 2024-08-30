@@ -66,6 +66,7 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   override connectedCallback() {
+    this.element?.serverConnectedCallback();
     // Call LitElement's `willUpdate` method.
     // Note, this method is required not to use DOM APIs.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
