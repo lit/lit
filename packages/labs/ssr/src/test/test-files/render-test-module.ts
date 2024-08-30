@@ -225,6 +225,81 @@ export class TestStyles extends LitElement {
   `;
 }
 
+/* Events */
+
+@customElement('test-events-parent')
+export class TestEventsParent extends LitElement {
+  @property()
+  value = '';
+  @property()
+  capture = '';
+
+  constructor() {
+    super();
+    this.addEventListener('test', (e) => {
+      (e as CustomEvent<(value: string) => void>).detail(this.value);
+    });
+  }
+  protected override willUpdate(_changedProperties: PropertyValues): void {
+    if (this.capture) {
+      this.addEventListener(
+        'test',
+        (e) => {
+          (e as CustomEvent<(value: string) => void>).detail(this.capture);
+        },
+        {capture: true}
+      );
+    }
+  }
+  override render() {
+    // prettier-ignore
+    return html`<main><slot></slot></main>`;
+  }
+}
+
+@customElement('test-events-child')
+export class TestEventsChild extends LitElement {
+  override serverConnectedCallback() {
+    this.dispatchEvent(
+      new CustomEvent('test', {
+        detail: (value: string) =>
+          this.setAttribute(
+            'data-test',
+            (this.getAttribute('data-test') ?? '') + value
+          ),
+        bubbles: true,
+      })
+    );
+  }
+  override render() {
+    // prettier-ignore
+    return html`<div>events child</div>`;
+  }
+}
+
+@customElement('test-events-shadow-nexted')
+export class TestEventsShadowNested extends LitElement {
+  override render() {
+    // prettier-ignore
+    return html`<slot></slot><test-events-parent value="shadow"><slot name="a"></slot></test-events-parent>`;
+  }
+}
+
+// prettier-ignore
+export const eventParentAndSingleChildWithoutValue = html`<test-events-parent><test-events-child></test-events-child></test-events-parent>`;
+
+// prettier-ignore
+export const eventParentAndSingleChildWithValue = html`<test-events-parent value="my-test"><test-events-child></test-events-child></test-events-parent>`;
+
+// prettier-ignore
+export const eventParentNesting = html`<test-events-parent capture="oc" value="ov">
+  <test-events-parent capture="ic" value="iv"><test-events-child></test-events-child></test-events-parent></test-events-parent>`;
+
+// prettier-ignore
+export const eventShadowNested = html`<test-events-parent value="my-test"><test-events-shadow-nexted>
+  <div><test-events-child></test-events-child></div><div slot="a"><test-events-child></test-events-child></div>
+  </test-events-shadow-nexted></test-events-parent>`;
+
 /* Directives */
 
 // prettier-ignore
