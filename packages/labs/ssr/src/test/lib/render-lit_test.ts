@@ -494,6 +494,54 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  /* Events */
+
+  test('events with parent and child', async () => {
+    const {render, eventParentAndSingleChildWithoutValue} = await setup();
+    const result = await render(eventParentAndSingleChildWithoutValue);
+    assert.is(
+      result,
+      '<!--lit-part RSGZngXXsLg=--><test-events-parent><template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+        '<test-events-child data-test><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
+    );
+  });
+
+  test('events with parent with value and child', async () => {
+    const {render, eventParentAndSingleChildWithValue} = await setup();
+    const result = await render(eventParentAndSingleChildWithValue);
+    assert.is(
+      result,
+      '<!--lit-part pLrHZ32UrRU=--><test-events-parent  value="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+        '<test-events-child data-test="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
+    );
+  });
+
+  test('assert event order with capture from top and bubbles from bottom', async () => {
+    const {render, eventParentNesting} = await setup();
+    const result = await render(eventParentNesting);
+    assert.is(
+      result,
+      '<!--lit-part 4D0mmmUOBvU=--><test-events-parent   capture="oc" value="ov"><template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>\n' +
+        '  <test-events-parent   capture="ic" value="iv"><template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+        '<test-events-child data-test="ocicivov"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child>' +
+        '</test-events-parent></test-events-parent><!--/lit-part-->'
+    );
+  });
+
+  test('assert event order through shadow DOM', async () => {
+    const {render, eventShadowNested} = await setup();
+    const result = await render(eventShadowNested);
+    assert.is(
+      result,
+      '<!--lit-part yg+yCWsPcUU=--><test-events-parent  value="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+        '<test-events-shadow-nexted><template shadowroot="open" shadowrootmode="open"><!--lit-part GQHLzN3QO5Q=--><slot></slot><!--lit-node 1--><test-events-parent  value="shadow" defer-hydration>' +
+        '<template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template><slot name="a"></slot></test-events-parent><!--/lit-part--></template>\n' +
+        '  <div><test-events-child data-test="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child>' +
+        '</div><div slot="a"><test-events-child data-test="shadowmy-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></div>\n' +
+        '  </test-events-shadow-nexted></test-events-parent><!--/lit-part-->'
+    );
+  });
+
   /* Directives */
 
   test('repeat directive with a template result', async () => {
