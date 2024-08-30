@@ -24,13 +24,23 @@ interface SignalWatcherInternal extends SignalWatcher {
 
 const signalWatcherBrand: unique symbol = Symbol('SignalWatcherBrand');
 
-// const watcherFinalizationRegistry = new FinalizationRegistry(
-//   (element: SignalWatcher) => {
-//     element.__unwatch();
-//   }
-// );
+// Memory management: We need to ensure that we don't leak memory by creating a
+// reference cycle between an element and its watcher, which then it kept alive
+// by the signals it watches. To avoid this, we break the cycle by using a
+// WeakMap to store the watcher for each element, and a FinalizationRegistry to
+// clean up the watcher when the element is garbage collected.
 
-const elementForWatcher = new WeakMap<Signal.subtle.Watcher, SignalWatcher>();
+const elementFinalizationRegistry = new FinalizationRegistry<{
+  watcher: Signal.subtle.Watcher;
+  signal: Signal.Computed<void>;
+}>(({watcher, signal}) => {
+  watcher.unwatch(signal);
+});
+
+const elementForWatcher = new WeakMap<
+  Signal.subtle.Watcher,
+  SignalWatcherInternal
+>();
 
 /**
  * Adds the ability for a LitElement or other ReactiveElement class to
@@ -67,16 +77,24 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
         this: Signal.subtle.Watcher
       ) {
         // All top-level references in this function body must either be `this`
-        // or a module global to prevent this closure from keeping the enclosing
-        // scopes alive.
-        const el = elementForWatcher.get(this) as
-          | SignalWatcherInternal
-          | undefined;
-        if (el?.__forcingUpdate === false) {
+        // (the watcher) or a module global to prevent this closure from keeping
+        // the enclosing scopes alive, which would keep the element alive. So
+        // The only two references are `this` and `elementForWatcher`.
+        const el = elementForWatcher.get(this);
+        if (el === undefined) {
+          // The element was garbage collected, so we can stop watching.
+          return;
+        }
+        if (el.__forcingUpdate === false) {
           el.requestUpdate();
         }
         this.watch();
       }));
+      elementForWatcher.set(watcher, this as unknown as SignalWatcherInternal);
+      elementFinalizationRegistry.register(this, {
+        watcher,
+        signal: this.__performUpdateSignal,
+      });
       watcher.watch(this.__performUpdateSignal);
     }
 
@@ -84,7 +102,7 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       if (this.__watcher === undefined) {
         return;
       }
-      this.__watcher!.unwatch(this.__performUpdateSignal!);
+      this.__watcher.unwatch(this.__performUpdateSignal!);
       this.__performUpdateSignal = undefined;
       this.__watcher = undefined;
     }
@@ -147,7 +165,7 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       this.__watch();
       // Force an uncached read of __performUpdateSignal
       this.__forcingUpdate = true;
-      this.__forceUpdateSignal?.set(this.__forceUpdateSignal.get() + 1);
+      this.__forceUpdateSignal.set(this.__forceUpdateSignal.get() + 1);
       this.__forcingUpdate = false;
       // Always read from the signal to ensure that it's tracked
       this.__performUpdateSignal!.get();
@@ -166,6 +184,8 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
           super.update(changedProperties);
         } else {
           // For a partial render, just commit the pending watches.
+          // TODO (justinfagnani): Should we access each signal in a separate
+          // try block?
           this.__pendingWatches.forEach((d) => d.commit());
         }
       } finally {
@@ -186,22 +206,26 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
 
     override connectedCallback(): void {
       super.connectedCallback();
-      // Because we might have missed some signal accesses while disconnected,
-      // we need to force a full render on the next update.
+      // Because we might have missed some signal updates while disconnected,
+      // we force a full render on the next update.
       this.requestUpdate();
     }
 
     override disconnectedCallback(): void {
       super.disconnectedCallback();
-      // Clean up the watcher to avoid memory leaks from signals holding
-      // references to the element. This means that while disconnected, regular
-      // reactive property updates will trigger a re-render, but signal updates
-      // will not. To ensure that current signal usage is still correctly
-      // tracked, we re-enable watching in performUpdate() even while
-      // disconnected. From that point on, a disconnected element will be
-      // retained by the signals it accesses during the update lifecycle.
-      // We may want to use a WeakMap inside the watcher to avoid a strong
-      // reference to the element.
+      // Clean up the watcher earlier than the FinalizationRegistry will, to
+      // avoid memory pressure from signals holding references to the element
+      // via the watcher.
+      //
+      // This means that while disconnected, regular reactive property updates
+      // will trigger a re-render, but signal updates will not. To ensure that
+      // current signal usage is still correctly tracked, we re-enable watching
+      // in performUpdate() even while disconnected. From that point on, a
+      // disconnected element will be retained by the signals it accesses during
+      // the update lifecycle.
+      //
+      // We use queueMicrotask() to ensure that this cleanup does not happens
+      // because of synchronous moves in the DOM.
       queueMicrotask(() => {
         if (this.isConnected === false) {
           this.__unwatch();

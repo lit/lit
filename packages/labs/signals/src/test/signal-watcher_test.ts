@@ -8,7 +8,7 @@ import {LitElement, html} from 'lit';
 import {assert} from '@esm-bundle/chai';
 
 import {SignalWatcher, Signal} from '../index.js';
-import {property} from 'lit/decorators.js';
+import {customElement, property} from 'lit/decorators.js';
 
 let elementNameId = 0;
 const generateElementName = () => `test-${elementNameId++}`;
@@ -227,4 +227,48 @@ suite('SignalWatcher', () => {
     await el.updateComplete;
     assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 1');
   });
+
+  // const isChrome = navigator.userAgent.match(/Chrome/);
+  // (isChrome ? test : test.skip)(
+  test.skip('watcher does not hold onto element after disconnect', async () => {
+    const count = new Signal.State(0);
+    @customElement(generateElementName())
+    class TestElement extends SignalWatcher(LitElement) {
+      largeProperty = Array.from({length: 10_000}, (_, k) => k);
+
+      override render() {
+        return html`<p>count: ${count.get()}</p>`;
+      }
+    }
+    const elementCount = 10_000;
+
+    // Make, add, and remove a bunch of elements
+    const elementRefs: Array<WeakRef<TestElement>> = [];
+    for (let i = 0; i < elementCount; i++) {
+      const el = new TestElement();
+      elementRefs.push(new WeakRef(el));
+      container.append(el);
+      await el.updateComplete;
+      assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 0');
+      el.remove();
+    }
+    assert.equal(container.children.length, 0);
+
+    // Force a GC cycle to clean up the elements. Await event loop turns,
+    // because.
+    for (let i = 0; i < 10; i++) {
+      gc();
+      await new Promise((r) => setTimeout(r, 1));
+    }
+
+    // Check that some elements are garbage collected
+    const survivingElements = elementRefs.filter(
+      (ref) => ref.deref() !== undefined
+    );
+    assert.isTrue(survivingElements.length < elementCount);
+  });
 });
+
+declare global {
+  function gc(): void;
+}
