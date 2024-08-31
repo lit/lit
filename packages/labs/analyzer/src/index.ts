@@ -20,6 +20,7 @@ export type {
   Parameter,
   Return,
   LitElementDeclaration,
+  MixinDeclaration,
   CustomElementDeclaration,
   LitElementExport,
   PackageJson,

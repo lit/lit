@@ -1,6 +1,6 @@
 {
   "name": "lit-html",
-  "version": "3.1.3",
+  "version": "3.2.0",
   "description": "HTML templates literals in JavaScript",
   "license": "BSD-3-Clause",
   "repository": {
@@ -286,6 +286,19 @@
       "development": "./development/directives/unsafe-html.js",
       "default": "./directives/unsafe-html.js"
     },
+    "./directives/unsafe-mathml.js": {
+      "types": "./development/directives/unsafe-mathml.d.ts",
+      "browser": {
+        "development": "./development/directives/unsafe-mathml.js",
+        "default": "./directives/unsafe-mathml.js"
+      },
+      "node": {
+        "development": "./node/development/directives/unsafe-mathml.js",
+        "default": "./node/directives/unsafe-mathml.js"
+      },
+      "development": "./development/directives/unsafe-mathml.js",
+      "default": "./directives/unsafe-mathml.js"
+    },
     "./directives/unsafe-svg.js": {
       "types": "./development/directives/unsafe-svg.d.ts",
       "browser": {
@@ -460,9 +473,7 @@
         "tsconfig.compiled-tests.json"
       ],
       "output": [
-        "compiled/**/*.{js,js.map,d.ts,d.ts.map}",
-        "tsconfig.tsbuildinfo",
-        "tsconfig.compiled-tests.tsbuildinfo"
+        "compiled/**/*.{js,js.map,d.ts,d.ts.map}"
       ]
     },
     "build:rollup": {

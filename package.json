@@ -258,11 +258,10 @@
     "@babel/eslint-parser": "^7.17.0",
     "@changesets/cli": "^2.24.4",
     "@changesets/get-github-info": "^0.5.0",
-    "chai": "^5.1.0",
-    "@rollup/plugin-commonjs": "^25.0.0",
+    "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-inject": "^5.0.5",
     "@rollup/plugin-node-resolve": "^15.2.3",
-    "@rollup/plugin-replace": "^5.0.5",
+    "@rollup/plugin-replace": "^5.0.7",
     "@rollup/plugin-terser": "^0.4.4",
     "@rollup/plugin-virtual": "^3.0.2",
     "@types/chai": "^4.3.1",
@@ -276,6 +275,7 @@
     "@web/test-runner-mocha": "^0.7.5",
     "@web/test-runner-playwright": "^0.9.0",
     "@web/test-runner-saucelabs": "^0.8.0",
+    "chai": "^5.1.0",
     "cross-env": "^7.0.3",
     "eslint": "^8.47.0",
     "eslint-plugin-import": "^2.28.1",
@@ -285,13 +285,16 @@
     "lint-staged": "^13.0.3",
     "mocha": "^10.0.0",
     "prettier": "^3.2.5",
-    "rollup": "^3.0.0",
+    "rollup": "^4.18.0",
     "rollup-plugin-copy": "^3.5.0",
     "rollup-plugin-sourcemaps": "^0.6.3",
-    "rollup-plugin-summary": "^2.0.0",
-    "typescript": "~5.3.3",
+    "rollup-plugin-summary": "^2.0.1",
+    "typescript": "~5.5.0",
     "uvu": "^0.5.6",
-    "wireit": "^0.14.0"
+    "wireit": "^0.14.7"
+  },
+  "overrides": {
+    "@rollup/pluginutils": "^5.1.0"
   },
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --write",

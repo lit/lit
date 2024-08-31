@@ -4,18 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-// As of TypeScript 4.7.4, `ARIAMixin` is missing the following properties
-// https://w3c.github.io/aria/#state_prop_def
-declare global {
-  interface ARIAMixin {
-    ariaBraileLabel: string | null;
-    ariaBraileRoleDescription: string | null;
-    ariaDescription: string | null;
-    ariaInvalid: string | null;
-    role: string | null;
-  }
-}
-
 type ARIAAttributeMap = {
   [K in keyof ARIAMixin]: string;
 };
@@ -26,8 +14,8 @@ type ARIAAttributeMap = {
 export const ariaMixinAttributes: ARIAAttributeMap = {
   ariaAtomic: 'aria-atomic',
   ariaAutoComplete: 'aria-autocomplete',
-  ariaBraileLabel: 'aria-brailelabel',
-  ariaBraileRoleDescription: 'aria-braileroledescription',
+  ariaBrailleLabel: 'aria-braillelabel',
+  ariaBrailleRoleDescription: 'aria-brailleroledescription',
   ariaBusy: 'aria-busy',
   ariaChecked: 'aria-checked',
   ariaColCount: 'aria-colcount',
@@ -67,16 +55,18 @@ export const ariaMixinAttributes: ARIAAttributeMap = {
   role: 'role',
 };
 
+type ElementInternalsInterface = ElementInternals;
+
 // Shim the global element internals object
 // Methods should be fine as noops and properties can generally
 // be while on the server.
 export const ElementInternalsShim = class ElementInternals
-  implements ARIAMixin
+  implements ElementInternalsInterface
 {
   ariaAtomic = '';
   ariaAutoComplete = '';
-  ariaBraileLabel = '';
-  ariaBraileRoleDescription = '';
+  ariaBrailleLabel = '';
+  ariaBrailleRoleDescription = '';
   ariaBusy = '';
   ariaChecked = '';
   ariaColCount = '';
@@ -141,7 +131,7 @@ export const ElementInternalsShim = class ElementInternals
   }
   setFormValue(): void {}
   setValidity(): void {}
-  states = new Set();
+  states = new Set<string>();
   validationMessage = '';
   validity = {} as ValidityState;
   willValidate = true;

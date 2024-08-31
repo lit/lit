@@ -1,5 +1,12 @@
 # eslint-plugin-lit
 
+## 0.0.2
+
+### Patch Changes
+
+- Updated dependencies [[`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c)]:
+  - @lit-labs/analyzer@0.13.0
+
 ## 0.0.1
 
 ### Patch Changes

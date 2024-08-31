@@ -1,5 +1,16 @@
 # @lit-labs/gen-wrapper-vue
 
+## 0.4.0
+
+### Minor Changes
+
+- [#4682](https://github.com/lit/lit/pull/4682) [`bbc1760b`](https://github.com/lit/lit/commit/bbc1760b05fedc744c1c86cb836f0b9c0550e428) - Update dependencies, remove Vue compiler output file renaming.
+
+### Patch Changes
+
+- Updated dependencies [[`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c)]:
+  - @lit-labs/analyzer@0.13.0
+
 ## 0.3.3
 
 ### Patch Changes

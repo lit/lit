@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "3.1.3",
+  "version": "3.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -140,6 +140,10 @@
     "./directives/unsafe-html.js": {
       "types": "./development/directives/unsafe-html.d.ts",
       "default": "./directives/unsafe-html.js"
+    },
+    "./directives/unsafe-mathml.js": {
+      "types": "./development/directives/unsafe-mathml.d.ts",
+      "default": "./directives/unsafe-mathml.js"
     },
     "./directives/unsafe-svg.js": {
       "types": "./development/directives/unsafe-svg.d.ts",
@@ -341,8 +345,8 @@
   ],
   "dependencies": {
     "@lit/reactive-element": "^2.0.4",
-    "lit-element": "^4.0.4",
-    "lit-html": "^3.1.2"
+    "lit-element": "^4.1.0",
+    "lit-html": "^3.2.0"
   },
   "devDependencies": {
     "@lit-internal/scripts": "^1.0.1",

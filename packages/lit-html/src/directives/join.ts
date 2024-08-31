@@ -19,11 +19,11 @@
  */
 export function join<I, J>(
   items: Iterable<I> | undefined,
-  joiner: (index: number) => J,
+  joiner: (index: number) => J
 ): Iterable<I | J>;
 export function join<I, J>(
   items: Iterable<I> | undefined,
-  joiner: J,
+  joiner: J
 ): Iterable<I | J>;
 export function* join<I, J>(items: Iterable<I> | undefined, joiner: J) {
   const isFunction = typeof joiner === 'function';

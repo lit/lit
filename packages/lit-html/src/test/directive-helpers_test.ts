@@ -12,6 +12,7 @@ import {
   CompiledTemplateResult,
   CompiledTemplate,
   UncompiledTemplateResult,
+  mathml,
 } from 'lit-html';
 import {assert} from 'chai';
 import {stripExpressionComments} from '@lit-labs/testing';
@@ -73,6 +74,7 @@ suite('directive-helpers', () => {
   test('isTemplateResult', () => {
     assert.isTrue(isTemplateResult(html``));
     assert.isTrue(isTemplateResult(svg``));
+    assert.isTrue(isTemplateResult(mathml``));
     if (isTestFileNotCompiled) {
       assert.isTrue(isTemplateResult(html``, TemplateResultType.HTML));
     } else {
@@ -81,12 +83,15 @@ suite('directive-helpers', () => {
       assert.isFalse(isTemplateResult(html``, TemplateResultType.HTML));
     }
     assert.isTrue(isTemplateResult(svg``, TemplateResultType.SVG));
+    assert.isTrue(isTemplateResult(mathml``, TemplateResultType.MATHML));
 
     assert.isFalse(isTemplateResult(null));
     assert.isFalse(isTemplateResult(undefined));
     assert.isFalse(isTemplateResult({}));
     assert.isFalse(isTemplateResult(html``, TemplateResultType.SVG));
+    assert.isFalse(isTemplateResult(html``, TemplateResultType.MATHML));
     assert.isFalse(isTemplateResult(svg``, TemplateResultType.HTML));
+    assert.isFalse(isTemplateResult(svg``, TemplateResultType.MATHML));
     assert.isFalse(isTemplateResult(null, TemplateResultType.HTML));
     assert.isFalse(isTemplateResult(undefined, TemplateResultType.HTML));
     assert.isFalse(isTemplateResult({}, TemplateResultType.HTML));
@@ -95,7 +100,7 @@ suite('directive-helpers', () => {
       isTemplateResult({
         _$litType$: _$lit_template_1,
         values: [],
-      }),
+      })
     );
     assert.isFalse(
       isTemplateResult(
@@ -103,8 +108,8 @@ suite('directive-helpers', () => {
           _$litType$: _$lit_template_1,
           values: [],
         },
-        TemplateResultType.HTML,
-      ),
+        TemplateResultType.HTML
+      )
     );
     assert.isFalse(
       isTemplateResult(
@@ -112,8 +117,8 @@ suite('directive-helpers', () => {
           _$litType$: _$lit_template_1,
           values: [],
         },
-        TemplateResultType.SVG,
-      ),
+        TemplateResultType.SVG
+      )
     );
   });
 
@@ -123,13 +128,16 @@ suite('directive-helpers', () => {
     function acceptUncompiledTemplateResult(_v: UncompiledTemplateResult) {}
 
     function acceptTemplateOrCompiledTemplateResult(
-      _v: TemplateResult | CompiledTemplateResult,
+      _v: TemplateResult | CompiledTemplateResult
     ) {}
     function acceptTemplateResultHtml(
-      _v: TemplateResult<typeof TemplateResultType.HTML>,
+      _v: TemplateResult<typeof TemplateResultType.HTML>
     ) {}
     function acceptTemplateResultSvg(
-      _v: TemplateResult<typeof TemplateResultType.SVG>,
+      _v: TemplateResult<typeof TemplateResultType.SVG>
+    ) {}
+    function acceptTemplateResultMathMl(
+      _v: TemplateResult<typeof TemplateResultType.MATHML>
     ) {}
 
     const v = html`` as TemplateResult | CompiledTemplateResult;
@@ -144,11 +152,23 @@ suite('directive-helpers', () => {
       acceptTemplateResultHtml(v);
       // @ts-expect-error v is an html template result
       acceptTemplateResultSvg(v);
+      // @ts-expect-error v is an html template result
+      acceptTemplateResultMathMl(v);
     }
     if (isTemplateResult(v, TemplateResultType.SVG)) {
       acceptUncompiledTemplateResult(v);
       acceptTemplateResultSvg(v);
       // @ts-expect-error v is an svg template result
+      acceptTemplateResultHtml(v);
+      // @ts-expect-error v is an svg template result
+      acceptTemplateResultMathMl(v);
+    }
+    if (isTemplateResult(v, TemplateResultType.MATHML)) {
+      acceptUncompiledTemplateResult(v);
+      acceptTemplateResultMathMl(v);
+      // @ts-expect-error v is a MathML template result
+      acceptTemplateResultSvg(v);
+      // @ts-expect-error v is a MathML template result
       acceptTemplateResultHtml(v);
     }
   });
@@ -158,7 +178,7 @@ suite('directive-helpers', () => {
       isCompiledTemplateResult({
         _$litType$: _$lit_template_1,
         values: [],
-      }),
+      })
     );
 
     if (isTestFileNotCompiled) {
@@ -230,7 +250,7 @@ suite('directive-helpers', () => {
           assert.equal(connected, this.isConnected);
           this.setValue(connected);
         }
-      },
+      }
     );
 
     const container1 = container.appendChild(document.createElement('div'));

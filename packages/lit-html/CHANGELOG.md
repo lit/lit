@@ -1,5 +1,17 @@
 # Change Log
 
+## 3.2.0
+
+### Minor Changes
+
+- [#4637](https://github.com/lit/lit/pull/4637) [`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98) - Add MathML support with the `mathml` template tag
+
+## 3.1.4
+
+### Patch Changes
+
+- [#4646](https://github.com/lit/lit/pull/4646) [`abf30b3e`](https://github.com/lit/lit/commit/abf30b3e895ea5d833f6d9559612e2b1ba47580d) - The value provided by the `ref()` directive will always be `undefined` when the element is disconnected.
+
 ## 3.1.3
 
 ### Patch Changes

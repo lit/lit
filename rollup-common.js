@@ -5,7 +5,7 @@
  */
 
 import {summary} from 'rollup-plugin-summary';
-import {terser} from 'rollup-plugin-terser';
+import terser from '@rollup/plugin-terser';
 import copy from 'rollup-plugin-copy';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import sourcemaps from 'rollup-plugin-sourcemaps';
@@ -597,7 +597,7 @@ const litMonoBundleConfig = ({
       exportConditions: ['development'],
     }),
     replace({
-      preventAssignment: true,
+      preventAssignment: false,
       values: {
         'const DEV_MODE = true': 'const DEV_MODE = false',
         'const ENABLE_EXTRA_SECURITY_HOOKS = true':

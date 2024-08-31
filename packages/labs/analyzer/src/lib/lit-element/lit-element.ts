@@ -22,6 +22,7 @@ import {
   getJSDocData,
   getTagName as getCustomElementTagName,
 } from '../custom-elements/custom-elements.js';
+import {getBaseTypes} from '../utils.js';
 
 export type TypeScript = typeof ts;
 
@@ -31,7 +32,8 @@ export type TypeScript = typeof ts;
  */
 export const getLitElementDeclaration = (
   declaration: LitClassDeclaration,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  isMixinClass?: boolean
 ): LitElementDeclaration => {
   return new LitElementDeclaration({
     tagname: getTagName(declaration, analyzer),
@@ -40,7 +42,7 @@ export const getLitElementDeclaration = (
     node: declaration,
     reactiveProperties: getProperties(declaration, analyzer),
     ...getJSDocData(declaration, analyzer),
-    getHeritage: () => getHeritage(declaration, analyzer),
+    getHeritage: () => getHeritage(declaration, analyzer, isMixinClass),
     ...getClassMembers(declaration, analyzer),
   });
 };
@@ -84,8 +86,12 @@ const _isLitElement = (ts: TypeScript, node: ts.Declaration) => {
 const _isLitElementModule = (file: ts.SourceFile) => {
   return (
     file.fileName.endsWith('/node_modules/lit-element/lit-element.d.ts') ||
+    file.fileName.endsWith(
+      '/node_modules/lit-element/development/lit-element.d.ts'
+    ) ||
     // Handle case of running analyzer in symlinked monorepo
-    file.fileName.endsWith('/packages/lit-element/lit-element.d.ts')
+    file.fileName.endsWith('/packages/lit-element/lit-element.d.ts') ||
+    file.fileName.endsWith('/packages/lit-element/development/lit-element.d.ts')
   );
 };
 
@@ -111,14 +117,16 @@ export const isLitElementSubclass = (
     return false;
   }
   const checker = analyzer.program.getTypeChecker();
-  const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
-  const baseTypes = checker.getBaseTypes(type);
-  for (const t of baseTypes) {
-    if (_isLitElementClassDeclaration(t, analyzer)) {
-      return true;
-    }
-  }
-  return false;
+  const type = checker.getTypeAtLocation(node);
+  const baseTypes = getBaseTypes(type);
+
+  return baseTypes.some((t) =>
+    // Mixins will cause the base types to be an intersection that
+    // includes `LitElement`
+    t.isIntersection()
+      ? t.types.some((t) => _isLitElementClassDeclaration(t, analyzer))
+      : _isLitElementClassDeclaration(t, analyzer)
+  );
 };
 
 /**
