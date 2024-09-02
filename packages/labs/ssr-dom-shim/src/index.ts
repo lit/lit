@@ -13,7 +13,7 @@ export {
 } from './lib/element-internals.js';
 export {CustomEvent, Event, EventTarget} from './lib/events.js';
 
-// In an empty vm, we need to patch the global context.
+// In an empty Node.js vm, we need to patch the global context.
 globalThis.Event ??= EventShim;
 globalThis.CustomEvent ??= CustomEventShim;
 
@@ -52,7 +52,6 @@ const ElementShim = class Element extends EventTargetShim {
   private __shadowRootMode: null | ShadowRootMode = null;
   protected __shadowRoot: null | ShadowRoot = null;
   protected __internals: null | ElementInternals = null;
-  __slots: Map<string, Element> | undefined;
 
   get shadowRoot() {
     if (this.__shadowRootMode === 'closed') {
