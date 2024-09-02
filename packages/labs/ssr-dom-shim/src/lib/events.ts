@@ -52,8 +52,7 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
     normalizedOptions.signal?.addEventListener('abort', () =>
       this.removeEventListener(type, callback, options)
     );
-    // We are ignoring capture, as we expecte separate instances of this class to be used for that.
-    eventListeners.set(callback, normalizedOptions);
+    eventListeners.set(callback, normalizedOptions ?? {});
   }
   removeEventListener(
     type: string,
