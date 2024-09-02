@@ -74,7 +74,6 @@ declare module 'parse5/dist/tree-adapters/default.js' {
 interface HTMLElementShim extends HTMLElement {
   __eventTargetParent: HTMLElement | undefined;
   __host: HTMLElement | undefined;
-  __slots: Map<string | undefined, HTMLElement> | undefined;
 }
 
 function ssrResolve(this: Directive, _part: Part, values: unknown[]) {
@@ -114,6 +113,10 @@ const patchAnyDirectives = (
 };
 
 const templateCache = new Map<TemplateStringsArray, Array<Op>>();
+const elementSlotMap = new WeakMap<
+  HTMLElement,
+  Map<string | undefined, HTMLElement>
+>();
 
 /**
  * Operation to output static text
@@ -873,7 +876,7 @@ And the inner template was:
           ) as HTMLElementShim;
           const slotName = getLast(renderInfo.slotStack);
           (instance.element as HTMLElementShim).__eventTargetParent =
-            eventTarget?.__slots?.get(slotName) ?? eventTarget;
+            elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
           (instance.element as HTMLElementShim).__host = getLast(
             renderInfo.customElementHostStack
           )?.element;
@@ -965,11 +968,15 @@ And the inner template was:
             `Internal error: ${op.type} outside of custom element context`
           );
         } else if (host.element) {
-          (host.element as HTMLElementShim).__slots ??= new Map();
-          if (!(host.element as HTMLElementShim).__slots!.has(op.name)) {
+          let slots = elementSlotMap.get(host.element);
+          if (!slots) {
+            slots = new Map();
+            elementSlotMap.set(host.element, slots);
+          }
+          if (!slots.has(op.name)) {
             const element = new HTMLElement() as HTMLElementShim;
             element.__eventTargetParent = getLast(renderInfo.eventTargetStack);
-            (host.element as HTMLElementShim).__slots!.set(op.name, element);
+            slots!.set(op.name, element);
             renderInfo.eventTargetStack.push(element);
           }
         }
