@@ -281,12 +281,12 @@ export const createComponent = <
           setProperty(
             elementRef.current,
             key,
-            props[key],
+            props[key as keyof typeof props],
             prevElemPropsRef.current.get(key),
             events
           );
           prevElemPropsRef.current.delete(key);
-          newElemProps.set(key, props[key]);
+          newElemProps.set(key, props[key as keyof typeof props]);
         }
         // "Unset" any props from previous render that no longer exist.
         // Setting to `undefined` seems like the correct thing to "unset"
