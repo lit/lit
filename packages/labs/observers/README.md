@@ -52,14 +52,17 @@ import { ResizeController } from "@lit-labs/observers/resize-controller.js";
 // ...
 
 class MyElement extends LitElement {
-  private _resizeController = new ResizeController(this, {});
+private _resizeController = new ResizeController<DOMRectReadOnly>(this, {
+    // Save into _resizeController.value only the current rect dimentions
+    callback: (entries: ResizeObserverEntry[]) => entries[entries.length - 1].contentRect,
+  });
 
-  render() {
-    const width = this.getBoundingClientRect().width;
-    const height = this.getBoundingClientRect().height;
-    
-    return html`<div class="container">${width}px x${height}px</div>`;
-  }
+render() {
+  const width = this._resizeController.value.width;
+  const height = this._resizeController.value.height;
+
+  return html`<div class="container">${width}px x${height}px</div>`;
+}
 
   static styles = css`
     .container {
