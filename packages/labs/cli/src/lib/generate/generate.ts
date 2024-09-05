@@ -134,8 +134,8 @@ export const run = async (
       const errors = results
         .map((r, i) =>
           r.status === 'rejected'
-            ? `Error generating '${generators[i].name}' wrapper for package '${packageRoot}': ` +
-                (r.reason as Error).stack ?? r.reason
+            ? (`Error generating '${generators[i].name}' wrapper for package '${packageRoot}': ` +
+                (r.reason as Error).stack ?? r.reason)
             : ''
         )
         .filter((e) => e)

@@ -416,7 +416,7 @@ const testSkipSafari = isSafari ? test.skip : test;
     el.shift = true;
     await el.updateComplete;
     await theAnimate!.finished;
-    assert.ok(frames!);
+    assert.ok(frames);
     assert.deepEqual(animateProps, {left: -200});
     assert.equal((frames![0].transform as string).trim(), 'translateX(-200px)');
     assert.equal((frames![0].color as string).trim(), 'rgb(0, 0, 0)');
