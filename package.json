@@ -179,7 +179,6 @@
         "./packages/labs/ssr-dom-shim:test",
         "./packages/labs/ssr-react:test",
         "./packages/labs/testing:test",
-        "./packages/labs/virtualizer:test",
         "./examples/preact:test"
       ]
     },
