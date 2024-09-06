@@ -21,18 +21,19 @@ export class WatchDirective<T> extends AsyncDirective {
   private __computed?: Signal.Computed<T | undefined>;
 
   private __watch() {
-    if (this.__watcher === undefined) {
-      this.__computed = new Signal.Computed(() => {
-        return this.__signal?.get();
-      });
-      const watcher = (this.__watcher = new Signal.subtle.Watcher(() => {
-        // TODO: If we're not running inside a SignalWatcher, we can commit to
-        // the DOM independently.
-        this.__host?.updateWatchDirective(this as WatchDirective<unknown>);
-        watcher.watch();
-      }));
-      watcher.watch(this.__computed);
+    if (this.__watcher !== undefined) {
+      return;
     }
+    this.__computed = new Signal.Computed(() => {
+      return this.__signal?.get();
+    });
+    const watcher = (this.__watcher = new Signal.subtle.Watcher(() => {
+      // TODO: If we're not running inside a SignalWatcher, we can commit to
+      // the DOM independently.
+      this.__host?._updateWatchDirective(this as WatchDirective<unknown>);
+      watcher.watch();
+    }));
+    watcher.watch(this.__computed);
   }
 
   private __unwatch() {
@@ -40,6 +41,7 @@ export class WatchDirective<T> extends AsyncDirective {
       this.__watcher.unwatch(this.__computed!);
       this.__computed = undefined;
       this.__watcher = undefined;
+      this.__host?._clearWatchDirective(this as WatchDirective<unknown>);
     }
   }
 

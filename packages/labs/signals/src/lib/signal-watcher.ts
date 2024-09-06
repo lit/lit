@@ -14,7 +14,7 @@ type ReactiveElementConstructor = abstract new (
 ) => ReactiveElement;
 
 export interface SignalWatcher extends ReactiveElement {
-  updateWatchDirective(d: WatchDirective<unknown>): void;
+  _updateWatchDirective(d: WatchDirective<unknown>): void;
 }
 
 interface SignalWatcherInterface extends SignalWatcher {}
@@ -116,7 +116,15 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
      */
     private __forceUpdateSignal = new Signal.State(0);
 
-    // @ts-expect-error This field
+    /*
+     * This field is used within the watcher to determine if the watcher
+     * notification was triggered by our performUpdate() override. Because we
+     * force a fresh read of the __performUpdateSignal by changing value of the
+     * __forceUpdate signal, the watcher will be notified. But we're already
+     * performing an update, so we don't want to enqueue another one.
+     */
+    // @ts-expect-error This field is accessed in a watcher function with a
+    // different `this` context, so TypeScript can't see the access.
     private __forcingUpdate = false;
 
     /**
@@ -225,7 +233,9 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       // the update lifecycle.
       //
       // We use queueMicrotask() to ensure that this cleanup does not happens
-      // because of synchronous moves in the DOM.
+      // because moves in the DOM within the same task, such as removing an
+      // element with .remove() and then adding it back later with .append()
+      // in the same task. For example, repeat() works this way.
       queueMicrotask(() => {
         if (this.isConnected === false) {
           this.__unwatch();
@@ -233,13 +243,34 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       });
     }
 
-    updateWatchDirective(d: WatchDirective<unknown>): void {
+    /**
+     * Enqueues an update caused by a signal change observed by a watch()
+     * directive.
+     *
+     * Note: the method is not part of the public API and is subject to change.
+     * In particular, it may be removed if the watch() directive is updated to
+     * work with standalone lit-html templates.
+     *
+     * @internal
+     */
+    _updateWatchDirective(d: WatchDirective<unknown>): void {
       this.__pendingWatches.add(d);
       // requestUpdate() will set __doFullRender to true, so remember the
       // current value and restore it after calling requestUpdate().
       const shouldRender = this.__doFullRender;
       this.requestUpdate();
       this.__doFullRender = shouldRender;
+    }
+
+    /**
+     * Clears a watch() directive from the set of pending watches.
+     *
+     * Note: the method is not part of the public API and is subject to change.
+     *
+     * @internal
+     */
+    _clearWatchDirective(d: WatchDirective<unknown>): void {
+      this.__pendingWatches.delete(d);
     }
   }
   return SignalWatcher;
