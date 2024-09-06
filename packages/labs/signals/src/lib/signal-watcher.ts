@@ -15,6 +15,7 @@ type ReactiveElementConstructor = abstract new (
 
 export interface SignalWatcher extends ReactiveElement {
   _updateWatchDirective(d: WatchDirective<unknown>): void;
+  _clearWatchDirective(d: WatchDirective<unknown>): void;
 }
 
 interface SignalWatcherInterface extends SignalWatcher {}
