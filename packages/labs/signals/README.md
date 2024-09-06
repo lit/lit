@@ -2,21 +2,31 @@
 
 TC39 Signals Proposal integration for Lit.
 
-> **Warning** `@lit-labs/signals` is part of the Lit Labs set of packages – it is published
-> in order to get feedback on the design and may receive breaking changes.
+> [!WARNING] `@lit-labs/signals` is part of the Lit Labs set of packages – it
+> is published in order to get feedback on the design and may receive breaking
+> changes.
 >
 > RFC: https://github.com/lit/rfcs/blob/main/rfcs/0005-standard-signals.md
 >
 > Give feedback: https://github.com/lit/lit/discussions/NNNN
 
-## The TC39 Signals Proposal
+## Overview
+
+`@lit-labs/signals` integrates the [TC39 Signals
+Proposal](https://github.com/tc39/proposal-signals) with Lit's template system
+and reactive update lifecycle. Signals used with an element's update lifecycle,
+such as in a template, will cause the element to re-render when the signal value
+changes. Signals can also be used for targetted or "pin-point" DOM updates,
+which can update the DOM without running the entire `render()` method.
+
+### The TC39 Signals Proposal
 
 The [TC39 Signals Proposal](https://github.com/tc39/proposal-signals) is a
 proposal to add standard signals to the JavaScript language.
 
 This is very exciting for web components, since it means that different web
-components that don't use the same libraries can interoperably watch and produce
-signals.
+components that don't use the same libraries can interoperably consume and
+produce signals.
 
 It also means that many existing state management systems and observability
 libraries that might currently each require their own adapter to integrated with
@@ -24,7 +34,7 @@ the Lit lifecycle, might converge on using standard signals so that we only need
 one Lit adapter, and eventually no adapter at all as support for signals is
 directly added to Lit
 
-## Why Signals?
+### Why Signals?
 
 Signals have several nice attributes for use with reactive components like Lit:
 
@@ -59,16 +69,49 @@ Signals have several nice attributes for use with reactive components like Lit:
    synchrously. The batching mechanism isn't standard yet, but could be an
    extension to the proposal.
 
-Signals are a natural fit for Lit. A LitElement render method is already
+Signals are a natural fit for Lit: a LitElement render method is already
 somewhat like a computed signal in that it is computed based on updates to
-inputs (reactive properties). The difference between Lit renders and signals is
+inputs (reactive properties).
+
+The difference between Lit renders and signals is
 that in Lit the data flow is push-based, rather than pull-based as in signals.
 Lit elements react when changes are pushed into them, whereas signals
 automatically subscribe to the other signals they access. But these approaches
 are very compatible, and we can easily make elements subscribe to the signals
 they access and trigger an update with an integration library like this one.
 
+### On Proposals and Polyfills
+
+Like all Lit Labs packages, `@lit-labs/signals` package may change frequently,
+have serious bugs, or not be maintained as well as Lit's core packages.
+
+Additionally, this package depends on the Signals proposal and directly depends
+on the polyfill, which add more potential sources of instability and bugs. The
+proposal may change, and the polfyill may have bugs or serious performance
+issues. If multiple versions of the polyfill are included on a page,
+interoperabiilty may fail.
+
+As the Signals proposal and polyfill progress we will update this package. At
+some point we will remove the dependency on the polyfill and assume the standard
+signal APIs exist, and pages will have to install the polyfill if needed.
+
+So `@lit-labs/signals` is not reccomended for production use. If you choose to
+use it, please thouroughly test and check the performance of your components
+and/or app _at scale_, with the number of signals and component instances that
+you expect in real-world usage.
+
+Please file feedback and bugs with the [Lit
+project](https://github.com/lit/lit/issues), the [Signals
+Proposal](https://github.com/tc39/proposal-signals), and the [Signals
+polyfill](https://github.com/proposal-signals/signal-polyfill) a appropriate.
+
 ## Usage
+
+There are three main exports:
+
+- The `SignalWatcher` mixin
+- The `watch()` directive
+- The `html` template tag, and `withWatch()` template tag factory
 
 ### SignalWatcher
 
@@ -99,11 +142,11 @@ export class SignalExample extends SignalWatcher(LitElement) {
   render() {
     return html`
       <p>The count is ${count.get()}</p>
-      <button @click=${this._onClick}>Increment<button></button></button>
+      <button @click=${this.#onClick}>Increment<button></button></button>
     `;
   }
 
-  private _onClick() {
+  #onClick() {
     count.set(count.get() + 1);
   }
 }
@@ -115,18 +158,9 @@ cause an infinite loop.
 ### watch() directive
 
 The `watch()` directive accepts a single Signal and renders its value,
-subscribing to updates and updating the DOM when the signal changes.
-
-The `watch()` directive allows for very targeted updates of the DOM, which can
-be good for performance (but as always, measure!).
-
-Updates from `watch()` directives are batched and commited during the next
-reactive update. If there are only updates from `watch()` directives, then those
-updates are commited without a full render - preserving both DOM coherence and
-targetted updates. If there is another reactive update pending, then the whole
-template is re-rendered, along with the latest signal values.
-
-`watch()` must be used in conjunction with `SignalWatcher`.
+subscribing to updates and updating the DOM when the signal changes. This allows
+for very targeted updates of the DOM, which can be good for performance (but as
+always, measure!).
 
 ```ts
 import {LitElement, html} from 'lit';
@@ -146,19 +180,36 @@ export class SignalExample extends SignalWatcher(LitElement) {
   render() {
     return html`
       <p>The count is ${watch(count)}</p>
-      <button @click=${this._onClick}>Increment<button></button></button>
+      <button @click=${this.#onClick}>Increment<button></button></button>
     `;
   }
 
-  private _onClick() {
+  #onClick() {
     count.set(count.get() + 1);
   }
 }
 ```
 
-You can mix and match targetted updates with `watch()` directive and auto-tracking with `SignalWatcher`. When you pass a signal directly to `watch()` it is not accessed in a callback
-watched by `SignalWatcher`, so an update to that signal will only cause a targeted
-DOM update and not an full template render.
+`watch()` updates are batched and run in coordination with the reactive update
+lifecycle. When a watched signal changes, it is aded to a batch and a reactive
+update is requested. Other changes, to reactive properties or signals accessed
+outside of `watch()`, are trigger reactive updates as usual.
+
+During a reactive update, if there are only updates from `watch()` directives,
+then those updates are commited directly _without_ a full template render. If
+any other changes triggered the reactive update, then the whole template is
+re-rendered, along with the latest signal values.
+
+This approach preserves both DOM coherence and targetted updates, and coalesces
+updates when both signals and reactive properties change.
+
+`watch()` must be used in conjunction with the `SignalWatcher` mixin.
+
+You can mix and match targetted updates with `watch()` directive and
+auto-tracking with `SignalWatcher`. When you pass a signal directly to `watch()`
+it is not accessed in a callback watched by `SignalWatcher`, so an update to
+that signal will only cause a targeted DOM update and not an full template
+render.
 
 ### html tag and withWatch()
 
@@ -183,19 +234,36 @@ export class SignalExample extends SignalWatcher(LitElement) {
   render() {
     return html`
       <p>The count is ${count}</p>
-      <button @click=${this._onClick}>Increment<button></button></button>
+      <button @click=${this.#onClick}>Increment<button></button></button>
     `;
   }
 
-  private _onClick() {
+  #onClick() {
     count.set(count.get() + 1);
   }
 }
 ```
 
+#### `withWatch()`
+
 `withWatch()` is a function that wraps an `html` tag function with the
-auto-watching functionality. This allows you to compose this wrapper with other
-html-tag wrappers like Lit's `withStatic()` static template wrapper.
+auto-watching functionality. The `html` tag exported by `@lit-labs/signals` is
+simply the core lit-html template tag wrapped with `withWatch()` as a
+convenience.
+
+`withWatch()` allows you to compose the signal watching wrapper with other
+lit-html tag wrappers like Lit's `withStatic()` utility.
+
+```ts
+import {html as coreHtml} from 'lit';
+import {withStatic} from 'lit/static-html.js';
+import {withWatch} from '@lit-labs/signals';
+
+/**
+ * A Lit template tag that support static values and pinpoint signal updates.
+ */
+const html = withWatch(withStatic(coreHtml));
+```
 
 ## Future Work
 
@@ -206,3 +274,12 @@ This library will change based on feedback from developers. Some existing dieas 
 - A `@property()` decorator that creates a signal-backed property that can be watched.
 - An `@effect()` method decorator that runs a method inside a watched computed signal, and re-runs it when any signal dependencies change. This would be an alternative the the common `@observe()` feature request.
 - Batched synchronous updates, when using a utility like []`batchedEffect()`](https://github.com/proposal-signals/signal-utils?tab=readme-ov-file#batched-effects)
+
+## Related Libraries
+
+### signal-utils
+
+The [`signal-utils` project](https://github.com/proposal-signals/signal-utils)
+contains a lot of utilities for building signals-based data models.
+
+Some of these are especially useful for use cases around shared observable state. The signal-backed collections (arrays, maps, and sets) can help address cases where Lit's reactive properties cannot see internal changes to objects.
