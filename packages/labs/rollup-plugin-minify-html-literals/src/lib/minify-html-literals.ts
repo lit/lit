@@ -122,7 +122,7 @@ export interface SourceMap {
   version: number | string;
   file: string | null;
   sources: Array<string | null>;
-  sourcesContent: Array<string | null>;
+  sourcesContent?: Array<string | null>;
   names: string[];
   mappings: string;
   toString(): string;

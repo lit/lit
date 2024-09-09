@@ -1,10 +1,11 @@
-import {expect} from 'chai';
+import {test, describe as suite} from 'node:test';
+import * as assert from 'node:assert/strict';
 import sinon from 'sinon';
 import {parseLiterals} from '../lib/parse-literals.js';
 import createParseTests from './parse-tests.js';
 
-describe('parse-literals', () => {
-  it('should allow overriding strategy', () => {
+suite('parse-literals', () => {
+  test('should allow overriding strategy', () => {
     const result: unknown[] = [];
     const strategy = {
       getRootNode: sinon.fake(),
@@ -17,8 +18,8 @@ describe('parse-literals', () => {
     };
 
     parseLiterals('true', {strategy});
-    expect(strategy.getRootNode.calledWith('true')).to.be.true;
-    expect(strategy.walkNodes.called).to.be.true;
+    assert.ok(strategy.getRootNode.calledWith('true'));
+    assert.ok(strategy.walkNodes.called);
   });
 
   createParseTests();
