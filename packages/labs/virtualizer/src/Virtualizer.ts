@@ -678,8 +678,8 @@ export class Virtualizer {
       const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
       const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
 
-      const height = bottom - top;
-      const width = right - left;
+      const height = Math.max(0, bottom - top);
+      const width = Math.max(0, right - left);
 
       layout.viewportSize = {width, height};
       layout.viewportScroll = {top: scrollTop, left: scrollLeft};
