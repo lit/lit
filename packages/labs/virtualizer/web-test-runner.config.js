@@ -5,6 +5,7 @@
  */
 
 export default {
+  concurrency: 1,
   testFramework: {
     config: {
       ui: 'bdd',
