@@ -162,6 +162,6 @@ describe('until', () => {
     expect(error!.message).to.contain(
       'Condition not met within 1000ms: "() => condition"'
     );
-    expect(error!.message).to.contain('at o.<anonymous>');
+    expect(error!.message).to.match(/at .\.<anonymous>/);
   });
 });
