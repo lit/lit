@@ -225,7 +225,7 @@ const testSkipSafari = isSafari ? test.skip : test;
     el.shift = true;
     await el.updateComplete;
     await theAnimate!.finished;
-    assert.ok(frames!);
+    assert.ok(frames);
     assert.equal(
       (frames![0].transform as string).trim(),
       'translateX(-200px) translateY(-200px)'
@@ -241,8 +241,9 @@ const testSkipSafari = isSafari ? test.skip : test;
     await el.updateComplete;
     await theAnimate!.finished;
     const r3 = el.div.getBoundingClientRect();
-    assert.ok(frames!);
+    assert.ok(frames);
     assert.equal(
+      // @ts-expect-error: bad type inference
       (frames![0].transform as string).trim(),
       'translateX(200px) translateY(200px)'
     );
@@ -415,7 +416,7 @@ const testSkipSafari = isSafari ? test.skip : test;
     el.shift = true;
     await el.updateComplete;
     await theAnimate!.finished;
-    assert.ok(frames!);
+    assert.ok(frames);
     assert.deepEqual(animateProps, {left: -200});
     assert.equal((frames![0].transform as string).trim(), 'translateX(-200px)');
     assert.equal((frames![0].color as string).trim(), 'rgb(0, 0, 0)');

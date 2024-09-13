@@ -58,6 +58,7 @@
     ".": "./index.js"
   },
   "devDependencies": {
+    "@types/eslint": "^9.6.1",
     "@types/node": "^20.11.5",
     "@typescript-eslint/parser": "^6.19.0",
     "@typescript-eslint/rule-tester": "^6.19.0",

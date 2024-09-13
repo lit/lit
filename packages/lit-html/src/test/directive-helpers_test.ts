@@ -199,6 +199,9 @@ suite('directive-helpers', () => {
   });
 
   test('getDirectiveClass', () => {
+    // TODO (justinfagnani): Remove this
+    // @ts-expect-error Directive is not assignable to Constructor<Directive>
+    // because it's abstract. This is a bug in @types/chai.
     assert.instanceOf(getDirectiveClass(classMap({}))?.prototype, Directive);
     assert.equal(getDirectiveClass(null), undefined);
     assert.equal(getDirectiveClass(undefined), undefined);

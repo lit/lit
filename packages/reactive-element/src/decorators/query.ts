@@ -114,7 +114,7 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
       const {get, set} =
         typeof nameOrContext === 'object'
           ? protoOrTarget
-          : descriptor ??
+          : (descriptor ??
             (() => {
               const key = DEV_MODE
                 ? Symbol(`${String(nameOrContext)} (@query() cache)`)
@@ -130,7 +130,7 @@ export function query(selector: string, cache?: boolean): QueryDecorator {
                   (this as WithCache)[key] = v;
                 },
               };
-            })();
+            })());
       return desc(protoOrTarget, nameOrContext, {
         get(this: ReactiveElement): V {
           let result: V = get!.call(this);
