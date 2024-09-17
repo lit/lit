@@ -15,15 +15,7 @@ import {
 import {isSingleExpression, setCommittedValue} from '../directive-helpers.js';
 
 type ValidPartType = 1 | 3 | 4;
-type Element = HTMLElement & {[key: string]: unknown};
-type GetValueFn = (element: Element, name: string) => unknown;
 type EqualFn = (value: unknown, elementValue: unknown) => boolean;
-
-const getValue: Record<ValidPartType, GetValueFn> = {
-  [PartType.PROPERTY]: (element, name) => element[name],
-  [PartType.BOOLEAN_ATTRIBUTE]: (element, name) => element.hasAttribute(name),
-  [PartType.ATTRIBUTE]: (element, name) => element.getAttribute(name),
-};
 
 const defaults: Record<ValidPartType, EqualFn> = {
   [PartType.PROPERTY]: (value, elementValue) => value === elementValue,
@@ -59,16 +51,24 @@ class LiveDirective extends Directive {
     part: AttributePart & {
       readonly type: ValidPartType;
     },
-    [value, equal]: DirectiveParameters<this>
+    [value, equal = defaults[part.type]]: DirectiveParameters<this>
   ) {
     if (value === noChange || value === nothing) {
       return value;
     }
-    const element = part.element as Element;
-    const name = part.name;
-    const _equal = equal ?? defaults[part.type];
 
-    if (_equal(value, getValue[part.type](element, name))) return noChange;
+    const {type, name, element} = part;
+
+    const currentValue =
+      type === PartType.PROPERTY
+        ? element[name as keyof typeof element]
+        : type === PartType.ATTRIBUTE
+          ? element.getAttribute(name)
+          : element.hasAttribute(name);
+
+    if (equal(value, currentValue)) {
+      return noChange;
+    }
 
     // Resets the part's value, causing its dirty-check to fail so that it
     // always sets the value.
@@ -95,11 +95,11 @@ class LiveDirective extends Directive {
  * html`<input .value=${live(x)}>`
  * ```
  *
- * `live()` performs a strict equality check against the live DOM value, and if
- * the new value is equal to the live value, does nothing. This means that
- * `live()` should not be used when the binding will cause a type conversion. If
- * you use `live()` with an attribute binding, make sure that only strings are
- * passed in, or the binding will update every render.
+ * By default, `live()` performs a strict equality check against the live DOM
+ * value, and if the new value is equal to the live value, does nothing. This
+ * means that `live()` should not be used when the binding will cause a type
+ * conversion. If you use `live()` with an attribute binding, make sure that
+ * only strings are passed in, or the binding will update every render.
  *
  * To customize the equality check, you can pass in a function as the second
  * argument.
