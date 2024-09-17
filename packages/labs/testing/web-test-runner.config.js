@@ -28,7 +28,7 @@ const config = {
       timeout: '60000',
     },
   },
-  plugins: [litSsrPlugin({initScript: './test/init-script.js'})],
+  plugins: [litSsrPlugin({workerModules: ['./typescript-worker.js']})],
 };
 
 export default config;

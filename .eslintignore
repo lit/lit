@@ -368,6 +368,7 @@ packages/labs/task/task.*
 
 packages/labs/testing/index.*
 packages/labs/testing/fixtures.*
+packages/labs/testing/typescript-worker.*
 packages/labs/testing/web-test-runner-ssr-plugin.*
 packages/labs/testing/lib
 packages/labs/testing/test

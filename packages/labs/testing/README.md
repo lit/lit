@@ -43,9 +43,12 @@ Signature
 `litSsrPlugin(options: LitSsrPluginOptions = {}): TestRunnerPlugin<Payload>`
 
 - `options: object` - Options object containing the following properties
-  - `initScript: string` - Relative paths to a script, which would be imported
-    inside the worker for server-side rendering before importing the modules.
-    This allows registering e.g. Node.js ESM hooks to directly import .ts files.
+  - `workerModules: string` - Relative paths to modules to be loaded before
+    the fixture modules.
+    This allows registering e.g. Node.js ESM hooks to directly import .ts files
+    or general setup.
+    You can use opinionated `@lit-labs/testing/typescript-worker.js` for
+    TypeScript support.
 
 ### Fixtures
 

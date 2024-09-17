@@ -20,7 +20,7 @@ teardown(() => {
 });
 
 for (const fixture of [ssrNonHydratedFixture, ssrHydratedFixture]) {
-  suite(`init-script rendered with ${fixture.name}`, () => {
+  suite(`worker module used with ${fixture.name}`, () => {
     test('renders good-element', async () => {
       const el = await fixture(html`<good-element></good-element>`, {
         base: import.meta.url,

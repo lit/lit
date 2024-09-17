@@ -6,4 +6,4 @@
 
 import {register} from 'node:module';
 
-register(new URL('./init-script-hooks.js', import.meta.url));
+register(new URL('./lib/typescript-hook.js', import.meta.url));

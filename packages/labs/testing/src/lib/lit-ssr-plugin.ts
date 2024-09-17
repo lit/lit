@@ -14,12 +14,12 @@ import type {TestRunnerPlugin} from '@web/test-runner';
 
 export interface LitSsrPluginOptions {
   /**
-   * This script will be imported before the modules inside the worker
-   * that renders the template on server-side.
+   * These modules will be imported from each newly created worker.
+   * (A worker is created for each call to render a template via SSR).
    * This allows registering hooks for Node.js (e.g. to allow importing .ts
    * files directly) or general setup.
    */
-  initScript?: string;
+  workerModules?: string[];
 }
 
 export interface Payload {
@@ -27,8 +27,12 @@ export interface Payload {
   modules: string[];
 }
 
+export interface PayloadWithWorkerModules
+  extends Payload,
+    Required<LitSsrPluginOptions> {}
+
 export function litSsrPlugin({
-  initScript,
+  workerModules = [],
 }: LitSsrPluginOptions = {}): TestRunnerPlugin<Payload> {
   return {
     name: 'lit-ssr-plugin',
@@ -42,12 +46,10 @@ export function litSsrPlugin({
       }
 
       const {template, modules} = payload;
-      const resolvedModules = modules.map(
-        (module) => pathToFileURL(pathlib.join(process.cwd(), module)).href
-      );
-      const resolvedInitScript = initScript
-        ? pathToFileURL(pathlib.join(process.cwd(), initScript)).href
-        : undefined;
+      const resolveModule = (module: string): string =>
+        pathToFileURL(pathlib.join(process.cwd(), module)).href;
+      const resolvedModules = modules.map(resolveModule);
+      const resolvedWorkerModules = workerModules.map(resolveModule);
 
       let resolve: (value: string) => void;
       let reject: (reason: unknown) => void;
@@ -60,7 +62,7 @@ export function litSsrPlugin({
         workerData: {
           template,
           modules: resolvedModules,
-          initScript: resolvedInitScript,
+          workerModules: resolvedWorkerModules,
         },
       });
 
