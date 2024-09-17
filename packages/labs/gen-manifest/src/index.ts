@@ -322,6 +322,12 @@ const convertEvent = (event: Event): cem.Event => {
 const convertAttribute = (
   reactiveProperty: ReactiveProperty
 ): cem.Attribute => {
+  const hasDefault =
+    reactiveProperty.reflect &&
+    reactiveProperty.type !== undefined &&
+    reactiveProperty.type.text in ['string', 'boolean', 'number'] &&
+    reactiveProperty.default !== undefined &&
+    reactiveProperty.converter === undefined;
   return {
     name:
       typeof reactiveProperty.attribute === 'string'
@@ -331,7 +337,7 @@ const convertAttribute = (
       text: 'unknown',
     },
     ...convertCommonInfo(reactiveProperty),
-    default: reactiveProperty.default,
+    default: hasDefault ? reactiveProperty.default : undefined,
     fieldName: reactiveProperty.name,
   };
 };
