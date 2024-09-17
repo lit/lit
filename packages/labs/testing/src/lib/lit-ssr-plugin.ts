@@ -49,7 +49,11 @@ export function litSsrPlugin({
       const resolveModule = (module: string): string =>
         pathToFileURL(pathlib.join(process.cwd(), module)).href;
       const resolvedModules = modules.map(resolveModule);
-      const resolvedWorkerModules = workerModules.map(resolveModule);
+      // We want to support both relative/absolute paths and external packages
+      // to allow using other hook implementations.
+      const resolvedWorkerModules = workerModules.map((m) =>
+        m.startsWith('.') ? resolveModule(m) : m
+      );
 
       let resolve: (value: string) => void;
       let reject: (reason: unknown) => void;
