@@ -66,15 +66,19 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   override connectedCallback() {
-    this.element?.serverConnectedCallback();
+    // Currently we only call connectedCallback as an opt-in,
+    // as this could break consumers.
+    if (globalThis.litSsrCallConnectedCallback) {
+      this.element.connectedCallback();
+    }
+
+    const propertyValues = changedProperties(this.element);
     // Call LitElement's `willUpdate` method.
     // Note, this method is required not to use DOM APIs.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this.element as any)?.willUpdate(changedProperties(this.element as any));
+    this.element?.['willUpdate'](propertyValues);
     // Reflect properties to attributes by calling into ReactiveElement's
     // update, which _only_ reflects attributes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (ReactiveElement.prototype as any).update.call(this.element);
+    ReactiveElement.prototype['update'].call(this.element, propertyValues);
   }
 
   override attributeChangedCallback(

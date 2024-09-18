@@ -13,6 +13,8 @@ import {property, customElement} from 'lit/decorators.js';
 import {html as serverhtml} from '../../lib/server-template.js';
 export {digestForTemplateResult} from '@lit-labs/ssr-client';
 
+export const moduleGlobalThis = globalThis;
+
 export {render} from '../../lib/render-lit-html.js';
 
 /* Real Tests */
@@ -259,7 +261,8 @@ export class TestEventsParent extends LitElement {
 
 @customElement('test-events-child')
 export class TestEventsChild extends LitElement {
-  override serverConnectedCallback() {
+  override connectedCallback() {
+    super.connectedCallback();
     this.dispatchEvent(
       new CustomEvent('test', {
         detail: (value: string) =>
