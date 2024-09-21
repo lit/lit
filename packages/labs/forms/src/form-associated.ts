@@ -24,6 +24,9 @@ interface FormAssociated extends ReactiveElement {
 
 interface FormAssociatedConstructor {
   [Symbol.metadata]: object & Record<PropertyKey, unknown>;
+
+  role: ElementInternals['role'];
+
   new (): FormAssociated;
 }
 
@@ -33,13 +36,14 @@ interface ValidityResult {
   anchor?: HTMLElement;
 }
 
-const internals = new WeakMap<FormAssociated, ElementInternals>();
+const internalsCache = new WeakMap<FormAssociated, ElementInternals>();
 
 /**
  * Returns the ElementInternals for a FormAssociated element. This should only
  * be called by subclasses of FormAssociated.
  */
-export const getInternals = (element: FormAssociated) => internals.get(element);
+export const getInternals = (element: FormAssociated) =>
+  internalsCache.get(element);
 
 /**
  * Returns true if the element is disabled.
@@ -49,6 +53,36 @@ export const isDisabled = (element: FormAssociated) =>
 
 const disabledElements = new WeakSet<FormAssociated>();
 
+/**
+ * A mixin that makes a ReactiveElement into a form-associated custom element.
+ *
+ * - ARIA role: Sets this element's ElementInternals role to the value of the
+ *   static `role` property.
+ * - Form value: The value of the element is stored in the field decorated with
+ *   the `@formValue()` decorator. This value field can have any name, but the
+ *   type must be assignable to `string | File | FormData | null`.
+ * - Form state: The state of the element is stored in the field decorated with
+ *   the `@formState()` decorator. This state field can have any name, but the
+ *   type must be assignable to `string | File | FormData | null`. The state
+ *   field should be private, as it is only intended to be set by the
+ *   FormAssociated mixin. The state field should usually be a getter/setter
+ *   pair so that the form value can be derived from the state during form
+ *   state restoration.
+ * - Form reset: When the form is reset, the value field is set to its initial
+ *   value, and the state field is set to its initial state. This means that the
+ *   initial value and state will be stored for the lifetime of the element.
+ * - Form state restoration: When the form is restored, the mode can be either
+ *   'restore' or 'autocomplete'. In 'restore' mode, the state field is set to
+ *   the state setter, if present, is set to the state that was previously
+ *   passed to `internals.setFormValue()`. It's the state setter's
+ *   responsibility to update the value setter. If there is no state setter, the
+ *   value setter is updated directly. In 'autocomplete' mode, the value setter
+ *   is updated directly.
+ * - Form disabled: When the element is disabled, the `ariaDisabled` property of
+ *   the ElementInternals is set to "true". The element is also added to a set
+ *   of disabled elements, which can be checked with the `isDisabled()`
+ *   function.
+ */
 export const FormAssociated = <T extends Constructor<ReactiveElement>>(
   base: T
 ) => {
@@ -58,8 +92,10 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(...args: any[]) {
       super(...args);
-      this.#internals = this.attachInternals();
-      internals.set(this, this.#internals);
+      const internals = this.attachInternals();
+      this.#internals = internals;
+      internalsCache.set(this, internals);
+      internals.role = (this.constructor as FormAssociatedConstructor).role;
     }
 
     formDisabledCallback(disabled: boolean) {
@@ -167,6 +203,8 @@ const initialStates = new WeakMap<FormAssociated, unknown>();
  *
  * This accessor should be private. The setter should only be called by the
  * FormAssociated mixin, not by the elemen itself.
+ *
+ * TODO: support getter/setter pairs
  */
 export const formState =
   () =>
