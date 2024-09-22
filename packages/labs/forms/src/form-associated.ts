@@ -23,11 +23,12 @@ interface FormAssociated extends ReactiveElement {
 }
 
 interface FormAssociatedConstructor {
-  [Symbol.metadata]: object & Record<PropertyKey, unknown>;
+  role?: ElementInternals['role'];
 
-  role: ElementInternals['role'];
+  formAssociated: true;
 
-  new (): FormAssociated;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  new (...args: any[]): FormAssociated;
 }
 
 interface ValidityResult {
@@ -49,9 +50,7 @@ export const getInternals = (element: FormAssociated) =>
  * Returns true if the element is disabled.
  */
 export const isDisabled = (element: FormAssociated) =>
-  disabledElements.has(element);
-
-const disabledElements = new WeakSet<FormAssociated>();
+  element.matches(':disabled');
 
 /**
  * A mixin that makes a ReactiveElement into a form-associated custom element.
@@ -79,14 +78,16 @@ const disabledElements = new WeakSet<FormAssociated>();
  *   value setter is updated directly. In 'autocomplete' mode, the value setter
  *   is updated directly.
  * - Form disabled: When the element is disabled, the `ariaDisabled` property of
- *   the ElementInternals is set to "true". The element is also added to a set
- *   of disabled elements, which can be checked with the `isDisabled()`
- *   function.
+ *   the ElementInternals is set to "true". The element's disable state can be
+ *   checked with the `isDisabled()` function (an alias for
+ *   `element.matches(':disabled')`).
  */
 export const FormAssociated = <T extends Constructor<ReactiveElement>>(
   base: T
 ) => {
   class C extends base {
+    static formAssociated = true;
+
     #internals: ElementInternals;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,23 +96,17 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       const internals = this.attachInternals();
       this.#internals = internals;
       internalsCache.set(this, internals);
-      internals.role = (this.constructor as FormAssociatedConstructor).role;
+      internals.role =
+        (this.constructor as FormAssociatedConstructor).role ?? null;
     }
 
     formDisabledCallback(disabled: boolean) {
-      if (disabled) {
-        disabledElements.add(this);
-      } else {
-        disabledElements.delete(this);
-      }
       this.#internals.ariaDisabled = String(disabled);
       this.requestUpdate();
     }
 
     formResetCallback() {
-      const metadata = (this.constructor as FormAssociatedConstructor)[
-        Symbol.metadata
-      ];
+      const metadata = this.constructor[Symbol.metadata]!;
 
       // Restore the initial value
       const valueAccess = valueAccessors.get(metadata);
@@ -128,9 +123,7 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       state: string | File | FormData | null,
       mode: 'restore' | 'autocomplete'
     ) {
-      const metadata = (this.constructor as FormAssociatedConstructor)[
-        Symbol.metadata
-      ];
+      const metadata = this.constructor[Symbol.metadata]!;
       if (mode === 'restore') {
         // When restoring a value we should get the state previously passed to
         // internals.setFormValue(). We can pass that to the state accessor,
@@ -151,7 +144,9 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       }
     }
   }
-  return C as Constructor<Interface<FormAssociated>> & T;
+  return C as Constructor<Interface<FormAssociated>> &
+    T &
+    FormAssociatedConstructor;
 };
 
 type Access = ClassAccessorDecoratorContext<FormAssociated, unknown>['access'];
@@ -197,31 +192,79 @@ const stateAccessors = new WeakMap<DecoratorMetadataObject, Access>();
  */
 const initialStates = new WeakMap<FormAssociated, unknown>();
 
+type FormStateDecorator = {
+  // Accessor decorator signature
+  <C extends FormAssociated, V extends string | File | FormData | null>(
+    target: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V>;
+
+  // Setter decorator signature
+  <C extends FormAssociated, V extends string | File | FormData | null>(
+    target: (this: C) => void,
+    context: ClassSetterDecoratorContext<C, V>
+  ): (this: C) => void;
+
+  // Getter decorator signature
+  <C extends FormAssociated, V extends string | File | FormData | null>(
+    target: (this: C) => V,
+    context: ClassSetterDecoratorContext<C, V>
+  ): (this: C) => V;
+
+  // Implementation signature
+  // <V extends string | File | FormData | null>(
+  //   target:
+  //     | ClassAccessorDecoratorTarget<FormAssociated, V>
+  //     | ((this: FormAssociated) => V),
+  //   context:
+  //     | ClassAccessorDecoratorContext<FormAssociated, V>
+  //     | ClassSetterDecoratorContext<FormAssociated, V>
+  // ):
+  //   | ClassAccessorDecoratorResult<FormAssociated, V>
+  //   | ((this: FormAssociated) => V);
+};
+
 /**
  * A class accessor decorator that marks a field as the form state for the
  * FormAssociated mixin.
  *
  * This accessor should be private. The setter should only be called by the
  * FormAssociated mixin, not by the elemen itself.
- *
- * TODO: support getter/setter pairs
  */
-export const formState =
-  () =>
-  <V extends string | File | FormData | null>(
-    target: ClassAccessorDecoratorTarget<FormAssociated, V>,
-    context: ClassAccessorDecoratorContext<FormAssociated, V>
-  ): ClassAccessorDecoratorResult<FormAssociated, V> => {
-    stateAccessors.set(context.metadata, context.access);
+export const formState = (): FormStateDecorator =>
+  (<C extends FormAssociated, V extends string | File | FormData | null>(
+    target:
+      | ClassAccessorDecoratorTarget<C, V>
+      | ((this: C) => void)
+      | ((this: C) => V),
+    context:
+      | ClassAccessorDecoratorContext<C, V>
+      | ClassSetterDecoratorContext<C, V>
+      | ClassGetterDecoratorContext<C, V>
+  ):
+    | ClassAccessorDecoratorResult<C, V>
+    | ((this: C) => void)
+    | ((this: C) => V) => {
+    if (context.kind === 'accessor') {
+      stateAccessors.set(context.metadata, context.access);
 
-    return {
-      get: target.get,
-      set(value: V) {
-        target.set.call(this, value);
-      },
-      init(value: V) {
-        initialStates.set(this, value);
-        return value;
-      },
-    };
-  };
+      return {
+        get: (target as ClassAccessorDecoratorTarget<C, V>).get,
+        set(value: V) {
+          (target as ClassAccessorDecoratorTarget<C, V>).set.call(this, value);
+        },
+        init(value: V) {
+          initialStates.set(this, value);
+          return value;
+        },
+      };
+    } else {
+      const access = stateAccessors.get(context.metadata) ?? {};
+      Object.assign(
+        access,
+        (context as ClassSetterDecoratorContext<C, V>).access
+      );
+      stateAccessors.set(context.metadata, access as Access);
+      return target;
+    }
+  }) as FormStateDecorator;
