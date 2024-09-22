@@ -37,14 +37,42 @@ interface ValidityResult {
   anchor?: HTMLElement;
 }
 
-const internalsCache = new WeakMap<FormAssociated, ElementInternals>();
+const internalsCache = new WeakMap<
+  FormAssociated,
+  {internals: ElementInternals; classes: WeakSet<Function>}
+>();
 
 /**
  * Returns the ElementInternals for a FormAssociated element. This should only
  * be called by subclasses of FormAssociated.
  */
-export const getInternals = (element: FormAssociated) =>
-  internalsCache.get(element);
+export const getInternals = (
+  c: FormAssociatedConstructor,
+  element: FormAssociated
+) => {
+  // TODO (justinfagnani): outlaw any constructor below the FormAssociated
+  // mixin, like LitElement, ReactiveElement, etc.
+  if (!(element instanceof c)) {
+    throw new Error('Element is not an instance of the constructor');
+  }
+  const state = internalsCache.get(element);
+  if (state === undefined) {
+    throw new Error('ElementInternals not found');
+  }
+  if (state.classes.has(c)) {
+    throw new Error('getInternals called twice with the same constructor');
+  }
+  state.classes.add(c);
+  return state.internals;
+};
+
+/*
+ * Private function to get the internals for a FormAssociated element. For use
+ * in decorators.
+ */
+const _getInternals = (element: FormAssociated) => {
+  return internalsCache.get(element)!.internals;
+};
 
 /**
  * Returns true if the element is disabled.
@@ -95,7 +123,7 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       super(...args);
       const internals = this.attachInternals();
       this.#internals = internals;
-      internalsCache.set(this, internals);
+      internalsCache.set(this, {internals, classes: new WeakSet()});
       internals.role =
         (this.constructor as FormAssociatedConstructor).role ?? null;
     }
@@ -175,7 +203,7 @@ export const formValue =
       get: target.get,
       set(value: V) {
         target.set.call(this, value);
-        getInternals(this)!.setFormValue(value);
+        _getInternals(this).setFormValue(value);
       },
       init(value: V) {
         initialValues.set(this, value);
@@ -210,18 +238,6 @@ type FormStateDecorator = {
     target: (this: C) => V,
     context: ClassSetterDecoratorContext<C, V>
   ): (this: C) => V;
-
-  // Implementation signature
-  // <V extends string | File | FormData | null>(
-  //   target:
-  //     | ClassAccessorDecoratorTarget<FormAssociated, V>
-  //     | ((this: FormAssociated) => V),
-  //   context:
-  //     | ClassAccessorDecoratorContext<FormAssociated, V>
-  //     | ClassSetterDecoratorContext<FormAssociated, V>
-  // ):
-  //   | ClassAccessorDecoratorResult<FormAssociated, V>
-  //   | ((this: FormAssociated) => V);
 };
 
 /**

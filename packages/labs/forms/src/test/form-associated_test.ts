@@ -9,7 +9,12 @@ import {LitElement, type TemplateResult, render} from 'lit';
 import {html, unsafeStatic} from 'lit/static-html.js';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {property} from 'lit/decorators.js';
-import {FormAssociated, formValue, getInternals} from '../form-associated.js';
+import {
+  FormAssociated,
+  formValue,
+  getInternals,
+  isDisabled,
+} from '../form-associated.js';
 
 let count = 0;
 export const generateElementName = () => `x-${count++}`;
@@ -21,10 +26,10 @@ class TestElement extends FormAssociated(LitElement) {
   @property()
   accessor value = '';
 
-  #internals = getInternals(this);
+  _internals = getInternals(TestElement, this);
 
   get _form() {
-    return this.#internals?.form;
+    return this._internals?.form;
   }
 
   override render(): TemplateResult {
@@ -33,6 +38,15 @@ class TestElement extends FormAssociated(LitElement) {
 }
 customElements.define(TestElement.tagName, TestElement);
 const testElementTag = unsafeStatic(TestElement.tagName);
+
+class CustomRoleElement extends FormAssociated(LitElement) {
+  static tagName = generateElementName();
+
+  static override role = 'button';
+
+  _internals = getInternals(CustomRoleElement, this);
+}
+customElements.define(CustomRoleElement.tagName, CustomRoleElement);
 
 suite('FormAssociated', () => {
   let container: HTMLElement;
@@ -75,6 +89,15 @@ suite('FormAssociated', () => {
     assert.equal(formData.get('foo'), 'bar');
   });
 
+  test('sets the role on internals', () => {
+    // TODO (justinfagnani): Can we check actual role?
+    const el = new TestElement();
+    assert.equal(el._internals.role, null);
+
+    const customRoleEl = new CustomRoleElement();
+    assert.equal(customRoleEl._internals.role, 'button');
+  });
+
   test('can be disabled', async () => {
     const elementRef = createRef<TestElement>();
     const fieldSetRef = createRef<HTMLFieldSetElement>();
@@ -90,10 +113,12 @@ suite('FormAssociated', () => {
     );
     const el = elementRef.value!;
     assert.equal(el.matches(':disabled'), true);
+    assert.equal(isDisabled(el), true);
 
     const fieldSet = fieldSetRef.value!;
     fieldSet.disabled = false;
     assert.equal(el.matches(':disabled'), false);
+    assert.equal(isDisabled(el), false);
   });
 
   test('can be reset', async () => {
@@ -112,6 +137,17 @@ suite('FormAssociated', () => {
     form.reset();
     formData = new FormData(form);
     assert.equal(formData.get('foo'), '');
+  });
+
+  test('getInternals can only be called once', async () => {
+    const el = new TestElement();
+    assert.throws(() => getInternals(TestElement, el));
+  });
+
+  test('getInternals can not be called with a random ctor', async () => {
+    const el = new TestElement();
+    class RandomCtor extends FormAssociated(LitElement) {}
+    assert.throws(() => getInternals(RandomCtor, el));
   });
 
   // TODO (justinfagnani): How can we test form state restoration and
