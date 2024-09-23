@@ -236,6 +236,7 @@ packages/labs/forms/lib/
 packages/labs/forms/node_modules/
 packages/labs/forms/index.*
 packages/labs/forms/form-associated.*
+packages/labs/forms/form-control.*
 
 packages/labs/gen-manifest/index.js
 packages/labs/gen-manifest/index.js.map

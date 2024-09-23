@@ -28,8 +28,8 @@ const browserPresets = {
   // Default set of Playwright browsers to test when running locally.
   local: [
     'chromium', // keep browsers on separate lines
-    'firefox', // to make it easier to comment out
-    'webkit', // individual browsers
+    // 'firefox', // to make it easier to comment out
+    // 'webkit', // individual browsers
   ],
 
   // Browsers to test during automated continuous integration.
@@ -219,7 +219,7 @@ const config: TestRunnerConfig = {
     }) as TestRunnerPlugin,
   ],
   // Only actually log errors. This helps make test output less spammy.
-  filterBrowserLogs: ({type}) => type === 'error',
+  // filterBrowserLogs: ({type}) => type === 'error',
   middleware: [
     /**
      * Ensures that when we're in dev mode we only load dev sources, and when
