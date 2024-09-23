@@ -18,17 +18,18 @@ import {
 let count = 0;
 export const generateElementName = () => `x-${count++}`;
 
+// MARK: Test Classes
+
+/**
+ * Basic test element with a validity check.
+ */
 class TestElement extends FormAssociated(LitElement) {
   static tagName = generateElementName();
 
-  @formValue()
-  accessor value = '';
-
   _internals = getInternals(TestElement, this);
 
-  get _form() {
-    return this._internals?.form;
-  }
+  @formValue()
+  accessor value = '';
 
   override _getValidity() {
     if (this.value === 'invalid') {
@@ -47,6 +48,9 @@ class TestElement extends FormAssociated(LitElement) {
 customElements.define(TestElement.tagName, TestElement);
 const testElementTag = unsafeStatic(TestElement.tagName);
 
+/**
+ * Test element with a custom role.
+ */
 class CustomRoleElement extends FormAssociated(LitElement) {
   static tagName = generateElementName();
 
@@ -56,6 +60,9 @@ class CustomRoleElement extends FormAssociated(LitElement) {
 }
 customElements.define(CustomRoleElement.tagName, CustomRoleElement);
 
+/**
+ * Test element that is initially invalid.
+ */
 class InitiallyInvalidElement extends FormAssociated(LitElement) {
   static tagName = generateElementName();
 
@@ -74,6 +81,45 @@ class InitiallyInvalidElement extends FormAssociated(LitElement) {
   }
 }
 customElements.define(InitiallyInvalidElement.tagName, InitiallyInvalidElement);
+
+/**
+ * Test element with an invalid value type.
+ */
+class InvalidValueTypeElement extends FormAssociated(LitElement) {
+  static tagName = generateElementName();
+
+  _internals = getInternals(InvalidValueTypeElement, this);
+
+  // @ts-expect-error value is not a FormValue
+  @formValue()
+  accessor value = 23;
+}
+customElements.define(InvalidValueTypeElement.tagName, InvalidValueTypeElement);
+
+/**
+ * Test element with a custom form value converter.
+ */
+class CustomConverterElement extends FormAssociated(LitElement) {
+  static tagName = generateElementName();
+
+  _internals = getInternals(CustomConverterElement, this);
+
+  @formValue({
+    converter: {
+      toFormValue(value: number) {
+        return String(value);
+      },
+      fromFormValue(value: string) {
+        return Number(value);
+      },
+    },
+  })
+  accessor value = 23;
+}
+customElements.define(CustomConverterElement.tagName, CustomConverterElement);
+const customConverterTag = unsafeStatic(CustomConverterElement.tagName);
+
+// MARK: Tests
 
 suite('FormAssociated', () => {
   let container: HTMLElement;
@@ -100,7 +146,7 @@ suite('FormAssociated', () => {
         </form>`,
       container
     );
-    assert.isOk(elementRef.value?._form);
+    assert.isOk(elementRef.value?._internals.form);
   });
 
   test('has a form value', async () => {
@@ -114,6 +160,27 @@ suite('FormAssociated', () => {
     );
     const formData = new FormData(formRef.value!);
     assert.equal(formData.get('foo'), 'bar');
+  });
+
+  test('converts the form value to the form', async () => {
+    const elementRef = createRef<CustomConverterElement>();
+    const formRef = createRef<HTMLFormElement>();
+    render(
+      html`
+        <form ${ref(formRef)}>
+          <${customConverterTag}
+            .value=${123}
+            name="foo"
+            ${ref(elementRef)}>
+          </${customConverterTag}>
+        </form>`,
+      container
+    );
+    const formData = new FormData(formRef.value!);
+    assert.strictEqual(formData.get('foo'), '123');
+
+    const el = elementRef.value!;
+    assert.strictEqual(el.value, 123);
   });
 
   test('can be initially invalid', async () => {

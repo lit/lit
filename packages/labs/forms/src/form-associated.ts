@@ -168,6 +168,9 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       stateAccess?.set(this, initialState);
     }
 
+    // TODO (justinfagnani): this method is completely untested. Can we trigger
+    // form restoration from a test, or do we just need to call the callback
+    // manually?
     formStateRestoreCallback(
       state: string | File | FormData | null,
       mode: 'restore' | 'autocomplete'
@@ -183,13 +186,25 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
           stateAccess.set(this, state);
         } else {
           const valueAccess = valueAccessors.get(metadata);
-          valueAccess?.set(this, state);
+          const valueOptions = formValueOptions.get(metadata);
+          if (valueOptions?.converter !== undefined) {
+            const value = valueOptions.converter.fromFormValue(state);
+            valueAccess?.set(this, value);
+          } else {
+            valueAccess?.set(this, state);
+          }
         }
       } else if (mode === 'autocomplete') {
         // When autocompleting a value, we don't get a previous state object, so
         // we should update the value accessor directly.
         const valueAccess = valueAccessors.get(metadata);
-        valueAccess?.set(this, state);
+        const valueOptions = formValueOptions.get(metadata);
+        if (valueOptions?.converter !== undefined) {
+          const value = valueOptions.converter.fromFormValue(state);
+          valueAccess?.set(this, value);
+        } else {
+          valueAccess?.set(this, state);
+        }
       }
     }
   }
@@ -206,24 +221,47 @@ const valueAccessors = new WeakMap<DecoratorMetadataObject, Access>();
  */
 const initialValues = new WeakMap<FormAssociated, unknown>();
 
+const formValueOptions = new WeakMap<
+  DecoratorMetadataObject,
+  FormValueOptions<unknown>
+>();
+
+export type FormValue = string | File | FormData | null;
+
+export interface FormValueOptions<T> {
+  converter?: FormValueConverter<T>;
+}
+
+interface FormValueConverter<T> {
+  toFormValue(v: T): FormValue;
+  fromFormValue(v: FormValue): T;
+}
+
 /**
  * A class accessor decorator that marks a field as the form value for the
  * FormAssociated mixin.
  */
 export const formValue =
-  () =>
-  <V extends string | File | FormData | null>(
-    target: ClassAccessorDecoratorTarget<FormAssociated, V>,
-    context: ClassAccessorDecoratorContext<FormAssociated, V>
-  ): ClassAccessorDecoratorResult<FormAssociated, V> => {
+  <T = FormValue>(options?: FormValueOptions<T>) =>
+  <C extends FormAssociated, V extends T>(
+    target: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V> => {
     valueAccessors.set(context.metadata, context.access);
+    if (options !== undefined) {
+      formValueOptions.set(context.metadata, options);
+    }
 
     return {
       get: target.get,
       set(value: V) {
         target.set.call(this, value);
         const internals = _getInternals(this);
-        internals.setFormValue(value);
+        internals.setFormValue(
+          options?.converter === undefined
+            ? (value as FormValue)
+            : options.converter.toFormValue(value)
+        );
         this._validate();
       },
       init(value: V) {
@@ -243,19 +281,19 @@ const initialStates = new WeakMap<FormAssociated, unknown>();
 
 type FormStateDecorator = {
   // Accessor decorator signature
-  <C extends FormAssociated, V extends string | File | FormData | null>(
+  <C extends FormAssociated, V extends FormValue>(
     target: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V>;
 
   // Setter decorator signature
-  <C extends FormAssociated, V extends string | File | FormData | null>(
+  <C extends FormAssociated, V extends FormValue>(
     target: (this: C) => void,
     context: ClassSetterDecoratorContext<C, V>
   ): (this: C) => void;
 
   // Getter decorator signature
-  <C extends FormAssociated, V extends string | File | FormData | null>(
+  <C extends FormAssociated, V extends FormValue>(
     target: (this: C) => V,
     context: ClassSetterDecoratorContext<C, V>
   ): (this: C) => V;
@@ -269,7 +307,7 @@ type FormStateDecorator = {
  * FormAssociated mixin, not by the elemen itself.
  */
 export const formState = (): FormStateDecorator =>
-  (<C extends FormAssociated, V extends string | File | FormData | null>(
+  (<C extends FormAssociated, V extends FormValue>(
     target:
       | ClassAccessorDecoratorTarget<C, V>
       | ((this: C) => void)
