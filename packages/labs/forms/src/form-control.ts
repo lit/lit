@@ -10,16 +10,26 @@ import {FormAssociated, getInternals} from './form-associated.js';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
 
-/**
- * Generates a public interface type that removes private and protected fields.
- * This allows accepting otherwise incompatible versions of the type (e.g. from
- * multiple copies of the same package in `node_modules`).
- */
-type Interface<T> = {
-  [K in keyof T]: T[K];
-};
+interface FormControl extends FormAssociated {
+  get form(): HTMLFormElement | null;
+  disabled: boolean;
+  get validity(): ValidityState;
+  get validationMessage(): string;
+  get willValidate(): boolean;
+  checkValidity(): boolean;
+  reportValidity(): boolean;
+}
 
-interface FormControl extends ReactiveElement {}
+// This should extends FormAssociatedConstructor, but that causes a type error
+// due to different constructor return types.
+interface FormControlConstructor {
+  role?: ElementInternals['role'];
+
+  formAssociated: true;
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  new (...args: any[]): FormControl;
+}
 
 /**
  * A mixin that makes a ReactiveElement into a form-associated custom element
@@ -28,7 +38,7 @@ interface FormControl extends ReactiveElement {}
 export const FormControl = <T extends Constructor<ReactiveElement>>(
   base: T
 ) => {
-  class C extends FormAssociated(base) {
+  class C extends FormAssociated(base) implements FormControl {
     #internals = getInternals(C, this);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -95,5 +105,5 @@ export const FormControl = <T extends Constructor<ReactiveElement>>(
       return this.#internals.reportValidity();
     }
   }
-  return C as Constructor<Interface<FormControl>> & T;
+  return C as Constructor<FormControl> & T & FormControlConstructor;
 };
