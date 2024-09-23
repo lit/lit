@@ -8,7 +8,6 @@ import {assert} from 'chai';
 import {LitElement, type TemplateResult, render} from 'lit';
 import {html, unsafeStatic} from 'lit/static-html.js';
 import {ref, createRef} from 'lit/directives/ref.js';
-import {property} from 'lit/decorators.js';
 import {
   FormAssociated,
   formValue,
@@ -23,13 +22,22 @@ class TestElement extends FormAssociated(LitElement) {
   static tagName = generateElementName();
 
   @formValue()
-  @property()
   accessor value = '';
 
   _internals = getInternals(TestElement, this);
 
   get _form() {
     return this._internals?.form;
+  }
+
+  override _getValidity() {
+    if (this.value === 'invalid') {
+      return {
+        flags: {customError: true},
+        message: 'Invalid value',
+      };
+    }
+    return {flags: {}};
   }
 
   override render(): TemplateResult {
@@ -47,6 +55,25 @@ class CustomRoleElement extends FormAssociated(LitElement) {
   _internals = getInternals(CustomRoleElement, this);
 }
 customElements.define(CustomRoleElement.tagName, CustomRoleElement);
+
+class InitiallyInvalidElement extends FormAssociated(LitElement) {
+  static tagName = generateElementName();
+
+  _internals = getInternals(InitiallyInvalidElement, this);
+
+  constructor() {
+    super();
+    this._validate();
+  }
+
+  override _getValidity() {
+    return {
+      flags: {valueMissing: true},
+      message: 'Required value',
+    };
+  }
+}
+customElements.define(InitiallyInvalidElement.tagName, InitiallyInvalidElement);
 
 suite('FormAssociated', () => {
   let container: HTMLElement;
@@ -81,12 +108,36 @@ suite('FormAssociated', () => {
     render(
       html`
         <form ${ref(formRef)}>
-          <${testElementTag} value="bar" name="foo"></${testElementTag}>
+          <${testElementTag} .value=${'bar'} name="foo"></${testElementTag}>
         </form>`,
       container
     );
     const formData = new FormData(formRef.value!);
     assert.equal(formData.get('foo'), 'bar');
+  });
+
+  test('can be initially invalid', async () => {
+    const el = new InitiallyInvalidElement();
+    assert.isFalse(el._internals.checkValidity());
+  });
+
+  test('validates', async () => {
+    const elementRef = createRef<TestElement>();
+    render(
+      html`
+        <form>
+          <${testElementTag}
+            .value=${'bar'}
+            name="foo"
+            ${ref(elementRef)}></${testElementTag}>
+        </form>`,
+      container
+    );
+    const el = elementRef.value!;
+    assert.isTrue(el._internals.checkValidity());
+
+    el.value = 'invalid';
+    assert.isFalse(el._internals.checkValidity());
   });
 
   test('sets the role on internals', () => {
@@ -112,13 +163,13 @@ suite('FormAssociated', () => {
       container
     );
     const el = elementRef.value!;
-    assert.equal(el.matches(':disabled'), true);
-    assert.equal(isDisabled(el), true);
+    assert.isTrue(el.matches(':disabled'));
+    assert.isTrue(isDisabled(el));
 
     const fieldSet = fieldSetRef.value!;
     fieldSet.disabled = false;
-    assert.equal(el.matches(':disabled'), false);
-    assert.equal(isDisabled(el), false);
+    assert.isFalse(el.matches(':disabled'));
+    assert.isFalse(isDisabled(el));
   });
 
   test('can be reset', async () => {
@@ -126,7 +177,7 @@ suite('FormAssociated', () => {
     render(
       html`
         <form ${ref(formRef)}>
-          <${testElementTag} value="bar" name="foo"></${testElementTag}>
+          <${testElementTag} .value=${'bar'} name="foo"></${testElementTag}>
         </form>`,
       container
     );

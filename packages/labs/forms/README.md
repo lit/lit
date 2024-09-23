@@ -16,6 +16,8 @@ and implements a number of best-practice behaviors for form associated elements:
 - Implements form state restoration with the `formStateRestoreCallback()`.
 - Syncs disability state to `internals.ariaDisabled` with the
   `formDisabledCallback()`.
+- Calls the element's custom validator method, `_getValidity()`, when the form
+  value changes and calls `internals.setValidity()` with the result.
 
 ```ts
 import {LitElement, html} from 'lit';

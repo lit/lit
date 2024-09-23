@@ -9,18 +9,26 @@ import {type ReactiveElement} from '@lit/reactive-element';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
 
-/**
- * Generates a public interface type that removes private and protected fields.
- * This allows accepting otherwise incompatible versions of the type (e.g. from
- * multiple copies of the same package in `node_modules`).
- */
-type Interface<T> = {
-  [K in keyof T]: T[K];
-};
+export interface FormAssociated extends ReactiveElement {
+  /**
+   * Implement this method to validate the element. Return a `ValidityResult`.
+   */
+  _getValidity?(): ValidityResult;
 
-interface FormAssociated extends ReactiveElement {
-  _checkValidity?(): ValidityResult;
+  /**
+   * Internal method to validate the element. This method should be called by
+   * the element when it's state might have changed in a way that would affect
+   * its validity.
+   *
+   * Calls `_getValidity` and sets the validity flags on the element's
+   * internals, then returns the result of `internals.checkValidity()`.
+   *
+   * It's often a good idea to call this method in the constructor to set the
+   * initial validity state.
+   */
+  _validate(): boolean;
 }
+type FormAssociatedInterface = FormAssociated;
 
 export interface FormAssociatedConstructor {
   role?: ElementInternals['role'];
@@ -32,7 +40,7 @@ export interface FormAssociatedConstructor {
 }
 
 interface ValidityResult {
-  flags: ValidityState;
+  flags: Partial<Omit<ValidityState, 'valid'>>;
   message?: string;
   anchor?: HTMLElement;
 }
@@ -109,14 +117,19 @@ export const isDisabled = (element: FormAssociated) =>
  *   the ElementInternals is set to "true". The element's disable state can be
  *   checked with the `isDisabled()` function (an alias for
  *   `element.matches(':disabled')`).
+ * - Validation: An element can implement the  `_getValidity()` method to
+ *   validate its state. This method is called automatically when the form value
+ *   changes, and can be called manually by the element.
  */
 export const FormAssociated = <T extends Constructor<ReactiveElement>>(
   base: T
 ) => {
-  class C extends base {
+  class C extends base implements FormAssociatedInterface {
     static formAssociated = true;
 
     #internals: ElementInternals;
+
+    _getValidity?(): ValidityResult;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(...args: any[]) {
@@ -126,6 +139,14 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       internalsCache.set(this, {internals, classes: new WeakSet()});
       internals.role =
         (this.constructor as FormAssociatedConstructor).role ?? null;
+    }
+
+    _validate() {
+      if (this._getValidity !== undefined) {
+        const {flags, message, anchor} = this._getValidity();
+        this.#internals.setValidity(flags, message, anchor);
+      }
+      return this.#internals.checkValidity();
     }
 
     formDisabledCallback(disabled: boolean) {
@@ -172,9 +193,7 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       }
     }
   }
-  return C as Constructor<Interface<FormAssociated>> &
-    T &
-    FormAssociatedConstructor;
+  return C as Constructor<FormAssociated> & T & FormAssociatedConstructor;
 };
 
 type Access = ClassAccessorDecoratorContext<FormAssociated, unknown>['access'];
@@ -203,7 +222,9 @@ export const formValue =
       get: target.get,
       set(value: V) {
         target.set.call(this, value);
-        _getInternals(this).setFormValue(value);
+        const internals = _getInternals(this);
+        internals.setFormValue(value);
+        this._validate();
       },
       init(value: V) {
         initialValues.set(this, value);
