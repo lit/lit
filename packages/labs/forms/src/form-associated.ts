@@ -58,7 +58,10 @@ interface ValidityResult {
   anchor?: HTMLElement;
 }
 
-type Access = ClassAccessorDecoratorContext<FormAssociated, unknown>['access'];
+type Access<T = unknown> = ClassAccessorDecoratorContext<
+  FormAssociated,
+  T
+>['access'];
 
 // #endregion
 
@@ -71,7 +74,10 @@ const internalsCache = new WeakMap<
 
 const valueAccessors = new WeakMap<DecoratorMetadataObject, Access>();
 
-const stateAccessors = new WeakMap<DecoratorMetadataObject, Access>();
+const stateAccessors = new WeakMap<
+  DecoratorMetadataObject,
+  Access<FormValue>
+>();
 
 /*
  * A store of initial values for FormAssociated elements so that they can be
@@ -83,7 +89,7 @@ const initialValues = new WeakMap<FormAssociated, unknown>();
  * A store of initial values for FormAssociated elements so that they can be
  * restored when the form is reset.
  */
-const initialStates = new WeakMap<FormAssociated, unknown>();
+const initialStates = new WeakMap<FormAssociated, FormValue>();
 
 const formValueOptions = new WeakMap<
   DecoratorMetadataObject,
@@ -213,12 +219,11 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       // Restore the initial state
       const stateAccess = stateAccessors.get(metadata);
       const initialState = initialStates.get(this);
-      stateAccess?.set(this, initialState);
+      if (initialState !== undefined) {
+        stateAccess?.set(this, initialState);
+      }
     }
 
-    // TODO (justinfagnani): this method is completely untested. Can we trigger
-    // form restoration from a test, or do we just need to call the callback
-    // manually?
     formStateRestoreCallback(
       state: string | File | FormData | null,
       mode: 'restore' | 'autocomplete'
@@ -263,6 +268,24 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
 
 // #region Decorators
 
+const updateFormValue = (
+  el: FormAssociated,
+  metadata: DecoratorMetadataObject,
+  value: unknown
+) => {
+  const options = formValueOptions.get(metadata);
+  const internals = _getInternals(el);
+  const stateAccess = stateAccessors.get(metadata);
+  const state = stateAccess?.get(el);
+  internals.setFormValue(
+    options?.converter === undefined
+      ? (value as FormValue)
+      : options.converter.toFormValue(value),
+    state
+  );
+  el._validate();
+};
+
 /**
  * A class accessor decorator that marks a field as the form value for the
  * FormAssociated mixin.
@@ -282,13 +305,7 @@ export const formValue =
       get: target.get,
       set(value: V) {
         target.set.call(this, value);
-        const internals = _getInternals(this);
-        internals.setFormValue(
-          options?.converter === undefined
-            ? (value as FormValue)
-            : options.converter.toFormValue(value)
-        );
-        this._validate();
+        updateFormValue(this, context.metadata, value);
       },
       init(value: V) {
         initialValues.set(this, value);
@@ -299,67 +316,88 @@ export const formValue =
 
 type FormStateDecorator = {
   // Accessor decorator signature
-  <C extends FormAssociated, V extends FormValue>(
+  <C extends FormAssociated, V>(
     target: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V>;
 
   // Setter decorator signature
-  <C extends FormAssociated, V extends FormValue>(
-    target: (this: C) => void,
+  <C extends FormAssociated, V>(
+    target: (this: C, v: V) => void,
     context: ClassSetterDecoratorContext<C, V>
-  ): (this: C) => void;
-
-  // Getter decorator signature
-  <C extends FormAssociated, V extends FormValue>(
-    target: (this: C) => V,
-    context: ClassSetterDecoratorContext<C, V>
-  ): (this: C) => V;
+  ): (this: C, v: V) => void;
 };
 
 /**
- * A class accessor decorator that marks a field as the form state for the
- * FormAssociated mixin.
- *
- * This accessor should be private. The setter should only be called by the
- * FormAssociated mixin, not by the elemen itself.
+ * A class accessor or setter decorator that marks a field as being part of the
+ * form state for the FormAssociated mixin. When this value is set, the form
+ * value is updated with the new state.
  */
 export const formState = (): FormStateDecorator =>
-  (<C extends FormAssociated, V extends FormValue>(
-    target:
-      | ClassAccessorDecoratorTarget<C, V>
-      | ((this: C) => void)
-      | ((this: C) => V),
+  (<C extends FormAssociated, V>(
+    target: ClassAccessorDecoratorTarget<C, V> | ((this: C, v: V) => void),
     context:
       | ClassAccessorDecoratorContext<C, V>
       | ClassSetterDecoratorContext<C, V>
-      | ClassGetterDecoratorContext<C, V>
-  ):
-    | ClassAccessorDecoratorResult<C, V>
-    | ((this: C) => void)
-    | ((this: C) => V) => {
+  ): ClassAccessorDecoratorResult<C, V> | ((this: C, v: V) => void) => {
     if (context.kind === 'accessor') {
-      stateAccessors.set(context.metadata, context.access);
-
       return {
         get: (target as ClassAccessorDecoratorTarget<C, V>).get,
         set(value: V) {
           (target as ClassAccessorDecoratorTarget<C, V>).set.call(this, value);
-        },
-        init(value: V) {
-          initialStates.set(this, value);
-          return value;
+          updateFormValue(this, context.metadata, value);
         },
       };
     } else {
-      const access = stateAccessors.get(context.metadata) ?? {};
-      Object.assign(
-        access,
-        (context as ClassSetterDecoratorContext<C, V>).access
-      );
-      stateAccessors.set(context.metadata, access as Access);
-      return target;
+      return function (this: C, value: V) {
+        (target as (this: C, v: V) => void).call(this, value);
+        updateFormValue(this, context.metadata, value);
+      };
     }
   }) as FormStateDecorator;
+
+/**
+ * A class getter decorator that marks a getter as the form state for the
+ * FormAssociated mixin.
+ *
+ * This getter should usually be private. The getter should only be called by
+ * the FormAssociated mixin, not by the element itself.
+ */
+export const formStateGetter =
+  () =>
+  <C extends FormAssociated, V extends FormValue>(
+    target: (this: C) => V,
+    context: ClassGetterDecoratorContext<C, V>
+  ): ((this: C) => V) => {
+    const access = stateAccessors.get(context.metadata) ?? {};
+    Object.assign(
+      access,
+      (context as ClassGetterDecoratorContext<C, V>).access
+    );
+    stateAccessors.set(context.metadata, access as Access<FormValue>);
+    return target;
+  };
+
+/**
+ * A class setter decorator that marks a setter as the form state for the
+ * FormAssociated mixin.
+ *
+ * This setter should usually be private. The setter should only be called by
+ * the FormAssociated mixin, not by the element itself.
+ */
+export const formStateSetter =
+  () =>
+  <C extends FormAssociated, V extends FormValue>(
+    target: (this: C, v: V) => void,
+    context: ClassSetterDecoratorContext<C, V>
+  ): ((this: C, v: V) => void) => {
+    const access = stateAccessors.get(context.metadata) ?? {};
+    Object.assign(
+      access,
+      (context as ClassSetterDecoratorContext<C, V>).access
+    );
+    stateAccessors.set(context.metadata, access as Access<FormValue>);
+    return target;
+  };
 
 // #endregion

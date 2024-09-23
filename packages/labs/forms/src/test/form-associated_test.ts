@@ -10,10 +10,14 @@ import {html, unsafeStatic} from 'lit/static-html.js';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {
   FormAssociated,
+  formState,
+  formStateGetter,
+  formStateSetter,
   formValue,
   getInternals,
   isDisabled,
 } from '../form-associated.js';
+import {property} from '@lit/reactive-element/decorators.js';
 
 let count = 0;
 export const generateElementName = () => `x-${count++}`;
@@ -118,6 +122,44 @@ class CustomConverterElement extends FormAssociated(LitElement) {
 }
 customElements.define(CustomConverterElement.tagName, CustomConverterElement);
 const customConverterTag = unsafeStatic(CustomConverterElement.tagName);
+
+/**
+ * Test element with a custom form state accessor.
+ */
+class CustomStateElement extends FormAssociated(LitElement) {
+  static tagName = generateElementName();
+
+  _internals = getInternals(CustomStateElement, this);
+
+  @formValue()
+  accessor value = 'bar';
+
+  @formState()
+  @property()
+  accessor count = 0;
+
+  @formStateGetter()
+  // @ts-expect-error #formState is called dynamically
+  get #formState() {
+    return this.value + '#' + this.count;
+  }
+
+  @formStateSetter()
+  set #formState(state: string) {
+    const [value, count] = state.split('#');
+    this.value = value;
+    this.count = Number(count);
+  }
+}
+customElements.define(CustomStateElement.tagName, CustomStateElement);
+const customStateTag = unsafeStatic(CustomStateElement.tagName);
+
+interface FormAssociatedElement extends HTMLElement {
+  formStateRestoreCallback(
+    state: string | File | FormData | null,
+    mode: 'restore' | 'autocomplete'
+  ): void;
+}
 
 // MARK: Tests
 
@@ -255,6 +297,107 @@ suite('FormAssociated', () => {
     form.reset();
     formData = new FormData(form);
     assert.equal(formData.get('foo'), '');
+  });
+
+  test('can be restored from state without @formState', async () => {
+    const elementRef = createRef<TestElement>();
+    const formRef = createRef<HTMLFormElement>();
+    render(
+      html`
+        <form ${ref(formRef)}>
+          <${testElementTag}
+            .value=${'bar'}
+            name="foo"
+            ${ref(elementRef)}>
+          </${testElementTag}>
+        </form>`,
+      container
+    );
+    const el = elementRef.value! as TestElement & FormAssociatedElement;
+    const form = formRef.value!;
+
+    // First, set the value so we store a state
+    el.value = 'baz';
+
+    // Now, restore the state
+    el.formStateRestoreCallback('bar', 'restore');
+    assert.equal(el.value, 'bar');
+    let formData = new FormData(form);
+    assert.equal(formData.get('foo'), 'bar');
+
+    el.formStateRestoreCallback('qux', 'autocomplete');
+    assert.equal(el.value, 'qux');
+    formData = new FormData(form);
+    assert.equal(formData.get('foo'), 'qux');
+  });
+
+  test('can be restored from state with @formState', async () => {
+    const elementRef = createRef<CustomStateElement>();
+    const formRef = createRef<HTMLFormElement>();
+    render(
+      html`
+        <form ${ref(formRef)}>
+          <${customStateTag}
+            .value=${'bar'}
+            name="foo"
+            ${ref(elementRef)}>
+          </${customStateTag}>
+        </form>`,
+      container
+    );
+    const el = elementRef.value! as CustomStateElement & FormAssociatedElement;
+    const form = formRef.value!;
+
+    // First, set the value so we store a state
+    el.value = 'baz';
+
+    // Now, restore the state
+    el.formStateRestoreCallback('bar#0', 'restore');
+    assert.equal(el.value, 'bar');
+    assert.equal(el.count, 0);
+    let formData = new FormData(form);
+    assert.equal(formData.get('foo'), 'bar');
+
+    // Restoring with 'autocomplete' should not change the count
+    el.count = 3;
+    el.formStateRestoreCallback('qux', 'autocomplete');
+    assert.equal(el.value, 'qux');
+    assert.equal(el.count, 3);
+    formData = new FormData(form);
+    assert.equal(formData.get('foo'), 'qux');
+  });
+
+  test('restoring uses value converter', async () => {
+    const elementRef = createRef<CustomConverterElement>();
+    const formRef = createRef<HTMLFormElement>();
+    render(
+      html`
+        <form ${ref(formRef)}>
+          <${customConverterTag}
+            .value=${123}
+            name="foo"
+            ${ref(elementRef)}>
+          </${customConverterTag}>
+        </form>`,
+      container
+    );
+    const el = elementRef.value! as CustomConverterElement &
+      FormAssociatedElement;
+    const form = formRef.value!;
+
+    // First, set the value so we store a state
+    el.value = 456;
+
+    // Now, restore the state
+    el.formStateRestoreCallback('123', 'restore');
+    assert.strictEqual(el.value, 123);
+    let formData = new FormData(form);
+    assert.equal(formData.get('foo'), '123');
+
+    el.formStateRestoreCallback('789', 'autocomplete');
+    assert.equal(el.value, 789);
+    formData = new FormData(form);
+    assert.equal(formData.get('foo'), '789');
   });
 
   test('getInternals can only be called once', async () => {
