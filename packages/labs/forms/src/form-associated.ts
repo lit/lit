@@ -6,6 +6,19 @@
 
 import {type ReactiveElement} from '@lit/reactive-element';
 
+// #region Types
+
+export interface FormValueOptions<T> {
+  converter?: FormValueConverter<T>;
+}
+
+interface FormValueConverter<T> {
+  toFormValue(v: T): FormValue;
+  fromFormValue(v: FormValue): T;
+}
+
+export type FormValue = string | File | FormData | null;
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
 
@@ -45,10 +58,41 @@ interface ValidityResult {
   anchor?: HTMLElement;
 }
 
+type Access = ClassAccessorDecoratorContext<FormAssociated, unknown>['access'];
+
+// #endregion
+
+// #region Shared State
+
 const internalsCache = new WeakMap<
   FormAssociated,
   {internals: ElementInternals; classes: WeakSet<Function>}
 >();
+
+const valueAccessors = new WeakMap<DecoratorMetadataObject, Access>();
+
+const stateAccessors = new WeakMap<DecoratorMetadataObject, Access>();
+
+/*
+ * A store of initial values for FormAssociated elements so that they can be
+ * restored when the form is reset.
+ */
+const initialValues = new WeakMap<FormAssociated, unknown>();
+
+/*
+ * A store of initial values for FormAssociated elements so that they can be
+ * restored when the form is reset.
+ */
+const initialStates = new WeakMap<FormAssociated, unknown>();
+
+const formValueOptions = new WeakMap<
+  DecoratorMetadataObject,
+  FormValueOptions<unknown>
+>();
+
+// #endregion
+
+// #region Utilities
 
 /**
  * Returns the ElementInternals for a FormAssociated element. This should only
@@ -87,6 +131,10 @@ const _getInternals = (element: FormAssociated) => {
  */
 export const isDisabled = (element: FormAssociated) =>
   element.matches(':disabled');
+
+// #endregion
+
+// #region FormAssociated
 
 /**
  * A mixin that makes a ReactiveElement into a form-associated custom element.
@@ -211,31 +259,9 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
   return C as Constructor<FormAssociated> & T & FormAssociatedConstructor;
 };
 
-type Access = ClassAccessorDecoratorContext<FormAssociated, unknown>['access'];
+// #endregion
 
-const valueAccessors = new WeakMap<DecoratorMetadataObject, Access>();
-
-/*
- * A store of initial values for FormAssociated elements so that they can be
- * restored when the form is reset.
- */
-const initialValues = new WeakMap<FormAssociated, unknown>();
-
-const formValueOptions = new WeakMap<
-  DecoratorMetadataObject,
-  FormValueOptions<unknown>
->();
-
-export type FormValue = string | File | FormData | null;
-
-export interface FormValueOptions<T> {
-  converter?: FormValueConverter<T>;
-}
-
-interface FormValueConverter<T> {
-  toFormValue(v: T): FormValue;
-  fromFormValue(v: FormValue): T;
-}
+// #region Decorators
 
 /**
  * A class accessor decorator that marks a field as the form value for the
@@ -270,14 +296,6 @@ export const formValue =
       },
     };
   };
-
-const stateAccessors = new WeakMap<DecoratorMetadataObject, Access>();
-
-/*
- * A store of initial values for FormAssociated elements so that they can be
- * restored when the form is reset.
- */
-const initialStates = new WeakMap<FormAssociated, unknown>();
 
 type FormStateDecorator = {
   // Accessor decorator signature
@@ -343,3 +361,5 @@ export const formState = (): FormStateDecorator =>
       return target;
     }
   }) as FormStateDecorator;
+
+// #endregion
