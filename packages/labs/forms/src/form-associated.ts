@@ -22,7 +22,7 @@ interface FormAssociated extends ReactiveElement {
   _checkValidity?(): ValidityResult;
 }
 
-interface FormAssociatedConstructor {
+export interface FormAssociatedConstructor {
   role?: ElementInternals['role'];
 
   formAssociated: true;

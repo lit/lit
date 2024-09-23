@@ -5,3 +5,4 @@
  */
 
 export * from './form-associated.js';
+export * from './form-control.js';
