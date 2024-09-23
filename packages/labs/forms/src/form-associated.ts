@@ -74,6 +74,13 @@ const internalsCache = new WeakMap<
 
 const valueAccessors = new WeakMap<DecoratorMetadataObject, Access>();
 
+const defaultValueAccessors = new WeakMap<DecoratorMetadataObject, Access>();
+
+const defaultStateAccessors = new WeakMap<
+  DecoratorMetadataObject,
+  Access<FormValue>
+>();
+
 const stateAccessors = new WeakMap<
   DecoratorMetadataObject,
   Access<FormValue>
@@ -213,15 +220,29 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
 
       // Restore the initial value
       const valueAccess = valueAccessors.get(metadata);
-      const initialValue = initialValues.get(this);
-      valueAccess?.set(this, initialValue);
+      const defaultValueAccess = defaultValueAccessors.get(metadata);
+
+      let defaultValue: unknown;
+
+      if (defaultValueAccess !== undefined) {
+        defaultValue = defaultValueAccess.get(this);
+      } else {
+        defaultValue = initialValues.get(this);
+      }
+      valueAccess?.set(this, defaultValue);
 
       // Restore the initial state
       const stateAccess = stateAccessors.get(metadata);
-      const initialState = initialStates.get(this);
-      if (initialState !== undefined) {
-        stateAccess?.set(this, initialState);
+      const defaultStateAccess = defaultStateAccessors.get(metadata);
+
+      let defaultState: FormValue | undefined;
+
+      if (defaultStateAccess !== undefined) {
+        defaultState = defaultStateAccess.get(this);
+      } else {
+        defaultState = initialStates.get(this);
       }
+      stateAccess?.set(this, defaultState ?? null);
     }
 
     formStateRestoreCallback(
@@ -314,6 +335,32 @@ export const formValue =
     };
   };
 
+/**
+ * A class accessor decorator that marks a field as the default value for the
+ * FormAssociated mixin. This value is used when resetting the form.
+ */
+export const formDefaultValue =
+  () =>
+  <C extends FormAssociated, V>(
+    _target: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ) => {
+    defaultValueAccessors.set(context.metadata, context.access);
+  };
+
+/**
+ * A class accessor decorator that marks a field as the default state for the
+ * FormAssociated mixin. This value is used when resetting the form.
+ */
+export const formDefaultState =
+  () =>
+  <C extends FormAssociated, V extends FormValue>(
+    _target: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ) => {
+    defaultStateAccessors.set(context.metadata, context.access);
+  };
+
 type FormStateDecorator = {
   // Accessor decorator signature
   <C extends FormAssociated, V>(
@@ -345,13 +392,19 @@ export const formState = (): FormStateDecorator =>
         get: (target as ClassAccessorDecoratorTarget<C, V>).get,
         set(value: V) {
           (target as ClassAccessorDecoratorTarget<C, V>).set.call(this, value);
-          updateFormValue(this, context.metadata, value);
+          const valueAccess = valueAccessors.get(context.metadata);
+          if (valueAccess !== undefined) {
+            updateFormValue(this, context.metadata, valueAccess.get(this));
+          }
         },
       };
     } else {
       return function (this: C, value: V) {
         (target as (this: C, v: V) => void).call(this, value);
-        updateFormValue(this, context.metadata, value);
+        const valueAccess = valueAccessors.get(context.metadata);
+        if (valueAccess !== undefined) {
+          updateFormValue(this, context.metadata, valueAccess.get(this));
+        }
       };
     }
   }) as FormStateDecorator;

@@ -10,6 +10,7 @@ import {html, unsafeStatic} from 'lit/static-html.js';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {
   FormAssociated,
+  formDefaultValue,
   formState,
   formStateGetter,
   formStateSetter,
@@ -51,6 +52,23 @@ class TestElement extends FormAssociated(LitElement) {
 }
 customElements.define(TestElement.tagName, TestElement);
 const testElementTag = unsafeStatic(TestElement.tagName);
+
+/**
+ * Test element with user-settable default value.
+ */
+class DefaultElement extends FormAssociated(LitElement) {
+  static tagName = generateElementName();
+
+  _internals = getInternals(DefaultElement, this);
+
+  @formValue()
+  accessor value = '';
+
+  @formDefaultValue()
+  accessor default = '';
+}
+customElements.define(DefaultElement.tagName, DefaultElement);
+const defaultElementTag = unsafeStatic(DefaultElement.tagName);
 
 /**
  * Test element with a custom role.
@@ -297,6 +315,28 @@ suite('FormAssociated', () => {
     form.reset();
     formData = new FormData(form);
     assert.equal(formData.get('foo'), '');
+  });
+
+  test('can be reset with default', async () => {
+    const formRef = createRef<HTMLFormElement>();
+    render(
+      html`
+        <form ${ref(formRef)}>
+          <${defaultElementTag}
+            .value=${'bar'}
+            .default=${'foo'}
+            name="foo">
+          </${defaultElementTag}>
+        </form>`,
+      container
+    );
+    const form = formRef.value!;
+    let formData = new FormData(form);
+    assert.equal(formData.get('foo'), 'bar');
+
+    form.reset();
+    formData = new FormData(form);
+    assert.equal(formData.get('foo'), 'foo');
   });
 
   test('can be restored from state without @formState', async () => {

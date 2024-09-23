@@ -83,6 +83,18 @@ FormAssociated will use them when setting a value and restoring the form.
 The `@formState()` decorator marks a field as being part of the form state so
 that the state is stored with the form and validation is performed.
 
+### `@defaultFormValue()` and `@defaultFormState()`
+
+These decorators mark fields as representing the default for value and state.
+These fields will be used to set the form state and `@formValue()` and
+`@formState()` fields when the form is reset.
+
+Each default field must have the same type as the corresponding value or state
+field.
+
+If there is no field decorated as the default, the initial values are used to
+reset the form.
+
 ```ts
 class CustomStateElement extends FormAssociated(LitElement) {
   @formValue()
