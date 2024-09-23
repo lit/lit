@@ -54,14 +54,14 @@ import { ResizeController } from "@lit-labs/observers/resize-controller.js";
 class MyElement extends LitElement {
 private _resizeController = new ResizeController<DOMRectReadOnly>(this, {
     // Save into _resizeController.value only the current rect dimentions
-    callback: (entries: ResizeObserverEntry[]) => entries[entries.length - 1].contentRect,
+    callback: (entries) => entries[entries.length - 1].contentRect,
   });
 
 render() {
-  const width = this._resizeController.value.width;
-  const height = this._resizeController.value.height;
+  const width = this._resizeController.value?.width ?? 0;
+  const height = this._resizeController.value?.height ?? 0;
 
-  return html`<div class="container">${width}px x${height}px</div>`;
+  return html`<div class="container">${width}px x ${height}px</div>`;
 }
 
   static styles = css`
