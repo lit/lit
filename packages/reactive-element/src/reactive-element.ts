@@ -1421,12 +1421,11 @@ export abstract class ReactiveElement
         .elementProperties;
       if (elementProperties.size > 0) {
         for (const [p, options] of elementProperties) {
-          if (
-            options.wrapped === true &&
-            !this._$changedProperties.has(p) &&
-            this[p as keyof this] !== undefined
-          ) {
-            this._$changeProperty(p, this[p as keyof this], options);
+          if (options.wrapped === true && this[p as keyof this] !== undefined) {
+            // Note, deleting an existing value here ensures
+            // the initial old value is seeded as `undefined`
+            this._$changedProperties.delete(p);
+            this._$changeProperty(p, undefined, options);
           }
         }
       }

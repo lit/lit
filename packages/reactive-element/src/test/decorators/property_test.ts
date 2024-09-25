@@ -488,6 +488,53 @@ suite('@property', () => {
     assert.deepEqual(el._observedZot2, {value: 'zot', oldValue: ''});
   });
 
+  test('reports initial changes to properties', async () => {
+    let changedProperties: PropertyValues | undefined;
+
+    class E extends ReactiveElement {
+      @property() unValued?: string;
+      @property() valued = 'valued';
+
+      _valuedAccessor = 'valuedAccessor';
+
+      @property()
+      accessor valuedAutoAccessor = 'valuedAutoAccessor';
+
+      @property()
+      set valuedAccessor(v) {
+        this._valuedAccessor = v;
+      }
+      get valuedAccessor() {
+        return this._valuedAccessor;
+      }
+
+      _unValuedAccessor?: string;
+
+      @property()
+      set unValuedAccessor(v) {
+        this._unValuedAccessor = v;
+      }
+      get unValuedAccessor() {
+        return this._unValuedAccessor;
+      }
+
+      override update(changed: PropertyValues) {
+        changedProperties = changed;
+        super.update(changed);
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    const expectedChanges = new Map([
+      ['valued', undefined],
+      ['valuedAccessor', undefined],
+      ['valuedAutoAccessor', undefined],
+    ]);
+    assert.deepEqual(changedProperties, expectedChanges);
+  });
+
   test('can handle some unreasonable property declarations', async () => {
     class PropertyOnSetterOnly extends ReactiveElement {
       @property()
