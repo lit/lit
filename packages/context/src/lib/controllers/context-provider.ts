@@ -102,11 +102,12 @@ export class ContextProvider<
     }
     // Also, in case an element is a consumer AND a provider
     // of the same context, we want to avoid the element to self-register.
-    if (ev.contextTarget === this.host) {
+    const consumerHost = ev.contextTarget ?? ev.composedPath()[0];
+    if (consumerHost === this.host) {
       return;
     }
     ev.stopPropagation();
-    this.addCallback(ev.callback, ev.contextTarget, ev.subscribe);
+    this.addCallback(ev.callback, consumerHost, ev.subscribe);
   };
 
   /**
@@ -124,7 +125,8 @@ export class ContextProvider<
     }
     // Also, in case an element is a consumer AND a provider
     // of the same context it shouldn't provide to itself.
-    if (ev.contextTarget === this.host) {
+    const childProviderHost = ev.contextTarget ?? ev.composedPath()[0];
+    if (childProviderHost === this.host) {
       return;
     }
     // Re-parent all of our subscriptions in case this new child provider
