@@ -53,6 +53,8 @@ packages/lit/lit-all.min.*
 packages/lit/lit-core.min.*
 packages/lit/polyfill-support.*
 
+packages/lit/smoke
+packages/lit/src/smoke
 packages/lit-element/decorators/
 packages/lit-element/development/
 packages/lit-element/node_modules/
