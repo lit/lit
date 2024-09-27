@@ -24,8 +24,7 @@ export interface LitSsrPluginOptions {
   /**
    * These modules will be imported from each newly created worker.
    * (A worker is created for each call to render a template via SSR).
-   * This allows registering hooks for Node.js (e.g. to allow importing .ts
-   * files directly) or general setup.
+   * This allows registering hooks for Node.js or general setup.
    */
   workerModules?: string[];
   /**
