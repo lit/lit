@@ -13,7 +13,7 @@ import {litSsrPlugin} from './lib/lit-ssr-plugin.js';
  */
 const config = {
   rootDir: '.',
-  files: ['./test/**/*_test.js'],
+  files: ['./test/lib/**/*_test.js'],
   nodeResolve: true,
   preserveSymlinks: true,
   browsers: [
@@ -28,7 +28,7 @@ const config = {
       timeout: '60000',
     },
   },
-  plugins: [litSsrPlugin({workerModules: ['./typescript-worker.js']})],
+  plugins: [litSsrPlugin({typeScript: true})],
 };
 
 export default config;

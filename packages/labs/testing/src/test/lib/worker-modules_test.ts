@@ -8,7 +8,7 @@ import {
   ssrNonHydratedFixture,
   ssrHydratedFixture,
   cleanupFixtures,
-} from '../fixtures.js';
+} from '../../fixtures.js';
 
 import {html} from 'lit';
 import {assert} from '@open-wc/testing';
@@ -24,7 +24,7 @@ for (const fixture of [ssrNonHydratedFixture, ssrHydratedFixture]) {
     test('renders good-element', async () => {
       const el = await fixture(html`<good-element></good-element>`, {
         base: import.meta.url,
-        modules: ['../src/test/good-element.ts'],
+        modules: ['../../src/test/lib/good-element.ts'],
       });
       assert.shadowDom.equal(
         el,

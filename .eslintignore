@@ -373,6 +373,7 @@ packages/labs/testing/web-test-runner-ssr-plugin.*
 packages/labs/testing/lib
 packages/labs/testing/test
 packages/labs/testing/**/.tsbuildinfo-utils
+packages/labs/testing/**/test_files
 
 packages/labs/tsserver-plugin/example/
 packages/labs/tsserver-plugin/example/node_modules/

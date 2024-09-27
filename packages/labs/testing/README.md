@@ -45,10 +45,11 @@ Signature
 - `options: object` - Options object containing the following properties
   - `workerModules: string` - Relative paths to modules to be loaded before
     the fixture modules.
-    This allows registering e.g. Node.js ESM hooks to directly import .ts files
-    or general setup.
-    You can use opinionated `@lit-labs/testing/typescript-worker.js` for
-    TypeScript support.
+    This allows registering e.g. Node.js ESM hooks or general setup.
+  - `typeScript: boolean | { tsconfig: string }` - Whether to enable TypeScript
+    parsing when running SSR code inside the worker. Optionally allows
+    specifying a relative path to a `tsconfig` file. Defaults to searching the
+    file tree for the nearest `tsconfig.json` file from the imported file.
 
 ### Fixtures
 

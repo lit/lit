@@ -9,7 +9,7 @@ import {
   ssrNonHydratedFixture,
   ssrHydratedFixture,
   cleanupFixtures,
-} from '../fixtures.js';
+} from '../../fixtures.js';
 
 import {html} from 'lit';
 import {assert} from '@open-wc/testing';

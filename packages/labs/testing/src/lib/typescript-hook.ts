@@ -5,10 +5,19 @@
  */
 
 import {existsSync, readFileSync} from 'node:fs';
-import type {LoadHook, ResolveHook} from 'node:module';
+import type {InitializeHook, LoadHook, ResolveHook} from 'node:module';
+import {basename, dirname} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
-import {type Options, transformSync} from '@swc/wasm';
+import {
+  type JscConfig,
+  type JscTarget,
+  type Options,
+  transformSync,
+} from '@swc/wasm';
+import * as ts from 'typescript';
+
+import type {TypeScriptOptions} from './lit-ssr-plugin';
 
 /**
  * This implements an opinionated Node.js ESM hook to transpile TypeScript on the fly.
@@ -23,22 +32,69 @@ const extensionMapping = Object.entries({
   '.mjs': '.mts',
   '.js': '.ts',
 } as const);
-const swcOptions: Options = {
-  jsc: {
-    externalHelpers: false,
-    keepClassNames: true,
-    parser: {
-      decorators: true,
-      dynamicImport: true,
-      syntax: 'typescript',
+const defaultTarget: JscTarget = 'es2021';
+let swcOptions: Partial<JscConfig> | undefined = undefined;
+
+const parseTransformOptionsFromTsconfig = (
+  tsconfig: string
+): Partial<JscConfig> => {
+  const {config, error} = ts.readConfigFile(tsconfig, ts.sys.readFile);
+  if (error) {
+    throw error;
+  }
+
+  const {options} = ts.parseJsonConfigFileContent(
+    config,
+    ts.sys,
+    dirname(tsconfig),
+    undefined,
+    basename(tsconfig)
+  );
+
+  return {
+    target: options.target
+      ? (ts.ScriptTarget[options.target].toLowerCase() as JscTarget)
+      : defaultTarget,
+    transform: {
+      legacyDecorator: options.experimentalDecorators,
+      decoratorMetadata: options.emitDecoratorMetadata,
+      useDefineForClassFields: options.useDefineForClassFields,
+      // decoratorVersion is not part of the API types, but works correctly
+      ...(options.experimentalDecorators
+        ? {}
+        : {
+            decoratorVersion: '2022-03',
+          }),
     },
-    target: 'es2021',
-  },
-  module: {
-    type: 'nodenext',
-  },
-  sourceMaps: 'inline',
-  swcrc: false,
+  };
+};
+
+const findAndParseTransformOptionsFromTsconfig = (
+  filePath: string
+): Partial<JscConfig> => {
+  const tsconfig = ts.findConfigFile(filePath, ts.sys.fileExists);
+  if (!tsconfig) {
+    throw new Error(
+      `No tsconfig.json found for ${filePath}! ` +
+        'Configure the tsconfig option in the litSsrPlugin typeScript options, ' +
+        'if you have a differently named tsconfig.json file.'
+    );
+  }
+
+  return parseTransformOptionsFromTsconfig(tsconfig);
+};
+
+/**
+ * Initializes the hook module.
+ *
+ * https://nodejs.org/api/module.html#initialize
+ */
+export const initialize: InitializeHook<TypeScriptOptions | undefined> = (
+  data
+): void => {
+  swcOptions = data?.tsconfig
+    ? parseTransformOptionsFromTsconfig(data.tsconfig)
+    : undefined;
 };
 
 /**
@@ -52,7 +108,7 @@ export const resolve: ResolveHook = (specifier, context, nextResolve) => {
     for (const [jsExtension, tsExtension] of extensionMapping) {
       if (specifier.endsWith(jsExtension)) {
         const maybeTsFile = new URL(
-          specifier.substring(specifier.length - jsExtension.length) +
+          specifier.substring(0, specifier.length - jsExtension.length) +
             tsExtension,
           context.parentURL
         );
@@ -78,7 +134,26 @@ export const load: LoadHook = (url, context, nextLoad) => {
   ) {
     const filePath = fileURLToPath(url);
     const source = readFileSync(filePath, 'utf8');
-    const result = transformSync(source, swcOptions);
+
+    const options: Options = {
+      jsc: {
+        externalHelpers: false,
+        keepClassNames: true,
+        parser: {
+          decorators: true,
+          dynamicImport: true,
+          syntax: 'typescript',
+        },
+        ...(swcOptions ??
+          findAndParseTransformOptionsFromTsconfig(dirname(filePath))),
+      },
+      module: {
+        type: 'nodenext',
+      },
+      sourceMaps: 'inline',
+      swcrc: false,
+    };
+    const result = transformSync(source, options);
     return {format: 'module', shortCircuit: true, source: result.code};
   }
   return nextLoad(url, context);
