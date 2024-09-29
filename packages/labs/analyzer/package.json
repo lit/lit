@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/analyzer",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "publishConfig": {
     "access": "public"
   },
@@ -119,7 +119,7 @@
   },
   "dependencies": {
     "package-json-type": "^1.0.3",
-    "typescript": "~5.3.3"
+    "typescript": "~5.5.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

@@ -1,5 +1,18 @@
 # @lit-labs/gen-manifest
 
+## 0.3.4
+
+### Patch Changes
+
+- Updated dependencies [[`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c)]:
+  - @lit-labs/analyzer@0.13.0
+
+## 0.3.3
+
+### Patch Changes
+
+- [#4147](https://github.com/lit/lit/pull/4147) [`634d8624`](https://github.com/lit/lit/commit/634d86248d8943f15930d2b1d281991c174970b7) Thanks [@43081j](https://github.com/43081j)! - Support for mixin classes/functions as super classes of analyzed classes
+
 ## 0.3.2
 
 ### Patch Changes

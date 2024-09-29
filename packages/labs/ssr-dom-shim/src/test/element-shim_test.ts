@@ -7,7 +7,7 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {HTMLElement} from '@lit-labs/ssr-dom-shim';
+import {customElements, HTMLElement} from '@lit-labs/ssr-dom-shim';
 
 const test = suite('Element Shim');
 
@@ -43,6 +43,34 @@ test('setAttribute silently casts values to a string', () => {
   // silently convert it to a string.
   shimmedEl.setAttribute('tomato', {} as unknown as string);
   assert.equal(shimmedEl.getAttribute('tomato'), '[object Object]');
+});
+
+test('localName and tagName should be available with constructor from customElements registry', () => {
+  const elementName = 'lit-test-registry';
+  customElements.define(elementName, class extends HTMLElement {});
+  const LitTestRegistry = customElements.get(elementName)!;
+
+  const shimmedEl = new LitTestRegistry();
+  assert.equal(shimmedEl.localName, elementName);
+  assert.equal(shimmedEl.tagName, elementName.toUpperCase());
+});
+
+test('localName and tagName should be available when registering with customElements', () => {
+  const elementName = 'lit-test-local';
+  class LitTestLocal extends HTMLElement {}
+  customElements.define(elementName, LitTestLocal);
+
+  const shimmedEl = new LitTestLocal();
+  assert.equal(shimmedEl.localName, elementName);
+  assert.equal(shimmedEl.tagName, elementName.toUpperCase());
+});
+
+test('localName and tagName usage should return undefined if not registered', () => {
+  class LitTestUnregistered extends HTMLElement {}
+
+  const shimmedEl = new LitTestUnregistered();
+  assert.equal(shimmedEl.localName, undefined);
+  assert.equal(shimmedEl.tagName, undefined);
 });
 
 test.run();

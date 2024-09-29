@@ -21,7 +21,7 @@ export default {
     }
   },
   plugins: [
-    replace({'Reflect.decorate': 'undefined'}),
+    replace({preventAssignment: false, 'Reflect.decorate': 'undefined'}),
     resolve(),
     /**
      * This minification setup serves the static site generation.

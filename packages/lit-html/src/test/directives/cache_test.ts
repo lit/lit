@@ -26,22 +26,22 @@ suite('cache directive', () => {
     const renderCached = (condition: any, v: string) =>
       render(
         html`${cache(
-          condition ? html`<div v=${v}></div>` : html`<span v=${v}></span>`,
+          condition ? html`<div v=${v}></div>` : html`<span v=${v}></span>`
         )}`,
-        container,
+        container
       );
 
     renderCached(true, 'A');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div v="A"></div>',
+      '<div v="A"></div>'
     );
     const element1 = container.firstElementChild;
 
     renderCached(false, 'B');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<span v="B"></span>',
+      '<span v="B"></span>'
     );
     const element2 = container.firstElementChild;
 
@@ -50,14 +50,14 @@ suite('cache directive', () => {
     renderCached(true, 'C');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div v="C"></div>',
+      '<div v="C"></div>'
     );
     assert.strictEqual(container.firstElementChild, element1);
 
     renderCached(false, 'D');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<span v="D"></span>',
+      '<span v="D"></span>'
     );
     assert.strictEqual(container.firstElementChild, element2);
   });
@@ -98,22 +98,22 @@ suite('cache directive', () => {
             : {
                 _$litType$: _$lit_template_2,
                 values: [v],
-              },
+              }
         )}`,
-        container,
+        container
       );
 
     renderCached(true, 'A');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div v="A"></div>',
+      '<div v="A"></div>'
     );
     const element1 = container.firstElementChild;
 
     renderCached(false, 'B');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<span v="B"></span>',
+      '<span v="B"></span>'
     );
     const element2 = container.firstElementChild;
 
@@ -122,14 +122,14 @@ suite('cache directive', () => {
     renderCached(true, 'C');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div v="C"></div>',
+      '<div v="C"></div>'
     );
     assert.strictEqual(container.firstElementChild, element1);
 
     renderCached(false, 'D');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<span v="D"></span>',
+      '<span v="D"></span>'
     );
     assert.strictEqual(container.firstElementChild, element2);
   });
@@ -143,13 +143,13 @@ suite('cache directive', () => {
     const renderCached = (condition: any, v: string) =>
       render(
         html`${cache(condition ? html`<div v=${v}></div>` : v)}`,
-        container,
+        container
       );
 
     renderCached(true, 'A');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div v="A"></div>',
+      '<div v="A"></div>'
     );
     const element1 = container.firstElementChild;
 
@@ -159,7 +159,7 @@ suite('cache directive', () => {
     renderCached(true, 'C');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div v="C"></div>',
+      '<div v="C"></div>'
     );
     assert.strictEqual(container.firstElementChild, element1);
 
@@ -185,13 +185,13 @@ suite('cache directive', () => {
     const renderMaybeCached = (condition: any, v: string) =>
       render(
         html`${condition ? cache(html`<div v=${v}></div>`) : v}`,
-        container,
+        container
       );
 
     renderMaybeCached(true, 'A');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div v="A"></div>',
+      '<div v="A"></div>'
     );
 
     renderMaybeCached(false, 'B');
@@ -200,7 +200,7 @@ suite('cache directive', () => {
     renderMaybeCached(true, 'C');
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div v="C"></div>',
+      '<div v="C"></div>'
     );
 
     renderMaybeCached(false, 'D');
@@ -246,23 +246,23 @@ suite('cache directive', () => {
         override reconnected() {
           this.log!.push(`reconnected-${this.id}`);
         }
-      },
+      }
     );
     const renderCached = (log: string[], condition: boolean) =>
       render(
         html`<div>${cache(
           condition
             ? html`<div>${disconnectable(log, 'a')}</div>`
-            : html`<span>${disconnectable(log, 'b')}</span>`,
+            : html`<span>${disconnectable(log, 'b')}</span>`
         )}</div>`,
-        container,
+        container
       );
     const log: string[] = [];
 
     renderCached(log, true);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div><div>a</div></div>',
+      '<div><div>a</div></div>'
     );
     assert.deepEqual(log, ['render-a']);
 
@@ -270,7 +270,7 @@ suite('cache directive', () => {
     renderCached(log, false);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div><span>b</span></div>',
+      '<div><span>b</span></div>'
     );
     assert.deepEqual(log, ['disconnected-a', 'render-b']);
 
@@ -278,7 +278,7 @@ suite('cache directive', () => {
     renderCached(log, true);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div><div>a</div></div>',
+      '<div><div>a</div></div>'
     );
     assert.deepEqual(log, ['disconnected-b', 'reconnected-a', 'render-a']);
 
@@ -286,7 +286,7 @@ suite('cache directive', () => {
     renderCached(log, false);
     assert.equal(
       stripExpressionComments(container.innerHTML),
-      '<div><span>b</span></div>',
+      '<div><span>b</span></div>'
     );
     assert.deepEqual(log, ['disconnected-a', 'reconnected-b', 'render-b']);
   });

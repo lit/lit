@@ -1,10 +1,11 @@
-import {expect} from 'chai';
+import {test, describe as suite} from 'node:test';
+import * as assert from 'node:assert/strict';
 import {minify} from 'html-minifier';
 import {defaultMinifyOptions, defaultStrategy} from '../lib/strategy.js';
 import {TemplatePart} from '../lib/models.js';
 
-describe('strategy', () => {
-  describe('default', () => {
+suite('strategy', () => {
+  suite('default', () => {
     const parts: TemplatePart[] = [
       {
         text: '<h1>',
@@ -18,14 +19,14 @@ describe('strategy', () => {
       },
     ];
 
-    describe('getPlaceholder()', () => {
-      it('should return a string with @ and () in it with no spaces', () => {
+    suite('getPlaceholder()', () => {
+      test('should return a string with @ and () in it with no spaces', () => {
         const placeholder = defaultStrategy.getPlaceholder(parts);
-        expect(placeholder.indexOf('@')).to.equal(0, 'should start with @');
-        expect(placeholder).to.include('()', 'should contain function parens');
+        assert.equal(placeholder.indexOf('@'), 0, 'should start with @');
+        assert.ok(placeholder.includes('()'), 'should contain function parens');
       });
 
-      it('should append "_" if placeholder exists in templates', () => {
+      test('should append "_" if placeholder exists in templates', () => {
         const regularPlaceholder = defaultStrategy.getPlaceholder(parts);
         const oneUnderscore = defaultStrategy.getPlaceholder([
           {
@@ -35,8 +36,8 @@ describe('strategy', () => {
           },
         ]);
 
-        expect(oneUnderscore).not.to.equal(regularPlaceholder);
-        expect(oneUnderscore).to.include('_');
+        assert.notEqual(oneUnderscore, regularPlaceholder);
+        assert.ok(oneUnderscore.includes('_'));
 
         const twoUnderscores = defaultStrategy.getPlaceholder([
           {
@@ -51,12 +52,12 @@ describe('strategy', () => {
           },
         ]);
 
-        expect(twoUnderscores).not.to.equal(regularPlaceholder);
-        expect(twoUnderscores).not.to.equal(oneUnderscore);
-        expect(twoUnderscores).to.include('__');
+        assert.notEqual(twoUnderscores, regularPlaceholder);
+        assert.notEqual(twoUnderscores, oneUnderscore);
+        assert.ok(twoUnderscores.includes('__'));
       });
 
-      it('should return a value that is preserved by html-minifier when splitting', () => {
+      test('should return a value that is preserved by html-minifier when splitting', () => {
         const placeholder = defaultStrategy.getPlaceholder(parts);
         const minHtml = defaultStrategy.minifyHTML(
           `
@@ -81,23 +82,25 @@ describe('strategy', () => {
         );
 
         // 8 placeholders, 9 parts
-        expect(
-          defaultStrategy.splitHTMLByPlaceholder(minHtml, placeholder)
-        ).to.have.lengthOf(9);
+        assert.equal(
+          defaultStrategy.splitHTMLByPlaceholder(minHtml, placeholder).length,
+          9
+        );
       });
     });
 
-    describe('combineHTMLStrings()', () => {
-      it('should join part texts by the placeholder', () => {
+    suite('combineHTMLStrings()', () => {
+      test('should join part texts by the placeholder', () => {
         const expected = '<h1>EXP</h1>';
-        expect(defaultStrategy.combineHTMLStrings(parts, 'EXP')).to.equal(
+        assert.equal(
+          defaultStrategy.combineHTMLStrings(parts, 'EXP'),
           expected
         );
       });
     });
 
-    describe('minifyHTML()', () => {
-      it('should call minify() with html and options', () => {
+    suite('minifyHTML()', () => {
+      test('should call minify() with html and options', () => {
         const placeholder = defaultStrategy.getPlaceholder(parts);
         const html = `
           <style>${placeholder}</style>
@@ -107,26 +110,29 @@ describe('strategy', () => {
           </ul>
         `;
 
-        expect(defaultStrategy.minifyHTML(html, defaultMinifyOptions)).to.equal(
+        assert.equal(
+          defaultStrategy.minifyHTML(html, defaultMinifyOptions),
           minify(html, defaultMinifyOptions)
         );
       });
     });
 
-    describe('splitHTMLByPlaceholder()', () => {
-      it('should split string by the placeholder', () => {
+    suite('splitHTMLByPlaceholder()', () => {
+      test('should split string by the placeholder', () => {
         const expected = ['<h1>', '</h1>'];
-        expect(
-          defaultStrategy.splitHTMLByPlaceholder('<h1>EXP</h1>', 'EXP')
-        ).to.deep.equal(expected);
+        assert.deepEqual(
+          defaultStrategy.splitHTMLByPlaceholder('<h1>EXP</h1>', 'EXP'),
+          expected
+        );
       });
 
-      it('should handle if a placeholder is missing its semicolon', () => {
+      test('should handle if a placeholder is missing its semicolon', () => {
         const expected = ['<h1>', '</h1><button onclick="', '"></button>'];
         const html = `<h1>EXP;</h1><button onclick="EXP"></button>`;
-        expect(
-          defaultStrategy.splitHTMLByPlaceholder(html, 'EXP;')
-        ).to.deep.equal(expected);
+        assert.deepEqual(
+          defaultStrategy.splitHTMLByPlaceholder(html, 'EXP;'),
+          expected
+        );
       });
     });
   });

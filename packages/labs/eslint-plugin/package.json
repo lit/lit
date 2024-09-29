@@ -1,7 +1,7 @@
 {
   "name": "eslint-plugin-lit",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Lit support for ESLint",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
@@ -64,8 +64,8 @@
     "eslint": "^8.56.0"
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.12.0",
+    "@lit-labs/analyzer": "^0.13.0",
     "@typescript-eslint/utils": "^6.19.0",
-    "typescript": "~5.3.3"
+    "typescript": "~5.5.0"
   }
 }
