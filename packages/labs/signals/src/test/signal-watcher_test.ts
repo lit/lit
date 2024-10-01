@@ -111,21 +111,13 @@ suite('SignalWatcher', () => {
 
     // First render, expect one read of the signal
     await el.updateComplete;
-    assert.equal(
-      el.shadowRoot?.querySelector('p')?.textContent,
-      'count: 1',
-      'A'
-    );
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 1');
     assert.equal(readCount, 1);
 
     // Updates work
     count.set(1);
     await el.updateComplete;
-    assert.equal(
-      el.shadowRoot?.querySelector('p')?.textContent,
-      'count: 2',
-      'B'
-    );
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 2');
     assert.equal(readCount, 2);
 
     // Disconnect the element
@@ -134,20 +126,12 @@ suite('SignalWatcher', () => {
 
     // Expect no reads while disconnected
     count.set(2);
-    assert.equal(
-      el.shadowRoot?.querySelector('p')?.textContent,
-      'count: 2',
-      'C'
-    );
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 2');
     assert.equal(readCount, 2);
 
     // Even after an update
     await el.updateComplete;
-    assert.equal(
-      el.shadowRoot?.querySelector('p')?.textContent,
-      'count: 2',
-      'D'
-    );
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 2');
     assert.equal(readCount, 2);
 
     // Reconnect the element
@@ -157,33 +141,92 @@ suite('SignalWatcher', () => {
     assert.isTrue(el.isUpdatePending);
 
     // So when reconnected, we still have the old value
-    assert.equal(
-      el.shadowRoot?.querySelector('p')?.textContent,
-      'count: 2',
-      'E'
-    );
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 2');
     assert.equal(readCount, 2);
 
     // But after an update, we get the new value
     await el.updateComplete;
-    assert.equal(countPlusOne.get(), 3, 'How is this failing? 2');
-    assert.equal(
-      el.shadowRoot?.querySelector('p')?.textContent,
-      'count: 3',
-      'F'
-    );
+    assert.equal(countPlusOne.get(), 3);
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 3');
     assert.equal(readCount, 3);
 
     // When signals change again we get the new value
     count.set(3);
     assert.isTrue(el.isUpdatePending);
     await el.updateComplete;
-    assert.equal(
-      el.shadowRoot?.querySelector('p')?.textContent,
-      'count: 4',
-      'G'
-    );
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 4');
     assert.equal(readCount, 4);
+  });
+
+  test('unsubscribes to a signal on element disconnect with pending update', async () => {
+    let readCount = 0;
+    const count = new Signal.State(0);
+    const countPlusOne = new Signal.Computed(() => {
+      readCount++;
+      return count.get() + 1;
+    });
+
+    class TestElement extends SignalWatcher(LitElement) {
+      override render() {
+        return html`<p>count: ${countPlusOne.get()}</p>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.append(el);
+
+    // First render, expect one read of the signal
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 1');
+    assert.equal(readCount, 1);
+
+    // Updates work
+    count.set(1);
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 2');
+    assert.equal(readCount, 2);
+
+    // Update signal and disconnect the element
+    count.set(2);
+    el.remove();
+
+    // Expect update to complete
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 3');
+    assert.equal(readCount, 3);
+
+    // Expect no reads while disconnected
+    count.set(3);
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 3');
+    assert.equal(readCount, 3);
+
+    // Even after an update
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 3');
+    assert.equal(readCount, 3);
+
+    // Reconnect the element
+    container.append(el);
+    assert.isTrue(el.isConnected);
+    // The mixin causes the element to update on re-connect
+    assert.isTrue(el.isUpdatePending);
+
+    // So when reconnected, we still have the old value
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 3');
+    assert.equal(readCount, 3);
+
+    // But after an update, we get the new value
+    await el.updateComplete;
+    assert.equal(countPlusOne.get(), 4);
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 4');
+    assert.equal(readCount, 4);
+
+    // When signals change again we get the new value
+    count.set(4);
+    assert.isTrue(el.isUpdatePending);
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 5');
+    assert.equal(readCount, 5);
   });
 
   test('type-only test where mixin on an abstract class preserves abstract type', () => {
