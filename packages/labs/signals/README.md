@@ -2,22 +2,26 @@
 
 TC39 Signals Proposal integration for Lit.
 
-> [!WARNING] `@lit-labs/signals` is part of the Lit Labs set of packages – it
+> [!WARNING]
+>
+> <!-- Prettier, go away -->
+>
+> `@lit-labs/signals` is part of the Lit Labs set of packages – it
 > is published in order to get feedback on the design and may receive breaking
 > changes.
 >
 > RFC: https://github.com/lit/rfcs/blob/main/rfcs/0005-standard-signals.md
 >
-> Give feedback: https://github.com/lit/lit/discussions/NNNN
+> Give feedback: https://github.com/lit/lit/discussions/4779
 
 ## Overview
 
 `@lit-labs/signals` integrates the [TC39 Signals
 Proposal](https://github.com/tc39/proposal-signals) with Lit's template system
-and reactive update lifecycle. Signals used with an element's update lifecycle,
-such as in a template, will cause the element to re-render when the signal value
-changes. Signals can also be used for targetted or "pin-point" DOM updates,
-which can update the DOM without running the entire `render()` method.
+and reactive update lifecycle. Signals used within an element's update
+lifecycle, such as in a template, will cause the element to re-render when the
+signal value changes. Signals can also be used for targetted or "pin-point" DOM
+updates, which can update the DOM without running the entire `render()` method.
 
 ### The TC39 Signals Proposal
 
@@ -85,11 +89,12 @@ they access and trigger an update with an integration library like this one.
 Like all Lit Labs packages, `@lit-labs/signals` package may change frequently,
 have serious bugs, or not be maintained as well as Lit's core packages.
 
-Additionally, this package depends on the Signals proposal and directly depends
-on the polyfill, which add more potential sources of instability and bugs. The
-proposal may change, and the polfyill may have bugs or serious performance
-issues. If multiple versions of the polyfill are included on a page,
-interoperabiilty may fail.
+Additionally, this package depends on the API defined in the [TC39 Signals
+proposal](https://github.com/tc39/proposal-signals) and directly depends on the
+[Signals polyfill](https://github.com/proposal-signals/signal-polyfill), which
+add more potential sources of instability and bugs. The proposal may change, and
+the polfyill may have bugs or serious performance issues. If multiple versions
+of the polyfill are included on a page, interoperabiilty may fail.
 
 As the Signals proposal and polyfill progress we will update this package. At
 some point we will remove the dependency on the polyfill and assume the standard
@@ -126,7 +131,7 @@ This effectively makes the the return result of `render()` a computed signal.
 
 ```ts
 import {LitElement, html} from 'lit';
-import {customElement, property} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {SignalWatcher, signal} from '@lit-labs/signals';
 
 const count = signal(0);
@@ -142,7 +147,7 @@ export class SignalExample extends SignalWatcher(LitElement) {
   render() {
     return html`
       <p>The count is ${count.get()}</p>
-      <button @click=${this.#onClick}>Increment<button></button></button>
+      <button @click=${this.#onClick}>Increment</button>
     `;
   }
 
@@ -164,7 +169,7 @@ always, measure!).
 
 ```ts
 import {LitElement, html} from 'lit';
-import {customElement, property} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {SignalWatcher, watch, signal} from '@lit-labs/signals';
 
 const count = signal(0);
@@ -180,7 +185,7 @@ export class SignalExample extends SignalWatcher(LitElement) {
   render() {
     return html`
       <p>The count is ${watch(count)}</p>
-      <button @click=${this.#onClick}>Increment<button></button></button>
+      <button @click=${this.#onClick}>Increment</button>
     `;
   }
 
@@ -195,10 +200,14 @@ lifecycle. When a watched signal changes, it is added to a batch and a reactive
 update is requested. Other changes, to reactive properties or signals accessed
 outside of `watch()`, are trigger reactive updates as usual.
 
-During a reactive update, if there are only updates from `watch()` directives,
-then those updates are commited directly _without_ a full template render. If
-any other changes triggered the reactive update, then the whole template is
-re-rendered, along with the latest signal values.
+> [!NOTE]
+>
+> <!-- -->
+>
+> During a reactive update, if there are only updates from `watch()` directives,
+> then those updates are commited directly _without_ a full template render. If
+> any other changes triggered the reactive update, then the whole template is
+> re-rendered, along with the latest signal values.
 
 This approach preserves both DOM coherence and targeted updates, and coalesces
 updates when both signals and reactive properties change.
@@ -218,7 +227,7 @@ Lit's default `html` tag and automatically wraps any signals in `watch()`.
 
 ```ts
 import {LitElement} from 'lit';
-import {customElement, property} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 import {SignalWatcher, html, signal} from '@lit-labs/signals';
 
 const count = signal(0);
@@ -234,7 +243,7 @@ export class SignalExample extends SignalWatcher(LitElement) {
   render() {
     return html`
       <p>The count is ${count}</p>
-      <button @click=${this.#onClick}>Increment<button></button></button>
+      <button @click=${this.#onClick}>Increment</button>
     `;
   }
 
@@ -247,9 +256,8 @@ export class SignalExample extends SignalWatcher(LitElement) {
 #### `withWatch()`
 
 `withWatch()` is a function that wraps an `html` tag function with the
-auto-watching functionality. The `html` tag exported by `@lit-labs/signals` is
-simply the core lit-html template tag wrapped with `withWatch()` as a
-convenience.
+auto-watching functionality. The `html` tag exported by `@lit-labs/signals` is a
+convenient export of the core lit-html template tag wrapped with `withWatch()`.
 
 `withWatch()` allows you to compose the signal watching wrapper with other
 lit-html tag wrappers like Lit's `withStatic()` utility.
