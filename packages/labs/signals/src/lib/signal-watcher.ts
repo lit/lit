@@ -233,8 +233,8 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       // disconnected element will be retained by the signals it accesses during
       // the update lifecycle.
       //
-      // We use queueMicrotask() to ensure that this cleanup does not happens
-      // because moves in the DOM within the same task, such as removing an
+      // We use queueMicrotask() to ensure that this cleanup does not happen
+      // because of moves in the DOM within the same task, such as removing an
       // element with .remove() and then adding it back later with .append()
       // in the same task. For example, repeat() works this way.
       queueMicrotask(() => {

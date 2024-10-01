@@ -95,7 +95,7 @@ As the Signals proposal and polyfill progress we will update this package. At
 some point we will remove the dependency on the polyfill and assume the standard
 signal APIs exist, and pages will have to install the polyfill if needed.
 
-So `@lit-labs/signals` is not reccomended for production use. If you choose to
+So `@lit-labs/signals` is not recommended for production use. If you choose to
 use it, please thouroughly test and check the performance of your components
 and/or app _at scale_, with the number of signals and component instances that
 you expect in real-world usage.
@@ -191,7 +191,7 @@ export class SignalExample extends SignalWatcher(LitElement) {
 ```
 
 `watch()` updates are batched and run in coordination with the reactive update
-lifecycle. When a watched signal changes, it is aded to a batch and a reactive
+lifecycle. When a watched signal changes, it is added to a batch and a reactive
 update is requested. Other changes, to reactive properties or signals accessed
 outside of `watch()`, are trigger reactive updates as usual.
 
@@ -200,12 +200,12 @@ then those updates are commited directly _without_ a full template render. If
 any other changes triggered the reactive update, then the whole template is
 re-rendered, along with the latest signal values.
 
-This approach preserves both DOM coherence and targetted updates, and coalesces
+This approach preserves both DOM coherence and targeted updates, and coalesces
 updates when both signals and reactive properties change.
 
 `watch()` must be used in conjunction with the `SignalWatcher` mixin.
 
-You can mix and match targetted updates with `watch()` directive and
+You can mix and match targeted updates with `watch()` directive and
 auto-tracking with `SignalWatcher`. When you pass a signal directly to `watch()`
 it is not accessed in a callback watched by `SignalWatcher`, so an update to
 that signal will only cause a targeted DOM update and not an full template
