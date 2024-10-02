@@ -82,7 +82,7 @@
       ],
       "files": [
         "rollup.config.js",
-        "../../rollup-common.js",
+        "../../../rollup-common.js",
         "src/test/*_test.html"
       ],
       "output": [
