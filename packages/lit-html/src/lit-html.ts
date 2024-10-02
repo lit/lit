@@ -1037,10 +1037,7 @@ class Template {
               ? (trustedTypes.emptyScript as unknown as '')
               : '';
             // Generate a new text node for each literal section
-            // These nodes are also used as the markers for node parts
-            // We can't use empty text nodes as markers because they're
-            // normalized when cloning in IE (could simplify when
-            // IE is no longer supported)
+            // These nodes are also used as the markers for child parts
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i], createMarker());
               // Walk past the marker node we just added
@@ -2085,9 +2082,6 @@ class EventPart extends AttributePart {
       );
     }
     if (shouldAddListener) {
-      // Beware: IE11 and Chrome 41 don't like using the listener as the
-      // options object. Figure out how to deal w/ this in IE11 - maybe
-      // patch addEventListener?
       this.element.addEventListener(
         this.name,
         this,
