@@ -295,7 +295,10 @@
     "wireit": "^0.14.7"
   },
   "overrides": {
-    "@rollup/pluginutils": "^5.1.0"
+    "@rollup/pluginutils": "^5.1.0",
+    "rollup-plugin-terser": {
+      "rollup": "$rollup"
+    }
   },
   "lint-staged": {
     "**/*.{cjs,html,js,json,md,ts}": "prettier --write",
