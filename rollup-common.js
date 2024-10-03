@@ -5,7 +5,7 @@
  */
 
 import {summary} from 'rollup-plugin-summary';
-import terser from '@rollup/plugin-terser';
+import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import sourcemaps from 'rollup-plugin-sourcemaps';
@@ -13,8 +13,8 @@ import replace from '@rollup/plugin-replace';
 import virtual from '@rollup/plugin-virtual';
 import inject from '@rollup/plugin-inject';
 
-// Greek prefixes used with minified class and stable properties on objects to
-// avoid collisions with user code and/or subclasses between packages. They are
+// Prefixes used with minified class and stable properties on objects to avoid
+// collisions with user code and/or subclasses between packages. They are
 // defined here rather than via an argument to litProdConfig() so we can
 // validate the list used by each package is unique (since copy/pasting the
 // individual package-based configs is common and error-prone)
@@ -37,7 +37,8 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit/task': '_$P',
   '@lit/context': '_$Q',
   '@lit/react': '_$R',
-  '@lit-labs/forms': '_$S',
+  '@lit-labs/signals': '_$S',
+  '@lit-labs/forms': '_$T',
 };
 
 // Validate prefix uniqueness
@@ -222,7 +223,7 @@ const prefixProperties = (
 };
 
 const generateTerserOptions = (
-  nameCache = null,
+  nameCache,
   classPropertyPrefix = '',
   testPropertyPrefix = ''
 ) => ({
