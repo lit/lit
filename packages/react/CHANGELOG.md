@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.0.6
+
+### Patch Changes
+
+- [#4774](https://github.com/lit/lit/pull/4774) [`25652984`](https://github.com/lit/lit/commit/2565298435d017672a1e7669f176134724c4c806) Thanks [@kyubisation](https://github.com/kyubisation)! - Prevent calling HTMLElement.prototype in SSR
+
 ## 1.0.5
 
 ### Patch Changes
