@@ -5,7 +5,7 @@
  */
 
 import {summary} from 'rollup-plugin-summary';
-import terser from '@rollup/plugin-terser';
+import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import sourcemaps from 'rollup-plugin-sourcemaps';
@@ -37,6 +37,7 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit/task': '_$P',
   '@lit/context': '_$Q',
   '@lit/react': '_$R',
+  '@lit-labs/signals': '_$S',
 };
 
 // Validate prefix uniqueness
@@ -221,7 +222,7 @@ const prefixProperties = (
 };
 
 const generateTerserOptions = (
-  nameCache = null,
+  nameCache,
   classPropertyPrefix = '',
   testPropertyPrefix = ''
 ) => ({
