@@ -198,12 +198,6 @@ const prefixProperties = (
   classPropertyPrefix,
   testPropertyPrefix
 ) => {
-  // console.log(
-  //   'prefixProperties',
-  //   classPropertyPrefix,
-  //   nameCache != null,
-  //   addedClassPrefix.has(context)
-  // );
   // Only prefix class properties once per options context, as a perf optimization
   if (nameCache && !addedClassPrefix.has(context)) {
     const {
@@ -211,7 +205,6 @@ const prefixProperties = (
     } = nameCache;
     classPropertyPrefix = testPropertyPrefix + classPropertyPrefix;
     for (const p in props) {
-      // console.log('prefixProperties', p, props[p]);
       // Note all properties in the terser name cache are prefixed with '$'
       // (presumably to avoid collisions with built-ins). Checking for the
       // prefix is just to ensure we don't double-prefix properties if
@@ -232,41 +225,38 @@ const generateTerserOptions = (
   nameCache,
   classPropertyPrefix = '',
   testPropertyPrefix = ''
-) => {
-  // console.log('generateTerserOptions', classPropertyPrefix, nameCache);
-  return {
-    warnings: true,
-    ecma: 2021,
-    compress: {
-      unsafe: true,
-      // An extra pass can squeeze out an extra byte or two.
-      passes: 2,
+) => ({
+  warnings: true,
+  ecma: 2021,
+  compress: {
+    unsafe: true,
+    // An extra pass can squeeze out an extra byte or two.
+    passes: 2,
+  },
+  output: {
+    // "some" preserves @license and @preserve comments
+    comments: CHECKSIZE ? false : 'some',
+    inline_script: false,
+  },
+  // This is implemented as a getter, so that we apply the class property prefix
+  // after the `nameCacheSeeder` build runs
+  get nameCache() {
+    return prefixProperties(
+      this,
+      nameCache,
+      classPropertyPrefix,
+      testPropertyPrefix
+    );
+  },
+  mangle: {
+    properties: {
+      regex: /^_/,
+      reserved: reservedProperties,
+      // Set to true to mangle to readable names
+      debug: false,
     },
-    output: {
-      // "some" preserves @license and @preserve comments
-      comments: CHECKSIZE ? false : 'some',
-      inline_script: false,
-    },
-    // This is implemented as a getter, so that we apply the class property prefix
-    // after the `nameCacheSeeder` build runs
-    get nameCache() {
-      return prefixProperties(
-        this,
-        nameCache,
-        classPropertyPrefix,
-        testPropertyPrefix
-      );
-    },
-    mangle: {
-      properties: {
-        regex: /^_/,
-        reserved: reservedProperties,
-        // Set to true to mangle to readable names
-        debug: false,
-      },
-    },
-  };
-};
+  },
+});
 
 /**
  * Inject an import for the SSR DOM Shim into the Node build of
@@ -318,12 +308,6 @@ export function litProdConfig({
   // eslint-disable-next-line no-undef
 } = options) {
   const classPropertyPrefix = PACKAGE_CLASS_PREFIXES[packageName];
-  console.log(
-    'Building',
-    packageName,
-    'classPropertyPrefix',
-    classPropertyPrefix
-  );
   if (classPropertyPrefix === undefined) {
     throw new Error(
       `Package ${packageName} was being built using 'litProdConfig' ` +
@@ -368,8 +352,6 @@ export function litProdConfig({
       ),
     },
   };
-
-  console.log('entryPoints', entryPoints);
 
   const nameCacheSeederInfile = 'name-cache-seeder-virtual-input.js';
   const nameCacheSeederOutfile = 'name-cache-seeder-throwaway-output.js';
