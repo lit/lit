@@ -28,6 +28,13 @@ export class ScrollerShim {
     );
   }
 
+  public get isDocumentScroller() {
+    return (
+      this.element === document.scrollingElement ||
+      this.element === document.documentElement
+    );
+  }
+
   public get scrollTop() {
     return this.element.scrollTop || window.scrollY;
   }
@@ -207,14 +214,10 @@ export class ScrollerController extends ScrollerShim {
     );
     // Correct the error
     this._nativeScrollTo(coordinates);
-    // Then, if we were headed for a specific destination, we continue scrolling:
-    // First, we update our target destination, if applicable...
+    // Then, if we were headed for a specific destination, we
+    // update our target coordinates, if applicable...
     if (this._retarget) {
       this._setDestination(this._retarget());
-    }
-    // Then we go ahead and resume scrolling
-    if (this._destination) {
-      this._nativeScrollTo(this._destination);
     }
   }
 
@@ -226,12 +229,18 @@ export class ScrollerController extends ScrollerShim {
       left = Math.min(left || 0, this.maxScrollLeft);
       const topDiff = Math.abs(top - scrollTop);
       const leftDiff = Math.abs(left - scrollLeft);
-      // We check to see if we've arrived at our destination.
+      // Check to see if we've arrived at our destination.
+      // If so, then we reset the scroll state.
       if (topDiff < 1 && leftDiff < 1) {
         if (this._end) {
           this._end();
         }
         this._resetScrollState();
+      }
+      // If not, and if we are correcting a scroll error, scrolling
+      // will have been interrupted, so we need to resume
+      else if (this.correctingScrollError) {
+        setTimeout(() => this._nativeScrollTo(this._destination!), 0);
       }
     }
   }

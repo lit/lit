@@ -642,19 +642,19 @@ export class Virtualizer {
     const layout = this._layout;
 
     if (hostElement && scrollingElement && layout) {
-      let top, left, bottom, right;
-
+      // Get bounds
       const hostElementBounds = hostElement.getBoundingClientRect();
-
-      top = 0;
-      left = 0;
-      bottom = window.innerHeight;
-      right = window.innerWidth;
-
+      const scrollingElementBounds = scrollingElement.getBoundingClientRect();
       const ancestorBounds = this._clippingAncestors.map((ancestor) =>
         ancestor.getBoundingClientRect()
       );
       ancestorBounds.unshift(hostElementBounds);
+
+      // Calculate viewport size (the portion of the virtualizer that is visible)
+      let top = 0;
+      let left = 0;
+      let bottom = window.innerHeight;
+      let right = window.innerWidth;
 
       for (const bounds of ancestorBounds) {
         top = Math.max(top, bounds.top);
@@ -663,28 +663,49 @@ export class Virtualizer {
         right = Math.min(right, bounds.right);
       }
 
-      const scrollingElementBounds = scrollingElement.getBoundingClientRect();
+      const viewportHeight = Math.max(0, bottom - top);
+      const viewportWidth = Math.max(0, right - left);
 
-      const offsetWithinScroller = {
-        left: hostElementBounds.left - scrollingElementBounds.left,
-        top: hostElementBounds.top - scrollingElementBounds.top,
-      };
+      // Calculate offset of virtualizer within scrolling element
+      let offsetTop: number;
+      let offsetLeft: number;
 
-      const totalScrollSize = {
-        width: scrollingElement.scrollWidth,
-        height: scrollingElement.scrollHeight,
-      };
+      if (this._isScroller) {
+        // Case #1: The virtualizer is the scrolling element; no offset
+        offsetTop = 0;
+        offsetLeft = 0;
+      } else {
+        // Case #2: The virtualizer is a descendant of the scrolling element,
+        // which may be either a clipping ancestor (#2a) or the document (#2b).
+        //
+        // For both #2a and #2b, we calculate the offset of the virtualizer
+        // within the scrolling element...
+        offsetTop = hostElementBounds.top - scrollingElementBounds.top;
+        offsetLeft = hostElementBounds.left - scrollingElementBounds.left;
+        if (!this._scrollerController!.isDocumentScroller) {
+          // ...and for #2b, we also add the scroll offset
+          offsetTop += scrollingElement.scrollTop;
+          offsetLeft += scrollingElement.scrollLeft;
+        }
+      }
 
-      const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
-      const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
+      // Calculate the position of the viewport relative to the virtualizer
+      let scrollTop = top - hostElementBounds.top;
+      let scrollLeft = left - hostElementBounds.left;
 
-      const height = Math.max(0, bottom - top);
-      const width = Math.max(0, right - left);
+      if (this._isScroller) {
+        scrollTop += scrollingElement.scrollTop;
+        scrollLeft += scrollingElement.scrollLeft;
+      }
 
-      layout.viewportSize = {width, height};
+      // Provide all metrics to the layout
+      layout.viewportSize = {height: viewportHeight, width: viewportWidth};
+      layout.offsetWithinScroller = {top: offsetTop, left: offsetLeft};
       layout.viewportScroll = {top: scrollTop, left: scrollLeft};
-      layout.totalScrollSize = totalScrollSize;
-      layout.offsetWithinScroller = offsetWithinScroller;
+      layout.totalScrollSize = {
+        height: scrollingElement.scrollHeight,
+        width: scrollingElement.scrollWidth,
+      };
     }
   }
 
