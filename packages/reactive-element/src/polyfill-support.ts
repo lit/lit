@@ -41,7 +41,7 @@ interface PatchableReactiveElement extends HTMLElement {
   connectedCallback(): void;
   hasUpdated: boolean;
   _$didUpdate(changedProperties: unknown): void;
-  createRenderRoot(): Element | ShadowRoot;
+  createRenderRoot(): HTMLElement | DocumentFragment;
   renderOptions: RenderOptions;
 }
 
