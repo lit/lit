@@ -30,8 +30,8 @@ export class LitElementRenderer extends ElementRenderer {
     return (ctor as unknown as typeof LitElement)['_$litElement$'];
   }
 
-  constructor(tagName: string) {
-    super(tagName);
+  constructor(tagName: string, renderInfo: RenderInfo) {
+    super(tagName, renderInfo);
     this.element = new (customElements.get(this.tagName)!)() as LitElement;
 
     // Reflect internals AOM attributes back to the DOM prior to hydration to
@@ -56,6 +56,12 @@ export class LitElementRenderer extends ElementRenderer {
         }
       }
     }
+
+    // Set the event target parent so events can bubble
+    // TODO (justinfagnani): make this the correct composed path
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.element as any).__eventTargetParent =
+      renderInfo.customElementInstanceStack.at(-1)?.element;
   }
 
   override get shadowRootOptions() {
@@ -66,6 +72,12 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   override connectedCallback() {
+    // TODO (justinfagnani): This assumes that connectedCallback() doesn't call
+    // any DOM APIs _except_ addEventListener() - which is obviously a big and
+    // bad assumption. We probably need a new SSR-compatible connected callback.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    (this.element as any)?.serverCallback();
+
     // Call LitElement's `willUpdate` method.
     // Note, this method is required not to use DOM APIs.
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
