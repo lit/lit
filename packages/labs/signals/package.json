@@ -134,7 +134,7 @@
     "access": "public"
   },
   "dependencies": {
-    "lit": "^3.1.2",
-    "signal-polyfill": "^0.1.2"
+    "lit": "^2.0.0 || ^3.0.0",
+    "signal-polyfill": "^0.2.0"
   }
 }
