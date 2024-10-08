@@ -138,7 +138,7 @@ useful to provide a context provider without introducing a custom element:
 
 #### **`my-app.js`**:
 
-```js
+```ts
 import {ContextProvider} from '@lit/context';
 import {loggerContext, Logger} from './logger.js';
 
