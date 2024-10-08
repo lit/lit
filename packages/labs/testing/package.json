@@ -19,7 +19,9 @@
     "build": "wireit",
     "build:ts": "wireit",
     "build:ts:utils": "wireit",
-    "test": "wireit"
+    "test": "wireit",
+    "test:wtr": "wireit",
+    "test:hook": "wireit"
   },
   "wireit": {
     "build": {
@@ -70,6 +72,12 @@
       ]
     },
     "test": {
+      "dependencies": [
+        "test:wtr",
+        "test:hook"
+      ]
+    },
+    "test:wtr": {
       "command": "wtr",
       "dependencies": [
         "build"
@@ -83,6 +91,14 @@
         "web-test-runner.config.js"
       ],
       "output": []
+    },
+    "test:hook": {
+      "command": "uvu test \"hook/.*_test\\.js$\"",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
     }
   },
   "exports": {
@@ -93,6 +109,10 @@
     "./fixtures.js": {
       "types": "./fixtures.d.ts",
       "default": "./fixtures.js"
+    },
+    "./typescript-worker.js": {
+      "types": "./typescript-worker.d.ts",
+      "default": "./typescript-worker.js"
     },
     "./web-test-runner-ssr-plugin.js": {
       "types": "./web-test-runner-ssr-plugin.d.ts",
@@ -108,9 +128,11 @@
   "dependencies": {
     "@lit-labs/ssr": "^3.1.8",
     "@lit-labs/ssr-client": "^1.1.4",
+    "@swc/wasm": "^1.7.26",
     "@web/test-runner-commands": "^0.6.1",
     "@webcomponents/template-shadowroot": "^0.1.0",
-    "lit": "^2.0.0 || ^3.0.0"
+    "lit": "^2.0.0 || ^3.0.0",
+    "typescript": "^5.0.0"
   },
   "devDependencies": {
     "@open-wc/testing": "^3.1.5"

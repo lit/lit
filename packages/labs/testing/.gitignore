@@ -1,5 +1,6 @@
 /index.*
 /fixtures.*
+/typescript-worker.*
 /web-test-runner-ssr-plugin.*
 /lib
 /test

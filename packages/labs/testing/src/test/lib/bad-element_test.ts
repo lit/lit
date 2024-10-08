@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {ssrFixture, cleanupFixtures} from '../fixtures.js';
+import {ssrFixture, cleanupFixtures} from '../../fixtures.js';
 
 import {html} from 'lit';
 import {assert} from '@open-wc/testing';
