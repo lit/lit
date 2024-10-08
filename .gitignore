@@ -7,4 +7,6 @@ node_modules/
 /temp
 .idea
 /scripts/check-size-out.md
-
+/playground/p/**/package-lock.json
+/playground/p/scratch/*/
+!/playground/p/scratch/*.*

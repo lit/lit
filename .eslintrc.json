@@ -42,6 +42,7 @@
     {
       "files": [
         "check-version-tracker.js",
+        "playground/scripts/*.js",
         "rollup-common.js",
         "rollup.config.js",
         "web-test-runner.config.js"
@@ -83,11 +84,12 @@
         "**/test-output/**",
         "**/web-test-runner.config.js",
         "packages/benchmarks/**",
+        "packages/labs/compiler/rollup.source_map_tests.js",
         "packages/labs/ssr/src/demo/**",
         "packages/labs/eleventy-plugin-lit/demo/**",
         "packages/tests/**",
-        "rollup-common.js",
-        "packages/labs/compiler/rollup.source_map_tests.js"
+        "playground/**",
+        "rollup-common.js"
       ],
       "rules": {
         "import/no-extraneous-dependencies": "off"
