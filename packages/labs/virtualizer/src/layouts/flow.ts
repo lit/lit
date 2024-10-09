@@ -276,6 +276,9 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     if (this._last < 0) {
       return this._calculateAnchor(lower, upper);
     }
+    if (this._last > this.items.length - 1) {
+      return this._calculateAnchor(lower, upper);
+    }
 
     const firstItem = this._getPhysicalItem(this._first),
       lastItem = this._getPhysicalItem(this._last),
@@ -311,6 +314,9 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       this._clearItems();
     } else {
       this._getItems();
+      // We may be able to calculate scroll size more accurately after
+      // processing the latest measurements
+      this._refineScrollSize();
     }
   }
 
@@ -505,11 +511,20 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
   _updateScrollSize() {
     const {averageMarginSize} = this._metricsCache;
-    this._scrollSize = Math.max(
-      1,
+    this._scrollSize =
       this.items.length * (averageMarginSize + this._getAverageSize()) +
-        averageMarginSize
-    );
+      averageMarginSize;
+  }
+
+  _refineScrollSize() {
+    // If all items are rendered, we can calculate the scroll size exactly
+    if (this._first === 0 && this._last === this.items.length - 1) {
+      this._scrollSize = this._physicalMax - this._physicalMin;
+    }
+    // Otherwise, we re-estimate with latest measurements
+    else {
+      this._updateScrollSize();
+    }
   }
 
   /**
