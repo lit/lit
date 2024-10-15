@@ -150,8 +150,8 @@ suite('Reactive controllers', () => {
 
   test('controllers callback order', async () => {
     assert.deepEqual(el.controller.callbackOrder, [
-      'hostConnected',
       'connectedCallback',
+      'hostConnected',
       'hostUpdate',
       'update',
       'hostUpdated',
