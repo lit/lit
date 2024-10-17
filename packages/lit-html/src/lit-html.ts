@@ -711,6 +711,12 @@ export interface RenderOptions {
    * render to change the connected state of the part.
    */
   isConnected?: boolean;
+  /**
+   * By default boolean values render as strings ("true" or "false") in child
+   * parts. Set to `true` to treat these values as non-rendering, equivalent
+   * to setting `nothing`.
+   */
+  noBooleanRender?: boolean;
 }
 
 const walker = d.createTreeWalker(
@@ -1448,7 +1454,12 @@ class ChildPart implements Disconnectable {
       // Non-rendering child values. It's important that these do not render
       // empty text nodes to avoid issues with preventing default <slot>
       // fallback content.
-      if (value === nothing || value == null || value === '') {
+      if (
+        value === nothing ||
+        value == null ||
+        value === '' ||
+        (this.options?.noBooleanRender && typeof value === 'boolean')
+      ) {
         if (this._$committedValue !== nothing) {
           debugLogEvent &&
             debugLogEvent({

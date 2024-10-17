@@ -628,6 +628,38 @@ suite('lit-html', () => {
       });
     });
 
+    test('renders a boolean', () => {
+      render(html`<div>${true}</div>`, container);
+      assertContent('<div>true</div>');
+      render(html`<div>${false}</div>`, container);
+      assertContent('<div>false</div>');
+    });
+
+    test('renders a boolean when specifying `noBooleanRender`', () => {
+      render(html`<div>${true}</div>`, container, {noBooleanRender: true});
+      assertContent('<div></div>');
+      render(html`<div>${false}</div>`, container, {noBooleanRender: true});
+      assertContent('<div></div>');
+    });
+
+    test('renders a conditional value', () => {
+      render(html`<div>${true && 'hi'}</div>`, container);
+      assertContent('<div>hi</div>');
+      render(html`<div>${false && 'hi'}</div>`, container);
+      assertContent('<div>false</div>');
+    });
+
+    test('renders a conditional value  when specifying `noBooleanRender`', () => {
+      render(html`<div>${true && 'hi'}</div>`, container, {
+        noBooleanRender: true,
+      });
+      assertContent('<div>hi</div>');
+      render(html`<div>${false && 'hi'}</div>`, container, {
+        noBooleanRender: true,
+      });
+      assertContent('<div></div>');
+    });
+
     test('renders noChange', () => {
       const template = (i: any) => html`<div>${i}</div>`;
       render(template('foo'), container);
