@@ -1,0 +1,15 @@
+{
+  "name": "@lit-internal/playground",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node ./scripts/start.js",
+    "import": "node ./scripts/import.js",
+    "export": "node ./scripts/export.js",
+    "new": "node ./scripts/new.js"
+  },
+  "devDependencies": {
+    "typescript": "~5.5.0",
+    "vite": "^5.3.4"
+  }
+}
