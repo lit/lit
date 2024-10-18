@@ -95,16 +95,22 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
     let stopPropagation = false;
     let stopImmediatePropagation = false;
     let eventPhase = 0;
+    let target: EventTarget | null = null;
+    let tmpTarget: EventTarget | null = null;
     let currentTarget: EventTarget | null = null;
     const originalStopPropagation = event.stopPropagation;
     const originalStopImmediatePropagation = event.stopImmediatePropagation;
     Object.defineProperties(event, {
       target: {
-        value: this,
+        get() {
+          return target ?? tmpTarget;
+        },
         ...kEnumerableProperty,
       },
       srcElement: {
-        value: this,
+        get() {
+          return target ?? tmpTarget;
+        },
         ...kEnumerableProperty,
       },
       currentTarget: {
@@ -163,10 +169,25 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
     };
 
     // An event starts with the capture order, where it starts from the top.
-    // This is done, even if bubbles is set to false (default).
-    for (const eventTarget of composedPath.slice().reverse()) {
+    // This is done even if bubbles is set to false (default).
+    const captureEventPath = composedPath.slice().reverse();
+    // If the event target, which dispatches the event, is either in the light DOM
+    // or the event is not composed, the target is always itself. If that is not
+    // the case, the target needs to be retargeted: https://dom.spec.whatwg.org/#retarget
+    target = !this.__host || !event.composed ? this : null;
+    const retarget = (eventTargets: EventTarget[]) => {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      tmpTarget = this;
+      while (tmpTarget.__host && eventTargets.includes(tmpTarget.__host)) {
+        tmpTarget = tmpTarget.__host;
+      }
+    };
+    for (const eventTarget of captureEventPath) {
+      if (!target && (!tmpTarget || tmpTarget === eventTarget.__host)) {
+        retarget(captureEventPath.slice(captureEventPath.indexOf(eventTarget)));
+      }
       currentTarget = eventTarget;
-      eventPhase = eventTarget === this ? 2 : 1;
+      eventPhase = eventTarget === event.target ? 2 : 1;
       const captureEventListeners = eventTarget.__captureEventListeners.get(
         event.type
       );
@@ -184,9 +205,18 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
     }
 
     const bubbleEventPath = event.bubbles ? composedPath : [this];
+    tmpTarget = null;
     for (const eventTarget of bubbleEventPath) {
+      if (
+        !target &&
+        (!tmpTarget || eventTarget === (tmpTarget as EventTarget).__host)
+      ) {
+        retarget(
+          bubbleEventPath.slice(0, bubbleEventPath.indexOf(eventTarget) + 1)
+        );
+      }
       currentTarget = eventTarget;
-      eventPhase = eventTarget === this ? 2 : 3;
+      eventPhase = eventTarget === event.target ? 2 : 3;
       const captureEventListeners = eventTarget.__eventListeners.get(
         event.type
       );

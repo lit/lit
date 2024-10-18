@@ -231,6 +231,7 @@ export class TestStyles extends LitElement {
 
 @customElement('test-events-parent')
 export class TestEventsParent extends LitElement {
+  static testInitializer?: (el: TestEventsParent) => void;
   @property()
   value = '';
   @property()
@@ -238,6 +239,7 @@ export class TestEventsParent extends LitElement {
 
   constructor() {
     super();
+    (this.constructor as typeof TestEventsParent).testInitializer?.(this);
     this.addEventListener('test', (e) => {
       (e as CustomEvent<(value: string) => void>).detail(this.value);
     });
@@ -261,6 +263,13 @@ export class TestEventsParent extends LitElement {
 
 @customElement('test-events-child')
 export class TestEventsChild extends LitElement {
+  static testInitializer?: (el: TestEventsChild) => void;
+
+  constructor() {
+    super();
+    (this.constructor as typeof TestEventsChild).testInitializer?.(this);
+  }
+
   override connectedCallback() {
     super.connectedCallback();
     this.dispatchEvent(
@@ -273,6 +282,12 @@ export class TestEventsChild extends LitElement {
         bubbles: true,
       })
     );
+    this.dispatchEvent(
+      new Event('testcomposed', {bubbles: true, composed: true})
+    );
+  }
+  eventOptions(): EventInit {
+    return {bubbles: true};
   }
   override render() {
     // prettier-ignore
@@ -280,11 +295,28 @@ export class TestEventsChild extends LitElement {
   }
 }
 
-@customElement('test-events-shadow-nexted')
+@customElement('test-events-shadow-nested')
 export class TestEventsShadowNested extends LitElement {
   override render() {
     // prettier-ignore
     return html`<slot></slot><test-events-parent value="shadow"><slot name="a"></slot></test-events-parent>`;
+  }
+}
+
+@customElement('test-events-child-shadow-nested')
+export class TestEventsChildShadowNested extends LitElement {
+  static testInitializer?: (el: TestEventsChildShadowNested) => void;
+
+  constructor() {
+    super();
+    (this.constructor as typeof TestEventsChildShadowNested).testInitializer?.(
+      this
+    );
+  }
+
+  override render() {
+    // prettier-ignore
+    return html`<test-events-child></test-events-child>`;
   }
 }
 
@@ -299,9 +331,12 @@ export const eventParentNesting = html`<test-events-parent capture="oc" value="o
   <test-events-parent capture="ic" value="iv"><test-events-child></test-events-child></test-events-parent></test-events-parent>`;
 
 // prettier-ignore
-export const eventShadowNested = html`<test-events-parent value="my-test"><test-events-shadow-nexted>
+export const eventShadowNested = html`<test-events-parent value="my-test"><test-events-shadow-nested>
   <div><test-events-child></test-events-child></div><div slot="a"><test-events-child></test-events-child></div>
-  </test-events-shadow-nexted></test-events-parent>`;
+  </test-events-shadow-nested></test-events-parent>`;
+
+// prettier-ignore
+export const eventChildShadowNested = html`<test-events-child-shadow-nested></test-events-child-shadow-nested>`;
 
 /* Directives */
 
