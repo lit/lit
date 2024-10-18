@@ -39,17 +39,17 @@ suite('ReactiveElement', () => {
     }
   });
 
-  test(`renderRoot exists after connectedCallback`, async () => {
+  test(`renderRoot exists before first update`, async () => {
     class E extends ReactiveElement {
       hasRenderRoot = false;
-      override connectedCallback() {
-        super.connectedCallback();
+      protected override willUpdate() {
         this.hasRenderRoot = !!this.renderRoot;
       }
     }
     customElements.define(generateElementName(), E);
     const el = new E();
     container.appendChild(el);
+    await el.updateComplete;
     assert.isTrue(el.hasRenderRoot);
   });
 
@@ -81,10 +81,13 @@ suite('ReactiveElement', () => {
     customElements.define(generateElementName(), E);
     const el = new E();
     container.appendChild(el);
+    await el.updateComplete;
     container.removeChild(el);
     container.appendChild(el);
+    await el.updateComplete;
     container.removeChild(el);
     container.appendChild(el);
+    await el.updateComplete;
     assert.equal(el.renderRootCalls, 1);
   });
 
