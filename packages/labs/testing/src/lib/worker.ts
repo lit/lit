@@ -4,16 +4,29 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {register} from 'module';
 import {parentPort, workerData} from 'worker_threads';
 import {render} from '@lit-labs/ssr';
 
-import type {Payload} from './lit-ssr-plugin.js';
+import type {PayloadWithWorkerModules} from './lit-ssr-plugin.js';
 
 if (parentPort === null) {
   throw new Error('worker.js must only be run in a worker thread');
 }
 
-const {template, modules} = workerData as Payload;
+const {template, modules, workerModules, typeScript} =
+  workerData as PayloadWithWorkerModules;
+
+if (typeScript) {
+  const data = typeof typeScript === 'object' ? typeScript : undefined;
+  register('./typescript-hook.js', {parentURL: import.meta.url, data});
+}
+
+// Import worker modules sequentially, as these can have side effects.
+// (e.g. registering Node.js hooks: https://nodejs.org/api/module.html#customization-hooks)
+for (const workerModule of workerModules) {
+  await import(workerModule);
+}
 
 await Promise.all(modules.map((module) => import(module)));
 

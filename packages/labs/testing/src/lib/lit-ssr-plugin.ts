@@ -12,12 +12,39 @@ import {litSsrPluginCommand} from './constants.js';
 import type {TemplateResult} from 'lit';
 import type {TestRunnerPlugin} from '@web/test-runner';
 
+export interface TypeScriptOptions {
+  /**
+   * Path to the tsconfig.json to be used in compilation.
+   * If not set, it defaults to searching the file tree for the nearest tsconfig.json file.
+   */
+  tsconfig?: string;
+}
+
+export interface LitSsrPluginOptions {
+  /**
+   * These modules will be imported from each newly created worker.
+   * (A worker is created for each call to render a template via SSR).
+   * This allows registering hooks for Node.js or general setup.
+   */
+  workerModules?: string[];
+  /**
+   * Whether to transpile TypeScript files.
+   */
+  typeScript?: boolean | TypeScriptOptions;
+}
+
 export interface Payload {
   template: TemplateResult;
   modules: string[];
 }
 
-export function litSsrPlugin(): TestRunnerPlugin<Payload> {
+export interface PayloadWithWorkerModules
+  extends Payload,
+    Required<LitSsrPluginOptions> {}
+
+export function litSsrPlugin(
+  options: LitSsrPluginOptions = {}
+): TestRunnerPlugin<Payload> {
   return {
     name: 'lit-ssr-plugin',
     async executeCommand({command, payload}) {
@@ -30,9 +57,15 @@ export function litSsrPlugin(): TestRunnerPlugin<Payload> {
       }
 
       const {template, modules} = payload;
-      const resolvedModules = modules.map(
-        (module) => pathToFileURL(pathlib.join(process.cwd(), module)).href
-      );
+      const resolveModule = (module: string): string =>
+        pathToFileURL(pathlib.join(process.cwd(), module)).href;
+      const resolvedModules = modules.map(resolveModule);
+      // We want to support both relative/absolute paths and external packages
+      // to allow using other hook implementations.
+      const resolvedWorkerModules =
+        options.workerModules?.map((m) =>
+          m.startsWith('.') ? resolveModule(m) : m
+        ) ?? [];
 
       let resolve: (value: string) => void;
       let reject: (reason: unknown) => void;
@@ -41,8 +74,23 @@ export function litSsrPlugin(): TestRunnerPlugin<Payload> {
         reject = rej;
       });
 
+      if (
+        options.typeScript &&
+        typeof options.typeScript === 'object' &&
+        options.typeScript.tsconfig
+      ) {
+        options.typeScript.tsconfig = resolveModule(
+          options.typeScript.tsconfig
+        );
+      }
+
       const worker = new Worker(new URL('./worker.js', import.meta.url), {
-        workerData: {template, modules: resolvedModules},
+        workerData: {
+          template,
+          modules: resolvedModules,
+          workerModules: resolvedWorkerModules,
+          typeScript: options.typeScript ?? false,
+        },
       });
 
       worker.on('error', (err) => {
