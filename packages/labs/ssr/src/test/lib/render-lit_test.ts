@@ -686,7 +686,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     let nextId = 0;
     const eventOrder: string[] = [];
     TestEventsChildShadowNested.testInitializer =
-      TestEventsChild.testInitializer = (el) => {
+      TestEventsChild.testInitializer = <T extends HTMLElement>(el: T) => {
         el.id = `id-${el.localName}-${++nextId}`;
         el.addEventListener(
           'testcomposed',
