@@ -37,6 +37,7 @@ const {
 } = _$LH;
 
 import {digestForTemplateResult} from '@lit-labs/ssr-client';
+import {HTMLElement} from '@lit-labs/ssr-dom-shim';
 
 import {
   ElementRenderer,
@@ -68,6 +69,11 @@ declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {
     isDefinedCustomElement?: boolean;
   }
+}
+
+interface HTMLElementShim extends HTMLElement {
+  __eventTargetParent: HTMLElement | undefined;
+  __host: HTMLElement | undefined;
 }
 
 function ssrResolve(this: Directive, _part: Part, values: unknown[]) {
@@ -107,8 +113,12 @@ const patchAnyDirectives = (
 };
 
 const templateCache = new Map<TemplateStringsArray, Array<Op>>();
-/**
+const elementSlotMap = new WeakMap<
+  HTMLElement,
+  Map<string | undefined, HTMLElement>
+>();
 
+/**
  * Operation to output static text
  */
 type TextOp = {
@@ -185,6 +195,36 @@ type CustomElementClosedOp = {
 };
 
 /**
+ * Operation to mark an open slot.
+ */
+type SlotElementOpenOp = {
+  type: 'slot-element-open';
+  name: string | undefined;
+};
+
+/**
+ * Operation to mark a slot closing.
+ */
+type SlotElementCloseOp = {
+  type: 'slot-element-close';
+};
+
+/**
+ * Operation to mark a slotted element as open.
+ */
+type SlottedElementOpenOp = {
+  type: 'slotted-element-open';
+  name: string | undefined;
+};
+
+/**
+ * Operation to mark a slotted element as closed.
+ */
+type SlottedElementCloseOp = {
+  type: 'slotted-element-close';
+};
+
+/**
  * Operation to possibly emit the `<!--lit-node-->` marker; the operation
  * always emits if there were attribute parts, and may emit if the node
  * was a custom element and it needed `defer-hydration` because it was
@@ -207,6 +247,10 @@ type Op =
   | CustomElementAttributesOp
   | CustomElementShadowOp
   | CustomElementClosedOp
+  | SlotElementOpenOp
+  | SlotElementCloseOp
+  | SlottedElementOpenOp
+  | SlottedElementCloseOp
   | PossibleNodeMarkerOp;
 
 /**
@@ -391,6 +435,17 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 
         const tagName = node.tagName;
 
+        if (
+          node.parentNode &&
+          isElementNode(node.parentNode) &&
+          node.parentNode.isDefinedCustomElement
+        ) {
+          ops.push({
+            type: 'slotted-element-open',
+            name: node.attrs.find((a) => a.name === 'slot')?.value,
+          });
+        }
+
         if (tagName.indexOf('-') !== -1) {
           // Looking up the constructor here means that custom elements must be
           // registered before rendering the first template that contains them.
@@ -409,6 +464,11 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               ),
             });
           }
+        } else if (tagName === 'slot') {
+          ops.push({
+            type: 'slot-element-open',
+            name: node.attrs.find((a) => a.name === 'name')?.value,
+          });
         }
         const attrInfo = node.attrs.map((attr) => {
           const isAttrBinding = attr.name.endsWith(boundAttributeSuffix);
@@ -571,9 +631,25 @@ const getTemplateOpcodes = (result: TemplateResult) => {
       }
     },
     node(node) {
-      if (isElementNode(node) && node.isDefinedCustomElement) {
+      if (!isElementNode(node)) {
+        return;
+      }
+      if (node.isDefinedCustomElement) {
         ops.push({
           type: 'custom-element-close',
+        });
+      } else if (node.tagName === 'slot') {
+        ops.push({
+          type: 'slot-element-close',
+        });
+      }
+      if (
+        node.parentNode &&
+        isElementNode(node.parentNode) &&
+        node.parentNode.isDefinedCustomElement
+      ) {
+        ops.push({
+          type: 'slotted-element-close',
         });
       }
     },
@@ -599,6 +675,16 @@ export type RenderInfo = {
    * Stack of open host custom elements (n-1 will be n's host)
    */
   customElementHostStack: Array<ElementRenderer | undefined>;
+
+  /**
+   * Stack of open event target instances.
+   */
+  eventTargetStack: Array<HTMLElement | undefined>;
+
+  /**
+   * Stack of current slot context.
+   */
+  slotStack: Array<string | undefined>;
 
   /**
    * An optional callback to notify when a custom element has been rendered.
@@ -784,6 +870,18 @@ And the inner template was:
           op.ctor,
           op.staticAttributes
         );
+        if (instance.element) {
+          const eventTarget = getLast(
+            renderInfo.eventTargetStack
+          ) as HTMLElementShim;
+          const slotName = getLast(renderInfo.slotStack);
+          (instance.element as HTMLElementShim).__eventTargetParent =
+            elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
+          (instance.element as HTMLElementShim).__host = getLast(
+            renderInfo.customElementHostStack
+          )?.element;
+          renderInfo.eventTargetStack.push(instance.element);
+        }
         // Set static attributes to the element renderer
         for (const [name, value] of op.staticAttributes) {
           instance.setAttribute(name, value);
@@ -861,6 +959,38 @@ And the inner template was:
       }
       case 'custom-element-close':
         renderInfo.customElementInstanceStack.pop();
+        renderInfo.eventTargetStack.pop();
+        break;
+      case 'slot-element-open': {
+        const host = getLast(renderInfo.customElementHostStack);
+        if (host === undefined) {
+          throw new Error(
+            `Internal error: ${op.type} outside of custom element context`
+          );
+        } else if (host.element) {
+          let slots = elementSlotMap.get(host.element);
+          if (!slots) {
+            slots = new Map();
+            elementSlotMap.set(host.element, slots);
+          }
+          if (!slots.has(op.name)) {
+            const element = new HTMLElement() as HTMLElementShim;
+            element.__eventTargetParent = getLast(renderInfo.eventTargetStack);
+            slots!.set(op.name, element);
+            renderInfo.eventTargetStack.push(element);
+          }
+        }
+
+        break;
+      }
+      case 'slot-element-close':
+        renderInfo.eventTargetStack.pop();
+        break;
+      case 'slotted-element-open':
+        renderInfo.slotStack.push(op.name);
+        break;
+      case 'slotted-element-close':
+        renderInfo.slotStack.pop();
         break;
       default:
         throw new Error('internal error');

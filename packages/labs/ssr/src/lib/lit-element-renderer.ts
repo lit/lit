@@ -66,14 +66,26 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   override connectedCallback() {
+    // Optionally call connectedCallback via setting: `litSsrCallConnectedCallback`
+    // Enable this flag to process events dispatched handled via connectedCallback.
+    if (globalThis.litSsrCallConnectedCallback) {
+      // Prevent element from trying to create a shadowRoot or enable updating
+      // since these are both specially handled for server rendering.
+      this.element['createRenderRoot'] = function () {
+        return null!;
+      };
+      this.element['enableUpdating'] = function () {};
+      this.element.connectedCallback();
+    }
+
+    const propertyValues = changedProperties(this.element);
     // Call LitElement's `willUpdate` method.
     // Note, this method is required not to use DOM APIs.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this.element as any)?.willUpdate(changedProperties(this.element as any));
+    this.element?.['willUpdate'](propertyValues);
+    // We are currently skipping the controller hook `hostUpdate`.
     // Reflect properties to attributes by calling into ReactiveElement's
     // update, which _only_ reflects attributes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (ReactiveElement.prototype as any).update.call(this.element);
+    ReactiveElement.prototype['update'].call(this.element, propertyValues);
   }
 
   override attributeChangedCallback(

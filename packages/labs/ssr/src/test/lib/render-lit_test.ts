@@ -494,6 +494,230 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  /* Events */
+
+  test('events with parent and child', async () => {
+    const {render, eventParentAndSingleChildWithoutValue, moduleGlobalThis} =
+      await setup();
+    try {
+      moduleGlobalThis.litSsrCallConnectedCallback = true;
+      const result = await render(eventParentAndSingleChildWithoutValue);
+      assert.is(
+        result,
+        '<!--lit-part RSGZngXXsLg=--><test-events-parent><template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+          '<test-events-child data-test><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
+      );
+    } finally {
+      delete moduleGlobalThis.litSsrCallConnectedCallback;
+    }
+  });
+
+  test('events with parent with value and child', async () => {
+    const {render, eventParentAndSingleChildWithValue, moduleGlobalThis} =
+      await setup();
+    try {
+      moduleGlobalThis.litSsrCallConnectedCallback = true;
+      const result = await render(eventParentAndSingleChildWithValue);
+      assert.is(
+        result,
+        '<!--lit-part pLrHZ32UrRU=--><test-events-parent  value="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+          '<test-events-child data-test="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
+      );
+    } finally {
+      delete moduleGlobalThis.litSsrCallConnectedCallback;
+    }
+  });
+
+  test('event order with capture from top and bubbles from bottom', async () => {
+    const {render, eventParentNesting, moduleGlobalThis} = await setup();
+    try {
+      moduleGlobalThis.litSsrCallConnectedCallback = true;
+      const result = await render(eventParentNesting);
+      assert.is(
+        result,
+        '<!--lit-part 4D0mmmUOBvU=--><test-events-parent   capture="oc" value="ov"><template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>\n' +
+          '  <test-events-parent   capture="ic" value="iv"><template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+          '<test-events-child data-test="ocicivov"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child>' +
+          '</test-events-parent></test-events-parent><!--/lit-part-->'
+      );
+    } finally {
+      delete moduleGlobalThis.litSsrCallConnectedCallback;
+    }
+  });
+
+  test('event order through shadow DOM', async () => {
+    const {render, eventShadowNested, moduleGlobalThis} = await setup();
+    try {
+      moduleGlobalThis.litSsrCallConnectedCallback = true;
+      const result = await render(eventShadowNested);
+      assert.is(
+        result,
+        '<!--lit-part QSPfkaBogFk=--><test-events-parent  value="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+          '<test-events-shadow-nested><template shadowroot="open" shadowrootmode="open"><!--lit-part GQHLzN3QO5Q=--><slot></slot><!--lit-node 1--><test-events-parent  value="shadow" defer-hydration>' +
+          '<template shadowroot="open" shadowrootmode="open"><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template><slot name="a"></slot></test-events-parent><!--/lit-part--></template>\n' +
+          '  <div><test-events-child data-test="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child>' +
+          '</div><div slot="a"><test-events-child data-test="shadowmy-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></div>\n' +
+          '  </test-events-shadow-nested></test-events-parent><!--/lit-part-->'
+      );
+    } finally {
+      delete moduleGlobalThis.litSsrCallConnectedCallback;
+    }
+  });
+
+  test('createRenderRoot and enableUpdating are not called', async () => {
+    const {
+      render,
+      TestEventsParent,
+      eventParentAndSingleChildWithoutValue,
+      moduleGlobalThis,
+    } = await setup();
+    let connectedCallbackCalls = 0;
+    let createRenderRootCalls = 0;
+    // We can't track calls to enableUpdating, as it is dynamically created
+    // but we can track calls to scheduleUpdate, which would be called if
+    // enableUpdating was called normally.
+    let scheduleUpdateCalls = 0;
+    const spyOn = (methodName: string, increment: () => void) => {
+      const method = (TestEventsParent.prototype as any)[methodName];
+      (TestEventsParent.prototype as any)[methodName] = function () {
+        increment();
+        return method.call(this);
+      };
+      return () => ((TestEventsParent.prototype as any)[methodName] = method);
+    };
+    const spies = [
+      spyOn('connectedCallback', () => connectedCallbackCalls++),
+      spyOn('createRenderRoot', () => createRenderRootCalls++),
+      spyOn('scheduleUpdate', () => scheduleUpdateCalls++),
+    ];
+    try {
+      moduleGlobalThis.litSsrCallConnectedCallback = true;
+
+      await render(eventParentAndSingleChildWithoutValue);
+      assert.equal(connectedCallbackCalls, 1);
+      assert.equal(createRenderRootCalls, 0);
+      assert.equal(scheduleUpdateCalls, 0);
+    } finally {
+      spies.forEach((s) => s());
+      delete moduleGlobalThis.litSsrCallConnectedCallback;
+    }
+  });
+
+  test('controller hostConnected is called', async () => {
+    const {
+      render,
+      TestEventsParent,
+      eventParentAndSingleChildWithoutValue,
+      moduleGlobalThis,
+    } = await setup();
+    try {
+      moduleGlobalThis.litSsrCallConnectedCallback = true;
+      let controllerHostConnectedCalls = 0;
+      TestEventsParent.testInitializer = (el) =>
+        el.addController({
+          hostConnected() {
+            controllerHostConnectedCalls++;
+          },
+        });
+
+      await render(eventParentAndSingleChildWithoutValue);
+      assert.equal(controllerHostConnectedCalls, 1);
+    } finally {
+      TestEventsParent.testInitializer = undefined;
+      delete moduleGlobalThis.litSsrCallConnectedCallback;
+    }
+  });
+
+  test('event target is correct without composed', async () => {
+    const {
+      render,
+      TestEventsChild,
+      TestEventsChildShadowNested,
+      eventChildShadowNested,
+      moduleGlobalThis,
+    } = await setup();
+    const prototypes = [TestEventsChild, TestEventsChildShadowNested];
+    const eventOrder: string[] = [];
+    TestEventsChild.testInitializer = (el) => {
+      el.id = 'unique-id';
+      el.addEventListener(
+        'test',
+        (e) => {
+          assert.is((e.currentTarget as HTMLElement).id, el.id);
+          assert.is((e.target as HTMLElement).id, el.id);
+          eventOrder.push(`capture`);
+        },
+        {capture: true}
+      );
+      el.addEventListener('test', (e) => {
+        assert.is((e.currentTarget as HTMLElement).id, el.id);
+        assert.is((e.target as HTMLElement).id, el.id);
+        eventOrder.push(`non-capture`);
+      });
+    };
+    TestEventsChildShadowNested.testInitializer = (el) => {
+      for (const options of [{}, {capture: true}]) {
+        el.addEventListener(
+          'test',
+          () => assert.unreachable('should not be reached without composed'),
+          options
+        );
+      }
+    };
+    try {
+      moduleGlobalThis.litSsrCallConnectedCallback = true;
+      await render(eventChildShadowNested);
+      assert.equal(eventOrder, ['capture', 'non-capture']);
+    } finally {
+      prototypes.forEach((p) => (p.testInitializer = undefined));
+      delete moduleGlobalThis.litSsrCallConnectedCallback;
+    }
+  });
+
+  test('event target is correct with composed', async () => {
+    const {
+      render,
+      TestEventsChild,
+      TestEventsChildShadowNested,
+      eventChildShadowNested,
+      moduleGlobalThis,
+    } = await setup();
+    const prototypes = [TestEventsChild, TestEventsChildShadowNested];
+    let nextId = 0;
+    const eventOrder: string[] = [];
+    TestEventsChildShadowNested.testInitializer =
+      TestEventsChild.testInitializer = <T extends HTMLElement>(el: T) => {
+        el.id = `id-${el.localName}-${++nextId}`;
+        el.addEventListener(
+          'testcomposed',
+          (e) => {
+            assert.is((e.currentTarget as HTMLElement).id, el.id);
+            assert.is((e.target as HTMLElement).id, el.id);
+            eventOrder.push(`${el.id} capture`);
+          },
+          {capture: true}
+        );
+        el.addEventListener('testcomposed', (e) => {
+          assert.is((e.currentTarget as HTMLElement).id, el.id);
+          assert.is((e.target as HTMLElement).id, el.id);
+          eventOrder.push(`${el.id}`);
+        });
+      };
+    try {
+      moduleGlobalThis.litSsrCallConnectedCallback = true;
+      await render(eventChildShadowNested);
+      assert.equal(eventOrder, [
+        'id-test-events-child-shadow-nested-1 capture',
+        'id-test-events-child-2 capture',
+        'id-test-events-child-2',
+        'id-test-events-child-shadow-nested-1',
+      ]);
+    } finally {
+      prototypes.forEach((p) => (p.testInitializer = undefined));
+      delete moduleGlobalThis.litSsrCallConnectedCallback;
+    }
+  });
+
   /* Directives */
 
   test('repeat directive with a template result', async () => {
