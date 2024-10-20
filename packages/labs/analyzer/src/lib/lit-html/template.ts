@@ -10,23 +10,37 @@
  * Utilities for analyzing lit-html templates.
  */
 
-import type ts from 'typescript';
+import {
+  type CommentNode,
+  type DocumentFragment,
+  type Element,
+  isCommentNode,
+  isDocument,
+  isDocumentFragment,
+  isElementNode,
+  type Node,
+  traverse,
+} from '@parse5/tools';
 import {_$LH} from 'lit-html/private-ssr-support.js';
 import {parseFragment} from 'parse5';
-import {
-  Node,
-  CommentNode,
-  Element,
-  DocumentFragment,
+import type ts from 'typescript';
+
+export {
   isCommentNode,
+  isDocumentFragment,
   isElementNode,
-  traverse,
+  isTextNode,
+  type CommentNode,
+  type DocumentFragment,
+  type Element,
+  type Node,
+  type TextNode,
 } from '@parse5/tools';
 
 const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} = _$LH;
 
 type TypeScript = typeof ts;
-type Attribute = Element['attrs'][number];
+export type Attribute = Element['attrs'][number];
 
 /**
  * Returns true if the specifier is known to export the Lit html template tag.
@@ -198,6 +212,7 @@ export interface PartInfo {
   valueIndex: number;
 }
 
+// TODO (justinfagnani): separate into ChildPartInfo and ElementPartInfo
 export interface SinglePartInfo extends PartInfo {
   type: typeof PartType.CHILD | typeof PartType.ELEMENT;
   expression: ts.Expression;
@@ -221,6 +236,32 @@ export const hasChildPart = (
   return (node as LitTemplateCommentNode).litPart?.type === PartType.CHILD;
 };
 
+export const getChildPartExpression = (node: CommentNode, ts: TypeScript) => {
+  if (!hasChildPart(node)) {
+    return undefined;
+  }
+  const {valueIndex} = node.litPart!;
+
+  let parent = node.parentNode;
+  while (parent && !isDocumentFragment(parent) && !isDocument(parent)) {
+    parent = parent.parentNode;
+  }
+  if (parent === null || isDocument(parent)) {
+    // Template not found. Should be error
+    return undefined;
+  }
+  const template = parent as LitTemplate;
+  const taggedTemplate = template.tsNode;
+
+  if (ts.isNoSubstitutionTemplateLiteral(taggedTemplate.template)) {
+    // Invalid case!
+    return;
+  }
+  const {templateSpans} = taggedTemplate.template;
+  const span = templateSpans[valueIndex];
+  return span.expression;
+};
+
 export const hasAttributePart = (
   node: Attribute
 ): node is LitTemplateAttribute => {
@@ -231,13 +272,37 @@ export type LitTemplateNode = Node & {
   litNodeIndex: number;
 };
 
+/**
+ * A parsed lit-html template.
+ */
 export interface LitTemplate extends DocumentFragment {
+  /**
+   * The original TypeScript node that this template was parsed from.
+   */
+  tsNode: ts.TaggedTemplateExpression;
+
+  /**
+   * The template strings that would be created from this expression at runtime.
+   */
   strings: TemplateStringsArray;
+
+  /**
+   * The template parts, including child, attribute, event, and property
+   * bindings.
+   */
   parts: Array<PartInfo>;
 }
 
 export interface LitTemplateCommentNode extends CommentNode {
+  /**
+   * If this comment is a marker for a child part, this property will be set to
+   * the ParInfo for that part.
+   */
   litPart?: SinglePartInfo;
+
+  /**
+   * The depth-first index of this node in the template.
+   */
   litNodeIndex: number;
 }
 
@@ -249,15 +314,49 @@ export interface LitTemplateAttribute extends Attribute {
   litPart: PartInfo;
 }
 
+const cache = new WeakMap<ts.TaggedTemplateExpression, LitTemplate>();
+
+export const getLitTemplateExpressions = (
+  sourceFile: ts.SourceFile,
+  ts: TypeScript,
+  checker: ts.TypeChecker
+): Array<ts.TaggedTemplateExpression> => {
+  const templates: Array<ts.TaggedTemplateExpression> = [];
+
+  const visitor = (tsNode: ts.Node) => {
+    if (isLitTaggedTemplateExpression(tsNode, ts, checker)) {
+      templates.push(tsNode);
+    }
+    ts.forEachChild(tsNode, visitor);
+  };
+
+  ts.forEachChild(sourceFile, visitor);
+  return templates;
+};
+
+/**
+ * Parses a lit-html tagged template expression into a {@linkcode LitTemplate}.
+ *
+ * {@linkcode LitTemplate} is a parse5 DocumentFragment with additional
+ * properties to describe the lit-html parts.
+ */
 export const parseLitTemplate = (
   node: ts.TaggedTemplateExpression,
   ts: TypeScript,
   _checker: ts.TypeChecker
 ): LitTemplate => {
+  const cached = cache.get(node);
+  if (cached !== undefined) {
+    return cached;
+  }
   const strings = getTemplateStrings(node, ts);
   const values = ts.isNoSubstitutionTemplateLiteral(node.template)
     ? []
     : node.template.templateSpans.map((s) => s.expression);
+  const templateSpans = ts.isNoSubstitutionTemplateLiteral(node.template)
+    ? []
+    : node.template.templateSpans;
+
   const parts: Array<PartInfo> = [];
   const [html, boundAttributeNames] = getTemplateHtml(strings, 1);
 
@@ -269,6 +368,18 @@ export const parseLitTemplate = (
   // Depth-first node index
   let nodeIndex = 0;
 
+  // Adjustments to source locations based on the difference between the
+  // binding expression lengths in TypeScript source vs the marker replacements
+  // in the prepared and parsed HTML.
+
+  // TODO (justinfagnani): implement line and column adjustments
+  // let lineAdjust = 0;
+  // let colAdjust = 0;
+  let offsetAdjust = 0;
+
+  const nodeMarker = `<${markerMatch}>`;
+  const nodeMarkerLength = nodeMarker.length;
+
   // TODO (justinfagnani): to support server-only templates that include
   // non-fragment-parser supported tags (<html>, <body>, etc) we need to
   // inspect the string and conditionally use parse() here.
@@ -278,10 +389,29 @@ export const parseLitTemplate = (
 
   traverse(ast, {
     ['pre:node'](node, _parent) {
+      // Adjust every node's source locations by the current adjustment values
+      // TODO (justinfagnani): adjust attribute locations
+      if (node.sourceCodeLocation !== undefined) {
+        node.sourceCodeLocation!.startOffset += offsetAdjust;
+      }
+
       if (isCommentNode(node)) {
         if (node.data === markerMatch) {
-          // An child binding, like <div>${}</div>
-          const expression = values[valueIndex++];
+          // A child binding, like <div>${}</div>
+
+          const expression = values[valueIndex];
+          const span = templateSpans[valueIndex];
+          const spanStart = span.expression.getFullStart();
+          const spanEnd = span.expression.getEnd();
+          const spanLength = spanEnd - spanStart + 3;
+          // Leading whichspace of an expression is included with the
+          // expression. Trailing whitespace is included with the literal.
+          const trailingWhitespaceLength = span.literal
+            .getFullText()
+            .search(/\S|$/);
+          offsetAdjust +=
+            spanLength + trailingWhitespaceLength - nodeMarkerLength;
+
           parts.push(
             ((node as LitTemplateCommentNode).litPart = {
               type: PartType.CHILD,
@@ -289,6 +419,7 @@ export const parseLitTemplate = (
               expression,
             } as SinglePartInfo)
           );
+          valueIndex++;
         }
         (node as LitTemplateCommentNode).litNodeIndex = nodeIndex++;
         // TODO (justinfagnani): handle <!--${}--> (comment binding)
@@ -297,7 +428,20 @@ export const parseLitTemplate = (
           for (const attr of node.attrs) {
             if (attr.name.startsWith(marker)) {
               // An element binding, like <div ${}>
-              const expression = values[valueIndex++];
+
+              const expression = values[valueIndex];
+              const span = templateSpans[valueIndex];
+
+              const trailingWhitespaceLength = span.literal
+                .getFullText()
+                .search(/\S|$/);
+
+              offsetAdjust +=
+                expression.getFullText().length +
+                trailingWhitespaceLength -
+                attr.name.length +
+                3;
+
               parts.push(
                 ((attr as LitTemplateAttribute).litPart = {
                   type: PartType.ELEMENT,
@@ -305,10 +449,12 @@ export const parseLitTemplate = (
                   expression,
                 } as SinglePartInfo)
               );
+              valueIndex++;
               boundAttributeIndex++;
               // TODO (justinfagnani): handle <div ${}="...">
             } else if (attr.name.endsWith(boundAttributeSuffix)) {
               // An attribute binding, like <div foo=${}>
+
               const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
                 boundAttributeNames[boundAttributeIndex++]!
               )!;
@@ -317,6 +463,25 @@ export const parseLitTemplate = (
                 valueIndex,
                 valueIndex + strings.length - 1
               );
+
+              // Adjust offsets
+              offsetAdjust -= boundAttributeSuffix.length;
+              const spans = templateSpans.slice(
+                valueIndex,
+                valueIndex + strings.length - 1
+              );
+              for (const span of spans) {
+                const spanStart = span.expression.getFullStart();
+                const spanEnd = span.expression.getEnd();
+                const spanLength = spanEnd - spanStart + 3;
+                const trailingWhitespaceLength = span.literal
+                  .getFullText()
+                  .search(/\S|$/);
+
+                offsetAdjust +=
+                  spanLength + trailingWhitespaceLength - marker.length;
+              }
+
               parts.push(
                 ((attr as LitTemplateAttribute).litPart = {
                   prefix,
@@ -325,10 +490,10 @@ export const parseLitTemplate = (
                     prefix === '.'
                       ? PartType.PROPERTY
                       : prefix === '?'
-                      ? PartType.BOOLEAN_ATTRIBUTE
-                      : prefix === '@'
-                      ? PartType.EVENT
-                      : PartType.ATTRIBUTE,
+                        ? PartType.BOOLEAN_ATTRIBUTE
+                        : prefix === '@'
+                          ? PartType.EVENT
+                          : PartType.ATTRIBUTE,
                   strings,
                   valueIndex,
                   expressions,
@@ -342,10 +507,20 @@ export const parseLitTemplate = (
         // TODO (justinfagnani): handle <${}>
       }
     },
+
+    node(node, _parent) {
+      if (node.sourceCodeLocation !== undefined) {
+        node.sourceCodeLocation!.endOffset += offsetAdjust;
+      }
+    },
   });
-  (ast as LitTemplate).parts = parts;
-  (ast as LitTemplate).strings = strings;
-  return ast as LitTemplate;
+
+  const finalAst = ast as LitTemplate;
+  finalAst.parts = parts;
+  finalAst.strings = strings;
+  finalAst.tsNode = node;
+  cache.set(node, finalAst);
+  return finalAst;
 };
 
 // TODO (justinfagnani): export a traverse function that takes a visitor that
@@ -382,3 +557,46 @@ export interface LitTaggedTemplateExpression
   extends ts.TaggedTemplateExpression {
   litTemplate: LitTemplate;
 }
+
+export function isNode(node: object): node is Node {
+  const obj: {nodeName?: unknown} = node;
+  return typeof obj?.nodeName === 'string';
+}
+
+export function isLitTemplate(node: object): node is LitTemplate {
+  return isNode(node) && 'tsNode' in node;
+}
+
+//
+// Copied from parse5
+//
+export interface Location {
+  /** One-based line index of the first character. */
+  startLine: number;
+  /** One-based column index of the first character. */
+  startCol: number;
+  /** Zero-based first character index. */
+  startOffset: number;
+  /** One-based line index of the last character. */
+  endLine: number;
+  /** One-based column index of the last character. Points directly *after* the last character. */
+  endCol: number;
+  /** Zero-based last character index. Points directly *after* the last character. */
+  endOffset: number;
+}
+export interface LocationWithAttributes extends Location {
+  /** Start tag attributes' location info. */
+  attrs?: Record<string, Location>;
+}
+export interface ElementLocation extends LocationWithAttributes {
+  /** Element's start tag location info. */
+  startTag?: Location;
+  /**
+   * Element's end tag location info.
+   * This property is undefined, if the element has no closing tag.
+   */
+  endTag?: Location;
+}
+//
+// End copy from parse5
+//
