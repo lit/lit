@@ -25,6 +25,12 @@
   },
   "wireit": {
     "build": {
+      "dependencies": [
+        "build:ts",
+        "build:commonjs"
+      ]
+    },
+    "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
         "../../lit:build"
@@ -52,6 +58,18 @@
       "output": [
         "test/browser/typescript.js"
       ]
+    },
+    "build:commonjs": {
+      "command": "tsc --pretty --project tsconfig.commonjs.json",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.commonjs.json"
+      ],
+      "output": [
+        "commonjs",
+        "tsconfig.commonjs.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
     },
     "test": {
       "dependencies": [
@@ -109,13 +127,22 @@
   "files": [
     "index.*",
     "package-analyzer.*",
-    "/lib/",
-    "!/lib/.tsbuildinfo"
+    "/commonjs/",
+    "/lib/"
   ],
   "exports": {
-    ".": "./index.js",
-    "./package-analyzer.js": "./package-analyzer.js",
-    "./lib/*.js": "./lib/*.js"
+    ".": {
+      "import": "./index.js",
+      "require": "./commonjs/index.js"
+    },
+    "./package-analyzer.js": {
+      "import": "./package-analyzer.js",
+      "require": "./commonjs/package-analyzer.js"
+    },
+    "./lib/*.js": {
+      "import": "./lib/*.js",
+      "require": "./commonjs/lib/*.js"
+    }
   },
   "dependencies": {
     "package-json-type": "^1.0.3",
