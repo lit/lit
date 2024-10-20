@@ -20,7 +20,7 @@ import {createRoot, Root} from 'react-dom/client';
 import {act} from 'react-dom/test-utils';
 
 import {createComponent} from '@lit-labs/react';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 const DEV_MODE = !!ReactiveElement.enableWarning;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

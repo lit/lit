@@ -1,5 +1,14 @@
 # Changelog
 
+## 0.12.2
+
+### Patch Changes
+
+- [#4679](https://github.com/lit/lit/pull/4679) [`eb84bebc`](https://github.com/lit/lit/commit/eb84bebcf8d3cd6d3ce6731a9fa754f5ae6e445c) Thanks [@codingjoe](https://github.com/codingjoe)! - Move localize setup to resolve import loop
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98)]:
+  - lit@3.2.0
+
 ## 0.12.1
 
 ### Patch Changes

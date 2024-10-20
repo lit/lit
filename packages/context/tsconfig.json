@@ -20,9 +20,6 @@
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "paths": {
-      "@esm-bundle/chai": ["../../local-types/@esm-bundle/chai/index.d.ts"]
-    },
     "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],

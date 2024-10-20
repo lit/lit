@@ -16,7 +16,7 @@ import {createRoot, Root} from 'react-dom/client';
 import {act} from 'react-dom/test-utils';
 
 import {createComponent} from '@lit/react';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 const DEV_MODE = !!ReactiveElement.enableWarning;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -512,6 +512,18 @@ suite('createComponent', () => {
     el.fire('foo');
     assert.equal(fooEvent!.type, 'foo');
     assert.equal(fooEvent2, undefined);
+  });
+
+  // Regression test for https://github.com/lit/lit/issues/4569
+  test('event prop should not be set on instance', async () => {
+    const handler = () => {};
+    render(<BasicElementComponent onFoo={handler} />);
+    const el = container.querySelector(tagName)!;
+    assert.notProperty(el, 'onFoo');
+
+    // Render again with the same handler
+    render(<BasicElementComponent onFoo={handler} />);
+    assert.notProperty(el, 'onFoo');
   });
 
   test('can listen to native events', async () => {

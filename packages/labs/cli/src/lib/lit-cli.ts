@@ -153,9 +153,8 @@ export class LitCli {
       if (!commandName || command == null || command == '') {
         return {invalidCommand: commandName ?? 'unknown command'};
       }
-      const maybeCommand = await this.resolveCommandAndMaybeInstallNeededDeps(
-        command
-      );
+      const maybeCommand =
+        await this.resolveCommandAndMaybeInstallNeededDeps(command);
       if (maybeCommand === undefined) {
         return {commandNotInstalled: true};
       }
@@ -289,12 +288,12 @@ export class LitCli {
     const installFrom = reference.installFrom ?? reference.importSpecifier;
     this.console.log(`Installing ${installFrom}...`);
     const child = childProcess.spawn(
-      // https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
-      /^win/.test(process.platform) ? 'npm.cmd' : 'npm',
+      'npm',
       ['install', '--save-dev', installFrom],
       {
         cwd: this.cwd,
         stdio: [process.stdin, 'pipe', 'pipe'],
+        shell: true,
       }
     );
     (async () => {

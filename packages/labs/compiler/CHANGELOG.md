@@ -1,5 +1,24 @@
 # @lit-labs/compiler
 
+## 1.1.0
+
+### Minor Changes
+
+- [#4682](https://github.com/lit/lit/pull/4682) [`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c) - Update typescript to 5.5.0
+
+### Patch Changes
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98), [`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c)]:
+  - lit-html@3.2.0
+  - @lit-labs/analyzer@0.13.0
+
+## 1.0.3
+
+### Patch Changes
+
+- Updated dependencies [[`1b17a369`](https://github.com/lit/lit/commit/1b17a369f3ecf54d2617fe08b0d52fd0f993074b)]:
+  - @lit-labs/analyzer@0.12.0
+
 ## 1.0.2
 
 ### Patch Changes

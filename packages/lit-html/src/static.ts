@@ -7,7 +7,12 @@
 // Any new exports need to be added to the export statement in
 // `packages/lit/src/index.all.ts`.
 
-import {html as coreHtml, svg as coreSvg, TemplateResult} from './lit-html.js';
+import {
+  html as coreHtml,
+  svg as coreSvg,
+  mathml as coreMathml,
+  TemplateResult,
+} from './lit-html.js';
 
 export interface StaticValue {
   /** The value to interpolate as-is into the template. */
@@ -15,7 +20,7 @@ export interface StaticValue {
 
   /**
    * A value that can't be decoded from ordinary JSON, make it harder for
-   * a attacker-controlled data that goes through JSON.parse to produce a valid
+   * an attacker-controlled data that goes through JSON.parse to produce a valid
    * StaticValue.
    */
   r: typeof brand;
@@ -107,7 +112,7 @@ const stringsCache = new Map<string, TemplateStringsArray>();
  * Wraps a lit-html template tag (`html` or `svg`) to add static value support.
  */
 export const withStatic =
-  (coreTag: typeof coreHtml | typeof coreSvg) =>
+  (coreTag: typeof coreHtml | typeof coreSvg | typeof coreMathml) =>
   (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult => {
     const l = values.length;
     let staticValue: string | undefined;
@@ -178,3 +183,11 @@ export const html = withStatic(coreHtml);
  * Includes static value support from `lit-html/static.js`.
  */
 export const svg = withStatic(coreSvg);
+
+/**
+ * Interprets a template literal as MathML fragment that can efficiently render
+ * to and update a container.
+ *
+ * Includes static value support from `lit-html/static.js`.
+ */
+export const mathml = withStatic(coreMathml);

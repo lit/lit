@@ -37,6 +37,7 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit/task': '_$P',
   '@lit/context': '_$Q',
   '@lit/react': '_$R',
+  '@lit-labs/signals': '_$S',
 };
 
 // Validate prefix uniqueness
@@ -221,7 +222,7 @@ const prefixProperties = (
 };
 
 const generateTerserOptions = (
-  nameCache = null,
+  nameCache,
   classPropertyPrefix = '',
   testPropertyPrefix = ''
 ) => ({
@@ -597,7 +598,7 @@ const litMonoBundleConfig = ({
       exportConditions: ['development'],
     }),
     replace({
-      preventAssignment: true,
+      preventAssignment: false,
       values: {
         'const DEV_MODE = true': 'const DEV_MODE = false',
         'const ENABLE_EXTRA_SECURITY_HOOKS = true':

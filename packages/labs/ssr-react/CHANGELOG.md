@@ -1,5 +1,17 @@
 # @lit-labs/ssr-react
 
+## 0.3.0
+
+### Minor Changes
+
+- [#4575](https://github.com/lit/lit/pull/4575) [`aa4fc3ef`](https://github.com/lit/lit/commit/aa4fc3eff349b202861e597ef7554934b9eaa19a) - The Node build of `@lit-labs/ssr-react/enable-lit-ssr.js` now also monkey-patches `react/jsx-runtime` to include logic for deeply server-rendering Lit components without modifying `jsxImportSource` in tsconfig.
+
+  The monkey-patching logic also adds a workaround for inconsistent es module interop behavior in tools like webpack which could lead to errors like `TypeError: Cannot set property createElement of [object Module] which has only a getter`.
+
+### Patch Changes
+
+- [#4575](https://github.com/lit/lit/pull/4575) [`aa4fc3ef`](https://github.com/lit/lit/commit/aa4fc3eff349b202861e597ef7554934b9eaa19a) - Use a global flag to detect whether `@lit-labs/ssr-react/enable-lit-ssr.js` was used for coordinating props when server rendering components made with `@lit/react`.
+
 ## 0.2.3
 
 ### Patch Changes

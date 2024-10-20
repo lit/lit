@@ -8,6 +8,8 @@ import {litProdConfig} from '../../rollup-common.js';
 import {createRequire} from 'module';
 import * as path from 'path';
 
+const __dirname = path.dirname(new URL(import.meta.url).pathname);
+
 /**
  * Takes a `relativeSourcePath` and `sourcemapPath` - with the same semantics as
  * those provided to the function given to Rollup's
@@ -60,6 +62,7 @@ export default litProdConfig({
     'directives/style-map',
     'directives/template-content',
     'directives/unsafe-html',
+    'directives/unsafe-mathml',
     'directives/unsafe-svg',
     'directives/until',
     'directives/when',

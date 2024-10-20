@@ -1,4 +1,4 @@
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import ts from './typescript.js';
 import {InMemoryAnalyzer} from './utils.js';
 import {AbsolutePath} from '../../index.js';

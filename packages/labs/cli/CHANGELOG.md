@@ -1,5 +1,26 @@
 # @lit-labs/cli
 
+## 0.6.5
+
+### Patch Changes
+
+- Updated dependencies [[`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c)]:
+  - @lit-labs/analyzer@0.13.0
+  - @lit/localize-tools@0.8.0
+
+## 0.6.4
+
+### Patch Changes
+
+- [#4616](https://github.com/lit/lit/pull/4616) [`e90dd627`](https://github.com/lit/lit/commit/e90dd6274cf702f09c46e622746fc752800e3fe3) - Use a shell when spawning a child process to install packages. This fixes an error that would happen when command is run in Windows with the latest Node.js security fix in v21.7.3.
+
+## 0.6.3
+
+### Patch Changes
+
+- Updated dependencies [[`1b17a369`](https://github.com/lit/lit/commit/1b17a369f3ecf54d2617fe08b0d52fd0f993074b)]:
+  - @lit-labs/analyzer@0.12.0
+
 ## 0.6.2
 
 ### Patch Changes

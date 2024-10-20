@@ -5,7 +5,7 @@
  */
 import {html, render} from 'lit-html';
 import {ref, createRef, RefOrCallback} from 'lit-html/directives/ref.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('ref', () => {
   let container: HTMLDivElement;
@@ -367,5 +367,27 @@ suite('ref', () => {
     assert.deepEqual(calls, ['DIV', undefined, 'DIV']);
     go();
     assert.deepEqual(calls, ['DIV', undefined, 'DIV', undefined, 'DIV']);
+  });
+
+  test('set to undefined when disconnected and reset when reconnected', () => {
+    let value: Element | undefined;
+    const go = () =>
+      render(html`<div ${ref((el) => (value = el))}></div>`, container);
+    const part = go();
+    assert.equal(value, container.firstElementChild);
+    part.setConnected(false);
+    assert.isUndefined(value);
+    part.setConnected(true);
+    assert.equal(value, container.firstElementChild);
+  });
+
+  test('always undefined when disconnected', () => {
+    let value: Element | undefined;
+    const go = () =>
+      render(html`<div ${ref((el) => (value = el))}></div>`, container);
+    const part = go();
+    part.setConnected(false);
+    go();
+    assert.isUndefined(value);
   });
 });

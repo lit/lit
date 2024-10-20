@@ -45,7 +45,7 @@ export type WebComponentProps<I extends HTMLElement> = React.DetailedHTMLProps<
  */
 export type ReactWebComponent<
   I extends HTMLElement,
-  E extends EventNames = {}
+  E extends EventNames = {},
 > = React.ForwardRefExoticComponent<
   // TODO(augustjk): Remove and use `React.PropsWithoutRef` when
   // https://github.com/preactjs/preact/issues/4124 is fixed.
@@ -165,8 +165,10 @@ const setProperty = <E extends Element>(
 ) => {
   const event = events?.[name];
   // Dirty check event value.
-  if (event !== undefined && value !== old) {
-    addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+  if (event !== undefined) {
+    if (value !== old) {
+      addOrUpdateEventListener(node, event, value as (e?: Event) => void);
+    }
     return;
   }
   // But don't dirty check properties; elements are assumed to do this.
@@ -214,7 +216,7 @@ const setProperty = <E extends Element>(
  */
 export const createComponent = <
   I extends HTMLElement,
-  E extends EventNames = {}
+  E extends EventNames = {},
 >({
   react: React,
   tagName,
@@ -224,7 +226,7 @@ export const createComponent = <
 }: Options<I, E>): ReactWebComponent<I, E> => {
   const eventProps = new Set(Object.keys(events ?? {}));
 
-  if (DEV_MODE) {
+  if (DEV_MODE && !NODE_MODE) {
     for (const p of reservedReactProperties) {
       if (p in elementClass.prototype && !(p in HTMLElement.prototype)) {
         // Note, this effectively warns only for `ref` since the other
@@ -307,7 +309,8 @@ export const createComponent = <
       // element properties in a special bag to be set by the server-side
       // element renderer.
       if (
-        React.createElement.name === 'litPatchedCreateElement' &&
+        (React.createElement.name === 'litPatchedCreateElement' ||
+          globalThis.litSsrReactEnabled) &&
         Object.keys(elementProps).length
       ) {
         // This property needs to remain unminified.

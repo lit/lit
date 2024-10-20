@@ -12,10 +12,41 @@ import {
   languages,
   setupAnalyzerForTest,
 } from '../utils.js';
+import {VariableDeclaration} from '../../../package-analyzer.js';
 
 // Get actual constructor to test internal ability to assert the type
 // of a dereferenced Declaration
 import {ClassDeclaration, LitElementDeclaration} from '../../../lib/model.js';
+
+// Regression test suite for errors that can happen with NodeNext resolution
+const resolutionTest = suite<AnalyzerTestContext>(
+  'LitElement regression tests'
+);
+
+resolutionTest.before((ctx) => {
+  setupAnalyzerForTest(ctx, 'ts', 'node-next-resolution');
+});
+
+resolutionTest(
+  'Analyzer finds LitElement declarations with NodeNext resolution',
+  ({getModule}) => {
+    const elementAModule = getModule('element-a');
+    assert.equal(elementAModule?.declarations.length, 1);
+    const decl = elementAModule!.declarations[0];
+    assert.equal(decl.name, 'ElementA');
+    assert.ok(decl.isLitElementDeclaration());
+    assert.equal(decl.tagname, 'element-a');
+
+    // Make sure inferred references to this type resolve
+    const mainModule = getModule('main');
+    const variableDecl = mainModule!.declarations[0] as VariableDeclaration;
+    assert.equal(variableDecl.name, 'element');
+    // This will throw if we don't handle extensions for type imports correctly
+    assert.equal(variableDecl.type!.references.length, 1);
+  }
+);
+
+resolutionTest.run();
 
 for (const lang of languages) {
   const test = suite<AnalyzerTestContext>(`LitElement tests (${lang})`);

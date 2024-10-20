@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.0
+
+### Minor Changes
+
+- [#4736](https://github.com/lit/lit/pull/4736) [`94dc4a60`](https://github.com/lit/lit/commit/94dc4a602d5b242845472ec076b8313d092b92da) Thanks [@43081j](https://github.com/43081j)! - Added rollup 4.x support to rollup-plugin-minify-html-literals
+
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 ### [1.2.6](https://github.com/asyncLiz/rollup-plugin-minify-html-literals/compare/v1.2.5...v1.2.6) (2021-03-09)

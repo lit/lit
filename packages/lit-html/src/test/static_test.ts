@@ -5,7 +5,7 @@
  */
 import {render} from 'lit-html';
 import {html, literal, unsafeStatic} from 'lit-html/static.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {stripExpressionComments} from '@lit-labs/testing';
 
 suite('static', () => {

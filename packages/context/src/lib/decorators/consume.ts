@@ -47,18 +47,19 @@ export function consume<ValueType>({
   context: Context<unknown, ValueType>;
   subscribe?: boolean;
 }): ConsumeDecorator<ValueType> {
-  return (<C extends ReactiveElement, V extends ValueType>(
-    protoOrTarget: ClassAccessorDecoratorTarget<C, V>,
-    nameOrContext: PropertyKey | ClassAccessorDecoratorContext<C, V>
+  return ((
+    protoOrTarget: ClassAccessorDecoratorTarget<ReactiveElement, ValueType>,
+    nameOrContext:
+      | PropertyKey
+      | ClassAccessorDecoratorContext<ReactiveElement, ValueType>
   ) => {
     if (typeof nameOrContext === 'object') {
       // Standard decorators branch
-      nameOrContext.addInitializer(function (this: ReactiveElement): void {
+      nameOrContext.addInitializer(function () {
         new ContextConsumer(this, {
           context,
-          callback: (value: ValueType) => {
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (this as any)[nameOrContext.name] = value;
+          callback: (value) => {
+            protoOrTarget.set.call(this, value);
           },
           subscribe,
         });
@@ -69,7 +70,7 @@ export function consume<ValueType>({
         (element: ReactiveElement): void => {
           new ContextConsumer(element, {
             context,
-            callback: (value: ValueType) => {
+            callback: (value) => {
               // eslint-disable-next-line @typescript-eslint/no-explicit-any
               (element as any)[nameOrContext] = value;
             },
@@ -94,7 +95,7 @@ type ConsumeDecorator<ValueType> = {
   // legacy
   <
     K extends PropertyKey,
-    Proto extends Interface<Omit<ReactiveElement, 'renderRoot'>>
+    Proto extends Interface<Omit<ReactiveElement, 'renderRoot'>>,
   >(
     protoOrDescriptor: Proto,
     name?: K
@@ -103,7 +104,7 @@ type ConsumeDecorator<ValueType> = {
   // standard
   <
     C extends Interface<Omit<ReactiveElement, 'renderRoot'>>,
-    V extends ValueType
+    V extends ValueType,
   >(
     value: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
@@ -127,18 +128,18 @@ type FieldMustMatchProvidedType<Obj, Key extends PropertyKey, ProvidedType> =
           consuming: ConsumingType;
         }
     : // Next we check whether the object has the property as an optional field
-    Obj extends Partial<Record<Key, infer ConsumingType>>
-    ? // Check assignability again. Note that we have to include undefined
-      // here on the consuming type because it's optional.
-      [ProvidedType] extends [ConsumingType | undefined]
-      ? DecoratorReturn
-      : {
-          message: 'provided type not assignable to consuming field';
-          provided: ProvidedType;
-          consuming: ConsumingType | undefined;
-        }
-    : // Ok, the field isn't present, so either someone's using consume
-      // manually, i.e. not as a decorator (maybe don't do that! but if you do,
-      // you're on your own for your type checking, sorry), or the field is
-      // private, in which case we can't check it.
-      DecoratorReturn;
+      Obj extends Partial<Record<Key, infer ConsumingType>>
+      ? // Check assignability again. Note that we have to include undefined
+        // here on the consuming type because it's optional.
+        [ProvidedType] extends [ConsumingType | undefined]
+        ? DecoratorReturn
+        : {
+            message: 'provided type not assignable to consuming field';
+            provided: ProvidedType;
+            consuming: ConsumingType | undefined;
+          }
+      : // Ok, the field isn't present, so either someone's using consume
+        // manually, i.e. not as a decorator (maybe don't do that! but if you do,
+        // you're on your own for your type checking, sorry), or the field is
+        // private, in which case we can't check it.
+        DecoratorReturn;

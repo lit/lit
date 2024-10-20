@@ -269,7 +269,7 @@ const REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG =
  *   - Call `renderer.connectedCallback()`
  *   - Emit `renderer.renderAttributes()`
  * - `text`
- *   - Emit end of of open tag `>`
+ *   - Emit end of open tag `>`
  * - `custom-element-shadow`
  *   - Emit `renderer.renderShadow()` (emits `<template shadowroot>` +
  *     recurses to emit `render()`)
@@ -474,10 +474,10 @@ const getTemplateOpcodes = (result: TemplateResult) => {
                   prefix === '.'
                     ? PropertyPart
                     : prefix === '?'
-                    ? BooleanAttributePart
-                    : prefix === '@'
-                    ? EventPart
-                    : AttributePart,
+                      ? BooleanAttributePart
+                      : prefix === '@'
+                        ? EventPart
+                        : AttributePart,
                 strings,
                 tagName: tagName.toUpperCase(),
                 useCustomElementInstance: node.isDefinedCustomElement,
@@ -880,8 +880,8 @@ function throwErrorForPartIndexMismatch(
 ) {
   const errorMsg = `
     Unexpected final partIndex: ${partIndex} !== ${
-    result.values.length
-  } while processing the following template:
+      result.values.length
+    } while processing the following template:
 
     ${displayTemplateResult(result)}
 

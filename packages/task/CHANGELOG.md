@@ -1,5 +1,16 @@
 # Change Log
 
+## 1.0.1
+
+### Patch Changes
+
+- [#4552](https://github.com/lit/lit/pull/4552) [`4050cac6`](https://github.com/lit/lit/commit/4050cac64e39870eb0257d2ab8f72f3e43b92077) Thanks [@jrencz](https://github.com/jrencz)! - Make `status` of Task a readonly property
+
+  So far `status` was writable which allowed for setting status of task form outside. Doing so did cause rendering of
+  expected template but the task was becoming internally incoherent.
+
+  Now attempt to assign `status` will end up in throwing a `TypeError`.
+
 ## 1.0.0
 
 ### Major Changes

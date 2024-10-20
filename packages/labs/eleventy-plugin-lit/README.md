@@ -92,7 +92,7 @@ Use the `componentModules` setting to tell the plugin where to find the
 definitions of your components.
 
 Pass an array of paths to `.js` files containing Lit component definitions.
-Paths are interpreted relative to to the directory from which the `eleventy`
+Paths are interpreted relative to the directory from which the `eleventy`
 command is executed.
 
 Each `.js` file should be a JavaScript module (ESM) that imports `lit` with a
@@ -317,7 +317,7 @@ layout: default.html
 The file `_includes/default.html` would then contain the following:
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <!-- As an optimization, immediately begin fetching the JavaScript modules

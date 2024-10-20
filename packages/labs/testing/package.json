@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/testing",
-  "version": "0.2.3",
+  "version": "0.2.5",
   "publishConfig": {
     "access": "public"
   },
