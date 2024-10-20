@@ -1,5 +1,18 @@
-// Edit this file to trigger the TSServer commands.
+import {LitElement, html, css} from 'lit';
+import {customElement, property} from 'lit/decorators.js';
 
-const anExampleVariable = 'Hello World';
-console.log(anExampleVariable);
-a;
+@customElement('my-element')
+export class MyElement extends LitElement {
+  static styles = css`
+    :host {
+      color: blue;
+    }
+  `;
+
+  @property({type: String})
+  name = 'World';
+
+  render() {
+    return html`<p>Hello, ${this.name}!</p>`;
+  }
+}

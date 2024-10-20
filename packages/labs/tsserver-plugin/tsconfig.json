@@ -5,9 +5,9 @@
     "tsBuildInfoFile": "tsconfig.tsbuildinfo",
     "target": "es2022",
     "lib": ["es2022"],
-    "module": "NodeNext",
+    "module": "CommonJS",
     "rootDir": "./src",
-    "moduleResolution": "NodeNext",
+    // "moduleResolution": "Classic",
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -24,9 +24,8 @@
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitOverride": true,
-    "skipLibCheck": true,
-    "types": []
+    "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/index.ts"],
   "exclude": []
 }

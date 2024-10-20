@@ -33,7 +33,7 @@
       "clean": "if-file-deleted"
     },
     "test": {
-      "command": "node --enable-sourcemaps --test-reporter=spec --test test/**/*_test.js",
+      "command": "node --enable-source-maps --test-reporter=spec --test test/**/*_test.js",
       "dependencies": [
         "build"
       ],
@@ -49,6 +49,10 @@
     ".": "./index.js"
   },
   "devDependencies": {
+    "@types/node": "^22.7.7",
     "typescript": "~5.5.0"
+  },
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.13.1"
   }
 }
