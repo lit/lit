@@ -1,5 +1,7 @@
 /lib/
 /test/
+/commonjs/*
+!commonjs/package.json
 
 index.js
 index.js.map

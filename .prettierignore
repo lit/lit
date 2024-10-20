@@ -165,6 +165,8 @@ packages/ts-transformers/internal/
 packages/ts-transformers/tests/
 packages/labs/analyzer/lib/
 packages/labs/analyzer/test/
+packages/labs/analyzer/commonjs/*
+!packages/labs/analyzer/commonjs/package.json
 
 packages/labs/analyzer/**/index.js
 packages/labs/analyzer/**/index.js.map
