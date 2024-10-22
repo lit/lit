@@ -715,19 +715,18 @@ export class Virtualizer {
       pos.forEach(({top, left, width, height, xOffset, yOffset}, index) => {
         const child = this._children[index - this._first];
         if (child) {
+          top = top + (yOffset ?? 0);
+          left = left + (xOffset ?? 0);
           child.style.position = 'absolute';
           child.style.boxSizing = 'border-box';
-          child.style.transform = `translate(${left}px, ${top}px)`;
+          child.style.left = left + 'px';
+          child.style.top = top + 'px';
           if (width !== undefined) {
             child.style.width = width + 'px';
           }
           if (height !== undefined) {
             child.style.height = height + 'px';
           }
-          (child.style.left as string | null) =
-            xOffset === undefined ? null : xOffset + 'px';
-          (child.style.top as string | null) =
-            yOffset === undefined ? null : yOffset + 'px';
         }
       });
     }
