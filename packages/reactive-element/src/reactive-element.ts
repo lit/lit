@@ -1052,13 +1052,7 @@ export abstract class ReactiveElement
    * Fixes any properties set on the instance before upgrade time.
    * Otherwise these would shadow the accessor and break these properties.
    * The properties are stored in a Map which is played back after the
-   * constructor runs. Note, on very old versions of Safari (<=9) or Chrome
-   * (<=41), properties created for native platform properties like (`id` or
-   * `name`) may not have default values set in the element constructor. On
-   * these browsers native properties appear on instances and therefore their
-   * default value will overwrite any element default (e.g. if the element sets
-   * this.id = 'id' in the constructor, the 'id' will become '' since this is
-   * the native platform default).
+   * constructor runs.
    */
   private __saveInstanceProperties() {
     const instanceProperties = new Map<PropertyKey, unknown>();
