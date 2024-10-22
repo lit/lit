@@ -5,5 +5,8 @@
   "devDependencies": {
     "@lit-labs/tsserver-plugin": "file:..",
     "typescript": "~5.5.0"
+  },
+  "dependencies": {
+    "lit": "^3.2.1"
   }
 }
