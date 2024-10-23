@@ -1,5 +1,11 @@
 # @lit-labs/testing
 
+## 0.2.5
+
+### Patch Changes
+
+- [#4731](https://github.com/lit/lit/pull/4731) [`ff87eb46`](https://github.com/lit/lit/commit/ff87eb461dfbfa8fd0101a6a9067dcaaa9b49f92) Thanks [@kyubisation](https://github.com/kyubisation)! - Add fallback for call site location detection for webkit
+
 ## 0.2.4
 
 ### Patch Changes

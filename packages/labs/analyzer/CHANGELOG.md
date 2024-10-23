@@ -1,5 +1,13 @@
 # @lit-labs/analyzer
 
+## 0.13.1
+
+### Patch Changes
+
+- [#4746](https://github.com/lit/lit/pull/4746) [`bc3ba558`](https://github.com/lit/lit/commit/bc3ba558e02f609ca2f1bffd7a05b058904307ba) - Properly ignore class private fields when analyzing LitElement reactive properties.
+
+- [#4744](https://github.com/lit/lit/pull/4744) [`55a6a0ce`](https://github.com/lit/lit/commit/55a6a0cec63e1f4f57adc8d3ac2a6424b0a554fc) - Fix bugs with type resolution and Lit module detection when using NodeNext module resolution in TypeScript
+
 ## 0.13.0
 
 ### Minor Changes
