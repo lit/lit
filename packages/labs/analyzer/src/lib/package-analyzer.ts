@@ -107,7 +107,7 @@ export const createPackageAnalyzer = (
     getProgram: () => program,
     typescript: ts,
     fs: ts.sys,
-    path,
+    path: path.posix,
   });
   for (const diagnostic of program.getSyntacticDiagnostics()) {
     analyzer.addDiagnostic(diagnostic);
