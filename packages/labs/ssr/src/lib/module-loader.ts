@@ -90,6 +90,10 @@ export function makeDefaultContextObject() {
     queueMicrotask,
   };
   // Everything above Node 14 should be set conditionally.
+  // Node 15+
+  if (globalThis.Event !== undefined) {
+    ctx.Event = Event;
+  }
   // Node 16+
   if (globalThis.atob !== undefined) {
     ctx.atob = atob;
@@ -104,6 +108,9 @@ export function makeDefaultContextObject() {
   // Node 18+
   if (globalThis.fetch !== undefined) {
     ctx.fetch = fetch;
+  }
+  if (globalThis.CustomEvent !== undefined) {
+    ctx.CustomEvent = CustomEvent;
   }
   return ctx;
 }
