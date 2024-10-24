@@ -404,6 +404,7 @@ export class Animate extends AsyncDirective {
       return;
     }
     this.prepare();
+    const disconnectedFromValues = this._fromValues;
     await animationFrame();
     if (this._parentNode?.isConnected) {
       // put element back in DOM
@@ -420,6 +421,7 @@ export class Animate extends AsyncDirective {
         // TODO(sorvell): these nudges could conflict with existing styling
         // or animation but setting left/top should be rare, especially via
         // animation.
+        this._fromValues ??= disconnectedFromValues;
         const left =
           (this._fromValues!['left'] as number) - (shifted['left'] as number);
         const top =
