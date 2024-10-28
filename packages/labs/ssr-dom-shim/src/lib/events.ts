@@ -5,8 +5,14 @@
  */
 
 /**
- * This implementation is not fully spec compliant (e.g. validation),
+ * This is a basic implementation of an EventTarget, Event and CustomEvent.
+ *
+ * This is not fully spec compliant (e.g. validation),
  * but should work well enough for our use cases.
+ *
+ * @see https://dom.spec.whatwg.org/#eventtarget
+ * @see https://dom.spec.whatwg.org/#event
+ * @see https://dom.spec.whatwg.org/#customevent
  */
 
 type EventTargetInterface = EventTarget;
@@ -33,14 +39,14 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
     callback: EventListenerOrEventListenerObject | null,
     options?: AddEventListenerOptions | boolean
   ): void {
-    if (!callback) {
+    if (callback === undefined || callback === null) {
       return;
     }
     const eventListenersMap = isCaptureEventListener(options)
       ? this.__captureEventListeners
       : this.__eventListeners;
     let eventListeners = eventListenersMap.get(type);
-    if (!eventListeners) {
+    if (eventListeners === undefined) {
       eventListeners = new Map();
       eventListenersMap.set(type, eventListeners);
     } else if (eventListeners.has(callback)) {
@@ -59,14 +65,14 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
     callback: EventListenerOrEventListenerObject | null,
     options?: EventListenerOptions | boolean
   ): void {
-    if (!callback) {
+    if (callback === undefined || callback === null) {
       return;
     }
     const eventListenersMap = isCaptureEventListener(options)
       ? this.__captureEventListeners
       : this.__eventListeners;
     const eventListeners = eventListenersMap.get(type);
-    if (eventListeners) {
+    if (eventListeners !== undefined) {
       eventListeners.delete(callback);
       if (!eventListeners.size) {
         eventListenersMap.delete(type);
@@ -105,43 +111,43 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
         get() {
           return target ?? tmpTarget;
         },
-        ...kEnumerableProperty,
+        ...enumerableProperty,
       },
       srcElement: {
         get() {
           return target ?? tmpTarget;
         },
-        ...kEnumerableProperty,
+        ...enumerableProperty,
       },
       currentTarget: {
         get() {
           return currentTarget;
         },
-        ...kEnumerableProperty,
+        ...enumerableProperty,
       },
       eventPhase: {
         get() {
           return eventPhase;
         },
-        ...kEnumerableProperty,
+        ...enumerableProperty,
       },
       composedPath: {
         value: () => composedPath,
-        ...kEnumerableProperty,
+        ...enumerableProperty,
       },
       stopPropagation: {
         value: () => {
           stopPropagation = true;
           originalStopPropagation.call(this);
         },
-        ...kEnumerableProperty,
+        ...enumerableProperty,
       },
       stopImmediatePropagation: {
         value: () => {
           stopImmediatePropagation = true;
           originalStopImmediatePropagation.call(this);
         },
-        ...kEnumerableProperty,
+        ...enumerableProperty,
       },
     });
 
@@ -247,20 +253,9 @@ export {
 
 type EventInterface = Event;
 
-const kEnumerableProperty: Record<string, unknown> = {__proto__: null};
-kEnumerableProperty.enumerable = true;
-Object.freeze(kEnumerableProperty);
-
-const kIsBeingDispatched = Symbol('kIsBeingDispatched');
-const kStop = Symbol('kStop');
-const kTarget = Symbol('kTarget');
-
-const kType = Symbol('type');
-const kDetail = Symbol('detail');
-
-function isEvent(value: unknown) {
-  return typeof (value as {[kType]: unknown})?.[kType] === 'string';
-}
+const enumerableProperty: Record<string, unknown> = {__proto__: null};
+enumerableProperty.enumerable = true;
+Object.freeze(enumerableProperty);
 
 const EventShim = class Event implements EventInterface {
   #cancelable = false;
@@ -269,10 +264,9 @@ const EventShim = class Event implements EventInterface {
   #defaultPrevented = false;
   #timestamp = Date.now();
   #propagationStopped = false;
-  [kType]: string;
-  [kTarget]: EventTarget | null;
-  [kIsBeingDispatched]: boolean;
-  [kStop]?: boolean;
+  #type: string;
+  #target: EventTarget | null;
+  #isBeingDispatched: boolean;
   readonly NONE = 0;
   readonly CAPTURING_PHASE = 1;
   readonly AT_TARGET = 2;
@@ -282,14 +276,6 @@ const EventShim = class Event implements EventInterface {
   static readonly AT_TARGET = 2;
   static readonly BUBBLING_PHASE = 3;
 
-  /**
-   * @param {string} type
-   * @param {{
-   *   bubbles?: boolean,
-   *   cancelable?: boolean,
-   *   composed?: boolean,
-   * }} [options]
-   */
   constructor(type: string, options: EventInit = {}) {
     if (arguments.length === 0)
       throw new Error(`The type argument must be specified`);
@@ -301,259 +287,140 @@ const EventShim = class Event implements EventInterface {
     this.#bubbles = !!bubbles;
     this.#composed = !!composed;
 
-    this[kType] = `${type}`;
-    this[kTarget] = null;
-    this[kIsBeingDispatched] = false;
+    this.#type = `${type}`;
+    this.#target = null;
+    this.#isBeingDispatched = false;
   }
 
-  /**
-   * @param {string} type
-   * @param {boolean} [bubbles]
-   * @param {boolean} [cancelable]
-   */
-  initEvent(type: string, bubbles = false, cancelable = false) {
-    if (arguments.length === 0)
-      throw new Error(`The type argument must be specified`);
-
-    if (this[kIsBeingDispatched]) {
-      return;
-    }
-    this[kType] = `${type}`;
-    this.#bubbles = !!bubbles;
-    this.#cancelable = !!cancelable;
+  initEvent(_type: string, _bubbles?: boolean, _cancelable?: boolean): void {
+    throw new Error('Method not implemented.');
   }
 
   stopImmediatePropagation() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
-    // Spec mention "stopImmediatePropagation should set both "stop propagation"
-    // and "stop immediate propagation" flags"
-    // cf: from https://dom.spec.whatwg.org/#dom-event-stopimmediatepropagation
     this.stopPropagation();
-    this[kStop] = true;
   }
 
   preventDefault() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
     this.#defaultPrevented = true;
   }
 
-  /**
-   * @type {EventTarget}
-   */
-  get target() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
-    return this[kTarget];
+  get target(): EventTarget | null {
+    return this.#target;
   }
 
-  /**
-   * @type {EventTarget}
-   */
-  get currentTarget() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
-    return this[kTarget];
+  get currentTarget(): EventTarget | null {
+    return this.#target;
   }
 
-  /**
-   * @type {EventTarget}
-   */
-  get srcElement() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
-    return this[kTarget];
+  get srcElement(): EventTarget | null {
+    return this.#target;
   }
 
-  /**
-   * @type {string}
-   */
-  get type() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
-    return this[kType];
+  get type(): string {
+    return this.#type;
   }
 
-  /**
-   * @type {boolean}
-   */
-  get cancelable() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
+  get cancelable(): boolean {
     return this.#cancelable;
   }
 
-  /**
-   * @type {boolean}
-   */
-  get defaultPrevented() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
+  get defaultPrevented(): boolean {
     return this.#cancelable && this.#defaultPrevented;
   }
 
-  /**
-   * @type {number}
-   */
-  get timeStamp() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
+  get timeStamp(): number {
     return this.#timestamp;
   }
 
-  // The following are non-op and unused properties/methods from Web API Event.
-  // These are not supported in Node.js and are provided purely for
-  // API completeness.
-  /**
-   * @returns {EventTarget[]}
-   */
-  composedPath() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
-    return this[kIsBeingDispatched] ? [this[kTarget]!] : [];
+  composedPath(): EventTarget[] {
+    return this.#isBeingDispatched ? [this.#target!] : [];
   }
 
-  /**
-   * @type {boolean}
-   */
-  get returnValue() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
+  get returnValue(): boolean {
     return !this.#cancelable || !this.#defaultPrevented;
   }
 
-  /**
-   * @type {boolean}
-   */
-  get bubbles() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
+  get bubbles(): boolean {
     return this.#bubbles;
   }
 
-  /**
-   * @type {boolean}
-   */
-  get composed() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
+  get composed(): boolean {
     return this.#composed;
   }
 
-  /**
-   * @type {number}
-   */
-  get eventPhase() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
-    return this[kIsBeingDispatched] ? Event.AT_TARGET : Event.NONE;
+  get eventPhase(): number {
+    return this.#isBeingDispatched ? Event.AT_TARGET : Event.NONE;
   }
 
-  /**
-   * @type {boolean}
-   */
-  get cancelBubble() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
+  get cancelBubble(): boolean {
     return this.#propagationStopped;
   }
 
-  /**
-   * @type {boolean}
-   */
   set cancelBubble(value) {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
     if (value) {
       this.#propagationStopped = true;
     }
   }
 
-  stopPropagation() {
-    if (!isEvent(this))
-      throw new Error('Value of "this" must be of type Event');
+  stopPropagation(): void {
     this.#propagationStopped = true;
   }
 
-  get isTrusted() {
+  get isTrusted(): boolean {
     return false;
   }
 };
 
 Object.defineProperties(EventShim.prototype, {
-  initEvent: kEnumerableProperty,
-  stopImmediatePropagation: kEnumerableProperty,
-  preventDefault: kEnumerableProperty,
-  target: kEnumerableProperty,
-  currentTarget: kEnumerableProperty,
-  srcElement: kEnumerableProperty,
-  type: kEnumerableProperty,
-  cancelable: kEnumerableProperty,
-  defaultPrevented: kEnumerableProperty,
-  timeStamp: kEnumerableProperty,
-  composedPath: kEnumerableProperty,
-  returnValue: kEnumerableProperty,
-  bubbles: kEnumerableProperty,
-  composed: kEnumerableProperty,
-  eventPhase: kEnumerableProperty,
-  cancelBubble: kEnumerableProperty,
-  stopPropagation: kEnumerableProperty,
-  isTrusted: kEnumerableProperty,
+  initEvent: enumerableProperty,
+  stopImmediatePropagation: enumerableProperty,
+  preventDefault: enumerableProperty,
+  target: enumerableProperty,
+  currentTarget: enumerableProperty,
+  srcElement: enumerableProperty,
+  type: enumerableProperty,
+  cancelable: enumerableProperty,
+  defaultPrevented: enumerableProperty,
+  timeStamp: enumerableProperty,
+  composedPath: enumerableProperty,
+  returnValue: enumerableProperty,
+  bubbles: enumerableProperty,
+  composed: enumerableProperty,
+  eventPhase: enumerableProperty,
+  cancelBubble: enumerableProperty,
+  stopPropagation: enumerableProperty,
+  isTrusted: enumerableProperty,
 });
 
 type CustomEventInterface = CustomEvent;
-
-function isCustomEvent(value: unknown) {
-  return (
-    isEvent(value) && (value as {[kDetail]: unknown})?.[kDetail] !== undefined
-  );
-}
 
 const CustomEventShim = class CustomEvent<T>
   extends EventShim
   implements CustomEventInterface
 {
-  [kDetail]: T | null;
-  /**
-   * @constructor
-   * @param {string} type
-   * @param {{
-   *   bubbles?: boolean,
-   *   cancelable?: boolean,
-   *   composed?: boolean,
-   *   detail?: any,
-   * }} [options]
-   */
+  #detail: T | null;
+
   constructor(type: string, options: CustomEventInit<T> = {}) {
-    if (arguments.length === 0)
-      throw new Error(`The type argument must be specified`);
     super(type, options);
-    this[kDetail] = options?.detail ?? null;
+    this.#detail = options?.detail ?? null;
   }
 
   initCustomEvent(
-    type: string,
-    bubbles?: boolean,
-    cancelable?: boolean,
-    detail?: T
+    _type: string,
+    _bubbles?: boolean,
+    _cancelable?: boolean,
+    _detail?: T
   ): void {
-    this[kDetail] = detail ?? null;
-    super.initEvent(type, bubbles, cancelable);
+    throw new Error('Method not implemented.');
   }
 
-  /**
-   * @type {any}
-   */
-  get detail() {
-    if (!isCustomEvent(this))
-      throw new Error('Value of "this" must be of type CustomEvent');
-    return this[kDetail];
+  get detail(): T {
+    return this.#detail!;
   }
 };
 
 Object.defineProperties(CustomEventShim.prototype, {
-  detail: kEnumerableProperty,
+  detail: enumerableProperty,
 });
 
 const EventShimWithRealType = EventShim as object as typeof Event;

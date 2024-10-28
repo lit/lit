@@ -69,11 +69,6 @@ export class LitElementRenderer extends ElementRenderer {
     // Optionally call connectedCallback via setting: `litSsrCallConnectedCallback`
     // Enable this flag to process events dispatched handled via connectedCallback.
     if (globalThis.litSsrCallConnectedCallback) {
-      // Prevent element from trying to create a shadowRoot or enable updating
-      // since these are both specially handled for server rendering.
-      this.element['createRenderRoot'] = function () {
-        return null!;
-      };
       this.element['enableUpdating'] = function () {};
       this.element.connectedCallback();
     }

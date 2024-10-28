@@ -210,7 +210,9 @@ type SlotElementCloseOp = {
 };
 
 /**
- * Operation to mark a slotted element as open.
+ * Operation to mark a slotted element as open. We do this by checking
+ * direct children of custom elements for the absence or presence of
+ * the slot attribute.
  */
 type SlottedElementOpenOp = {
   type: 'slotted-element-open';
@@ -467,6 +469,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
         } else if (tagName === 'slot') {
           ops.push({
             type: 'slot-element-open',
+            // Name is either assigned the slot name or undefined for
+            // an unnamed slot.
             name: node.attrs.find((a) => a.name === 'name')?.value,
           });
         }
@@ -969,14 +973,16 @@ And the inner template was:
           );
         } else if (host.element) {
           let slots = elementSlotMap.get(host.element);
-          if (!slots) {
+          if (slots === undefined) {
             slots = new Map();
             elementSlotMap.set(host.element, slots);
           }
+          // op.name is either the slot name or undefined, which represents
+          // the unnamed slot case.
           if (!slots.has(op.name)) {
             const element = new HTMLElement() as HTMLElementShim;
             element.__eventTargetParent = getLast(renderInfo.eventTargetStack);
-            slots!.set(op.name, element);
+            slots.set(op.name, element);
             renderInfo.eventTargetStack.push(element);
           }
         }
