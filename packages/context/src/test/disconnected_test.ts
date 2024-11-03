@@ -1,4 +1,4 @@
-import {LitElement, html, TemplateResult} from 'lit';
+import {LitElement, html, TemplateResult, type PropertyValues} from 'lit';
 import {createContext, consume, ContextProvider} from '@lit/context';
 import {assert} from 'chai';
 
@@ -33,6 +33,15 @@ class ContextConsumerChildElement extends LitElement {
   @consume({context: simpleContext, subscribe: true})
   value!: number;
 
+  protected shouldUpdate(_changedProperties: PropertyValues): boolean {
+    return this.isConnected;
+  }
+
+  connectedCallback(): void {
+    super.connectedCallback();
+    this.requestUpdate();
+  }
+
   render() {
     console.log('child', this.value, 'connected =', this.isConnected);
 
@@ -65,5 +74,9 @@ suite('disconnected', () => {
     }
 
     assert.equal(lastValue, 1);
+
+    provider.contextProvider.setValue(1);
+    await provider.updateComplete;
+    await sleep(100);
   });
 });
