@@ -117,6 +117,13 @@ const elementSlotMap = new WeakMap<
   Map<string | undefined, HTMLElement>
 >();
 
+// We want the slot element to be able to be identified.
+class HTMLSlotElement extends HTMLElement {
+  override get localName(): string {
+    return 'slot';
+  }
+}
+
 /**
  * Operation to output static text
  */
@@ -877,6 +884,13 @@ And the inner template was:
           op.staticAttributes
         );
         if (instance.element) {
+          // In the case the renderer has created an instance, we want to set
+          // the event target parent and the host of the element. Our
+          // EventTarget polyfill uses these values to calculate the
+          // composedPath of a dispatched event.
+          // Note that the event target parent is either the unnamed/named slot
+          // in the parent event target if it exists or the parent event target
+          // if no matching slot exists.
           const eventTarget = getLast(
             renderInfo.eventTargetStack
           ) as HTMLElementWithEventMeta;
@@ -974,6 +988,9 @@ And the inner template was:
             `Internal error: ${op.type} outside of custom element context`
           );
         } else if (host.element) {
+          // We need to track which element has which slots. This is necessary
+          // to calculate the correct event path by connecting children of the
+          // host element to the corresponding slot.
           let slots = elementSlotMap.get(host.element);
           if (slots === undefined) {
             slots = new Map();
@@ -982,7 +999,7 @@ And the inner template was:
           // op.name is either the slot name or undefined, which represents
           // the unnamed slot case.
           if (!slots.has(op.name)) {
-            const element = new HTMLElement() as HTMLElementWithEventMeta;
+            const element = new HTMLSlotElement() as HTMLElementWithEventMeta;
             element.__eventTargetParent = getLast(renderInfo.eventTargetStack);
             slots.set(op.name, element);
             renderInfo.eventTargetStack.push(element);

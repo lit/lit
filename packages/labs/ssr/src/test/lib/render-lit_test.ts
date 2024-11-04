@@ -497,10 +497,10 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
   /* Events */
 
   test('events with parent and child', async () => {
-    const {render, eventParentAndSingleChildWithoutValue, moduleGlobalThis} =
+    const {render, eventParentAndSingleChildWithoutValue, setupEvents} =
       await setup();
+    const {eventPath, reset} = setupEvents();
     try {
-      moduleGlobalThis.litSsrCallConnectedCallback = true;
       const result = await render(eventParentAndSingleChildWithoutValue);
       assert.is(
         result,
@@ -511,16 +511,25 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
           '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
           '<test-events-child data-test><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
       );
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:1',
+        'slot:2/capture/CAPTURING_PHASE/test-events-child:1',
+        'test-events-child:1/capture/AT_TARGET/test-events-child:1',
+        'test-events-child:1/non-capture/AT_TARGET/test-events-child:1',
+        'slot:2/non-capture/BUBBLING_PHASE/test-events-child:1',
+        'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:1',
+      ]);
     } finally {
-      delete moduleGlobalThis.litSsrCallConnectedCallback;
+      reset();
     }
   });
 
   test('events with parent with value and child', async () => {
-    const {render, eventParentAndSingleChildWithValue, moduleGlobalThis} =
+    const {render, eventParentAndSingleChildWithValue, setupEvents} =
       await setup();
+    const {eventPath, reset} = setupEvents();
     try {
-      moduleGlobalThis.litSsrCallConnectedCallback = true;
       const result = await render(eventParentAndSingleChildWithValue);
       assert.is(
         result,
@@ -531,15 +540,24 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
           '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
           '<test-events-child data-test="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
       );
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:1',
+        'slot:2/capture/CAPTURING_PHASE/test-events-child:1',
+        'test-events-child:1/capture/AT_TARGET/test-events-child:1',
+        'test-events-child:1/non-capture/AT_TARGET/test-events-child:1',
+        'slot:2/non-capture/BUBBLING_PHASE/test-events-child:1',
+        'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:1',
+      ]);
     } finally {
-      delete moduleGlobalThis.litSsrCallConnectedCallback;
+      reset();
     }
   });
 
   test('event order with capture from top and bubbles from bottom', async () => {
-    const {render, eventParentNesting, moduleGlobalThis} = await setup();
+    const {render, eventParentNesting, setupEvents} = await setup();
+    const {eventPath, reset} = setupEvents();
     try {
-      moduleGlobalThis.litSsrCallConnectedCallback = true;
       const result = await render(eventParentNesting);
       assert.is(
         result,
@@ -556,15 +574,28 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
           '<test-events-child data-test="ocicivov"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child>' +
           '</test-events-parent></test-events-parent><!--/lit-part-->'
       );
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:3',
+        'slot:2/capture/CAPTURING_PHASE/test-events-child:3',
+        'test-events-parent:1/capture/CAPTURING_PHASE/test-events-child:3',
+        'slot:4/capture/CAPTURING_PHASE/test-events-child:3',
+        'test-events-child:3/capture/AT_TARGET/test-events-child:3',
+        'test-events-child:3/non-capture/AT_TARGET/test-events-child:3',
+        'slot:4/non-capture/BUBBLING_PHASE/test-events-child:3',
+        'test-events-parent:1/non-capture/BUBBLING_PHASE/test-events-child:3',
+        'slot:2/non-capture/BUBBLING_PHASE/test-events-child:3',
+        'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:3',
+      ]);
     } finally {
-      delete moduleGlobalThis.litSsrCallConnectedCallback;
+      reset();
     }
   });
 
   test('event order through shadow DOM', async () => {
-    const {render, eventShadowNested, moduleGlobalThis} = await setup();
+    const {render, eventShadowNested, setupEvents} = await setup();
+    const {eventPath, reset} = setupEvents();
     try {
-      moduleGlobalThis.litSsrCallConnectedCallback = true;
       const result = await render(eventShadowNested);
       assert.is(
         result,
@@ -583,8 +614,104 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
           '</div><div slot="a"><test-events-child data-test="shadowmy-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></div>\n' +
           '  </test-events-shadow-nested></test-events-parent><!--/lit-part-->'
       );
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        // Event from first <test-events-child>
+        'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:3',
+        'slot:2/capture/CAPTURING_PHASE/test-events-child:3',
+        'test-events-child:3/capture/AT_TARGET/test-events-child:3',
+        'test-events-child:3/non-capture/AT_TARGET/test-events-child:3',
+        'slot:2/non-capture/BUBBLING_PHASE/test-events-child:3',
+        'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:3',
+        // Event from second <test-events-child>
+        'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:4',
+        'slot:2/capture/CAPTURING_PHASE/test-events-child:4',
+        'test-events-parent:1/capture/CAPTURING_PHASE/test-events-child:4',
+        'slot:5/capture/CAPTURING_PHASE/test-events-child:4',
+        'test-events-child:4/capture/AT_TARGET/test-events-child:4',
+        'test-events-child:4/non-capture/AT_TARGET/test-events-child:4',
+        'slot:5/non-capture/BUBBLING_PHASE/test-events-child:4',
+        'test-events-parent:1/non-capture/BUBBLING_PHASE/test-events-child:4',
+        'slot:2/non-capture/BUBBLING_PHASE/test-events-child:4',
+        'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:4',
+      ]);
     } finally {
-      delete moduleGlobalThis.litSsrCallConnectedCallback;
+      reset();
+    }
+  });
+
+  test('event path skips shadow DOM with non-existent slot usage', async () => {
+    const {render, eventParentAndSingleWithNonExistentSlot, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      await render(eventParentAndSingleWithNonExistentSlot);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:1',
+        'test-events-child:1/capture/AT_TARGET/test-events-child:1',
+        'test-events-child:1/non-capture/AT_TARGET/test-events-child:1',
+        'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:1',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('event target is correct without composed', async () => {
+    const {render, eventChildShadowNested, setupEvents} = await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      await render(eventChildShadowNested);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'test-events-child:1/capture/AT_TARGET/test-events-child:1',
+        'test-events-child:1/non-capture/AT_TARGET/test-events-child:1',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('event target is correct with composed', async () => {
+    const {render, TestEventsChild, eventChildShadowNested, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    TestEventsChild.eventOptions = {composed: true};
+    try {
+      await render(eventChildShadowNested);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'test-events-child-shadow-nested:0/capture/AT_TARGET/test-events-child-shadow-nested:0',
+        'test-events-child:1/capture/AT_TARGET/test-events-child:1',
+        'test-events-child:1/non-capture/AT_TARGET/test-events-child:1',
+        'test-events-child-shadow-nested:0/non-capture/AT_TARGET/test-events-child-shadow-nested:0',
+      ]);
+    } finally {
+      delete TestEventsChild.eventOptions;
+      reset();
+    }
+  });
+
+  test('event target is correct with twice nested shadow DOM', async () => {
+    const {render, TestEventsChild, eventChildShadowNestedTwice, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    TestEventsChild.eventOptions = {composed: true};
+    try {
+      await render(eventChildShadowNestedTwice);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'test-events-child-shadow-nested-twice:0/capture/AT_TARGET/test-events-child-shadow-nested-twice:0',
+        'test-events-child-shadow-nested:1/capture/AT_TARGET/test-events-child-shadow-nested:1',
+        'test-events-child:2/capture/AT_TARGET/test-events-child:2',
+        'test-events-child:2/non-capture/AT_TARGET/test-events-child:2',
+        'test-events-child-shadow-nested:1/non-capture/AT_TARGET/test-events-child-shadow-nested:1',
+        'test-events-child-shadow-nested-twice:0/non-capture/AT_TARGET/test-events-child-shadow-nested-twice:0',
+      ]);
+    } finally {
+      delete TestEventsChild.eventOptions;
+      reset();
     }
   });
 
@@ -593,8 +720,9 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       render,
       TestEventsParent,
       eventParentAndSingleChildWithoutValue,
-      moduleGlobalThis,
+      setupEvents,
     } = await setup();
+    const {reset} = setupEvents();
     let connectedCallbackCalls = 0;
     let createRenderRootCalls = 0;
     // We can't track calls to enableUpdating, as it is dynamically created
@@ -615,15 +743,13 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       spyOn('scheduleUpdate', () => scheduleUpdateCalls++),
     ];
     try {
-      moduleGlobalThis.litSsrCallConnectedCallback = true;
-
       await render(eventParentAndSingleChildWithoutValue);
       assert.equal(connectedCallbackCalls, 1);
       assert.equal(createRenderRootCalls, 1);
       assert.equal(scheduleUpdateCalls, 0);
     } finally {
       spies.forEach((s) => s());
-      delete moduleGlobalThis.litSsrCallConnectedCallback;
+      reset();
     }
   });
 
@@ -632,10 +758,10 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       render,
       TestEventsParent,
       eventParentAndSingleChildWithoutValue,
-      moduleGlobalThis,
+      setupEvents,
     } = await setup();
+    const {reset} = setupEvents();
     try {
-      moduleGlobalThis.litSsrCallConnectedCallback = true;
       let controllerHostConnectedCalls = 0;
       TestEventsParent.testInitializer = (el) =>
         el.addController({
@@ -648,97 +774,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       assert.equal(controllerHostConnectedCalls, 1);
     } finally {
       TestEventsParent.testInitializer = undefined;
-      delete moduleGlobalThis.litSsrCallConnectedCallback;
-    }
-  });
-
-  test('event target is correct without composed', async () => {
-    const {
-      render,
-      TestEventsChild,
-      TestEventsChildShadowNested,
-      eventChildShadowNested,
-      moduleGlobalThis,
-    } = await setup();
-    const prototypes = [TestEventsChild, TestEventsChildShadowNested];
-    const eventOrder: string[] = [];
-    TestEventsChild.testInitializer = (el) => {
-      el.id = 'unique-id';
-      el.addEventListener(
-        'test',
-        (e) => {
-          assert.is((e.currentTarget as HTMLElement).id, el.id);
-          assert.is((e.target as HTMLElement).id, el.id);
-          eventOrder.push(`capture`);
-        },
-        {capture: true}
-      );
-      el.addEventListener('test', (e) => {
-        assert.is((e.currentTarget as HTMLElement).id, el.id);
-        assert.is((e.target as HTMLElement).id, el.id);
-        eventOrder.push(`non-capture`);
-      });
-    };
-    TestEventsChildShadowNested.testInitializer = (el) => {
-      for (const options of [{}, {capture: true}]) {
-        el.addEventListener(
-          'test',
-          () => assert.unreachable('should not be reached without composed'),
-          options
-        );
-      }
-    };
-    try {
-      moduleGlobalThis.litSsrCallConnectedCallback = true;
-      await render(eventChildShadowNested);
-      assert.equal(eventOrder, ['capture', 'non-capture']);
-    } finally {
-      prototypes.forEach((p) => (p.testInitializer = undefined));
-      delete moduleGlobalThis.litSsrCallConnectedCallback;
-    }
-  });
-
-  test('event target is correct with composed', async () => {
-    const {
-      render,
-      TestEventsChild,
-      TestEventsChildShadowNested,
-      eventChildShadowNested,
-      moduleGlobalThis,
-    } = await setup();
-    const prototypes = [TestEventsChild, TestEventsChildShadowNested];
-    let nextId = 0;
-    const eventOrder: string[] = [];
-    TestEventsChildShadowNested.testInitializer =
-      TestEventsChild.testInitializer = <T extends HTMLElement>(el: T) => {
-        el.id = `id-${el.localName}-${++nextId}`;
-        el.addEventListener(
-          'testcomposed',
-          (e) => {
-            assert.is((e.currentTarget as HTMLElement).id, el.id);
-            assert.is((e.target as HTMLElement).id, el.id);
-            eventOrder.push(`${el.id} capture`);
-          },
-          {capture: true}
-        );
-        el.addEventListener('testcomposed', (e) => {
-          assert.is((e.currentTarget as HTMLElement).id, el.id);
-          assert.is((e.target as HTMLElement).id, el.id);
-          eventOrder.push(`${el.id}`);
-        });
-      };
-    try {
-      moduleGlobalThis.litSsrCallConnectedCallback = true;
-      await render(eventChildShadowNested);
-      assert.equal(eventOrder, [
-        'id-test-events-child-shadow-nested-1 capture',
-        'id-test-events-child-2 capture',
-        'id-test-events-child-2',
-        'id-test-events-child-shadow-nested-1',
-      ]);
-    } finally {
-      prototypes.forEach((p) => (p.testInitializer = undefined));
-      delete moduleGlobalThis.litSsrCallConnectedCallback;
+      reset();
     }
   });
 
