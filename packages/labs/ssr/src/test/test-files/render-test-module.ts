@@ -229,9 +229,22 @@ export class TestStyles extends LitElement {
 
 /* Events */
 
+export class EventTargetTestBase extends LitElement {
+  static testInitializer?: (el: EventTargetTestBase) => void;
+
+  constructor() {
+    super();
+    (this.constructor as typeof EventTargetTestBase).testInitializer?.(this);
+  }
+}
+
 @customElement('test-events-parent')
-export class TestEventsParent extends LitElement {
-  static testInitializer?: (el: TestEventsParent) => void;
+export class TestEventsParent extends EventTargetTestBase {
+  static override styles = css`
+    :host {
+      display: block;
+    }
+  `;
   @property()
   value = '';
   @property()
@@ -239,7 +252,6 @@ export class TestEventsParent extends LitElement {
 
   constructor() {
     super();
-    (this.constructor as typeof TestEventsParent).testInitializer?.(this);
     this.addEventListener('test', (e) => {
       (e as CustomEvent<(value: string) => void>).detail(this.value);
     });
@@ -262,14 +274,7 @@ export class TestEventsParent extends LitElement {
 }
 
 @customElement('test-events-child')
-export class TestEventsChild extends LitElement {
-  static testInitializer?: (el: TestEventsChild) => void;
-
-  constructor() {
-    super();
-    (this.constructor as typeof TestEventsChild).testInitializer?.(this);
-  }
-
+export class TestEventsChild extends EventTargetTestBase {
   override connectedCallback() {
     super.connectedCallback();
     this.dispatchEvent(
@@ -286,9 +291,6 @@ export class TestEventsChild extends LitElement {
       new Event('testcomposed', {bubbles: true, composed: true})
     );
   }
-  eventOptions(): EventInit {
-    return {bubbles: true};
-  }
   override render() {
     // prettier-ignore
     return html`<div>events child</div>`;
@@ -304,16 +306,7 @@ export class TestEventsShadowNested extends LitElement {
 }
 
 @customElement('test-events-child-shadow-nested')
-export class TestEventsChildShadowNested extends LitElement {
-  static testInitializer?: (el: TestEventsChildShadowNested) => void;
-
-  constructor() {
-    super();
-    (this.constructor as typeof TestEventsChildShadowNested).testInitializer?.(
-      this
-    );
-  }
-
+export class TestEventsChildShadowNested extends EventTargetTestBase {
   override render() {
     // prettier-ignore
     return html`<test-events-child></test-events-child>`;

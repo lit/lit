@@ -15,14 +15,36 @@
  * @see https://dom.spec.whatwg.org/#customevent
  */
 
+export interface EventTargetShimMeta {
+  /**
+   * The event target parent represents the previous event target for an event
+   * in capture phase and the next event target for a bubbling event.
+   * Note that this is not the element parent
+   */
+  __eventTargetParent: EventTarget | undefined;
+  /**
+   * The host event target/element of this event target, if this event target
+   * is inside a Shadow DOM.
+   */
+  __host: EventTarget | undefined;
+}
+
 type EventTargetInterface = EventTarget;
 
 const isCaptureEventListener = (
   options: undefined | AddEventListenerOptions | boolean
 ) => (typeof options === 'boolean' ? options : options?.capture ?? false);
 
+// Event phases
+const NONE = 0;
+const CAPTURING_PHASE = 1;
+const AT_TARGET = 2;
+const BUBBLING_PHASE = 3;
+
 // Shim the global EventTarget object
-const EventTargetShim = class EventTarget implements EventTargetInterface {
+const EventTargetShim = class EventTarget
+  implements EventTargetInterface, EventTargetShimMeta
+{
   private __eventListeners = new Map<
     string,
     Map<EventListenerOrEventListenerObject, AddEventListenerOptions>
@@ -100,7 +122,7 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
     // in this scenario.
     let stopPropagation = false;
     let stopImmediatePropagation = false;
-    let eventPhase = 0;
+    let eventPhase = NONE;
     let target: EventTarget | null = null;
     let tmpTarget: EventTarget | null = null;
     let currentTarget: EventTarget | null = null;
@@ -115,7 +137,7 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
       },
       srcElement: {
         get() {
-          return target ?? tmpTarget;
+          return event.target;
         },
         ...enumerableProperty,
       },
@@ -138,19 +160,22 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
       stopPropagation: {
         value: () => {
           stopPropagation = true;
-          originalStopPropagation.call(this);
+          originalStopPropagation.call(event);
         },
         ...enumerableProperty,
       },
       stopImmediatePropagation: {
         value: () => {
           stopImmediatePropagation = true;
-          originalStopImmediatePropagation.call(this);
+          originalStopImmediatePropagation.call(event);
         },
         ...enumerableProperty,
       },
     });
 
+    // An event handler can either be a function, an object with a handleEvent
+    // method or null. This function takes care to call the event handler
+    // correctly.
     const invokeEventListener = (
       listener: EventListenerOrEventListenerObject,
       options: AddEventListenerOptions,
@@ -168,14 +193,19 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
         eventListenerMap.delete(listener);
       }
     };
+    // When an event is finished being dispatched, which can be after the event
+    // tree has been traversed or stopPropagation/stopImmediatePropagation has
+    // been called. Once that is the case, the currentTarget and eventPhase
+    // need to be reset and a value, representing whether the event has not
+    // been prevented, needs to be returned.
     const finishDispatch = () => {
       currentTarget = null;
-      eventPhase = 0;
+      eventPhase = NONE;
       return !event.defaultPrevented;
     };
 
     // An event starts with the capture order, where it starts from the top.
-    // This is done even if bubbles is set to false (default).
+    // This is done even if bubbles is set to false, which is the default.
     const captureEventPath = composedPath.slice().reverse();
     // If the event target, which dispatches the event, is either in the light DOM
     // or the event is not composed, the target is always itself. If that is not
@@ -193,19 +223,23 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
         retarget(captureEventPath.slice(captureEventPath.indexOf(eventTarget)));
       }
       currentTarget = eventTarget;
-      eventPhase = eventTarget === event.target ? 2 : 1;
+      eventPhase = eventTarget === event.target ? AT_TARGET : CAPTURING_PHASE;
       const captureEventListeners = eventTarget.__captureEventListeners.get(
         event.type
       );
       if (captureEventListeners) {
-        captureEventListeners.forEach((options, listener) => {
+        for (const [listener, options] of captureEventListeners) {
           invokeEventListener(listener, options, captureEventListeners);
           if (stopImmediatePropagation) {
+            // Event.stopImmediatePropagation() stops any following invocation
+            // of an event handler even on the same event target.
             return finishDispatch();
           }
-        });
+        }
       }
       if (stopPropagation) {
+        // Event.stopPropagation() stops any following invocation
+        // of an event handler for any following event targets.
         return finishDispatch();
       }
     }
@@ -222,19 +256,23 @@ const EventTargetShim = class EventTarget implements EventTargetInterface {
         );
       }
       currentTarget = eventTarget;
-      eventPhase = eventTarget === event.target ? 2 : 3;
+      eventPhase = eventTarget === event.target ? AT_TARGET : BUBBLING_PHASE;
       const captureEventListeners = eventTarget.__eventListeners.get(
         event.type
       );
       if (captureEventListeners) {
-        captureEventListeners.forEach((options, listener) => {
+        for (const [listener, options] of captureEventListeners) {
           invokeEventListener(listener, options, captureEventListeners);
           if (stopImmediatePropagation) {
+            // Event.stopImmediatePropagation() stops any following invocation
+            // of an event handler even on the same event target.
             return finishDispatch();
           }
-        });
+        }
       }
       if (stopPropagation) {
+        // Event.stopPropagation() stops any following invocation
+        // of an event handler for any following event targets.
         return finishDispatch();
       }
     }
@@ -267,14 +305,14 @@ const EventShim = class Event implements EventInterface {
   #type: string;
   #target: EventTarget | null;
   #isBeingDispatched: boolean;
-  readonly NONE = 0;
-  readonly CAPTURING_PHASE = 1;
-  readonly AT_TARGET = 2;
-  readonly BUBBLING_PHASE = 3;
-  static readonly NONE = 0;
-  static readonly CAPTURING_PHASE = 1;
-  static readonly AT_TARGET = 2;
-  static readonly BUBBLING_PHASE = 3;
+  readonly NONE = NONE;
+  readonly CAPTURING_PHASE = CAPTURING_PHASE;
+  readonly AT_TARGET = AT_TARGET;
+  readonly BUBBLING_PHASE = BUBBLING_PHASE;
+  static readonly NONE = NONE;
+  static readonly CAPTURING_PHASE = CAPTURING_PHASE;
+  static readonly AT_TARGET = AT_TARGET;
+  static readonly BUBBLING_PHASE = BUBBLING_PHASE;
 
   constructor(type: string, options: EventInit = {}) {
     if (arguments.length === 0)

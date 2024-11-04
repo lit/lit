@@ -37,7 +37,7 @@ const {
 } = _$LH;
 
 import {digestForTemplateResult} from '@lit-labs/ssr-client';
-import {HTMLElement} from '@lit-labs/ssr-dom-shim';
+import {HTMLElement, HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
 
 import {
   ElementRenderer,
@@ -69,11 +69,6 @@ declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {
     isDefinedCustomElement?: boolean;
   }
-}
-
-interface HTMLElementShim extends HTMLElement {
-  __eventTargetParent: HTMLElement | undefined;
-  __host: HTMLElement | undefined;
 }
 
 function ssrResolve(this: Directive, _part: Part, values: unknown[]) {
@@ -113,6 +108,10 @@ const patchAnyDirectives = (
 };
 
 const templateCache = new Map<TemplateStringsArray, Array<Op>>();
+
+// This is a map for which slots exist for a given custom element.
+// With a named slot, it is represented as a string with the name
+// and the unnamed slot is represented as undefined.
 const elementSlotMap = new WeakMap<
   HTMLElement,
   Map<string | undefined, HTMLElement>
@@ -203,7 +202,7 @@ type SlotElementOpenOp = {
 };
 
 /**
- * Operation to mark a slot closing.
+ * Operation to mark a slot as closed.
  */
 type SlotElementCloseOp = {
   type: 'slot-element-close';
@@ -442,6 +441,9 @@ const getTemplateOpcodes = (result: TemplateResult) => {
           isElementNode(node.parentNode) &&
           node.parentNode.isDefinedCustomElement
         ) {
+          // When the parent node is a custom element we check for the presence
+          // or absence of the slot attribute. This allows us to track the
+          // event tree with the association of the slot path.
           ops.push({
             type: 'slotted-element-open',
             name: node.attrs.find((a) => a.name === 'slot')?.value,
@@ -877,11 +879,11 @@ And the inner template was:
         if (instance.element) {
           const eventTarget = getLast(
             renderInfo.eventTargetStack
-          ) as HTMLElementShim;
+          ) as HTMLElementWithEventMeta;
           const slotName = getLast(renderInfo.slotStack);
-          (instance.element as HTMLElementShim).__eventTargetParent =
+          (instance.element as HTMLElementWithEventMeta).__eventTargetParent =
             elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
-          (instance.element as HTMLElementShim).__host = getLast(
+          (instance.element as HTMLElementWithEventMeta).__host = getLast(
             renderInfo.customElementHostStack
           )?.element;
           renderInfo.eventTargetStack.push(instance.element);
@@ -980,7 +982,7 @@ And the inner template was:
           // op.name is either the slot name or undefined, which represents
           // the unnamed slot case.
           if (!slots.has(op.name)) {
-            const element = new HTMLElement() as HTMLElementShim;
+            const element = new HTMLElement() as HTMLElementWithEventMeta;
             element.__eventTargetParent = getLast(renderInfo.eventTargetStack);
             slots.set(op.name, element);
             renderInfo.eventTargetStack.push(element);
