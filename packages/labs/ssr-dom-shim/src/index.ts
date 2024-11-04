@@ -4,7 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {ElementInternalsShim} from './lib/element-internals.js';
-import {EventTargetShim, EventShim, CustomEventShim} from './lib/events.js';
+import {
+  EventTargetShim,
+  EventShim,
+  CustomEventShim,
+  EventTargetShimMeta,
+} from './lib/events.js';
 
 export {
   ariaMixinAttributes,
@@ -16,6 +21,9 @@ export {CustomEvent, Event, EventTarget} from './lib/events.js';
 // In an empty Node.js vm, we need to patch the global context.
 globalThis.Event ??= EventShim;
 globalThis.CustomEvent ??= CustomEventShim;
+
+// Internal type to be used for the event polyfill functionality.
+export type HTMLElementWithEventMeta = HTMLElement & EventTargetShimMeta;
 
 const attributes = new WeakMap<
   InstanceType<typeof HTMLElementShim>,

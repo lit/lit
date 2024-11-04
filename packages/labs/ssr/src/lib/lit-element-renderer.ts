@@ -19,6 +19,22 @@ export type Constructor<T> = {new (): T};
 
 const {attributeToProperty, changedProperties} = _$LE;
 
+// We want consumers to be able to implement their own createRenderRoot
+// and to detect whether it breaks during SSR. Due to this, we
+// patch the createRenderRoot method on LitElement.
+// If this method is not patched, the SSR call will fail, as adoptStyles
+// is called, which will in turn call browser native APIs.
+// TODO: Check if we could enable supportsAdoptingStyleSheets during SSR
+// and polyfill CSSStyleSheet.
+LitElement.prototype['createRenderRoot'] = function () {
+  return (
+    this.shadowRoot ??
+    this.attachShadow(
+      (this.constructor as typeof ReactiveElement).shadowRootOptions
+    )
+  );
+};
+
 /**
  * ElementRenderer implementation for LitElements
  */
@@ -69,8 +85,22 @@ export class LitElementRenderer extends ElementRenderer {
     // Optionally call connectedCallback via setting: `litSsrCallConnectedCallback`
     // Enable this flag to process events dispatched handled via connectedCallback.
     if (globalThis.litSsrCallConnectedCallback) {
+      // Prevent enabling asynchronous updating by overriding enableUpdating
+      // with a no-op.
       this.element['enableUpdating'] = function () {};
-      this.element.connectedCallback();
+      // We also depend on patching createRenderRoot, which is done above.
+      try {
+        this.element.connectedCallback();
+      } catch (e) {
+        const className = this.element.constructor.name;
+        console.warn(
+          `Calling ${className}.connectedCallback() resulted in a thrown ` +
+            'error. Consider removing `litSsrCallConnectedCallback` to ' +
+            'prevent calling connectedCallback or add isServer checks to ' +
+            'your code to prevent calling browser API during SSR.'
+        );
+        throw e;
+      }
     }
 
     const propertyValues = changedProperties(this.element);
