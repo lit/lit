@@ -10,10 +10,9 @@ import {classMap} from 'lit/directives/class-map.js';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
+import type {HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
 import {html as serverhtml} from '../../lib/server-template.js';
 export {digestForTemplateResult} from '@lit-labs/ssr-client';
-
-export const moduleGlobalThis = globalThis;
 
 export {render} from '../../lib/render-lit-html.js';
 
@@ -229,12 +228,65 @@ export class TestStyles extends LitElement {
 
 /* Events */
 
+const eventPhases = ['NONE', 'CAPTURING_PHASE', 'AT_TARGET', 'BUBBLING_PHASE'];
+let nextId = 0;
+// Pattern: element-name:id/capture/eventPhase/target:id
+let eventPath: string[] = [];
+
+export const setupEvents = () => {
+  nextId = 0;
+  eventPath = [];
+  globalThis.litSsrCallConnectedCallback = true;
+  return {
+    eventPath,
+    reset: () => delete globalThis.litSsrCallConnectedCallback,
+  };
+};
+
+// The event handlers for slots should only be added once per slot.
+const registeredEventHandlerElements = new WeakSet<HTMLElement>();
 export class EventTargetTestBase extends LitElement {
   static testInitializer?: (el: EventTargetTestBase) => void;
 
   constructor() {
     super();
+    this.id = `${nextId++}`;
+    this._attachEventHandler(this);
     (this.constructor as typeof EventTargetTestBase).testInitializer?.(this);
+  }
+  override connectedCallback() {
+    super.connectedCallback();
+    // We want to also track slot element events, which we can resolve via event parents
+    const slots: HTMLElement[] = [];
+    let el = this as HTMLElement as HTMLElementWithEventMeta;
+    while (
+      (el.__eventTargetParent as HTMLElement | undefined)?.localName === 'slot'
+    ) {
+      slots.push(el.__eventTargetParent as HTMLElement);
+      el = el.__eventTargetParent as HTMLElement as HTMLElementWithEventMeta;
+    }
+
+    for (const el of slots
+      .reverse()
+      .filter((el) => !registeredEventHandlerElements.has(el))) {
+      el.id = `${nextId++}`;
+      this._attachEventHandler(el);
+      registeredEventHandlerElements.add(el);
+    }
+  }
+  private _attachEventHandler(el: HTMLElement) {
+    for (const capture of [true, false]) {
+      el.addEventListener(
+        'test',
+        ({target, eventPhase}) => {
+          const {localName, id: targetId} = target as HTMLElement;
+          eventPath.push(
+            `${el.localName}:${el.id}/${capture ? 'capture' : 'non-capture'}/${eventPhases[eventPhase]}/${localName}:${targetId}`
+          );
+        },
+        {capture}
+      );
+    }
   }
 }
 
@@ -275,6 +327,7 @@ export class TestEventsParent extends EventTargetTestBase {
 
 @customElement('test-events-child')
 export class TestEventsChild extends EventTargetTestBase {
+  static eventOptions?: EventInit;
   override connectedCallback() {
     super.connectedCallback();
     this.dispatchEvent(
@@ -285,10 +338,8 @@ export class TestEventsChild extends EventTargetTestBase {
             (this.getAttribute('data-test') ?? '') + value
           ),
         bubbles: true,
+        ...(this.constructor as typeof TestEventsChild).eventOptions,
       })
-    );
-    this.dispatchEvent(
-      new Event('testcomposed', {bubbles: true, composed: true})
     );
   }
   override render() {
@@ -313,6 +364,14 @@ export class TestEventsChildShadowNested extends EventTargetTestBase {
   }
 }
 
+@customElement('test-events-child-shadow-nested-twice')
+export class TestEventsChildShadowNestedTwice extends EventTargetTestBase {
+  override render() {
+    // prettier-ignore
+    return html`<test-events-child-shadow-nested></test-events-child-shadow-nested>`;
+  }
+}
+
 // prettier-ignore
 export const eventParentAndSingleChildWithoutValue = html`<test-events-parent><test-events-child></test-events-child></test-events-parent>`;
 
@@ -329,7 +388,13 @@ export const eventShadowNested = html`<test-events-parent value="my-test"><test-
   </test-events-shadow-nested></test-events-parent>`;
 
 // prettier-ignore
+export const eventParentAndSingleWithNonExistentSlot = html`<test-events-parent><test-events-child slot="nothing"></test-events-child></test-events-parent>`;
+
+// prettier-ignore
 export const eventChildShadowNested = html`<test-events-child-shadow-nested></test-events-child-shadow-nested>`;
+
+// prettier-ignore
+export const eventChildShadowNestedTwice = html`<test-events-child-shadow-nested-twice></test-events-child-shadow-nested-twice>`;
 
 /* Directives */
 
