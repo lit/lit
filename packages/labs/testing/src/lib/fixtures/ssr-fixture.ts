@@ -55,7 +55,7 @@ export async function ssrFixture<T extends HTMLElement>(
     const {stack} = new Error();
     const match =
       stack?.match(
-        /http:\/\/(localhost|host.containers.internal).+(?=\?wtr-session-id)/
+        /http:\/\/(localhost|host\.containers\.internal).+(?=\?wtr-session-id)/
       ) ??
       // Looking for wtr-session-id might not work in webkit. See https://github.com/lit/lit/issues/4067
       // As a fallback, we look for the first file which is not inside node_modules and
@@ -68,7 +68,7 @@ export async function ssrFixture<T extends HTMLElement>(
       // @http://localhost:8000/test/my-element_test.js:20:37
       [
         ...(stack?.matchAll(
-          /http:\/\/(localhost|host.containers.internal):?[^:)]+/gm
+          /http:\/\/(localhost|host\.containers\.internal):?[^:)]+/gm
         ) ?? []),
       ]
         .map((m) => m[0])
