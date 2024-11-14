@@ -99,6 +99,14 @@ if (DEV_MODE) {
   ) => {
     const ctor = defineTestElement(getControllerConfig);
     const el = await renderTestElement(ctor);
+
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    await new Promise((resolve) => requestAnimationFrame(resolve));
+    // Note: Instead of requesting two animation frames, we can also wait 100 ms
+    // to reproduce the issue:
+    //
+    // await new Promise((resolve) => setTimeout(resolve, 100));
+
     return el;
   };
 
