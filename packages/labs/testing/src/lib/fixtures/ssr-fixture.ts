@@ -53,6 +53,7 @@ export async function ssrFixture<T extends HTMLElement>(
     // asyncFunctionResume@[native code]
     // @http://localhost:8000/test/my-element_test.js?wtr-session-id=aKWON-wBOBGyzb2CwIvmK:65:37
     const {stack} = new Error();
+    // host.containers.internal represents the host address when running browser/tests inside a container.
     const match =
       stack?.match(
         /http:\/\/(localhost|host\.containers\.internal).+(?=\?wtr-session-id)/
