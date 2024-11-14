@@ -43,6 +43,7 @@ if (DEV_MODE) {
     class A extends ReactiveElement {
       observer: ResizeController;
       observerValue: unknown;
+      private updateCount = 0;
       changeDuringUpdate?: () => void;
       constructor() {
         super();
@@ -62,6 +63,7 @@ if (DEV_MODE) {
 
       override updated() {
         this.observerValue = this.observer.value;
+        this.updateCount++;
       }
 
       resetObserverValue() {
@@ -149,6 +151,7 @@ if (DEV_MODE) {
     }));
 
     // Does not reports initial change when `skipInitial` is set
+    assert.equal((el as any).updateCount, 1);
     assert.isUndefined(el.observerValue);
 
     // Reports subsequent attribute change when `skipInitial` is set
