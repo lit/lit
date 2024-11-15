@@ -724,6 +724,24 @@ export function* renderValue(
   renderInfo: RenderInfo,
   hydratable = true
 ): RenderResult {
+  if (renderInfo.customElementHostStack.length === 0) {
+    // If the SSR root event target is not at the start of the event target
+    // stack, we add it to the beginning of the array.
+    // This only applies if we are in the top level document and not in a
+    // Shadow DOM.
+    const rootEventTarget = renderInfo.eventTargetStack[0];
+    if (rootEventTarget !== litServerRootEventTarget) {
+      renderInfo.eventTargetStack.unshift(litServerRootEventTarget);
+      if (rootEventTarget) {
+        // If an entry in the event target stack was provided and it was not
+        // the event root target, we need to connect the given event target
+        // to the root event target.
+        (rootEventTarget as HTMLElementWithEventMeta).__eventTargetParent =
+          rootEventTarget;
+      }
+    }
+  }
+
   patchIfDirective(value);
   if (isRenderLightDirective(value)) {
     // If a value was produced with renderLight(), we want to call and render

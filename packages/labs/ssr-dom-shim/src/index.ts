@@ -138,6 +138,21 @@ const HTMLElementShimWithRealType =
   HTMLElementShim as object as typeof HTMLElement;
 export {HTMLElementShimWithRealType as HTMLElement};
 
+// For convenience, we provide a global instance of a HTMLElement as an event
+// target. This facilitates registering global event handlers
+// (e.g. for @lit/context ContextProvider).
+// We use this in in the SSR render function.
+globalThis.litServerRootEventTarget ??= Object.defineProperty(
+  new HTMLElementShimWithRealType(),
+  'localName',
+  {
+    // Patch localName (and tagName) to return a unique name.
+    get() {
+      return 'lit-server-event-root-target';
+    },
+  }
+);
+
 interface CustomHTMLElementConstructor {
   new (): HTMLElement;
   observedAttributes?: string[];

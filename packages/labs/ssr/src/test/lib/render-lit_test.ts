@@ -513,12 +513,14 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       );
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
-        'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:1',
-        'slot:2/capture/CAPTURING_PHASE/test-events-child:1',
-        'test-events-child:1/capture/AT_TARGET/test-events-child:1',
-        'test-events-child:1/non-capture/AT_TARGET/test-events-child:1',
-        'slot:2/non-capture/BUBBLING_PHASE/test-events-child:1',
-        'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:1',
+        'lit-server-event-root-target:1/capture/CAPTURING_PHASE/test-events-child:2',
+        'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:2',
+        'slot:3/capture/CAPTURING_PHASE/test-events-child:2',
+        'test-events-child:2/capture/AT_TARGET/test-events-child:2',
+        'test-events-child:2/non-capture/AT_TARGET/test-events-child:2',
+        'slot:3/non-capture/BUBBLING_PHASE/test-events-child:2',
+        'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:2',
+        'lit-server-event-root-target:1/non-capture/BUBBLING_PHASE/test-events-child:2',
       ]);
     } finally {
       reset();
@@ -542,12 +544,14 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       );
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'lit-server-event-root-target:1/capture/CAPTURING_PHASE/test-events-child:1',
         'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:1',
         'slot:2/capture/CAPTURING_PHASE/test-events-child:1',
         'test-events-child:1/capture/AT_TARGET/test-events-child:1',
         'test-events-child:1/non-capture/AT_TARGET/test-events-child:1',
         'slot:2/non-capture/BUBBLING_PHASE/test-events-child:1',
         'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:1',
+        'lit-server-event-root-target:1/non-capture/BUBBLING_PHASE/test-events-child:1',
       ]);
     } finally {
       reset();
@@ -576,6 +580,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       );
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'lit-server-event-root-target:1/capture/CAPTURING_PHASE/test-events-child:3',
         'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:3',
         'slot:2/capture/CAPTURING_PHASE/test-events-child:3',
         'test-events-parent:1/capture/CAPTURING_PHASE/test-events-child:3',
@@ -586,6 +591,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
         'test-events-parent:1/non-capture/BUBBLING_PHASE/test-events-child:3',
         'slot:2/non-capture/BUBBLING_PHASE/test-events-child:3',
         'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:3',
+        'lit-server-event-root-target:1/non-capture/BUBBLING_PHASE/test-events-child:3',
       ]);
     } finally {
       reset();
@@ -617,13 +623,16 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
         // Event from first <test-events-child>
+        'lit-server-event-root-target:1/capture/CAPTURING_PHASE/test-events-child:3',
         'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:3',
         'slot:2/capture/CAPTURING_PHASE/test-events-child:3',
         'test-events-child:3/capture/AT_TARGET/test-events-child:3',
         'test-events-child:3/non-capture/AT_TARGET/test-events-child:3',
         'slot:2/non-capture/BUBBLING_PHASE/test-events-child:3',
         'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:3',
+        'lit-server-event-root-target:1/non-capture/BUBBLING_PHASE/test-events-child:3',
         // Event from second <test-events-child>
+        'lit-server-event-root-target:1/capture/CAPTURING_PHASE/test-events-child:4',
         'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:4',
         'slot:2/capture/CAPTURING_PHASE/test-events-child:4',
         'test-events-parent:1/capture/CAPTURING_PHASE/test-events-child:4',
@@ -634,6 +643,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
         'test-events-parent:1/non-capture/BUBBLING_PHASE/test-events-child:4',
         'slot:2/non-capture/BUBBLING_PHASE/test-events-child:4',
         'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:4',
+        'lit-server-event-root-target:1/non-capture/BUBBLING_PHASE/test-events-child:4',
       ]);
     } finally {
       reset();
@@ -648,10 +658,12 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       await render(eventParentAndSingleWithNonExistentSlot);
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'lit-server-event-root-target:1/capture/CAPTURING_PHASE/test-events-child:1',
         'test-events-parent:0/capture/CAPTURING_PHASE/test-events-child:1',
         'test-events-child:1/capture/AT_TARGET/test-events-child:1',
         'test-events-child:1/non-capture/AT_TARGET/test-events-child:1',
         'test-events-parent:0/non-capture/BUBBLING_PHASE/test-events-child:1',
+        'lit-server-event-root-target:1/non-capture/BUBBLING_PHASE/test-events-child:1',
       ]);
     } finally {
       reset();
@@ -682,10 +694,12 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       await render(eventChildShadowNested);
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'lit-server-event-root-target:1/capture/CAPTURING_PHASE/test-events-child-shadow-nested:0',
         'test-events-child-shadow-nested:0/capture/AT_TARGET/test-events-child-shadow-nested:0',
         'test-events-child:1/capture/AT_TARGET/test-events-child:1',
         'test-events-child:1/non-capture/AT_TARGET/test-events-child:1',
         'test-events-child-shadow-nested:0/non-capture/AT_TARGET/test-events-child-shadow-nested:0',
+        'lit-server-event-root-target:1/non-capture/BUBBLING_PHASE/test-events-child-shadow-nested:0',
       ]);
     } finally {
       delete TestEventsChild.eventOptions;
@@ -702,12 +716,14 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       await render(eventChildShadowNestedTwice);
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'lit-server-event-root-target:1/capture/CAPTURING_PHASE/test-events-child-shadow-nested-twice:0',
         'test-events-child-shadow-nested-twice:0/capture/AT_TARGET/test-events-child-shadow-nested-twice:0',
         'test-events-child-shadow-nested:1/capture/AT_TARGET/test-events-child-shadow-nested:1',
         'test-events-child:2/capture/AT_TARGET/test-events-child:2',
         'test-events-child:2/non-capture/AT_TARGET/test-events-child:2',
         'test-events-child-shadow-nested:1/non-capture/AT_TARGET/test-events-child-shadow-nested:1',
         'test-events-child-shadow-nested-twice:0/non-capture/AT_TARGET/test-events-child-shadow-nested-twice:0',
+        'lit-server-event-root-target:1/non-capture/BUBBLING_PHASE/test-events-child-shadow-nested-twice:0',
       ]);
     } finally {
       delete TestEventsChild.eventOptions;
