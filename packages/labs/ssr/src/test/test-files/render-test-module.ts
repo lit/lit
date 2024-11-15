@@ -257,16 +257,18 @@ export class EventTargetTestBase extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
     // We want to also track slot element events, which we can resolve via event parents
-    const slots: HTMLElement[] = [];
+    const rootEventTargetAndSlots: HTMLElement[] = [];
     let el = this as HTMLElement as HTMLElementWithEventMeta;
     while (
-      (el.__eventTargetParent as HTMLElement | undefined)?.localName === 'slot'
+      [litServerRootEventTarget.localName, 'slot'].includes(
+        (el.__eventTargetParent as HTMLElement | undefined)?.localName as string
+      )
     ) {
-      slots.push(el.__eventTargetParent as HTMLElement);
+      rootEventTargetAndSlots.push(el.__eventTargetParent as HTMLElement);
       el = el.__eventTargetParent as HTMLElement as HTMLElementWithEventMeta;
     }
 
-    for (const el of slots
+    for (const el of rootEventTargetAndSlots
       .reverse()
       .filter((el) => !registeredEventHandlerElements.has(el))) {
       el.id = `${nextId++}`;
@@ -395,6 +397,9 @@ export const eventChildShadowNested = html`<test-events-child-shadow-nested></te
 
 // prettier-ignore
 export const eventChildShadowNestedTwice = html`<test-events-child-shadow-nested-twice></test-events-child-shadow-nested-twice>`;
+
+// prettier-ignore
+export const eventChild = html`<test-events-child></test-events-child>`;
 
 /* Directives */
 
