@@ -166,8 +166,8 @@ export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
  * ```
  */
 export class Task<
-  T extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
-  R = unknown,
+  const T extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
+  const R = unknown,
 > {
   private _previousArgs?: T;
   private _task: TaskFunction<T, R>;
