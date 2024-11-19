@@ -295,6 +295,7 @@ const enumerableProperty: Record<string, unknown> = {__proto__: null};
 enumerableProperty.enumerable = true;
 Object.freeze(enumerableProperty);
 
+// TODO: Remove this when we remove support for vm modules (--experimental-vm-modules).
 const EventShim = class Event implements EventInterface {
   #cancelable = false;
   #bubbles = false;
@@ -432,6 +433,7 @@ Object.defineProperties(EventShim.prototype, {
 
 type CustomEventInterface = CustomEvent;
 
+// TODO: Remove this when we remove support for vm modules (--experimental-vm-modules).
 const CustomEventShim = class CustomEvent<T>
   extends EventShim
   implements CustomEventInterface

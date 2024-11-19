@@ -119,6 +119,7 @@ const elementSlotMap = new WeakMap<
 
 // We want the slot element to be able to be identified.
 class HTMLSlotElement extends HTMLElement {
+  name!: string;
   override get localName(): string {
     return 'slot';
   }
@@ -730,8 +731,8 @@ export function* renderValue(
     // This only applies if we are in the top level document and not in a
     // Shadow DOM.
     const rootEventTarget = renderInfo.eventTargetStack[0];
-    if (rootEventTarget !== litServerRootEventTarget) {
-      renderInfo.eventTargetStack.unshift(litServerRootEventTarget);
+    if (rootEventTarget !== litServerRoot) {
+      renderInfo.eventTargetStack.unshift(litServerRoot);
       if (rootEventTarget) {
         // If an entry in the event target stack was provided and it was not
         // the event root target, we need to connect the given event target
@@ -1017,8 +1018,18 @@ And the inner template was:
           // op.name is either the slot name or undefined, which represents
           // the unnamed slot case.
           if (!slots.has(op.name)) {
-            const element = new HTMLSlotElement() as HTMLElementWithEventMeta;
-            element.__eventTargetParent = getLast(renderInfo.eventTargetStack);
+            const element = new HTMLSlotElement() as HTMLSlotElement &
+              HTMLElementWithEventMeta;
+            element.name = op.name ?? '';
+            const eventTarget = getLast(
+              renderInfo.eventTargetStack
+            ) as HTMLElementWithEventMeta;
+            const slotName = getLast(renderInfo.slotStack);
+            element.__eventTargetParent =
+              elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
+            element.__host = getLast(
+              renderInfo.customElementHostStack
+            )?.element;
             slots.set(op.name, element);
             renderInfo.eventTargetStack.push(element);
           }
