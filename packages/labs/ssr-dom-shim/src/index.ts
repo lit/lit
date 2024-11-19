@@ -19,6 +19,8 @@ export {
 export {CustomEvent, Event, EventTarget} from './lib/events.js';
 
 // In an empty Node.js vm, we need to patch the global context.
+// TODO: Remove these globalThis assignments when we remove support
+// for vm modules (--experimental-vm-modules).
 globalThis.Event ??= EventShim;
 globalThis.CustomEvent ??= CustomEventShim;
 
@@ -142,13 +144,13 @@ export {HTMLElementShimWithRealType as HTMLElement};
 // target. This facilitates registering global event handlers
 // (e.g. for @lit/context ContextProvider).
 // We use this in in the SSR render function.
-globalThis.litServerRootEventTarget ??= Object.defineProperty(
+globalThis.litServerRoot ??= Object.defineProperty(
   new HTMLElementShimWithRealType(),
   'localName',
   {
     // Patch localName (and tagName) to return a unique name.
     get() {
-      return 'lit-server-event-root-target';
+      return 'lit-server-root';
     },
   }
 );

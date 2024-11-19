@@ -8,4 +8,4 @@
 declare var litSsrCallConnectedCallback: undefined | boolean;
 
 // eslint-disable-next-line no-var
-declare var litServerRootEventTarget: HTMLElement;
+declare var litServerRoot: HTMLElement;

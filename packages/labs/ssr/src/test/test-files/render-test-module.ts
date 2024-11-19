@@ -230,7 +230,7 @@ export class TestStyles extends LitElement {
 
 const eventPhases = ['NONE', 'CAPTURING_PHASE', 'AT_TARGET', 'BUBBLING_PHASE'];
 let nextId = 0;
-// Pattern: element-name:id/capture/eventPhase/target:id
+// Pattern: element-name{id,host?}/capture/eventPhase/target{id}
 let eventPath: string[] = [];
 
 export const setupEvents = () => {
@@ -257,33 +257,54 @@ export class EventTargetTestBase extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
     // We want to also track slot element events, which we can resolve via event parents
-    const rootEventTargetAndSlots: HTMLElement[] = [];
+    const rootEventTargetAndSlots: HTMLElementWithEventMeta[] = [];
     let el = this as HTMLElement as HTMLElementWithEventMeta;
     while (
-      [litServerRootEventTarget.localName, 'slot'].includes(
+      [litServerRoot.localName, 'slot'].includes(
         (el.__eventTargetParent as HTMLElement | undefined)?.localName as string
       )
     ) {
-      rootEventTargetAndSlots.push(el.__eventTargetParent as HTMLElement);
-      el = el.__eventTargetParent as HTMLElement as HTMLElementWithEventMeta;
+      rootEventTargetAndSlots.push(
+        el.__eventTargetParent as HTMLElementWithEventMeta
+      );
+      el = el.__eventTargetParent as HTMLElementWithEventMeta;
     }
 
     for (const el of rootEventTargetAndSlots
       .reverse()
       .filter((el) => !registeredEventHandlerElements.has(el))) {
-      el.id = `${nextId++}`;
+      if (el.localName === 'slot') {
+        el.id = `${nextId++}`;
+      }
       this._attachEventHandler(el);
       registeredEventHandlerElements.add(el);
     }
   }
   private _attachEventHandler(el: HTMLElement) {
+    const isSlotElementWithName = (
+      e: HTMLElement
+    ): e is HTMLElement & {name: string} =>
+      e.localName === 'slot' && 'name' in e && !!e.name;
     for (const capture of [true, false]) {
       el.addEventListener(
         'test',
         ({target, eventPhase}) => {
-          const {localName, id: targetId} = target as HTMLElement;
+          const elementName =
+            el.localName +
+            `${isSlotElementWithName(el) ? `[name=${el.name}]` : ''}`;
+          const host = (el as HTMLElementWithEventMeta).__host as
+            | HTMLElement
+            | undefined;
+          // Unfortunately we cannot use the host element id here,
+          // as it is lost across the module loader border.
+          const elementDetails = el.id
+            ? `{id:${el.id}${host ? `,host:${host.localName}` : ''}}`
+            : '';
+          const captureDetails = capture ? 'capture' : 'non-capture';
+          const {localName, id: targetId} = target as HTMLElementWithEventMeta;
+          const targetDetails = `${localName}{id:${targetId}}`;
           eventPath.push(
-            `${el.localName}:${el.id}/${capture ? 'capture' : 'non-capture'}/${eventPhases[eventPhase]}/${localName}:${targetId}`
+            `${elementName}${elementDetails}/${captureDetails}/${eventPhases[eventPhase]}/${targetDetails}`
           );
         },
         {capture}
@@ -351,7 +372,7 @@ export class TestEventsChild extends EventTargetTestBase {
 }
 
 @customElement('test-events-shadow-nested')
-export class TestEventsShadowNested extends LitElement {
+export class TestEventsShadowNested extends EventTargetTestBase {
   override render() {
     // prettier-ignore
     return html`<slot></slot><test-events-parent value="shadow"><slot name="a"></slot></test-events-parent>`;
@@ -371,6 +392,14 @@ export class TestEventsChildShadowNestedTwice extends EventTargetTestBase {
   override render() {
     // prettier-ignore
     return html`<test-events-child-shadow-nested></test-events-child-shadow-nested>`;
+  }
+}
+
+@customElement('test-events-nested-slots')
+export class TestEventsNestedSlots extends EventTargetTestBase {
+  override render() {
+    // prettier-ignore
+    return html`<slot><test-events-parent><slot name="a"></slot></test-events-parent></slot>`;
   }
 }
 
@@ -400,6 +429,18 @@ export const eventChildShadowNestedTwice = html`<test-events-child-shadow-nested
 
 // prettier-ignore
 export const eventChild = html`<test-events-child></test-events-child>`;
+
+// prettier-ignore
+export const eventNestedSlotWithNamedSlotChild = html`<test-events-nested-slots><test-events-child slot="a"></test-events-child></test-events-nested-slots>`;
+
+// prettier-ignore
+export const eventNestedSlotWithUnnamedSlotChild = html`<test-events-nested-slots><test-events-child></test-events-child></test-events-nested-slots>`;
+
+// prettier-ignore
+export const eventNestedSlotWithUnnamedAndNamedSlotChild = html`<test-events-nested-slots><test-events-child></test-events-child><test-events-child slot="a"></test-events-child></test-events-nested-slots>`;
+
+// prettier-ignore
+export const eventNestedSlotWithNamedAndUnnamedSlotChild = html`<test-events-nested-slots><test-events-child slot="a"></test-events-child><test-events-child></test-events-child></test-events-nested-slots>`;
 
 /* Directives */
 
