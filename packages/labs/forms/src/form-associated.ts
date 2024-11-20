@@ -30,7 +30,7 @@ export interface FormAssociated extends ReactiveElement {
 
   /**
    * Internal method to validate the element. This method should be called by
-   * the element when it's state might have changed in a way that would affect
+   * the element when its state might have changed in a way that would affect
    * its validity.
    *
    * Calls `_getValidity` and sets the validity flags on the element's
@@ -83,7 +83,7 @@ const defaultStateAccessors = new WeakMap<
 
 const stateAccessors = new WeakMap<
   DecoratorMetadataObject,
-  Access<FormValue>
+  Partial<Access<FormValue>>
 >();
 
 /*
@@ -242,7 +242,7 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       } else {
         defaultState = initialStates.get(this);
       }
-      stateAccess?.set(this, defaultState ?? null);
+      stateAccess?.set?.(this, defaultState ?? null);
     }
 
     formStateRestoreCallback(
@@ -250,35 +250,24 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       mode: 'restore' | 'autocomplete'
     ) {
       const metadata = this.constructor[Symbol.metadata]!;
-      if (mode === 'restore') {
+      const stateAccess = stateAccessors.get(metadata);
+      if (mode === 'restore' && stateAccess?.set !== undefined) {
         // When restoring a value we should get the state previously passed to
-        // internals.setFormValue(). We can pass that to the state accessor,
-        // which should update the value accessor.
-        // If there is no state accessor, we should update the value accessor
-        const stateAccess = stateAccessors.get(metadata);
-        if (stateAccess !== undefined) {
-          stateAccess.set(this, state);
-        } else {
-          const valueAccess = valueAccessors.get(metadata);
-          const valueOptions = formValueOptions.get(metadata);
-          if (valueOptions?.converter !== undefined) {
-            const value = valueOptions.converter.fromFormValue(state);
-            valueAccess?.set(this, value);
-          } else {
-            valueAccess?.set(this, state);
-          }
-        }
-      } else if (mode === 'autocomplete') {
-        // When autocompleting a value, we don't get a previous state object, so
-        // we should update the value accessor directly.
+        // internals.setFormValue(). We can pass that to the state setter, which
+        // should be implemented to update the value. If there is no state
+        // accessor, we will update the value accessor in the next branch.
+        stateAccess.set(this, state);
+      } else {
+        // In 'autocomple' mode a value, we don't get a previous state object,
+        // so we should update the value accessor directly. In 'restore' mode
+        // without a state setter, we will also update the value accessor here.
         const valueAccess = valueAccessors.get(metadata);
         const valueOptions = formValueOptions.get(metadata);
-        if (valueOptions?.converter !== undefined) {
-          const value = valueOptions.converter.fromFormValue(state);
-          valueAccess?.set(this, value);
-        } else {
-          valueAccess?.set(this, state);
-        }
+        const value =
+          valueOptions?.converter !== undefined
+            ? valueOptions.converter.fromFormValue(state)
+            : state;
+        valueAccess?.set(this, value);
       }
     }
   }
@@ -289,15 +278,14 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
 
 // #region Decorators
 
-const updateFormValue = (
-  el: FormAssociated,
-  metadata: DecoratorMetadataObject,
-  value: unknown
-) => {
+/*
+ * Sets the ElementInternals form value and state and triggers validation.
+ */
+const setFormValue = (el: FormAssociated, value: unknown) => {
+  const metadata = el.constructor[Symbol.metadata]!;
   const options = formValueOptions.get(metadata);
   const internals = _getInternals(el);
-  const stateAccess = stateAccessors.get(metadata);
-  const state = stateAccess?.get(el);
+  const state = stateAccessors.get(metadata)?.get?.(el);
   internals.setFormValue(
     options?.converter === undefined
       ? (value as FormValue)
@@ -317,6 +305,7 @@ export const formValue =
     target: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
   ): ClassAccessorDecoratorResult<C, V> => {
+    // Store the value accessor and options for later use
     valueAccessors.set(context.metadata, context.access);
     if (options !== undefined) {
       formValueOptions.set(context.metadata, options);
@@ -326,7 +315,7 @@ export const formValue =
       get: target.get,
       set(value: V) {
         target.set.call(this, value);
-        updateFormValue(this, context.metadata, value);
+        setFormValue(this, value);
       },
       init(value: V) {
         initialValues.set(this, value);
@@ -394,7 +383,7 @@ export const formState = (): FormStateDecorator =>
           (target as ClassAccessorDecoratorTarget<C, V>).set.call(this, value);
           const valueAccess = valueAccessors.get(context.metadata);
           if (valueAccess !== undefined) {
-            updateFormValue(this, context.metadata, valueAccess.get(this));
+            setFormValue(this, valueAccess.get(this));
           }
         },
       };
@@ -403,7 +392,7 @@ export const formState = (): FormStateDecorator =>
         (target as (this: C, v: V) => void).call(this, value);
         const valueAccess = valueAccessors.get(context.metadata);
         if (valueAccess !== undefined) {
-          updateFormValue(this, context.metadata, valueAccess.get(this));
+          setFormValue(this, valueAccess.get(this));
         }
       };
     }
