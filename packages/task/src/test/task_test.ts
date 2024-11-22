@@ -759,7 +759,7 @@ suite('Task', () => {
   });
 
   test('Elements only render once for pending tasks', async () => {
-    let resolveTask: (v: unknown) => void;
+    let resolveTask: (v: any) => void;
     let renderCount = 0;
     class TestElement extends ReactiveElement {
       task = new Task(this, {
@@ -1073,7 +1073,7 @@ suite('Task', () => {
     );
   });
 
-  test('tuple type arguments are inferred in simplified signature without need for "as const"', () => {
+  test('tuple type arguments are inferred without need for "as const"', () => {
     const expectType = <T>(x: T) => x;
 
     class TestElement extends ReactiveElement {
@@ -1088,31 +1088,13 @@ suite('Task', () => {
         },
         () => [this.string, this.number]
       );
-    }
-    TestElement;
-  });
-
-  test('tuple type arguments are too broad in complex signature without "as const"', () => {
-    const expectType = <T>(x: T) => x;
-
-    class TestElement extends ReactiveElement {
-      string = '';
-      number = 1;
-
-      task = new Task(this, {
-        task: ([string, number]) => {
-          expectType<string | number>(string);
-          expectType<string | number>(number);
-        },
-        args: () => [this.string, this.number],
-      });
 
       task2 = new Task(this, {
         task: ([string, number]) => {
           expectType<string>(string);
           expectType<number>(number);
         },
-        args: () => [this.string, this.number] as const,
+        args: () => [this.string, this.number],
       });
     }
     TestElement;
