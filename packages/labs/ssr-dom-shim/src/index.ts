@@ -144,6 +144,8 @@ export {HTMLElementShimWithRealType as HTMLElement};
 // target. This facilitates registering global event handlers
 // (e.g. for @lit/context ContextProvider).
 // We use this in in the SSR render function.
+// Note, this is a bespoke element and not simply `document` or `window` since
+// user code relies on these being undefined in the server environment.
 globalThis.litServerRoot ??= Object.defineProperty(
   new HTMLElementShimWithRealType(),
   'localName',
