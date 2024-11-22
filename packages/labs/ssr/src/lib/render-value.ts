@@ -114,7 +114,7 @@ const templateCache = new Map<TemplateStringsArray, Array<Op>>();
 // and the unnamed slot is represented as undefined.
 const elementSlotMap = new WeakMap<
   HTMLElement,
-  Map<string | undefined, HTMLElement>
+  Map<string | undefined, HTMLSlotElement>
 >();
 
 // We want the slot element to be able to be identified.
@@ -219,7 +219,8 @@ type SlotElementCloseOp = {
 /**
  * Operation to mark a slotted element as open. We do this by checking
  * direct children of custom elements for the absence or presence of
- * the slot attribute.
+ * the slot attribute. The absence of the slot attribute (i.e. unnamed slot)
+ * is represented by undefined.
  */
 type SlottedElementOpenOp = {
   type: 'slotted-element-open';

@@ -119,18 +119,6 @@ test('should handle dispatched bubbling event with parent', () => {
   ]);
 });
 
-test('should handle dispatched bubbling event with parent', () => {
-  const [parent, child] = createElementsWithListener('parent', 'child');
-  child.__eventTargetParent = parent;
-  child.dispatchEvent(new Event(eventName, {bubbles: true}));
-  assert.equal(eventPath, [
-    'parent:0/capture/CAPTURING_PHASE/child:1',
-    'child:1/capture/AT_TARGET/child:1',
-    'child:1/non-capture/AT_TARGET/child:1',
-    'parent:0/non-capture/BUBBLING_PHASE/child:1',
-  ]);
-});
-
 test('should handle stopPropagation during capture phase', () => {
   const [parent, child] = createElementsWithListener('parent', 'child');
   child.__eventTargetParent = parent;
