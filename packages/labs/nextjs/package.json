@@ -25,7 +25,7 @@
     "imports-loader": "^4.0.1"
   },
   "peerDependencies": {
-    "next": "13 || 14"
+    "next": "13 || 14 || 15"
   },
   "scripts": {
     "build": "wireit",
