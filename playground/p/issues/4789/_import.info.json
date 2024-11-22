@@ -1,0 +1,11 @@
+{
+  "source": "https://lit.dev/playground/#gist=1781355efc64eba1811131415cbdbfc0",
+  "originalPackageJSON": {
+    "dependencies": {
+      "lit": "^3.0.0",
+      "@lit/reactive-element": "^2.0.0",
+      "lit-element": "^4.0.0",
+      "lit-html": "^3.0.0"
+    }
+  }
+}
