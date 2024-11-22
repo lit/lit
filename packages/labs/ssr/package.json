@@ -236,7 +236,12 @@
     "parse5": "^7.1.1"
   },
   "peerDependencies": {
-    "@types/node": ">=18.0.0 <25.0.0"
+    "@types/node": ">=18.0.0 <24.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/node": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=13.9.0"
