@@ -166,8 +166,8 @@ export interface TaskConfig<T extends ReadonlyArray<unknown>, R> {
  * ```
  */
 export class Task<
-  T extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
-  R = unknown,
+  const T extends ReadonlyArray<unknown> = ReadonlyArray<unknown>,
+  const R = unknown,
 > {
   private _previousArgs?: T;
   private _task: TaskFunction<T, R>;
@@ -227,12 +227,12 @@ export class Task<
   private _rejectTaskComplete?: (e: unknown) => void;
   private _taskComplete?: Promise<R>;
 
+  constructor(host: ReactiveControllerHost, task: TaskConfig<T, R>);
   constructor(
     host: ReactiveControllerHost,
     task: TaskFunction<T, R>,
     args?: ArgsFunction<T>
   );
-  constructor(host: ReactiveControllerHost, task: TaskConfig<T, R>);
   constructor(
     host: ReactiveControllerHost,
     task: TaskFunction<T, R> | TaskConfig<T, R>,
