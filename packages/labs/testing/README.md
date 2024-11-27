@@ -43,9 +43,7 @@ Signature
 `litSsrPlugin(options: LitSsrPluginOptions = {}): TestRunnerPlugin<Payload>`
 
 - `options: object` - Options object containing the following properties
-  - `workerInitModules: string` - Relative paths to modules to be loaded before
-    the fixture modules.
-    This allows registering e.g. Node.js ESM hooks or general setup.
+  - `workerInitModules: string` - Modules to be loaded before the fixture modules. This allows registering e.g. Node.js ESM hooks or general setup. Accepts absolute paths, paths relative to the working directory, or external package modules.
 
 ### Fixtures
 
