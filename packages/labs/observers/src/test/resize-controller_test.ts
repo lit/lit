@@ -101,13 +101,7 @@ if (DEV_MODE) {
   ) => {
     const ctor = defineTestElement(getControllerConfig);
     const el = await renderTestElement(ctor);
-
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    await new Promise((resolve) => requestAnimationFrame(resolve));
-    // Note: Instead of requesting two animation frames, we can also wait 100 ms
-    // to reproduce the issue:
-    //
-    // await new Promise((resolve) => setTimeout(resolve, 100));
+    await resizeComplete();
 
     return el;
   };
@@ -378,13 +372,11 @@ if (DEV_MODE) {
 
     // Reports initial changes when observe called.
     el.observer.observe(d1);
-    el.renderRoot.appendChild(d1);
     await resizeComplete();
-    // Note, appending changes size!
-    assert.isTrue(el.observerValue);
+    assert.isUndefined(el.observerValue);
 
-    // Reports change to observed target.
-    resizeElement(d1);
+    // Note, appending changes size!
+    el.renderRoot.appendChild(d1);
     await resizeComplete();
     assert.isTrue(el.observerValue);
   });
@@ -433,6 +425,7 @@ if (DEV_MODE) {
     customElements.define(generateElementName(), TestFirstUpdated);
 
     const el = (await renderTestElement(TestFirstUpdated)) as TestFirstUpdated;
+    await resizeComplete();
 
     // Reports initial change by default
     assert.isTrue(el.observerValue);
@@ -467,8 +460,9 @@ if (DEV_MODE) {
     }
     customElements.define(generateElementName(), A);
     const el = (await renderTestElement(A)) as A;
-
+    await resizeComplete();
     assert.equal(el.observerValue, undefined);
+
     resizeElement(d);
     await resizeComplete();
     assert.isTrue(el.observerValue);

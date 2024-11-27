@@ -72,6 +72,9 @@ export class ResizeController<T = unknown> implements ReactiveController {
    * `handleChanges` once by checking and then resetting this flag.
    */
   private _unobservedUpdate = false;
+
+  private _didSkipInitial = false;
+
   /**
    * The result of processing the observer's changes via the `callback`
    * function.
@@ -105,6 +108,13 @@ export class ResizeController<T = unknown> implements ReactiveController {
       return;
     }
     this._observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+      console.error('entries', entries[0].target);
+      if (this._skipInitial && !this._didSkipInitial) {
+        console.error('this._skipInitial && !this._didSkipInitial');
+        this._didSkipInitial = true;
+        return;
+      }
+      console.error('ResizeObserver callback');
       this.handleChanges(entries);
       this._host.requestUpdate();
     });
@@ -116,10 +126,20 @@ export class ResizeController<T = unknown> implements ReactiveController {
    * function to produce a result stored in the `value` property.
    */
   protected handleChanges(entries: ResizeObserverEntry[]) {
+    console.error('handleChanges');
     this.value = this.callback?.(entries, this._observer);
   }
 
+  _didSetUpObservers = false;
+
   hostConnected() {
+    this.observeAll();
+  }
+
+  async observeAll() {
+    if (this._didSetUpObservers) return;
+    console.error('observeAll');
+    this._didSetUpObservers = true;
     for (const target of this._targets) {
       this.observe(target);
     }
@@ -133,10 +153,10 @@ export class ResizeController<T = unknown> implements ReactiveController {
     // Handle initial state as a set of 0 changes. This helps setup initial
     // state and promotes UI = f(state) since ideally the callback does not
     // rely on changes.
-    if (!this._skipInitial && this._unobservedUpdate) {
-      this.handleChanges([]);
-    }
-    this._unobservedUpdate = false;
+    // if (!this._skipInitial && this._unobservedUpdate) {
+    //   this.handleChanges([]);
+    // }
+    // this._unobservedUpdate = false;
   }
 
   /**
@@ -145,10 +165,11 @@ export class ResizeController<T = unknown> implements ReactiveController {
    * @param target Element to observe
    */
   observe(target: Element) {
+    // Add to this._targets if it isn't already, to ensure it is re-observed on reconnect.
     this._targets.add(target);
     this._observer.observe(target, this._config);
     this._unobservedUpdate = true;
-    this._host.requestUpdate();
+    // this._host.requestUpdate();
   }
 
   /**
@@ -166,5 +187,6 @@ export class ResizeController<T = unknown> implements ReactiveController {
    */
   protected disconnect() {
     this._observer.disconnect();
+    this._didSetUpObservers = false;
   }
 }
