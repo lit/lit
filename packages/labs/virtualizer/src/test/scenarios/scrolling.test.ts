@@ -217,12 +217,14 @@ describe('scrollIntoView()', () => {
 
   it('should scroll to the correct element', async () => {
     const {host, virtualizer} = await virtualizerFixture({
-      fixtureStyles: html` <style>
-        section {
-          max-block-size: 100dvh;
-          overflow: auto;
-        }
-      </style>`,
+      fixtureStyles: html`
+        <style>
+          section {
+            max-block-size: 100dvh;
+            overflow: auto;
+          }
+        </style>
+      `,
       itemStyles: html`
         <style>
           .item {
