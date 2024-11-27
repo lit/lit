@@ -85,4 +85,39 @@ describe('Virtualizer re-renders properly after changes to the `items` array', (
     // array).
     expect(outOfBounds).to.be.false;
   });
+
+  it('should size the items properly when the `items` array is replaced', async () => {
+    const _10000Items = array(10000).map((_, i) => `Item ${i}`);
+
+    const v = (await fixture(html`
+      <lit-virtualizer
+        .items=${_10000Items}
+        .renderItem=${(item: string) => html`<div>${item}</div>`}
+      ></lit-virtualizer>
+    `)) as LitVirtualizer;
+
+    // Make sure we have a Virtualizer and
+    // that its initial render is correct
+    expect(v).to.be.instanceOf(LitVirtualizer);
+    await v.layoutComplete;
+    expect(v.textContent).to.contain('Item 0');
+
+    // Replace the `items` array with a new one with a single item
+    // that is much longer than the default height
+    v.items = [
+      'Consequat do adipisicing excepteur sit ea Lorem nostrud aliquip voluptate Lorem incididunt. Non eu amet laboris magna laboris commodo aute laboris do ut. Nisi eiusmod sit sunt ipsum excepteur exercitation duis magna eiusmod deserunt. Aliquip eu ullamco veniam Lorem.',
+    ];
+    await v.layoutComplete;
+
+    // Make sure we've correctly re-rendered
+    expect(v.textContent).to.contain(
+      'Consequat do adipisicing excepteur sit ea Lorem nostrud aliquip voluptate Lorem incididunt. Non eu amet laboris magna laboris commodo aute laboris do ut. Nisi eiusmod sit sunt ipsum excepteur exercitation duis magna eiusmod deserunt. Aliquip eu ullamco veniam Lorem.'
+    );
+
+    // Make sure the height of the virtualizer is the same as the height of the first item
+    const {height} = v.getBoundingClientRect();
+    expect(height).to.equal(
+      v.firstElementChild?.getBoundingClientRect().height
+    );
+  });
 });
