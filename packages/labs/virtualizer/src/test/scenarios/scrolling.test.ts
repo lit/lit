@@ -10,8 +10,10 @@ import {
   virtualizerFixture,
   VirtualizerFixtureOptions,
   observeScroll,
+  type DefaultItem,
 } from '../virtualizer-test-utilities.js';
 import {BaseLayoutConfig} from '../../layouts/shared/Layout.js';
+import {html} from 'lit';
 
 type Coordinate = 'top' | 'left';
 
@@ -208,4 +210,46 @@ function testScrollBy(fixtureOptions: VirtualizerFixtureOptions) {
 
 describe('scrollBy()', () => {
   testScrollBy({});
+});
+
+describe('scrollIntoView()', () => {
+  ignoreBenignErrors(beforeEach, afterEach);
+
+  it('should scroll to the correct element', async () => {
+    const {host, virtualizer} = await virtualizerFixture({
+      fixtureStyles: html` <style>
+        section {
+          max-block-size: 100dvh;
+          overflow: auto;
+        }
+      </style>`,
+      itemStyles: html`
+        <style>
+          .item {
+            block-size: 32px;
+            margin-bottom: 2px;
+          }
+        </style>
+      `,
+      nItems: 10000,
+      renderItem: (item: DefaultItem) =>
+        html`<div id="item-${item.index}" class="item">${item.text}</div>`,
+      scroller: false,
+    });
+
+    // Scroll to the 3000th item
+    virtualizer.element(3000)?.scrollIntoView();
+    await virtualizer.layoutComplete;
+
+    // Make sure the element exists in the DOM
+    const item = host.querySelector('#item-3000');
+    expect(item).to.not.be.null;
+
+    // Make sure the element is at the top of the viewport
+    // FIXME: this test is flaky:
+    // On the `gnorton/fix-4767` branch, this fails with a difference of 8.4140625 pixels
+    // On the `main` branch, this fails with a difference of -1025.5859375 pixels
+    // I don't know where the 8.4140625 difference is coming from...
+    expect(item?.getBoundingClientRect().top).to.equal(0);
+  });
 });
