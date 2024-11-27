@@ -66,6 +66,7 @@ lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/lit/
   - [`@lit-labs/scoped-registry-mixin`](./packages/labs/scoped-registry-mixin) - A mixin for LitElement that integrates with the speculative Scoped CustomElementRegistry polyfill.
   - [`@lit-labs/observers`](./packages/labs/observers) - A set of reactive controllers that facilitate using the platform observer objects.
   - [`@lit-labs/preact-signals`](./packages/labs/preact-signals) - [Preact Signals](https://preactjs.com/guide/v10/signals/) integration for Lit.
+  - [`@lit-labs/signals`](./packages/labs/signals) - [TC39 proposal Signals](https://github.com/tc39/proposal-signals) integration for Lit.
   - [`@lit-labs/testing`](./packages/labs/testing) - Utilities for testing Lit components.
   - [`@lit-labs/virtualizer`](./packages/labs/virtualizer) - Viewport-based virtualization (including virtual scrolling).
   - [`@lit-labs/compiler`](./packages/labs/compiler) - A compiler for optimizing Lit templates.
