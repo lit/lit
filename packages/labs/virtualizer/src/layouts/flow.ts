@@ -312,6 +312,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     } else {
       this._getItems();
     }
+    // Fix scroll size after rendering
+    this._updateScrollSize();
   }
 
   /**
@@ -360,8 +362,13 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
     // If we are scrolling to a specific index or if we are doing another
     // pass to stabilize a previously started reflow, we will already
-    // have an anchor. If not, establish an anchor now.
-    if (this._anchorIdx === null || this._anchorPos === null) {
+    // have an anchor and anchor is in view. If not, establish an anchor now.
+    if (
+      this._anchorIdx === null ||
+      this._anchorPos === null ||
+      this._anchorPos < lower ||
+      this._anchorPos > upper
+    ) {
       this._anchorIdx = this._getAnchor(lower, upper);
       this._anchorPos = this._getPosition(this._anchorIdx);
     }
@@ -504,12 +511,17 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   }
 
   _updateScrollSize() {
-    const {averageMarginSize} = this._metricsCache;
-    this._scrollSize = Math.max(
-      1,
-      this.items.length * (averageMarginSize + this._getAverageSize()) +
-        averageMarginSize
-    );
+    const lastItemPosition = this._getPhysicalItem(this.items.length - 1);
+    if (this._last === this.items.length - 1 && lastItemPosition) {
+      this._scrollSize = lastItemPosition.pos + lastItemPosition.size;
+    } else {
+      const {averageMarginSize} = this._metricsCache;
+      this._scrollSize = Math.max(
+        1,
+        this.items.length * (averageMarginSize + this._getAverageSize()) +
+          averageMarginSize
+      );
+    }
   }
 
   /**
