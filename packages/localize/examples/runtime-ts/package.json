@@ -57,6 +57,6 @@
   },
   "devDependencies": {
     "@lit/localize-tools": "^0.8.0",
-    "@web/dev-server": "^0.1.22"
+    "@web/dev-server": "^0.4.6"
   }
 }
