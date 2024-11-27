@@ -38,6 +38,13 @@ export default {
 };
 ```
 
+Signature
+
+`litSsrPlugin(options: LitSsrPluginOptions = {}): TestRunnerPlugin<Payload>`
+
+- `options: object` - Options object containing the following properties
+  - `workerInitModules: string` - Modules to be loaded before the fixture modules. This allows registering e.g. Node.js ESM hooks or general setup. Accepts absolute paths, paths relative to the working directory, or external package modules.
+
 ### Fixtures
 
 The package exports functions that will generate fixtures by passing the
