@@ -19,6 +19,11 @@ for events dispatched by the custom element.
 For properties, the wrapper interrogates the web component class to discover
 its available properties. Then any React `props` passed with property names are
 set on the custom element as properties and not attributes.
+Setting config option `renderAttributesOnCreate` to `true`, all values
+should be passed to the web component as attributes instead of properties.
+The attribute values are present during first rendering of the web component and
+this can therefore prevent potential FOUCs.
+Object values without converter available are excluded as they cannot be passed as attributes.
 
 For events, `createComponent` accepts a mapping of React event prop names
 to events fired by the custom element. For example passing `{onfoo: 'foo'}`
