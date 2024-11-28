@@ -176,7 +176,7 @@ export class ResizeController<T = unknown> implements ReactiveController {
    * disconnects. Note that the observer is automatically reconnected when the
    * host reconnects.
    */
-  protected disconnect() {
+  private disconnect() {
     this._observer.disconnect();
   }
 }
