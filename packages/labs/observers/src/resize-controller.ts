@@ -140,7 +140,7 @@ export class ResizeController<T = unknown> implements ReactiveController {
 
   hostDisconnected() {
     this._isConnected = false;
-    this.disconnect();
+    this._observer.disconnect();
   }
 
   /**
@@ -172,11 +172,13 @@ export class ResizeController<T = unknown> implements ReactiveController {
   }
 
   /**
-   * Disconnects the observer. This is done automatically when the host
-   * disconnects. Note that the observer is automatically reconnected when the
-   * host reconnects.
+   * Disconnects the observer, unobserving all previously-observed elements.
+   *
+   * You typically do not need to call this method yourself, as we automatically
+   * disconnect the observer when the host component is disconnected.
    */
-  protected disconnect() {
+  disconnect() {
     this._observer.disconnect();
+    this._targets.clear();
   }
 }
