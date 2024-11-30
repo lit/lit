@@ -12,7 +12,7 @@ This package requires either a native [`URLPattern`](https://developer.mozilla.o
 
 `@lit-labs/router` is a component-oriented router API vended as reactive controllers. Routes are configured as part of component definitions, and integrated into the component lifecycle and rendering.
 
-Usage will generally look like this, with a configuration in a reactive controller, and rendering done via route-specific render callbacks and an "outlet" to use in the main render() method:
+Usage will generally look like this, with a configuration in a reactive controller, and rendering done via route-specific render callbacks and an "outlet" to use in the main `render()` method:
 
 ```ts
 class MyElement extends LitElement {
@@ -48,13 +48,17 @@ The general shape of the API includes:
 
 ### Router
 
-A Router is a controller (a subclass of the Routes controller) for use at the top-level of an application. It's main purpose is to set up global `click` and `popstate` event listeners (which should be installed only once on a page). It can optionally contain route definitions as a convenience.
+A `Router` is a root-level router.
+
+There should only be one `Router` instance on a page, because the `Router` extends [`Routes`](#routes) and installs global `click` and `popstate` event listeners on `window` and `document` (which should be installed only once on a page) to intercept navigation.
+
+Nested routes should be configured with the [`Routes`](#routes) controller.
 
 It can be installed with no configuration:
 
 ```ts
 class App extends LitElement {
-  private router = new Router(this);
+  private _router = new Router(this);
 }
 ```
 
@@ -62,23 +66,23 @@ Or contain route configurations:
 
 ```ts
 class MyElement extends LitElement {
-  private router = new Router(this, [
+  private _router = new Router(this, [
     {path: '/', render: () => html`<h1>Home</h1>`},
   ]);
 
   render() {
-    return this.router.outlet();
+    return this._router.outlet();
   }
 }
 ```
 
 ### Routes
 
-Routes is the main interface into the router API. A Routes controller contains route definitions and the templates that each route renders:
+A `Routes` controller is the main interface into the router API. It contains route definitions and the templates that each route renders:
 
 ```ts
 class MyElement extends LitElement {
-  private routes = new Routes(this, [
+  private _routes = new Routes(this, [
     {path: '/', render: () => html`<h1>Home</h1>`},
     {path: '/projects', render: () => html`<h1>Projects</h1>`},
     {path: '/about', render: () => html`<h1>About</h1>`},
@@ -140,7 +144,7 @@ Example with named parameter:
 An outlet is where a routes object renders the currently selected route's template. It can be used anywhere in the host element's template:
 
 ```ts
-html`<main>${this.routes.outlet()}</main>`;
+html`<main>${this._routes.outlet()}</main>`;
 ```
 
 #### enter() callbacks
@@ -155,6 +159,7 @@ A route can define an `enter()` callback that lets it do work before rendering a
   render: (params) => html`<x-foo></x-foo>`,
   enter: async (params) => {
     await import('./x-foo.js');
+    return true;
   },
 }
 ```
@@ -182,11 +187,11 @@ or dynamically install new routes:
 
 #### `goto()`
 
-`goto(url: string)` is a programmatic navigation API. It takes full URLs for top-level navigation and relative URLs for navigation within a nested route space.
+`goto(pathname: string)` is a programmatic navigation API. It takes full URLs for top-level navigation and relative URLs for navigation within a nested route space.
 
 `goto(name: string, params: object)` _(not implemented)_ allows navigation via named routes. The name and params are scoped to the Routes object it's called on, though nested routes can be triggered by a "tail" parameter - the match of a trailing `/*` parameter (See tail groups).
 
-`goto()` returns a Promise that resolves when any triggered async `enter()` callbacks have completed.
+`goto()` _(not implemented)_ returns a Promise that resolves when any triggered async `enter()` callbacks have completed.
 
 #### `link()`
 
@@ -195,6 +200,10 @@ Components need to generate links to resources within the app. It's desirable to
 ##### Relative links
 
 Relative links are relative to the parent route and its current state, and can be specified with a path string or name and parameters.
+
+`link(pathname?: string | undefined): string`
+
+`link(name: string, params: object): string` _(not implemented)_
 
 Examples
 
