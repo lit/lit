@@ -4,12 +4,28 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {ElementInternalsShim} from './lib/element-internals.js';
+import {
+  EventTargetShim,
+  EventShim,
+  CustomEventShim,
+  EventTargetShimMeta,
+} from './lib/events.js';
 
 export {
   ariaMixinAttributes,
   ElementInternals,
   HYDRATE_INTERNALS_ATTR_PREFIX,
 } from './lib/element-internals.js';
+export {CustomEvent, Event, EventTarget} from './lib/events.js';
+
+// In an empty Node.js vm, we need to patch the global context.
+// TODO: Remove these globalThis assignments when we remove support
+// for vm modules (--experimental-vm-modules).
+globalThis.Event ??= EventShim;
+globalThis.CustomEvent ??= CustomEventShim;
+
+// Internal type to be used for the event polyfill functionality.
+export type HTMLElementWithEventMeta = HTMLElement & EventTargetShimMeta;
 
 const attributes = new WeakMap<
   InstanceType<typeof HTMLElementShim>,
@@ -36,7 +52,7 @@ const attributesForElement = (
 //    `const ElementShimWithRealType = ElementShim as object as typeof Element;`.
 // 4. We want the exported names to match the real ones, hence e.g.
 //    `export {ElementShimWithRealType as Element}`.
-const ElementShim = class Element {
+const ElementShim = class Element extends EventTargetShim {
   get attributes() {
     return Array.from(attributesForElement(this)).map(([name, value]) => ({
       name,
@@ -123,6 +139,23 @@ const HTMLElementShim = class HTMLElement extends ElementShim {};
 const HTMLElementShimWithRealType =
   HTMLElementShim as object as typeof HTMLElement;
 export {HTMLElementShimWithRealType as HTMLElement};
+
+// For convenience, we provide a global instance of a HTMLElement as an event
+// target. This facilitates registering global event handlers
+// (e.g. for @lit/context ContextProvider).
+// We use this in in the SSR render function.
+// Note, this is a bespoke element and not simply `document` or `window` since
+// user code relies on these being undefined in the server environment.
+globalThis.litServerRoot ??= Object.defineProperty(
+  new HTMLElementShimWithRealType(),
+  'localName',
+  {
+    // Patch localName (and tagName) to return a unique name.
+    get() {
+      return 'lit-server-root';
+    },
+  }
+);
 
 interface CustomHTMLElementConstructor {
   new (): HTMLElement;
