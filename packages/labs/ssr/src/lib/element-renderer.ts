@@ -14,23 +14,27 @@ type Interface<T> = {
   [P in keyof T]: T[P];
 };
 
+// TODO (justinfagnani): Now that the ctor takes a RenderInfo, do we
+// need it in the other methods?
 export type ElementRendererConstructor = (new (
-  tagName: string
+  tagName: string,
+  renderInfo: RenderInfo
 ) => Interface<ElementRenderer>) &
   typeof ElementRenderer;
 
 type AttributesMap = Map<string, string>;
 
 export const getElementRenderer = (
-  {elementRenderers}: RenderInfo,
+  renderInfo: RenderInfo,
   tagName: string,
   ceClass: typeof HTMLElement | undefined = customElements.get(tagName),
   attributes: AttributesMap = new Map()
 ): ElementRenderer => {
   if (ceClass === undefined) {
     console.warn(`Custom element ${tagName} was not registered.`);
-    return new FallbackRenderer(tagName);
+    return new FallbackRenderer(tagName, renderInfo);
   }
+  const {elementRenderers} = renderInfo;
   // TODO(kschaaf): Should we implement a caching scheme, e.g. keyed off of
   // ceClass's base class to prevent O(n) lookups for every element (probably
   // not a concern for the small number of element renderers we'd expect)? Doing
@@ -38,10 +42,10 @@ export const getElementRenderer = (
   // custom elements with a `client-only` attribute, so punting for now.
   for (const renderer of elementRenderers) {
     if (renderer.matchesClass(ceClass, tagName, attributes)) {
-      return new renderer(tagName);
+      return new renderer(tagName, renderInfo);
     }
   }
-  return new FallbackRenderer(tagName);
+  return new FallbackRenderer(tagName, renderInfo);
 };
 
 // TODO (justinfagnani): remove in favor of ShadowRootInit
@@ -59,6 +63,7 @@ export abstract class ElementRenderer {
   // do.
   element?: HTMLElement;
   tagName: string;
+  renderInfo: RenderInfo;
 
   /**
    * Should be implemented to return true when the given custom element class
@@ -83,8 +88,9 @@ export abstract class ElementRenderer {
    * An ElementRenderer can actually instantiate the custom element class, or
    * it could emulate the element in some other way.
    */
-  constructor(tagName: string) {
+  constructor(tagName: string, renderInfo: RenderInfo) {
     this.tagName = tagName;
+    this.renderInfo = renderInfo;
   }
 
   /**
