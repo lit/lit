@@ -175,6 +175,22 @@ for (const lang of languages) {
       assert.equal(importedClass.module, 'external.js');
     });
 
+    test('property with string literal union', () => {
+      const property = element.reactiveProperties.get('stringLiteralUnion')!;
+      assert.equal(property.type?.text, '"hi" | "hello"');
+      assert.equal(property.type?.references.length, 0);
+      assert.equal(property.reflect, false);
+    });
+
+    test('reflected property with string literal union', () => {
+      const property = element.reactiveProperties.get(
+        'reflectedStringLiteralUnion'
+      )!;
+      assert.equal(property.type?.text, '"hi" | "hello"');
+      assert.equal(property.type?.references.length, 0);
+      assert.equal(property.reflect, true);
+    });
+
     test('reflect: true', () => {
       const property = element.reactiveProperties.get('reflectTrue')!;
       assert.equal(property.reflect, true);
