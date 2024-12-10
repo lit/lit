@@ -196,7 +196,7 @@
     "react-dom": "^18.2.0"
   },
   "peerDependencies": {
-    "@types/react": "17 || 18"
+    "@types/react": "17 || 18 || 19"
   },
   "publishConfig": {
     "access": "public"
