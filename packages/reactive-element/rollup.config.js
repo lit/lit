@@ -23,6 +23,7 @@ export default litProdConfig({
     'decorators/query-assigned-elements',
     'decorators/query-assigned-nodes',
     'decorators/query-async',
+    'mixins/element-internals',
   ],
   external: [],
   bundled: [

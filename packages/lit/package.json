@@ -161,6 +161,10 @@
       "types": "./development/html.d.ts",
       "default": "./html.js"
     },
+    "./mixins/element-internals.js": {
+      "types": "./development/mixins/element-internals.d.ts",
+      "default": "./mixins/element-internals.js"
+    },
     "./polyfill-support.js": {
       "types": "./development/polyfill-support.d.ts",
       "default": "./polyfill-support.js"
@@ -341,6 +345,7 @@
     "/directives/",
     "/development/",
     "!/development/test/",
+    "/mixins/",
     "/logo.svg"
   ],
   "dependencies": {

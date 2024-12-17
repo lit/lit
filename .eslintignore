@@ -41,6 +41,7 @@ packages/internal-scripts/lib/
 packages/lit/decorators/
 packages/lit/development/
 packages/lit/directives/
+packages/lit/mixins/
 packages/lit/node_modules/
 packages/lit/test/
 
@@ -142,6 +143,7 @@ packages/react/use-controller.*
 packages/reactive-element/decorators/
 packages/reactive-element/development/
 packages/reactive-element/legacy-decorators/
+packages/reactive-element/mixins/
 packages/reactive-element/node/
 packages/reactive-element/std-decorators/
 packages/reactive-element/test/
