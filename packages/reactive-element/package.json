@@ -186,6 +186,19 @@
       "development": "./development/decorators/state.js",
       "default": "./decorators/state.js"
     },
+    "./mixins/element-internals.js": {
+      "types": "./development/mixins/element-internals.d.ts",
+      "browser": {
+        "development": "./development/mixins/element-internals.js",
+        "default": "./mixins/element-internals.js"
+      },
+      "node": {
+        "development": "./node/development/mixins/element-internals.js",
+        "default": "./node/mixins/element-internals.js"
+      },
+      "development": "./development/mixins/element-internals.js",
+      "default": "./mixins/element-internals.js"
+    },
     "./polyfill-support.js": {
       "types": "./development/polyfill-support.d.ts",
       "browser": {
@@ -450,6 +463,7 @@
     "/decorators/",
     "/development/",
     "!/development/test/",
+    "/mixins/",
     "/node/"
   ],
   "dependencies": {

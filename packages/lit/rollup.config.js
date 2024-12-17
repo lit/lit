@@ -66,6 +66,7 @@ export default litProdConfig({
     'directives/unsafe-svg',
     'directives/until',
     'directives/when',
+    'mixins/element-internals',
     'async-directive',
     'html',
     'index',
