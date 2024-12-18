@@ -155,8 +155,8 @@ export class ContextProvider<
   };
 
   private attachListeners() {
-    this.host.addEventListener('context-request', this.onContextRequest);
-    this.host.addEventListener('context-provider', this.onProviderRequest);
+    this.host.addEventListener?.('context-request', this.onContextRequest);
+    this.host.addEventListener?.('context-provider', this.onProviderRequest);
   }
 
   hostConnected(): void {
