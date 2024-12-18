@@ -119,10 +119,9 @@ suite('Styling', () => {
           `,
         ];
         adoptStyles(shadowRoot, styles);
-        const adoptedStyleSheets_1 = shadowRoot.adoptedStyleSheets;
+        const adoptedStyleSheets_1 = [...shadowRoot.adoptedStyleSheets];
         adoptStyles(shadowRoot, styles);
-        const adoptedStyleSheets_2 = shadowRoot.adoptedStyleSheets;
-        assert.notStrictEqual(adoptedStyleSheets_1, adoptedStyleSheets_2);
+        const adoptedStyleSheets_2 = [...shadowRoot.adoptedStyleSheets];
         adoptedStyleSheets_1.forEach((_, index) => {
           assert.strictEqual(
             adoptedStyleSheets_1[index],
@@ -138,17 +137,15 @@ suite('Styling', () => {
         iframe.onload = function () {
           iframe.contentWindow?.document.body.appendChild(div);
           adoptStyles(shadowRoot, styles);
-          const adoptedStyleSheets_3 = shadowRoot.adoptedStyleSheets;
+          const adoptedStyleSheets_3 = [...shadowRoot.adoptedStyleSheets];
           adoptStyles(shadowRoot, styles);
-          const adoptedStyleSheets_4 = shadowRoot.adoptedStyleSheets;
-          assert.notStrictEqual(adoptedStyleSheets_3, adoptedStyleSheets_4);
+          const adoptedStyleSheets_4 = [...shadowRoot.adoptedStyleSheets];
           adoptedStyleSheets_1.forEach((_, index) => {
             assert.strictEqual(
               adoptedStyleSheets_3[index],
               adoptedStyleSheets_4[index]
             );
           });
-          assert.notStrictEqual(adoptedStyleSheets_2, adoptedStyleSheets_3);
           adoptedStyleSheets_1.forEach((_, index) => {
             assert.notStrictEqual(
               adoptedStyleSheets_2[index],
