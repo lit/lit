@@ -239,9 +239,35 @@ module.exports = {
 // outer markers (though note there are 2 layers of markers due to the
 // use of the unsafeHTML directive).
 function trimOuterMarkers(renderedContent: string): string {
-  return renderedContent
-    .replace(/^((<!--[^<>]*-->)|(<\?>)|\s)+/, '')
-    .replace(/((<!--[^<>]*-->)|(<\?>)|\s)+$/, '');
+  const q = '<?>';
+  const startMarker = '<!--lit-part '; // e.g. <!--lit-part HeR8tRCwgQQ=-->
+  const endMarker = '<!--/lit-part-->';
+
+  renderedContent = renderedContent.trim();
+
+  let start;
+  let end;
+
+  if (renderedContent.startsWith(q)) {
+    start = q.length;
+  } else if (renderedContent.startsWith(startMarker)) {
+    start = renderedContent.indexOf('-->') + 3;
+  }
+
+  if (renderedContent.endsWith(q)) {
+    end = renderedContent.length - q.length;
+  } else if (renderedContent.endsWith(endMarker)) {
+    end = renderedContent.length - endMarker.length;
+  }
+
+  if (start || end) {
+    // trim one or more
+    return trimOuterMarkers(
+      renderedContent.slice(start ?? 0, end ?? renderedContent.length)
+    );
+  }
+
+  return renderedContent;
 }
 
 // Assuming this is faster than Array.from(iter).join();
