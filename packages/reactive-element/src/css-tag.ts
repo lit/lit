@@ -172,9 +172,12 @@ export const adoptStyles = (
   styles: Array<CSSResultOrNative>
 ) => {
   if (supportsAdoptingStyleSheets) {
-    (renderRoot as ShadowRoot).adoptedStyleSheets = styles.map((s) =>
-      s instanceof CSSStyleSheet ? s : s.styleSheet!
-    );
+    const sheets = styles.map(
+      (result) => (result as CSSResult).styleSheet ?? result
+    ) as CSSStyleSheet[];
+    const defaultView = renderRoot.ownerDocument.defaultView ?? window;
+    const viewSheets = sheetsForView(defaultView, sheets);
+    renderRoot.adoptedStyleSheets = viewSheets;
   } else {
     for (const s of styles) {
       const style = document.createElement('style');
@@ -187,6 +190,42 @@ export const adoptStyles = (
       renderRoot.appendChild(style);
     }
   }
+};
+
+const viewSheetCache = new WeakMap<
+  Window,
+  WeakMap<CSSStyleSheet, CSSStyleSheet>
+>();
+
+const sheetsForView = (view: Window, sheets: CSSStyleSheet[]) => {
+  let cache = viewSheetCache.get(view);
+  if (cache === undefined) {
+    viewSheetCache.set(view, (cache = new WeakMap()));
+  }
+
+  return sheets.map((sheet) => {
+    let viewSheet = cache.get(sheet);
+    if (viewSheet === undefined) {
+      if (
+        sheet instanceof
+        (view as unknown as {CSSStyleSheet: typeof CSSStyleSheet}).CSSStyleSheet
+      ) {
+        viewSheet = sheet;
+      } else {
+        const css = Array.from((sheet as CSSStyleSheet).cssRules).reduce(
+          (css, rule) => `${css} ${rule.cssText}`,
+          ''
+        );
+        viewSheet = new (
+          view as unknown as {CSSStyleSheet: typeof CSSStyleSheet}
+        ).CSSStyleSheet({baseURL: window.location.href});
+        viewSheet.replaceSync(css);
+      }
+      cache.set(sheet, viewSheet);
+    }
+
+    return viewSheet;
+  });
 };
 
 const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
