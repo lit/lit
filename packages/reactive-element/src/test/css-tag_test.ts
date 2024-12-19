@@ -129,11 +129,7 @@ suite('Styling', () => {
           );
         });
         const iframe = document.createElement('iframe');
-        const html = '<body>Foo</body>';
         document.body.appendChild(iframe);
-        iframe.contentWindow?.document.open();
-        iframe.contentWindow?.document.write(html);
-        iframe.contentWindow?.document.close();
         iframe.onload = function () {
           iframe.contentWindow?.document.body.appendChild(div);
           adoptStyles(shadowRoot, styles);

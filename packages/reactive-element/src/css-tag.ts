@@ -171,14 +171,7 @@ export const adoptStyles = (
   renderRoot: ShadowRoot,
   styles: Array<CSSResultOrNative>
 ) => {
-  if (supportsAdoptingStyleSheets) {
-    const sheets = styles.map(
-      (result) => (result as CSSResult).styleSheet ?? result
-    ) as CSSStyleSheet[];
-    const defaultView = renderRoot.ownerDocument.defaultView ?? window;
-    const viewSheets = sheetsForView(defaultView, sheets);
-    renderRoot.adoptedStyleSheets = viewSheets;
-  } else {
+  if (!adoptStyleSheets(renderRoot, styles)) {
     for (const s of styles) {
       const style = document.createElement('style');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -192,6 +185,27 @@ export const adoptStyles = (
   }
 };
 
+/**
+ * Applies the given styles to a `shadowRoot` when `adoptedStyleSheets` is available and returns `true`.
+ * Otherwise, it does nothing and returns `false`.
+ */
+export const adoptStyleSheets = (
+  renderRoot: ShadowRoot,
+  styles: Array<CSSResultOrNative>
+) => {
+  if (supportsAdoptingStyleSheets) {
+    const sheets = styles.map(
+      (result) => (result as CSSResult).styleSheet ?? result
+    ) as CSSStyleSheet[];
+    const defaultView = renderRoot.ownerDocument.defaultView ?? window;
+    const viewSheets = sheetsForView(defaultView, sheets);
+    renderRoot.adoptedStyleSheets = viewSheets;
+    return true;
+  } else {
+    return false;
+  }
+};
+
 const viewSheetCache = new WeakMap<
   Window,
   WeakMap<CSSStyleSheet, CSSStyleSheet>
@@ -202,7 +216,6 @@ const sheetsForView = (view: Window, sheets: CSSStyleSheet[]) => {
   if (cache === undefined) {
     viewSheetCache.set(view, (cache = new WeakMap()));
   }
-
   return sheets.map((sheet) => {
     let viewSheet = cache.get(sheet);
     if (viewSheet === undefined) {
@@ -212,18 +225,14 @@ const sheetsForView = (view: Window, sheets: CSSStyleSheet[]) => {
       ) {
         viewSheet = sheet;
       } else {
-        const css = Array.from((sheet as CSSStyleSheet).cssRules).reduce(
-          (css, rule) => `${css} ${rule.cssText}`,
-          ''
-        );
+        const css = cssResultFromStyleSheet(sheet as CSSStyleSheet);
         viewSheet = new (
           view as unknown as {CSSStyleSheet: typeof CSSStyleSheet}
         ).CSSStyleSheet({baseURL: window.location.href});
-        viewSheet.replaceSync(css);
+        viewSheet.replaceSync(css.cssText);
       }
       cache.set(sheet, viewSheet);
     }
-
     return viewSheet;
   });
 };
