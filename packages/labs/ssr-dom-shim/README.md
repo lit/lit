@@ -3,8 +3,9 @@
 ## Overview
 
 This package provides minimal implementations of `Element`, `HTMLElement`,
-`CustomElementRegistry`, and `customElements`, designed to be used when Server
-Side Rendering (SSR) web components from Node, including Lit components.
+`EventTarget`, `Event`, `CustomEvent`, `CustomElementRegistry`, and
+`customElements`, designed to be used when Server Side Rendering (SSR) web
+components from Node, including Lit components.
 
 ## Usage
 
@@ -31,8 +32,9 @@ main patterns for providing access to these shims to users:
    condition](https://nodejs.org/api/packages.html#conditional-exports) to
    ensure this only happens when running in Node, and not in the browser.
 
-Lit takes approach #2 for all of the shims except for `customElements`, so that
-users who have imported `lit` are able to call `customElements.define` in their
+Lit takes approach #2 for all of the shims except for `customElements`, `Event`
+and `CustomEvent`, so that users who have imported `lit` are able to call
+`customElements.define` or `new Event(...)`/`new CustomEvent(...)` in their
 components from Node.
 
 ### Exports
@@ -40,7 +42,12 @@ components from Node.
 The main module exports the following values. Note that no globals are set by
 this module.
 
+- [`EventTarget`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget)
+  - [`addEventListener`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
+  - [`dispatchEvent`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent)
+  - [`removeEventListener`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener)
 - [`Element`](https://developer.mozilla.org/en-US/docs/Web/API/Element)
+  - (Inherits from EventTarget)
   - [`attachShadow`](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow)
   - [`shadowRoot`](https://developer.mozilla.org/en-US/docs/Web/API/Element/shadowRoot)
   - [`attributes`](https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes)
@@ -52,6 +59,8 @@ this module.
   - (Inherits from Element)
 - [`CustomElementRegistry`](https://developer.mozilla.org/en-US/docs/Web/API/CustomElementRegistry)
 - [`customElements`](https://developer.mozilla.org/en-US/docs/Web/API/Window/customElements)
+- [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event)
+- [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
 
 ## Contributing
 
