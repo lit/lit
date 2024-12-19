@@ -49,11 +49,11 @@ jobs:
 
       # - uses: google/wireit@setup-github-actions-caching/v2
 
-      - name: Install playwright deps
-        run: npx playwright install-deps
-
       - name: NPM install
         run: npm ci
+
+      - name: Install playwright browsers
+        run: npx playwright install --with-deps
 
       - name: Build
         run: npm run build
@@ -83,6 +83,9 @@ jobs:
 
       - name: NPM install
         run: npm ci
+
+      - name: Install playwright browsers
+        run: npx playwright install --with-deps
 
       - name: Test
         env:
