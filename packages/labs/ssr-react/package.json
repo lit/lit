@@ -51,8 +51,8 @@
     "@lit-labs/ssr-client": "^1.1.7"
   },
   "peerDependencies": {
-    "@types/react": "17 || 18",
-    "react": "17 || 18"
+    "@types/react": "17 || 18 || 19",
+    "react": "17 || 18 || 19"
   },
   "scripts": {
     "build": "wireit",
