@@ -372,6 +372,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   // client-side lit-html.
   let nodeIndex = 0;
 
+  // TODO (justinfagnani): Replace with template parser from @lit-labs/analyzer
+
   traverse(ast, {
     'pre:node'(node, parent) {
       if (isCommentNode(node)) {
