@@ -4,12 +4,24 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {ElementInternalsShim} from './lib/element-internals.js';
+import {CSSStyleSheetShim} from './lib/css.js';
 
 export {
   ariaMixinAttributes,
   ElementInternals,
   HYDRATE_INTERNALS_ATTR_PREFIX,
 } from './lib/element-internals.js';
+export {
+  CSSRule,
+  CSSRuleList,
+  CSSStyleSheet,
+  MediaList,
+  StyleSheet,
+} from './lib/css.js';
+
+// We want to provide CSSStyleSheet in the global scope, as
+// `new CSSStyleSheet()` can be called anywhere in consumer code.
+globalThis.CSSStyleSheet ??= CSSStyleSheetShim;
 
 const attributes = new WeakMap<
   InstanceType<typeof HTMLElementShim>,
