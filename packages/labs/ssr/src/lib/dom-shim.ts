@@ -17,6 +17,9 @@ import {
   HTMLElement,
   Element,
   CSSStyleSheet,
+  Event,
+  CustomEvent,
+  EventTarget,
   CustomElementRegistry,
 } from '@lit-labs/ssr-dom-shim';
 
@@ -52,6 +55,9 @@ export const getWindow = ({
   }
 
   const window = {
+    EventTarget,
+    Event: globalThis.Event ?? Event,
+    CustomEvent: globalThis.CustomEvent ?? CustomEvent,
     Element,
     HTMLElement,
     Document,
