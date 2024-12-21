@@ -4,5 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import '@lit-labs/ssr-dom-shim/css-loader.js';
 import {installWindowOnGlobal} from './dom-shim.js';
 installWindowOnGlobal();

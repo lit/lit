@@ -64,4 +64,16 @@ test('load CSS file with a backtick', async () => {
   );
 });
 
+test('should fail without import attributes', async () => {
+  try {
+    // The CSS file is not copied/transpiled to the test directory.
+    await import('../src/test/example.css');
+    assert.unreachable(
+      'The import without import attributes should have thrown'
+    );
+  } catch (e) {
+    assert.ok('Threw as expected');
+  }
+});
+
 test.run();
