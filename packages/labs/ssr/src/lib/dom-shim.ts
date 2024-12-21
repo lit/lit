@@ -16,10 +16,10 @@ import fetch from 'node-fetch';
 import {
   HTMLElement,
   Element,
-  CSSStyleSheet,
   Event,
   CustomEvent,
   EventTarget,
+  CSSStyleSheet,
   CustomElementRegistry,
 } from '@lit-labs/ssr-dom-shim';
 

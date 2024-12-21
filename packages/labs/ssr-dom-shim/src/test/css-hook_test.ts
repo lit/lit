@@ -13,7 +13,7 @@ import '@lit-labs/ssr-dom-shim';
 // The CSS file is not copied/transpiled to the test directory.
 import example from '../src/test/example.css' with {type: 'css'};
 
-const test = suite('CSSStyleSheet loader');
+const test = suite('CSSStyleSheet hook');
 
 const textFromStyleSheet = (sheet: CSSStyleSheet) => {
   return Array.from({length: sheet.cssRules.length})

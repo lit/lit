@@ -19,4 +19,4 @@ import {register} from 'node:module';
  * @see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import/with
  * @see https://nodejs.org/api/module.html#customization-hooks
  */
-register('./lib/css-loader.js', {parentURL: import.meta.url});
+register('./lib/css-hook.js', {parentURL: import.meta.url});

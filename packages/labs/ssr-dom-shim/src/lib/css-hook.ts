@@ -1,8 +1,7 @@
 import type {LoadHook, ResolveHook} from 'node:module';
 
 /**
- * Checks for each import, whether the file exists and if not, tries
- * to find an associated TypeScript file.
+ * Resolves imports with a css type import attribute.
  *
  * https://nodejs.org/api/module.html#resolvespecifier-context-nextresolve
  */
@@ -19,9 +18,9 @@ export const resolve: ResolveHook = (specifier, context, nextResolve) => {
 };
 
 /**
- * When an attempt is made to import a CSS file/module, the CSS content
- * is read and added to a CSSRule, which is provided in a CSSStyleSheet
- * instance.
+ * When an attempt is made to import a CSS file/module, code is
+ * generated to read the corresponding file, add it to a CSSStyleSheet
+ * instance and return that instance as the default export.
  *
  * https://nodejs.org/api/module.html#loadurl-context-nextload
  */
