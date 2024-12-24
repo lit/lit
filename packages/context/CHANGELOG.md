@@ -1,5 +1,11 @@
 # @lit-labs/context
 
+## 1.1.3
+
+### Patch Changes
+
+- [#4684](https://github.com/lit/lit/pull/4684) [`619449b8`](https://github.com/lit/lit/commit/619449b84cb63d9c00e4316551246957c939a64b) Thanks [@tomherni](https://github.com/tomherni)! - Fix syntax typo in code example in the Context README
+
 ## 1.1.2
 
 ### Patch Changes

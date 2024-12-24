@@ -1,5 +1,12 @@
 # @lit-internal/test-elements-react
 
+## 1.0.7
+
+### Patch Changes
+
+- Updated dependencies [[`25652984`](https://github.com/lit/lit/commit/2565298435d017672a1e7669f176134724c4c806)]:
+  - @lit/react@1.0.6
+
 ## 1.0.6
 
 ### Patch Changes

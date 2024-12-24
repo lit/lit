@@ -759,7 +759,7 @@ suite('Task', () => {
   });
 
   test('Elements only render once for pending tasks', async () => {
-    let resolveTask: (v: unknown) => void;
+    let resolveTask: (v: any) => void;
     let renderCount = 0;
     class TestElement extends ReactiveElement {
       task = new Task(this, {
