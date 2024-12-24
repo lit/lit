@@ -59,6 +59,13 @@
           ],
           "tagName": "element-a",
           "customElement": true,
+          "attributes": [
+            {
+              "name": "foo",
+              "type": {"text": "string | undefined"},
+              "fieldName": "foo"
+            }
+          ],
           "events": [
             {
               "name": "a-changed",
@@ -390,6 +397,13 @@
           ],
           "tagName": "element-events",
           "customElement": true,
+          "attributes": [
+            {
+              "name": "foo",
+              "type": {"text": "string | undefined"},
+              "fieldName": "foo"
+            }
+          ],
           "events": [
             {
               "name": "string-custom-event",
@@ -709,6 +723,36 @@
           ],
           "tagName": "element-props",
           "customElement": true,
+          "attributes": [
+            {"name": "astr", "type": {"text": "string"}, "fieldName": "aStr"},
+            {"name": "anum", "type": {"text": "number"}, "fieldName": "aNum"},
+            {
+              "name": "abool",
+              "type": {"text": "boolean"},
+              "fieldName": "aBool"
+            },
+            {
+              "name": "astrarray",
+              "type": {"text": "string[]"},
+              "fieldName": "aStrArray"
+            },
+            {
+              "name": "aMyType",
+              "type": {
+                "text": "MyType",
+                "references": [
+                  {
+                    "name": "MyType",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-props.js",
+                    "start": 0,
+                    "end": 6
+                  }
+                ]
+              },
+              "fieldName": "aMyType"
+            }
+          ],
           "events": [
             {
               "name": "a-changed",
@@ -768,7 +812,14 @@
             }
           ],
           "tagName": "element-slots",
-          "customElement": true
+          "customElement": true,
+          "attributes": [
+            {
+              "name": "maindefault",
+              "type": {"text": "string"},
+              "fieldName": "mainDefault"
+            }
+          ]
         }
       ],
       "exports": [
@@ -1016,6 +1067,13 @@
           ],
           "tagName": "element-sub",
           "customElement": true,
+          "attributes": [
+            {
+              "name": "foo",
+              "type": {"text": "string | undefined"},
+              "fieldName": "foo"
+            }
+          ],
           "events": [
             {
               "name": "sub-changed",
