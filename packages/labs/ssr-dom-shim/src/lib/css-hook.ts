@@ -1,21 +1,4 @@
-import type {LoadHook, ResolveHook} from 'node:module';
-
-/**
- * Resolves imports with a css type import attribute.
- *
- * https://nodejs.org/api/module.html#resolvespecifier-context-nextresolve
- */
-export const resolve: ResolveHook = (specifier, context, nextResolve) => {
-  if (context.importAttributes.type === 'css') {
-    return {
-      format: 'module',
-      shortCircuit: true,
-      url: new URL(specifier, context.parentURL).toString(),
-    };
-  }
-
-  return nextResolve(specifier, context);
-};
+import type {LoadHook} from 'node:module';
 
 /**
  * When an attempt is made to import a CSS file/module, code is

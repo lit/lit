@@ -66,6 +66,7 @@ this module.
 - [`CSSRule`](https://developer.mozilla.org/en-US/docs/Web/API/CSSRule)
 - [`CSSRuleList`](https://developer.mozilla.org/en-US/docs/Web/API/CSSRuleList)
 - [`CSSStyleSheet`](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet)
+  - (Inherits from StyleSheet)
   - [`replace`](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/replace)
   - [`replaceSync`](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/replaceSync)
 
