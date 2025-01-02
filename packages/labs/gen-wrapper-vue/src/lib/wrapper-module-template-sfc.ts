@@ -162,7 +162,7 @@ const wrapperTemplate = (
           : ''
       }
 
-      const slots = useSlots();
+      const slots = useSlots() as Slots;
 
       const render = () => {
         const eventProps = ${renderEvents(events)};
@@ -173,7 +173,7 @@ const wrapperTemplate = (
         return h(
           '${tagname}',
           props,
-          assignSlotNodes(slots as Slots)
+          assignSlotNodes(slots)
         );
       };
     </script>
