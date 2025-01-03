@@ -1,5 +1,16 @@
 # @lit-labs/ssr-react
 
+## 0.3.1
+
+### Patch Changes
+
+- [#4865](https://github.com/lit/lit/pull/4865) [`dd2fdc96`](https://github.com/lit/lit/commit/dd2fdc96441a585f735f3d1daffe65c652bad0df) Thanks [@Artur-](https://github.com/Artur-)! - fix: Widen range for React types to include React 19
+
+- [#4755](https://github.com/lit/lit/pull/4755) [`25962bf5`](https://github.com/lit/lit/commit/25962bf58f33f32abef6487689438bf095780b63) Thanks [@kyubisation](https://github.com/kyubisation)! - Implement SSR event handling and an optional flag `globalThis.litSsrCallConnectedCallback` to call `connectedCallback` during SSR, if set to true.
+
+- Updated dependencies [[`25962bf5`](https://github.com/lit/lit/commit/25962bf58f33f32abef6487689438bf095780b63)]:
+  - @lit-labs/ssr@3.3.0
+
 ## 0.3.0
 
 ### Minor Changes

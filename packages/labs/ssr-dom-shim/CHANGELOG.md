@@ -1,5 +1,11 @@
 # @lit-labs/ssr-dom-shim
 
+## 1.3.0
+
+### Minor Changes
+
+- [#4755](https://github.com/lit/lit/pull/4755) [`25962bf5`](https://github.com/lit/lit/commit/25962bf58f33f32abef6487689438bf095780b63) Thanks [@kyubisation](https://github.com/kyubisation)! - Implement SSR event handling and an optional flag `globalThis.litSsrCallConnectedCallback` to call `connectedCallback` during SSR, if set to true.
+
 ## 1.2.1
 
 ### Patch Changes
