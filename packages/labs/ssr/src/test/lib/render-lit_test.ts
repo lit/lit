@@ -494,6 +494,442 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  /* Events */
+
+  test('events with parent and child', async () => {
+    const {render, eventParentAndSingleChildWithoutValue, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      const result = await render(eventParentAndSingleChildWithoutValue);
+      assert.is(
+        result,
+        '<!--lit-part RSGZngXXsLg=--><test-events-parent><template shadowroot="open" shadowrootmode="open"><style>\n' +
+          '    :host {\n' +
+          '      display: block;\n' +
+          '    }\n' +
+          '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+          '<test-events-child data-test><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
+      );
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'test-events-child{id:1}/capture/AT_TARGET/test-events-child{id:1}',
+        'test-events-child{id:1}/non-capture/AT_TARGET/test-events-child{id:1}',
+        'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('events with parent with value and child', async () => {
+    const {render, eventParentAndSingleChildWithValue, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      const result = await render(eventParentAndSingleChildWithValue);
+      assert.is(
+        result,
+        '<!--lit-part pLrHZ32UrRU=--><test-events-parent  value="my-test"><template shadowroot="open" shadowrootmode="open"><style>\n' +
+          '    :host {\n' +
+          '      display: block;\n' +
+          '    }\n' +
+          '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+          '<test-events-child data-test="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
+      );
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'test-events-child{id:1}/capture/AT_TARGET/test-events-child{id:1}',
+        'test-events-child{id:1}/non-capture/AT_TARGET/test-events-child{id:1}',
+        'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('event order with capture from top and bubbles from bottom', async () => {
+    const {render, eventParentNesting, setupEvents} = await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      const result = await render(eventParentNesting);
+      assert.is(
+        result,
+        '<!--lit-part 4D0mmmUOBvU=--><test-events-parent   capture="oc" value="ov"><template shadowroot="open" shadowrootmode="open"><style>\n' +
+          '    :host {\n' +
+          '      display: block;\n' +
+          '    }\n' +
+          '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>\n' +
+          '  <test-events-parent   capture="ic" value="iv"><template shadowroot="open" shadowrootmode="open"><style>\n' +
+          '    :host {\n' +
+          '      display: block;\n' +
+          '    }\n' +
+          '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+          '<test-events-child data-test="ocicivov"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child>' +
+          '</test-events-parent></test-events-parent><!--/lit-part-->'
+      );
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-parent{id:1}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'slot{id:4,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-child{id:3}/capture/AT_TARGET/test-events-child{id:3}',
+        'test-events-child{id:3}/non-capture/AT_TARGET/test-events-child{id:3}',
+        'slot{id:4,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'test-events-parent{id:1}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('event order through shadow DOM', async () => {
+    const {render, eventShadowNested, setupEvents} = await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      const result = await render(eventShadowNested);
+      assert.is(
+        result,
+        '<!--lit-part QSPfkaBogFk=--><test-events-parent  value="my-test"><template shadowroot="open" shadowrootmode="open"><style>\n' +
+          '    :host {\n' +
+          '      display: block;\n' +
+          '    }\n' +
+          '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+          '<test-events-shadow-nested><template shadowroot="open" shadowrootmode="open"><!--lit-part GQHLzN3QO5Q=--><slot></slot><!--lit-node 1--><test-events-parent  value="shadow" defer-hydration>' +
+          '<template shadowroot="open" shadowrootmode="open"><style>\n' +
+          '    :host {\n' +
+          '      display: block;\n' +
+          '    }\n' +
+          '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template><slot name="a"></slot></test-events-parent><!--/lit-part--></template>\n' +
+          '  <div><test-events-child data-test="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child>' +
+          '</div><div slot="a"><test-events-child data-test="shadowmy-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></div>\n' +
+          '  </test-events-shadow-nested></test-events-parent><!--/lit-part-->'
+      );
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        // Event from first child
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:5}',
+        'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:5}',
+        'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:5}',
+        'test-events-shadow-nested{id:1}/capture/CAPTURING_PHASE/test-events-child{id:5}',
+        'slot{id:4,host:test-events-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:5}',
+        'test-events-child{id:5}/capture/AT_TARGET/test-events-child{id:5}',
+        'test-events-child{id:5}/non-capture/AT_TARGET/test-events-child{id:5}',
+        'slot{id:4,host:test-events-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
+        'test-events-shadow-nested{id:1}/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
+        'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
+        'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
+        // Event from second child
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        'test-events-shadow-nested{id:1}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        'slot{id:4,host:test-events-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        'test-events-parent{id:3,host:test-events-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        'slot{id:7,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        'slot[name=a]{id:8,host:test-events-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        'test-events-child{id:6}/capture/AT_TARGET/test-events-child{id:6}',
+        'test-events-child{id:6}/non-capture/AT_TARGET/test-events-child{id:6}',
+        'slot[name=a]{id:8,host:test-events-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        'slot{id:7,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        'test-events-parent{id:3,host:test-events-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        'slot{id:4,host:test-events-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        'test-events-shadow-nested{id:1}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('event path skips shadow DOM with non-existent slot usage', async () => {
+    const {render, eventParentAndSingleWithNonExistentSlot, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      await render(eventParentAndSingleWithNonExistentSlot);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'test-events-child{id:1}/capture/AT_TARGET/test-events-child{id:1}',
+        'test-events-child{id:1}/non-capture/AT_TARGET/test-events-child{id:1}',
+        'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('event target is correct without composed', async () => {
+    const {render, eventChildShadowNested, setupEvents} = await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      await render(eventChildShadowNested);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'test-events-child{id:1,host:test-events-child-shadow-nested}/capture/AT_TARGET/test-events-child{id:1}',
+        'test-events-child{id:1,host:test-events-child-shadow-nested}/non-capture/AT_TARGET/test-events-child{id:1}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('event target is correct with composed', async () => {
+    const {render, TestEventsChild, eventChildShadowNested, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    TestEventsChild.eventOptions = {composed: true};
+    try {
+      await render(eventChildShadowNested);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child-shadow-nested{id:0}',
+        'test-events-child-shadow-nested{id:0}/capture/AT_TARGET/test-events-child-shadow-nested{id:0}',
+        'test-events-child{id:1,host:test-events-child-shadow-nested}/capture/AT_TARGET/test-events-child{id:1}',
+        'test-events-child{id:1,host:test-events-child-shadow-nested}/non-capture/AT_TARGET/test-events-child{id:1}',
+        'test-events-child-shadow-nested{id:0}/non-capture/AT_TARGET/test-events-child-shadow-nested{id:0}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child-shadow-nested{id:0}',
+      ]);
+    } finally {
+      delete TestEventsChild.eventOptions;
+      reset();
+    }
+  });
+
+  test('event target is correct with twice nested shadow DOM', async () => {
+    const {render, TestEventsChild, eventChildShadowNestedTwice, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    TestEventsChild.eventOptions = {composed: true};
+    try {
+      await render(eventChildShadowNestedTwice);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child-shadow-nested-twice{id:0}',
+        'test-events-child-shadow-nested-twice{id:0}/capture/AT_TARGET/test-events-child-shadow-nested-twice{id:0}',
+        'test-events-child-shadow-nested{id:1,host:test-events-child-shadow-nested-twice}/capture/AT_TARGET/test-events-child-shadow-nested{id:1}',
+        'test-events-child{id:2,host:test-events-child-shadow-nested}/capture/AT_TARGET/test-events-child{id:2}',
+        'test-events-child{id:2,host:test-events-child-shadow-nested}/non-capture/AT_TARGET/test-events-child{id:2}',
+        'test-events-child-shadow-nested{id:1,host:test-events-child-shadow-nested-twice}/non-capture/AT_TARGET/test-events-child-shadow-nested{id:1}',
+        'test-events-child-shadow-nested-twice{id:0}/non-capture/AT_TARGET/test-events-child-shadow-nested-twice{id:0}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child-shadow-nested-twice{id:0}',
+      ]);
+    } finally {
+      delete TestEventsChild.eventOptions;
+      reset();
+    }
+  });
+
+  test('event target works with nested slots with named slot child', async () => {
+    const {render, eventNestedSlotWithNamedSlotChild, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      await render(eventNestedSlotWithNamedSlotChild);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-parent{id:1,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'slot{id:4,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'slot[name=a]{id:5,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-child{id:3}/capture/AT_TARGET/test-events-child{id:3}',
+        'test-events-child{id:3}/non-capture/AT_TARGET/test-events-child{id:3}',
+        'slot[name=a]{id:5,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'slot{id:4,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'test-events-parent{id:1,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('event target works with nested slots with unnamed slot child', async () => {
+    const {render, eventNestedSlotWithUnnamedSlotChild, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      await render(eventNestedSlotWithUnnamedSlotChild);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-child{id:3}/capture/AT_TARGET/test-events-child{id:3}',
+        'test-events-child{id:3}/non-capture/AT_TARGET/test-events-child{id:3}',
+        'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('event target works with nested slots with unnamed and named slot child', async () => {
+    const {render, eventNestedSlotWithUnnamedAndNamedSlotChild, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      await render(eventNestedSlotWithUnnamedAndNamedSlotChild);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        // Event from first child
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-child{id:3}/capture/AT_TARGET/test-events-child{id:3}',
+        'test-events-child{id:3}/non-capture/AT_TARGET/test-events-child{id:3}',
+        'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        // Event from second child
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:4}',
+        'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:4}',
+        'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:4}',
+        'test-events-parent{id:1,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:4}',
+        'slot{id:5,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:4}',
+        'slot[name=a]{id:6,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:4}',
+        'test-events-child{id:4}/capture/AT_TARGET/test-events-child{id:4}',
+        'test-events-child{id:4}/non-capture/AT_TARGET/test-events-child{id:4}',
+        'slot[name=a]{id:6,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
+        'slot{id:5,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
+        'test-events-parent{id:1,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
+        'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
+        'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('event target works with nested slots with named and unnamed slot child', async () => {
+    const {render, eventNestedSlotWithNamedAndUnnamedSlotChild, setupEvents} =
+      await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      await render(eventNestedSlotWithNamedAndUnnamedSlotChild);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        // Event from first child
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-parent{id:1,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'slot{id:4,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'slot[name=a]{id:5,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        'test-events-child{id:3}/capture/AT_TARGET/test-events-child{id:3}',
+        'test-events-child{id:3}/non-capture/AT_TARGET/test-events-child{id:3}',
+        'slot[name=a]{id:5,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'slot{id:4,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'test-events-parent{id:1,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        // Event from second child
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        'test-events-child{id:6}/capture/AT_TARGET/test-events-child{id:6}',
+        'test-events-child{id:6}/non-capture/AT_TARGET/test-events-child{id:6}',
+        'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('enableUpdating is prevented from being called', async () => {
+    const {
+      render,
+      TestEventsParent,
+      eventParentAndSingleChildWithoutValue,
+      setupEvents,
+    } = await setup();
+    const {reset} = setupEvents();
+    let connectedCallbackCalls = 0;
+    let createRenderRootCalls = 0;
+    // We can't track calls to enableUpdating, as it is dynamically created
+    // but we can track calls to scheduleUpdate, which would be called if
+    // enableUpdating was called normally.
+    let scheduleUpdateCalls = 0;
+    const spyOn = (methodName: string, increment: () => void) => {
+      const method = (TestEventsParent.prototype as any)[methodName];
+      (TestEventsParent.prototype as any)[methodName] = function () {
+        increment();
+        return method.call(this);
+      };
+      return () => ((TestEventsParent.prototype as any)[methodName] = method);
+    };
+    const spies = [
+      spyOn('connectedCallback', () => connectedCallbackCalls++),
+      spyOn('createRenderRoot', () => createRenderRootCalls++),
+      spyOn('scheduleUpdate', () => scheduleUpdateCalls++),
+    ];
+    try {
+      await render(eventParentAndSingleChildWithoutValue);
+      assert.equal(connectedCallbackCalls, 1);
+      assert.equal(createRenderRootCalls, 1);
+      assert.equal(scheduleUpdateCalls, 0);
+    } finally {
+      spies.forEach((s) => s());
+      reset();
+    }
+  });
+
+  test('controller hostConnected is called', async () => {
+    const {
+      render,
+      TestEventsParent,
+      eventParentAndSingleChildWithoutValue,
+      setupEvents,
+    } = await setup();
+    const {reset} = setupEvents();
+    try {
+      let controllerHostConnectedCalls = 0;
+      TestEventsParent.testInitializer = (el) =>
+        el.addController({
+          hostConnected() {
+            controllerHostConnectedCalls++;
+          },
+        });
+
+      await render(eventParentAndSingleChildWithoutValue);
+      assert.equal(controllerHostConnectedCalls, 1);
+    } finally {
+      TestEventsParent.testInitializer = undefined;
+      reset();
+    }
+  });
+
   /* Directives */
 
   test('repeat directive with a template result', async () => {
