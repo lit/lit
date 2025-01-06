@@ -26,14 +26,17 @@ export class ContextProviderEvent<
   C extends Context<unknown, unknown>,
 > extends Event {
   readonly context: C;
+  readonly contextTarget: Element;
 
   /**
    *
    * @param context the context which this provider can provide
+   * @param contextTarget the original context target of the provider
    */
-  constructor(context: C) {
+  constructor(context: C, contextTarget: Element) {
     super('context-provider', {bubbles: true, composed: true});
     this.context = context;
+    this.contextTarget = contextTarget;
   }
 }
 
@@ -94,13 +97,13 @@ export class ContextProvider<
     ev: ContextRequestEvent<Context<unknown, unknown>>
   ): void => {
     // Only call the callback if the context matches.
+    if (ev.context !== this.context) {
+      return;
+    }
     // Also, in case an element is a consumer AND a provider
     // of the same context, we want to avoid the element to self-register.
-    // The check on composedPath (as opposed to ev.target) is to cover cases
-    // where the consumer is in the shadowDom of the provider (in which case,
-    // event.target === this.host because of event retargeting).
-    const consumerHost = ev.composedPath()[0] as Element;
-    if (ev.context !== this.context || consumerHost === this.host) {
+    const consumerHost = ev.contextTarget ?? ev.composedPath()[0];
+    if (consumerHost === this.host) {
       return;
     }
     ev.stopPropagation();
@@ -117,13 +120,13 @@ export class ContextProvider<
     ev: ContextProviderEvent<Context<unknown, unknown>>
   ): void => {
     // Ignore events when the context doesn't match.
+    if (ev.context !== this.context) {
+      return;
+    }
     // Also, in case an element is a consumer AND a provider
     // of the same context it shouldn't provide to itself.
-    // We use composedPath (as opposed to ev.target) to cover cases
-    // where the consumer is in the shadowDom of the provider (in which case,
-    // event.target === this.host because of event retargeting).
-    const childProviderHost = ev.composedPath()[0] as Element;
-    if (ev.context !== this.context || childProviderHost === this.host) {
+    const childProviderHost = ev.contextTarget ?? ev.composedPath()[0];
+    if (childProviderHost === this.host) {
       return;
     }
     // Re-parent all of our subscriptions in case this new child provider
@@ -148,7 +151,7 @@ export class ContextProvider<
       }
       seen.add(callback);
       consumerHost.dispatchEvent(
-        new ContextRequestEvent(this.context, callback, true)
+        new ContextRequestEvent(this.context, consumerHost, callback, true)
       );
     }
     ev.stopPropagation();
@@ -161,6 +164,6 @@ export class ContextProvider<
 
   hostConnected(): void {
     // emit an event to signal a provider is available for this context
-    this.host.dispatchEvent(new ContextProviderEvent(this.context));
+    this.host.dispatchEvent(new ContextProviderEvent(this.context, this.host));
   }
 }
