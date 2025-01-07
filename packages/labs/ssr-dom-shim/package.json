@@ -21,9 +21,9 @@
       "types": "./index.d.ts",
       "default": "./index.js"
     },
-    "./css-hook.js": {
-      "types": "./css-hook.d.ts",
-      "default": "./css-hook.js"
+    "./register-css-hook.js": {
+      "types": "./register-css-hook.d.ts",
+      "default": "./register-css-hook.js"
     }
   },
   "files": [
@@ -60,7 +60,7 @@
         "build"
       ],
       "env": {
-        "NODE_OPTIONS": "--enable-source-maps --import ./css-hook.js"
+        "NODE_OPTIONS": "--enable-source-maps --import ./register-css-hook.js"
       },
       "output": []
     }

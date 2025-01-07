@@ -72,13 +72,21 @@ this module.
 
 ### CSS Node.js customization hook
 
-`@lit-labs/ssr-dom-shim/css-hook.js` implements/registers a Node.js
-customization hook to import CSS files/modules as instances of `CSSStyleSheet`.
+`@lit-labs/ssr-dom-shim/register-css-hook.js` implements/registers a
+[Node.js customization hook](https://nodejs.org/api/module.html#customization-hooks)
+(Node.js >= 18.6.0) to import CSS files/modules as instances of `CSSStyleSheet`.
 
 ```ts
 import styles from 'my-styles.css' with {type: 'css'};
 // styles is now an instance of CSSStyleSheet
 ```
+
+This can either be used as a parameter with the Node.js CLI
+(e.g. `node --import @lit-labs/ssr-dom-shim/register-css-hook.js my-script.js` or via
+environment variable `NODE_OPTIONS="--import @lit-labs/ssr-dom-shim/register-css-hook.js"`)
+or imported inline, and it will apply to any module dynamically imported afterwards
+(e.g. `import @lit-labs/ssr-dom-shim/register-css-hook.js` and
+subsequently `await import('./my-component.js')`).
 
 - [Node.js Customization Hooks](https://nodejs.org/api/module.html#customization-hooks)
 - [Import Attributes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import/with)

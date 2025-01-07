@@ -356,7 +356,7 @@ packages/labs/ssr-client/node_modules/
 packages/labs/ssr-client/index.*
 packages/labs/ssr-client/lit-element-hydrate-support.*
 
-packages/labs/ssr-dom-shim/css-hook.*
+packages/labs/ssr-dom-shim/register-css-hook.*
 packages/labs/ssr-dom-shim/index.*
 packages/labs/ssr-dom-shim/lib/
 packages/labs/ssr-dom-shim/test/

@@ -47,13 +47,16 @@ test('load CSS file via static import', async () => {
   );
 });
 
-test('load CSS file with a backtick', async () => {
+test('load CSS file with special characters', async () => {
   // The CSS file is not copied/transpiled to the test directory.
-  const sheet = await import('../src/test/example-with-backticks.css', {
-    with: {type: 'css'},
-  });
+  const sheet = await import(
+    '../src/test/example-with-special-characters.css',
+    {
+      with: {type: 'css'},
+    }
+  );
   const rule = readFileSync(
-    new URL('../src/test/example-with-backticks.css', import.meta.url),
+    new URL('../src/test/example-with-special-characters.css', import.meta.url),
     'utf8'
   );
 

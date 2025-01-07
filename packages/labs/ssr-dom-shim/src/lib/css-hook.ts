@@ -1,3 +1,4 @@
+import {readFile} from 'node:fs/promises';
 import type {LoadHook} from 'node:module';
 
 /**
@@ -9,16 +10,11 @@ import type {LoadHook} from 'node:module';
  */
 export const load: LoadHook = async (url, context, nextLoad) => {
   if (context.importAttributes.type === 'css') {
-    // Convert the path to base64 to prevent any special characters
-    // from being falsely interpreted as code.
-    const base64url = btoa(url);
+    const content = await readFile(new URL(url), 'utf-8');
     const code = `
-      import {readFile} from 'node:fs/promises';
       import {CSSStyleSheet} from '@lit-labs/ssr-dom-shim';
-      const url = new URL(atob('${base64url}'));
-      const css = await readFile(url, 'utf-8');
       const sheet = new CSSStyleSheet();
-      sheet.replaceSync(css);
+      sheet.replaceSync(${JSON.stringify(content)});
       export default sheet;
     `;
     return {format: 'module', shortCircuit: true, source: code};
