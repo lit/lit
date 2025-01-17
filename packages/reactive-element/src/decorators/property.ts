@@ -147,7 +147,7 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
       },
       init(this: ReactiveElement, v: V): V {
         if (v !== undefined) {
-          this._$changeProperty(name, undefined, options);
+          this._$changeProperty(name, undefined, options, true);
         }
         return v;
       },

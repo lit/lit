@@ -274,6 +274,18 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
    * @internal
    */
   wrapped?: boolean;
+
+  /**
+   * When `reflect` is `true`, skips reflecting the initial default value.
+   */
+  skipReflectInitial?: boolean;
+
+  /**
+   * Default value for the property. Used with `skipReflectInitial` to
+   * skip the intiial attribute reflection. Avoid setting a value here and
+   * in the field/accessor.
+   */
+  value?: Type;
 }
 
 /**
@@ -1257,7 +1269,18 @@ export abstract class ReactiveElement
       ).getPropertyOptions(name);
       const hasChanged = options.hasChanged ?? notEqual;
       const newValue = this[name as keyof this];
-      if (hasChanged(newValue, oldValue)) {
+      let changed = hasChanged(newValue, oldValue);
+      // Force an update if a reflecting property should have an attribute.
+      if (!changed && options.reflect && newValue != null) {
+        const attr = (
+          this.constructor as typeof ReactiveElement
+        ).__attributeNameForProperty(name, options);
+        changed =
+          attr != null &&
+          !this._$changedProperties.has(name) &&
+          !this.hasAttribute(attr);
+      }
+      if (changed) {
         this._$changeProperty(name, oldValue, options);
       } else {
         // Abort the request if the property should not be considered changed.
@@ -1275,8 +1298,28 @@ export abstract class ReactiveElement
   _$changeProperty(
     name: PropertyKey,
     oldValue: unknown,
-    options: PropertyDeclaration
+    options: PropertyDeclaration,
+    initialize?: boolean
   ) {
+    // When initializing, seed property to setter and optionally
+    // skip attribute reflection.
+    if (initialize) {
+      const value = this[name as keyof this] ?? options.value;
+      if (value === undefined) {
+        return;
+      }
+      // Avoids reflecting property
+      const reflectingProp = this.__reflectingProperty;
+      if (options.skipReflectInitial) {
+        this.__reflectingProperty = name;
+      }
+      // Note, this will be re-entrant but without initialization
+      // so this just needs to exit.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this[name as keyof this] = value as any;
+      this.__reflectingProperty = reflectingProp;
+      return;
+    }
     // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
     // vs just Map.set()
     if (!this._$changedProperties.has(name)) {
@@ -1422,11 +1465,11 @@ export abstract class ReactiveElement
       if (elementProperties.size > 0) {
         for (const [p, options] of elementProperties) {
           if (
-            options.wrapped === true &&
-            !this._$changedProperties.has(p) &&
-            this[p as keyof this] !== undefined
+            // when wrapped *or* there is a default value, seed the change)
+            (options.wrapped === true || options.value !== undefined) &&
+            !this._$changedProperties.has(p)
           ) {
-            this._$changeProperty(p, this[p as keyof this], options);
+            this._$changeProperty(p, undefined, options, true);
           }
         }
       }
