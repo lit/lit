@@ -1271,7 +1271,7 @@ export abstract class ReactiveElement
       const newValue = this[name as keyof this];
       let changed = hasChanged(newValue, oldValue);
       // Force an update if a reflecting property should have an attribute.
-      if (!changed && options.reflect && newValue != null) {
+      if (!changed && this.hasUpdated && options.reflect && newValue != null) {
         const attr = (
           this.constructor as typeof ReactiveElement
         ).__attributeNameForProperty(name, options);
