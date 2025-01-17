@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {chromeLauncher} from '@web/test-runner-chrome';
+
 export default {
   concurrency: 1,
   testFramework: {
@@ -16,4 +18,20 @@ export default {
       rootHooks: [],
     },
   },
+  browsers: [
+    chromeLauncher({
+      async createPage({context}) {
+        const page = await context.newPage();
+        await page.evaluateOnNewDocument((CI) => {
+          // eslint-disable-next-line no-undef
+          globalThis.process = {
+            env: {
+              CI,
+            },
+          };
+        }, process.env.CI);
+        return page;
+      },
+    }),
+  ],
 };
