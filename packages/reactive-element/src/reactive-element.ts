@@ -1301,36 +1301,38 @@ export abstract class ReactiveElement
     options: PropertyDeclaration,
     initialize?: boolean
   ) {
-    // When initializing, seed property to setter and optionally
-    // skip attribute reflection.
-    if (initialize) {
-      const value = this[name as keyof this] ?? options.value;
-      if (value === undefined) {
-        return;
-      }
-      // Avoids reflecting property
-      const reflectingProp = this.__reflectingProperty;
-      if (options.skipReflectInitial) {
-        this.__reflectingProperty = name;
-      }
-      // Note, this will be re-entrant but without initialization
-      // so this just needs to exit.
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      this[name as keyof this] = value as any;
-      this.__reflectingProperty = reflectingProp;
-      return;
-    }
     // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
     // vs just Map.set()
     if (!this._$changedProperties.has(name)) {
       this._$changedProperties.set(name, oldValue);
     }
+    const reflect =
+      options.reflect &&
+      this.__reflectingProperty !== name &&
+      !(initialize && options.skipReflectInitial);
     // Add to reflecting properties set.
     // Note, it's important that every change has a chance to add the
     // property to `__reflectingProperties`. This ensures setting
     // attribute + property reflects correctly.
-    if (options.reflect === true && this.__reflectingProperty !== name) {
+    if (reflect) {
       (this.__reflectingProperties ??= new Set<PropertyKey>()).add(name);
+    }
+  }
+
+  // set property quietly, without reflection
+  __initializeValue(
+    name: PropertyKey,
+    value: unknown,
+    options: PropertyDeclaration
+  ) {
+    const reflectingProp = this.__reflectingProperty;
+    if (options.skipReflectInitial) {
+      this.__reflectingProperty = name;
+    }
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    this[name as keyof this] = value as any;
+    if (options.skipReflectInitial) {
+      this.__reflectingProperty = reflectingProp;
     }
   }
 
@@ -1464,12 +1466,21 @@ export abstract class ReactiveElement
         .elementProperties;
       if (elementProperties.size > 0) {
         for (const [p, options] of elementProperties) {
+          const {wrapped, value: defaultValue} = options;
+          if (wrapped !== true && defaultValue === undefined) {
+            continue;
+          }
+          const value = this[p as keyof this];
           if (
-            // when wrapped *or* there is a default value, seed the change)
-            (options.wrapped === true || options.value !== undefined) &&
+            wrapped === true &&
+            value !== undefined &&
             !this._$changedProperties.has(p)
           ) {
             this._$changeProperty(p, undefined, options, true);
+          }
+          // ensure options.value is set to property value.
+          if (value === undefined && defaultValue !== undefined) {
+            this.__initializeValue(p, defaultValue, options);
           }
         }
       }

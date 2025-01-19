@@ -592,4 +592,162 @@ suite('@property', () => {
     assert.equal(el.first, 'first updated');
     assert.equal(el.second, 'second updated');
   });
+
+  test('default value', async () => {
+    class E extends ReactiveElement {
+      @property({value: 'acc'})
+      accessor acc!: string;
+
+      #gs!: string;
+      get gs() {
+        return this.#gs;
+      }
+
+      @property({value: 'gs'})
+      set gs(v: string) {
+        this.#gs = v;
+      }
+
+      changes = new Map<PropertyKey, any>();
+
+      override updated(changed: PropertyValues) {
+        this.changes = new Map(changed);
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.equal(el.acc, 'acc');
+    assert.equal(el.gs, 'gs');
+    assert.deepEqual(Array.from(el.changes), [
+      ['acc', undefined],
+      ['gs', undefined],
+    ]);
+    el.acc = '2';
+    el.gs = '3';
+    await el.updateComplete;
+    assert.equal(el.acc, '2');
+    assert.equal(el.gs, '3');
+    assert.deepEqual(Array.from(el.changes), [
+      ['acc', 'acc'],
+      ['gs', 'gs'],
+    ]);
+    const el2 = new E();
+    container.appendChild(el2);
+    el2.acc = '2';
+    el2.gs = '3';
+    await el2.updateComplete;
+    assert.equal(el2.acc, '2');
+    assert.equal(el2.gs, '3');
+    assert.deepEqual(Array.from(el2.changes), [
+      ['acc', undefined],
+      ['gs', undefined],
+    ]);
+    const late = generateElementName();
+    const el3 = document.createElement(late) as any;
+    container.append(el3);
+    el3.acc = '2';
+    el3.gs = '3';
+    customElements.define(late, class extends E {});
+    await el3.updateComplete;
+    assert.equal(el3.acc, '2');
+    assert.equal(el3.gs, '3');
+    assert.deepEqual(Array.from(el3.changes), [
+      ['acc', undefined],
+      ['gs', undefined],
+    ]);
+  });
+
+  test('default value reflects... by default', async () => {
+    class E extends ReactiveElement {
+      @property({value: 'acc', reflect: true})
+      accessor acc!: string;
+
+      #gs!: string;
+      get gs() {
+        return this.#gs;
+      }
+      @property({value: 'gs', reflect: true})
+      set gs(v: string) {
+        this.#gs = v;
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.equal(el.getAttribute('acc'), 'acc');
+    assert.equal(el.getAttribute('gs'), 'gs');
+    el.acc = '2';
+    el.gs = '3';
+    await el.updateComplete;
+    assert.equal(el.getAttribute('acc'), '2');
+    assert.equal(el.getAttribute('gs'), '3');
+    const el2 = new E();
+    container.appendChild(el2);
+    el2.acc = '2';
+    el2.gs = '3';
+    await el2.updateComplete;
+    assert.equal(el.getAttribute('acc'), '2');
+    assert.equal(el.getAttribute('gs'), '3');
+    const late = generateElementName();
+    const el3 = document.createElement(late) as any;
+    container.append(el3);
+    el3.acc = '2';
+    el3.gs = '3';
+    customElements.define(late, class extends E {});
+    await el3.updateComplete;
+    assert.equal(el.getAttribute('acc'), '2');
+    assert.equal(el.getAttribute('gs'), '3');
+  });
+
+  test('skipReflectInitial', async () => {
+    class E extends ReactiveElement {
+      @property({reflect: true, skipReflectInitial: true, value: 'acc'})
+      accessor acc!: string;
+
+      #gs!: string;
+      get gs() {
+        return this.#gs;
+      }
+
+      @property({reflect: true, skipReflectInitial: true, value: 'gs'})
+      set gs(v: string) {
+        this.#gs = v;
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.isFalse(el.hasAttributes());
+    el.acc = 'acc';
+    el.gs = 'gs';
+    await el.updateComplete;
+    assert.equal(el.getAttribute('acc'), 'acc');
+    assert.equal(el.getAttribute('gs'), 'gs');
+    el.acc = '2';
+    el.gs = '3';
+    await el.updateComplete;
+    assert.equal(el.getAttribute('acc'), '2');
+    assert.equal(el.getAttribute('gs'), '3');
+
+    const el2 = new E();
+    container.appendChild(el2);
+    el2.acc = '2';
+    el2.gs = '3';
+    await el2.updateComplete;
+    assert.equal(el2.getAttribute('acc'), '2');
+    assert.equal(el2.getAttribute('gs'), '3');
+    const late = generateElementName();
+    const el3 = document.createElement(late) as any;
+    container.append(el3);
+    el3.acc = '2';
+    el3.gs = '3';
+    customElements.define(late, class extends E {});
+    await el3.updateComplete;
+    assert.equal(el3.getAttribute('acc'), '2');
+    assert.equal(el3.getAttribute('gs'), '3');
+  });
 });
