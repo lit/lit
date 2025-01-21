@@ -228,10 +228,12 @@ if (DEV_MODE) {
     }
   };
 
-  issueWarning(
-    'dev-mode',
-    `Lit is in dev mode. Not recommended for production!`
-  );
+  queueMicrotask(() => {
+    issueWarning(
+      'dev-mode',
+      `Lit is in dev mode. Not recommended for production!`
+    );
+  });
 }
 
 const wrap =
@@ -2197,11 +2199,13 @@ polyfillSupport?.(Template, ChildPart);
 // This line will be used in regexes to search for lit-html usage.
 (global.litHtmlVersions ??= []).push('3.2.1');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
-  issueWarning!(
-    'multiple-versions',
-    `Multiple versions of Lit loaded. ` +
-      `Loading multiple versions is not recommended.`
-  );
+  queueMicrotask(() => {
+    issueWarning!(
+      'multiple-versions',
+      `Multiple versions of Lit loaded. ` +
+        `Loading multiple versions is not recommended.`
+    );
+  });
 }
 
 /**
