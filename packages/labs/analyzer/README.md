@@ -2,6 +2,15 @@
 
 A static analyzer for Lit
 
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+
 ## Overview
 
 This package contains static analysis utilities for analyzing source code that contain Lit templates and elements, that might be useful for other programs like linters, IDE plugins, code generators, etc.
