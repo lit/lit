@@ -279,9 +279,11 @@ export const _$LE = {
 // This line will be used in regexes to search for LitElement usage.
 (globalThis.litElementVersions ??= []).push('4.1.1');
 if (DEV_MODE && globalThis.litElementVersions.length > 1) {
-  issueWarning!(
-    'multiple-versions',
-    `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended.`
-  );
+  queueMicrotask(() => {
+    issueWarning!(
+      'multiple-versions',
+      `Multiple versions of Lit loaded. Loading multiple versions ` +
+        `is not recommended.`
+    );
+  });
 }

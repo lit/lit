@@ -94,19 +94,21 @@ if (DEV_MODE) {
     }
   };
 
-  issueWarning(
-    'dev-mode',
-    `Lit is in dev mode. Not recommended for production!`
-  );
-
-  // Issue polyfill support warning.
-  if (global.ShadyDOM?.inUse && polyfillSupport === undefined) {
+  queueMicrotask(() => {
     issueWarning(
-      'polyfill-support-missing',
-      `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
-        `the \`polyfill-support\` module has not been loaded.`
+      'dev-mode',
+      `Lit is in dev mode. Not recommended for production!`
     );
-  }
+
+    // Issue polyfill support warning.
+    if (global.ShadyDOM?.inUse && polyfillSupport === undefined) {
+      issueWarning(
+        'polyfill-support-missing',
+        `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
+          `the \`polyfill-support\` module has not been loaded.`
+      );
+    }
+  });
 }
 
 /**
@@ -1671,9 +1673,11 @@ if (DEV_MODE) {
 // This line will be used in regexes to search for ReactiveElement usage.
 (global.reactiveElementVersions ??= []).push('2.0.4');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
-  issueWarning!(
-    'multiple-versions',
-    `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended.`
-  );
+  queueMicrotask(() => {
+    issueWarning!(
+      'multiple-versions',
+      `Multiple versions of Lit loaded. Loading multiple versions ` +
+        `is not recommended.`
+    );
+  });
 }
