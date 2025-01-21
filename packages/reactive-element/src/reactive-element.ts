@@ -276,16 +276,12 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
   wrapped?: boolean;
 
   /**
-   * When `reflect` is `true`, skips reflecting the initial default value.
-   */
-  skipReflectInitial?: boolean;
-
-  /**
-   * Default value for the property. Used with `skipReflectInitial` to
-   * skip the intiial attribute reflection. Avoid setting a value here and
+   * Default value for the property. When set, the property is
+   * initialized to this value and if `reflect` is set, the initial default
+   * value does *not* reflect. Avoid setting a value here and
    * in the field/accessor.
    */
-  value?: Type;
+  defaultValue?: Type;
 }
 
 /**
@@ -1270,15 +1266,22 @@ export abstract class ReactiveElement
       const hasChanged = options.hasChanged ?? notEqual;
       const newValue = this[name as keyof this];
       let changed = hasChanged(newValue, oldValue);
-      // Force an update if a reflecting property should have an attribute.
-      if (!changed && this.hasUpdated && options.reflect && newValue != null) {
+      // When there is no change, check a corner case that can occur when
+      // 1. there's a defaultValue which was not reflected
+      // 2. the property is subsequently set to the defaultValue.
+      // For example, `prop: {defaultValue: 'foo', reflect: true}`
+      // and el.prop = 'foo'. This should be considered a change if the
+      // attribute is not set.
+      if (
+        !changed &&
+        options.reflect &&
+        newValue != null &&
+        options.defaultValue === newValue
+      ) {
         const attr = (
           this.constructor as typeof ReactiveElement
         ).__attributeNameForProperty(name, options);
-        changed =
-          attr != null &&
-          !this._$changedProperties.has(name) &&
-          !this.hasAttribute(attr);
+        changed = !this.hasAttribute(attr!);
       }
       if (changed) {
         this._$changeProperty(name, oldValue, options);
@@ -1306,10 +1309,12 @@ export abstract class ReactiveElement
     if (!this._$changedProperties.has(name)) {
       this._$changedProperties.set(name, oldValue);
     }
+    // Avoid reflecting when the property is initialized
+    // and it has a defaultValue.
     const reflect =
       options.reflect &&
       this.__reflectingProperty !== name &&
-      !(initialize && options.skipReflectInitial);
+      !(initialize && options.defaultValue !== undefined);
     // Add to reflecting properties set.
     // Note, it's important that every change has a chance to add the
     // property to `__reflectingProperties`. This ensures setting
@@ -1319,21 +1324,14 @@ export abstract class ReactiveElement
     }
   }
 
-  // set property quietly, without reflection
-  __initializeValue(
-    name: PropertyKey,
-    value: unknown,
-    options: PropertyDeclaration
-  ) {
+  // Intiialize property's defaultValue. Do this without reflection.
+  __initializeDefaultValue(name: PropertyKey, options: PropertyDeclaration) {
+    const {defaultValue} = options;
     const reflectingProp = this.__reflectingProperty;
-    if (options.skipReflectInitial) {
-      this.__reflectingProperty = name;
-    }
+    this.__reflectingProperty = name;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    this[name as keyof this] = value as any;
-    if (options.skipReflectInitial) {
-      this.__reflectingProperty = reflectingProp;
-    }
+    this[name as keyof this] = defaultValue as any;
+    this.__reflectingProperty = reflectingProp;
   }
 
   /**
@@ -1466,21 +1464,21 @@ export abstract class ReactiveElement
         .elementProperties;
       if (elementProperties.size > 0) {
         for (const [p, options] of elementProperties) {
-          const {wrapped, value: defaultValue} = options;
+          const {wrapped, defaultValue} = options;
           if (wrapped !== true && defaultValue === undefined) {
             continue;
           }
           const value = this[p as keyof this];
+          // Ensure any initially set value is seen as a change.
           if (
             wrapped === true &&
             value !== undefined &&
             !this._$changedProperties.has(p)
           ) {
             this._$changeProperty(p, undefined, options, true);
-          }
-          // ensure options.value is set to property value.
-          if (value === undefined && defaultValue !== undefined) {
-            this.__initializeValue(p, defaultValue, options);
+            // Or if no value is set, initialize a default value.
+          } else if (value === undefined && defaultValue !== undefined) {
+            this.__initializeDefaultValue(p, options);
           }
         }
       }

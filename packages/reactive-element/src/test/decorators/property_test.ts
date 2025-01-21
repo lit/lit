@@ -568,12 +568,12 @@ suite('@property', () => {
     delete extendedReflect.decorate;
   });
 
-  test('default value', async () => {
+  test('defaultValue', async () => {
     class E extends ReactiveElement {
-      @property({value: 'prop'})
+      @property({defaultValue: 'prop'})
       prop!: string;
 
-      @property({value: 'acc'})
+      @property({defaultValue: 'acc'})
       accessor acc!: string;
 
       #gs!: string;
@@ -581,7 +581,7 @@ suite('@property', () => {
         return this.#gs;
       }
 
-      @property({value: 'gs'})
+      @property({defaultValue: 'gs'})
       set gs(v: string) {
         this.#gs = v;
       }
@@ -648,65 +648,12 @@ suite('@property', () => {
     ]);
   });
 
-  test('default value reflects... by default', async () => {
+  test('defaultValue does not reflect', async () => {
     class E extends ReactiveElement {
-      @property({value: 'prop', reflect: true})
+      @property({reflect: true, defaultValue: 'prop'})
       prop!: string;
 
-      @property({value: 'acc', reflect: true})
-      accessor acc!: string;
-
-      #gs!: string;
-      get gs() {
-        return this.#gs;
-      }
-      @property({value: 'gs', reflect: true})
-      set gs(v: string) {
-        this.#gs = v;
-      }
-    }
-    customElements.define(generateElementName(), E);
-    const el = new E();
-    container.appendChild(el);
-    await el.updateComplete;
-    assert.equal(el.getAttribute('prop'), 'prop');
-    assert.equal(el.getAttribute('acc'), 'acc');
-    assert.equal(el.getAttribute('gs'), 'gs');
-    el.prop = '1';
-    el.acc = '2';
-    el.gs = '3';
-    await el.updateComplete;
-    assert.equal(el.getAttribute('prop'), '1');
-    assert.equal(el.getAttribute('acc'), '2');
-    assert.equal(el.getAttribute('gs'), '3');
-    const el2 = new E();
-    container.appendChild(el2);
-    el2.prop = '1';
-    el2.acc = '2';
-    el2.gs = '3';
-    await el2.updateComplete;
-    assert.equal(el.getAttribute('prop'), '1');
-    assert.equal(el.getAttribute('acc'), '2');
-    assert.equal(el.getAttribute('gs'), '3');
-    const late = generateElementName();
-    const el3 = document.createElement(late) as any;
-    container.append(el3);
-    el3.prop = '1';
-    el3.acc = '2';
-    el3.gs = '3';
-    customElements.define(late, class extends E {});
-    await el3.updateComplete;
-    assert.equal(el.getAttribute('prop'), '1');
-    assert.equal(el.getAttribute('acc'), '2');
-    assert.equal(el.getAttribute('gs'), '3');
-  });
-
-  test('skipReflectInitial', async () => {
-    class E extends ReactiveElement {
-      @property({reflect: true, skipReflectInitial: true, value: 'prop'})
-      prop!: string;
-
-      @property({reflect: true, skipReflectInitial: true, value: 'acc'})
+      @property({reflect: true, defaultValue: 'acc'})
       accessor acc!: string;
 
       #gs!: string;
@@ -714,7 +661,7 @@ suite('@property', () => {
         return this.#gs;
       }
 
-      @property({reflect: true, skipReflectInitial: true, value: 'gs'})
+      @property({reflect: true, defaultValue: 'gs'})
       set gs(v: string) {
         this.#gs = v;
       }

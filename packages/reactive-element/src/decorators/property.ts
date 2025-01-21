@@ -147,7 +147,7 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
       },
       init(this: ReactiveElement, v: V): V {
         this._$changeProperty(name, undefined, options, true);
-        return v ?? (options.value as V);
+        return v ?? (options.defaultValue as V);
       },
     } as unknown as ClassAccessorDecoratorResult<C, V>;
   } else if (kind === 'setter') {

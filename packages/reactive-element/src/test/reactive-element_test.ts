@@ -259,13 +259,13 @@ suite('ReactiveElement', () => {
     assert.equal(el.updateCount, 6);
   });
 
-  test('property options default value', async () => {
+  test('property options defaultValue', async () => {
     class E extends ReactiveElement {
       static override get properties() {
         return {
-          prop: {value: 'prop'},
-          acc: {value: 'acc'},
-          gs: {value: 'gs'},
+          prop: {defaultValue: 'prop'},
+          acc: {defaultValue: 'acc'},
+          gs: {defaultValue: 'gs'},
         };
       }
 
@@ -344,72 +344,13 @@ suite('ReactiveElement', () => {
     ]);
   });
 
-  test('property options default value reflects... by default', async () => {
+  test('property options defaultValue does not reflect', async () => {
     class E extends ReactiveElement {
       static override get properties() {
         return {
-          prop: {value: 'prop', reflect: true},
-          acc: {value: 'acc', reflect: true},
-          gs: {value: 'gs', reflect: true},
-        };
-      }
-
-      prop!: string;
-
-      accessor acc!: string;
-
-      #gs!: string;
-      get gs() {
-        return this.#gs;
-      }
-
-      set gs(v: string) {
-        this.#gs = v;
-      }
-    }
-    customElements.define(generateElementName(), E);
-    const el = new E();
-    container.appendChild(el);
-    await el.updateComplete;
-    assert.equal(el.getAttribute('prop'), 'prop');
-    assert.equal(el.getAttribute('acc'), 'acc');
-    assert.equal(el.getAttribute('gs'), 'gs');
-    el.prop = '1';
-    el.acc = '2';
-    el.gs = '3';
-    await el.updateComplete;
-    assert.equal(el.getAttribute('prop'), '1');
-    assert.equal(el.getAttribute('acc'), '2');
-    assert.equal(el.getAttribute('gs'), '3');
-    const el2 = new E();
-    container.appendChild(el2);
-    el2.prop = '1';
-    el2.acc = '2';
-    el2.gs = '3';
-    await el2.updateComplete;
-    assert.equal(el.getAttribute('prop'), '1');
-    assert.equal(el.getAttribute('acc'), '2');
-    assert.equal(el.getAttribute('gs'), '3');
-    const late = generateElementName();
-    const el3 = document.createElement(late) as any;
-    container.append(el3);
-    el3.prop = '1';
-    el3.acc = '2';
-    el3.gs = '3';
-    customElements.define(late, class extends E {});
-    await el3.updateComplete;
-    assert.equal(el.getAttribute('prop'), '1');
-    assert.equal(el.getAttribute('acc'), '2');
-    assert.equal(el.getAttribute('gs'), '3');
-  });
-
-  test('property options skipReflectInitial', async () => {
-    class E extends ReactiveElement {
-      static override get properties() {
-        return {
-          prop: {reflect: true, skipReflectInitial: true, value: 'prop'},
-          acc: {reflect: true, skipReflectInitial: true, value: 'acc'},
-          gs: {reflect: true, skipReflectInitial: true, value: 'gs'},
+          prop: {reflect: true, defaultValue: 'prop'},
+          acc: {reflect: true, defaultValue: 'acc'},
+          gs: {reflect: true, defaultValue: 'gs'},
         };
       }
 
