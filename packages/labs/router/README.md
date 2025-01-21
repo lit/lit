@@ -2,9 +2,18 @@
 
 A router for Lit.
 
-## Status
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Give feedback: https://github.com/lit/lit/discussions/3354
 
-🚧 `@lit-labs/router` is part of the Lit Labs set of packages - it is published in order to get feedback on the design and not ready for production. Breaking changes are likely to happen frequently. 🚧
+## Status
 
 This package requires either a native [`URLPattern`](https://developer.mozilla.org/en-US/docs/Web/API/URLPattern) implementation (which is currently only implemented in Chrome, Edge, and other Chromium browsers) or a URLPattern polyfill, like [`urlpattern-polyfill`](https://github.com/kenchris/urlpattern-polyfill).
 
