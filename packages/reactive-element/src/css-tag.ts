@@ -178,8 +178,12 @@ export const adoptStyles = (
   } else {
     for (const s of styles) {
       const style = document.createElement('style');
+      
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const nonce = (global as any)['litNonce'];
+      let nonce = (global as any)['litNonce'] 
+      || ((renderRoot as ShadowRoot)?.querySelector("style[nonce]") as HTMLStyleElement)?.nonce 
+      || ((renderRoot as ShadowRoot)?.querySelector("script[nonce]") as HTMLScriptElement)?.nonce;
+
       if (nonce !== undefined) {
         style.setAttribute('nonce', nonce);
       }
