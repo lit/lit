@@ -24,9 +24,11 @@ export type RenderResult = Iterable<string | Promise<RenderResult>>;
  */
 export const collectResult = async (result: RenderResult): Promise<string> => {
   let value = '';
-  for (const chunk of result) {
-    value +=
-      typeof chunk === 'string' ? chunk : await collectResult(await chunk);
+  if (result) {
+    for (const chunk of result) {
+      value +=
+        typeof chunk === 'string' ? chunk : await collectResult(await chunk);
+    }
   }
   return value;
 };
