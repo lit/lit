@@ -38,9 +38,12 @@ export interface ResizeControllerConfig<T = unknown> {
    */
   callback?: ResizeValueCallback<T>;
   /**
-   * By default the `callback` is called without changes when a target is
-   * observed. This is done to help manage initial state, but this
-   * setup step can be skipped by setting this to true.
+   * The browser's `ResizeObserver` triggers immediately when a target is first
+   * observed. This behavior may be undesirable in a Lit component, as it may
+   * cause an extraneous `updated()` lifecycle callback after the initial
+   * render. If the performance impact of this is a concern, set `skipInitial`
+   * to true, which will cause the `ResizeController` to automatically ignore
+   * the first callback from the `ResizeObserver`.
    */
   skipInitial?: boolean;
 }
@@ -65,13 +68,9 @@ export class ResizeController<T = unknown> implements ReactiveController {
   private _config?: ResizeObserverOptions;
   private _observer!: ResizeObserver;
   private _skipInitial = false;
-  /**
-   * Flag used to help manage calling the `callback` when observe is called
-   * in addition to when a mutation occurs. This is done to help setup initial
-   * state and is performed async by requesting a host update and calling
-   * `handleChanges` once by checking and then resetting this flag.
-   */
-  private _unobservedUpdate = false;
+  private _shouldSkipNextUpdate?: Set<Element> = undefined;
+  private _isConnected = false;
+
   /**
    * The result of processing the observer's changes via the `callback`
    * function.
@@ -87,12 +86,11 @@ export class ResizeController<T = unknown> implements ReactiveController {
     {target, config, callback, skipInitial}: ResizeControllerConfig<T>
   ) {
     this._host = host;
-    // Target defaults to `host` unless explicitly `null`.
-    if (target !== null) {
-      this._targets.add(target ?? host);
-    }
     this._config = config;
     this._skipInitial = skipInitial ?? this._skipInitial;
+    if (this._skipInitial) {
+      this._shouldSkipNextUpdate = new Set();
+    }
     this.callback = callback;
     if (isServer) {
       return;
@@ -105,9 +103,23 @@ export class ResizeController<T = unknown> implements ReactiveController {
       return;
     }
     this._observer = new ResizeObserver((entries: ResizeObserverEntry[]) => {
+      if (this._skipInitial) {
+        entries = entries.filter(
+          (entry) => !this._shouldSkipNextUpdate!.delete(entry.target)
+        );
+        if (entries.length === 0) {
+          return;
+        }
+      }
       this.handleChanges(entries);
       this._host.requestUpdate();
     });
+    // Target defaults to `host` unless explicitly `null`.
+    if (target !== null) {
+      // Make sure we only call observe at the end of the constructor, once all
+      // the other properties are set.
+      this.observe(target ?? host);
+    }
     host.addController(this);
   }
 
@@ -120,23 +132,15 @@ export class ResizeController<T = unknown> implements ReactiveController {
   }
 
   hostConnected() {
+    this._isConnected = true;
     for (const target of this._targets) {
-      this.observe(target);
+      this._observer.observe(target, this._config);
     }
   }
 
   hostDisconnected() {
-    this.disconnect();
-  }
-
-  async hostUpdated() {
-    // Handle initial state as a set of 0 changes. This helps setup initial
-    // state and promotes UI = f(state) since ideally the callback does not
-    // rely on changes.
-    if (!this._skipInitial && this._unobservedUpdate) {
-      this.handleChanges([]);
-    }
-    this._unobservedUpdate = false;
+    this._isConnected = false;
+    this._observer.disconnect();
   }
 
   /**
@@ -145,10 +149,14 @@ export class ResizeController<T = unknown> implements ReactiveController {
    * @param target Element to observe
    */
   observe(target: Element) {
+    // Add to this._targets if it isn't already, to ensure it is re-observed on reconnect.
     this._targets.add(target);
-    this._observer.observe(target, this._config);
-    this._unobservedUpdate = true;
-    this._host.requestUpdate();
+    if (this._skipInitial) {
+      this._shouldSkipNextUpdate!.add(target);
+    }
+    if (this._isConnected) {
+      this._observer.observe(target, this._config);
+    }
   }
 
   /**
@@ -157,14 +165,20 @@ export class ResizeController<T = unknown> implements ReactiveController {
    */
   unobserve(target: Element) {
     this._targets.delete(target);
-    this._observer.unobserve(target);
+    this._shouldSkipNextUpdate?.delete(target);
+    if (this._isConnected) {
+      this._observer.unobserve(target);
+    }
   }
 
   /**
-   * Disconnects the observer. This is done automatically when the host
-   * disconnects.
+   * Disconnects the observer, unobserving all previously-observed elements.
+   *
+   * You typically do not need to call this method yourself, as we automatically
+   * disconnect the observer when the host component is disconnected.
    */
-  protected disconnect() {
+  disconnect() {
     this._observer.disconnect();
+    this._targets.clear();
   }
 }
