@@ -40,7 +40,7 @@ $ npm install @lit-labs/observers
 Here's an example:
 
 ```ts
-import {MutationController} from '@lit-labs/observers/mutation_controller.js';
+import {MutationController} from '@lit-labs/observers/mutation-controller.js';
 // ...
 
 class MyElement extends LitElement {
