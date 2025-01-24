@@ -2,9 +2,24 @@
 
 A package for server-side rendering Lit templates and components.
 
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Documentation: https://lit.dev/docs/ssr/overview/
+>
+> Give feedback: https://github.com/lit/lit/discussions/3353
+
 ## Status
 
-`@lit-labs/ssr` is pre-release software, not quite ready for public consumption. As we develop it we are using it as a test bed to ensure that new versions of `lit` (`lit-html` and `lit-element`) are SSR-ready. We expect that the foundational SSR support in this package will support a wide variety of use cases, from full-blown app rendering frameworks built on top of web components, to framework-specific plugins for rendering custom elements in e.g. React or Angular, to pre-rendering plugins for static site generators like 11ty. Please stay tuned and file issues with use cases you'd like to see covered.
+`@lit-labs/ssr` is pre-release software, not quite ready for public consumption.
+If you try Lit SSR, please give feedback and file issues with bugs and use cases
+you'd like to see covered.
 
 ## Server Usage
 
