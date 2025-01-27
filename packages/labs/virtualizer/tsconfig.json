@@ -22,7 +22,7 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "tsBuildInfoFile": ".tsbuildinfo",
-    "types": ["mocha"]
+    "types": ["mocha", "node"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["*.d.ts", "**/*.d.ts"]
