@@ -2,4 +2,5 @@
 '@lit/ts-transformers': patch
 ---
 
-fix(ts-transformers): make typescript a peer dep
+Made typescript a peer dependency, this ensures that projects using a different
+version of typescript will get consistent results from this package.
