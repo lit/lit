@@ -215,16 +215,18 @@ let debugLogRenderId = 0;
 let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
-  global.litIssuedWarnings ??= new Set();
+  const issuedWarnings: Set<string | undefined> =
+    (globalThis.litIssuedWarnings ??= new Set());
 
   // Issue a warning, if we haven't already.
   issueWarning = (code: string, warning: string) => {
     warning += code
       ? ` See https://lit.dev/msg/${code} for more information.`
       : '';
-    if (!global.litIssuedWarnings!.has(warning)) {
+    if (!issuedWarnings!.has(warning) && !issuedWarnings!.has(code)) {
       console.warn(warning);
-      global.litIssuedWarnings!.add(warning);
+      issuedWarnings!.add(warning);
+      issuedWarnings!.add(code);
     }
   };
 

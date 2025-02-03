@@ -103,9 +103,10 @@ if (DEV_MODE) {
   // Issue a warning, if we haven't already.
   issueWarning = (code: string, warning: string) => {
     warning += ` See https://lit.dev/msg/${code} for more information.`;
-    if (!issuedWarnings.has(warning)) {
+    if (!issuedWarnings!.has(warning) && !issuedWarnings!.has(code)) {
       console.warn(warning);
-      issuedWarnings.add(warning);
+      issuedWarnings!.add(warning);
+      issuedWarnings!.add(code);
     }
   };
 }
