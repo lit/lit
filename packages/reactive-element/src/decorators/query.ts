@@ -31,7 +31,9 @@ if (DEV_MODE) {
     if (!issuedWarnings!.has(warning) && !issuedWarnings!.has(code)) {
       console.warn(warning);
       issuedWarnings!.add(warning);
-      issuedWarnings!.add(code);
+      if (code !== '') {
+        issuedWarnings!.add(code);
+      }
     }
   };
 }
