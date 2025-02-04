@@ -1,5 +1,5 @@
 ---
-"@lit-labs/observers": patch
+'@lit-labs/observers': patch
 ---
 
 Fix typo in README.md
