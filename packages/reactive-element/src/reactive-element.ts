@@ -276,10 +276,15 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
   wrapped?: boolean;
 
   /**
-   * Default value for the property. When set, the property is
-   * initialized to this value and if `reflect` is set, the initial default
-   * value does *not* reflect. Avoid setting a value here and
-   * in the field/accessor.
+   * The default value for the property.
+   *
+   * When set, the property is initialized to this value and if the `reflect`
+   * option is `true`, the initial default value does *not* reflect. Subsequent
+   * changes to the property will reflect, even if they are equal to the default
+   * value.
+   *
+   * Avoid setting both a default value here and defining a field initializer or
+   * setting the property in the constructor or connectedCallback.
    */
   defaultValue?: Type;
 }
