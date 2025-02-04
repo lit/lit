@@ -689,10 +689,6 @@ export abstract class ReactiveElement
     if (options.state) {
       (options as Mutable<PropertyDeclaration, 'attribute'>).attribute = false;
     }
-    if (this.prototype.hasOwnProperty(name)) {
-      options = {...options, wrapped: true};
-    }
-
     this.__prepare();
     this.elementProperties.set(name, options);
     if (!options.noAccessor) {
