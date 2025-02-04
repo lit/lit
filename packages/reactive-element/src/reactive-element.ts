@@ -1276,7 +1276,7 @@ export abstract class ReactiveElement
       // 2. the property is subsequently set to the defaultValue.
       // For example, `prop: {defaultValue: 'foo', reflect: true}`
       // and el.prop = 'foo'. This should be considered a change if the
-      // attribute is not set.
+      // attribute is not set because we will now reflect the property to the attribute.
       if (
         !changed &&
         options.reflect &&
