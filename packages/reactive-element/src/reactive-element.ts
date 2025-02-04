@@ -281,7 +281,8 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
    * When set, the property is initialized to this value and if the `reflect`
    * option is `true`, the initial default value does *not* reflect. Subsequent
    * changes to the property will reflect, even if they are equal to the default
-   * value.
+   * value. The default value will trigger an initial `undefined` old value
+   * in the `changedProperties` map argument to update lifecycle methods.
    *
    * Avoid setting both a default value here and defining a field initializer or
    * setting the property in the constructor or connectedCallback.
@@ -688,6 +689,10 @@ export abstract class ReactiveElement
     if (options.state) {
       (options as Mutable<PropertyDeclaration, 'attribute'>).attribute = false;
     }
+    if (this.prototype.hasOwnProperty(name)) {
+      options = {...options, wrapped: true};
+    }
+
     this.__prepare();
     this.elementProperties.set(name, options);
     if (!options.noAccessor) {
@@ -1330,7 +1335,10 @@ export abstract class ReactiveElement
   }
 
   // Intiialize property's defaultValue. Do this without reflection.
-  __initializeDefaultValue(name: PropertyKey, options: PropertyDeclaration) {
+  private __initializeDefaultValue(
+    name: PropertyKey,
+    options: PropertyDeclaration
+  ) {
     const {defaultValue} = options;
     const reflectingProp = this.__reflectingProperty;
     this.__reflectingProperty = name;
@@ -1474,15 +1482,16 @@ export abstract class ReactiveElement
             continue;
           }
           const value = this[p as keyof this];
-          // Ensure any initially set value is seen as a change.
           if (
             wrapped === true &&
             value !== undefined &&
             !this._$changedProperties.has(p)
           ) {
+            // Ensure the initial value is in changedProperties.
             this._$changeProperty(p, undefined, options, true);
-            // Or if no value is set, initialize a default value.
           } else if (value === undefined && defaultValue !== undefined) {
+            // Or if no value is set, initialize a default value.
+            // Note, this will also be in changedProperties.
             this.__initializeDefaultValue(p, options);
           }
         }
