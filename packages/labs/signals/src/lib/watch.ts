@@ -9,6 +9,22 @@ import {AsyncDirective} from 'lit/async-directive.js';
 import {Signal} from 'signal-polyfill';
 import {SignalWatcher} from './signal-watcher.js';
 
+// Watcher for directives that are not associated with a host element.
+let effectsPending = false;
+const hostlessWatcher = new Signal.subtle.Watcher(async () => {
+  if (effectsPending) {
+    return;
+  }
+  effectsPending = true;
+  queueMicrotask(() => {
+    effectsPending = false;
+    for (const signal of hostlessWatcher.getPending()) {
+      signal.get();
+    }
+    hostlessWatcher.watch();
+  });
+});
+
 export class WatchDirective<T> extends AsyncDirective {
   private __host?: SignalWatcher;
 
@@ -25,15 +41,13 @@ export class WatchDirective<T> extends AsyncDirective {
       return;
     }
     this.__computed = new Signal.Computed(() => {
+      this.setValue(this.__signal?.get());
       return this.__signal?.get();
     });
-    const watcher = (this.__watcher = new Signal.subtle.Watcher(() => {
-      // TODO: If we're not running inside a SignalWatcher, we can commit to
-      // the DOM independently.
-      this.__host?._updateWatchDirective(this as WatchDirective<unknown>);
-      watcher.watch();
-    }));
-    watcher.watch(this.__computed);
+    this.__watcher = this.__host?._partUpdateWatcher ?? hostlessWatcher;
+    this.__watcher.watch(this.__computed);
+    // get to trigger watcher but untracked so it's not part of performUpdate
+    Signal.subtle.untrack(() => this.__computed?.get());
   }
 
   private __unwatch() {
@@ -41,12 +55,7 @@ export class WatchDirective<T> extends AsyncDirective {
       this.__watcher.unwatch(this.__computed!);
       this.__computed = undefined;
       this.__watcher = undefined;
-      this.__host?._clearWatchDirective(this as WatchDirective<unknown>);
     }
-  }
-
-  commit() {
-    this.setValue(Signal.subtle.untrack(() => this.__computed?.get()));
   }
 
   render(signal: Signal.State<T> | Signal.Computed<T>): T {
@@ -65,12 +74,11 @@ export class WatchDirective<T> extends AsyncDirective {
     }
     this.__signal = signal;
     this.__watch();
-
     // We use untrack() so that the signal access is not tracked by the watcher
     // created by SignalWatcher. This means that an can use both SignalWatcher
     // and watch() and a signal update won't trigger a full element update if
     // it's only passed to watch() and not otherwise accessed by the element.
-    return Signal.subtle.untrack(() => this.__computed!.get());
+    return Signal.subtle.untrack(() => this.__signal!.get());
   }
 
   protected override disconnected(): void {
