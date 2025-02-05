@@ -162,8 +162,6 @@
   ],
   "devDependencies": {
     "@open-wc/testing": "^3.1.6",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "^22.10.7",
     "@web/dev-server-esbuild": "^0.3.0",
     "tachometer": "^0.7.0"
   },
