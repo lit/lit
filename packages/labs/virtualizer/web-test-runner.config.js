@@ -22,16 +22,25 @@ export default {
     chromeLauncher({
       async createPage({context}) {
         const page = await context.newPage();
-        await page.evaluateOnNewDocument((CI) => {
-          // eslint-disable-next-line no-undef
-          globalThis.process = {
-            env: {
-              CI,
-            },
-          };
-        }, process.env.CI);
+        await page.evaluateOnNewDocument(provideSkipInCI, process.env.CI);
         return page;
       },
     }),
   ],
 };
+
+function provideSkipInCI(CI) {
+  // We're extending Mocha's describe function, so
+  // need to wait until Mocha has loaded
+  addEventListener('load', () => {
+    // eslint-disable-next-line no-undef
+    const {describe} = globalThis;
+    describe.skipInCI = (title, fn) => {
+      if (CI) {
+        describe.skip(title, fn);
+      } else {
+        describe(title, fn);
+      }
+    };
+  });
+}

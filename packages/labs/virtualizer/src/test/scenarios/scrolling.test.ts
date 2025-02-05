@@ -126,11 +126,7 @@ function testBasicScrolling(fixtureOptions: VirtualizerFixtureOptions) {
 // Commenting out these tests until we can investigate further, so that
 // we can get the rest of the tests running on CI without interfering
 // with the overall lit release pipeline.
-describe('basic scrolling functionality, via scrollTo()', function () {
-  before(function () {
-    if (globalThis.process?.env?.CI) this.skip();
-  });
-
+describe.skipInCI('basic scrolling functionality, via scrollTo()', function () {
   describe('vertical', () => {
     describe('using <lit-virtualizer>...', () => {
       describe('...and window scrolling', () => {
