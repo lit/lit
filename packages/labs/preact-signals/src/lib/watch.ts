@@ -13,20 +13,29 @@ class WatchDirective extends AsyncDirective {
   private __dispose?: () => void;
 
   override render(signal: Signal<unknown>) {
-    if (signal !== this.__signal) {
+    if (signal !== this.__signal || this.__dispose === undefined) {
       this.__dispose?.();
       this.__signal = signal;
 
       // Whether the subscribe() callback is called because of this render
       // pass, or because of a separate signal update.
       let updateFromLit = true;
-      this.__dispose = signal.subscribe((value) => {
+      // Reference the directive weakly so that the subscription does not hold
+      // onto it. This allows the host element to be freed from memory when it's
+      // not referenced.
+      const ref = new WeakRef(this);
+      const dispose = (this.__dispose = signal.subscribe((value) => {
+        const dir = ref.deref();
+        if (dir === undefined) {
+          dispose();
+          return;
+        }
         // The subscribe() callback is called synchronously during subscribe.
         // Ignore the first call since we return the value below in that case.
         if (updateFromLit === false) {
-          this.setValue(value);
+          dir.setValue(value);
         }
-      });
+      }));
       updateFromLit = false;
     }
 
@@ -39,6 +48,7 @@ class WatchDirective extends AsyncDirective {
 
   protected override disconnected(): void {
     this.__dispose?.();
+    this.__dispose = undefined;
   }
 
   protected override reconnected(): void {
@@ -55,9 +65,11 @@ class WatchDirective extends AsyncDirective {
     // so the synchronous call here will go before a render call, and we'll get
     // two sets of the value (setValue() here and the return in render()), but
     // this is ok because the value will be dirty-checked by lit-html.
-    this.__dispose = this.__signal?.subscribe((value) => {
-      this.setValue(value);
-    });
+    //
+    // Note, render subscribes but does not set the value, so set it manually.
+    if (this.__signal !== undefined) {
+      this.setValue(this.render(this.__signal));
+    }
   }
 }
 
