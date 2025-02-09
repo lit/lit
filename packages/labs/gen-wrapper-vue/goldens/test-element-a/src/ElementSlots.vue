@@ -20,7 +20,7 @@ const vDefaults = {
 
 let hasRendered = false;
 
-const slots = useSlots();
+const slots = useSlots() as Slots;
 
 const render = () => {
   const eventProps = {};
@@ -35,7 +35,7 @@ const render = () => {
 
   hasRendered = true;
 
-  return h('element-slots', props, assignSlotNodes(slots as Slots));
+  return h('element-slots', props, assignSlotNodes(slots));
 };
 </script>
 <template><render v-defaults /></template>

@@ -1,5 +1,11 @@
 # @lit-labs/virtualizer
 
+## 2.0.15
+
+### Patch Changes
+
+- [#4807](https://github.com/lit/lit/pull/4807) [`1eb179f6`](https://github.com/lit/lit/commit/1eb179f69d663440fd2ebd3589b6f2808d87494f) Thanks [@graynorton](https://github.com/graynorton)! - Fix case where items in a hidden Virtualizer were being rendered
+
 ## 2.0.14
 
 ### Patch Changes
