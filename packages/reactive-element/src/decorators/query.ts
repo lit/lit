@@ -22,7 +22,11 @@ if (DEV_MODE) {
   // are loaded.
   globalThis.litIssuedWarnings ??= new Set();
 
-  // Issue a warning, if we haven't already.
+  /**
+   * Issue a warning if we haven't already, based either on `code` or `warning`.
+   * Warnings are disabled automatically only by `warning`; disabling via `code`
+   * can be done by users.
+   */
   issueWarning = (code: string, warning: string) => {
     warning += code
       ? ` See https://lit.dev/msg/${code} for more information.`

@@ -82,17 +82,21 @@ const polyfillSupport = DEV_MODE
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
-  globalThis.litIssuedWarnings ??= new Set();
+  global.litIssuedWarnings ??= new Set();
 
-  // Issue a warning, if we haven't already.
+  /**
+   * Issue a warning if we haven't already, based either on `code` or `warning`.
+   * Warnings are disabled automatically only by `warning`; disabling via `code`
+   * can be done by users.
+   */
   issueWarning = (code: string, warning: string) => {
     warning += ` See https://lit.dev/msg/${code} for more information.`;
     if (
-      !globalThis.litIssuedWarnings!.has(warning) &&
-      !globalThis.litIssuedWarnings!.has(code)
+      !global.litIssuedWarnings!.has(warning) &&
+      !global.litIssuedWarnings!.has(code)
     ) {
       console.warn(warning);
-      globalThis.litIssuedWarnings!.add(warning);
+      global.litIssuedWarnings!.add(warning);
     }
   };
 

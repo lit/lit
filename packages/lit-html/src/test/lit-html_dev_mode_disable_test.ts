@@ -16,27 +16,17 @@ if (DEV_MODE) {
   globalThis.litIssuedWarnings!.add('dev-mode');
 
   suite('Can disable developer mode warning', () => {
-    const warnings: string[] = [];
-
-    const consoleWarn = console.warn;
-
-    suiteSetup(() => {
-      console.warn = (message: string) => warnings.push(message);
-    });
-
-    suiteTeardown(() => {
-      console.warn = consoleWarn;
-    });
-
     const litWarnings = globalThis.litIssuedWarnings!;
 
-    test('dev mode waring was disabled', () => {
+    test('dev mode warning was disabled', () => {
       // Ensure lit-html package is imported
       void html``;
+      // Ensure the warning message wasn't issued
       assert.lengthOf(
         Array.from(litWarnings).filter((v) => v?.includes('dev mode')),
         0
       );
+      // Ensure warning code is still present (to silence the warning)
       assert.lengthOf(
         Array.from(litWarnings).filter((v) => v?.includes('dev-mode')),
         1

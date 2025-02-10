@@ -16,21 +16,9 @@ if (DEV_MODE) {
   globalThis.litIssuedWarnings!.add('dev-mode');
 
   suite('Can disable developer mode warning', () => {
-    const warnings: string[] = [];
-
-    const consoleWarn = console.warn;
-
-    suiteSetup(() => {
-      console.warn = (message: string) => warnings.push(message);
-    });
-
-    suiteTeardown(() => {
-      console.warn = consoleWarn;
-    });
-
     const litWarnings = globalThis.litIssuedWarnings!;
 
-    test('dev mode waring was disabled', () => {
+    test('dev mode warning was disabled', () => {
       assert.lengthOf(
         Array.from(litWarnings).filter((v) => v?.includes('dev mode')),
         0

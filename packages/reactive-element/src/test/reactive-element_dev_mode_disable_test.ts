@@ -18,7 +18,6 @@ if (DEV_MODE) {
 
   suite('Can disable developer mode warning', () => {
     let container: HTMLElement;
-    let warnings: string[] = [];
 
     const missingPlatformSupport =
       window.ShadyDOM?.inUse &&
@@ -27,7 +26,7 @@ if (DEV_MODE) {
     const consoleWarn = console.warn;
 
     suiteSetup(() => {
-      console.warn = (message: string) => warnings.push(message);
+      console.warn = () => {};
     });
 
     suiteTeardown(() => {
@@ -35,7 +34,6 @@ if (DEV_MODE) {
     });
 
     setup(() => {
-      warnings = [];
       container = document.createElement('div');
       document.body.appendChild(container);
     });

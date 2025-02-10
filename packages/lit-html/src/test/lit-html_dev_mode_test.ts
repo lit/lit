@@ -14,12 +14,11 @@ const DEV_MODE = !!globalThis.litIssuedWarnings;
 if (DEV_MODE) {
   suite('Developer mode warnings', () => {
     let container: HTMLElement;
-    let warnings: string[] = [];
 
     const consoleWarn = console.warn;
 
     suiteSetup(() => {
-      console.warn = (message: string) => warnings.push(message);
+      console.warn = () => {};
     });
 
     suiteTeardown(() => {
@@ -27,7 +26,6 @@ if (DEV_MODE) {
     });
 
     setup(() => {
-      warnings = [];
       container = document.createElement('div');
       document.body.appendChild(container);
     });
@@ -43,6 +41,7 @@ if (DEV_MODE) {
     test('warns for dev mode only 1x', () => {
       // Ensure lit-html package is imported
       void html``;
+      // Ensure the warning message was issued
       assert.equal(
         Array.from(litWarnings).filter((v) => v?.includes('dev mode')).length,
         1
