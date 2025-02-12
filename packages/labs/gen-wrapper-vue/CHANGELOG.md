@@ -1,5 +1,11 @@
 # @lit-labs/gen-wrapper-vue
 
+## 0.4.1
+
+### Patch Changes
+
+- [#4888](https://github.com/lit/lit/pull/4888) [`3eb64fbf`](https://github.com/lit/lit/commit/3eb64fbf8c45348f031c7dfc2438a8030643c69b) - Move `Slots` type assertion to fix type errors on generated components.
+
 ## 0.4.0
 
 ### Minor Changes

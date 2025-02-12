@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/ssr-react",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "publishConfig": {
     "access": "public"
   },
@@ -47,12 +47,12 @@
     "/jsx-runtime.{d.ts,d.ts.map,js,js.map}"
   ],
   "dependencies": {
-    "@lit-labs/ssr": "^3.2.2",
+    "@lit-labs/ssr": "^3.3.0",
     "@lit-labs/ssr-client": "^1.1.7"
   },
   "peerDependencies": {
-    "@types/react": "17 || 18",
-    "react": "17 || 18"
+    "@types/react": "17 || 18 || 19",
+    "react": "17 || 18 || 19"
   },
   "scripts": {
     "build": "wireit",
@@ -99,7 +99,7 @@
     }
   },
   "devDependencies": {
-    "@lit/react": "1.0.6",
+    "@lit/react": "1.0.7",
     "@types/node": "^20.11.25",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",

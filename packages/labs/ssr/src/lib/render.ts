@@ -34,8 +34,10 @@ export function* render(
     elementRenderers: [LitElementRenderer],
     customElementInstanceStack: [],
     customElementHostStack: [],
+    eventTargetStack: [],
+    slotStack: [],
     deferHydration: false,
-  };
+  } satisfies RenderInfo;
   renderInfo = {...defaultRenderInfo, ...renderInfo};
   let hydratable = true;
   if (isTemplateResult(value)) {
