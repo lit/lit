@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/nextjs",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publishConfig": {
     "access": "public"
   },
@@ -25,7 +25,7 @@
     "imports-loader": "^4.0.1"
   },
   "peerDependencies": {
-    "next": "13 || 14"
+    "next": "13 || 14 || 15"
   },
   "scripts": {
     "build": "wireit",

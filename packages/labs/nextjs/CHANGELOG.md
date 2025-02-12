@@ -1,5 +1,13 @@
 # @lit-labs/nextjs
 
+## 0.2.1
+
+### Patch Changes
+
+- [#4840](https://github.com/lit/lit/pull/4840) [`37c02502`](https://github.com/lit/lit/commit/37c025029a085a4837496b6a4fa7203034c3d16f) Thanks [@kyubisation](https://github.com/kyubisation)! - Fix type of nextjs config wrapper
+
+- [#4815](https://github.com/lit/lit/pull/4815) [`d3ce79a7`](https://github.com/lit/lit/commit/d3ce79a7a7efdbb8645e41810d00eaa09f61251f) Thanks [@JamesIves](https://github.com/JamesIves)! - Adds support for Next.js 15
+
 ## 0.2.0
 
 ### Minor Changes

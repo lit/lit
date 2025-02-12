@@ -16,7 +16,9 @@ interface LitSsrPluginOptions {
   addDeclarativeShadowDomPolyfill?: boolean;
 }
 
-export = (pluginOptions: LitSsrPluginOptions = {}): NextConfig =>
+export = (
+    pluginOptions: LitSsrPluginOptions = {}
+  ): ((nextConfig: NextConfig) => NextConfig) =>
   (nextConfig: NextConfig = {}) => {
     return Object.assign({}, nextConfig, {
       webpack: (config, options) => {

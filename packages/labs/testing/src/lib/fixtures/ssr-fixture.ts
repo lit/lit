@@ -53,8 +53,11 @@ export async function ssrFixture<T extends HTMLElement>(
     // asyncFunctionResume@[native code]
     // @http://localhost:8000/test/my-element_test.js?wtr-session-id=aKWON-wBOBGyzb2CwIvmK:65:37
     const {stack} = new Error();
+    // host.containers.internal represents the host address when running browser/tests inside a container.
     const match =
-      stack?.match(/http:\/\/localhost.+(?=\?wtr-session-id)/) ??
+      stack?.match(
+        /http:\/\/(localhost|host\.containers\.internal).+(?=\?wtr-session-id)/
+      ) ??
       // Looking for wtr-session-id might not work in webkit. See https://github.com/lit/lit/issues/4067
       // As a fallback, we look for the first file which is not inside node_modules and
       // is not this ssr-fixture file.
@@ -64,7 +67,11 @@ export async function ssrFixture<T extends HTMLElement>(
       // ssrFixture@http://localhost:8000/lib/fixtures/ssr-fixture.js:19:34
       // ssrNonHydratedFixture@http://localhost:8000/lib/fixtures/ssr-fixture.js:98:45
       // @http://localhost:8000/test/my-element_test.js:20:37
-      [...(stack?.matchAll(/http:\/\/localhost:?[^:)]+/gm) ?? [])]
+      [
+        ...(stack?.matchAll(
+          /http:\/\/(localhost|host\.containers\.internal):?[^:)]+/gm
+        ) ?? []),
+      ]
         .map((m) => m[0])
         .filter(
           (u) =>
