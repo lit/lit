@@ -1,5 +1,15 @@
 # @lit-labs/virtualizer
 
+## 2.1.0
+
+### Minor Changes
+
+- [#4921](https://github.com/lit/lit/pull/4921) [`ead2e23c`](https://github.com/lit/lit/commit/ead2e23c2e42a7acd953e956d6079cb4af7801d1) Thanks [@graynorton](https://github.com/graynorton)! - Add option to suppress logging of errors ignored during tests
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
 ## 2.0.15
 
 ### Patch Changes
