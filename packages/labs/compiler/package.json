@@ -112,7 +112,7 @@
   "devDependencies": {
     "@rollup/plugin-typescript": "11.1.6",
     "@types/trusted-types": "^2.0.7",
-    "rollup": "^3.27.2",
+    "rollup": "^4.22.4",
     "source-map": "^0.7.4",
     "uvu": "^0.5.6"
   },
