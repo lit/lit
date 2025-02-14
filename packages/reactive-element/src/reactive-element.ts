@@ -1350,7 +1350,7 @@ export abstract class ReactiveElement
       this._$changedProperties.set(name, oldValue);
       if (
         options.defaultValue !== undefined &&
-        (this.__initializedProperties ??= new Set()).has(name)
+        !(this.__initializedProperties ??= new Set()).has(name)
       ) {
         this.__initializedProperties.add(name);
       }
