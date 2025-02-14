@@ -1,5 +1,13 @@
 # @lit-labs/observers
 
+## 2.0.5
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+- [#4914](https://github.com/lit/lit/pull/4914) [`ee153ce5`](https://github.com/lit/lit/commit/ee153ce528e2d01a75179e80794c34fb96ff9f56) - Fix typo in README.md
+
 ## 2.0.4
 
 ### Patch Changes
