@@ -599,13 +599,14 @@ suite('@property', () => {
       accessor acc!: string;
 
       #gs!: string;
+      @property({defaultValue: 'gs'})
       get gs() {
         return this.#gs;
       }
-
-      @property({defaultValue: 'gs'})
       set gs(v: string) {
+        const old = this.gs;
         this.#gs = v;
+        this.requestUpdate('gs', old);
       }
 
       changes = new Map<PropertyKey, any>();
@@ -617,13 +618,12 @@ suite('@property', () => {
     customElements.define(generateElementName(), E);
     const el = new E();
     container.appendChild(el);
+    assert.equal(el.acc, 'acc');
+    assert.equal(el.gs, 'gs');
     await el.updateComplete;
     assert.equal(el.acc, 'acc');
     assert.equal(el.gs, 'gs');
-    assert.deepEqual(Array.from(el.changes), [
-      ['acc', undefined],
-      ['gs', undefined],
-    ]);
+    assert.deepEqual(Array.from(el.changes), []);
     el.acc = '2';
     el.gs = '3';
     await el.updateComplete;
@@ -641,8 +641,8 @@ suite('@property', () => {
     assert.equal(el2.acc, '2');
     assert.equal(el2.gs, '3');
     assert.deepEqual(Array.from(el2.changes), [
-      ['acc', undefined],
-      ['gs', undefined],
+      ['acc', 'acc'],
+      ['gs', 'gs'],
     ]);
     const late = generateElementName();
     const el3 = document.createElement(late) as any;
@@ -654,8 +654,8 @@ suite('@property', () => {
     assert.equal(el3.acc, '2');
     assert.equal(el3.gs, '3');
     assert.deepEqual(Array.from(el3.changes), [
-      ['acc', undefined],
-      ['gs', undefined],
+      ['acc', 'acc'],
+      ['gs', 'gs'],
     ]);
   });
 
@@ -665,13 +665,14 @@ suite('@property', () => {
       accessor acc!: string;
 
       #gs!: string;
+      @property({reflect: true, defaultValue: 'gs'})
       get gs() {
         return this.#gs;
       }
-
-      @property({reflect: true, defaultValue: 'gs'})
       set gs(v: string) {
+        const old = this.gs;
         this.#gs = v;
+        this.requestUpdate('gs', old);
       }
     }
     customElements.define(generateElementName(), E);

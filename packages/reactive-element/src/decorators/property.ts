@@ -99,6 +99,7 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 type StandardPropertyContext<C, V> = (
   | ClassAccessorDecoratorContext<C, V>
   | ClassSetterDecoratorContext<C, V>
+  | ClassGetterDecoratorContext<C, V>
 ) & {metadata: object};
 
 /**
@@ -107,9 +108,12 @@ type StandardPropertyContext<C, V> = (
  */
 export const standardProperty = <C extends Interface<ReactiveElement>, V>(
   options: PropertyDeclaration = defaultPropertyDeclaration,
-  target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void),
+  target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void) | (() => V),
   context: StandardPropertyContext<C, V>
-): ClassAccessorDecoratorResult<C, V> | ((this: C, value: V) => void) => {
+):
+  | ClassAccessorDecoratorResult<C, V>
+  | ((this: C, value: V) => void)
+  | ((this: C) => V) => {
   const {kind, metadata} = context;
 
   if (DEV_MODE && metadata == null) {
@@ -146,10 +150,20 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
         this.requestUpdate(name, oldValue, options);
       },
       init(this: ReactiveElement, v: V): V {
-        this._$changeProperty(name, undefined, options, true);
+        if (options.defaultValue === undefined) {
+          this._$changeProperty(name, undefined, options);
+        }
         return v ?? (options.defaultValue as V);
       },
     } as unknown as ClassAccessorDecoratorResult<C, V>;
+  } else if (kind === 'getter') {
+    const {name} = context;
+    return options.defaultValue !== undefined
+      ? function (this: ReactiveElement) {
+          const v = (target as () => V).call(this);
+          return v === undefined ? this._$getDefaultValue(name, v, options) : v;
+        }
+      : target;
   } else if (kind === 'setter') {
     const {name} = context;
     return function (this: ReactiveElement, value: V) {

@@ -595,15 +595,14 @@ suite('@property', () => {
     customElements.define(generateElementName(), E);
     const el = new E();
     container.appendChild(el);
+    assert.equal(el.prop, 'prop');
+    assert.equal(el.acc, 'acc');
+    assert.equal(el.gs, 'gs');
     await el.updateComplete;
     assert.equal(el.prop, 'prop');
     assert.equal(el.acc, 'acc');
     assert.equal(el.gs, 'gs');
-    assert.deepEqual(Array.from(el.changes), [
-      ['prop', undefined],
-      ['acc', undefined],
-      ['gs', undefined],
-    ]);
+    assert.deepEqual(Array.from(el.changes), []);
     el.prop = '1';
     el.acc = '2';
     el.gs = '3';
@@ -626,9 +625,9 @@ suite('@property', () => {
     assert.equal(el2.acc, '2');
     assert.equal(el2.gs, '3');
     assert.deepEqual(Array.from(el2.changes), [
-      ['prop', undefined],
-      ['acc', undefined],
-      ['gs', undefined],
+      ['prop', 'prop'],
+      ['acc', 'acc'],
+      ['gs', 'gs'],
     ]);
     const late = generateElementName();
     const el3 = document.createElement(late) as any;
@@ -642,9 +641,9 @@ suite('@property', () => {
     assert.equal(el3.acc, '2');
     assert.equal(el3.gs, '3');
     assert.deepEqual(Array.from(el3.changes), [
-      ['prop', undefined],
-      ['acc', undefined],
-      ['gs', undefined],
+      ['prop', 'prop'],
+      ['acc', 'acc'],
+      ['gs', 'gs'],
     ]);
   });
 
