@@ -182,7 +182,11 @@ export interface ComplexAttributeConverter<Type = unknown, TypeHint = unknown> {
    * Called to convert an attribute value to a property
    * value.
    */
-  fromAttribute?(value: string | null, type?: TypeHint): Type;
+  fromAttribute?(
+    value: string | null,
+    type?: TypeHint,
+    options?: PropertyDeclaration
+  ): Type;
 
   /**
    * Called to convert a property value to an attribute
@@ -191,12 +195,20 @@ export interface ComplexAttributeConverter<Type = unknown, TypeHint = unknown> {
    * It returns unknown instead of string, to be compatible with
    * https://github.com/WICG/trusted-types (and similar efforts).
    */
-  toAttribute?(value: Type, type?: TypeHint): unknown;
+  toAttribute?(
+    value: Type,
+    type?: TypeHint,
+    options?: PropertyDeclaration
+  ): unknown;
 }
 
 type AttributeConverter<Type = unknown, TypeHint = unknown> =
   | ComplexAttributeConverter<Type>
-  | ((value: string | null, type?: TypeHint) => Type);
+  | ((
+      value: string | null,
+      type?: TypeHint,
+      options?: PropertyDeclaration
+    ) => Type);
 
 /**
  * Defines options for a property accessor.
@@ -274,6 +286,20 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
    * @internal
    */
   wrapped?: boolean;
+
+  /**
+   * The default value for the property.
+   *
+   * When set, the property is initialized to this value and if the `reflect`
+   * option is `true`, the initial default value does *not* reflect. Subsequent
+   * changes to the property will reflect, even if they are equal to the default
+   * value. The default value will trigger an initial `undefined` old value
+   * in the `changedProperties` map argument to update lifecycle methods.
+   *
+   * Avoid setting both a default value here and defining a field initializer or
+   * setting the property in the constructor or connectedCallback.
+   */
+  defaultValue?: Type;
 }
 
 /**
@@ -339,7 +365,11 @@ export const defaultConverter: ComplexAttributeConverter = {
     return value;
   },
 
-  fromAttribute(value: string | null, type?: unknown) {
+  fromAttribute(
+    value: string | null,
+    type?: unknown,
+    options?: PropertyDeclaration
+  ) {
     let fromValue: unknown = value;
     switch (type) {
       case Boolean:
@@ -361,7 +391,7 @@ export const defaultConverter: ComplexAttributeConverter = {
         }
         break;
     }
-    return fromValue;
+    return fromValue ?? options?.defaultValue ?? null;
   },
 };
 
@@ -676,6 +706,12 @@ export abstract class ReactiveElement
       (options as Mutable<PropertyDeclaration, 'attribute'>).attribute = false;
     }
     this.__prepare();
+    // Whether this property is wrapping accessors.
+    // Helps control the initial value change and reflection logic.
+    if (this.prototype.hasOwnProperty(name)) {
+      options = Object.create(options);
+      options.wrapped = true;
+    }
     this.elementProperties.set(name, options);
     if (!options.noAccessor) {
       const key = DEV_MODE
@@ -747,13 +783,25 @@ export abstract class ReactiveElement
           `future version of Lit.`
       );
     }
+    // Note, to support `accessor` + legacy decorators and ensure
+    // a value at construction time, the getter must return the
+    // default value. This is because we cannnot set the value
+    // in `_intiialize` since the private storage isn't yet
+    // available.
+    const getter =
+      options.defaultValue !== undefined
+        ? function (this: ReactiveElement) {
+            const v = get?.call(this);
+            return v === undefined
+              ? this._$getDefaultValue(name, v, options)
+              : v;
+          }
+        : get!;
     return {
-      get(this: ReactiveElement) {
-        return get?.call(this);
-      },
+      get: getter,
       set(this: ReactiveElement, value: unknown) {
-        const oldValue = get?.call(this);
-        set!.call(this, value);
+        const oldValue = getter?.call(this);
+        set?.call(this, value);
         this.requestUpdate(name, oldValue, options);
       },
       configurable: true,
@@ -981,6 +1029,12 @@ export abstract class ReactiveElement
   _$changedProperties!: PropertyValues;
 
   /**
+   * Records properties that have been changed. Used to
+   * know when *not* to return a default value.
+   */
+  private __initializedProperties?: Set<PropertyKey>;
+
+  /**
    * Properties that should be reflected when updated.
    */
   private __reflectingProperties?: Set<PropertyKey>;
@@ -1156,7 +1210,7 @@ export abstract class ReactiveElement
         undefined
           ? (options.converter as ComplexAttributeConverter)
           : defaultConverter;
-      const attrValue = converter.toAttribute!(value, options.type);
+      const attrValue = converter.toAttribute!(value, options.type, options);
       if (
         DEV_MODE &&
         (this.constructor as typeof ReactiveElement).enabledWarnings!.includes(
@@ -1211,7 +1265,8 @@ export abstract class ReactiveElement
       this.__reflectingProperty = propName;
       this[propName as keyof this] = converter.fromAttribute!(
         value,
-        options.type
+        options.type,
+        options
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ) as any;
       // mark state not reflecting
@@ -1251,7 +1306,25 @@ export abstract class ReactiveElement
       ).getPropertyOptions(name);
       const hasChanged = options.hasChanged ?? notEqual;
       const newValue = this[name as keyof this];
-      if (hasChanged(newValue, oldValue)) {
+      let changed = hasChanged(newValue, oldValue);
+      // When there is no change, check a corner case that can occur when
+      // 1. there's a defaultValue which was not reflected
+      // 2. the property is subsequently set to the defaultValue.
+      // For example, `prop: {defaultValue: 'foo', reflect: true}`
+      // and el.prop = 'foo'. This should be considered a change if the
+      // attribute is not set because we will now reflect the property to the attribute.
+      if (
+        !changed &&
+        options.reflect &&
+        newValue != null &&
+        options.defaultValue === newValue
+      ) {
+        const attr = (
+          this.constructor as typeof ReactiveElement
+        ).__attributeNameForProperty(name, options);
+        changed = !this.hasAttribute(attr!);
+      }
+      if (changed) {
         this._$changeProperty(name, oldValue, options);
       } else {
         // Abort the request if the property should not be considered changed.
@@ -1275,6 +1348,12 @@ export abstract class ReactiveElement
     // vs just Map.set()
     if (!this._$changedProperties.has(name)) {
       this._$changedProperties.set(name, oldValue);
+      if (
+        options.defaultValue !== undefined &&
+        !(this.__initializedProperties ??= new Set()).has(name)
+      ) {
+        this.__initializedProperties.add(name);
+      }
     }
     // Add to reflecting properties set.
     // Note, it's important that every change has a chance to add the
@@ -1283,6 +1362,20 @@ export abstract class ReactiveElement
     if (options.reflect === true && this.__reflectingProperty !== name) {
       (this.__reflectingProperties ??= new Set<PropertyKey>()).add(name);
     }
+  }
+
+  /**
+   * @internal
+   * Returns the default value the given property.
+   */
+  _$getDefaultValue(
+    name: PropertyKey,
+    value: unknown,
+    options: PropertyDeclaration
+  ) {
+    return this.__initializedProperties?.has(name) == true
+      ? value
+      : options.defaultValue;
   }
 
   /**
@@ -1402,25 +1495,26 @@ export abstract class ReactiveElement
         this.__instanceProperties = undefined;
       }
       // Trigger initial value reflection and populate the initial
-      // changedProperties map, but only for the case of experimental
-      // decorators on accessors, which will not have already populated the
-      // changedProperties map. We can't know if these accessors had
-      // initializers, so we just set them anyway - a difference from
-      // experimental decorators on fields and standard decorators on
-      // auto-accessors.
-      // For context why experimentalDecorators with auto accessors are handled
-      // specifically also see:
+      // `changedProperties` map, but only for the case of properties created
+      // via `createProperty` on accessors, which will not have already
+      // populated the `changedProperties` map since they are not set.
+      // We can't know if these accessors had initializers, so we just set
+      // them anyway - a difference from experimental decorators on fields and
+      // standard decorators on auto-accessors.
+      // For context see:
       // https://github.com/lit/lit/pull/4183#issuecomment-1711959635
       const elementProperties = (this.constructor as typeof ReactiveElement)
         .elementProperties;
       if (elementProperties.size > 0) {
         for (const [p, options] of elementProperties) {
+          const {wrapped, defaultValue} = options;
           if (
-            options.wrapped === true &&
+            wrapped === true &&
+            defaultValue === undefined &&
             !this._$changedProperties.has(p) &&
             this[p as keyof this] !== undefined
           ) {
-            this._$changeProperty(p, this[p as keyof this], options);
+            this._$changeProperty(p, undefined, options);
           }
         }
       }
