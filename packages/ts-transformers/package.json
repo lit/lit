@@ -1,6 +1,6 @@
 {
   "name": "@lit/ts-transformers",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "publishConfig": {
     "access": "public"
   },
@@ -10,7 +10,7 @@
   "homepage": "https://github.com/lit/lit/tree/main/packages/ts-transformers",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/ts-transformers"
   },
   "type": "commonjs",
