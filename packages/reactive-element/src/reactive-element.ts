@@ -182,11 +182,7 @@ export interface ComplexAttributeConverter<Type = unknown, TypeHint = unknown> {
    * Called to convert an attribute value to a property
    * value.
    */
-  fromAttribute?(
-    value: string | null,
-    type?: TypeHint,
-    options?: PropertyDeclaration
-  ): Type;
+  fromAttribute?(value: string | null, type?: TypeHint): Type;
 
   /**
    * Called to convert a property value to an attribute
@@ -195,20 +191,12 @@ export interface ComplexAttributeConverter<Type = unknown, TypeHint = unknown> {
    * It returns unknown instead of string, to be compatible with
    * https://github.com/WICG/trusted-types (and similar efforts).
    */
-  toAttribute?(
-    value: Type,
-    type?: TypeHint,
-    options?: PropertyDeclaration
-  ): unknown;
+  toAttribute?(value: Type, type?: TypeHint): unknown;
 }
 
 type AttributeConverter<Type = unknown, TypeHint = unknown> =
   | ComplexAttributeConverter<Type>
-  | ((
-      value: string | null,
-      type?: TypeHint,
-      options?: PropertyDeclaration
-    ) => Type);
+  | ((value: string | null, type?: TypeHint) => Type);
 
 /**
  * Defines options for a property accessor.
@@ -288,18 +276,13 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
   wrapped?: boolean;
 
   /**
-   * The default value for the property.
-   *
-   * When set, the property is initialized to this value and if the `reflect`
-   * option is `true`, the initial default value does *not* reflect. Subsequent
-   * changes to the property will reflect, even if they are equal to the default
-   * value. The default value will trigger an initial `undefined` old value
-   * in the `changedProperties` map argument to update lifecycle methods.
-   *
-   * Avoid setting both a default value here and defining a field initializer or
-   * setting the property in the constructor or connectedCallback.
+   * When set and if the `reflect` option is `true`, the initial default value
+   * does *not* reflect. Subsequent changes to the property will reflect, even
+   * if they are equal to the default value. The default value will not trigger
+   * an initial `undefined` old value in the `changedProperties` map argument
+   * to update lifecycle methods.
    */
-  defaultValue?: Type;
+  skipInitial?: boolean;
 }
 
 /**
@@ -365,11 +348,7 @@ export const defaultConverter: ComplexAttributeConverter = {
     return value;
   },
 
-  fromAttribute(
-    value: string | null,
-    type?: unknown,
-    options?: PropertyDeclaration
-  ) {
+  fromAttribute(value: string | null, type?: unknown) {
     let fromValue: unknown = value;
     switch (type) {
       case Boolean:
@@ -391,7 +370,7 @@ export const defaultConverter: ComplexAttributeConverter = {
         }
         break;
     }
-    return fromValue ?? options?.defaultValue ?? null;
+    return fromValue;
   },
 };
 
@@ -411,6 +390,7 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   type: String,
   converter: defaultConverter,
   reflect: false,
+  skipInitial: false,
   hasChanged: notEqual,
 };
 
@@ -783,24 +763,10 @@ export abstract class ReactiveElement
           `future version of Lit.`
       );
     }
-    // Note, to support `accessor` + legacy decorators and ensure
-    // a value at construction time, the getter must return the
-    // default value. This is because we cannnot set the value
-    // in `_intiialize` since the private storage isn't yet
-    // available.
-    const getter =
-      options.defaultValue !== undefined
-        ? function (this: ReactiveElement) {
-            const v = get?.call(this);
-            return v === undefined
-              ? this._$getDefaultValue(name, v, options)
-              : v;
-          }
-        : get!;
     return {
-      get: getter,
+      get,
       set(this: ReactiveElement, value: unknown) {
-        const oldValue = getter?.call(this);
+        const oldValue = get?.call(this);
         set?.call(this, value);
         this.requestUpdate(name, oldValue, options);
       },
@@ -1029,10 +995,10 @@ export abstract class ReactiveElement
   _$changedProperties!: PropertyValues;
 
   /**
-   * Records properties that have been changed. Used to
-   * know when *not* to return a default value.
+   * Records property default values when the
+   * `skipInitial` option is used.
    */
-  private __initializedProperties?: Set<PropertyKey>;
+  private __initialValues?: Map<PropertyKey, unknown>;
 
   /**
    * Properties that should be reflected when updated.
@@ -1210,7 +1176,7 @@ export abstract class ReactiveElement
         undefined
           ? (options.converter as ComplexAttributeConverter)
           : defaultConverter;
-      const attrValue = converter.toAttribute!(value, options.type, options);
+      const attrValue = converter.toAttribute!(value, options.type);
       if (
         DEV_MODE &&
         (this.constructor as typeof ReactiveElement).enabledWarnings!.includes(
@@ -1263,12 +1229,11 @@ export abstract class ReactiveElement
             : defaultConverter;
       // mark state reflecting
       this.__reflectingProperty = propName;
-      this[propName as keyof this] = converter.fromAttribute!(
-        value,
-        options.type,
-        options
+      this[propName as keyof this] =
+        converter.fromAttribute!(value, options.type) ??
+        this.__initialValues?.get(propName) ??
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ) as any;
+        (null as any);
       // mark state not reflecting
       this.__reflectingProperty = null;
     }
@@ -1308,16 +1273,17 @@ export abstract class ReactiveElement
       const newValue = this[name as keyof this];
       let changed = hasChanged(newValue, oldValue);
       // When there is no change, check a corner case that can occur when
-      // 1. there's a defaultValue which was not reflected
-      // 2. the property is subsequently set to the defaultValue.
-      // For example, `prop: {defaultValue: 'foo', reflect: true}`
+      // 1. there's a initial value which was not reflected
+      // 2. the property is subsequently set to this value.
+      // For example, `prop: {skipInitial: true, reflect: true}`
       // and el.prop = 'foo'. This should be considered a change if the
       // attribute is not set because we will now reflect the property to the attribute.
       if (
         !changed &&
         options.reflect &&
         newValue != null &&
-        options.defaultValue === newValue
+        options.skipInitial &&
+        newValue === this.__initialValues?.get(name)
       ) {
         const attr = (
           this.constructor as typeof ReactiveElement
@@ -1342,18 +1308,29 @@ export abstract class ReactiveElement
   _$changeProperty(
     name: PropertyKey,
     oldValue: unknown,
-    options: PropertyDeclaration
+    options: PropertyDeclaration,
+    initializeValue?: unknown
   ) {
+    // Record default value when skipInitial is used. This allows us to
+    // restore this value when the attribute is removed.
+    if (
+      options.skipInitial &&
+      !(this.__initialValues ??= new Map()).has(name)
+    ) {
+      this.__initialValues.set(
+        name,
+        initializeValue ?? oldValue ?? this[name as keyof this]
+      );
+      // if this is not wrapping an accessor, it must be an initial setting
+      // and in this case we do not want to record the change or reflect.
+      if (options.wrapped !== true || initializeValue !== undefined) {
+        return;
+      }
+    }
     // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
     // vs just Map.set()
     if (!this._$changedProperties.has(name)) {
       this._$changedProperties.set(name, oldValue);
-      if (
-        options.defaultValue !== undefined &&
-        !(this.__initializedProperties ??= new Set()).has(name)
-      ) {
-        this.__initializedProperties.add(name);
-      }
     }
     // Add to reflecting properties set.
     // Note, it's important that every change has a chance to add the
@@ -1362,20 +1339,6 @@ export abstract class ReactiveElement
     if (options.reflect === true && this.__reflectingProperty !== name) {
       (this.__reflectingProperties ??= new Set<PropertyKey>()).add(name);
     }
-  }
-
-  /**
-   * @internal
-   * Returns the default value the given property.
-   */
-  _$getDefaultValue(
-    name: PropertyKey,
-    value: unknown,
-    options: PropertyDeclaration
-  ) {
-    return this.__initializedProperties?.has(name) == true
-      ? value
-      : options.defaultValue;
   }
 
   /**
@@ -1507,14 +1470,14 @@ export abstract class ReactiveElement
         .elementProperties;
       if (elementProperties.size > 0) {
         for (const [p, options] of elementProperties) {
-          const {wrapped, defaultValue} = options;
+          const {wrapped} = options;
+          const value = this[p as keyof this];
           if (
             wrapped === true &&
-            defaultValue === undefined &&
             !this._$changedProperties.has(p) &&
-            this[p as keyof this] !== undefined
+            value !== undefined
           ) {
-            this._$changeProperty(p, undefined, options);
+            this._$changeProperty(p, undefined, options, value);
           }
         }
       }

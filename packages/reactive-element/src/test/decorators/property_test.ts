@@ -568,20 +568,20 @@ suite('@property', () => {
     delete extendedReflect.decorate;
   });
 
-  test('defaultValue', async () => {
+  test('skipInitial', async () => {
     class E extends ReactiveElement {
-      @property({defaultValue: 'prop'})
-      prop!: string;
+      @property({skipInitial: true})
+      prop = 'prop';
 
-      @property({defaultValue: 'acc'})
-      accessor acc!: string;
+      @property({skipInitial: true})
+      accessor acc = 'acc';
 
-      #gs!: string;
+      #gs = 'gs';
       get gs() {
         return this.#gs;
       }
 
-      @property({defaultValue: 'gs'})
+      @property({skipInitial: true})
       set gs(v: string) {
         this.#gs = v;
       }
@@ -647,20 +647,20 @@ suite('@property', () => {
     ]);
   });
 
-  test('defaultValue does not reflect', async () => {
+  test('skipInitial does not reflect', async () => {
     class E extends ReactiveElement {
-      @property({reflect: true, defaultValue: 'prop'})
-      prop!: string;
+      @property({reflect: true, skipInitial: true})
+      prop = 'prop';
 
-      @property({reflect: true, defaultValue: 'acc'})
-      accessor acc!: string;
+      @property({reflect: true, skipInitial: true})
+      accessor acc = 'acc';
 
-      #gs!: string;
+      #gs = 'gs';
       get gs() {
         return this.#gs;
       }
 
-      @property({reflect: true, defaultValue: 'gs'})
+      @property({reflect: true, skipInitial: true})
       set gs(v: string) {
         this.#gs = v;
       }

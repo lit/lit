@@ -70,10 +70,7 @@ const legacyProperty = (
   name: PropertyKey
 ) => {
   const hasOwnProperty = proto.hasOwnProperty(name);
-  (proto.constructor as typeof ReactiveElement).createProperty(
-    name,
-    hasOwnProperty ? {...options, wrapped: true} : options
-  );
+  (proto.constructor as typeof ReactiveElement).createProperty(name, options);
   // For accessors (which have a descriptor on the prototype) we need to
   // return a descriptor, otherwise TypeScript overwrites the descriptor we
   // define in createProperty() with the original descriptor. We don't do this
@@ -99,7 +96,6 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
 type StandardPropertyContext<C, V> = (
   | ClassAccessorDecoratorContext<C, V>
   | ClassSetterDecoratorContext<C, V>
-  | ClassGetterDecoratorContext<C, V>
 ) & {metadata: object};
 
 /**
@@ -108,12 +104,9 @@ type StandardPropertyContext<C, V> = (
  */
 export const standardProperty = <C extends Interface<ReactiveElement>, V>(
   options: PropertyDeclaration = defaultPropertyDeclaration,
-  target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void) | (() => V),
+  target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void),
   context: StandardPropertyContext<C, V>
-):
-  | ClassAccessorDecoratorResult<C, V>
-  | ((this: C, value: V) => void)
-  | ((this: C) => V) => {
+): ClassAccessorDecoratorResult<C, V> | ((this: C, value: V) => void) => {
   const {kind, metadata} = context;
 
   if (DEV_MODE && metadata == null) {
@@ -150,22 +143,13 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
         this.requestUpdate(name, oldValue, options);
       },
       init(this: ReactiveElement, v: V): V {
-        if (options.defaultValue === undefined) {
-          this._$changeProperty(name, undefined, options);
-        }
-        return v ?? (options.defaultValue as V);
+        this._$changeProperty(name, undefined, options, v);
+        return v;
       },
     } as unknown as ClassAccessorDecoratorResult<C, V>;
-  } else if (kind === 'getter') {
-    const {name} = context;
-    return options.defaultValue !== undefined
-      ? function (this: ReactiveElement) {
-          const v = (target as () => V).call(this);
-          return v === undefined ? this._$getDefaultValue(name, v, options) : v;
-        }
-      : target;
   } else if (kind === 'setter') {
     const {name} = context;
+    options.wrapped = true;
     return function (this: ReactiveElement, value: V) {
       const oldValue = this[name as keyof ReactiveElement];
       (target as (value: V) => void).call(this, value);

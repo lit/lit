@@ -314,27 +314,32 @@ suite('ReactiveElement', () => {
     assert.equal(el.updateCount, 6);
   });
 
-  test('property options defaultValue', async () => {
+  test('property options skipInitial', async () => {
     class E extends ReactiveElement {
       static override get properties() {
         return {
-          prop: {defaultValue: 'prop'},
-          acc: {defaultValue: 'acc'},
-          gs: {defaultValue: 'gs'},
+          prop: {skipInitial: true},
+          acc: {skipInitial: true},
+          gs: {skipInitial: true},
         };
       }
 
       prop!: string;
 
-      accessor acc!: string;
+      accessor acc = 'acc';
 
-      #gs!: string;
+      #gs = 'gs';
       get gs() {
         return this.#gs;
       }
 
       set gs(v: string) {
         this.#gs = v;
+      }
+
+      constructor() {
+        super();
+        this.prop = 'prop';
       }
 
       changes = new Map<PropertyKey, any>();
@@ -398,27 +403,32 @@ suite('ReactiveElement', () => {
     ]);
   });
 
-  test('property options defaultValue does not reflect', async () => {
+  test('property options skipInitial does not reflect', async () => {
     class E extends ReactiveElement {
       static override get properties() {
         return {
-          prop: {reflect: true, defaultValue: 'prop'},
-          acc: {reflect: true, defaultValue: 'acc'},
-          gs: {reflect: true, defaultValue: 'gs'},
+          prop: {reflect: true, skipInitial: true},
+          acc: {reflect: true, skipInitial: true},
+          gs: {reflect: true, skipInitial: true},
         };
       }
 
       prop!: string;
 
-      accessor acc!: string;
+      accessor acc = 'acc';
 
-      #gs!: string;
+      #gs = 'gs';
       get gs() {
         return this.#gs;
       }
 
       set gs(v: string) {
         this.#gs = v;
+      }
+
+      constructor() {
+        super();
+        this.prop = 'prop';
       }
     }
     customElements.define(generateElementName(), E);
@@ -731,140 +741,132 @@ suite('ReactiveElement', () => {
     assert.deepEqual(el.defaultReflectArr, null);
   });
 
-  test('property/attribute values when attributes removed and defaultValue is set', async () => {
+  test('property/attribute values when attributes removed and skipInitial is set', async () => {
     class E extends ReactiveElement {
       static override get properties() {
         return {
-          bool: {type: Boolean, defaultValue: false},
-          num: {type: Number, defaultValue: 0},
-          str: {type: String, defaultValue: 'str'},
-          obj: {type: Object, defaultValue: {obj: true}},
-          arr: {type: Array, defaultValue: [0]},
-          reflectBool: {type: Boolean, reflect: true, defaultValue: false},
-          reflectNum: {type: Number, reflect: true, defaultValue: 0},
-          reflectStr: {type: String, reflect: true, defaultValue: 'str'},
-          reflectObj: {type: Object, reflect: true, defaultValue: {obj: true}},
-          reflectArr: {type: Array, reflect: true, defaultValue: [0]},
-          accBool: {type: Boolean, defaultValue: false},
-          accNum: {type: Number, defaultValue: 0},
-          accStr: {type: String, defaultValue: 'str'},
-          accObj: {type: Object, defaultValue: {obj: true}},
-          accArr: {type: Array, defaultValue: [0]},
-          accReflectBool: {type: Boolean, reflect: true, defaultValue: false},
-          accReflectNum: {type: Number, reflect: true, defaultValue: 0},
-          accReflectStr: {type: String, reflect: true, defaultValue: 'str'},
-          accReflectObj: {
-            type: Object,
-            reflect: true,
-            defaultValue: {obj: true},
-          },
-          accReflectArr: {type: Array, reflect: true, defaultValue: [0]},
-          gsBool: {type: Boolean, defaultValue: false},
-          gsNum: {type: Number, defaultValue: 0},
-          gsStr: {type: String, defaultValue: 'str'},
-          gsObj: {type: Object, defaultValue: {obj: true}},
-          gsArr: {type: Array, defaultValue: [0]},
-          gsReflectBool: {type: Boolean, reflect: true, defaultValue: false},
-          gsReflectNum: {type: Number, reflect: true, defaultValue: 0},
-          gsReflectStr: {type: String, reflect: true, defaultValue: 'str'},
-          gsReflectObj: {
-            type: Object,
-            reflect: true,
-            defaultValue: {obj: true},
-          },
-          gsReflectArr: {type: Array, reflect: true, defaultValue: [0]},
+          bool: {type: Boolean, skipInitial: true},
+          num: {type: Number, skipInitial: true},
+          str: {type: String, skipInitial: true},
+          obj: {type: Object, skipInitial: true},
+          arr: {type: Array, skipInitial: true},
+          reflectBool: {type: Boolean, reflect: true, skipInitial: true},
+          reflectNum: {type: Number, reflect: true, skipInitial: true},
+          reflectStr: {type: String, reflect: true, skipInitial: true},
+          reflectObj: {type: Object, reflect: true, skipInitial: true},
+          reflectArr: {type: Array, reflect: true, skipInitial: true},
+          accBool: {type: Boolean, skipInitial: true},
+          accNum: {type: Number, skipInitial: true},
+          accStr: {type: String, skipInitial: true},
+          accObj: {type: Object, skipInitial: true},
+          accArr: {type: Array, skipInitial: true},
+          accReflectBool: {type: Boolean, reflect: true, skipInitial: true},
+          accReflectNum: {type: Number, reflect: true, skipInitial: true},
+          accReflectStr: {type: String, reflect: true, skipInitial: true},
+          accReflectObj: {type: Object, reflect: true, skipInitial: true},
+          accReflectArr: {type: Array, reflect: true, skipInitial: true},
+          gsBool: {type: Boolean, skipInitial: true},
+          gsNum: {type: Number, skipInitial: true},
+          gsStr: {type: String, skipInitial: true},
+          gsObj: {type: Object, skipInitial: true},
+          gsArr: {type: Array, skipInitial: true},
+          gsReflectBool: {type: Boolean, reflect: true, skipInitial: true},
+          gsReflectNum: {type: Number, reflect: true, skipInitial: true},
+          gsReflectStr: {type: String, reflect: true, skipInitial: true},
+          gsReflectObj: {type: Object, reflect: true, skipInitial: true},
+          gsReflectArr: {type: Array, reflect: true, skipInitial: true},
         };
       }
 
-      bool?: boolean;
-      num?: number;
-      str?: string;
-      obj?: Record<string, unknown>;
-      arr?: unknown[];
-      reflectBool?: boolean;
-      reflectNum?: number;
-      reflectStr?: string;
-      reflectObj?: Record<string, unknown>;
-      reflectArr?: unknown[];
-      accessor accBool: boolean | undefined;
-      accessor accNum: number | undefined;
-      accessor accStr: string | undefined;
-      accessor accObj: Record<string, unknown> | undefined;
-      accessor accArr: unknown[] | undefined;
-      accessor accReflectBool: boolean | undefined;
-      accessor accReflectNum: number | undefined;
-      accessor accReflectStr: string | undefined;
-      accessor accReflectObj: Record<string, unknown> | undefined;
-      accessor accReflectArr: unknown[] | undefined;
+      bool = false;
+      num = 0;
+      str = 'str';
+      obj: Record<string, unknown> = {obj: true};
+      arr = [0];
+      reflectBool = false;
+      reflectNum = 0;
+      reflectStr = 'str';
+      reflectObj: Record<string, unknown> = {obj: true};
+      reflectArr = [0];
+      accessor accBool = false;
+      accessor accNum = 0;
+      accessor accStr = 'str';
+      accessor accObj: Record<string, unknown> = {obj: true};
+      accessor accArr = [0];
+      accessor accReflectBool = false;
+      accessor accReflectNum = 0;
+      accessor accReflectStr = 'str';
+      accessor accReflectObj: Record<string, unknown> = {obj: true};
+      accessor accReflectArr = [0];
 
-      #gsBool: boolean | undefined;
+      #gsBool = false;
       get gsBool() {
         return this.#gsBool;
       }
-      set gsBool(value: boolean | undefined) {
+      set gsBool(value: boolean) {
         this.#gsBool = value;
       }
-      #gsNum: number | undefined;
+      #gsNum = 0;
       get gsNum() {
         return this.#gsNum;
       }
-      set gsNum(value: number | undefined) {
+      set gsNum(value: number) {
         this.#gsNum = value;
       }
-      #gsStr: string | undefined;
+      #gsStr = 'str';
       get gsStr() {
         return this.#gsStr;
       }
-      set gsStr(value: string | undefined) {
+      set gsStr(value: string) {
         this.#gsStr = value;
       }
-      #gsObj: Record<string, unknown> | undefined;
+      #gsObj = {obj: true} as Record<string, unknown>;
       get gsObj() {
         return this.#gsObj;
       }
-      set gsObj(value: Record<string, unknown> | undefined) {
+      set gsObj(value: Record<string, unknown>) {
         this.#gsObj = value;
       }
-      #gsArr: unknown[] | undefined;
+      #gsArr = [0] as unknown[];
       get gsArr() {
         return this.#gsArr;
       }
-      set gsArr(value: unknown[] | undefined) {
+      set gsArr(value: unknown[]) {
         this.#gsArr = value;
       }
-      #gsReflectBool: boolean | undefined;
+      #gsReflectBool = false;
       get gsReflectBool() {
         return this.#gsReflectBool;
       }
-      set gsReflectBool(value: boolean | undefined) {
+      set gsReflectBool(value: boolean) {
         this.#gsReflectBool = value;
       }
-      #gsReflectNum: number | undefined;
+      #gsReflectNum = 0;
       get gsReflectNum() {
         return this.#gsReflectNum;
       }
-      set gsReflectNum(value: number | undefined) {
+      set gsReflectNum(value: number) {
         this.#gsReflectNum = value;
       }
-      #gsReflectStr: string | undefined;
+      #gsReflectStr = 'str';
       get gsReflectStr() {
         return this.#gsReflectStr;
       }
-      set gsReflectStr(value: string | undefined) {
+      set gsReflectStr(value: string) {
         this.#gsReflectStr = value;
       }
-      #gsReflectObj: Record<string, unknown> | undefined;
+      #gsReflectObj = {obj: true} as Record<string, unknown>;
       get gsReflectObj() {
         return this.#gsReflectObj;
       }
-      set gsReflectObj(value: Record<string, unknown> | undefined) {
+      set gsReflectObj(value: Record<string, unknown>) {
         this.#gsReflectObj = value;
       }
-      #gsReflectArr: unknown[] | undefined;
+      #gsReflectArr = [0] as unknown[];
       get gsReflectArr() {
         return this.#gsReflectArr;
       }
-      set gsReflectArr(value: unknown[] | undefined) {
+      set gsReflectArr(value: unknown[]) {
         this.#gsReflectArr = value;
       }
     }

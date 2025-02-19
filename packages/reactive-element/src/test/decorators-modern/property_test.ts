@@ -593,16 +593,16 @@ suite('@property', () => {
     assert.equal(el.second, 'second updated');
   });
 
-  test('defaultValue', async () => {
+  test('skipInitial', async () => {
     class E extends ReactiveElement {
-      @property({defaultValue: 'acc'})
-      accessor acc!: string;
+      @property({skipInitial: true})
+      accessor acc = 'acc';
 
-      #gs!: string;
-      @property({defaultValue: 'gs'})
+      #gs = 'gs';
       get gs() {
         return this.#gs;
       }
+      @property({skipInitial: true})
       set gs(v: string) {
         const old = this.gs;
         this.#gs = v;
@@ -659,16 +659,16 @@ suite('@property', () => {
     ]);
   });
 
-  test('defaultValue does not reflect', async () => {
+  test('skipInitial does not reflect', async () => {
     class E extends ReactiveElement {
-      @property({reflect: true, defaultValue: 'acc'})
-      accessor acc!: string;
+      @property({reflect: true, skipInitial: true})
+      accessor acc = 'acc';
 
-      #gs!: string;
-      @property({reflect: true, defaultValue: 'gs'})
+      #gs = 'gs';
       get gs() {
         return this.#gs;
       }
+      @property({reflect: true, skipInitial: true})
       set gs(v: string) {
         const old = this.gs;
         this.#gs = v;
