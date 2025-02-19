@@ -995,7 +995,7 @@ export abstract class ReactiveElement
   _$changedProperties!: PropertyValues;
 
   /**
-   * Records property default values when the
+   * Records property initial values when the
    * `skipInitial` option is used.
    */
   private __initialValues?: Map<PropertyKey, unknown>;

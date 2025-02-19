@@ -143,7 +143,9 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
         this.requestUpdate(name, oldValue, options);
       },
       init(this: ReactiveElement, v: V): V {
-        this._$changeProperty(name, undefined, options, v);
+        if (v !== undefined) {
+          this._$changeProperty(name, undefined, options, v);
+        }
         return v;
       },
     } as unknown as ClassAccessorDecoratorResult<C, V>;
