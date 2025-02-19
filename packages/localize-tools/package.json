@@ -10,7 +10,7 @@
   "homepage": "https://github.com/lit/lit/tree/main/packages/localize-tools",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/localize-tools"
   },
   "bin": {
