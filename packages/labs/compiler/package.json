@@ -1,9 +1,9 @@
 {
   "name": "@lit-labs/compiler",
   "description": "Compiler to prepare Lit templates at build time",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "author": "Google LLC",
-  "homepage": "https://github.com/Lit/Lit/tree/main/packages/labs/compiler",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/compiler",
   "license": "BSD-3-Clause",
   "type": "module",
   "main": "index.js",
@@ -20,7 +20,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/Lit/Lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/compiler"
   },
   "bugs": {
