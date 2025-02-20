@@ -314,13 +314,13 @@ suite('ReactiveElement', () => {
     assert.equal(el.updateCount, 6);
   });
 
-  test('property options skipInitial', async () => {
+  test('property options useDefault', async () => {
     class E extends ReactiveElement {
       static override get properties() {
         return {
-          prop: {skipInitial: true},
-          acc: {skipInitial: true},
-          gs: {skipInitial: true},
+          prop: {useDefault: true},
+          acc: {useDefault: true},
+          gs: {useDefault: true},
         };
       }
 
@@ -403,13 +403,13 @@ suite('ReactiveElement', () => {
     ]);
   });
 
-  test('property options skipInitial does not reflect', async () => {
+  test('property options useDefault does not reflect', async () => {
     class E extends ReactiveElement {
       static override get properties() {
         return {
-          prop: {reflect: true, skipInitial: true},
-          acc: {reflect: true, skipInitial: true},
-          gs: {reflect: true, skipInitial: true},
+          prop: {reflect: true, useDefault: true},
+          acc: {reflect: true, useDefault: true},
+          gs: {reflect: true, useDefault: true},
         };
       }
 
@@ -741,40 +741,40 @@ suite('ReactiveElement', () => {
     assert.deepEqual(el.defaultReflectArr, null);
   });
 
-  test('property/attribute values when attributes removed and skipInitial is set', async () => {
+  test('property/attribute values when attributes removed and useDefault is set', async () => {
     class E extends ReactiveElement {
       static override get properties() {
         return {
-          bool: {type: Boolean, skipInitial: true},
-          num: {type: Number, skipInitial: true},
-          str: {type: String, skipInitial: true},
-          obj: {type: Object, skipInitial: true},
-          arr: {type: Array, skipInitial: true},
-          reflectBool: {type: Boolean, reflect: true, skipInitial: true},
-          reflectNum: {type: Number, reflect: true, skipInitial: true},
-          reflectStr: {type: String, reflect: true, skipInitial: true},
-          reflectObj: {type: Object, reflect: true, skipInitial: true},
-          reflectArr: {type: Array, reflect: true, skipInitial: true},
-          accBool: {type: Boolean, skipInitial: true},
-          accNum: {type: Number, skipInitial: true},
-          accStr: {type: String, skipInitial: true},
-          accObj: {type: Object, skipInitial: true},
-          accArr: {type: Array, skipInitial: true},
-          accReflectBool: {type: Boolean, reflect: true, skipInitial: true},
-          accReflectNum: {type: Number, reflect: true, skipInitial: true},
-          accReflectStr: {type: String, reflect: true, skipInitial: true},
-          accReflectObj: {type: Object, reflect: true, skipInitial: true},
-          accReflectArr: {type: Array, reflect: true, skipInitial: true},
-          gsBool: {type: Boolean, skipInitial: true},
-          gsNum: {type: Number, skipInitial: true},
-          gsStr: {type: String, skipInitial: true},
-          gsObj: {type: Object, skipInitial: true},
-          gsArr: {type: Array, skipInitial: true},
-          gsReflectBool: {type: Boolean, reflect: true, skipInitial: true},
-          gsReflectNum: {type: Number, reflect: true, skipInitial: true},
-          gsReflectStr: {type: String, reflect: true, skipInitial: true},
-          gsReflectObj: {type: Object, reflect: true, skipInitial: true},
-          gsReflectArr: {type: Array, reflect: true, skipInitial: true},
+          bool: {type: Boolean, useDefault: true},
+          num: {type: Number, useDefault: true},
+          str: {type: String, useDefault: true},
+          obj: {type: Object, useDefault: true},
+          arr: {type: Array, useDefault: true},
+          reflectBool: {type: Boolean, reflect: true, useDefault: true},
+          reflectNum: {type: Number, reflect: true, useDefault: true},
+          reflectStr: {type: String, reflect: true, useDefault: true},
+          reflectObj: {type: Object, reflect: true, useDefault: true},
+          reflectArr: {type: Array, reflect: true, useDefault: true},
+          accBool: {type: Boolean, useDefault: true},
+          accNum: {type: Number, useDefault: true},
+          accStr: {type: String, useDefault: true},
+          accObj: {type: Object, useDefault: true},
+          accArr: {type: Array, useDefault: true},
+          accReflectBool: {type: Boolean, reflect: true, useDefault: true},
+          accReflectNum: {type: Number, reflect: true, useDefault: true},
+          accReflectStr: {type: String, reflect: true, useDefault: true},
+          accReflectObj: {type: Object, reflect: true, useDefault: true},
+          accReflectArr: {type: Array, reflect: true, useDefault: true},
+          gsBool: {type: Boolean, useDefault: true},
+          gsNum: {type: Number, useDefault: true},
+          gsStr: {type: String, useDefault: true},
+          gsObj: {type: Object, useDefault: true},
+          gsArr: {type: Array, useDefault: true},
+          gsReflectBool: {type: Boolean, reflect: true, useDefault: true},
+          gsReflectNum: {type: Number, reflect: true, useDefault: true},
+          gsReflectStr: {type: String, reflect: true, useDefault: true},
+          gsReflectObj: {type: Object, reflect: true, useDefault: true},
+          gsReflectArr: {type: Array, reflect: true, useDefault: true},
         };
       }
 

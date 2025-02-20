@@ -279,10 +279,10 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
    * When set and if the `reflect` option is `true`, the initial default value
    * does *not* reflect. Subsequent changes to the property will reflect, even
    * if they are equal to the default value. The default value will not trigger
-   * an initial `undefined` old value in the `changedProperties` map argument
+   * an initial old value in the `changedProperties` map argument
    * to update lifecycle methods.
    */
-  skipInitial?: boolean;
+  useDefault?: boolean;
 }
 
 /**
@@ -390,7 +390,7 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   type: String,
   converter: defaultConverter,
   reflect: false,
-  skipInitial: false,
+  useDefault: false,
   hasChanged: notEqual,
 };
 
@@ -995,10 +995,10 @@ export abstract class ReactiveElement
   _$changedProperties!: PropertyValues;
 
   /**
-   * Records property initial values when the
-   * `skipInitial` option is used.
+   * Records property default values when the
+   * `useDefault` option is used.
    */
-  private __initialValues?: Map<PropertyKey, unknown>;
+  private __defaultValues?: Map<PropertyKey, unknown>;
 
   /**
    * Properties that should be reflected when updated.
@@ -1231,7 +1231,7 @@ export abstract class ReactiveElement
       this.__reflectingProperty = propName;
       this[propName as keyof this] =
         converter.fromAttribute!(value, options.type) ??
-        this.__initialValues?.get(propName) ??
+        this.__defaultValues?.get(propName) ??
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (null as any);
       // mark state not reflecting
@@ -1275,15 +1275,15 @@ export abstract class ReactiveElement
       // When there is no change, check a corner case that can occur when
       // 1. there's a initial value which was not reflected
       // 2. the property is subsequently set to this value.
-      // For example, `prop: {skipInitial: true, reflect: true}`
+      // For example, `prop: {useDefault: true, reflect: true}`
       // and el.prop = 'foo'. This should be considered a change if the
       // attribute is not set because we will now reflect the property to the attribute.
       if (
         !changed &&
         options.reflect &&
         newValue != null &&
-        options.skipInitial &&
-        newValue === this.__initialValues?.get(name)
+        options.useDefault &&
+        newValue === this.__defaultValues?.get(name)
       ) {
         const attr = (
           this.constructor as typeof ReactiveElement
@@ -1311,13 +1311,10 @@ export abstract class ReactiveElement
     options: PropertyDeclaration,
     initializeValue?: unknown
   ) {
-    // Record default value when skipInitial is used. This allows us to
+    // Record default value when useDefault is used. This allows us to
     // restore this value when the attribute is removed.
-    if (
-      options.skipInitial &&
-      !(this.__initialValues ??= new Map()).has(name)
-    ) {
-      this.__initialValues.set(
+    if (options.useDefault && !(this.__defaultValues ??= new Map()).has(name)) {
+      this.__defaultValues.set(
         name,
         initializeValue ?? oldValue ?? this[name as keyof this]
       );

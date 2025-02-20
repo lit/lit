@@ -568,12 +568,12 @@ suite('@property', () => {
     delete extendedReflect.decorate;
   });
 
-  test('skipInitial', async () => {
+  test('useDefault', async () => {
     class E extends ReactiveElement {
-      @property({skipInitial: true})
+      @property({useDefault: true})
       prop = 'prop';
 
-      @property({skipInitial: true})
+      @property({useDefault: true})
       accessor acc = 'acc';
 
       #gs = 'gs';
@@ -581,7 +581,7 @@ suite('@property', () => {
         return this.#gs;
       }
 
-      @property({skipInitial: true})
+      @property({useDefault: true})
       set gs(v: string) {
         this.#gs = v;
       }
@@ -647,12 +647,12 @@ suite('@property', () => {
     ]);
   });
 
-  test('skipInitial does not reflect', async () => {
+  test('useDefault does not reflect', async () => {
     class E extends ReactiveElement {
-      @property({reflect: true, skipInitial: true})
+      @property({reflect: true, useDefault: true})
       prop = 'prop';
 
-      @property({reflect: true, skipInitial: true})
+      @property({reflect: true, useDefault: true})
       accessor acc = 'acc';
 
       #gs = 'gs';
@@ -660,7 +660,7 @@ suite('@property', () => {
         return this.#gs;
       }
 
-      @property({reflect: true, skipInitial: true})
+      @property({reflect: true, useDefault: true})
       set gs(v: string) {
         this.#gs = v;
       }
