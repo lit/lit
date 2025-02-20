@@ -4,4 +4,4 @@
 'lit-element': minor
 ---
 
-Adds property option for `skipIntial`. When set, the initial value is not considered a change abd does _not_ reflect when `reflect` is also set. In addition, when the attribute is removed, the initial value is restored.
+Adds property option for `useDefault`. When set, the initial default value is not considered a change and does _not_ reflect when `reflect` is set. In addition, when the attribute is removed, the default value is restored.
