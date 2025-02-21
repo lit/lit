@@ -13,8 +13,66 @@
  * @see https://dom.spec.whatwg.org/#eventtarget
  * @see https://dom.spec.whatwg.org/#event
  * @see https://dom.spec.whatwg.org/#customevent
+ *
+ * Example Event Path
+ * ------------------
+ *
+ * Note that this depends on the logic in `packages/labs/ssr/src/lib/render-value.ts`.
+ * Any element that is not a custom element or a slot element is skipped in the chain.
+ *
+ * <main>
+ *   <my-el1>
+ *     #shadow-dom (open)
+ *       <div>
+ *         <slot></slot>
+ *         <my-el2>
+ *           #shadow-dom (closed)
+ *             <slot></slot>
+ *             <event-dispatcher3></event-dispatcher3>
+ *           <slot name="nested"></slot>
+ *         </my-el2>
+ *       </div>
+ *     <event-dispatcher1></event-dispatcher1>
+ *     <event-dispatcher2 slot="nested"></event-dispatcher2>
+ *   </my-el1>
+ * </main>
+ *
+ * Given the previous structure, the event path of this shim would be as follows,
+ * for the given dispatcher with an event that bubbles (document-fragment
+ * represents a ShadowRoot/#shadow-dom instance):
+ *
+ * <event-dispatcher1>:
+ * [event-dispatcher1, slot{my-el1}, document-fragment{my-el1}, my-el1, document]
+ *
+ * <event-dispatcher2>:
+ * [
+ *   event-dispatcher2,
+ *   slot[name="nested"]{my-el1},
+ *   slot{my-el2},
+ *   document-fragment{my-el2},
+ *   my-el2,
+ *   document-fragment{my-el1},
+ *   my-el1,
+ *   document
+ * ]
+ *
+ * <event-dispatcher3> (without composed):
+ * [event-dispatcher3, document-fragment{my-el2}]
+ *
+ * <event-dispatcher3> (composed):
+ * [
+ *   event-dispatcher3,
+ *   document-fragment{my-el2},
+ *   my-el2,
+ *   document-fragment{my-el1},
+ *   my-el1,
+ *   document
+ * ]
  */
 
+/**
+ * Properties necessary for the EventTarget shim to work.
+ */
 export interface EventTargetShimMeta {
   /**
    * The event target parent represents the previous event target for an event
@@ -53,6 +111,7 @@ const EventTargetShim = class EventTarget
     string,
     Map<EventListenerOrEventListenerObject, AddEventListenerOptions>
   >();
+  private __eventPathCache?: EventTarget[];
   __eventTargetParent: EventTarget | undefined;
   __host: EventTarget | undefined;
 
@@ -102,20 +161,12 @@ const EventTargetShim = class EventTarget
     }
   }
   dispatchEvent(event: Event): boolean {
-    const composedPath: EventTarget[] = [this];
-    let parent = this.__eventTargetParent;
-    if (event.composed) {
-      while (parent) {
-        composedPath.push(parent);
-        parent = parent.__eventTargetParent;
-      }
-    } else {
+    let composedPath = this.__resolveFullEventPath();
+    if (!event.composed && this.__host) {
       // If the event is not composed and the event was dispatched inside
-      // shadow DOM, we need to stop before the host of the shadow DOM.
-      while (parent && parent !== this.__host) {
-        composedPath.push(parent);
-        parent = parent.__eventTargetParent;
-      }
+      // shadow DOM, we need to stop the event chain before the host of the
+      // shadow DOM.
+      composedPath = composedPath.slice(0, composedPath.indexOf(this.__host));
     }
 
     // We need to patch various properties that would either be empty or wrong
@@ -257,12 +308,10 @@ const EventTargetShim = class EventTarget
       }
       currentTarget = eventTarget;
       eventPhase = eventTarget === event.target ? AT_TARGET : BUBBLING_PHASE;
-      const captureEventListeners = eventTarget.__eventListeners.get(
-        event.type
-      );
-      if (captureEventListeners) {
-        for (const [listener, options] of captureEventListeners) {
-          invokeEventListener(listener, options, captureEventListeners);
+      const eventListeners = eventTarget.__eventListeners.get(event.type);
+      if (eventListeners) {
+        for (const [listener, options] of eventListeners) {
+          invokeEventListener(listener, options, eventListeners);
           if (stopImmediatePropagation) {
             // Event.stopImmediatePropagation() stops any following invocation
             // of an event handler even on the same event target.
@@ -278,6 +327,18 @@ const EventTargetShim = class EventTarget
     }
     return finishDispatch();
   }
+  private __resolveFullEventPath(): EventTarget[] {
+    if (this.__eventPathCache) {
+      return this.__eventPathCache;
+    } else if (!this.__eventTargetParent) {
+      return (this.__eventPathCache = [this, documentShim]);
+    } else {
+      return (this.__eventPathCache = [
+        this,
+        ...this.__eventTargetParent.__resolveFullEventPath(),
+      ]);
+    }
+  }
 };
 
 const EventTargetShimWithRealType =
@@ -286,6 +347,35 @@ export {
   EventTargetShimWithRealType as EventTarget,
   EventTargetShimWithRealType as EventTargetShim,
 };
+
+// Due to Document depending on EventTargetShim and EventTargetShim
+// depending on document, the Document/document declarations are in
+// the same file as the EventTargetShim.
+type DocumentInterface = Document;
+
+const DocumentShim = class Document
+  extends EventTargetShim
+  implements Partial<DocumentInterface>
+{
+  get adoptedStyleSheets() {
+    return [];
+  }
+  createTreeWalker() {
+    return {} as TreeWalker;
+  }
+  createTextNode() {
+    return {} as Text;
+  }
+  createElement() {
+    return {} as HTMLElement;
+  }
+};
+const DocumentShimWithRealType = DocumentShim as object as typeof Document;
+export {DocumentShimWithRealType as Document};
+
+const documentShim = new DocumentShim();
+const documentShimWithRealType = documentShim as object as Document;
+export {documentShimWithRealType as document};
 
 /* Adapted from Node.js https://github.com/nodejs/node/blob/main/lib/internal/event_target.js */
 
