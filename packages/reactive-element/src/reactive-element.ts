@@ -1035,7 +1035,7 @@ export abstract class ReactiveElement
     // call hostConnected. Note, re-using existence of `renderRoot` here
     // (which is set in connectedCallback) to avoid the need to track a
     // first connected state.
-    if (this.renderRoot !== undefined && this.isConnected) {
+    if (this.hasUpdated && this.renderRoot !== undefined && this.isConnected) {
       controller.hostConnected?.();
     }
   }
@@ -1098,10 +1098,10 @@ export abstract class ReactiveElement
    */
   connectedCallback() {
     // Create renderRoot before controllers `hostConnected`
-    (this as Mutable<typeof this, 'renderRoot'>).renderRoot ??=
-      this.createRenderRoot();
     this.enableUpdating(true);
-    this.__controllers?.forEach((c) => c.hostConnected?.());
+    if (this.renderRoot !== undefined) {
+      this.__controllers?.forEach((c) => c.hostConnected?.());
+    }
   }
 
   /**
@@ -1119,7 +1119,9 @@ export abstract class ReactiveElement
    * @category lifecycle
    */
   disconnectedCallback() {
-    this.__controllers?.forEach((c) => c.hostDisconnected?.());
+    if (this.renderRoot !== undefined) {
+      this.__controllers?.forEach((c) => c.hostDisconnected?.());
+    }
   }
 
   /**
@@ -1369,8 +1371,13 @@ export abstract class ReactiveElement
     if (!this.hasUpdated) {
       // Create renderRoot before first update. This occurs in `connectedCallback`
       // but is done here to support out of tree calls to `enableUpdating`/`performUpdate`.
-      (this as Mutable<typeof this, 'renderRoot'>).renderRoot ??=
-        this.createRenderRoot();
+      if (this.renderRoot === undefined) {
+        (this as Mutable<typeof this, 'renderRoot'>).renderRoot =
+          this.createRenderRoot();
+        if (this.isConnected) {
+          this.__controllers?.forEach((c) => c.hostConnected?.());
+        }
+      }
       if (DEV_MODE) {
         // Produce warning if any reactive properties on the prototype are
         // shadowed by class fields. Instance fields set before upgrade are
