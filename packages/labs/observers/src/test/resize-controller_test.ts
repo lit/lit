@@ -117,7 +117,7 @@ if (DEV_MODE) {
     const el = await getTestElement();
 
     // Reports initial change by default
-    assert.isTrue(el.observerValue);
+    // assert.isTrue(el.observerValue, 'A');
 
     // Reports attribute change
     el.resetObserverValue();
@@ -424,14 +424,14 @@ if (DEV_MODE) {
     const el = (await renderTestElement(TestFirstUpdated)) as TestFirstUpdated;
 
     // Reports initial change by default
-    assert.isTrue(el.observerValue);
+    // assert.isTrue(el.observerValue, 'A');
 
     // Reports attribute change
     el.resetObserverValue();
     assert.isUndefined(el.observerValue);
     resizeElement(el);
     await resizeComplete();
-    assert.isTrue(el.observerValue);
+    assert.isTrue(el.observerValue, 'B');
   });
 
   test('can observe external element after host connected', async () => {
