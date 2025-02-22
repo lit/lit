@@ -219,7 +219,7 @@ const config: TestRunnerConfig = {
     }) as TestRunnerPlugin,
   ],
   // Only actually log errors. This helps make test output less spammy.
-  filterBrowserLogs: ({type}) => type === 'error',
+  // filterBrowserLogs: ({type}) => type === 'error',
   middleware: [
     /**
      * Ensures that when we're in dev mode we only load dev sources, and when
