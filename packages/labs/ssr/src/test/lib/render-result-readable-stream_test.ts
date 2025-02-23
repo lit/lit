@@ -55,8 +55,9 @@ test.run();
 
 const collectReadable = async (r: NodeReadableStream) => {
   let s = '';
+  const decoder = new TextDecoder();
   for await (const v of r) {
-    s += v;
+    s += decoder.decode(v, {stream: true});
   }
   return s;
 };
