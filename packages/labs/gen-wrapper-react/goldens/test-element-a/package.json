@@ -11,8 +11,8 @@
     "@lit/react": "^1.0.0"
   },
   "peerDependencies": {
-    "react": "^17 || ^18",
-    "@types/react": "^17 || ^18"
+    "react": "^17 || ^18 || ^19",
+    "@types/react": "^17 || ^18 || ^19"
   },
   "devDependencies": {
     "typescript": "~5.5.0"
