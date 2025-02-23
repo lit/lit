@@ -23,6 +23,10 @@
         "development": "./node/development/reactive-element.js",
         "default": "./node/reactive-element.js"
       },
+      "workerd": {
+        "development": "./node/development/reactive-element.js",
+        "default": "./node/reactive-element.js"
+      },
       "browser": {
         "development": "./development/reactive-element.js",
         "default": "./reactive-element.js"
@@ -37,6 +41,10 @@
     "./css-tag.js": {
       "types": "./development/css-tag.d.ts",
       "edge-light": {
+        "development": "./node/development/css-tag.js",
+        "default": "./node/css-tag.js"
+      },
+      "workerd": {
         "development": "./node/development/css-tag.js",
         "default": "./node/css-tag.js"
       },
@@ -57,6 +65,10 @@
         "development": "./node/development/decorators.js",
         "default": "./node/decorators.js"
       },
+      "workerd": {
+        "development": "./node/development/decorators.js",
+        "default": "./node/decorators.js"
+      },
       "browser": {
         "development": "./development/decorators.js",
         "default": "./decorators.js"
@@ -71,6 +83,10 @@
     "./decorators/base.js": {
       "types": "./development/decorators/base.d.ts",
       "edge-light": {
+        "development": "./node/development/decorators/base.js",
+        "default": "./node/decorators/base.js"
+      },
+      "workerd": {
         "development": "./node/development/decorators/base.js",
         "default": "./node/decorators/base.js"
       },
@@ -91,6 +107,10 @@
         "development": "./node/development/decorators/custom-element.js",
         "default": "./node/decorators/custom-element.js"
       },
+      "workerd": {
+        "development": "./node/development/decorators/custom-element.js",
+        "default": "./node/decorators/custom-element.js"
+      },
       "browser": {
         "development": "./development/decorators/custom-element.js",
         "default": "./decorators/custom-element.js"
@@ -105,6 +125,10 @@
     "./decorators/event-options.js": {
       "types": "./development/decorators/event-options.d.ts",
       "edge-light": {
+        "development": "./node/development/decorators/event-options.js",
+        "default": "./node/decorators/event-options.js"
+      },
+      "workerd": {
         "development": "./node/development/decorators/event-options.js",
         "default": "./node/decorators/event-options.js"
       },
@@ -125,6 +149,10 @@
         "development": "./node/development/decorators/property.js",
         "default": "./node/decorators/property.js"
       },
+      "workerd": {
+        "development": "./node/development/decorators/property.js",
+        "default": "./node/decorators/property.js"
+      },
       "browser": {
         "development": "./development/decorators/property.js",
         "default": "./decorators/property.js"
@@ -139,6 +167,10 @@
     "./decorators/query-all.js": {
       "types": "./development/decorators/query-all.d.ts",
       "edge-light": {
+        "development": "./node/development/decorators/query-all.js",
+        "default": "./node/decorators/query-all.js"
+      },
+      "workerd": {
         "development": "./node/development/decorators/query-all.js",
         "default": "./node/decorators/query-all.js"
       },
@@ -159,6 +191,10 @@
         "development": "./node/development/decorators/query-assigned-elements.js",
         "default": "./node/decorators/query-assigned-elements.js"
       },
+      "workerd": {
+        "development": "./node/development/decorators/query-assigned-elements.js",
+        "default": "./node/decorators/query-assigned-elements.js"
+      },
       "browser": {
         "development": "./development/decorators/query-assigned-elements.js",
         "default": "./decorators/query-assigned-elements.js"
@@ -173,6 +209,10 @@
     "./decorators/query-assigned-nodes.js": {
       "types": "./development/decorators/query-assigned-nodes.d.ts",
       "edge-light": {
+        "development": "./node/development/decorators/query-assigned-nodes.js",
+        "default": "./node/decorators/query-assigned-nodes.js"
+      },
+      "workerd": {
         "development": "./node/development/decorators/query-assigned-nodes.js",
         "default": "./node/decorators/query-assigned-nodes.js"
       },
@@ -193,6 +233,10 @@
         "development": "./node/development/decorators/query-async.js",
         "default": "./node/decorators/query-async.js"
       },
+      "workerd": {
+        "development": "./node/development/decorators/query-async.js",
+        "default": "./node/decorators/query-async.js"
+      },
       "browser": {
         "development": "./development/decorators/query-async.js",
         "default": "./decorators/query-async.js"
@@ -207,6 +251,10 @@
     "./decorators/query.js": {
       "types": "./development/decorators/query.d.ts",
       "edge-light": {
+        "development": "./node/development/decorators/query.js",
+        "default": "./node/decorators/query.js"
+      },
+      "workerd": {
         "development": "./node/development/decorators/query.js",
         "default": "./node/decorators/query.js"
       },
@@ -227,6 +275,10 @@
         "development": "./node/development/decorators/state.js",
         "default": "./node/decorators/state.js"
       },
+      "workerd": {
+        "development": "./node/development/decorators/state.js",
+        "default": "./node/decorators/state.js"
+      },
       "browser": {
         "development": "./development/decorators/state.js",
         "default": "./decorators/state.js"
@@ -244,6 +296,10 @@
         "development": "./node/development/polyfill-support.js",
         "default": "./node/polyfill-support.js"
       },
+      "workerd": {
+        "development": "./node/development/polyfill-support.js",
+        "default": "./node/polyfill-support.js"
+      },
       "browser": {
         "development": "./development/polyfill-support.js",
         "default": "./polyfill-support.js"
@@ -258,6 +314,10 @@
     "./reactive-controller.js": {
       "types": "./development/reactive-controller.d.ts",
       "edge-light": {
+        "development": "./node/development/reactive-controller.js",
+        "default": "./node/reactive-controller.js"
+      },
+      "workerd": {
         "development": "./node/development/reactive-controller.js",
         "default": "./node/reactive-controller.js"
       },

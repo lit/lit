@@ -23,6 +23,10 @@
         "development": "./node/development/index.js",
         "default": "./node/index.js"
       },
+      "workerd": {
+        "development": "./node/development/index.js",
+        "default": "./node/index.js"
+      },
       "browser": {
         "development": "./development/index.js",
         "default": "./index.js"
@@ -37,6 +41,10 @@
     "./use-controller.js": {
       "types": "./development/use-controller.d.ts",
       "edge-light": {
+        "development": "./node/development/use-controller.js",
+        "default": "./node/use-controller.js"
+      },
+      "workerd": {
         "development": "./node/development/use-controller.js",
         "default": "./node/use-controller.js"
       },
