@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2022 Google LLC
+ * Copyright 2025 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
