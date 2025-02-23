@@ -10,26 +10,26 @@ import * as assert from 'uvu/assert';
 import type {ReadableStream as NodeReadableStream} from 'node:stream/web';
 import {createReadableStream} from '../../lib/render-result-readable-stream.js';
 
-test('RenderResultReadable collects strings', async () => {
+test('ReadableStream collects strings', async () => {
   const s = await collectReadable(createReadableStream(['a', 'b', 'c']));
   assert.equal(s, 'abc');
 });
 
-test('RenderResultReadable collects strings and Promises', async () => {
+test('ReadableStream collects strings and Promises', async () => {
   const s = await collectReadable(
     createReadableStream(['a', Promise.resolve(['b']), 'c'])
   );
   assert.equal(s, 'abc');
 });
 
-test('RenderResultReadable collects strings and Promises of iterables', async () => {
+test('ReadableStream collects strings and Promises of iterables', async () => {
   const s = await collectReadable(
     createReadableStream(['a', Promise.resolve(['b', 'c']), 'd'])
   );
   assert.equal(s, 'abcd');
 });
 
-test('RenderResultReadable collects strings and nested Promises of iterables', async () => {
+test('ReadableStream collects strings and nested Promises of iterables', async () => {
   const s = await collectReadable(
     createReadableStream([
       'a',
@@ -40,7 +40,7 @@ test('RenderResultReadable collects strings and nested Promises of iterables', a
   assert.equal(s, 'abcd');
 });
 
-test('RenderResultReadable yields for some time until promises resolve', async () => {
+test('ReadableStream yields for some time until promises resolve', async () => {
   const readable = createReadableStream([
     'a',
     new Promise((res) => setTimeout(res, 50)).then((_) => ['b', 'c']),
