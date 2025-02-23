@@ -4,6 +4,8 @@ import styles from '../styles/Home.module.css';
 import '../src/simple-greeter';
 import SimpleGreeter from '../src/simple-greeter-react';
 
+export const runtime = "experimental-edge"
+
 export default function Home() {
   return (
     <div className={styles.container}>
@@ -12,7 +14,7 @@ export default function Home() {
         <link rel="icon" href="/flame-favicon.svg" />
       </Head>
 
-      <span>Node</span> | <Link href="/edge">Edge Runtime</Link>
+      <Link href="/">Node</Link> | <span>Edge Runtime</span>
 
       <main className={styles.main}>
         <h1 className={styles.title}>
