@@ -8,6 +8,9 @@ on:
     paths:
       - '**/CHANGELOG.md'
 
+permissions:
+  contents: read
+
 jobs:
   release-image:
     if: github.repository == 'lit/lit'
@@ -25,7 +28,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - uses: google/wireit@setup-github-actions-caching/v1
+      - uses: google/wireit@setup-github-actions-caching/v2
 
       - name: NPM install
         run: npm ci
@@ -45,7 +48,7 @@ jobs:
           node_modules/.bin/release-image -m <(sed -n '/# Releases/,$p' release.md)
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: releaseimage
           path: release.png

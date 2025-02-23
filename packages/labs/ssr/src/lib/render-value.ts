@@ -7,11 +7,7 @@
  */
 
 import type {TemplateResult, ChildPart, CompiledTemplateResult} from 'lit';
-import type {
-  Directive,
-  DirectiveClass,
-  DirectiveResult,
-} from 'lit/directive.js';
+import type {Directive} from 'lit/directive.js';
 
 import {nothing, noChange} from 'lit';
 import {PartType} from 'lit/directive.js';
@@ -29,8 +25,7 @@ const {
   marker,
   markerMatch,
   boundAttributeSuffix,
-  overrideDirectiveResolve,
-  setDirectiveClass,
+  patchDirectiveResolve,
   getAttributePartCommittedValue,
   resolveDirective,
   AttributePart,
@@ -42,6 +37,7 @@ const {
 } = _$LH;
 
 import {digestForTemplateResult} from '@lit-labs/ssr-client';
+import {HTMLElement, HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
 
 import {
   ElementRenderer,
@@ -51,7 +47,7 @@ import {
 
 import {escapeHtml} from './util/escape-html.js';
 
-import {parseFragment} from 'parse5';
+import {parseFragment, parse} from 'parse5';
 import {
   isElementNode,
   isCommentNode,
@@ -67,6 +63,7 @@ import {reflectedAttributeName} from './reflected-attributes.js';
 
 import type {RenderResult} from './render-result.js';
 import {isHydratable} from './server-template.js';
+import type {Part} from 'lit-html';
 
 declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {
@@ -74,30 +71,20 @@ declare module 'parse5/dist/tree-adapters/default.js' {
   }
 }
 
-const patchedDirectiveCache = new WeakMap<DirectiveClass, DirectiveClass>();
+function ssrResolve(this: Directive, _part: Part, values: unknown[]) {
+  // Since the return value may also be a directive result in the case of nested
+  // directives, we may need to patch that as well.
+  return patchIfDirective(this.render(...values));
+}
 
 /**
- * Looks for values of type `DirectiveResult` and replaces its Directive class
- * with a subclass that calls `render` rather than `update`
+ * Looks for values of type `DirectiveResult` and patches its Directive class
+ * such that it calls `render` rather than `update`.
  */
 const patchIfDirective = (value: unknown) => {
-  // This property needs to remain unminified.
   const directiveCtor = getDirectiveClass(value);
   if (directiveCtor !== undefined) {
-    let patchedCtor = patchedDirectiveCache.get(directiveCtor);
-    if (patchedCtor === undefined) {
-      patchedCtor = overrideDirectiveResolve(
-        directiveCtor,
-        (directive: Directive, values: unknown[]) => {
-          // Since the return value may also be a directive result in the case of
-          // nested directives, we may need to patch that as well
-          return patchIfDirective(directive.render(...values));
-        }
-      );
-      patchedDirectiveCache.set(directiveCtor, patchedCtor);
-    }
-    // This property needs to remain unminified.
-    setDirectiveClass(value as DirectiveResult, patchedCtor);
+    patchDirectiveResolve(directiveCtor, ssrResolve);
   }
   return value;
 };
@@ -120,9 +107,25 @@ const patchAnyDirectives = (
   }
 };
 
-const templateCache = new Map<TemplateStringsArray, Array<Op>>();
-/**
+const templateCache = new WeakMap<TemplateStringsArray, Array<Op>>();
 
+// This is a map for which slots exist for a given custom element.
+// With a named slot, it is represented as a string with the name
+// and the unnamed slot is represented as undefined.
+const elementSlotMap = new WeakMap<
+  HTMLElement,
+  Map<string | undefined, HTMLSlotElement>
+>();
+
+// We want the slot element to be able to be identified.
+class HTMLSlotElement extends HTMLElement {
+  name!: string;
+  override get localName(): string {
+    return 'slot';
+  }
+}
+
+/**
  * Operation to output static text
  */
 type TextOp = {
@@ -199,6 +202,39 @@ type CustomElementClosedOp = {
 };
 
 /**
+ * Operation to mark an open slot.
+ */
+type SlotElementOpenOp = {
+  type: 'slot-element-open';
+  name: string | undefined;
+};
+
+/**
+ * Operation to mark a slot as closed.
+ */
+type SlotElementCloseOp = {
+  type: 'slot-element-close';
+};
+
+/**
+ * Operation to mark a slotted element as open. We do this by checking
+ * direct children of custom elements for the absence or presence of
+ * the slot attribute. The absence of the slot attribute (i.e. unnamed slot)
+ * is represented by undefined.
+ */
+type SlottedElementOpenOp = {
+  type: 'slotted-element-open';
+  name: string | undefined;
+};
+
+/**
+ * Operation to mark a slotted element as closed.
+ */
+type SlottedElementCloseOp = {
+  type: 'slotted-element-close';
+};
+
+/**
  * Operation to possibly emit the `<!--lit-node-->` marker; the operation
  * always emits if there were attribute parts, and may emit if the node
  * was a custom element and it needed `defer-hydration` because it was
@@ -221,7 +257,19 @@ type Op =
   | CustomElementAttributesOp
   | CustomElementShadowOp
   | CustomElementClosedOp
+  | SlotElementOpenOp
+  | SlotElementCloseOp
+  | SlottedElementOpenOp
+  | SlottedElementCloseOp
   | PossibleNodeMarkerOp;
+
+/**
+ * Any of these top level tags will be removed by parse5's `parseFragment` and
+ * will cause part errors if there are any part bindings. For only the `html`,
+ * `head`, and `body` tags, we use a page-level template `parse`.
+ */
+const REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG =
+  /^(\s|<!--[^(-->)]*-->)*(<(!doctype|html|head|body))/i;
 
 /**
  * For a given TemplateResult, generates and/or returns a cached list of opcodes
@@ -275,7 +323,7 @@ type Op =
  *   - Call `renderer.connectedCallback()`
  *   - Emit `renderer.renderAttributes()`
  * - `text`
- *   - Emit end of of open tag `>`
+ *   - Emit end of open tag `>`
  * - `custom-element-shadow`
  *   - Emit `renderer.renderShadow()` (emits `<template shadowroot>` +
  *     recurses to emit `render()`)
@@ -290,7 +338,6 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   if (template !== undefined) {
     return template;
   }
-  // The property '_$litType$' needs to remain unminified.
   const [html, attrNames] = getTemplateHtml(
     result.strings,
     // SVG TemplateResultType functionality is only required on the client,
@@ -300,13 +347,21 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   );
 
   const hydratable = isHydratable(result);
+  const htmlString = String(html);
+  // Only server templates can use top level document tags such as `<html>`,
+  // `<body>`, and `<head>`.
+  const isPageLevelTemplate =
+    !hydratable && REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG.test(htmlString);
 
   /**
    * The html string is parsed into a parse5 AST with source code information
    * on; this lets us skip over certain ast nodes by string character position
    * while walking the AST.
+   *
+   * Server Templates may need to use `parse` as they may contain document tags such
+   * as `<html>`.
    */
-  const ast = parseFragment(String(html), {
+  const ast = (isPageLevelTemplate ? parse : parseFragment)(htmlString, {
     sourceCodeLocationInfo: true,
   });
 
@@ -390,6 +445,20 @@ const getTemplateOpcodes = (result: TemplateResult) => {
 
         const tagName = node.tagName;
 
+        if (
+          node.parentNode &&
+          isElementNode(node.parentNode) &&
+          node.parentNode.isDefinedCustomElement
+        ) {
+          // When the parent node is a custom element we check for the presence
+          // or absence of the slot attribute. This allows us to track the
+          // event tree with the association of the slot path.
+          ops.push({
+            type: 'slotted-element-open',
+            name: node.attrs.find((a) => a.name === 'slot')?.value,
+          });
+        }
+
         if (tagName.indexOf('-') !== -1) {
           // Looking up the constructor here means that custom elements must be
           // registered before rendering the first template that contains them.
@@ -408,6 +477,13 @@ const getTemplateOpcodes = (result: TemplateResult) => {
               ),
             });
           }
+        } else if (tagName === 'slot') {
+          ops.push({
+            type: 'slot-element-open',
+            // Name is either assigned the slot name or undefined for
+            // an unnamed slot.
+            name: node.attrs.find((a) => a.name === 'name')?.value,
+          });
         }
         const attrInfo = node.attrs.map((attr) => {
           const isAttrBinding = attr.name.endsWith(boundAttributeSuffix);
@@ -439,16 +515,16 @@ const getTemplateOpcodes = (result: TemplateResult) => {
             // nodes with bindings, we don't account for it in the nodeIndex because
             // that will not be injected into the client template
             const strings = attr.value.split(marker);
-            // We store the case-sensitive name from `attrNames` (generated
-            // while parsing the template strings); note that this assumes
-            // parse5 attribute ordering matches string ordering
-            const name = attrNames[attrIndex++];
             const attrSourceLocation =
               node.sourceCodeLocation!.attrs![attr.name]!;
             const attrNameStartOffset = attrSourceLocation.startOffset;
             const attrEndOffset = attrSourceLocation.endOffset;
             flushTo(attrNameStartOffset);
             if (isAttrBinding) {
+              // We store the case-sensitive name from `attrNames` (generated
+              // while parsing the template strings); note that this assumes
+              // parse5 attribute ordering matches string ordering
+              const name = attrNames[attrIndex++];
               const [, prefix, caseSensitiveName] = /([.?@])?(.*)/.exec(
                 name as string
               )!;
@@ -471,10 +547,10 @@ const getTemplateOpcodes = (result: TemplateResult) => {
                   prefix === '.'
                     ? PropertyPart
                     : prefix === '?'
-                    ? BooleanAttributePart
-                    : prefix === '@'
-                    ? EventPart
-                    : AttributePart,
+                      ? BooleanAttributePart
+                      : prefix === '@'
+                        ? EventPart
+                        : AttributePart,
                 strings,
                 tagName: tagName.toUpperCase(),
                 useCustomElementInstance: node.isDefinedCustomElement,
@@ -570,9 +646,25 @@ const getTemplateOpcodes = (result: TemplateResult) => {
       }
     },
     node(node) {
-      if (isElementNode(node) && node.isDefinedCustomElement) {
+      if (!isElementNode(node)) {
+        return;
+      }
+      if (node.isDefinedCustomElement) {
         ops.push({
           type: 'custom-element-close',
+        });
+      } else if (node.tagName === 'slot') {
+        ops.push({
+          type: 'slot-element-close',
+        });
+      }
+      if (
+        node.parentNode &&
+        isElementNode(node.parentNode) &&
+        node.parentNode.isDefinedCustomElement
+      ) {
+        ops.push({
+          type: 'slotted-element-close',
         });
       }
     },
@@ -600,6 +692,16 @@ export type RenderInfo = {
   customElementHostStack: Array<ElementRenderer | undefined>;
 
   /**
+   * Stack of open event target instances.
+   */
+  eventTargetStack: Array<HTMLElement | undefined>;
+
+  /**
+   * Stack of current slot context.
+   */
+  slotStack: Array<string | undefined>;
+
+  /**
    * An optional callback to notify when a custom element has been rendered.
    *
    * This allows servers to know what specific tags were rendered for a given
@@ -624,6 +726,24 @@ export function* renderValue(
   renderInfo: RenderInfo,
   hydratable = true
 ): RenderResult {
+  if (renderInfo.customElementHostStack.length === 0) {
+    // If the SSR root event target is not at the start of the event target
+    // stack, we add it to the beginning of the array.
+    // This only applies if we are in the top level document and not in a
+    // Shadow DOM.
+    const rootEventTarget = renderInfo.eventTargetStack[0];
+    if (rootEventTarget !== litServerRoot) {
+      renderInfo.eventTargetStack.unshift(litServerRoot);
+      if (rootEventTarget) {
+        // If an entry in the event target stack was provided and it was not
+        // the event root target, we need to connect the given event target
+        // to the root event target.
+        (rootEventTarget as HTMLElementWithEventMeta).__eventTargetParent =
+          rootEventTarget;
+      }
+    }
+  }
+
   patchIfDirective(value);
   if (isRenderLightDirective(value)) {
     // If a value was produced with renderLight(), we want to call and render
@@ -783,6 +903,25 @@ And the inner template was:
           op.ctor,
           op.staticAttributes
         );
+        if (instance.element) {
+          // In the case the renderer has created an instance, we want to set
+          // the event target parent and the host of the element. Our
+          // EventTarget polyfill uses these values to calculate the
+          // composedPath of a dispatched event.
+          // Note that the event target parent is either the unnamed/named slot
+          // in the parent event target if it exists or the parent event target
+          // if no matching slot exists.
+          const eventTarget = getLast(
+            renderInfo.eventTargetStack
+          ) as HTMLElementWithEventMeta;
+          const slotName = getLast(renderInfo.slotStack);
+          (instance.element as HTMLElementWithEventMeta).__eventTargetParent =
+            elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
+          (instance.element as HTMLElementWithEventMeta).__host = getLast(
+            renderInfo.customElementHostStack
+          )?.element;
+          renderInfo.eventTargetStack.push(instance.element);
+        }
         // Set static attributes to the element renderer
         for (const [name, value] of op.staticAttributes) {
           instance.setAttribute(name, value);
@@ -860,6 +999,53 @@ And the inner template was:
       }
       case 'custom-element-close':
         renderInfo.customElementInstanceStack.pop();
+        renderInfo.eventTargetStack.pop();
+        break;
+      case 'slot-element-open': {
+        const host = getLast(renderInfo.customElementHostStack);
+        if (host === undefined) {
+          throw new Error(
+            `Internal error: ${op.type} outside of custom element context`
+          );
+        } else if (host.element) {
+          // We need to track which element has which slots. This is necessary
+          // to calculate the correct event path by connecting children of the
+          // host element to the corresponding slot.
+          let slots = elementSlotMap.get(host.element);
+          if (slots === undefined) {
+            slots = new Map();
+            elementSlotMap.set(host.element, slots);
+          }
+          // op.name is either the slot name or undefined, which represents
+          // the unnamed slot case.
+          if (!slots.has(op.name)) {
+            const element = new HTMLSlotElement() as HTMLSlotElement &
+              HTMLElementWithEventMeta;
+            element.name = op.name ?? '';
+            const eventTarget = getLast(
+              renderInfo.eventTargetStack
+            ) as HTMLElementWithEventMeta;
+            const slotName = getLast(renderInfo.slotStack);
+            element.__eventTargetParent =
+              elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
+            element.__host = getLast(
+              renderInfo.customElementHostStack
+            )?.element;
+            slots.set(op.name, element);
+            renderInfo.eventTargetStack.push(element);
+          }
+        }
+
+        break;
+      }
+      case 'slot-element-close':
+        renderInfo.eventTargetStack.pop();
+        break;
+      case 'slotted-element-open':
+        renderInfo.slotStack.push(op.name);
+        break;
+      case 'slotted-element-close':
+        renderInfo.slotStack.pop();
         break;
       default:
         throw new Error('internal error');
@@ -877,8 +1063,8 @@ function throwErrorForPartIndexMismatch(
 ) {
   const errorMsg = `
     Unexpected final partIndex: ${partIndex} !== ${
-    result.values.length
-  } while processing the following template:
+      result.values.length
+    } while processing the following template:
 
     ${displayTemplateResult(result)}
 

@@ -1,5 +1,20 @@
 # @lit/lit-starter-js
 
+## 2.0.2
+
+### Patch Changes
+
+- [#4681](https://github.com/lit/lit/pull/4681) [`5463b104`](https://github.com/lit/lit/commit/5463b1046e0589c9ce7041e67cd539ddfba2e5a7) - Update Rollup and Terser dependencies
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98)]:
+  - lit@3.2.0
+
+## 2.0.1
+
+### Patch Changes
+
+- [#4451](https://github.com/lit/lit/pull/4451) [`7852e130`](https://github.com/lit/lit/commit/7852e13022c9dcfcff5ed54a215c93420349e318) - Minor security fixes.
+
 ## 2.0.0
 
 ### Major Changes

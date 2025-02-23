@@ -1,5 +1,55 @@
 # Change Log
 
+## 4.1.1
+
+### Patch Changes
+
+- [#4782](https://github.com/lit/lit/pull/4782) [`99703a03`](https://github.com/lit/lit/commit/99703a03b68ed800a8a0f5784c10a32fbc6e2db6) - Revert the Terser plugin for Rollup to `rollup-plugin-terser` from `@rollup/plugin-terser`
+  due to a bug that prevented our minified name prefixing from working.
+
+## 4.1.0
+
+### Minor Changes
+
+- [#4637](https://github.com/lit/lit/pull/4637) [`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98) - Add MathML support with the `mathml` template tag
+
+### Patch Changes
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98)]:
+  - lit-html@3.2.0
+
+## 4.0.6
+
+### Patch Changes
+
+- [#4646](https://github.com/lit/lit/pull/4646) [`abf30b3e`](https://github.com/lit/lit/commit/abf30b3e895ea5d833f6d9559612e2b1ba47580d) - The value provided by the `ref()` directive will always be `undefined` when the element is disconnected.
+
+## 4.0.5
+
+### Patch Changes
+
+- [#4570](https://github.com/lit/lit/pull/4570) [`bd881370`](https://github.com/lit/lit/commit/bd881370b83d366f7654dd510731242a68949a20) - Fix the lit-html marker length to be consistently 9 characters.
+
+## 4.0.4
+
+### Patch Changes
+
+- [#4485](https://github.com/lit/lit/pull/4485) [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf) - Add "browser" export condition entrypoints to any package.json files with "node"
+  export conditions. This fixes Node test runners emulating browser environments that were incorrectly loading the
+  "node" entrypoints instead of the browser code.
+- Updated dependencies [[`1a32b61e`](https://github.com/lit/lit/commit/1a32b61ecf09c2c2e6efac2735c2c627af793286), [`e901c582`](https://github.com/lit/lit/commit/e901c5829b50b38db9c434e979a8fd215adafea8), [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf), [`dca963f7`](https://github.com/lit/lit/commit/dca963f7f5d2f7be91f2f073ebabe92d033b3a25)]:
+  - lit-html@3.1.2
+  - @lit-labs/ssr-dom-shim@1.2.0
+  - @lit/reactive-element@2.0.4
+
+## 4.0.3
+
+### Patch Changes
+
+- [#4473](https://github.com/lit/lit/pull/4473) [`9a4d569f`](https://github.com/lit/lit/commit/9a4d569f710a3c49409dcc778b71a71a04c4916a) - Add a warning in dev mode when binding this.requestUpdate directly as an event listener.
+
+- [#4413](https://github.com/lit/lit/pull/4413) [`f60a3a2c`](https://github.com/lit/lit/commit/f60a3a2c994f41fc3df1bd8a76451ea185b66e11) - Remove unused internal parameters to `requestUpdate()`
+
 ## 4.0.2
 
 ### Patch Changes
@@ -460,7 +510,7 @@ Changes below were based on the [Keep a Changelog](http://keepachangelog.com/) f
 
 ### Changed
 
-- Added a static `getPropertyDescriptor` method to allow easier customization of property accessors. This method should return a a `PropertyDescriptor` to install on the property. If no descriptor is returned, no property accessor is created. ([#911](https://github.com/Polymer/lit-element/issues/911))
+- Added a static `getPropertyDescriptor` method to allow easier customization of property accessors. This method should return a `PropertyDescriptor` to install on the property. If no descriptor is returned, no property accessor is created. ([#911](https://github.com/Polymer/lit-element/issues/911))
 - The value returned by `render` is always rendered, even if it isn't a `TemplateResult`. ([#712](https://github.com/Polymer/lit-element/issues/712))
 
 ### Added

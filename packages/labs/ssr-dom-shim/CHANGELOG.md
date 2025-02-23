@@ -1,5 +1,23 @@
 # @lit-labs/ssr-dom-shim
 
+## 1.3.0
+
+### Minor Changes
+
+- [#4755](https://github.com/lit/lit/pull/4755) [`25962bf5`](https://github.com/lit/lit/commit/25962bf58f33f32abef6487689438bf095780b63) Thanks [@kyubisation](https://github.com/kyubisation)! - Implement SSR event handling and an optional flag `globalThis.litSsrCallConnectedCallback` to call `connectedCallback` during SSR, if set to true.
+
+## 1.2.1
+
+### Patch Changes
+
+- [#4553](https://github.com/lit/lit/pull/4553) [`65bc240c`](https://github.com/lit/lit/commit/65bc240c91e39163a4debd59351410667b2e0ce9) Thanks [@kyubisation](https://github.com/kyubisation)! - Implement Element.localName and Element.tagName. Fixes [3375](https://github.com/lit/lit/issues/3375).
+
+## 1.2.0
+
+### Minor Changes
+
+- [#4493](https://github.com/lit/lit/pull/4493) [`e901c582`](https://github.com/lit/lit/commit/e901c5829b50b38db9c434e979a8fd215adafea8) - Add `toggleAttribute` to the Element shim.
+
 ## 1.1.2
 
 ### Patch Changes

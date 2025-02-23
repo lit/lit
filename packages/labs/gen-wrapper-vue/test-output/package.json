@@ -4,7 +4,7 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "@esm-bundle/chai": "^4.3.4-fix.0",
+    "chai": "^5.1.0",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^9.0.0",
     "vue": "^3.2.25",
@@ -14,7 +14,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^2.3.1",
-    "typescript": "~5.2.0",
+    "typescript": "~5.3.3",
     "vite": "^2.9.2",
     "vue-tsc": "^1.8.8"
   },

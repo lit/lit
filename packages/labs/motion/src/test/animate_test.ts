@@ -23,7 +23,7 @@ import {
   flyAbove,
   flyBelow,
 } from '@lit-labs/motion';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
 // by checking if warning API is available.
@@ -464,18 +464,19 @@ const testSkipSafari = isSafari ? test.skip : test;
           top: 20px;
         }
       `,
-      () => html`<div
-        class="child ${classMap({shiftChild})}"
-        ${animate({onComplete: childComplete})}
-      >
-        Child
-        <div
-          class="gChild ${classMap({shiftGChild})}"
-          ${animate({onStart: gChildStart, onComplete: gChildComplete})}
+      () =>
+        html`<div
+          class="child ${classMap({shiftChild})}"
+          ${animate({onComplete: childComplete})}
         >
-          GChild
-        </div>
-      </div>`
+          Child
+          <div
+            class="gChild ${classMap({shiftGChild})}"
+            ${animate({onStart: gChildStart, onComplete: gChildComplete})}
+          >
+            GChild
+          </div>
+        </div>`
     );
     el = new El();
     container.appendChild(el);

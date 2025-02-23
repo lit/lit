@@ -2,6 +2,9 @@ name: Sizecheck
 
 on: [pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   checksize:
     name: sizecheck
@@ -16,7 +19,7 @@ jobs:
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
-      - uses: google/wireit@setup-github-actions-caching/v1
+      - uses: google/wireit@setup-github-actions-caching/v2
 
       - name: NPM install
         run: npm ci
@@ -33,7 +36,7 @@ jobs:
 
       - name: Upload artifacts
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: sizecheck
           path: |

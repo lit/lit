@@ -3,7 +3,7 @@
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {LitElement, ReactiveControllerHost} from 'lit';
+import {ReactiveControllerHost} from 'lit';
 import {nothing, AttributePart} from 'lit/html.js';
 import {directive, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
@@ -171,7 +171,8 @@ const nodeToAnimateMap = new WeakMap<Node, Animate>();
  * `animate` directive class. Animates a node's position between renders.
  */
 export class Animate extends AsyncDirective {
-  private _host?: LitElement;
+  private _hostHasUpdated = false;
+  private _host?: ReactiveControllerHost;
   private _fromValues?: CSSValues;
   private _parentNode: Element | null = null;
   private _nextSibling: Node | null = null;
@@ -227,8 +228,9 @@ export class Animate extends AsyncDirective {
   override update(part: AttributePart, [options]: Parameters<this['render']>) {
     const firstUpdate = this._host === undefined;
     if (firstUpdate) {
-      this._host = part.options?.host as LitElement;
+      this._host = part.options?.host as ReactiveControllerHost;
       this._host.addController(this);
+      this._host.updateComplete.then((_) => (this._hostHasUpdated = true));
       this.element = part.element;
       nodeToAnimateMap.set(this.element, this);
     }
@@ -287,7 +289,7 @@ export class Animate extends AsyncDirective {
       dirty = isDirty(value, this._previousValue);
     }
     this._shouldAnimate =
-      this._host!.hasUpdated &&
+      this._hostHasUpdated &&
       !this.isDisabled() &&
       !this.isAnimating() &&
       dirty &&
@@ -512,7 +514,7 @@ export class Animate extends AsyncDirective {
       .filter((a) => a !== undefined) as CSSValues[];
     let dScaleX = 1;
     let dScaleY = 1;
-    if (ancestorProps !== undefined) {
+    if (ancestorProps.length > 0) {
       // gather scaling data for ancestors
       ancestorProps.forEach((a) => {
         if (a['width']) {
@@ -628,7 +630,7 @@ function noAwait(_p: null | undefined | Promise<unknown>) {}
  * render to DOM and when they are removed.
  *
  * Options include:
- * * animationOptions:  configure animation via standard KeyframeAnimationOptions
+ * * keyframeOptions:  configure animation via standard KeyframeAnimationOptions
  * * properties: list of properties to animate, defaults to
  * ['left', 'top','width', 'height', 'opacity', 'color', 'background']
  * * disabled: disables animation

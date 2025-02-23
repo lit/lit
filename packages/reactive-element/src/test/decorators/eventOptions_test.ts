@@ -12,7 +12,7 @@ import {
   RenderingElement,
   html,
 } from '../test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 let hasOptions;
 const supportsOptions = (function () {

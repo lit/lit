@@ -1,5 +1,60 @@
 # Change Log
 
+## 3.2.1
+
+### Patch Changes
+
+- [#4782](https://github.com/lit/lit/pull/4782) [`99703a03`](https://github.com/lit/lit/commit/99703a03b68ed800a8a0f5784c10a32fbc6e2db6) - Revert the Terser plugin for Rollup to `rollup-plugin-terser` from `@rollup/plugin-terser`
+  due to a bug that prevented our minified name prefixing from working.
+
+## 3.2.0
+
+### Minor Changes
+
+- [#4637](https://github.com/lit/lit/pull/4637) [`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98) - Add MathML support with the `mathml` template tag
+
+### Patch Changes
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98)]:
+  - lit-html@3.2.0
+  - lit-element@4.1.0
+
+## 3.1.4
+
+### Patch Changes
+
+- [#4646](https://github.com/lit/lit/pull/4646) [`abf30b3e`](https://github.com/lit/lit/commit/abf30b3e895ea5d833f6d9559612e2b1ba47580d) - The value provided by the `ref()` directive will always be `undefined` when the element is disconnected.
+
+## 3.1.3
+
+### Patch Changes
+
+- [#4570](https://github.com/lit/lit/pull/4570) [`bd881370`](https://github.com/lit/lit/commit/bd881370b83d366f7654dd510731242a68949a20) - Fix the lit-html marker length to be consistently 9 characters.
+
+## 3.1.2
+
+### Patch Changes
+
+- [#4523](https://github.com/lit/lit/pull/4523) [`1a32b61e`](https://github.com/lit/lit/commit/1a32b61ecf09c2c2e6efac2735c2c627af793286) - Add a DEV_MODE error to catch duplicate attribute bindings that otherwise create silent errors.
+
+- [#4485](https://github.com/lit/lit/pull/4485) [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf) - Add "browser" export condition entrypoints to any package.json files with "node"
+  export conditions. This fixes Node test runners emulating browser environments that were incorrectly loading the
+  "node" entrypoints instead of the browser code.
+- Updated dependencies [[`1a32b61e`](https://github.com/lit/lit/commit/1a32b61ecf09c2c2e6efac2735c2c627af793286), [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf), [`dca963f7`](https://github.com/lit/lit/commit/dca963f7f5d2f7be91f2f073ebabe92d033b3a25)]:
+  - lit-html@3.1.2
+  - @lit/reactive-element@2.0.4
+  - lit-element@4.0.4
+
+## 3.1.1
+
+### Patch Changes
+
+- [#4409](https://github.com/lit/lit/pull/4409) [`1af7991c`](https://github.com/lit/lit/commit/1af7991c27456c7e6073a3ee6f18f102c2adc026) - asyncReplace correctly re-renders when value is unchanged (#4408)
+
+- [#4473](https://github.com/lit/lit/pull/4473) [`9a4d569f`](https://github.com/lit/lit/commit/9a4d569f710a3c49409dcc778b71a71a04c4916a) - Add a warning in dev mode when binding this.requestUpdate directly as an event listener.
+
+- [#4413](https://github.com/lit/lit/pull/4413) [`f60a3a2c`](https://github.com/lit/lit/commit/f60a3a2c994f41fc3df1bd8a76451ea185b66e11) - Remove unused internal parameters to `requestUpdate()`
+
 ## 3.1.0
 
 ### Minor Changes

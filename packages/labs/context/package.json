@@ -6,7 +6,7 @@
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/context"
   },
   "type": "module",
@@ -165,7 +165,7 @@
     "@lit/context": "^1.0.0"
   },
   "devDependencies": {
-    "@esm-bundle/chai": "^4.3.4-fix.0",
+    "chai": "^5.1.0",
     "@lit-internal/scripts": "^1.0.1",
     "@lit-labs/testing": "^0.2.2",
     "@types/trusted-types": "^2.0.2"

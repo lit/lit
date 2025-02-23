@@ -1,5 +1,22 @@
 # Change Log
 
+## 1.0.8
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+## 1.0.7
+
+### Patch Changes
+
+- [#2239](https://github.com/lit/lit/pull/2239) [`851334cb`](https://github.com/lit/lit/commit/851334cb40c4903ce3fd10544942da1887f5c721) Thanks [@alfonsogarciacaro](https://github.com/alfonsogarciacaro)! - Make `animate` directive compatible with any element implementing `ReactiveControllerHost` instead of just `LitElement`.
+
+- [#4496](https://github.com/lit/lit/pull/4496) [`78d23215`](https://github.com/lit/lit/commit/78d23215060ab09e0048f7f583ac8b291378ac21) Thanks [@zh-lx](https://github.com/zh-lx)! - Fix a harmless but incorrect check on array during ancestor adjustment. This fix is purely an optimization with no change in behavior.
+
+- Updated dependencies [[`1a32b61e`](https://github.com/lit/lit/commit/1a32b61ecf09c2c2e6efac2735c2c627af793286), [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf)]:
+  - lit@3.1.2
+
 ## 1.0.6
 
 ### Patch Changes

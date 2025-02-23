@@ -6,6 +6,7 @@
 
 // IMPORTANT: these imports must be type-only
 import type {Directive, DirectiveResult, PartInfo} from './directive.js';
+import type {TrustedHTML, TrustedTypesWindow} from 'trusted-types/lib';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -240,7 +241,7 @@ const wrap =
     ? (global.ShadyDOM!.wrap as <T extends Node>(node: T) => T)
     : <T extends Node>(node: T) => node;
 
-const trustedTypes = (global as unknown as Window).trustedTypes;
+const trustedTypes = (global as unknown as TrustedTypesWindow).trustedTypes;
 
 /**
  * Our TrustedTypePolicy for HTML which is declared using the html template
@@ -336,7 +337,7 @@ const boundAttributeSuffix = '$lit$';
 // a valid element name and attribute name. We don't support dynamic names (yet)
 // but this at least ensures that the parse tree is closer to the template
 // intention.
-const marker = `lit$${String(Math.random()).slice(9)}$`;
+const marker = `lit$${Math.random().toFixed(9).slice(2)}$`;
 
 // String used to tell if a comment is a marker comment
 const markerMatch = '?' + marker;
@@ -440,8 +441,9 @@ const rawTextElement = /^(?:script|style|textarea|title)$/i;
 /** TemplateResult types */
 const HTML_RESULT = 1;
 const SVG_RESULT = 2;
+const MATHML_RESULT = 3;
 
-type ResultType = typeof HTML_RESULT | typeof SVG_RESULT;
+type ResultType = typeof HTML_RESULT | typeof SVG_RESULT | typeof MATHML_RESULT;
 
 // TemplatePart types
 // IMPORTANT: these must match the values in PartType
@@ -510,6 +512,8 @@ export type TemplateResult<T extends ResultType = ResultType> =
 export type HTMLTemplateResult = TemplateResult<typeof HTML_RESULT>;
 
 export type SVGTemplateResult = TemplateResult<typeof SVG_RESULT>;
+
+export type MathMLTemplateResult = TemplateResult<typeof MATHML_RESULT>;
 
 /**
  * A TemplateResult that has been compiled by @lit-labs/compiler, skipping the
@@ -587,8 +591,8 @@ const tag =
 export const html = tag(HTML_RESULT);
 
 /**
- * Interprets a template literal as an SVG fragment that can efficiently
- * render to and update a container.
+ * Interprets a template literal as an SVG fragment that can efficiently render
+ * to and update a container.
  *
  * ```ts
  * const rect = svg`<rect width="10" height="10"></rect>`;
@@ -607,9 +611,36 @@ export const html = tag(HTML_RESULT);
  *
  * In LitElement usage, it's invalid to return an SVG fragment from the
  * `render()` method, as the SVG fragment will be contained within the element's
- * shadow root and thus cannot be used within an `<svg>` HTML element.
+ * shadow root and thus not be properly contained within an `<svg>` HTML
+ * element.
  */
 export const svg = tag(SVG_RESULT);
+
+/**
+ * Interprets a template literal as MathML fragment that can efficiently render
+ * to and update a container.
+ *
+ * ```ts
+ * const num = mathml`<mn>1</mn>`;
+ *
+ * const eq = html`
+ *   <math>
+ *     ${num}
+ *   </math>`;
+ * ```
+ *
+ * The `mathml` *tag function* should only be used for MathML fragments, or
+ * elements that would be contained **inside** a `<math>` HTML element. A common
+ * error is placing a `<math>` *element* in a template tagged with the `mathml`
+ * tag function. The `<math>` element is an HTML element and should be used
+ * within a template tagged with the {@linkcode html} tag function.
+ *
+ * In LitElement usage, it's invalid to return an MathML fragment from the
+ * `render()` method, as the MathML fragment will be contained within the
+ * element's shadow root and thus not be properly contained within a `<math>`
+ * HTML element.
+ */
+export const mathml = tag(MATHML_RESULT);
 
 /**
  * A sentinel value that signals that a value was handled by a directive and
@@ -641,7 +672,7 @@ export const nothing = Symbol.for('lit-nothing');
 /**
  * The cache of prepared templates, keyed by the tagged TemplateStringsArray
  * and _not_ accounting for the specific template tag used. This means that
- * template tags cannot be dynamic - the must statically be one of html, svg,
+ * template tags cannot be dynamic - they must statically be one of html, svg,
  * or attr. This restriction simplifies the cache lookup, which is on the hot
  * path for rendering.
  */
@@ -714,7 +745,7 @@ function trustFromTemplateString(
   // though we might need to make that check inside of the html and svg
   // functions, because precompiled templates don't come in as
   // TemplateStringArray objects.
-  if (!Array.isArray(tsa) || !tsa.hasOwnProperty('raw')) {
+  if (!isArray(tsa) || !tsa.hasOwnProperty('raw')) {
     let message = 'invalid template strings array';
     if (DEV_MODE) {
       message = `
@@ -765,7 +796,8 @@ const getTemplateHtml = (
   // parts. ElementParts are also reflected in this array as undefined
   // rather than a string, to disambiguate from attribute bindings.
   const attrNames: Array<string> = [];
-  let html = type === SVG_RESULT ? '<svg>' : '';
+  let html =
+    type === SVG_RESULT ? '<svg>' : type === MATHML_RESULT ? '<math>' : '';
 
   // When we're inside a raw text tag (not it's text content), the regex
   // will still be tagRegex so we can find attributes, but will switch to
@@ -838,8 +870,8 @@ const getTemplateHtml = (
             match[QUOTE_CHAR] === undefined
               ? tagEndRegex
               : match[QUOTE_CHAR] === '"'
-              ? doubleQuoteAttrEndRegex
-              : singleQuoteAttrEndRegex;
+                ? doubleQuoteAttrEndRegex
+                : singleQuoteAttrEndRegex;
         }
       } else if (
         regex === doubleQuoteAttrEndRegex ||
@@ -888,17 +920,19 @@ const getTemplateHtml = (
       regex === textEndRegex
         ? s + nodeMarker
         : attrNameEndIndex >= 0
-        ? (attrNames.push(attrName!),
-          s.slice(0, attrNameEndIndex) +
-            boundAttributeSuffix +
-            s.slice(attrNameEndIndex)) +
-          marker +
-          end
-        : s + marker + (attrNameEndIndex === -2 ? i : end);
+          ? (attrNames.push(attrName!),
+            s.slice(0, attrNameEndIndex) +
+              boundAttributeSuffix +
+              s.slice(attrNameEndIndex)) +
+            marker +
+            end
+          : s + marker + (attrNameEndIndex === -2 ? i : end);
   }
 
   const htmlResult: string | TrustedHTML =
-    html + (strings[l] || '<?>') + (type === SVG_RESULT ? '</svg>' : '');
+    html +
+    (strings[l] || '<?>') +
+    (type === SVG_RESULT ? '</svg>' : type === MATHML_RESULT ? '</math>' : '');
 
   // Returned as an array for terseness
   return [trustFromTemplateString(strings, htmlResult), attrNames];
@@ -928,10 +962,10 @@ class Template {
     this.el = Template.createElement(html, options);
     walker.currentNode = this.el.content;
 
-    // Re-parent SVG nodes into template root
-    if (type === SVG_RESULT) {
-      const svgElement = this.el.content.firstChild!;
-      svgElement.replaceWith(...svgElement.childNodes);
+    // Re-parent SVG or MathML nodes into template root
+    if (type === SVG_RESULT || type === MATHML_RESULT) {
+      const wrapper = this.el.content.firstChild!;
+      wrapper.replaceWith(...wrapper.childNodes);
     }
 
     // Walk the template to find binding markers and create TemplateParts
@@ -975,10 +1009,10 @@ class Template {
                   m[1] === '.'
                     ? PropertyPart
                     : m[1] === '?'
-                    ? BooleanAttributePart
-                    : m[1] === '@'
-                    ? EventPart
-                    : AttributePart,
+                      ? BooleanAttributePart
+                      : m[1] === '@'
+                        ? EventPart
+                        : AttributePart,
               });
               (node as Element).removeAttribute(name);
             } else if (name.startsWith(marker)) {
@@ -1003,10 +1037,7 @@ class Template {
               ? (trustedTypes.emptyScript as unknown as '')
               : '';
             // Generate a new text node for each literal section
-            // These nodes are also used as the markers for node parts
-            // We can't use empty text nodes as markers because they're
-            // normalized when cloning in IE (could simplify when
-            // IE is no longer supported)
+            // These nodes are also used as the markers for child parts
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i], createMarker());
               // Walk past the marker node we just added
@@ -1036,6 +1067,28 @@ class Template {
       }
       nodeIndex++;
     }
+
+    if (DEV_MODE) {
+      // If there was a duplicate attribute on a tag, then when the tag is
+      // parsed into an element the attribute gets de-duplicated. We can detect
+      // this mismatch if we haven't precisely consumed every attribute name
+      // when preparing the template. This works because `attrNames` is built
+      // from the template string and `attrNameIndex` comes from processing the
+      // resulting DOM.
+      if (attrNames.length !== attrNameIndex) {
+        throw new Error(
+          `Detected duplicate attribute bindings. This occurs if your template ` +
+            `has duplicate attributes on an element tag. For example ` +
+            `"<input ?disabled=\${true} ?disabled=\${false}>" contains a ` +
+            `duplicate "disabled" attribute. The error was detected in ` +
+            `the following template: \n` +
+            '`' +
+            strings.join('${...}') +
+            '`'
+        );
+      }
+    }
+
     // We could set walker.currentNode to another node here to prevent a memory
     // leak, but every time we prepare a template, we immediately render it
     // and re-use the walker in new TemplateInstance._clone().
@@ -1283,8 +1336,8 @@ class ChildPart implements Disconnectable {
   _$parent: Disconnectable | undefined;
   /**
    * Connection state for RootParts only (i.e. ChildPart without _$parent
-   * returned from top-level `render`). This field is unsed otherwise. The
-   * intention would clearer if we made `RootPart` a subclass of `ChildPart`
+   * returned from top-level `render`). This field is unused otherwise. The
+   * intention would be clearer if we made `RootPart` a subclass of `ChildPart`
    * with this field (and a different _$isConnected getter), but the subclass
    * caused a perf regression, possibly due to making call sites polymorphic.
    * @internal
@@ -1460,7 +1513,7 @@ class ChildPart implements Disconnectable {
                 `This is a security risk, as style injection attacks can ` +
                 `exfiltrate data and spoof UIs. ` +
                 `Consider instead using css\`...\` literals ` +
-                `to compose styles, and make do dynamic styling with ` +
+                `to compose styles, and do dynamic styling with ` +
                 `css custom properties, ::parts, <slot>s, ` +
                 `and by mutating the DOM rather than stylesheets.`;
             } else {
@@ -1689,7 +1742,7 @@ class ChildPart implements Disconnectable {
     }
   }
   /**
-   * Implementation of RootPart's `isConnected`. Note that this metod
+   * Implementation of RootPart's `isConnected`. Note that this method
    * should only be called on `RootPart`s (the `ChildPart` returned from a
    * top-level `render()` call). It has no effect on non-root ChildParts.
    * @param isConnected Whether to set
@@ -1733,11 +1786,11 @@ export interface RootPart extends ChildPart {
 
 export type {AttributePart};
 class AttributePart implements Disconnectable {
-  readonly type = ATTRIBUTE_PART as
+  readonly type:
     | typeof ATTRIBUTE_PART
     | typeof PROPERTY_PART
     | typeof BOOLEAN_ATTRIBUTE_PART
-    | typeof EVENT_PART;
+    | typeof EVENT_PART = ATTRIBUTE_PART;
   readonly element: HTMLElement;
   readonly name: string;
   readonly options: RenderOptions | undefined;
@@ -2029,9 +2082,6 @@ class EventPart extends AttributePart {
       );
     }
     if (shouldAddListener) {
-      // Beware: IE11 and Chrome 41 don't like using the listener as the
-      // options object. Figure out how to deal w/ this in IE11 - maybe
-      // patch addEventListener?
       this.element.addEventListener(
         this.name,
         this,
@@ -2101,7 +2151,7 @@ class ElementPart implements Disconnectable {
  * external users.
  *
  * We currently do not make a mangled rollup build of the lit-ssr code. In order
- * to keep a number of (otherwise private) top-level exports  mangled in the
+ * to keep a number of (otherwise private) top-level exports mangled in the
  * client side code, we export a _$LH object containing those members (or
  * helper methods for accessing private fields of those members), and then
  * re-export them for use in lit-ssr. This keeps lit-ssr agnostic to whether the
@@ -2139,7 +2189,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(global.litHtmlVersions ??= []).push('3.1.0');
+(global.litHtmlVersions ??= []).push('3.2.1');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

@@ -1,5 +1,43 @@
 # @lit-labs/analyzer
 
+## 0.13.2
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+## 0.13.1
+
+### Patch Changes
+
+- [#4746](https://github.com/lit/lit/pull/4746) [`bc3ba558`](https://github.com/lit/lit/commit/bc3ba558e02f609ca2f1bffd7a05b058904307ba) - Properly ignore class private fields when analyzing LitElement reactive properties.
+
+- [#4744](https://github.com/lit/lit/pull/4744) [`55a6a0ce`](https://github.com/lit/lit/commit/55a6a0cec63e1f4f57adc8d3ac2a6424b0a554fc) - Fix bugs with type resolution and Lit module detection when using NodeNext module resolution in TypeScript
+
+## 0.13.0
+
+### Minor Changes
+
+- [#4682](https://github.com/lit/lit/pull/4682) [`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c) - Update typescript to 5.5.0
+
+## 0.12.1
+
+### Patch Changes
+
+- [#4147](https://github.com/lit/lit/pull/4147) [`634d8624`](https://github.com/lit/lit/commit/634d86248d8943f15930d2b1d281991c174970b7) Thanks [@43081j](https://github.com/43081j)! - Support for mixin classes/functions as super classes of analyzed classes
+
+## 0.12.0
+
+### Minor Changes
+
+- [#4261](https://github.com/lit/lit/pull/4261) [`1b17a369`](https://github.com/lit/lit/commit/1b17a369f3ecf54d2617fe08b0d52fd0f993074b) - Add lib/lit-html/template.js module with initial template utilities.
+
+## 0.11.1
+
+### Patch Changes
+
+- [#4520](https://github.com/lit/lit/pull/4520) [`89c5bdfb`](https://github.com/lit/lit/commit/89c5bdfbc9bc9177f25d4d8f35e41e842afa0d63) - Update typescript dependency
+
 ## 0.11.0
 
 ### Minor Changes

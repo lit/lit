@@ -5,9 +5,17 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   release:
     # Don't run on forks. We can and should only release from the main repo.
+    permissions:
+      contents: write  # for Git to git push
+      pull-requests: write # to allow creating PR
+      id-token: write # for npm provenance
+
     if: github.repository == 'lit/lit'
 
     name: Release
@@ -60,6 +68,7 @@ jobs:
           HUSKY: 0
           GITHUB_TOKEN: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
           NPM_TOKEN: ${{ secrets.LIT_ROBOT_NPM_PUBLISH_ACCESS_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
 
       - name: Checkout dist repo
         uses: actions/checkout@v3

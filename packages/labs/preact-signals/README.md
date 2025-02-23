@@ -2,6 +2,17 @@
 
 Preact Signals integration for Lit.
 
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Give feedback: https://github.com/lit/lit/discussions/4115
+
 ## Why Signals?
 
 Signals are an easy way to create shared observable state - state that many elements can use and update when it changes. This is great for things like a game state that many components need to read.
@@ -24,7 +35,7 @@ Preact Signals are a good place to start. It has integrations with other librari
 
 `SignalWatcher` is a mixin that makes an element watch all signal accesses during the element's reactive update lifecycle, then triggers an element update when signals change. This includes signals read in `shouldUpdate()`, `willUpdate()`, `update()`, `render()`, `updated()`, `firstUpdated()`, and reactive controller's `hostUpdate()` and `hostUpdated()`.
 
-This effectively makes the the return result of `render()` a computed signal.
+This effectively makes the return result of `render()` a computed signal.
 
 ```ts
 import {LitElement, html} from 'lit';

@@ -1,5 +1,42 @@
 # @lit-labs/virtualizer
 
+## 2.1.0
+
+### Minor Changes
+
+- [#4921](https://github.com/lit/lit/pull/4921) [`ead2e23c`](https://github.com/lit/lit/commit/ead2e23c2e42a7acd953e956d6079cb4af7801d1) Thanks [@graynorton](https://github.com/graynorton)! - Add option to suppress logging of errors ignored during tests
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+## 2.0.15
+
+### Patch Changes
+
+- [#4807](https://github.com/lit/lit/pull/4807) [`1eb179f6`](https://github.com/lit/lit/commit/1eb179f69d663440fd2ebd3589b6f2808d87494f) Thanks [@graynorton](https://github.com/graynorton)! - Fix case where items in a hidden Virtualizer were being rendered
+
+## 2.0.14
+
+### Patch Changes
+
+- [#4687](https://github.com/lit/lit/pull/4687) [`8ecf3c03`](https://github.com/lit/lit/commit/8ecf3c03d73486e2529c553e92ef4f044c49aab9) Thanks [@alanbuzek](https://github.com/alanbuzek)! - Fix a null pointer exception when virtulizer component is destroyed and then recreated again quickly.
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98)]:
+  - lit@3.2.0
+
+## 2.0.13
+
+### Patch Changes
+
+- [#4564](https://github.com/lit/lit/pull/4564) [`6b4b45ff`](https://github.com/lit/lit/commit/6b4b45ffee88e546110a31f946f27eafe364fa42) Thanks [@IMinchev64](https://github.com/IMinchev64)! - Guard top-level `window` with `typeof` check so that importing the code will not throw when imported in non-browser environments without a global `window` defined. Note, this on its own will not server render items inside the virtualizer, but it will no longer error when attempting to do so.
+
+## 2.0.12
+
+### Patch Changes
+
+- [#4427](https://github.com/lit/lit/pull/4427) [`a19a60b8`](https://github.com/lit/lit/commit/a19a60b84c092ed974e5d294a2ece46f4b43dcd4) Thanks [@pdesoyres-cc](https://github.com/pdesoyres-cc)! - Now correctly include `/support/method-interception.js` and `/support/resize-observer-errors.js` artifacts to the published package. Previously these were listed in the package exports but not actually included with the npm published package.
+
 ## 2.0.11
 
 ### Patch Changes

@@ -5,7 +5,7 @@
  */
 
 import {LitElement, html} from 'lit';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 import {SignalWatcher, computed, signal} from '../index.js';
 
@@ -96,5 +96,47 @@ suite('SignalWatcher', () => {
     await el.updateComplete;
     assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 3');
     assert.equal(readCount, 2);
+  });
+
+  test('type-only test where mixin on an abstract class preserves abstract type', () => {
+    if (true as boolean) {
+      // This is a type-only test. Do not run it.
+      return;
+    }
+    abstract class BaseEl extends LitElement {
+      abstract foo(): void;
+    }
+    // @ts-expect-error foo() needs to be implemented.
+    class TestEl extends SignalWatcher(BaseEl) {}
+    console.log(TestEl); // usage to satisfy eslint.
+
+    const TestElFromAbstractSignalWatcher = SignalWatcher(BaseEl);
+    // @ts-expect-error cannot instantiate an abstract class.
+    new TestElFromAbstractSignalWatcher();
+
+    // This is fine, passed in class is not abstract.
+    const TestElFromConcreteClass = SignalWatcher(LitElement);
+    new TestElFromConcreteClass();
+  });
+
+  test('class returned from signal-watcher should be directly instantiatable if non-abstract', async () => {
+    const count = signal(0);
+    class TestEl extends LitElement {
+      override render() {
+        return html`<p>count: ${count.value}</p>`;
+      }
+    }
+    const TestElWithSignalWatcher = SignalWatcher(TestEl);
+    customElements.define(generateElementName(), TestElWithSignalWatcher);
+    const el = new TestElWithSignalWatcher();
+    container.append(el);
+
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 0');
+
+    count.value = 1;
+
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 1');
   });
 });

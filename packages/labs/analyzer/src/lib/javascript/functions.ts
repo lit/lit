@@ -20,8 +20,10 @@ import {
   FunctionOverloadDeclaration,
   Parameter,
   Return,
+  MixinDeclaration,
 } from '../model.js';
 import {getTypeForNode, getTypeForType} from '../types.js';
+import {maybeGetMixinFromFunctionLike} from './mixins.js';
 import {parseJSDocDescription, parseNodeJSDocInfo} from './jsdoc.js';
 import {hasDefaultModifier, hasExportModifier} from '../utils.js';
 
@@ -74,6 +76,9 @@ export const getFunctionDeclarationInfo = (
  * Returns an analyzer `FunctionDeclaration` model for the given
  * ts.FunctionLikeDeclaration.
  *
+ * If this is a mixin function, the return value will be a `MixinDeclaration`
+ * model instead.
+ *
  * Note, the `docNode` may differ from the `declaration` in the case of a const
  * assignment to a class expression, as the JSDoc will be attached to the
  * VariableStatement rather than the class-like expression.
@@ -84,6 +89,20 @@ export const getFunctionDeclaration = (
   analyzer: AnalyzerInterface,
   docNode?: ts.Node
 ): FunctionDeclaration => {
+  const mixinDeclarationInfo = maybeGetMixinFromFunctionLike(
+    declaration,
+    name,
+    analyzer
+  );
+
+  if (mixinDeclarationInfo !== undefined) {
+    return new MixinDeclaration({
+      ...mixinDeclarationInfo,
+      ...parseNodeJSDocInfo(docNode ?? declaration, analyzer),
+      ...getFunctionLikeInfo(declaration, name, analyzer),
+    });
+  }
+
   return new FunctionDeclaration({
     ...parseNodeJSDocInfo(docNode ?? declaration, analyzer),
     ...getFunctionLikeInfo(declaration, name, analyzer),
@@ -143,6 +162,7 @@ const getParameter = (
   )[0];
   const p: Parameter = {
     name: param.name.getText(),
+    node: param,
     type: getTypeForNode(param, analyzer),
     ...(paramTag ? parseJSDocDescription(paramTag, analyzer) : {}),
     optional: false,

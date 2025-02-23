@@ -1,15 +1,15 @@
 {
   "name": "eslint-plugin-lit",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.3",
   "description": "Lit support for ESLint",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
   "homepage": "https://github.com/lit/lit/tree/main/packages/labs/esling-plugin-lit",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
-    "directory": "packages/labs/esling-plugin-lit"
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/eslint-plugin"
   },
   "main": "index.js",
   "type": "module",
@@ -30,14 +30,20 @@
         "index.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
-      "clean": "if-file-deleted"
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:deps"
+      ]
+    },
+    "build:deps": {
+      "dependencies": [
+        "../analyzer:build"
+      ]
     },
     "test": {
-      "#comment": "The quotes around the file regex must be double quotes on windows!",
-      "command": "cross-env NODE_OPTIONS=--enable-source-maps uvu test \"_test\\.js$\"",
+      "command": "node --enable-source-maps --test-reporter=spec --test test/**/*_test.js",
       "dependencies": [
-        "build",
-        "../../lit:build"
+        "build"
       ],
       "files": [],
       "output": []
@@ -51,5 +57,15 @@
   "exports": {
     ".": "./index.js"
   },
-  "dependencies": {}
+  "devDependencies": {
+    "@types/node": "^20.11.5",
+    "@typescript-eslint/parser": "^6.19.0",
+    "@typescript-eslint/rule-tester": "^6.19.0",
+    "eslint": "^8.56.0"
+  },
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.13.0",
+    "@typescript-eslint/utils": "^6.19.0",
+    "typescript": "~5.5.0"
+  }
 }

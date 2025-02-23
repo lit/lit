@@ -15,7 +15,7 @@ import {
 } from '@lit-labs/task';
 import {deepArrayEquals} from '@lit-labs/task/deep-equals.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 // Safari didn't support reasons until 15.4
 const supportsAbortSignalReason = (() => {
@@ -759,7 +759,7 @@ suite('Task', () => {
   });
 
   test('Elements only render once for pending tasks', async () => {
-    let resolveTask: (v: unknown) => void;
+    let resolveTask: (v: any) => void;
     let renderCount = 0;
     class TestElement extends ReactiveElement {
       task = new Task(this, {

@@ -7,6 +7,7 @@ import {
   ChildPart,
   CompiledTemplateResult,
   html,
+  mathml,
   noChange,
   nothing,
   render,
@@ -17,6 +18,7 @@ import {
   SanitizerFactory,
   Part,
   CompiledTemplate,
+  MathMLTemplateResult,
 } from 'lit-html';
 
 import {
@@ -27,7 +29,7 @@ import {
   DirectiveParameters,
 } from 'lit-html/directive.js';
 import {isCompiledTemplateResult} from 'lit-html/directive-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {
   stripExpressionComments,
   stripExpressionMarkers,
@@ -794,6 +796,27 @@ suite('lit-html', () => {
     });
   });
 
+  suite('MathML', () => {
+    test('renders MathML', () => {
+      const container = document.createElement('math');
+      const t = mathml`<mi>x</mi>`;
+      render(t, container);
+      const mi = container.firstElementChild!;
+      assert.equal(mi.tagName, 'mi');
+      assert.equal(mi.namespaceURI, 'http://www.w3.org/1998/Math/MathML');
+    });
+
+    const staticAssertExtends = <T, U extends T>(_?: [T, U]) => {};
+
+    test('`MathMLTemplateResult` is a subtype of `TemplateResult`', () => {
+      staticAssertExtends<TemplateResult, MathMLTemplateResult>();
+    });
+
+    test('`mathml` returns a `MathMLTemplateResult`', () => {
+      staticAssertExtends<MathMLTemplateResult, ReturnType<typeof mathml>>();
+    });
+  });
+
   suite('attributes', () => {
     test('renders to a quoted attribute', () => {
       render(html`<div foo="${'bar'}"></div>`, container);
@@ -1199,6 +1222,17 @@ suite('lit-html', () => {
 
       go(nothing);
       assert.strictEqual((div as any).foo, undefined);
+    });
+
+    test('noChange does not set property', () => {
+      const go = (v: any) =>
+        render(html`<div id="a" .tabIndex=${v}></div>`, container);
+
+      go(noChange);
+      const div = container.querySelector('div')!;
+
+      // If noChange has been interpreted as undefined, tabIndex would be 0
+      assert.strictEqual(div.tabIndex, -1);
     });
 
     test('null sets null', () => {
@@ -2180,6 +2214,24 @@ suite('lit-html', () => {
             </template>`,
           container
         );
+      });
+
+      skipTestIfCompiled('Duplicate attributes throw', () => {
+        assert.throws(() => {
+          render(
+            html`<input ?disabled=${true} ?disabled=${false} fooAttribute=${'potato'}>`,
+            container
+          );
+        }, `Detected duplicate attribute bindings. This occurs if your template has duplicate attributes on an element tag. For example "<input ?disabled=\${true} ?disabled=\${false}>" contains a duplicate "disabled" attribute. The error was detected in the following template: \n\`<input ?disabled=\${...} ?disabled=\${...} fooAttribute=\${...}>\``);
+      });
+
+      test('Matching attribute bindings across elements should not throw', () => {
+        assert.doesNotThrow(() => {
+          render(
+            html`<input ?disabled=${true}><input ?disabled=${false}>`,
+            container
+          );
+        });
       });
 
       test('Expressions inside nested templates throw in dev mode', () => {

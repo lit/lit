@@ -1,5 +1,23 @@
 # Change Log
 
+## 1.1.7
+
+### Patch Changes
+
+- [#4485](https://github.com/lit/lit/pull/4485) [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf) - Add "browser" export condition entrypoints to any package.json files with "node"
+  export conditions. This fixes Node test runners emulating browser environments that were incorrectly loading the
+  "node" entrypoints instead of the browser code.
+- Updated dependencies [[`1a32b61e`](https://github.com/lit/lit/commit/1a32b61ecf09c2c2e6efac2735c2c627af793286), [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf), [`dca963f7`](https://github.com/lit/lit/commit/dca963f7f5d2f7be91f2f073ebabe92d033b3a25)]:
+  - lit-html@3.1.2
+  - lit@3.1.2
+  - @lit/reactive-element@2.0.4
+
+## 1.1.6
+
+### Patch Changes
+
+- [#4481](https://github.com/lit/lit/pull/4481) [`1a1f3f0f`](https://github.com/lit/lit/commit/1a1f3f0fff9dc87548e5fc8e7f5c80142b52d669) - Provide better error message in `createAttributeParts()` when an error occurs due to hydration value mismatch.
+
 ## 1.1.5
 
 ### Patch Changes

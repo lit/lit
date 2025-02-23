@@ -205,8 +205,8 @@ const wrapperTemplate = ({name, tagname, events}: LitElementDeclaration) => {
        const {name, type} = event;
        return javascript`
      ${kabobToOnEvent(name)}: '${name}' as EventName<${
-         type?.text || `CustomEvent<unknown>`
-       }>,`;
+       type?.text || `CustomEvent<unknown>`
+     }>,`;
      })}
    }
   });

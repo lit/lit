@@ -5,13 +5,14 @@
   "description": "Internal scripts for the Lit monorepo",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
-    "directory": "packages/@lit-internal/scripts"
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/internal-scripts"
   },
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "type": "module",
   "bin": {
+    "add-browser-exports": "bin/add-browser-exports.js",
     "treemirror": "bin/treemirror.js",
     "release-image": "bin/release-image.js"
   },

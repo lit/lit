@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.8.0
+
+### Minor Changes
+
+- [#4682](https://github.com/lit/lit/pull/4682) [`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c) - Update typescript to 5.5.0
+
+### Patch Changes
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98)]:
+  - lit@3.2.0
+
+## 0.7.2
+
+### Patch Changes
+
+- [#4503](https://github.com/lit/lit/pull/4503) [`350147d6`](https://github.com/lit/lit/commit/350147d608cc34fe926dd2bced0e25748c726c59) - Fix an issue where running `extract` on an existing translation target would rewrite the "id" for placeholders signifying the expression index, which breaks translation targets where the expressions need to be reordered.
+
+- [#4530](https://github.com/lit/lit/pull/4530) [`258142d2`](https://github.com/lit/lit/commit/258142d2da9960c0a411308a3f178e6cedb2d93b) - Translated message validation that runs before the `build` step now disregards template literal expressions. This allow source code to have variables in expressions renamed while still keeping the same translations, or avoid errors that could happen from module import order changing which expression gets picked up first when multiple `msg()` calls with the same id have different expressions. This behavior is more consistent with how a translation unit is identified according to [how the message id is generated](https://lit.dev/docs/localization/overview/#id-generation).
+
+- Updated dependencies [[`1a32b61e`](https://github.com/lit/lit/commit/1a32b61ecf09c2c2e6efac2735c2c627af793286), [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf)]:
+  - lit@3.1.2
+
 ## 0.7.1
 
 ### Patch Changes

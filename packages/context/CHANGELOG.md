@@ -1,5 +1,29 @@
 # @lit-labs/context
 
+## 1.1.4
+
+### Patch Changes
+
+- [#4734](https://github.com/lit/lit/pull/4734) [`0f535d48`](https://github.com/lit/lit/commit/0f535d483ba32c57e49ffaa7f7e4ce70a9f6f26d) Thanks [@sorin-davidoi](https://github.com/sorin-davidoi)! - Avoid calling Event.composedPath() when it is not needed
+
+## 1.1.3
+
+### Patch Changes
+
+- [#4684](https://github.com/lit/lit/pull/4684) [`619449b8`](https://github.com/lit/lit/commit/619449b84cb63d9c00e4316551246957c939a64b) Thanks [@tomherni](https://github.com/tomherni)! - Fix syntax typo in code example in the Context README
+
+## 1.1.2
+
+### Patch Changes
+
+- [#4598](https://github.com/lit/lit/pull/4598) [`7cfb2274`](https://github.com/lit/lit/commit/7cfb2274d8903c5be40ca4dcaf5167a57bb36a32) Thanks [@jun-sheaf](https://github.com/jun-sheaf)! - Use `target.set` instead of member assignment in `@consume()` decorator.
+
+## 1.1.1
+
+### Patch Changes
+
+- [#4614](https://github.com/lit/lit/pull/4614) [`ab77cc9c`](https://github.com/lit/lit/commit/ab77cc9c83a67b60b42e77cf736fefbc6503f824) - Fix context types to be compatible with WCCG context protocol types.
+
 ## 1.1.0
 
 ### Minor Changes

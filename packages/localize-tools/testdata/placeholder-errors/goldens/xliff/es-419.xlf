@@ -10,10 +10,6 @@
   <source>Hello <ph id="0">${name}</ph></source>
   <target>Hola Mundo</target>
 </trans-unit>
-<trans-unit id="changed-expression">
-  <source>Hello <ph id="0">${name}</ph></source>
-  <target>Hola <ph id="0">${alert("evil") || name}</ph></target>
-</trans-unit>
 <trans-unit id="missing-html">
   <source><ph id="0">&lt;b></ph>Hello World<ph id="1">&lt;/b></ph></source>
   <target>Hola Mundo</target>

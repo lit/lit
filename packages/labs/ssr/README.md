@@ -2,9 +2,24 @@
 
 A package for server-side rendering Lit templates and components.
 
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Documentation: https://lit.dev/docs/ssr/overview/
+>
+> Give feedback: https://github.com/lit/lit/discussions/3353
+
 ## Status
 
-`@lit-labs/ssr` is pre-release software, not quite ready for public consumption. As we develop it we are using it as a test bed to ensure that new versions of `lit` (`lit-html` and `lit-element`) are SSR-ready. We expect that the foundational SSR support in this package will support a wide variety of use cases, from full-blown app rendering frameworks built on top of web components, to framework-specific plugins for rendering custom elements in e.g. React or Angular, to pre-rendering plugins for static site generators like 11ty. Please stay tuned and file issues with use cases you'd like to see covered.
+`@lit-labs/ssr` is pre-release software, not quite ready for public consumption.
+If you try Lit SSR, please give feedback and file issues with bugs and use cases
+you'd like to see covered.
 
 ## Server Usage
 
@@ -247,7 +262,13 @@ Please note the following current limitations with the SSR package:
 
 - **Browser support**: Support for hydrating elements on browsers that require the ShadyCSS polyfill (IE11) is not currently tested or supported.
 - **DOM shim**: The DOM shim used by default is very minimal; because the server-rendering code for Lit relies largely on its declarative nature and string-based templates, we are able to incrementally stream the contents of a template and its sub-elements while avoiding the cost of a full DOM shim by not actually using the DOM for rendering. As such, the DOM shim used provides only enough to load and register element definitions, namely things like a minimal `HTMLElement` base class and `customElements` registry.
-- **DOM access**: The above point means care should be taken to avoid interacting directly with the DOM in certain lifecycle callbacks. Concretely, you should generally only interact directly with the DOM (like accessing child/parent nodes, querying, imperatively adding event listeners, dispatching events, etc.) in the following lifecycle callbacks, which are not called on the server:
-  - `LitElement`'s `update`, `updated`, `firstUpdated`, or event handlers
+- **DOM access**: The above point means care should be taken to avoid interacting directly with the DOM in certain lifecycle callbacks. Concretely, you should generally only interact directly with the DOM (like accessing child/parent nodes, querying, etc.) in the following lifecycle callbacks, which are not called on the server:
+  - `LitElement`'s `update`, `updated`, `firstUpdated`
   - `Directive`'s `update`
+- **Events**: The DOM shim implements basic event handling.
+  - It is possible to register event handlers and to dispatch events, but only on custom elements.
+  - Be aware that you cannot mutate a parent via events, due to the way we stream data via SSR. This means only a use case like `@lit/context` is supported, where events are used to pass data from a parent back to a child to use in its rendering.
+  - The DOM tree is not fully formed and the `event.composedPath()` returns a simplified tree, only containing the custom elements.
+  - As an alternative to `document.documentElement` or `document.body` (which are expected to be undefined in the server environment) for global event listeners (e.g. for `@lit/context ContextProvider`), you can use the global variable `globalThis.litServerRoot` which is (only) available during SSR (e.g. `new ContextProvider(isServer ? globalThis.litServerRoot : document.body, {...})`).
+- **connectedCallback Opt-In**: We provide an opt-in for calling `connectedCallback`, which can be enabled via `globalThis.litSsrCallConnectedCallback = true;`. This will enable calling `connectedCallback` (and the `hostConnected` hook for controllers, but not the `hostUpdate` hook) on the server. This e.g. enables using `@lit/context` on the server.
 - **Patterns for usage**: As mentioned above under "Status", we intend to flesh out a number of common patterns for using this package, and provide appropriate APIs and documentation for these as the package reaches maturity. Concerns like server/client data management, incremental loading and hydration, etc. are currently beyond the scope of what this package offers, but we believe it should support building these patterns on top of it going forward. Please [file issues](https://github.com/lit/lit/issues/new/choose) for ideas, suggestions, and use cases you may encounter.

@@ -308,6 +308,10 @@ export abstract class Declaration {
     return this instanceof FunctionDeclaration;
   }
 
+  isMixinDeclaration(): this is MixinDeclaration {
+    return this instanceof MixinDeclaration;
+  }
+
   isClassField(): this is ClassField {
     return this instanceof ClassField;
   }
@@ -446,7 +450,7 @@ export type ClassHeritage = {
 };
 
 export interface ClassDeclarationInit extends DeclarationInit {
-  node: ts.ClassLikeDeclaration;
+  node: ts.ClassDeclaration | ts.ClassLikeDeclaration | ts.CallExpression;
   getHeritage: () => ClassHeritage;
   fieldMap?: Map<string, ClassField> | undefined;
   staticFieldMap?: Map<string, ClassField> | undefined;
@@ -461,7 +465,7 @@ export class ClassDeclaration extends Declaration {
   readonly _staticFieldMap: Map<string, ClassField>;
   readonly _methodMap: Map<string, ClassMethod>;
   readonly _staticMethodMap: Map<string, ClassMethod>;
-  override readonly node: ts.ClassLikeDeclaration;
+  override readonly node: ts.ClassLikeDeclaration | ts.CallExpression;
 
   constructor(init: ClassDeclarationInit) {
     super(init);
@@ -559,6 +563,21 @@ export class ClassDeclaration extends Declaration {
   }
 }
 
+export interface MixinDeclarationInit extends FunctionLikeInit {
+  classDeclaration: ClassDeclaration;
+  superClassArgIndex: number;
+}
+
+export class MixinDeclaration extends FunctionDeclaration {
+  readonly classDeclaration: ClassDeclaration;
+  readonly superClassArgIndex: number;
+  constructor(init: MixinDeclarationInit) {
+    super(init);
+    this.classDeclaration = init.classDeclaration;
+    this.superClassArgIndex = init.superClassArgIndex;
+  }
+}
+
 export interface Described {
   description?: string | undefined;
   summary?: string | undefined;
@@ -637,6 +656,7 @@ export interface LitElementExport extends LitElementDeclaration {
 
 export interface PropertyLike extends DeprecatableDescribed {
   name: string;
+  node: ts.Node;
   type: Type | undefined;
   default?: string | undefined;
 }
@@ -648,11 +668,23 @@ export interface Return {
 }
 
 export interface Parameter extends PropertyLike {
+  node: ts.ParameterDeclaration;
   optional?: boolean | undefined;
   rest?: boolean | undefined;
 }
 
 export interface ReactiveProperty extends PropertyLike {
+  /**
+   * The property declaration.
+   *
+   * A ts.PropertyDeclaration if the property was declared as a class field,
+   * or a ts.PropertyAssignment if the property was declared in a static
+   * properties block.
+   */
+  node: ts.PropertyDeclaration | ts.PropertyAssignment;
+
+  optionsNode: ts.ObjectLiteralExpression | undefined;
+
   reflect: boolean;
 
   // TODO(justinfagnani): should we convert into attribute name?

@@ -13,7 +13,7 @@ import {
   ReactiveElement,
 } from '@lit/reactive-element';
 import {generateElementName, nextFrame} from './test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
 // by checking if warning API is available.
@@ -3078,7 +3078,7 @@ suite('ReactiveElement', () => {
           }
         > & {
           observedAttributes?: string[];
-        }
+        },
       >(superclass: B) {
         class E extends superclass {
           static override get observedAttributes(): string[] {
@@ -3192,7 +3192,7 @@ suite('ReactiveElement', () => {
           }
         > & {
           observedAttributes?: string[];
-        }
+        },
       >(superclass: B) {
         class E extends superclass {
           static override get observedAttributes(): string[] {

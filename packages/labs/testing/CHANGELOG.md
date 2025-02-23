@@ -1,5 +1,36 @@
 # @lit-labs/testing
 
+## 0.2.7
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+## 0.2.6
+
+### Patch Changes
+
+- [#4821](https://github.com/lit/lit/pull/4821) [`f93f51be`](https://github.com/lit/lit/commit/f93f51be00ae120f7e29be13ff2c7b3dc1d98262) Thanks [@kyubisation](https://github.com/kyubisation)! - Fix fixture base url resolution when running browsers in containers
+
+- [#4730](https://github.com/lit/lit/pull/4730) [`267d243a`](https://github.com/lit/lit/commit/267d243aeec13a6f0e8184420919db4c519b8caf) Thanks [@kyubisation](https://github.com/kyubisation)! - Add option for init script for ssr worker to allow registering Node.js hooks
+
+- Updated dependencies [[`25962bf5`](https://github.com/lit/lit/commit/25962bf58f33f32abef6487689438bf095780b63)]:
+  - @lit-labs/ssr@3.3.0
+
+## 0.2.5
+
+### Patch Changes
+
+- [#4731](https://github.com/lit/lit/pull/4731) [`ff87eb46`](https://github.com/lit/lit/commit/ff87eb461dfbfa8fd0101a6a9067dcaaa9b49f92) Thanks [@kyubisation](https://github.com/kyubisation)! - Add fallback for call site location detection for webkit
+
+## 0.2.4
+
+### Patch Changes
+
+- [#4541](https://github.com/lit/lit/pull/4541) [`d128391b`](https://github.com/lit/lit/commit/d128391b2713ec431a5ca3763266f95ed214d67c) - Fix declarative shadowroot detection and parsing to use the correct spec behavior.
+
+- [#4516](https://github.com/lit/lit/pull/4516) [`c51bc182`](https://github.com/lit/lit/commit/c51bc1824b150bb06499887d16938ff8670bf90c) - Update @web/test-runner-commands dependency
+
 ## 0.2.3
 
 ### Patch Changes

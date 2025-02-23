@@ -15,16 +15,11 @@ import type {LitElement, TemplateResult} from 'lit';
 import type {FixtureOptions, SsrFixtureOptions} from './fixture-options.js';
 import type {Payload} from '../lit-ssr-plugin.js';
 
-// Enhance DOMParser's parseFromString method to include `includeShadowRoots`
-// option for browsers that support declarative shadow DOM as proposed in
-// https://github.com/mfreed7/declarative-shadow-dom/blob/master/README.md#mitigation.
+// Enhance `Element` with method that parses declarative shadow DOM
+// See https://github.com/whatwg/html/pull/9538
 declare global {
-  interface DOMParser {
-    parseFromString(
-      string: string,
-      type: DOMParserSupportedType,
-      option: {includeShadowRoots: boolean}
-    ): Document;
+  interface Element {
+    setHTMLUnsafe(html: string): void;
   }
 }
 
@@ -58,7 +53,31 @@ export async function ssrFixture<T extends HTMLElement>(
     // asyncFunctionResume@[native code]
     // @http://localhost:8000/test/my-element_test.js?wtr-session-id=aKWON-wBOBGyzb2CwIvmK:65:37
     const {stack} = new Error();
-    const match = stack?.match(/http:\/\/localhost.+(?=\?wtr-session-id)/);
+    // host.containers.internal represents the host address when running browser/tests inside a container.
+    const match =
+      stack?.match(
+        /http:\/\/(localhost|host\.containers\.internal).+(?=\?wtr-session-id)/
+      ) ??
+      // Looking for wtr-session-id might not work in webkit. See https://github.com/lit/lit/issues/4067
+      // As a fallback, we look for the first file which is not inside node_modules and
+      // is not this ssr-fixture file.
+      //
+      // Webkit Stack:
+      // @http://localhost:8000/lib/fixtures/ssr-fixture.js:38:36
+      // ssrFixture@http://localhost:8000/lib/fixtures/ssr-fixture.js:19:34
+      // ssrNonHydratedFixture@http://localhost:8000/lib/fixtures/ssr-fixture.js:98:45
+      // @http://localhost:8000/test/my-element_test.js:20:37
+      [
+        ...(stack?.matchAll(
+          /http:\/\/(localhost|host\.containers\.internal):?[^:)]+/gm
+        ) ?? []),
+      ]
+        .map((m) => m[0])
+        .filter(
+          (u) =>
+            !u.includes('/node_modules/') &&
+            !u.includes('/lib/fixtures/ssr-fixture.js')
+        );
     if (!match) {
       throw new Error(
         `Could not find call site for ssrFixture in stack:\n${stack}`
@@ -77,22 +96,13 @@ export async function ssrFixture<T extends HTMLElement>(
 
   const container = createContainer();
 
-  if (HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot')) {
-    // Browser natively supports declarative shadowroot.
-    // Shadowroots are only parsed and attached during initial HTML parsing.
-    // innerHTML will not work and must use DOMParser.
-    // See https://web.dev/declarative-shadow-dom/#parser-only
-    const fragment = new DOMParser().parseFromString(
-      // DOMParser could separate opening lit-part comment from others as it
-      // selectively places some elements into <body>. Wrapping the entire
-      // rendered content in <body> preserves order.
-      '<body>' + rendered + '</body>',
-      'text/html',
-      {
-        includeShadowRoots: true,
-      }
-    );
-    container.replaceChildren(...Array.from(fragment.body.childNodes));
+  if (
+    HTMLTemplateElement.prototype.hasOwnProperty('shadowRootMode') &&
+    'setHTMLUnsafe' in Element.prototype
+  ) {
+    // Browser natively supports Declarative Shadow DOM and `setHTMLUnsafe()`
+    // which is needed for DSD to be parsed and attached.
+    container.setHTMLUnsafe(rendered);
   } else {
     // Utilize ponyfill
     container.innerHTML = rendered;

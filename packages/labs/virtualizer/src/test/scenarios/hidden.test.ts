@@ -12,6 +12,7 @@ import {expect, fixture} from '@open-wc/testing';
 
 /*
   This file contains regression tests for https://github.com/lit/lit/issues/3815
+  and https://github.com/lit/lit/issues/4672
 */
 
 type Item = {label: number};
@@ -44,9 +45,9 @@ describe("Don't render any children if the virtualizer is hidden", () => {
   ignoreBenignErrors(beforeEach, afterEach);
 
   it('should not render any children when initially hidden', async () => {
-    const el = await fixture<VirtualizerHider>(
-      html` <virtualizer-hider hidden></virtualizer-hider> `
-    );
+    const el = await fixture<VirtualizerHider>(html`
+      <virtualizer-hider hidden></virtualizer-hider>
+    `);
     const virtualizer = el.shadowRoot!.querySelector('lit-virtualizer')!;
     // We can't await on layoutComplete when first render is empty.
     // See https://github.com/lit/lit/issues/4376
@@ -55,9 +56,26 @@ describe("Don't render any children if the virtualizer is hidden", () => {
   });
 
   it('should not render any children when subsequently hidden', async () => {
-    const el = await fixture<VirtualizerHider>(
-      html` <virtualizer-hider></virtualizer-hider> `
-    );
+    const el = await fixture<VirtualizerHider>(html`
+      <virtualizer-hider></virtualizer-hider>
+    `);
+    const virtualizer = el.shadowRoot!.querySelector('lit-virtualizer')!;
+    await virtualizer.layoutComplete;
+    expect(virtualizer.children.length).to.be.greaterThan(0);
+
+    el.hidden = true;
+    await virtualizer.layoutComplete;
+    expect(virtualizer.children.length).to.equal(0);
+  });
+
+  // Issue #4672
+  it('should not render any children when hidden and nested beneath a clipping ancestor', async () => {
+    const clipper = await fixture<HTMLDivElement>(html`
+      <div style="overflow: hidden;">
+        <virtualizer-hider></virtualizer-hider>
+      </div>
+    `);
+    const el = clipper.querySelector('virtualizer-hider')! as VirtualizerHider;
     const virtualizer = el.shadowRoot!.querySelector('lit-virtualizer')!;
     await virtualizer.layoutComplete;
     expect(virtualizer.children.length).to.be.greaterThan(0);

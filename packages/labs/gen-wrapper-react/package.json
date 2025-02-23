@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/gen-wrapper-react",
   "description": "Code generator for React wrapper for Lit components",
-  "version": "0.3.1",
+  "version": "0.3.3",
   "publishConfig": {
     "access": "public"
   },
@@ -10,7 +10,11 @@
   "bugs": "https://github.com/lit/lit/issues",
   "type": "module",
   "main": "lib/index.js",
-  "repository": "lit/lit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/gen-wrapper-react"
+  },
   "scripts": {
     "build": "wireit",
     "test": "wireit",
@@ -60,7 +64,7 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.11.0",
+    "@lit-labs/analyzer": "^0.13.0",
     "@lit-labs/gen-utils": "^0.3.0"
   },
   "devDependencies": {

@@ -1,5 +1,29 @@
 # @lit-labs/observers
 
+## 2.0.5
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+- [#4914](https://github.com/lit/lit/pull/4914) [`ee153ce5`](https://github.com/lit/lit/commit/ee153ce528e2d01a75179e80794c34fb96ff9f56) - Fix typo in README.md
+
+## 2.0.4
+
+### Patch Changes
+
+- [#4782](https://github.com/lit/lit/pull/4782) [`99703a03`](https://github.com/lit/lit/commit/99703a03b68ed800a8a0f5784c10a32fbc6e2db6) - Revert the Terser plugin for Rollup to `rollup-plugin-terser` from `@rollup/plugin-terser`
+  due to a bug that prevented our minified name prefixing from working.
+
+## 2.0.3
+
+### Patch Changes
+
+- [#4591](https://github.com/lit/lit/pull/4591) [`045b6f15`](https://github.com/lit/lit/commit/045b6f159815edb9e690bc1f6829d467f42aa520) Thanks [@a11delavar](https://github.com/a11delavar)! - Do not initialize observers to prevent failing in SSR environment.
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98)]:
+  - lit-html@3.2.0
+
 ## 2.0.2
 
 ### Patch Changes

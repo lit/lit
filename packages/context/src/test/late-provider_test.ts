@@ -16,7 +16,7 @@ import {
   ContextConsumer,
   createContext,
 } from '@lit/context';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 const simpleContext = 'simple-context' as Context<'simple-context', number>;
 

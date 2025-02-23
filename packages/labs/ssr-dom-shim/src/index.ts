@@ -4,12 +4,28 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {ElementInternalsShim} from './lib/element-internals.js';
+import {
+  EventTargetShim,
+  EventShim,
+  CustomEventShim,
+  EventTargetShimMeta,
+} from './lib/events.js';
 
 export {
   ariaMixinAttributes,
   ElementInternals,
   HYDRATE_INTERNALS_ATTR_PREFIX,
 } from './lib/element-internals.js';
+export {CustomEvent, Event, EventTarget} from './lib/events.js';
+
+// In an empty Node.js vm, we need to patch the global context.
+// TODO: Remove these globalThis assignments when we remove support
+// for vm modules (--experimental-vm-modules).
+globalThis.Event ??= EventShim;
+globalThis.CustomEvent ??= CustomEventShim;
+
+// Internal type to be used for the event polyfill functionality.
+export type HTMLElementWithEventMeta = HTMLElement & EventTargetShimMeta;
 
 const attributes = new WeakMap<
   InstanceType<typeof HTMLElementShim>,
@@ -36,7 +52,7 @@ const attributesForElement = (
 //    `const ElementShimWithRealType = ElementShim as object as typeof Element;`.
 // 4. We want the exported names to match the real ones, hence e.g.
 //    `export {ElementShimWithRealType as Element}`.
-const ElementShim = class Element {
+const ElementShim = class Element extends EventTargetShim {
   get attributes() {
     return Array.from(attributesForElement(this)).map(([name, value]) => ({
       name,
@@ -53,6 +69,12 @@ const ElementShim = class Element {
     }
     return this.__shadowRoot;
   }
+  get localName() {
+    return (this.constructor as NamedCustomHTMLElementConstructor).__localName;
+  }
+  get tagName() {
+    return this.localName?.toUpperCase();
+  }
   setAttribute(name: string, value: unknown): void {
     // Emulate browser behavior that silently casts all values to string. E.g.
     // `42` becomes `"42"` and `{}` becomes `"[object Object]""`.
@@ -60,6 +82,28 @@ const ElementShim = class Element {
   }
   removeAttribute(name: string) {
     attributesForElement(this).delete(name);
+  }
+  toggleAttribute(name: string, force?: boolean): boolean {
+    // Steps reference https://dom.spec.whatwg.org/#dom-element-toggleattribute
+    if (this.hasAttribute(name)) {
+      // Step 5
+      if (force === undefined || !force) {
+        this.removeAttribute(name);
+        return false;
+      }
+    } else {
+      // Step 4
+      if (force === undefined || force) {
+        // Step 4.1
+        this.setAttribute(name, '');
+        return true;
+      } else {
+        // Step 4.2
+        return false;
+      }
+    }
+    // Step 6
+    return true;
   }
   hasAttribute(name: string) {
     return attributesForElement(this).has(name);
@@ -96,9 +140,31 @@ const HTMLElementShimWithRealType =
   HTMLElementShim as object as typeof HTMLElement;
 export {HTMLElementShimWithRealType as HTMLElement};
 
+// For convenience, we provide a global instance of a HTMLElement as an event
+// target. This facilitates registering global event handlers
+// (e.g. for @lit/context ContextProvider).
+// We use this in in the SSR render function.
+// Note, this is a bespoke element and not simply `document` or `window` since
+// user code relies on these being undefined in the server environment.
+globalThis.litServerRoot ??= Object.defineProperty(
+  new HTMLElementShimWithRealType(),
+  'localName',
+  {
+    // Patch localName (and tagName) to return a unique name.
+    get() {
+      return 'lit-server-root';
+    },
+  }
+);
+
 interface CustomHTMLElementConstructor {
   new (): HTMLElement;
   observedAttributes?: string[];
+}
+
+interface NamedCustomHTMLElementConstructor
+  extends CustomHTMLElementConstructor {
+  __localName: string;
 }
 
 type CustomElementRegistration = {
@@ -126,6 +192,8 @@ const CustomElementRegistryShim = class CustomElementRegistry {
         );
       }
     }
+    // Provide tagName and localName for the component.
+    (ctor as NamedCustomHTMLElementConstructor).__localName = name;
     this.__definitions.set(name, {
       ctor,
       // Note it's important we read `observedAttributes` in case it is a getter

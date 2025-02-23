@@ -7,13 +7,20 @@
 import {parentPort, workerData} from 'worker_threads';
 import {render} from '@lit-labs/ssr';
 
-import type {Payload} from './lit-ssr-plugin.js';
+import type {PayloadWithWorkerInitModules} from './lit-ssr-plugin.js';
 
 if (parentPort === null) {
   throw new Error('worker.js must only be run in a worker thread');
 }
 
-const {template, modules} = workerData as Payload;
+const {template, modules, workerInitModules} =
+  workerData as PayloadWithWorkerInitModules;
+
+// Import worker modules sequentially, as these can have side effects.
+// (e.g. registering Node.js hooks: https://nodejs.org/api/module.html#customization-hooks)
+for (const workerModule of workerInitModules) {
+  await import(workerModule);
+}
 
 await Promise.all(modules.map((module) => import(module)));
 

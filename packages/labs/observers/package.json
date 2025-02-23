@@ -1,12 +1,12 @@
 {
   "name": "@lit-labs/observers",
-  "version": "2.0.2",
+  "version": "2.0.5",
   "description": "A set of reactive controllers that facilitate using the platform observer objects.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/observers"
   },
   "type": "module",
@@ -168,6 +168,7 @@
     "@types/trusted-types": "^2.0.2"
   },
   "dependencies": {
+    "lit-html": "^3.2.0",
     "@lit/reactive-element": "^1.0.0 || ^2.0.0"
   },
   "publishConfig": {

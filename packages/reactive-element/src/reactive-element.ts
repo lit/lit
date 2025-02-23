@@ -948,10 +948,10 @@ export abstract class ReactiveElement
     return attribute === false
       ? undefined
       : typeof attribute === 'string'
-      ? attribute
-      : typeof name === 'string'
-      ? name.toLowerCase()
-      : undefined;
+        ? attribute
+        : typeof name === 'string'
+          ? name.toLowerCase()
+          : undefined;
   }
 
   // Initialize to an unresolved Promise so we can make sure the element has
@@ -1009,7 +1009,7 @@ export abstract class ReactiveElement
       (res) => (this.enableUpdating = res)
     );
     this._$changedProperties = new Map();
-    // This enqueues a microtask that ust run before the first update, so it
+    // This enqueues a microtask that must run before the first update, so it
     // must be called before requestUpdate()
     this.__saveInstanceProperties();
     // ensures first update will be caught by an early access of
@@ -1052,13 +1052,7 @@ export abstract class ReactiveElement
    * Fixes any properties set on the instance before upgrade time.
    * Otherwise these would shadow the accessor and break these properties.
    * The properties are stored in a Map which is played back after the
-   * constructor runs. Note, on very old versions of Safari (<=9) or Chrome
-   * (<=41), properties created for native platform properties like (`id` or
-   * `name`) may not have default values set in the element constructor. On
-   * these browsers native properties appear on instances and therefore their
-   * default value will overwrite any element default (e.g. if the element sets
-   * this.id = 'id' in the constructor, the 'id' will become '' since this is
-   * the native platform default).
+   * constructor runs.
    */
   private __saveInstanceProperties() {
     const instanceProperties = new Map<PropertyKey, unknown>();
@@ -1136,7 +1130,7 @@ export abstract class ReactiveElement
    * overridden, `super.attributeChangedCallback(name, _old, value)` must be
    * called.
    *
-   * See [using the lifecycle callbacks](https://developer.mozilla.org/en-US/docs/Web/Web_Components/Using_custom_elements#using_the_lifecycle_callbacks)
+   * See [responding to attribute changes](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_custom_elements#responding_to_attribute_changes)
    * on MDN for more information about the `attributeChangedCallback`.
    * @category attributes
    */
@@ -1211,8 +1205,8 @@ export abstract class ReactiveElement
         typeof options.converter === 'function'
           ? {fromAttribute: options.converter}
           : options.converter?.fromAttribute !== undefined
-          ? options.converter
-          : defaultConverter;
+            ? options.converter
+            : defaultConverter;
       // mark state reflecting
       this.__reflectingProperty = propName;
       this[propName as keyof this] = converter.fromAttribute!(
@@ -1237,30 +1231,26 @@ export abstract class ReactiveElement
    * @param oldValue old value of requesting property
    * @param options property options to use instead of the previously
    *     configured options
-   * @param initial whether this call is for the initial value of the property.
-   *     Initial values do not reflect to an attribute.
    * @category updates
    */
   requestUpdate(
     name?: PropertyKey,
     oldValue?: unknown,
     options?: PropertyDeclaration
-  ): void;
-  /* @internal */
-  requestUpdate(
-    name?: PropertyKey,
-    oldValue?: unknown,
-    options?: PropertyDeclaration,
-    initial = false,
-    initialValue?: unknown
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
+      if (DEV_MODE && (name as unknown) instanceof Event) {
+        issueWarning(
+          ``,
+          `The requestUpdate() method was called with an Event as the property name. This is probably a mistake caused by binding this.requestUpdate as an event listener. Instead bind a function that will call it with no arguments: () => this.requestUpdate()`
+        );
+      }
       options ??= (
         this.constructor as typeof ReactiveElement
       ).getPropertyOptions(name);
       const hasChanged = options.hasChanged ?? notEqual;
-      const newValue = initial ? initialValue : this[name as keyof this];
+      const newValue = this[name as keyof this];
       if (hasChanged(newValue, oldValue)) {
         this._$changeProperty(name, oldValue, options);
       } else {
@@ -1584,7 +1574,7 @@ export abstract class ReactiveElement
    * @category updates
    */
   protected update(_changedProperties: PropertyValues) {
-    // The forEach() expression will only run when when __reflectingProperties is
+    // The forEach() expression will only run when __reflectingProperties is
     // defined, and it returns undefined, setting __reflectingProperties to
     // undefined
     this.__reflectingProperties &&= this.__reflectingProperties.forEach((p) =>
@@ -1673,7 +1663,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(global.reactiveElementVersions ??= []).push('2.0.2');
+(global.reactiveElementVersions ??= []).push('2.0.4');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
   issueWarning!(
     'multiple-versions',

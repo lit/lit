@@ -278,14 +278,11 @@ export class XliffFormatter implements Formatter {
    */
   private encodeContents(doc: Document, contents: Message['contents']): Node[] {
     const nodes = [];
-    // We need a unique ID within each source for each placeholder. The index
-    // will do.
-    let phIdx = 0;
     for (const content of contents) {
       if (typeof content === 'string') {
         nodes.push(doc.createTextNode(content));
       } else {
-        nodes.push(this.createPlaceholder(doc, String(phIdx++), content));
+        nodes.push(this.createPlaceholder(doc, content));
       }
     }
     return nodes;
@@ -293,10 +290,12 @@ export class XliffFormatter implements Formatter {
 
   private createPlaceholder(
     doc: Document,
-    id: string,
-    {untranslatable}: Placeholder
+    {untranslatable, index}: Placeholder
   ): HTMLElement {
     const style = this.xliffConfig.placeholderStyle ?? 'x';
+    // We need a unique ID within each source for each placeholder. The index
+    // will do.
+    const id = String(index);
     if (style === 'x') {
       // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#x
       const el = doc.createElement('x');

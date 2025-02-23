@@ -34,7 +34,8 @@ import {ScrollerController} from './ScrollerController.js';
 // polyfill in the package; this bit of module state facilitates
 // a simple mechanism (see ./polyfillLoaders/ResizeObserver.js.)
 // for loading the polyfill.
-let _ResizeObserver: typeof ResizeObserver | undefined = window?.ResizeObserver;
+let _ResizeObserver: typeof ResizeObserver | undefined =
+  typeof window !== 'undefined' ? window.ResizeObserver : undefined;
 
 /**
  * Call this function to provide a `ResizeObserver` polyfill for Virtualizer to use.
@@ -230,6 +231,11 @@ export class Virtualizer {
    */
   private _layoutInitialized: Promise<void> | null = null;
 
+  /**
+   * Track connection state to guard against errors / unnecessary work
+   */
+  private _connected = false;
+
   constructor(config: VirtualizerConfig) {
     if (!config) {
       throw new Error(
@@ -298,6 +304,7 @@ export class Virtualizer {
 
     this._schedule(this._updateLayout);
     this._observeAndListen();
+    this._connected = true;
   }
 
   _observeAndListen() {
@@ -340,6 +347,7 @@ export class Virtualizer {
     this._childrenRO?.disconnect();
     this._childrenRO = null;
     this._rejectLayoutCompletePromise('disconnected');
+    this._connected = false;
   }
 
   private _applyVirtualizerStyles() {
@@ -542,21 +550,21 @@ export class Virtualizer {
   }
 
   _finishDOMUpdate() {
-    this._children.forEach((child) => this._childrenRO!.observe(child));
-    this._checkScrollIntoViewTarget(this._childrenPos);
-    this._positionChildren(this._childrenPos);
-    this._sizeHostElement(this._scrollSize);
-    this._correctScrollError();
-    if (this._benchmarkStart && 'mark' in window.performance) {
-      window.performance.mark('uv-end');
+    if (this._connected) {
+      // _childrenRO should be non-null if we're connected
+      this._children.forEach((child) => this._childrenRO!.observe(child));
+      this._checkScrollIntoViewTarget(this._childrenPos);
+      this._positionChildren(this._childrenPos);
+      this._sizeHostElement(this._scrollSize);
+      this._correctScrollError();
+      if (this._benchmarkStart && 'mark' in window.performance) {
+        window.performance.mark('uv-end');
+      }
     }
   }
 
   _updateLayout() {
-    // Only update the layout and trigger a re-render if we have:
-    //   a) A layout
-    //   b) A scrollerController, which means we're connected
-    if (this._layout && this._scrollerController) {
+    if (this._layout && this._connected) {
       this._layout.items = this._items;
       this._updateView();
       if (this._childMeasurements !== null) {
@@ -670,8 +678,8 @@ export class Virtualizer {
       const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
       const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
 
-      const height = bottom - top;
-      const width = right - left;
+      const height = Math.max(0, bottom - top);
+      const width = Math.max(0, right - left);
 
       layout.viewportSize = {width, height};
       layout.viewportScroll = {top: scrollTop, left: scrollLeft};

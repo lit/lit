@@ -24,15 +24,15 @@ const emit = defineEmits<{
   (e: 'sub-changed', payload: CustomEvent<unknown>): void;
 }>();
 
-const slots = useSlots();
+const slots = useSlots() as Slots;
 
 const render = () => {
   const eventProps = {
     onSubChanged: (event: CustomEvent<unknown>) =>
       emit('sub-changed', event as CustomEvent<unknown>),
   };
-
   const props = eventProps as typeof eventProps & Props;
+
   for (const p in vueProps) {
     const v = vueProps[p as keyof Props];
     if (v !== undefined || hasRendered) {
@@ -42,7 +42,7 @@ const render = () => {
 
   hasRendered = true;
 
-  return h('element-sub', props, assignSlotNodes(slots as Slots));
+  return h('element-sub', props, assignSlotNodes(slots));
 };
 </script>
 <template><render v-defaults /></template>

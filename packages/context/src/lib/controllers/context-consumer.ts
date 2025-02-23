@@ -34,7 +34,7 @@ export interface Options<C extends Context<unknown, unknown>> {
  */
 export class ContextConsumer<
   C extends Context<unknown, unknown>,
-  HostElement extends ReactiveControllerHost & HTMLElement
+  HostElement extends ReactiveControllerHost & HTMLElement,
 > implements ReactiveController
 {
   protected host: HostElement;
@@ -91,7 +91,12 @@ export class ContextConsumer<
 
   private dispatchRequest() {
     this.host.dispatchEvent(
-      new ContextRequestEvent(this.context, this._callback, this.subscribe)
+      new ContextRequestEvent(
+        this.context,
+        this.host,
+        this._callback,
+        this.subscribe
+      )
     );
   }
 

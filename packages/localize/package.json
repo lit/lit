@@ -1,16 +1,16 @@
 {
   "name": "@lit/localize",
-  "version": "0.12.1",
+  "version": "0.12.2",
   "publishConfig": {
     "access": "public"
   },
   "description": "Localization client library for lit-html",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
-  "homepage": "https://github.com/Lit/Lit/tree/main/packages/localize",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/localize",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Lit/Lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/localize"
   },
   "main": "lit-localize.js",
@@ -89,6 +89,6 @@
     "/init/"
   ],
   "dependencies": {
-    "lit": "^2.0.0 || ^3.0.0"
+    "lit": "^3.2.0"
   }
 }

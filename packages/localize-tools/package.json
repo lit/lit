@@ -1,6 +1,6 @@
 {
   "name": "@lit/localize-tools",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "publishConfig": {
     "access": "public"
   },
@@ -10,7 +10,7 @@
   "homepage": "https://github.com/lit/lit/tree/main/packages/localize-tools",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/localize-tools"
   },
   "bin": {
@@ -136,16 +136,16 @@
     "fast-glob": "^3.2.7",
     "fs-extra": "^10.0.0",
     "jsonschema": "^1.4.0",
-    "lit": "^2.0.0 || ^3.0.0",
+    "lit": "^3.2.0",
     "minimist": "^1.2.5",
     "parse5": "^7.1.1",
     "source-map-support": "^0.5.19",
-    "typescript": "~5.2.0"
+    "typescript": "~5.5.0"
   },
   "devDependencies": {
     "@lit-internal/tests": "0.0.1",
-    "@lit-labs/ssr": "^3.1.8",
-    "@lit/ts-transformers": "^2.0.0",
+    "@lit-labs/ssr": "^3.2.2",
+    "@lit/ts-transformers": "^2.0.1",
     "@types/fs-extra": "^9.0.1",
     "@types/minimist": "^1.2.0",
     "@types/prettier": "^2.0.1",

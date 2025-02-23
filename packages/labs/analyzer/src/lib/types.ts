@@ -199,7 +199,20 @@ const getSpecifierFromTypeImport = (
   analyzer: AnalyzerInterface
 ) => {
   specifier = analyzer.path.normalize(
-    resolveExtension(specifier as AbsolutePath, analyzer)
+    // Types can resolve to source or declaration files, so include those
+    // extensions as well. We still include JS extensions to support JSDoc
+    // types.
+    // We don't include the CommonJS-only extensions .cts and .d.cts here
+    resolveExtension(specifier as AbsolutePath, analyzer, [
+      'js',
+      'mjs',
+      'ts',
+      'mts',
+      'tsx',
+      'jsx',
+      'd.ts',
+      'd.mts',
+    ])
   );
   if (analyzer.path.isAbsolute(specifier)) {
     const {

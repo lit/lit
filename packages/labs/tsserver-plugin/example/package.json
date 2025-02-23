@@ -1,0 +1,9 @@
+{
+  "name": "@lit-internal/example-lit-project",
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "@lit-labs/tsserver-plugin": "file:..",
+    "typescript": "~5.5.0"
+  }
+}

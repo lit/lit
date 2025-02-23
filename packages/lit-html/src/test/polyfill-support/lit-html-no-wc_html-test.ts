@@ -5,7 +5,7 @@
  */
 import 'lit-html/polyfill-support.js';
 import {html, render} from 'lit-html';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {ShadyRenderOptions} from '../test-utils/shadow-root.js';
 
 suite('shady-render without Shadow DOM or Custom Elements', () => {

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {createApp, reactive, h} from 'vue';
 import {
   default as ElementEvents,
@@ -12,7 +12,7 @@ import {
   MyDetail,
   EventSubclass,
   TemplateResult,
-} from '@lit-internal/test-element-a-vue/ElementEvents.js';
+} from '@lit-internal/test-element-a-vue/ElementEvents.vue.js';
 import {ElementEvents as ElementEventsElement} from '@lit-internal/test-element-a/element-events.js';
 
 suite('test-element-events', () => {

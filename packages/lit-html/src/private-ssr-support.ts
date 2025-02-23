@@ -27,6 +27,9 @@ import type {
   TemplateInstance,
 } from './lit-html.js';
 
+// Contains either the minified or unminified `_$resolve` Directive method name.
+let resolveMethodName: Extract<keyof Directive, '_$resolve'> | null = null;
+
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
  *
@@ -57,6 +60,40 @@ export const _$LH = {
         return resolveOverrideFn(this, values);
       }
     },
+  patchDirectiveResolve: (
+    directiveClass: typeof Directive,
+    resolveOverrideFn: (
+      this: Directive,
+      _part: Part,
+      values: unknown[]
+    ) => unknown
+  ) => {
+    if (directiveClass.prototype._$resolve !== resolveOverrideFn) {
+      resolveMethodName ??= directiveClass.prototype._$resolve
+        .name as NonNullable<typeof resolveMethodName>;
+      for (
+        let proto = directiveClass.prototype;
+        proto !== Object.prototype;
+        proto = Object.getPrototypeOf(proto)
+      ) {
+        if (proto.hasOwnProperty(resolveMethodName)) {
+          proto[resolveMethodName] = resolveOverrideFn;
+          return;
+        }
+      }
+      // Nothing was patched which indicates an error. The most likely error is
+      // that somehow both minified and unminified lit code passed through this
+      // codepath. This is possible as lit-labs/ssr contains its own lit-html
+      // module as a dependency for server rendering client Lit code. If a
+      // client contains multiple duplicate Lit modules with minified and
+      // unminified exports, we currently cannot handle both.
+      throw new Error(
+        `Internal error: It is possible that both dev mode and production mode` +
+          ` Lit was mixed together during SSR. Please comment on the issue: ` +
+          `https://github.com/lit/lit/issues/4527`
+      );
+    }
+  },
   setDirectiveClass(value: DirectiveResult, directiveClass: DirectiveClass) {
     // This property needs to remain unminified.
     value['_$litDirective$'] = directiveClass;

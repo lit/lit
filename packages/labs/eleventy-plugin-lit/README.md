@@ -8,33 +8,39 @@ A plugin for [Eleventy](https://www.11ty.dev) that pre-renders
 [![Build Status](https://github.com/lit/lit/actions/workflows/tests.yml/badge.svg)](https://github.com/lit/lit/actions/workflows/tests.yml)
 [![Published on npm](https://img.shields.io/npm/v/@lit-labs/eleventy-plugin-lit.svg?logo=npm)](https://www.npmjs.com/package/@lit-labs/eleventy-plugin-lit)
 
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Give feedback: https://github.com/lit/lit/discussions/3356
+
 ## Contents
 
-- [Status](#status)
-- [Setup](#setup)
-  - [Install](#install)
-  - [Register plugin](#register-plugin)
-  - [Configure component modules](#configure-component-modules)
-  - [Enable experimental VM modules](#enable-experimental-vm-modules)
-  - [Watch mode](#watch-mode)
-- [Usage](#usage)
-  - [Component compatibility](#component-compatibility)
-  - [Passing data to components](#passing-data-to-components)
-- [Declarative Shadow DOM](#declarative-shadow-dom)
-  - [Polyfill](#polyfill)
-- [Hydration](#hydration)
-- [Bootup](#bootup)
-  - [Example bootup strategy](#example-bootup-strategy)
-- [Roadmap](#roadmap)
-- [Issues and comments](#issues-and-comments)
-- [Contributing](#contributing)
-
-## Status
-
-🚧 `@lit-labs/eleventy-plugin-lit` is part of the [Lit
-Labs](https://lit.dev/docs/libraries/labs/) set of packages - it is published in
-order to get feedback on the design and not ready for production. Breaking
-changes are likely to happen frequently. 🚧
+- [@lit-labs/eleventy-plugin-lit](#lit-labseleventy-plugin-lit)
+  - [Contents](#contents)
+  - [Setup](#setup)
+    - [Install](#install)
+    - [Register plugin](#register-plugin)
+    - [Configure mode](#configure-mode)
+    - [Configure component modules](#configure-component-modules)
+    - [Watch mode](#watch-mode)
+  - [Usage](#usage)
+    - [Component compatibility](#component-compatibility)
+    - [Passing data to components](#passing-data-to-components)
+  - [Declarative Shadow DOM](#declarative-shadow-dom)
+    - [Polyfill](#polyfill)
+  - [Hydration](#hydration)
+  - [Bootup](#bootup)
+    - [Example bootup strategy](#example-bootup-strategy)
+  - [Roadmap](#roadmap)
+  - [Issues and comments](#issues-and-comments)
+  - [Contributing](#contributing)
+    - [Testing environment variables:](#testing-environment-variables)
 
 ## Setup
 
@@ -92,7 +98,7 @@ Use the `componentModules` setting to tell the plugin where to find the
 definitions of your components.
 
 Pass an array of paths to `.js` files containing Lit component definitions.
-Paths are interpreted relative to to the directory from which the `eleventy`
+Paths are interpreted relative to the directory from which the `eleventy`
 command is executed.
 
 Each `.js` file should be a JavaScript module (ESM) that imports `lit` with a
@@ -317,7 +323,7 @@ layout: default.html
 The file `_includes/default.html` would then contain the following:
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <!-- As an optimization, immediately begin fetching the JavaScript modules

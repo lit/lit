@@ -1,5 +1,34 @@
 # @lit-labs/ssr-react
 
+## 0.3.2
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+## 0.3.1
+
+### Patch Changes
+
+- [#4865](https://github.com/lit/lit/pull/4865) [`dd2fdc96`](https://github.com/lit/lit/commit/dd2fdc96441a585f735f3d1daffe65c652bad0df) Thanks [@Artur-](https://github.com/Artur-)! - fix: Widen range for React types to include React 19
+
+- [#4755](https://github.com/lit/lit/pull/4755) [`25962bf5`](https://github.com/lit/lit/commit/25962bf58f33f32abef6487689438bf095780b63) Thanks [@kyubisation](https://github.com/kyubisation)! - Implement SSR event handling and an optional flag `globalThis.litSsrCallConnectedCallback` to call `connectedCallback` during SSR, if set to true.
+
+- Updated dependencies [[`25962bf5`](https://github.com/lit/lit/commit/25962bf58f33f32abef6487689438bf095780b63)]:
+  - @lit-labs/ssr@3.3.0
+
+## 0.3.0
+
+### Minor Changes
+
+- [#4575](https://github.com/lit/lit/pull/4575) [`aa4fc3ef`](https://github.com/lit/lit/commit/aa4fc3eff349b202861e597ef7554934b9eaa19a) - The Node build of `@lit-labs/ssr-react/enable-lit-ssr.js` now also monkey-patches `react/jsx-runtime` to include logic for deeply server-rendering Lit components without modifying `jsxImportSource` in tsconfig.
+
+  The monkey-patching logic also adds a workaround for inconsistent es module interop behavior in tools like webpack which could lead to errors like `TypeError: Cannot set property createElement of [object Module] which has only a getter`.
+
+### Patch Changes
+
+- [#4575](https://github.com/lit/lit/pull/4575) [`aa4fc3ef`](https://github.com/lit/lit/commit/aa4fc3eff349b202861e597ef7554934b9eaa19a) - Use a global flag to detect whether `@lit-labs/ssr-react/enable-lit-ssr.js` was used for coordinating props when server rendering components made with `@lit/react`.
+
 ## 0.2.3
 
 ### Patch Changes
