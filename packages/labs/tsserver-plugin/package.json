@@ -1,14 +1,14 @@
 {
   "name": "@lit-labs/tsserver-plugin",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.0.1",
   "description": "TypeScript Language Service Plugin for Lit",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
   "homepage": "https://github.com/lit/lit/tree/main/packages/labs/tsserver-plugin",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/tsserver-plugin"
   },
   "main": "index.js",

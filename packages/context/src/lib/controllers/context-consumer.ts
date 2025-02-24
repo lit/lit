@@ -91,7 +91,12 @@ export class ContextConsumer<
 
   private dispatchRequest() {
     this.host.dispatchEvent(
-      new ContextRequestEvent(this.context, this._callback, this.subscribe)
+      new ContextRequestEvent(
+        this.context,
+        this.host,
+        this._callback,
+        this.subscribe
+      )
     );
   }
 
