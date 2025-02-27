@@ -10,7 +10,11 @@
   "bugs": "https://github.com/lit/lit/issues",
   "type": "module",
   "main": "lib/index.js",
-  "repository": "lit/lit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/gen-wrapper-react"
+  },
   "scripts": {
     "build": "wireit",
     "test": "wireit",
