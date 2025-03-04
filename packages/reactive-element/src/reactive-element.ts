@@ -276,11 +276,21 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
   wrapped?: boolean;
 
   /**
-   * When set and if the `reflect` option is `true`, the initial default value
-   * does *not* reflect. Subsequent changes to the property will reflect, even
-   * if they are equal to the default value. The default value will not trigger
-   * an initial old value in the `changedProperties` map argument
-   * to update lifecycle methods.
+   * When `true`, uses the initial value of the property as the default value,
+   * which changes how attributes are handled:
+   *  - The initial value does *not* reflect, even if the `reflect` option is `true`.
+   *    Subsequent changes to the property will reflect, even if they are equal to the
+   *     default value.
+   *  - When the attribute is removed, the property is set to the default value
+   *  - The initial value will not trigger an old value in the `changedProperties` map
+   *    argument to update lifecycle methods.
+   *
+   * When set, properties must be initialized, either with a field initializer, or an
+   * assignment in the constructor. Not initializing the property may lead to
+   * improper handling of subsequent property assignments.
+   *
+   * While this behavior is opt-in, most properties that reflect to attributes should
+   * use `useDefault: true` so that their initial values do not reflect.
    */
   useDefault?: boolean;
 }
