@@ -124,6 +124,10 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
   if (properties === undefined) {
     globalThis.litPropertyMetadata.set(metadata, (properties = new Map()));
   }
+  if (kind === 'setter') {
+    options = Object.create(options);
+    options.wrapped = true;
+  }
   properties.set(context.name, options);
 
   if (kind === 'accessor') {
@@ -151,7 +155,6 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
     } as unknown as ClassAccessorDecoratorResult<C, V>;
   } else if (kind === 'setter') {
     const {name} = context;
-    options.wrapped = true;
     return function (this: ReactiveElement, value: V) {
       const oldValue = this[name as keyof ReactiveElement];
       (target as (value: V) => void).call(this, value);
