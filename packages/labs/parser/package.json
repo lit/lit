@@ -1,0 +1,101 @@
+{
+  "name": "@lit-labs/parser",
+  "version": "0.13.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "A static parser for Lit",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/parser",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/parser"
+  },
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "wireit",
+    "start": "wireit",
+    "playground": "wireit",
+    "test": "wireit",
+    "test:debug": "wireit"
+  },
+  "wireit": {
+    "start": {
+      "command": "node ./lib/index.js",
+      "dependencies": [
+        "build"
+      ]
+    },
+    "build": {
+      "command": "tsc --build --pretty",
+      "dependencies": [],
+      "files": [
+        "src/**/*.ts",
+        "!src/playground/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib/",
+        "test/",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "playground": {
+      "command": "vite src/playground/ -c vite.config.mjs",
+      "service": true,
+      "files": [
+        "vite.config.mjs",
+        "src/playground/**/*.ts"
+      ]
+    },
+    "test": {
+      "command": "wtr --config web-test-runner.config.js",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "web-test-runner.config.js"
+      ]
+    },
+    "test:debug": {
+      "command": "wtr --config web-test-runner.config.js --watch",
+      "service": true,
+      "dependencies": [
+        {
+          "cascade": false,
+          "script": "build"
+        }
+      ],
+      "files": [
+        "web-test-runner.config.js",
+        "test/**/*.js"
+      ]
+    }
+  },
+  "files": [
+    "/lib/",
+    "!/lib/.tsbuildinfo"
+  ],
+  "dependencies": {
+    "@parse5/tools": "^0.5.0",
+    "oxc-parser": "^0.56.0"
+  },
+  "devDependencies": {
+    "@lit/task": "^1.0.2",
+    "@oxc-parser/wasm": "^0.57.0",
+    "@web/dev-server-legacy": "^1.0.0",
+    "@web/test-runner": "^0.15.0",
+    "@web/test-runner-playwright": "^0.9.0",
+    "chai": "^5.2.0",
+    "codemirror-elements": "^0.0.8",
+    "lit": "^3.2.1",
+    "shiki": "^3.2.1",
+    "typescript": "~5.5.0",
+    "vite": "^6.2.1",
+    "vite-plugin-wasm": "^3.4.1"
+  }
+}
