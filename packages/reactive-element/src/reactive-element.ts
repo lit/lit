@@ -1286,18 +1286,11 @@ export abstract class ReactiveElement
       // For example, `prop: {useDefault: true, reflect: true}`
       // and el.prop = 'foo'. This should be considered a change if the
       // attribute is not set because we will now reflect the property to the attribute.
-      if (
-        !changed &&
-        options.reflect &&
-        newValue != null &&
+      changed ||= 
         options.useDefault &&
-        newValue === this.__defaultValues?.get(name)
-      ) {
-        const attr = (
-          this.constructor as typeof ReactiveElement
-        ).__attributeNameForProperty(name, options);
-        changed = !this.hasAttribute(attr!);
-      }
+        options.reflect &&
+        newValue === this.__defaultValues?.get(name) &&
+        !this.hasAttribute(ctor.__attributeNameForProperty(name, options)!);
       if (changed) {
         this._$changeProperty(name, oldValue, options);
       } else {
