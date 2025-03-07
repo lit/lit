@@ -1279,18 +1279,18 @@ export abstract class ReactiveElement
       const ctor = this.constructor as typeof ReactiveElement;
       const newValue = this[name as keyof this];
       options ??= ctor.getPropertyOptions(name);
-      let changed = (options.hasChanged ?? notEqual)(newValue, oldValue);
-      // When there is no change, check a corner case that can occur when
-      // 1. there's a initial value which was not reflected
-      // 2. the property is subsequently set to this value.
-      // For example, `prop: {useDefault: true, reflect: true}`
-      // and el.prop = 'foo'. This should be considered a change if the
-      // attribute is not set because we will now reflect the property to the attribute.
-      changed ||= 
-        options.useDefault &&
-        options.reflect &&
-        newValue === this.__defaultValues?.get(name) &&
-        !this.hasAttribute(ctor.__attributeNameForProperty(name, options)!);
+      const changed =
+        (options.hasChanged ?? notEqual)(newValue, oldValue) ||
+        // When there is no change, check a corner case that can occur when
+        // 1. there's a initial value which was not reflected
+        // 2. the property is subsequently set to this value.
+        // For example, `prop: {useDefault: true, reflect: true}`
+        // and el.prop = 'foo'. This should be considered a change if the
+        // attribute is not set because we will now reflect the property to the attribute.
+        (options.useDefault &&
+          options.reflect &&
+          newValue === this.__defaultValues?.get(name) &&
+          !this.hasAttribute(ctor.__attributeNameForProperty(name, options)!));
       if (changed) {
         this._$changeProperty(name, oldValue, options);
       } else {
