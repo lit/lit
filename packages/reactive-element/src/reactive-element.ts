@@ -1276,12 +1276,10 @@ export abstract class ReactiveElement
           `The requestUpdate() method was called with an Event as the property name. This is probably a mistake caused by binding this.requestUpdate as an event listener. Instead bind a function that will call it with no arguments: () => this.requestUpdate()`
         );
       }
-      options ??= (
-        this.constructor as typeof ReactiveElement
-      ).getPropertyOptions(name);
-      const hasChanged = options.hasChanged ?? notEqual;
+      const ctor = this.constructor as typeof ReactiveElement;
       const newValue = this[name as keyof this];
-      let changed = hasChanged(newValue, oldValue);
+      options ??= ctor.getPropertyOptions(name);
+      let changed = (options.hasChanged ?? notEqual)(newValue, oldValue);
       // When there is no change, check a corner case that can occur when
       // 1. there's a initial value which was not reflected
       // 2. the property is subsequently set to this value.
