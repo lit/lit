@@ -1,0 +1,55 @@
+{
+  "name": "@lit-labs/parser",
+  "version": "0.13.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "A static parser for Lit",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/labs/parser",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/parser"
+  },
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "build": "wireit",
+    "start": "wireit"
+  },
+  "wireit": {
+    "start": {
+      "command": "node ./lib/index.js",
+      "dependencies": [
+        "build"
+      ]
+    },
+    "build": {
+      "command": "tsc --build --pretty",
+      "dependencies": [],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib/",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    }
+  },
+  "files": [
+    "/lib/",
+    "!/lib/.tsbuildinfo"
+  ],
+  "exports": {},
+  "dependencies": {
+    "@parse5/tools": "^0.5.0",
+    "oxc-parser": "^0.56.0"
+  },
+  "devDependencies": {
+    "typescript": "~5.5.0"
+  }
+}
