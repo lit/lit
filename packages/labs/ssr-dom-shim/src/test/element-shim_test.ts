@@ -7,7 +7,12 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {customElements, HTMLElement} from '@lit-labs/ssr-dom-shim';
+import {
+  customElements,
+  document,
+  EventTargetShimMeta,
+  HTMLElement,
+} from '@lit-labs/ssr-dom-shim';
 
 const test = suite('Element Shim');
 
@@ -71,6 +76,36 @@ test('localName and tagName usage should return undefined if not registered', ()
   const shimmedEl = new LitTestUnregistered();
   assert.equal(shimmedEl.localName, undefined);
   assert.equal(shimmedEl.tagName, undefined);
+});
+
+test('getRootNode should return document when not inside a shadow DOM', () => {
+  assert.equal(new HTMLElement().getRootNode(), document);
+});
+
+test('getRootNode should return the shadow root of the host', () => {
+  const host = new HTMLElement();
+  host.attachShadow({mode: 'open'});
+  const child = new HTMLElement();
+  (child as Partial<EventTargetShimMeta>).__host = host;
+  assert.equal(child.getRootNode(), host.shadowRoot);
+  assert.equal(child.getRootNode({composed: false}), host.shadowRoot);
+});
+
+test('getRootNode should return document with composed option', () => {
+  const host = new HTMLElement();
+  host.attachShadow({mode: 'open'});
+  const child = new HTMLElement();
+  (child as Partial<EventTargetShimMeta>).__host = host;
+  assert.equal(child.getRootNode({composed: true}), document);
+});
+
+test('getRootNode should return the shadow root of the host with closed mode', () => {
+  const host = new HTMLElement();
+  const shadowRoot = host.attachShadow({mode: 'closed'});
+  assert.equal(host.shadowRoot, null);
+  const child = new HTMLElement();
+  (child as Partial<EventTargetShimMeta>).__host = host;
+  assert.equal(child.getRootNode(), shadowRoot);
 });
 
 test.run();

@@ -9,6 +9,7 @@ import {
   EventShim,
   CustomEventShim,
   EventTargetShimMeta,
+  document,
 } from './lib/events.js';
 
 export {
@@ -16,7 +17,14 @@ export {
   ElementInternals,
   HYDRATE_INTERNALS_ATTR_PREFIX,
 } from './lib/element-internals.js';
-export {CustomEvent, Event, EventTarget} from './lib/events.js';
+export {
+  CustomEvent,
+  Event,
+  EventTarget,
+  EventTargetShimMeta,
+  Document,
+  document,
+} from './lib/events.js';
 
 // In an empty Node.js vm, we need to patch the global context.
 // TODO: Remove these globalThis assignments when we remove support
@@ -24,7 +32,10 @@ export {CustomEvent, Event, EventTarget} from './lib/events.js';
 globalThis.Event ??= EventShim;
 globalThis.CustomEvent ??= CustomEventShim;
 
-// Internal type to be used for the event polyfill functionality.
+/**
+ * Internal type to be used for the event polyfill functionality.
+ * @deprecated Use EventTargetShimMeta directly, if needed.
+ */
 export type HTMLElementWithEventMeta = HTMLElement & EventTargetShimMeta;
 
 const attributes = new WeakMap<
@@ -52,7 +63,25 @@ const attributesForElement = (
 //    `const ElementShimWithRealType = ElementShim as object as typeof Element;`.
 // 4. We want the exported names to match the real ones, hence e.g.
 //    `export {ElementShimWithRealType as Element}`.
-const ElementShim = class Element extends EventTargetShim {
+const NodeShim = class Node extends EventTargetShim {
+  getRootNode(options?: GetRootNodeOptions): Node {
+    if (options?.composed) {
+      return document as unknown as Node;
+    }
+    // getRootNode returns the containing ShadowRoot instance, even if that was
+    // created in closed mode.
+    const host = (this as Partial<EventTargetShimMeta>).__host as
+      | typeof ElementShim
+      | undefined;
+    return (
+      (host as {__shadowRoot?: null | ShadowRoot})?.__shadowRoot ?? document
+    );
+  }
+};
+const NodeShimWithRealType = NodeShim as object as typeof Node;
+export {NodeShimWithRealType as Node};
+
+const ElementShim = class Element extends NodeShim {
   get attributes() {
     return Array.from(attributesForElement(this)).map(([name, value]) => ({
       name,
@@ -109,12 +138,14 @@ const ElementShim = class Element extends EventTargetShim {
     return attributesForElement(this).has(name);
   }
   attachShadow(init: ShadowRootInit): ShadowRoot {
-    const shadowRoot = {host: this} as object as ShadowRoot;
     this.__shadowRootMode = init.mode;
-    if (init && init.mode === 'open') {
-      this.__shadowRoot = shadowRoot;
-    }
-    return shadowRoot;
+    const shadowRoot = new ShadowRootShim(
+      shadowRootConstructionToken,
+      init
+    ) as ShadowRootInterface & EventTargetShimMeta;
+    shadowRoot.__eventTargetParent = this;
+    shadowRoot.__host = this;
+    return (this.__shadowRoot = shadowRoot);
   }
   attachInternals(): ElementInternals {
     if (this.__internals !== null) {
@@ -139,6 +170,45 @@ const HTMLElementShim = class HTMLElement extends ElementShim {};
 const HTMLElementShimWithRealType =
   HTMLElementShim as object as typeof HTMLElement;
 export {HTMLElementShimWithRealType as HTMLElement};
+
+const HTMLSlotElementShim = class HTMLSlotElement extends HTMLElementShim {
+  name!: string;
+  override get localName(): string {
+    return 'slot';
+  }
+};
+const HTMLSlotElementShimWithRealType =
+  HTMLSlotElementShim as object as typeof HTMLSlotElement;
+export {HTMLSlotElementShimWithRealType as HTMLSlotElement};
+
+type ShadowRootInterface = ShadowRoot;
+
+const shadowRootConstructionToken = Symbol();
+const ShadowRootShim = class ShadowRoot
+  extends EventTargetShim
+  implements Partial<ShadowRootInterface>
+{
+  get host(): Element {
+    return (this as Partial<EventTargetShimMeta>).__host! as Element;
+  }
+  mode: 'open' | 'closed';
+
+  constructor();
+  /**
+   * @internal
+   */
+  constructor(constructionToken: Symbol, init: ShadowRootInit);
+  constructor(constructionToken?: Symbol, init?: ShadowRootInit) {
+    super();
+    if (constructionToken !== shadowRootConstructionToken) {
+      throw new TypeError('Illegal constructor');
+    }
+    this.mode = init!.mode;
+  }
+};
+const ShadowRootShimWithRealType =
+  ShadowRootShim as object as typeof ShadowRoot;
+export {ShadowRootShimWithRealType as ShadowRoot};
 
 // For convenience, we provide a global instance of a HTMLElement as an event
 // target. This facilitates registering global event handlers
