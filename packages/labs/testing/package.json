@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/testing",
-  "version": "0.2.5",
+  "version": "0.2.7",
   "publishConfig": {
     "access": "public"
   },
@@ -10,7 +10,7 @@
   "homepage": "https://github.com/lit/lit/tree/main/packages/labs/testing",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/testing"
   },
   "main": "index.js",
@@ -106,7 +106,7 @@
     "lib/**/*.{d.ts,d.ts.map,js,js.map}"
   ],
   "dependencies": {
-    "@lit-labs/ssr": "^3.1.8",
+    "@lit-labs/ssr": "^3.3.0",
     "@lit-labs/ssr-client": "^1.1.4",
     "@web/test-runner-commands": "^0.6.1",
     "@webcomponents/template-shadowroot": "^0.1.0",

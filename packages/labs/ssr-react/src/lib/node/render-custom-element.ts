@@ -34,6 +34,8 @@ export const renderCustomElement = (tagName: string, props: {} | null) => {
     elementRenderers: [LitElementRenderer],
     customElementInstanceStack: [],
     customElementHostStack: [],
+    eventTargetStack: [],
+    slotStack: [],
     deferHydration: false,
   };
 

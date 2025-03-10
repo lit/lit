@@ -1,5 +1,24 @@
 # Change Log
 
+## 3.3.1
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+- [#4919](https://github.com/lit/lit/pull/4919) [`d9e4f5bc`](https://github.com/lit/lit/commit/d9e4f5bc83d0760a0ddcda3c942155340bf2a57e) Thanks [@jimsimon](https://github.com/jimsimon)! - Use `WeakMap` for template cache. This prevents memory leaks when templates are dynamically created e.g. in combination with `unsafeHTML()`.
+
+## 3.3.0
+
+### Minor Changes
+
+- [#4755](https://github.com/lit/lit/pull/4755) [`25962bf5`](https://github.com/lit/lit/commit/25962bf58f33f32abef6487689438bf095780b63) Thanks [@kyubisation](https://github.com/kyubisation)! - Implement SSR event handling and an optional flag `globalThis.litSsrCallConnectedCallback` to call `connectedCallback` during SSR, if set to true.
+
+### Patch Changes
+
+- Updated dependencies [[`25962bf5`](https://github.com/lit/lit/commit/25962bf58f33f32abef6487689438bf095780b63)]:
+  - @lit-labs/ssr-dom-shim@1.3.0
+
 ## 3.2.2
 
 ### Patch Changes

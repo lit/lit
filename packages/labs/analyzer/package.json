@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/analyzer",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "publishConfig": {
     "access": "public"
   },
@@ -10,7 +10,7 @@
   "homepage": "https://github.com/lit/lit/tree/main/packages/labs/analyzer",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/analyzer"
   },
   "main": "index.js",

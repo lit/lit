@@ -2,6 +2,15 @@
 
 Integrates Lit SSR with Next.js to enable deep server rendering of Lit components.
 
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+
 ## Overview
 
 Lit components can be imported and added to Next.js projects but by default they will only be _shallowly_ rendered on the server. That is, the Lit component's tag and attributes set via JSX will be rendered, but the component's shadow DOM will not be.

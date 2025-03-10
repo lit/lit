@@ -2,12 +2,16 @@
 
 A package containing utilities for testing Lit components.
 
-## Status
-
-`@lit-labs/testing` is part of the [Lit
-Labs](https://lit.dev/docs/libraries/labs/) set of packages - it is published in
-order to get feedback on the design and not ready for production. Breaking
-changes are likely to happen frequently.
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Give feedback: https://github.com/lit/lit/discussions/3359
 
 ## Overview
 
@@ -37,6 +41,13 @@ export default {
   plugins: [litSsrPlugin()],
 };
 ```
+
+Signature
+
+`litSsrPlugin(options: LitSsrPluginOptions = {}): TestRunnerPlugin<Payload>`
+
+- `options: object` - Options object containing the following properties
+  - `workerInitModules: string` - Modules to be loaded before the fixture modules. This allows registering e.g. Node.js ESM hooks or general setup. Accepts absolute paths, paths relative to the working directory, or external package modules.
 
 ### Fixtures
 

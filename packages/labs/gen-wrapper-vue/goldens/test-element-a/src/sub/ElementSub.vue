@@ -24,7 +24,7 @@ const emit = defineEmits<{
   (e: 'sub-changed', payload: CustomEvent<unknown>): void;
 }>();
 
-const slots = useSlots();
+const slots = useSlots() as Slots;
 
 const render = () => {
   const eventProps = {
@@ -42,7 +42,7 @@ const render = () => {
 
   hasRendered = true;
 
-  return h('element-sub', props, assignSlotNodes(slots as Slots));
+  return h('element-sub', props, assignSlotNodes(slots));
 };
 </script>
 <template><render v-defaults /></template>
