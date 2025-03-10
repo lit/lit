@@ -387,7 +387,7 @@ export const parseLitTemplate = (
     sourceCodeLocationInfo: true,
   });
 
-  traverse(ast, {
+  traverse(ast as Node, {
     ['pre:node'](node, _parent) {
       // Adjust every node's source locations by the current adjustment values
       // TODO (justinfagnani): adjust attribute locations

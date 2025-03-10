@@ -35,11 +35,14 @@ export const withMultiAttributeBinding = () =>
 export const withElementBinding = () =>
   html`<div ${ref()}><span>Hello, world!</span></div>`;
 
+// prettier-ignore
 export const withChildBindingWithSpaces = () =>
-  html`<div class="a">${'a'}<span>A</span></div>`;
+  html`<div class="a">${ 'a' }<span>A</span></div>`;
 
+// prettier-ignore
 export const withAttributeBindingWithSpaces = () =>
-  html`<div class=${'a'}><span>Hello, world!</span></div>`;
+  html`<div class=${ 'a' }><span>Hello, world!</span></div>`;
 
+// prettier-ignore
 export const withElementBindingWithSpaces = () =>
-  html`<div ${ref()}><span>Hello, world!</span></div>`;
+  html`<div ${  ref()  }><span>Hello, world!</span></div>`;
