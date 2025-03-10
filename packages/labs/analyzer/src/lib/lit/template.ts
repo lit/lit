@@ -24,6 +24,10 @@ import {
 import {_$LH} from 'lit-html/private-ssr-support.js';
 import {parseFragment} from 'parse5';
 import type ts from 'typescript';
+import {
+  isLitHtmlImportDeclaration,
+  isResolvedPropertyAccessExpressionLitHtmlNamespace,
+} from './modules.js';
 
 export {
   isCommentNode,
@@ -41,20 +45,6 @@ const {getTemplateHtml, marker, markerMatch, boundAttributeSuffix} = _$LH;
 
 type TypeScript = typeof ts;
 export type Attribute = Element['attrs'][number];
-
-/**
- * Returns true if the specifier is known to export the Lit html template tag.
- *
- * This can be used in a heuristic to determine if a template is a lit-html
- * template.
- */
-export const isKnownLitModuleSpecifier = (specifier: string): boolean => {
-  return (
-    specifier === 'lit' ||
-    specifier === 'lit-html' ||
-    specifier === 'lit-element'
-  );
-};
 
 // TODO (justinfagnani): we have a number of template tags now:
 // lit-html plain, lit-html static, lit-ssr server, preact-signals, svg,
@@ -83,48 +73,6 @@ export const isLitTaggedTemplateExpression = (
     );
   }
   return false;
-};
-
-/**
- * Resolve a common pattern of using the `html` identifier of a lit namespace
- * import.
- *
- * E.g.:
- *
- * ```ts
- * import * as identifier from 'lit';
- * identifier.html`<p>I am compiled!</p>`;
- * ```
- */
-const isResolvedPropertyAccessExpressionLitHtmlNamespace = (
-  node: ts.PropertyAccessExpression,
-  ts: TypeScript,
-  checker: ts.TypeChecker
-): boolean => {
-  // Ensure propertyAccessExpression ends with `.html`.
-  if (ts.isIdentifier(node.name) && node.name.text !== 'html') {
-    return false;
-  }
-  // Expect a namespace preceding `html`, `<namespace>.html`.
-  if (!ts.isIdentifier(node.expression)) {
-    return false;
-  }
-
-  // Resolve the namespace if it has been aliased.
-  const symbol = checker.getSymbolAtLocation(node.expression);
-  if (!symbol) {
-    return false;
-  }
-  const namespaceImport = symbol.declarations?.[0];
-  if (!namespaceImport || !ts.isNamespaceImport(namespaceImport)) {
-    return false;
-  }
-  const importDeclaration = namespaceImport.parent.parent;
-  const specifier = importDeclaration.moduleSpecifier;
-  if (!ts.isStringLiteral(specifier)) {
-    return false;
-  }
-  return isKnownLitModuleSpecifier(specifier.text);
 };
 
 /**
@@ -185,15 +133,7 @@ const isResolvedIdentifierLitHtmlTemplate = (
   if (!ts.isImportClause(importClause)) {
     return false;
   }
-  const importDeclaration = importClause.parent;
-  if (!ts.isImportDeclaration(importDeclaration)) {
-    return false;
-  }
-  const specifier = importDeclaration.moduleSpecifier;
-  if (!ts.isStringLiteral(specifier)) {
-    return false;
-  }
-  return isKnownLitModuleSpecifier(specifier.text);
+  return isLitHtmlImportDeclaration(importClause.parent, ts);
 };
 
 export const PartType = {

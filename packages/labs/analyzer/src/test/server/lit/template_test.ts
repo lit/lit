@@ -16,7 +16,7 @@ import {
   type LitTemplateCommentNode,
   type Node,
   parseLitTemplate,
-} from '../../../lib/lit-html/template.js';
+} from '../../../lib/lit/template.js';
 import type {ClassDeclaration} from '../../../lib/model.js';
 import {languages, setupAnalyzerForNodeTest} from '../utils.js';
 
