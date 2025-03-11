@@ -70,10 +70,7 @@ const legacyProperty = (
   name: PropertyKey
 ) => {
   const hasOwnProperty = proto.hasOwnProperty(name);
-  (proto.constructor as typeof ReactiveElement).createProperty(
-    name,
-    hasOwnProperty ? {...options, wrapped: true} : options
-  );
+  (proto.constructor as typeof ReactiveElement).createProperty(name, options);
   // For accessors (which have a descriptor on the prototype) we need to
   // return a descriptor, otherwise TypeScript overwrites the descriptor we
   // define in createProperty() with the original descriptor. We don't do this
@@ -127,6 +124,10 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
   if (properties === undefined) {
     globalThis.litPropertyMetadata.set(metadata, (properties = new Map()));
   }
+  if (kind === 'setter') {
+    options = Object.create(options);
+    options.wrapped = true;
+  }
   properties.set(context.name, options);
 
   if (kind === 'accessor') {
@@ -147,7 +148,7 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
       },
       init(this: ReactiveElement, v: V): V {
         if (v !== undefined) {
-          this._$changeProperty(name, undefined, options);
+          this._$changeProperty(name, undefined, options, v);
         }
         return v;
       },

@@ -50,6 +50,7 @@ export type ContextCallback<ValueType> = (
 export class ContextRequestEvent<T extends UnknownContext> extends Event {
   public constructor(
     public readonly context: T,
+    public readonly contextTarget: Element,
     public readonly callback: ContextCallback<ContextType<T>>,
     public readonly subscribe?: boolean
   ) {

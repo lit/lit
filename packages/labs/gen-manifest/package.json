@@ -7,7 +7,11 @@
   "bugs": "https://github.com/lit/lit/issues",
   "type": "module",
   "main": "index.js",
-  "repository": "lit/lit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/gen-manifest"
+  },
   "scripts": {
     "build": "wireit",
     "test": "wireit",

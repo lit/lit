@@ -1,13 +1,13 @@
 {
   "name": "@lit-labs/virtualizer",
-  "version": "2.0.14",
+  "version": "2.1.0",
   "description": "Viewport-based virtualization (virtual scrolling) for Lit",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/virtualizer"
   },
   "main": "lit-virtualizer.js",

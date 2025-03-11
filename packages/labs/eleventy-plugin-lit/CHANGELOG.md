@@ -1,5 +1,20 @@
 # @lit-labs/eleventy-plugin-lit
 
+## 1.0.5
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+## 1.0.4
+
+### Patch Changes
+
+- [#4869](https://github.com/lit/lit/pull/4869) [`bdc8db8d`](https://github.com/lit/lit/commit/bdc8db8d54e1e17d36be7dafb2bab877d625596c) Thanks [@zachleat](https://github.com/zachleat)! - Improve performance on trimming outer markers from server rendered results.
+
+- Updated dependencies [[`25962bf5`](https://github.com/lit/lit/commit/25962bf58f33f32abef6487689438bf095780b63)]:
+  - @lit-labs/ssr@3.3.0
+
 ## 1.0.3
 
 ### Patch Changes

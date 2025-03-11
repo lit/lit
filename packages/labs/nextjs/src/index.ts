@@ -48,7 +48,7 @@ export = (
           test: /\/pages\/.*\.(?:j|t)sx?$|\/app\/.*\.(?:j|t)sx?$/,
           // Exclude Next's own distributed files as they're commonjs and won't
           // play nice with `imports-loader`.
-          exclude: /next\/dist\//,
+          exclude: [/next\/dist\//, /node_modules/],
           loader: 'imports-loader',
           options: {
             imports,

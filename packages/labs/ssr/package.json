@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "3.2.2",
+  "version": "3.3.1",
   "publishConfig": {
     "access": "public"
   },
@@ -200,7 +200,7 @@
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/ssr"
   },
   "devDependencies": {
@@ -225,7 +225,7 @@
   },
   "dependencies": {
     "@lit-labs/ssr-client": "^1.1.7",
-    "@lit-labs/ssr-dom-shim": "^1.2.0",
+    "@lit-labs/ssr-dom-shim": "^1.3.0",
     "@lit/reactive-element": "^2.0.4",
     "@parse5/tools": "^0.3.0",
     "@types/node": "^16.0.0",

@@ -1,13 +1,13 @@
 {
   "name": "@lit-labs/eleventy-plugin-lit",
-  "version": "1.0.3",
+  "version": "1.0.5",
   "description": "Eleventy plugin for rendering Lit components.",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/eleventy-plugin-lit"
   },
   "publishConfig": {
@@ -90,7 +90,7 @@
     }
   },
   "dependencies": {
-    "@lit-labs/ssr": "^3.1.8",
+    "@lit-labs/ssr": "^3.3.0",
     "lit": "^2.7.0 || ^3.0.0"
   },
   "devDependencies": {

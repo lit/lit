@@ -8,6 +8,17 @@ objects, including:
 - IntersectionObserver
 - PerformanceObserver
 
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Give feedback: https://github.com/lit/lit/discussions/3355
+
 ## Overview
 
 The modern web platform provides a number of observer helpers that can be used
@@ -29,7 +40,7 @@ $ npm install @lit-labs/observers
 Here's an example:
 
 ```ts
-import {MutationController} from '@lit-labs/observers/mutation_controller.js';
+import {MutationController} from '@lit-labs/observers/mutation-controller.js';
 // ...
 
 class MyElement extends LitElement {

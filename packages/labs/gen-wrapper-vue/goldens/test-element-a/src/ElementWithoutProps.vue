@@ -5,13 +5,13 @@ import '@lit-internal/test-element-a/element-without-props.js';
 
 export interface Props {}
 
-const slots = useSlots();
+const slots = useSlots() as Slots;
 
 const render = () => {
   const eventProps = {};
   const props = eventProps as typeof eventProps & Props;
 
-  return h('element-without-props', props, assignSlotNodes(slots as Slots));
+  return h('element-without-props', props, assignSlotNodes(slots));
 };
 </script>
 <template><render /></template>

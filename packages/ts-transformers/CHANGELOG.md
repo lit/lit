@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.2
+
+### Patch Changes
+
+- [#4907](https://github.com/lit/lit/pull/4907) [`01fa2942`](https://github.com/lit/lit/commit/01fa294291f6c8876a7de0a1b99df37cb7f2d477) Thanks [@bennypowers](https://github.com/bennypowers)! - Made typescript a peer dependency, this ensures that projects using a different
+  version of typescript will get consistent results from this package.
+
 ## 2.0.1
 
 ### Patch Changes

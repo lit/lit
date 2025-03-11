@@ -2,7 +2,23 @@
 
 `@lit-labs/virtualizer` provides viewport-based virtualization (including virtual scrolling) for [Lit](https://lit.dev).
 
-⚠️ `@lit-labs/virtualizer` is in late prerelease. Its API is intended to remain quite stable going forward, but you should expect (increasingly minor) changes before 1.0. Some of these changes may be technically breaking, but we anticipate that they will be mechanical and straightforward to make.
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Give feedback: https://github.com/lit/lit/discussions/3362
+
+> [!WARNING]
+>
+> `@lit-labs/virtualizer` is in late prerelease. Its API is intended to remain
+> quite stable going forward, but you should expect (increasingly minor) changes
+> before 1.0. Some of these changes may be technically breaking, but we
+> anticipate that they will be mechanical and straightforward to make.
 
 ## Getting Started
 

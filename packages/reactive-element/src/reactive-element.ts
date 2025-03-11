@@ -274,6 +274,25 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
    * @internal
    */
   wrapped?: boolean;
+
+  /**
+   * When `true`, uses the initial value of the property as the default value,
+   * which changes how attributes are handled:
+   *  - The initial value does *not* reflect, even if the `reflect` option is `true`.
+   *    Subsequent changes to the property will reflect, even if they are equal to the
+   *     default value.
+   *  - When the attribute is removed, the property is set to the default value
+   *  - The initial value will not trigger an old value in the `changedProperties` map
+   *    argument to update lifecycle methods.
+   *
+   * When set, properties must be initialized, either with a field initializer, or an
+   * assignment in the constructor. Not initializing the property may lead to
+   * improper handling of subsequent property assignments.
+   *
+   * While this behavior is opt-in, most properties that reflect to attributes should
+   * use `useDefault: true` so that their initial values do not reflect.
+   */
+  useDefault?: boolean;
 }
 
 /**
@@ -381,6 +400,7 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   type: String,
   converter: defaultConverter,
   reflect: false,
+  useDefault: false,
   hasChanged: notEqual,
 };
 
@@ -676,6 +696,12 @@ export abstract class ReactiveElement
       (options as Mutable<PropertyDeclaration, 'attribute'>).attribute = false;
     }
     this.__prepare();
+    // Whether this property is wrapping accessors.
+    // Helps control the initial value change and reflection logic.
+    if (this.prototype.hasOwnProperty(name)) {
+      options = Object.create(options);
+      options.wrapped = true;
+    }
     this.elementProperties.set(name, options);
     if (!options.noAccessor) {
       const key = DEV_MODE
@@ -748,12 +774,10 @@ export abstract class ReactiveElement
       );
     }
     return {
-      get(this: ReactiveElement) {
-        return get?.call(this);
-      },
+      get,
       set(this: ReactiveElement, value: unknown) {
         const oldValue = get?.call(this);
-        set!.call(this, value);
+        set?.call(this, value);
         this.requestUpdate(name, oldValue, options);
       },
       configurable: true,
@@ -981,6 +1005,12 @@ export abstract class ReactiveElement
   _$changedProperties!: PropertyValues;
 
   /**
+   * Records property default values when the
+   * `useDefault` option is used.
+   */
+  private __defaultValues?: Map<PropertyKey, unknown>;
+
+  /**
    * Properties that should be reflected when updated.
    */
   private __reflectingProperties?: Set<PropertyKey>;
@@ -1052,13 +1082,7 @@ export abstract class ReactiveElement
    * Fixes any properties set on the instance before upgrade time.
    * Otherwise these would shadow the accessor and break these properties.
    * The properties are stored in a Map which is played back after the
-   * constructor runs. Note, on very old versions of Safari (<=9) or Chrome
-   * (<=41), properties created for native platform properties like (`id` or
-   * `name`) may not have default values set in the element constructor. On
-   * these browsers native properties appear on instances and therefore their
-   * default value will overwrite any element default (e.g. if the element sets
-   * this.id = 'id' in the constructor, the 'id' will become '' since this is
-   * the native platform default).
+   * constructor runs.
    */
   private __saveInstanceProperties() {
     const instanceProperties = new Map<PropertyKey, unknown>();
@@ -1215,11 +1239,11 @@ export abstract class ReactiveElement
             : defaultConverter;
       // mark state reflecting
       this.__reflectingProperty = propName;
-      this[propName as keyof this] = converter.fromAttribute!(
-        value,
-        options.type
+      this[propName as keyof this] =
+        converter.fromAttribute!(value, options.type) ??
+        this.__defaultValues?.get(propName) ??
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ) as any;
+        (null as any);
       // mark state not reflecting
       this.__reflectingProperty = null;
     }
@@ -1252,12 +1276,22 @@ export abstract class ReactiveElement
           `The requestUpdate() method was called with an Event as the property name. This is probably a mistake caused by binding this.requestUpdate as an event listener. Instead bind a function that will call it with no arguments: () => this.requestUpdate()`
         );
       }
-      options ??= (
-        this.constructor as typeof ReactiveElement
-      ).getPropertyOptions(name);
-      const hasChanged = options.hasChanged ?? notEqual;
+      const ctor = this.constructor as typeof ReactiveElement;
       const newValue = this[name as keyof this];
-      if (hasChanged(newValue, oldValue)) {
+      options ??= ctor.getPropertyOptions(name);
+      const changed =
+        (options.hasChanged ?? notEqual)(newValue, oldValue) ||
+        // When there is no change, check a corner case that can occur when
+        // 1. there's a initial value which was not reflected
+        // 2. the property is subsequently set to this value.
+        // For example, `prop: {useDefault: true, reflect: true}`
+        // and el.prop = 'foo'. This should be considered a change if the
+        // attribute is not set because we will now reflect the property to the attribute.
+        (options.useDefault &&
+          options.reflect &&
+          newValue === this.__defaultValues?.get(name) &&
+          !this.hasAttribute(ctor.__attributeNameForProperty(name, options)!));
+      if (changed) {
         this._$changeProperty(name, oldValue, options);
       } else {
         // Abort the request if the property should not be considered changed.
@@ -1275,8 +1309,22 @@ export abstract class ReactiveElement
   _$changeProperty(
     name: PropertyKey,
     oldValue: unknown,
-    options: PropertyDeclaration
+    options: PropertyDeclaration,
+    initializeValue?: unknown
   ) {
+    // Record default value when useDefault is used. This allows us to
+    // restore this value when the attribute is removed.
+    if (options.useDefault && !(this.__defaultValues ??= new Map()).has(name)) {
+      this.__defaultValues.set(
+        name,
+        initializeValue ?? oldValue ?? this[name as keyof this]
+      );
+      // if this is not wrapping an accessor, it must be an initial setting
+      // and in this case we do not want to record the change or reflect.
+      if (options.wrapped !== true || initializeValue !== undefined) {
+        return;
+      }
+    }
     // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
     // vs just Map.set()
     if (!this._$changedProperties.has(name)) {
@@ -1408,25 +1456,26 @@ export abstract class ReactiveElement
         this.__instanceProperties = undefined;
       }
       // Trigger initial value reflection and populate the initial
-      // changedProperties map, but only for the case of experimental
-      // decorators on accessors, which will not have already populated the
-      // changedProperties map. We can't know if these accessors had
-      // initializers, so we just set them anyway - a difference from
-      // experimental decorators on fields and standard decorators on
-      // auto-accessors.
-      // For context why experimentalDecorators with auto accessors are handled
-      // specifically also see:
+      // `changedProperties` map, but only for the case of properties created
+      // via `createProperty` on accessors, which will not have already
+      // populated the `changedProperties` map since they are not set.
+      // We can't know if these accessors had initializers, so we just set
+      // them anyway - a difference from experimental decorators on fields and
+      // standard decorators on auto-accessors.
+      // For context see:
       // https://github.com/lit/lit/pull/4183#issuecomment-1711959635
       const elementProperties = (this.constructor as typeof ReactiveElement)
         .elementProperties;
       if (elementProperties.size > 0) {
         for (const [p, options] of elementProperties) {
+          const {wrapped} = options;
+          const value = this[p as keyof this];
           if (
-            options.wrapped === true &&
+            wrapped === true &&
             !this._$changedProperties.has(p) &&
-            this[p as keyof this] !== undefined
+            value !== undefined
           ) {
-            this._$changeProperty(p, this[p as keyof this], options);
+            this._$changeProperty(p, undefined, options, value);
           }
         }
       }
