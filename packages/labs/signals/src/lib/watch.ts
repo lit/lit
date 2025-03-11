@@ -44,7 +44,7 @@ export class WatchDirective<T> extends AsyncDirective {
       this.setValue(this.__signal?.get());
       return this.__signal?.get();
     });
-    this.__watcher = this.__host?._partUpdateWatcher ?? hostlessWatcher;
+    this.__watcher = this.__host?._watcher ?? hostlessWatcher;
     this.__watcher.watch(this.__computed);
     // get to trigger watcher but untracked so it's not part of performUpdate
     Signal.subtle.untrack(() => this.__computed?.get());

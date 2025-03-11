@@ -8,14 +8,16 @@ import type {ReactiveElement} from 'lit';
 import {Signal} from 'signal-polyfill';
 
 export interface SignalWatcher extends ReactiveElement {
-  _partUpdateWatcher?: Signal.subtle.Watcher;
+  _watcher?: Signal.subtle.Watcher;
+}
+
+export interface EffectOptions {
+  beforeUpdate?: boolean;
+  manualDispose?: boolean;
 }
 
 interface SignalWatcherApi {
-  effect(
-    fn: () => void,
-    options?: {beforeUpdate?: boolean; manualDispose?: boolean}
-  ): () => void;
+  effect(fn: () => void, options?: EffectOptions): () => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -24,10 +26,8 @@ type Constructor<T = {}> = new (...args: any[]) => T;
 interface SignalWatcherInterface extends SignalWatcher {}
 interface SignalWatcherInternal extends SignalWatcher {
   __forcingUpdate: boolean;
-  __beforeUpdateWatcher?: Signal.subtle.Watcher;
-  __performUpdateWatcher?: Signal.subtle.Watcher;
-  __afterUpdateWatcher?: Signal.subtle.Watcher;
-  __flushEffects: () => void;
+  __performUpdateSignal?: Signal.Computed<void>;
+  requestUpdate(): void;
   __queueEffects: () => void;
 }
 
@@ -38,33 +38,10 @@ const signalWatcherBrand: unique symbol = Symbol('SignalWatcherBrand');
 // by the signals it watches. To avoid this, we break the cycle by using a
 // WeakMap to store the watcher for each element, and a FinalizationRegistry to
 // clean up the watcher when the element is garbage collected.
-
-const elementFinalizationRegistry = new FinalizationRegistry<{
-  beforeUpdateWatcher: Signal.subtle.Watcher;
-  performUpdateWatcher: Signal.subtle.Watcher;
-  partUpdateWatcher: Signal.subtle.Watcher;
-  afterUpdateWatcher: Signal.subtle.Watcher;
-}>(
-  ({
-    beforeUpdateWatcher,
-    performUpdateWatcher,
-    partUpdateWatcher,
-    afterUpdateWatcher,
-  }) => {
-    beforeUpdateWatcher.unwatch(
-      ...Signal.subtle.introspectSources(beforeUpdateWatcher)
-    );
-    performUpdateWatcher.unwatch(
-      ...Signal.subtle.introspectSources(performUpdateWatcher)
-    );
-    partUpdateWatcher.unwatch(
-      ...Signal.subtle.introspectSources(partUpdateWatcher)
-    );
-    afterUpdateWatcher.unwatch(
-      ...Signal.subtle.introspectSources(afterUpdateWatcher)
-    );
-  }
-);
+const elementFinalizationRegistry =
+  new FinalizationRegistry<Signal.subtle.Watcher>((watcher) => {
+    watcher.unwatch(...Signal.subtle.introspectSources(watcher));
+  });
 
 const elementForWatcher = new WeakMap<
   Signal.subtle.Watcher,
@@ -88,27 +65,33 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
   class SignalWatcher extends Base implements SignalWatcherInterface {
     static [signalWatcherBrand]: true;
 
-    // @internal
-    _partUpdateWatcher?: Signal.subtle.Watcher;
-    private __performUpdateWatcher?: Signal.subtle.Watcher;
-    private __beforeUpdateWatcher?: Signal.subtle.Watcher;
-    private __afterUpdateWatcher?: Signal.subtle.Watcher;
+    // @internal used in watch directive
+    _watcher?: Signal.subtle.Watcher;
 
-    private __flushWatcher(watcher: Signal.subtle.Watcher | undefined) {
-      if (watcher === undefined) {
-        return;
-      }
-      for (const signal of watcher.getPending()) {
-        signal.get();
-      }
-      watcher.watch();
-    }
-
+    /**
+     * Flushes effects in required order:
+     * 1. Before update effects
+     * 2. Perform update
+     * 3. Pending watches
+     * 4. After update effects
+     * */
     private __flushEffects() {
-      this.__flushWatcher(this.__beforeUpdateWatcher!);
-      this.__flushWatcher(this._partUpdateWatcher!);
-      this.__flushWatcher(this.__performUpdateWatcher!);
-      this.__flushWatcher(this.__afterUpdateWatcher!);
+      const beforeEffects = [] as Signal.Computed<void>[];
+      const afterEffects = [] as Signal.Computed<void>[];
+      this.__effects.forEach((options, signal) => {
+        const list = options?.beforeUpdate ? beforeEffects : afterEffects;
+        list.push(signal);
+      });
+      const pendingWatches = this._watcher
+        ?.getPending()
+        .filter(
+          (signal) =>
+            signal !== this.__performUpdateSignal && !this.__effects.has(signal)
+        );
+      beforeEffects.forEach((signal) => signal.get());
+      this.__performUpdateSignal?.get();
+      pendingWatches!.forEach((signal) => signal.get());
+      afterEffects.forEach((signal) => signal.get());
     }
 
     // @ts-expect-error This method is called anonymously in a watcher function
@@ -124,7 +107,7 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
     }
 
     private __watch() {
-      if (this.__performUpdateWatcher !== undefined) {
+      if (this._watcher !== undefined) {
         return;
       }
       // We create a fresh computed instead of just re-using the existing one
@@ -133,92 +116,70 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
         this.__forceUpdateSignal.get();
         super.performUpdate();
       });
-      const performUpdateWatcher = (this.__performUpdateWatcher =
-        new Signal.subtle.Watcher(function (this: Signal.subtle.Watcher) {
-          // All top-level references in this function body must either be `this`
-          // (the performUpdateWatcher) or a module global to prevent this closure from keeping
-          // the enclosing scopes alive, which would keep the element alive. So
-          // The only two references are `this` and `elementForWatcher`.
-          const el = elementForWatcher.get(this);
-          if (el === undefined) {
-            // The element was garbage collected, so we can stop watching.
-            return;
-          }
-          if (el.__forcingUpdate === false) {
-            el.requestUpdate();
-          }
-          this.watch();
-        }));
-      const watchCb = async function (this: Signal.subtle.Watcher) {
-        const el = elementForWatcher.get(performUpdateWatcher);
+      const watcher = (this._watcher = new Signal.subtle.Watcher(function (
+        this: Signal.subtle.Watcher
+      ) {
+        // All top-level references in this function body must either be `this`
+        // (the `watcher`) or a module global to prevent this closure from keeping
+        // the enclosing scopes alive, which would keep the element alive. So
+        // The only two references are `this` and `elementForWatcher`.
+        const el = elementForWatcher.get(this);
         if (el === undefined) {
           // The element was garbage collected, so we can stop watching.
           return;
         }
+        if (el.__forcingUpdate === false) {
+          const needsUpdate = new Set(this.getPending()).has(
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            (el as any).__performUpdateSignal
+          );
+          if (needsUpdate) {
+            el.requestUpdate();
+          } else {
+            el.__queueEffects();
+          }
+        }
         this.watch();
-        el.__queueEffects();
-      };
-      const beforeUpdateWatcher = (this.__beforeUpdateWatcher =
-        new Signal.subtle.Watcher(watchCb));
-      const partUpdateWatcher = (this._partUpdateWatcher =
-        new Signal.subtle.Watcher(watchCb));
-      const afterUpdateWatcher = (this.__afterUpdateWatcher =
-        new Signal.subtle.Watcher(watchCb));
-      elementForWatcher.set(
-        performUpdateWatcher,
-        this as unknown as SignalWatcherInternal
-      );
-      elementFinalizationRegistry.register(this, {
-        beforeUpdateWatcher,
-        partUpdateWatcher,
-        performUpdateWatcher,
-        afterUpdateWatcher,
-      });
-      performUpdateWatcher.watch(this.__performUpdateSignal);
-      beforeUpdateWatcher.watch(...Array.from(this.#effects.before));
-      afterUpdateWatcher.watch(...Array.from(this.#effects.after));
+      }));
+      elementForWatcher.set(watcher, this as unknown as SignalWatcherInternal);
+      elementFinalizationRegistry.register(this, watcher);
+      watcher.watch(this.__performUpdateSignal);
+      watcher.watch(...Array.from(this.__effects).map(([signal]) => signal));
     }
 
     private __unwatch() {
-      if (this.__performUpdateWatcher === undefined) {
+      if (this._watcher === undefined) {
         return;
       }
-      this.__performUpdateWatcher?.unwatch(
-        ...Signal.subtle.introspectSources(this.__performUpdateWatcher!)
+      // We unwatch all signals that are not manually disposed, so that we don't
+      // keep the element alive by holding references to it.
+      this._watcher.unwatch(
+        ...Signal.subtle
+          .introspectSources(this._watcher!)
+          .filter(
+            (signal) =>
+              this.__effects.get(signal as Signal.Computed<void>)
+                ?.manualDispose !== true
+          )
       );
-      this.__beforeUpdateWatcher?.unwatch(...Array.from(this.#effects.before));
-      this.__afterUpdateWatcher?.unwatch(...Array.from(this.#effects.after));
       this.__performUpdateSignal = undefined;
-      this.__beforeUpdateWatcher = undefined;
-      this._partUpdateWatcher = undefined;
-      this.__performUpdateWatcher = undefined;
-      this.__afterUpdateWatcher = undefined;
+      this._watcher = undefined;
     }
 
-    #effects = {
-      before: new Set<Signal.Computed<void>>(),
-      after: new Set<Signal.Computed<void>>(),
-    };
+    // list signals managing effects, stored with effect options.
+    private __effects = new Map<
+      Signal.Computed<void>,
+      EffectOptions | undefined
+    >();
 
-    effect(
-      fn: () => void,
-      options?: {beforeUpdate?: boolean; manualDispose?: boolean}
-    ): () => void {
+    effect(fn: () => void, options?: EffectOptions): () => void {
       this.__watch();
       const signal = new Signal.Computed(() => {
         fn();
       });
+      this._watcher!.watch(signal);
+      this.__effects.set(signal, options);
       const beforeUpdate = options?.beforeUpdate ?? false;
-      const watcher = beforeUpdate
-        ? this.__beforeUpdateWatcher
-        : this.__afterUpdateWatcher;
-      watcher!.watch(signal);
-      const effectList = beforeUpdate
-        ? this.#effects.before
-        : this.#effects.after;
-      if (options?.manualDispose !== true) {
-        effectList.add(signal);
-      }
       // An untracked read is safer and all that it takes to
       // tell the watcher to go.
       if (beforeUpdate) {
@@ -229,8 +190,8 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
         );
       }
       return () => {
-        effectList.delete(signal);
-        watcher!.unwatch(signal);
+        this.__effects.delete(signal);
+        this._watcher!.unwatch(signal);
       };
     }
 
