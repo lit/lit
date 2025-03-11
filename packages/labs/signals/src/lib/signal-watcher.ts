@@ -130,8 +130,7 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
         }
         if (el.__forcingUpdate === false) {
           const needsUpdate = new Set(this.getPending()).has(
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any
-            (el as any).__performUpdateSignal
+            el.__performUpdateSignal as Signal.Computed<void>
           );
           if (needsUpdate) {
             el.requestUpdate();
