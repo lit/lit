@@ -11,13 +11,61 @@ export interface SignalWatcher extends ReactiveElement {
   _watcher?: Signal.subtle.Watcher;
 }
 
-export interface EffectOptions {
+interface EffectOptions {
   beforeUpdate?: boolean;
   manualDispose?: boolean;
 }
 
+export interface ElementEffectOptions extends EffectOptions {
+  element?: SignalWatcher & SignalWatcherApi;
+}
+
+let effectsPending = false;
+const effectWatcher = new Signal.subtle.Watcher(() => {
+  if (effectsPending) {
+    return;
+  }
+  effectsPending = true;
+  queueMicrotask(() => {
+    effectsPending = false;
+    for (const signal of effectWatcher.getPending()) {
+      signal.get();
+    }
+    effectWatcher.watch();
+  });
+});
+
+/**
+ * Executes the provided callback function when any of the signals it accesses
+ * change. If an options object is provided, the `element` property can be used
+ * to specify the element to associate the effect with. The `beforeUpdate`
+ * property can be used to specify that the effect should run before the element
+ * updates. The `manualDispose` property can be used to specify that the effect
+ * should not be automatically disposed when the element is disconnected.
+ *
+ * @param callback
+ * @param options {element, beforeUpdate, manualDispose}
+ * @returns
+ */
+export const effect = (
+  callback: () => void,
+  options?: ElementEffectOptions
+) => {
+  const {element} = options ?? {};
+  if (element === undefined) {
+    const computed = new Signal.Computed(callback);
+    effectWatcher.watch(computed);
+    Signal.subtle.untrack(() => computed.get());
+    return () => {
+      effectWatcher.unwatch(computed);
+    };
+  } else {
+    return element._effect(callback, options);
+  }
+};
+
 interface SignalWatcherApi {
-  effect(fn: () => void, options?: EffectOptions): () => void;
+  _effect(fn: () => void, options?: EffectOptions): () => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -171,7 +219,8 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
       EffectOptions | undefined
     >();
 
-    effect(fn: () => void, options?: EffectOptions): () => void {
+    // @internal exposed via `effect`
+    _effect(fn: () => void, options?: EffectOptions): () => void {
       this.__watch();
       const signal = new Signal.Computed(() => {
         fn();

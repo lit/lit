@@ -8,7 +8,7 @@ import {LitElement, html, render} from 'lit';
 import {property} from 'lit/decorators.js';
 import {cache} from 'lit/directives/cache.js';
 import {assert} from '@esm-bundle/chai';
-import {watch, signal, computed, SignalWatcher} from '../index.js';
+import {watch, signal, computed, SignalWatcher, effect} from '../index.js';
 
 let elementNameId = 0;
 const generateElementName = () => `test-${elementNameId++}`;
@@ -183,19 +183,22 @@ suite('watch directive', () => {
     await el.updateComplete;
     let effectBeforeValue = -1;
     let effectBeforeDom: string | null | undefined = '';
-    const disposeEffectBefore = el.effect(
+    const disposeEffectBefore = effect(
       () => {
         effectBeforeValue = count.get();
         effectBeforeDom = el.shadowRoot?.querySelector('p')?.textContent;
       },
-      {beforeUpdate: true}
+      {element: el, beforeUpdate: true}
     );
     let effectValue = -1;
     let effectDom: string | null | undefined = '';
-    const disposeEffect = el.effect(() => {
-      effectValue = count.get();
-      effectDom = el.shadowRoot?.querySelector('p')?.textContent;
-    });
+    const disposeEffect = effect(
+      () => {
+        effectValue = count.get();
+        effectDom = el.shadowRoot?.querySelector('p')?.textContent;
+      },
+      {element: el}
+    );
     await el.updateComplete;
     assert.equal(effectBeforeValue, 0);
     assert.equal(effectBeforeDom, 'count: 0');
