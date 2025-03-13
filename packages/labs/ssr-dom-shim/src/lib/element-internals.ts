@@ -41,6 +41,7 @@ export const ariaMixinAttributes: ARIAAttributeMap = {
   ariaPosInSet: 'aria-posinset',
   ariaPressed: 'aria-pressed',
   ariaReadOnly: 'aria-readonly',
+  ariaRelevant: 'aria-relevant',
   ariaRequired: 'aria-required',
   ariaRoleDescription: 'aria-roledescription',
   ariaRowCount: 'aria-rowcount',
@@ -94,6 +95,7 @@ export const ElementInternalsShim = class ElementInternals
   ariaPosInSet = '';
   ariaPressed = '';
   ariaReadOnly = '';
+  ariaRelevant = '';
   ariaRequired = '';
   ariaRoleDescription = '';
   ariaRowCount = '';
