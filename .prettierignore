@@ -287,6 +287,7 @@ packages/labs/observers/performance-controller.*
 packages/labs/observers/resize-controller.*
 packages/labs/observers/intersection-controller.*
 
+packages/labs/parser/lib/
 packages/labs/preact-signals/development/
 packages/labs/preact-signals/lib/
 packages/labs/preact-signals/node_modules/
