@@ -48,7 +48,7 @@ jobs:
           node_modules/.bin/release-image -m <(sed -n '/# Releases/,$p' release.md)
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: releaseimage
           path: release.png

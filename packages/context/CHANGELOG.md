@@ -1,5 +1,11 @@
 # @lit-labs/context
 
+## 1.1.4
+
+### Patch Changes
+
+- [#4734](https://github.com/lit/lit/pull/4734) [`0f535d48`](https://github.com/lit/lit/commit/0f535d483ba32c57e49ffaa7f7e4ce70a9f6f26d) Thanks [@sorin-davidoi](https://github.com/sorin-davidoi)! - Avoid calling Event.composedPath() when it is not needed
+
 ## 1.1.3
 
 ### Patch Changes

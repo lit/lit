@@ -1,12 +1,12 @@
 {
   "name": "@lit-labs/motion",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Lit directives for making things move.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/motion"
   },
   "type": "module",

@@ -1,12 +1,12 @@
 {
   "name": "@lit-labs/preact-signals",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Preact Signals integration for Lit",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/preact-signals"
   },
   "type": "module",
