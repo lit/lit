@@ -82,31 +82,39 @@ const polyfillSupport = DEV_MODE
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
-  const issuedWarnings: Set<string | undefined> = (global.litIssuedWarnings ??=
-    new Set());
+  global.litIssuedWarnings ??= new Set();
 
-  // Issue a warning, if we haven't already.
+  /**
+   * Issue a warning if we haven't already, based either on `code` or `warning`.
+   * Warnings are disabled automatically only by `warning`; disabling via `code`
+   * can be done by users.
+   */
   issueWarning = (code: string, warning: string) => {
     warning += ` See https://lit.dev/msg/${code} for more information.`;
-    if (!issuedWarnings.has(warning)) {
+    if (
+      !global.litIssuedWarnings!.has(warning) &&
+      !global.litIssuedWarnings!.has(code)
+    ) {
       console.warn(warning);
-      issuedWarnings.add(warning);
+      global.litIssuedWarnings!.add(warning);
     }
   };
 
-  issueWarning(
-    'dev-mode',
-    `Lit is in dev mode. Not recommended for production!`
-  );
-
-  // Issue polyfill support warning.
-  if (global.ShadyDOM?.inUse && polyfillSupport === undefined) {
+  queueMicrotask(() => {
     issueWarning(
-      'polyfill-support-missing',
-      `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
-        `the \`polyfill-support\` module has not been loaded.`
+      'dev-mode',
+      `Lit is in dev mode. Not recommended for production!`
     );
-  }
+
+    // Issue polyfill support warning.
+    if (global.ShadyDOM?.inUse && polyfillSupport === undefined) {
+      issueWarning(
+        'polyfill-support-missing',
+        `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
+          `the \`polyfill-support\` module has not been loaded.`
+      );
+    }
+  });
 }
 
 /**
@@ -1720,9 +1728,11 @@ if (DEV_MODE) {
 // This line will be used in regexes to search for ReactiveElement usage.
 (global.reactiveElementVersions ??= []).push('2.0.4');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
-  issueWarning!(
-    'multiple-versions',
-    `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended.`
-  );
+  queueMicrotask(() => {
+    issueWarning!(
+      'multiple-versions',
+      `Multiple versions of Lit loaded. Loading multiple versions ` +
+        `is not recommended.`
+    );
+  });
 }
