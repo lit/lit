@@ -67,7 +67,7 @@
     },
     "test:server:uvu": {
       "#comment": "The quotes around the file regex must be double quotes on windows!",
-      "command": "uvu test/server \"_test\\.js$\" -i \"lit-html/\"",
+      "command": "uvu test/server \"_test\\.js$\" -i \"lit/template_test\"",
       "env": {
         "NODE_OPTIONS": "--enable-source-maps"
       },
@@ -80,7 +80,7 @@
       "output": []
     },
     "test:server:node": {
-      "command": "node --enable-source-maps --test-reporter=spec --test test/server/lit-html/*_test.js",
+      "command": "node --enable-source-maps --test-reporter=spec --test test/server/lit/template_test.js",
       "dependencies": [
         "build"
       ],

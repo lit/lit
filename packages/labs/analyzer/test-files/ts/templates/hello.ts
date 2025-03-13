@@ -46,3 +46,24 @@ export const withAttributeBindingWithSpaces = () =>
 // prettier-ignore
 export const withElementBindingWithSpaces = () =>
   html`<div ${  ref()  }><span>Hello, world!</span></div>`;
+
+// prettier-ignore
+export const withMultiLineChildExpression = () => html`
+  <div class="a">
+    ${html`
+      <p>A</p>
+      <p>B</p>
+    `}
+  </div>
+  <div class="b"></div>
+`;
+
+// prettier-ignore
+export const withMultiLineAttributeExpression = () => html`
+  <div class="${[
+    'a',
+    'b'].join(' ')}">
+    <span>A</span>
+  </div>
+  <div class="b"></div>
+`;

@@ -14,7 +14,7 @@ import {
   getLitTemplateExpressions,
   isLitTaggedTemplateExpression,
   type LitTemplateCommentNode,
-  type Node,
+  type ChildNode,
   parseLitTemplate,
 } from '../../../lib/lit/template.js';
 import type {ClassDeclaration} from '../../../lib/model.js';
@@ -113,8 +113,13 @@ const getTestSourceFile = (filename: string) => {
   return {sourceFile, checker};
 };
 
+/**
+ * Asserts that the source locations for the given parse5 node are correct by
+ * extracting source from the TypeScript TaggedTemplateExpression and comparing
+ * the text to the expected value.
+ */
 const assertTemplateNodeText = (
-  node: Node,
+  node: ChildNode,
   templateExpression: ts.TaggedTemplateExpression,
   expected: string
 ) => {
@@ -122,30 +127,57 @@ const assertTemplateNodeText = (
   const templateText = templateExpression.template.getFullText().slice(1, -1);
 
   const {sourceCodeLocation} = node;
+  const {startOffset, endOffset, startLine, startCol, endLine, endCol} =
+    sourceCodeLocation!;
 
   // Check that the offsets are correct:
-  const elementText = templateText.substring(
-    sourceCodeLocation!.startOffset,
-    sourceCodeLocation!.endOffset
-  );
+  const elementTextFromOffsets = templateText.substring(startOffset, endOffset);
+  assert.equal(elementTextFromOffsets, expected);
 
-  assert.equal(elementText, expected);
-
-  // TODO: check that the lines and cols are correct
+  // Check that the lines and cols are correct
+  const lines = templateText.split('\n');
+  const elementTextFromLinesAndCols = lines
+    .slice(startLine - 1, endLine)
+    .map((line, i) => {
+      const start = i === 0 ? startCol - 1 : 0;
+      const end = i === endLine - startLine ? endCol - 1 : undefined;
+      return line.slice(start, end);
+    })
+    .join('\n');
+  assert.equal(elementTextFromLinesAndCols, expected);
 };
 
-suite('parseTemplate', () => {
+suite('parseLitTemplate', () => {
   const testFilePath = path.resolve(testFilesDir, 'hello.ts');
   const {sourceFile, checker} = getTestSourceFile(testFilePath);
-  const templateExpressions = getLitTemplateExpressions(
+  const allTemplateExpressions = getLitTemplateExpressions(
     sourceFile,
     ts,
     checker
   );
+  const templateExpressions = new Map<string, ts.TaggedTemplateExpression>();
+  for (const templateExpression of allTemplateExpressions) {
+    let parent = templateExpression.parent;
+    while (
+      parent !== undefined &&
+      !ts.isVariableDeclaration(parent) &&
+      !ts.isTaggedTemplateExpression(parent)
+    ) {
+      parent = parent.parent;
+    }
+    if (ts.isTaggedTemplateExpression(parent)) {
+      continue;
+    }
+    if (parent !== undefined) {
+      const {name} = parent as ts.VariableDeclaration;
+      const functionName = name.getText();
+      templateExpressions.set(functionName, templateExpression);
+    }
+  }
 
   suite('source location adjustment', () => {
     test('simple template', () => {
-      const templateExpression = templateExpressions[0];
+      const templateExpression = templateExpressions.get('simple')!;
       const litTemplate = parseLitTemplate(templateExpression, ts, checker);
       const div = litTemplate.childNodes[0];
       assertTemplateNodeText(
@@ -156,7 +188,7 @@ suite('parseTemplate', () => {
     });
 
     test('template with static child', () => {
-      const templateExpression = templateExpressions[4];
+      const templateExpression = templateExpressions.get('withChildren')!;
       const litTemplate = parseLitTemplate(templateExpression, ts, checker);
 
       const div = litTemplate.childNodes[0];
@@ -171,7 +203,7 @@ suite('parseTemplate', () => {
     });
 
     test('template with child binding', () => {
-      const templateExpression = templateExpressions[5];
+      const templateExpression = templateExpressions.get('withChildBinding')!;
       const litTemplate = parseLitTemplate(templateExpression, ts, checker);
 
       const div = litTemplate.childNodes[0];
@@ -191,7 +223,9 @@ suite('parseTemplate', () => {
     });
 
     test('template with child binding with spaces', () => {
-      const templateExpression = templateExpressions[12];
+      const templateExpression = templateExpressions.get(
+        'withChildBindingWithSpaces'
+      )!;
       const litTemplate = parseLitTemplate(templateExpression, ts, checker);
 
       const div = litTemplate.childNodes[0];
@@ -211,7 +245,9 @@ suite('parseTemplate', () => {
     });
 
     test('template with attribute binding', () => {
-      const templateExpression = templateExpressions[8];
+      const templateExpression = templateExpressions.get(
+        'withAttributeBinding'
+      )!;
       const litTemplate = parseLitTemplate(templateExpression, ts, checker);
 
       const div = litTemplate.childNodes[0];
@@ -231,7 +267,9 @@ suite('parseTemplate', () => {
     });
 
     test('template with quoted attribute binding', () => {
-      const templateExpression = templateExpressions[9];
+      const templateExpression = templateExpressions.get(
+        'withQuotedAttributeBinding'
+      )!;
       const litTemplate = parseLitTemplate(templateExpression, ts, checker);
 
       const div = litTemplate.childNodes[0];
@@ -250,8 +288,10 @@ suite('parseTemplate', () => {
       );
     });
 
-    test('template with multi attribute binding', () => {
-      const templateExpression = templateExpressions[10];
+    test('template with multi attribute bindings', () => {
+      const templateExpression = templateExpressions.get(
+        'withMultiAttributeBinding'
+      )!;
       const litTemplate = parseLitTemplate(templateExpression, ts, checker);
 
       const div = litTemplate.childNodes[0];
@@ -271,7 +311,9 @@ suite('parseTemplate', () => {
     });
 
     test('template with attribute binding with spaces', () => {
-      const templateExpression = templateExpressions[13];
+      const templateExpression = templateExpressions.get(
+        'withAttributeBindingWithSpaces'
+      )!;
       const litTemplate = parseLitTemplate(templateExpression, ts, checker);
 
       const div = litTemplate.childNodes[0];
@@ -291,7 +333,7 @@ suite('parseTemplate', () => {
     });
 
     test('template with element binding', () => {
-      const templateExpression = templateExpressions[11];
+      const templateExpression = templateExpressions.get('withElementBinding')!;
       const litTemplate = parseLitTemplate(templateExpression, ts, checker);
 
       const div = litTemplate.childNodes[0];
@@ -311,7 +353,9 @@ suite('parseTemplate', () => {
     });
 
     test('template with element binding with spaces', () => {
-      const templateExpression = templateExpressions[14];
+      const templateExpression = templateExpressions.get(
+        'withElementBindingWithSpaces'
+      )!;
       const litTemplate = parseLitTemplate(templateExpression, ts, checker);
 
       const div = litTemplate.childNodes[0];
@@ -331,7 +375,7 @@ suite('parseTemplate', () => {
     });
 
     test('template with nested template', () => {
-      const templateExpression = templateExpressions[6];
+      const templateExpression = templateExpressions.get('nested')!;
       const litTemplate = parseLitTemplate(templateExpression, ts, checker);
 
       // First child is text
@@ -345,5 +389,47 @@ suite('parseTemplate', () => {
   </div>`
       );
     });
+
+    test('template with multi-line child expression', () => {
+      const templateExpression = templateExpressions.get(
+        'withMultiLineChildExpression'
+      )!;
+      const litTemplate = parseLitTemplate(templateExpression, ts, checker);
+
+      // First child is text
+      const div = litTemplate.childNodes[1];
+      assertTemplateNodeText(
+        div,
+        templateExpression,
+        `<div class="a">
+    \${html\`
+      <p>A</p>
+      <p>B</p>
+    \`}
+  </div>`
+      );
+    });
+  });
+
+  test('template with multi-line attribute expression', () => {
+    const templateExpression = templateExpressions.get(
+      'withMultiLineAttributeExpression'
+    )!;
+    const litTemplate = parseLitTemplate(templateExpression, ts, checker);
+
+    // First child is text
+    const divA = litTemplate.childNodes[1];
+    assertTemplateNodeText(
+      divA,
+      templateExpression,
+      `<div class="\${[
+    'a',
+    'b'].join(' ')}">
+    <span>A</span>
+  </div>`
+    );
+
+    const divB = litTemplate.childNodes[3];
+    assertTemplateNodeText(divB, templateExpression, `<div class="b"></div>`);
   });
 });
