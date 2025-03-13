@@ -380,7 +380,7 @@ export const parseLitTemplate = (
 
           // Adjust line and column
           const expressionText = expression.getFullText();
-          const expressionLines = expressionText.split('\n');
+          const expressionLines = expressionText.split(/\r?\n/);
           lineAdjust += expressionLines.length - 1;
           if (expressionLines.length > 1) {
             colAdjust = expressionLines.at(-1)!.length;
@@ -462,7 +462,7 @@ export const parseLitTemplate = (
                   expressionLength + trailingWhitespaceLength - marker.length;
 
                 const expressionText = span.expression.getFullText();
-                const expressionLines = expressionText.split('\n');
+                const expressionLines = expressionText.split(/\r?\n/);
                 lineAdjust += expressionLines.length - 1;
 
                 if (expressionLines.length > 1) {
