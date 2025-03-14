@@ -16,6 +16,13 @@ export {
   ElementInternals,
   HYDRATE_INTERNALS_ATTR_PREFIX,
 } from './lib/element-internals.js';
+export {
+  CSSRule,
+  CSSRuleList,
+  CSSStyleSheet,
+  MediaList,
+  StyleSheet,
+} from './lib/css.js';
 export {CustomEvent, Event, EventTarget} from './lib/events.js';
 
 // In an empty Node.js vm, we need to patch the global context.
