@@ -2,6 +2,15 @@
 
 A package for integrating Lit SSR with React and React frameworks.
 
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+
 ## Overview
 
 By default, React's SSR library renders custom elements _shallowly_, i.e. only the element's open and closing tags, attributes, and light DOM children are present in the server-rendered HTML - shadow DOM contents are not rendered.
