@@ -25,7 +25,7 @@ export class Router extends Routes {
     window.addEventListener('click', this._onClick);
     window.addEventListener('popstate', this._onPopState);
     // Kick off routed rendering by going to the current URL
-    this.goto(window.location.pathname);
+    this.goto(new URL(origin + window.location.pathname + window.location.search + window.location.hash));
   }
 
   override hostDisconnected() {
@@ -68,11 +68,11 @@ export class Router extends Routes {
     e.preventDefault();
     if (href !== location.href) {
       window.history.pushState({}, '', href);
-      this.goto(anchor.pathname);
+      this.goto(new URL(origin + anchor.pathname + anchor.search + anchor.hash));
     }
   };
 
   private _onPopState = (_e: PopStateEvent) => {
-    this.goto(window.location.pathname);
+    this.goto(new URL(origin + window.location.pathname + window.location.search + window.location.hash));
   };
 }
