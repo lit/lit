@@ -17,6 +17,22 @@ declare global {
   }
 }
 
+// Feature detection used to install creationScope in the renderOptions
+// Note, Chrome Canary to 136 has partial support, but it's not
+// fully functional so it's not directly supported and the polyfill should be
+// used.
+const hasLegacyScopedCustomRegistry = 'importNode' in ShadowRoot.prototype;
+// https://github.com/whatwg/html/issues/10854
+// https://github.com/whatwg/html/pull/10869
+const hasSpecCustomRegistry = 'customElements' in Element.prototype;
+
+if (!hasLegacyScopedCustomRegistry && !hasSpecCustomRegistry) {
+  console.warn(
+    'Scoped registry mixin is not supported in this browser. ' +
+      'Scoped custom elements will not work as expected.'
+  );
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LitElementConstructor = new (...args: any[]) => LitElement;
 
@@ -48,10 +64,22 @@ export function ScopedRegistryHost<SuperClass extends LitElementConstructor>(
         );
       }
 
-      const renderRoot = (this.renderOptions.creationScope = this.attachShadow({
+      const renderRoot = this.attachShadow({
         ...shadowRootOptions,
         customElements: constructor.registry,
-      }));
+      });
+
+      this.renderOptions.creationScope = hasLegacyScopedCustomRegistry
+        ? renderRoot
+        : {
+            importNode(node: Node, deep?: boolean): Node {
+              return document.importNode(node, {
+                customElements: constructor.registry,
+                selfOnly: !deep,
+                deep /* Safari Tech preview <= 214 */,
+              } as unknown as boolean);
+            },
+          };
 
       adoptStyles(
         renderRoot,
