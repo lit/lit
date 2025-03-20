@@ -69,6 +69,14 @@ export function ScopedRegistryHost<SuperClass extends LitElementConstructor>(
         customElements: constructor.registry,
       });
 
+      /**
+       * Note, support for the initial spec proposal polyfill is maintained in
+       * addition to the current spec proposal to facilitate element piecemeal
+       * migration.
+       *
+       * When all elements are migrated to this version of the mixin, the
+       * polyfill should be upgraded.
+       */
       this.renderOptions.creationScope = hasLegacyScopedCustomRegistry
         ? renderRoot
         : {
@@ -76,7 +84,6 @@ export function ScopedRegistryHost<SuperClass extends LitElementConstructor>(
               return document.importNode(node, {
                 customElements: constructor.registry,
                 selfOnly: !deep,
-                deep /* Safari Tech preview <= 214 */,
               } as unknown as boolean);
             },
           };
