@@ -1,15 +1,15 @@
 {
   "name": "eslint-plugin-lit",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Lit support for ESLint",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
   "homepage": "https://github.com/lit/lit/tree/main/packages/labs/esling-plugin-lit",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
-    "directory": "packages/labs/eslint-plugin-lit"
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/eslint-plugin"
   },
   "main": "index.js",
   "type": "module",

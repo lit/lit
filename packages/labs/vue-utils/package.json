@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/vue-utils",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "publishConfig": {
     "access": "public"
   },
@@ -9,7 +9,7 @@
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/vue-utils"
   },
   "type": "module",

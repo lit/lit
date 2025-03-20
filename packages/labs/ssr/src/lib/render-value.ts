@@ -107,7 +107,7 @@ const patchAnyDirectives = (
   }
 };
 
-const templateCache = new Map<TemplateStringsArray, Array<Op>>();
+const templateCache = new WeakMap<TemplateStringsArray, Array<Op>>();
 
 // This is a map for which slots exist for a given custom element.
 // With a named slot, it is represented as a string with the name
