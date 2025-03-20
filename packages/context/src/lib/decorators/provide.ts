@@ -52,12 +52,13 @@ export function provide<ValueType>({
       ContextProvider<Context<unknown, ValueType>>
     >();
     if (typeof nameOrContext === 'object') {
+      // Standard decorators branch
       return {
         get(this: ReactiveElement) {
           return protoOrTarget.get.call(this);
         },
         set(this: ReactiveElement, value: ValueType) {
-          controllerMap.get(this)?.setValue(value);
+          controllerMap.get(this)!.setValue(value);
           return protoOrTarget.set.call(this, value);
         },
         init(this: ReactiveElement, value: ValueType) {
