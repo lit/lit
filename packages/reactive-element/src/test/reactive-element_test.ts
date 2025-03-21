@@ -214,6 +214,55 @@ suite('ReactiveElement', () => {
     ]);
   });
 
+  test('changedProperties initial values when user set', async () => {
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {
+          prop: {},
+          acc: {},
+          gs: {},
+        };
+      }
+
+      prop!: string;
+
+      accessor acc = 'acc';
+
+      #gs = 'gs';
+      get gs() {
+        return this.#gs;
+      }
+
+      set gs(v: string) {
+        this.#gs = v;
+      }
+
+      changes = new Map<PropertyKey, any>();
+
+      constructor() {
+        super();
+        this.prop = 'prop';
+        this.changes = new Map<PropertyKey, any>();
+      }
+
+      override updated(changed: PropertyValues) {
+        this.changes = new Map(changed);
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    el.prop = '1';
+    el.acc = '2';
+    el.gs = '3';
+    await el.updateComplete;
+    assert.deepEqual(Array.from(el.changes), [
+      ['prop', undefined],
+      ['acc', undefined],
+      ['gs', undefined],
+    ]);
+  });
+
   test('property options', async () => {
     const hasChanged = (value: any, old: any) =>
       old === undefined || value > old;
@@ -471,6 +520,55 @@ suite('ReactiveElement', () => {
     assert.equal(el3.getAttribute('prop'), '1');
     assert.equal(el3.getAttribute('acc'), '2');
     assert.equal(el3.getAttribute('gs'), '3');
+  });
+
+  test('changedProperties initial values with useDefault when user set', async () => {
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {
+          prop: {reflect: true, useDefault: true},
+          acc: {reflect: true, useDefault: true},
+          gs: {reflect: true, useDefault: true},
+        };
+      }
+
+      prop!: string;
+
+      accessor acc = 'acc';
+
+      #gs = 'gs';
+      get gs() {
+        return this.#gs;
+      }
+
+      set gs(v: string) {
+        this.#gs = v;
+      }
+
+      changes = new Map<PropertyKey, any>();
+
+      constructor() {
+        super();
+        this.prop = 'prop';
+        this.changes = new Map<PropertyKey, any>();
+      }
+
+      override updated(changed: PropertyValues) {
+        this.changes = new Map(changed);
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    el.prop = '1';
+    el.acc = '2';
+    el.gs = '3';
+    await el.updateComplete;
+    assert.deepEqual(Array.from(el.changes), [
+      ['prop', 'prop'],
+      ['acc', 'acc'],
+      ['gs', 'gs'],
+    ]);
   });
 
   test('PropertyDeclaration field `hasChanged` can be passed concrete types', () => {
