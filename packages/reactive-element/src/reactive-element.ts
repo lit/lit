@@ -1317,32 +1317,33 @@ export abstract class ReactiveElement
   _$changeProperty(
     name: PropertyKey,
     oldValue: unknown,
-    options: PropertyDeclaration,
+    {useDefault, reflect, wrapped}: PropertyDeclaration,
     initializeValue?: unknown
   ) {
     // Record default value when useDefault is used. This allows us to
     // restore this value when the attribute is removed.
-    if (options.useDefault && !(this.__defaultValues ??= new Map()).has(name)) {
+    if (useDefault && !(this.__defaultValues ??= new Map()).has(name)) {
       this.__defaultValues.set(
         name,
         initializeValue ?? oldValue ?? this[name as keyof this]
       );
       // if this is not wrapping an accessor, it must be an initial setting
       // and in this case we do not want to record the change or reflect.
-      if (options.wrapped !== true || initializeValue !== undefined) {
+      if (wrapped !== true || initializeValue !== undefined) {
         return;
       }
     }
     // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
     // vs just Map.set()
     if (!this._$changedProperties.has(name)) {
+      oldValue = !this.hasUpdated && !useDefault ? undefined : oldValue;
       this._$changedProperties.set(name, oldValue);
     }
     // Add to reflecting properties set.
     // Note, it's important that every change has a chance to add the
     // property to `__reflectingProperties`. This ensures setting
     // attribute + property reflects correctly.
-    if (options.reflect === true && this.__reflectingProperty !== name) {
+    if (reflect === true && this.__reflectingProperty !== name) {
       (this.__reflectingProperties ??= new Set<PropertyKey>()).add(name);
     }
   }
