@@ -45,6 +45,7 @@ export type DocumentFragment = DefaultTreeAdapterTypes.DocumentFragment;
 export type Element = DefaultTreeAdapterTypes.Element;
 export type Node = DefaultTreeAdapterTypes.Node;
 export type TextNode = DefaultTreeAdapterTypes.TextNode;
+export type ElementLocation = Token.ElementLocation;
 
 // TODO (justinfagnani): we have a number of template tags now:
 // lit-html plain, lit-html static, lit-ssr server, preact-signals, svg,
@@ -54,7 +55,7 @@ export type TextNode = DefaultTreeAdapterTypes.TextNode;
  * Returns true if the given node is a tagged template expression with the
  * lit-html template tag.
  */
-export const isLitTaggedTemplateExpression = (
+export const isLitHtmlTaggedTemplateExpression = (
   node: ts.Node,
   ts: TypeScript,
   checker: ts.TypeChecker
@@ -281,7 +282,7 @@ export const getLitTemplateExpressions = (
   const templates: Array<ts.TaggedTemplateExpression> = [];
 
   const visitor = (tsNode: ts.Node) => {
-    if (isLitTaggedTemplateExpression(tsNode, ts, checker)) {
+    if (isLitHtmlTaggedTemplateExpression(tsNode, ts, checker)) {
       templates.push(tsNode);
     }
     ts.forEachChild(tsNode, visitor);
@@ -298,22 +299,24 @@ export const getLitTemplateExpressions = (
  * properties to describe the lit-html parts.
  */
 export const parseLitTemplate = (
-  node: ts.TaggedTemplateExpression,
+  templateNode: ts.TaggedTemplateExpression,
   ts: TypeScript,
   _checker: ts.TypeChecker
 ): LitTemplate => {
-  const cached = templateCache.get(node);
+  const cached = templateCache.get(templateNode);
   if (cached !== undefined) {
     return cached;
   }
 
-  const strings = getTemplateStrings(node, ts);
-  const values = ts.isNoSubstitutionTemplateLiteral(node.template)
+  const strings = getTemplateStrings(templateNode, ts);
+  const values = ts.isNoSubstitutionTemplateLiteral(templateNode.template)
     ? []
-    : node.template.templateSpans.map((s) => s.expression);
-  const templateSpans = ts.isNoSubstitutionTemplateLiteral(node.template)
+    : templateNode.template.templateSpans.map((s) => s.expression);
+  const templateSpans = ts.isNoSubstitutionTemplateLiteral(
+    templateNode.template
+  )
     ? []
-    : node.template.templateSpans;
+    : templateNode.template.templateSpans;
 
   const parts: Array<PartInfo> = [];
   const [html, boundAttributeNames] = getTemplateHtml(strings, 1);
@@ -338,18 +341,18 @@ export const parseLitTemplate = (
 
   const nodeMarker = `<${markerMatch}>`;
   const nodeMarkerLength = nodeMarker.length;
+  const source = html.toString();
 
   // TODO (justinfagnani): to support server-only templates that include
   // non-fragment-parser supported tags (<html>, <body>, etc) we need to
   // inspect the string and conditionally use parse() here.
-  const ast = parseFragment(html.toString(), {
+  const ast = parseFragment(source, {
     sourceCodeLocationInfo: true,
   });
 
   traverse(ast, {
     ['pre:node'](node, _parent) {
       // Adjust every node's source locations by the current adjustment values
-      // TODO (justinfagnani): adjust attribute locations
       if (node.sourceCodeLocation !== undefined) {
         node.sourceCodeLocation!.startOffset += offsetAdjust;
         node.sourceCodeLocation!.startLine += lineAdjust;
@@ -401,8 +404,17 @@ export const parseLitTemplate = (
         (node as LitTemplateCommentNode).litNodeIndex = nodeIndex++;
         // TODO (justinfagnani): handle <!--${}--> (comment binding)
       } else if (isElementNode(node)) {
+        const {startTag} = node.sourceCodeLocation as ElementLocation;
+
+        // Adjust the start tag end offset before the attributes are processed
+        if (startTag !== undefined) {
+          startTag.startOffset += offsetAdjust;
+        }
+
         if (node.attrs.length > 0) {
           for (const attr of node.attrs) {
+            // TODO (justinfagnani): adjust attribute locations
+
             if (attr.name.startsWith(marker)) {
               // An element binding, like <div ${}>
 
@@ -494,20 +506,39 @@ export const parseLitTemplate = (
             }
           }
         }
+
+        // Adjust the start tag end offset after the attributes are processed
+        if (startTag !== undefined) {
+          startTag.endOffset += offsetAdjust;
+        }
+
         (node as LitTemplateElement).litNodeIndex = nodeIndex++;
         // TODO (justinfagnani): handle <${}>
       }
     },
 
     node(node, _parent) {
-      if (node.sourceCodeLocation !== undefined) {
-        node.sourceCodeLocation!.endOffset += offsetAdjust;
-        node.sourceCodeLocation!.endLine += lineAdjust;
-        if (node.sourceCodeLocation!.endLine > currentLine) {
-          colAdjust = 0;
-          currentLine = node.sourceCodeLocation!.endLine;
-        } else {
-          node.sourceCodeLocation!.endCol += colAdjust;
+      const {sourceCodeLocation} = node;
+      if (sourceCodeLocation == null) {
+        return;
+      }
+      sourceCodeLocation.endOffset += offsetAdjust;
+      sourceCodeLocation.endLine += lineAdjust;
+      if (sourceCodeLocation.endLine > currentLine) {
+        colAdjust = 0;
+        currentLine = sourceCodeLocation!.endLine;
+      } else {
+        sourceCodeLocation!.endCol += colAdjust;
+      }
+
+      if (isElementNode(node)) {
+        const {endTag} = sourceCodeLocation as ElementLocation;
+
+        // Adjust the end tag offsets after element and its children are
+        // processed
+        if (endTag !== undefined) {
+          endTag.startOffset += offsetAdjust;
+          endTag.endOffset += offsetAdjust;
         }
       }
     },
@@ -516,8 +547,8 @@ export const parseLitTemplate = (
   const finalAst = ast as LitTemplate;
   finalAst.parts = parts;
   finalAst.strings = strings;
-  finalAst.tsNode = node;
-  templateCache.set(node, finalAst);
+  finalAst.tsNode = templateNode;
+  templateCache.set(templateNode, finalAst);
   return finalAst;
 };
 
@@ -551,11 +582,3 @@ const getTemplateStrings = (
 type Mutable<T, K extends keyof T> = Omit<T, K> & {
   -readonly [P in keyof Pick<T, K>]: P extends K ? T[P] : never;
 };
-
-// /**
-//  * A TypeScript TaggedTemplateExpression with a parsed Lit template.
-//  */
-// export interface LitTaggedTemplateExpression
-//   extends ts.TaggedTemplateExpression {
-//   litTemplate: LitTemplate;
-// }

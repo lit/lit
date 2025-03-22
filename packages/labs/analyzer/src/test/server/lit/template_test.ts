@@ -12,7 +12,7 @@ import * as url from 'url';
 import {
   type Element,
   getLitTemplateExpressions,
-  isLitTaggedTemplateExpression,
+  isLitHtmlTaggedTemplateExpression,
   type LitTemplateCommentNode,
   type ChildNode,
   parseLitTemplate,
@@ -46,7 +46,7 @@ for (const lang of languages) {
         returnStatement.expression as ts.TaggedTemplateExpression;
       assert.equal(typescript.isIdentifier(expression.tag), true);
       assert.equal(
-        isLitTaggedTemplateExpression(
+        isLitHtmlTaggedTemplateExpression(
           expression,
           analyzer.typescript,
           analyzer.program.getTypeChecker()
@@ -63,7 +63,7 @@ for (const lang of languages) {
         .statements[0] as ts.ReturnStatement;
       const expression = statement.expression as ts.TaggedTemplateExpression;
       assert.equal(
-        isLitTaggedTemplateExpression(
+        isLitHtmlTaggedTemplateExpression(
           expression,
           analyzer.typescript,
           analyzer.program.getTypeChecker()
