@@ -5,14 +5,14 @@
  */
 
 import type ts from 'typescript';
-import {Package, PackageJson, AnalyzerInterface, Module} from './model.js';
-import {AbsolutePath} from './paths.js';
 import {getModule} from './javascript/modules.js';
-export {PackageJson};
 import {
   getPackageInfo,
   getPackageRootForModulePath,
 } from './javascript/packages.js';
+import {AnalyzerInterface, Module, Package, PackageJson} from './model.js';
+import {AbsolutePath} from './paths.js';
+export {PackageJson};
 
 export type TypeScript = typeof ts;
 
