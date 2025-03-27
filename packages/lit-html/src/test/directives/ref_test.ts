@@ -354,6 +354,29 @@ suite('ref', () => {
     assert.deepEqual(bCalls, ['DIV', undefined]);
   });
 
+  test('callback passed to ref directive changes to undefined', () => {
+    const calls: Array<string | undefined> = [];
+    const callback = (el: Element | undefined) => calls.push(el?.tagName);
+
+    const go = (cb: ((el: Element | undefined) => void) | undefined) =>
+      render(html`<div ${ref(cb)}></div>`, container);
+
+    assert.doesNotThrow(() => go(callback));
+    assert.deepEqual(calls, ['DIV']);
+
+    assert.doesNotThrow(() => go(undefined));
+    assert.deepEqual(calls, ['DIV', undefined]);
+
+    assert.doesNotThrow(() => go(undefined));
+    assert.deepEqual(calls, ['DIV', undefined]);
+  });
+
+  test('does not throw when ref set to undefined, then disconnected', () => {
+    const go = () => render(html`<div ${ref(undefined)}></div>`, container);
+    const part = go();
+    assert.doesNotThrow(() => part.setConnected(false));
+  });
+
   test('new callback created each render', () => {
     const calls: Array<string | undefined> = [];
     const go = () =>
