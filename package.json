@@ -160,6 +160,7 @@
         "./packages/localize-tools:test",
         "./packages/react:test",
         "./packages/tests:test",
+        "./packages/tests-typescript:test",
         "./packages/ts-transformers:test",
         "./packages/labs/analyzer:test",
         "./packages/labs/cli:test",
