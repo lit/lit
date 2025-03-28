@@ -19,7 +19,7 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "noImplicitOverride": true,
-    "types": []
+    "types": ["trusted-types"]
   },
   "include": [
     "lit-element/**/*.ts",

@@ -22,7 +22,7 @@
     "experimentalDecorators": true,
     "importHelpers": true,
     "noImplicitOverride": true,
-    "types": ["node"]
+    "types": ["node", "trusted-types"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/polyfill-support.ts"],
