@@ -21,7 +21,7 @@
     "allowSyntheticDefaultImports": true,
     "stripInternal": true,
     "noImplicitOverride": true,
-    "types": ["mocha"]
+    "types": ["mocha", "trusted-types"]
   },
   "include": ["src/test/std-decorators/**/*.ts"],
   "exclude": [],

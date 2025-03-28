@@ -23,7 +23,7 @@
     "importHelpers": true,
     "stripInternal": true,
     "noImplicitOverride": true,
-    "types": ["mocha"]
+    "types": ["mocha", "trusted-types"]
   },
   "include": [
     "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",

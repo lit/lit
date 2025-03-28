@@ -20,7 +20,7 @@
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
-    "types": ["mocha"]
+    "types": ["mocha", "trusted-types"]
   },
   "include": ["src/**/*.ts"],
   "exclude": ["src/test/std-decorators/**/*"]
