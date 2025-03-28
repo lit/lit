@@ -6,7 +6,7 @@
 
 // IMPORTANT: these imports must be type-only
 import type {Directive, DirectiveResult, PartInfo} from './directive.js';
-import type {TrustedHTML, TrustedTypesWindow} from 'trusted-types/lib';
+import type {TrustedHTML, TrustedTypesWindow} from 'trusted-types/lib/index.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
