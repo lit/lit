@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {TrustedHTML} from 'trusted-types/lib';
 import ts from 'typescript';
 import {_$LH as litHtmlPrivate} from 'lit-html/private-ssr-support.js';
 import {parseFragment, serialize} from 'parse5';

@@ -21,7 +21,7 @@
     "allowSyntheticDefaultImports": true,
     "stripInternal": true,
     "noImplicitOverride": true,
-    "types": ["mocha", "node"]
+    "types": ["mocha", "node", "trusted-types"]
   },
   "include": [
     "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
