@@ -5,7 +5,7 @@
   "type": "module",
   "dependencies": {
     "typescript": "5.8.2",
-    "lit": "3.2.1"
+    "lit": "*"
   },
   "scripts": {
     "test": "wireit",
@@ -34,7 +34,7 @@
       ]
     },
     "test:bundler": {
-      "command": "npx tsc --module es2020 --moduleResolution bundler  --lib DOM --noEmit src/test-entry.ts",
+      "command": "npx tsc --module es2020 --moduleResolution bundler --lib DOM --noEmit src/test-entry.ts",
       "dependencies": [
         "../lit:build"
       ]
