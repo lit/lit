@@ -1336,7 +1336,11 @@ export abstract class ReactiveElement
     // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
     // vs just Map.set()
     if (!this._$changedProperties.has(name)) {
-      oldValue = !this.hasUpdated && !useDefault ? undefined : oldValue;
+      // On the initial change, the old value should be `undefined`, except
+      // with `useDefault`
+      if (!this.hasUpdated && !useDefault) {
+        oldValue = undefined;
+      }
       this._$changedProperties.set(name, oldValue);
     }
     // Add to reflecting properties set.
