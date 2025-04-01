@@ -1,0 +1,43 @@
+{
+  "name": "@lit-internal/tests-typescript",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "dependencies": {
+    "typescript": "5.8.2",
+    "lit": "*"
+  },
+  "scripts": {
+    "test": "wireit",
+    "test:node": "wireit",
+    "test:nodenext": "wireit",
+    "test:bundler": "wireit"
+  },
+  "wireit": {
+    "test": {
+      "dependencies": [
+        "test:node",
+        "test:nodenext",
+        "test:bundler"
+      ]
+    },
+    "test:node": {
+      "command": "npx tsc --module es2020 --moduleResolution node --lib DOM --noEmit src/test-entry.ts",
+      "dependencies": [
+        "../lit:build"
+      ]
+    },
+    "test:nodenext": {
+      "command": "npx tsc --module nodenext --moduleResolution nodenext --lib DOM --noEmit src/test-entry.ts",
+      "dependencies": [
+        "../lit:build"
+      ]
+    },
+    "test:bundler": {
+      "command": "npx tsc --module es2020 --moduleResolution bundler --lib DOM --noEmit src/test-entry.ts",
+      "dependencies": [
+        "../lit:build"
+      ]
+    }
+  }
+}
