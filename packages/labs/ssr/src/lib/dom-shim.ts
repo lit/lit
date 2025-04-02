@@ -20,6 +20,9 @@ import {
   CustomEvent,
   EventTarget,
   CustomElementRegistry,
+  IntersectionObserver,
+  MutationObserver,
+  ResizeObserver,
 } from '@lit-labs/ssr-dom-shim';
 
 /**
@@ -78,9 +81,9 @@ export const getWindow = ({
       fetch(url as unknown as Parameters<typeof fetch>[0], init),
 
     location: new URL('http://localhost'),
-    MutationObserver: class {
-      observe() {}
-    },
+    IntersectionObserver,
+    MutationObserver,
+    ResizeObserver,
 
     // No-op any async tasks
     requestAnimationFrame() {},
