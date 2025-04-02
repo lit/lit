@@ -37,7 +37,7 @@ const {
 } = _$LH;
 
 import {digestForTemplateResult} from '@lit-labs/ssr-client';
-import {HTMLElement, HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
+import {EventTargetShimMeta, HTMLSlotElement} from '@lit-labs/ssr-dom-shim';
 
 import {
   ElementRenderer,
@@ -113,17 +113,9 @@ const templateCache = new WeakMap<TemplateStringsArray, Array<Op>>();
 // With a named slot, it is represented as a string with the name
 // and the unnamed slot is represented as undefined.
 const elementSlotMap = new WeakMap<
-  HTMLElement,
+  EventTarget,
   Map<string | undefined, HTMLSlotElement>
 >();
-
-// We want the slot element to be able to be identified.
-class HTMLSlotElement extends HTMLElement {
-  name!: string;
-  override get localName(): string {
-    return 'slot';
-  }
-}
 
 /**
  * Operation to output static text
@@ -694,7 +686,7 @@ export type RenderInfo = {
   /**
    * Stack of open event target instances.
    */
-  eventTargetStack: Array<HTMLElement | undefined>;
+  eventTargetStack: Array<EventTarget | undefined>;
 
   /**
    * Stack of current slot context.
@@ -738,7 +730,7 @@ export function* renderValue(
         // If an entry in the event target stack was provided and it was not
         // the event root target, we need to connect the given event target
         // to the root event target.
-        (rootEventTarget as HTMLElementWithEventMeta).__eventTargetParent =
+        (rootEventTarget as Partial<EventTargetShimMeta>).__eventTargetParent =
           rootEventTarget;
       }
     }
@@ -911,15 +903,7 @@ And the inner template was:
           // Note that the event target parent is either the unnamed/named slot
           // in the parent event target if it exists or the parent event target
           // if no matching slot exists.
-          const eventTarget = getLast(
-            renderInfo.eventTargetStack
-          ) as HTMLElementWithEventMeta;
-          const slotName = getLast(renderInfo.slotStack);
-          (instance.element as HTMLElementWithEventMeta).__eventTargetParent =
-            elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
-          (instance.element as HTMLElementWithEventMeta).__host = getLast(
-            renderInfo.customElementHostStack
-          )?.element;
+          addEventTargetConfiguration(instance.element, renderInfo);
           renderInfo.eventTargetStack.push(instance.element);
         }
         // Set static attributes to the element renderer
@@ -1019,20 +1003,11 @@ And the inner template was:
           // op.name is either the slot name or undefined, which represents
           // the unnamed slot case.
           if (!slots.has(op.name)) {
-            const element = new HTMLSlotElement() as HTMLSlotElement &
-              HTMLElementWithEventMeta;
+            const element = new HTMLSlotElement();
             element.name = op.name ?? '';
-            const eventTarget = getLast(
-              renderInfo.eventTargetStack
-            ) as HTMLElementWithEventMeta;
-            const slotName = getLast(renderInfo.slotStack);
-            element.__eventTargetParent =
-              elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
-            element.__host = getLast(
-              renderInfo.customElementHostStack
-            )?.element;
-            slots.set(op.name, element);
+            addEventTargetConfiguration(element, renderInfo);
             renderInfo.eventTargetStack.push(element);
+            slots.set(op.name, element);
           }
         }
 
@@ -1188,4 +1163,19 @@ function isJavaScriptScriptTag(node: Element | Template): boolean {
   // we can return false.
   const willExecute = !safeTypeSeen;
   return willExecute;
+}
+
+function addEventTargetConfiguration(
+  element: HTMLElement & Partial<EventTargetShimMeta>,
+  renderInfo: RenderInfo
+): void {
+  const eventTarget = getLast(renderInfo.eventTargetStack)!;
+  const slotName = getLast(renderInfo.slotStack);
+  element.__host = getLast(renderInfo.customElementHostStack)?.element;
+  const eventTargetParent =
+    elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
+  element.__eventTargetParent =
+    eventTargetParent === element.__host
+      ? element.getRootNode() ?? eventTargetParent
+      : eventTargetParent;
 }
