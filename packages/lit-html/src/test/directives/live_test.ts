@@ -16,8 +16,8 @@ class LiveTester extends HTMLElement {
     return this._x;
   }
 
-  set x(v: string | undefined) {
-    this._x = v;
+  set x(v: unknown) {
+    this._x = String(v);
     this._setCount++;
   }
 }
@@ -212,6 +212,37 @@ suite('live directive', () => {
       await new Promise((resolve) => setTimeout(resolve, 0));
       assert.equal(el.getAttribute('hidden'), null);
       assert.equal(mutationCount, 1);
+    });
+  });
+
+  suite('custom equality', () => {
+    test('sets a non-changed property when there is a type conversion', () => {
+      const go = (x: number) =>
+        render(html`<live-tester .x="${live(x)}"></live-tester>}`, container);
+
+      go(1);
+      const el = container.firstElementChild as LiveTester;
+      assert.equal(el.x, '1');
+      assert.equal(el._setCount, 1);
+      go(1);
+      assert.equal(el.x, '1');
+      assert.equal(el._setCount, 2);
+    });
+
+    test('customize equality to handle type conversion', () => {
+      const eqAsString = (a: unknown, b: unknown) => String(a) === b;
+      const go = (x: number) =>
+        render(
+          html`<live-tester .x="${live(x, eqAsString)}"></live-tester>}`,
+          container
+        );
+      go(1);
+      const el = container.firstElementChild as LiveTester;
+      assert.equal(el.x, '1');
+      assert.equal(el._setCount, 1);
+      go(1);
+      assert.equal(el.x, '1');
+      assert.equal(el._setCount, 1);
     });
   });
 });
