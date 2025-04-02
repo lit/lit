@@ -125,23 +125,44 @@ const getReferencesForTypeNode = (
 ): Reference[] => {
   const {typescript} = analyzer;
   const references: Reference[] = [];
+  const typeParameterStack: Array<ts.FunctionTypeNode> = [];
   const visit = (node: ts.Node) => {
-    if (typescript.isTypeReferenceNode(node)) {
+    if (typescript.isFunctionTypeNode(node) && node.typeParameters) {
+      typeParameterStack.push(node);
+      // Recurse here so that we can pop the stack after visiting children
+      typescript.forEachChild(node, visit);
+      typeParameterStack.pop();
+      return;
+    } else if (typescript.isTypeReferenceNode(node)) {
       const name = getRootName(typescript, node.typeName);
-      // TODO(kschaaf): we'd like to just do
-      // `checker.getSymbolAtLocation(node)` to get the symbol, but it appears
-      // that nodes created with `checker.typeToTypeNode()` do not have
-      // associated symbols, so we need to look up by name via
-      // `checker.getSymbolsInScope()`
-      const symbol = getSymbolForName(name, location, analyzer);
+      // TODO(kschaaf): we'd like to just do `checker.getSymbolAtLocation(node)`
+      // to get the symbol, but it appears that nodes created with
+      // `checker.typeToTypeNode()` do not have associated symbols, so we need
+      // to look up by name via `checker.getSymbolsInScope()` We fall back to
+      // trying to get the symbol using the type node as the location, for type
+      // references that reference a type argument declared in the same type
+      // tree. This only seems to work for explicitly written types, not
+      // inferred types.
+      const symbol =
+        getSymbolForName(name, location, analyzer) ??
+        getSymbolForName(name, node, analyzer);
       if (symbol === undefined) {
-        analyzer.addDiagnostic(
-          createDiagnostic({
-            typescript,
-            node: location,
-            message: `Could not get symbol for '${name}'.`,
-          })
-        );
+        // We can't and don't need to make a reference for local type parameters
+        if (
+          !isLocalTypeParameterReference(
+            name,
+            typeParameterStack,
+            analyzer.typescript
+          )
+        ) {
+          analyzer.addDiagnostic(
+            createDiagnostic({
+              typescript,
+              node: location,
+              message: `Could not get symbol for '${name}'.`,
+            })
+          );
+        }
         return;
       }
       const ref = getReferenceForSymbol(symbol, location, analyzer);
@@ -185,6 +206,25 @@ const getReferencesForTypeNode = (
   };
   visit(typeNode);
   return references;
+};
+
+const isLocalTypeParameterReference = (
+  name: string,
+  typeParameterStack: Array<ts.FunctionTypeNode>,
+  typescript: typeof ts
+): boolean => {
+  for (const f of [...typeParameterStack].reverse()) {
+    for (const typeParameter of f.typeParameters!) {
+      const {name: typeParameterName} = typeParameter;
+      if (
+        typescript.isIdentifier(typeParameterName) &&
+        typeParameterName.text === name
+      ) {
+        return true;
+      }
+    }
+  }
+  return false;
 };
 
 /**
