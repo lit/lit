@@ -42,14 +42,17 @@ e.g.
 ```js
 const withLitSSR = require('@lit-labs/nextjs')({
   addDeclarativeShadowDomPolyfill: true,
+  webpackModuleRulesTest: /\/my-app-pages\/.*\.tsx?$/,
 });
 ```
 
 The following options are supported:
 
-| Property                          | Type      | Description                                                                                                                                                                      |
-| --------------------------------- | --------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `addDeclarativeShadowDomPolyfill` | `boolean` | If `true`, the client bundle will include a script that applies the [Declarative Shadow DOM polyfill](https://github.com/webcomponents/template-shadowroot). Defaults to `true`. |
+| Property                          | Type            | Description                                                                                                                                                                      |
+| --------------------------------- | --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `addDeclarativeShadowDomPolyfill` | `boolean`       | If `true`, the client bundle will include a script that applies the [Declarative Shadow DOM polyfill](https://github.com/webcomponents/template-shadowroot). Defaults to `true`. |
+| `webpackModuleRulesTest`          | `RegExp`        | Allows to pass a specific RegExp to match the files to be processed by the plugin. Defaults to `/\/pages\/.*\.(?:j\|t)sx?$\|\/app\/.*\.(?:j\|t)sx?$/`.                           |
+| `webpackModuleRulesExclude`       | `Array<RegExp>` | Allows to pass an array of RegExp to exclude files from being processed by the plugin. Defaults to `[/next\/dist\//, /node_modules/]`.                                           |
 
 ## Considerations
 
