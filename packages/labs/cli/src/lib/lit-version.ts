@@ -1,1 +1,1 @@
-export const litVersion = '3.2.1';
+export const litVersion = '3.3.0';
