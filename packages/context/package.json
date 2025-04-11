@@ -210,7 +210,7 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/reactive-element": "^2.1.0"
+    "@lit/reactive-element": "^1.6.2 || ^2.1.0"
   },
   "devDependencies": {
     "chai": "^5.1.0",
