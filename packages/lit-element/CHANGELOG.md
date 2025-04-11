@@ -4,7 +4,7 @@
 
 ### Minor Changes
 
-- [#4901](https://github.com/lit/lit/pull/4901) [`c9160405`](https://github.com/lit/lit/commit/c9160405deaf8de68bb1e587ef9b2484cb58b353) Thanks [@maxpatiiuk](https://github.com/maxpatiiuk)! - Make disabling dev mode warnings simpler
+- [#4901](https://github.com/lit/lit/pull/4901) [`c9160405`](https://github.com/lit/lit/commit/c9160405deaf8de68bb1e587ef9b2484cb58b353) Thanks [@maxpatiiuk](https://github.com/maxpatiiuk)! - Dev mode warnings are now emitted on the next microtask after package import, allowing for a wider opportunity to suppress the warnings by consumers.
 
 - [#4934](https://github.com/lit/lit/pull/4934) [`4824c4ce`](https://github.com/lit/lit/commit/4824c4ce094fabf9d96c92f0d986827b046b2705) - Adds property option for `useDefault`. When set, the initial default value is not considered a change and does _not_ reflect when `reflect` is set. In addition, when the attribute is removed, the default value is restored.
 
