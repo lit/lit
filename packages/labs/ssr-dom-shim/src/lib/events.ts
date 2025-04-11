@@ -276,7 +276,8 @@ class EventTarget implements globalThis.EventTarget, EventTargetShimMeta {
   }
 }
 
-const EventTargetShimWithRealType = EventTarget as object as typeof EventTarget;
+const EventTargetShimWithRealType =
+  EventTarget as object as typeof globalThis.EventTarget;
 export {
   EventTargetShimWithRealType as EventTarget,
   EventTargetShimWithRealType as EventTargetShim,
