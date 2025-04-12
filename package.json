@@ -306,7 +306,7 @@
     }
   },
   "lint-staged": {
-    "**/*.{cjs,html,js,json,md,ts}": "prettier --write",
+    "**/*.{cjs,html,js,json,md,ts}": "prettier --write --no-error-on-unmatched-pattern",
     "{*.{js,ts},!(examples)/**/*.{js,ts}}": "eslint --fix"
   }
 }
