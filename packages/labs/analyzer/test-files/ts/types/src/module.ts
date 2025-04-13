@@ -64,3 +64,15 @@ const [separatelyExportedDestructArr, [separatelyExportedDestructArrNested]] = [
 export {separatelyExportedDestructArr, separatelyExportedDestructArrNested};
 
 export const importedType = Math.random() ? returnsClass() : html``;
+
+// The function type triggers a "Could not get symbol for 'T'." error.
+// This is written as a nested object so that we can get the type of the
+// function. Otherwise the function is analyzed as a FunctionDeclaration, which
+// does not have a type in our model.
+// The return type of the function must be *inferred* as a type parameter to
+// trigger the error.
+// TODO (justinfagnani): Add FunctionDeclaration type to the model and/or make
+// FunctionDeclaration extend VariableDeclaration.
+export const nestedTypeParameter = {
+  f: <T>(o: T) => o,
+};
