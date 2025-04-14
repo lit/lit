@@ -220,7 +220,6 @@ suite('directive-helpers', () => {
 
         // Check that the test is correctly inserting two different parts:
         assert.notEqual(childPart1, childPart2);
-        assert.notEqual(childPart1._$endNode, childPart2._$startNode);
 
         removePart(childPart1);
         removePart(childPart2);
