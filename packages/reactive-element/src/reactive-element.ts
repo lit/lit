@@ -1247,11 +1247,12 @@ export abstract class ReactiveElement
             : defaultConverter;
       // mark state reflecting
       this.__reflectingProperty = propName;
+      const convertedValue = converter.fromAttribute!(value, options.type);
       this[propName as keyof this] =
-        converter.fromAttribute!(value, options.type) ??
+        convertedValue ??
         this.__defaultValues?.get(propName) ??
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (null as any);
+        (convertedValue as any);
       // mark state not reflecting
       this.__reflectingProperty = null;
     }
