@@ -1,17 +1,6 @@
 # @lit-labs/rollup-plugin-minify-html-literals
 
-This is a combination and continuation of three previous projects:
-
-1. [rollup-plugin-minify-html-literals](https://github.com/asyncLiz/rollup-plugin-minify-html-literals)
-2. [minify html literals](https://github.com/asyncLiz/minify-html-literals)
-3. [parse literals](https://github.com/asyncLiz/parse-literals)
-
-Changed since the originals:
-
-- all three projects have been merged into one
-- rollup 4 added to peerDependencies
-- testing is cleaned up and improved
-- source code has been refactored more closely follow Lit's code style
+A Rollup plugin to minify HTML and CSS markup inside JavaScript template literal strings.
 
 ## Usage
 
@@ -93,3 +82,11 @@ export default {
   ],
 };
 ```
+
+# Acknowledgements
+
+This is a combination and continuation of three previous projects:
+
+1. [rollup-plugin-minify-html-literals](https://github.com/asyncLiz/rollup-plugin-minify-html-literals)
+2. [minify html literals](https://github.com/asyncLiz/minify-html-literals)
+3. [parse literals](https://github.com/asyncLiz/parse-literals)
