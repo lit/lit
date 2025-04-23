@@ -1731,7 +1731,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(global.reactiveElementVersions ??= []).push('2.0.4');
+(global.reactiveElementVersions ??= []).push('2.1.0');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
   queueMicrotask(() => {
     issueWarning!(

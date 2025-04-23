@@ -1,5 +1,11 @@
 # @lit-labs/nextjs
 
+## 0.2.3
+
+### Patch Changes
+
+- [#4940](https://github.com/lit/lit/pull/4940) [`b42e0465`](https://github.com/lit/lit/commit/b42e0465e659f3eecae43d96b3fcef81ace82f6a) Thanks [@raoufswe](https://github.com/raoufswe)! - [Changed] - update webpack exclude to filter node_modules
+
 ## 0.2.2
 
 ### Patch Changes

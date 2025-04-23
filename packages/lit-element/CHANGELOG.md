@@ -1,5 +1,21 @@
 # Change Log
 
+## 4.2.0
+
+### Minor Changes
+
+- [#4901](https://github.com/lit/lit/pull/4901) [`c9160405`](https://github.com/lit/lit/commit/c9160405deaf8de68bb1e587ef9b2484cb58b353) Thanks [@maxpatiiuk](https://github.com/maxpatiiuk)! - Dev mode warnings are now emitted on the next microtask after package import, allowing for a wider opportunity to suppress the warnings by consumers.
+
+- [#4934](https://github.com/lit/lit/pull/4934) [`4824c4ce`](https://github.com/lit/lit/commit/4824c4ce094fabf9d96c92f0d986827b046b2705) - Adds property option for `useDefault`. When set, the initial default value is not considered a change and does _not_ reflect when `reflect` is set. In addition, when the attribute is removed, the default value is restored.
+
+### Patch Changes
+
+- [#4949](https://github.com/lit/lit/pull/4949) [`3e2f87f6`](https://github.com/lit/lit/commit/3e2f87f688d7f447f5bd8517cc5a2f29ee1f3ce5) - fixes inconsistent initial changed properties values
+
+- Updated dependencies [[`c9160405`](https://github.com/lit/lit/commit/c9160405deaf8de68bb1e587ef9b2484cb58b353), [`3e2f87f6`](https://github.com/lit/lit/commit/3e2f87f688d7f447f5bd8517cc5a2f29ee1f3ce5), [`4824c4ce`](https://github.com/lit/lit/commit/4824c4ce094fabf9d96c92f0d986827b046b2705), [`0a9bc720`](https://github.com/lit/lit/commit/0a9bc72016812f3c3cfb00e1e41e1cae418dde0b)]:
+  - @lit/reactive-element@2.1.0
+  - lit-html@3.3.0
+
 ## 4.1.1
 
 ### Patch Changes
