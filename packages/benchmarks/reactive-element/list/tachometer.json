@@ -41,7 +41,7 @@
                 "setupCommands": [
                   "npm ci",
                   "npm run bootstrap -- --concurrency=1",
-                  "npm run build"
+                  "WIREIT_CACHE=none npm run build"
                 ]
               },
               "lit-element": {
@@ -52,7 +52,7 @@
                 "setupCommands": [
                   "npm ci",
                   "npm run bootstrap -- --concurrency=1",
-                  "npm run build"
+                  "WIREIT_CACHE=none npm run build"
                 ]
               },
               "@lit/reactive-element": {
@@ -63,7 +63,7 @@
                 "setupCommands": [
                   "npm ci",
                   "npm run bootstrap -- --concurrency=1",
-                  "npm run build"
+                  "WIREIT_CACHE=none npm run build"
                 ]
               }
             }
@@ -84,7 +84,7 @@
                 "setupCommands": [
                   "npm ci",
                   "npm run bootstrap -- --concurrency=1",
-                  "npm run build"
+                  "WIREIT_CACHE=none npm run build"
                 ]
               }
             }
