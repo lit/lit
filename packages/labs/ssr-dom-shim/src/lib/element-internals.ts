@@ -20,6 +20,7 @@ export const ariaMixinAttributes: ARIAAttributeMap = {
   ariaChecked: 'aria-checked',
   ariaColCount: 'aria-colcount',
   ariaColIndex: 'aria-colindex',
+  ariaColIndexText: 'aria-colindextext',
   ariaColSpan: 'aria-colspan',
   ariaCurrent: 'aria-current',
   ariaDescription: 'aria-description',
@@ -40,10 +41,12 @@ export const ariaMixinAttributes: ARIAAttributeMap = {
   ariaPosInSet: 'aria-posinset',
   ariaPressed: 'aria-pressed',
   ariaReadOnly: 'aria-readonly',
+  ariaRelevant: 'aria-relevant',
   ariaRequired: 'aria-required',
   ariaRoleDescription: 'aria-roledescription',
   ariaRowCount: 'aria-rowcount',
   ariaRowIndex: 'aria-rowindex',
+  ariaRowIndexText: 'aria-rowindextext',
   ariaRowSpan: 'aria-rowspan',
   ariaSelected: 'aria-selected',
   ariaSetSize: 'aria-setsize',
@@ -71,6 +74,7 @@ export const ElementInternalsShim = class ElementInternals
   ariaChecked = '';
   ariaColCount = '';
   ariaColIndex = '';
+  ariaColIndexText = '';
   ariaColSpan = '';
   ariaCurrent = '';
   ariaDescription = '';
@@ -91,10 +95,12 @@ export const ElementInternalsShim = class ElementInternals
   ariaPosInSet = '';
   ariaPressed = '';
   ariaReadOnly = '';
+  ariaRelevant = '';
   ariaRequired = '';
   ariaRoleDescription = '';
   ariaRowCount = '';
   ariaRowIndex = '';
+  ariaRowIndexText = '';
   ariaRowSpan = '';
   ariaSelected = '';
   ariaSetSize = '';
