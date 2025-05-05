@@ -1107,6 +1107,40 @@ suite('ReactiveElement', () => {
     assert.deepEqual(el.gsReflectArr, [0]);
   });
 
+  test('fromAttribute can set prop to null or undefined', () => {
+    class A extends ReactiveElement {
+      static override get properties() {
+        return {
+          foo: {
+            converter: {
+              fromAttribute: (value: string | null) => {
+                if (value === 'undef') {
+                  return undefined;
+                }
+                if (value === 'nll') {
+                  return null;
+                }
+                return value;
+              },
+            },
+          },
+        };
+      }
+
+      foo?: string;
+    }
+    customElements.define(generateElementName(), A);
+    const el = new A();
+    container.appendChild(el);
+    assert.equal(el.foo, undefined);
+    el.setAttribute('foo', 'bar');
+    assert.equal(el.foo, 'bar');
+    el.setAttribute('foo', 'undef');
+    assert.equal(el.foo, undefined);
+    el.setAttribute('foo', 'nll');
+    assert.equal(el.foo, null);
+  });
+
   test("attributes removed when a reflecting property's value becomes null", async () => {
     class E extends ReactiveElement {
       static override get properties() {
