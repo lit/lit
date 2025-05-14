@@ -194,6 +194,10 @@ function promiseWithResolvers<T>(): PromiseWithResolvers<T> {
 
 class CustomElementRegistry implements RealCustomElementRegistry {
   private __definitions = new Map<string, CustomElementRegistration>();
+  private __reverseDefinitions = new Map<
+    CustomHTMLElementConstructor,
+    string
+  >();
   private __pendingWhenDefineds = new Map<
     string,
     PromiseWithResolvers<CustomElementConstructor>
@@ -216,6 +220,13 @@ class CustomElementRegistry implements RealCustomElementRegistry {
         );
       }
     }
+    if (this.__reverseDefinitions.has(ctor)) {
+      throw new Error(
+        `Failed to execute 'define' on 'CustomElementRegistry': ` +
+          `the constructor has already been used with this registry for the ` +
+          `tag name ${this.__reverseDefinitions.get(ctor)}`
+      );
+    }
     // Provide tagName and localName for the component.
     (ctor as NamedCustomHTMLElementConstructor).__localName = name;
     this.__definitions.set(name, {
@@ -231,6 +242,7 @@ class CustomElementRegistry implements RealCustomElementRegistry {
       // returns the constructor).
       observedAttributes: ctor.observedAttributes ?? [],
     });
+    this.__reverseDefinitions.set(ctor, name);
     this.__pendingWhenDefineds.get(name)?.resolve(ctor);
     this.__pendingWhenDefineds.delete(name);
   }
@@ -241,16 +253,15 @@ class CustomElementRegistry implements RealCustomElementRegistry {
   }
 
   getName(ctor: CustomHTMLElementConstructor) {
-    for (const [name, definition] of this.__definitions.entries()) {
-      if (definition.ctor === ctor) {
-        return name;
-      }
-    }
-    return null;
+    return this.__reverseDefinitions.get(ctor) ?? null;
   }
 
   upgrade(_element: HTMLElement) {
     // In SSR this doesn't make a lot of sense, so we do nothing.
+    throw new Error(
+      `customElements.upgrade is not currently supported in SSR. ` +
+        `Please file a bug if you need it.`
+    );
   }
 
   async whenDefined(name: string): Promise<CustomElementConstructor> {
