@@ -249,7 +249,7 @@ class CustomElementRegistry implements RealCustomElementRegistry {
     return null;
   }
 
-  upgrade(element: HTMLElement) {
+  upgrade(_element: HTMLElement) {
     // In SSR this doesn't make a lot of sense, so we do nothing.
   }
 
