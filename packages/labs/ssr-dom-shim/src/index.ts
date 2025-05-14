@@ -172,8 +172,32 @@ type CustomElementRegistration = {
   observedAttributes: string[];
 };
 
-const CustomElementRegistryShim = class CustomElementRegistry {
+type RealCustomElementRegistry = (typeof globalThis)['customElements'];
+type RealCustomElementRegistryClass =
+  (typeof globalThis)['CustomElementRegistry'];
+
+// Ponyfill for PromiseWithResolvers, remove once we can assume its presence.
+type PromiseWithResolvers<T> = {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason?: unknown) => void;
+};
+function promiseWithResolvers<T>(): PromiseWithResolvers<T> {
+  let resolve: (value: T) => void;
+  let reject: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return {promise, resolve: resolve!, reject: reject!};
+}
+
+class CustomElementRegistry implements RealCustomElementRegistry {
   private __definitions = new Map<string, CustomElementRegistration>();
+  private __pendingWhenDefineds = new Map<
+    string,
+    PromiseWithResolvers<CustomElementConstructor>
+  >();
 
   define(name: string, ctor: CustomHTMLElementConstructor) {
     if (this.__definitions.has(name)) {
@@ -207,15 +231,44 @@ const CustomElementRegistryShim = class CustomElementRegistry {
       // returns the constructor).
       observedAttributes: ctor.observedAttributes ?? [],
     });
+    this.__pendingWhenDefineds.get(name)?.resolve(ctor);
+    this.__pendingWhenDefineds.delete(name);
   }
 
   get(name: string) {
     const definition = this.__definitions.get(name);
     return definition?.ctor;
   }
-};
+
+  getName(ctor: CustomHTMLElementConstructor) {
+    for (const [name, definition] of this.__definitions.entries()) {
+      if (definition.ctor === ctor) {
+        return name;
+      }
+    }
+    return null;
+  }
+
+  upgrade(element: HTMLElement) {
+    // In SSR this doesn't make a lot of sense, so we do nothing.
+  }
+
+  async whenDefined(name: string): Promise<CustomElementConstructor> {
+    const definition = this.__definitions.get(name);
+    if (definition) {
+      return definition.ctor;
+    }
+    let withResolvers = this.__pendingWhenDefineds.get(name);
+    if (!withResolvers) {
+      withResolvers = promiseWithResolvers<CustomElementConstructor>();
+      this.__pendingWhenDefineds.set(name, withResolvers);
+    }
+    return withResolvers.promise;
+  }
+}
+
 const CustomElementRegistryShimWithRealType =
-  CustomElementRegistryShim as object as typeof CustomElementRegistry;
+  CustomElementRegistry as object as RealCustomElementRegistryClass;
 export {CustomElementRegistryShimWithRealType as CustomElementRegistry};
 
 export const customElements = new CustomElementRegistryShimWithRealType();
