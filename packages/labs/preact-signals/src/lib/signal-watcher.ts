@@ -45,17 +45,27 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       //  - from signals
       //  - from both (do we get one or two re-renders)
       // and see if we really need a new effect here.
-      this.__dispose = effect(() => {
+      //
+      // Reference the element weakly so that the effect does not hold
+      // onto it. This allows the element to be freed from memory when it's not
+      // referenced (e.g. when updated after disconnection).
+      const elRef = new WeakRef(this);
+      const dispose = (this.__dispose = effect(() => {
+        const el = elRef.deref();
+        if (el === undefined) {
+          dispose();
+          return;
+        }
         if (updateFromLit) {
           updateFromLit = false;
-          super.performUpdate();
+          Base.prototype.performUpdate.call(el);
         } else {
           // This branch is an effect run from Preact signals.
           // This will cause another call into performUpdate, which will
           // then create a new effect watching that update pass.
-          this.requestUpdate();
+          el.requestUpdate();
         }
-      });
+      }));
     }
 
     override connectedCallback(): void {
