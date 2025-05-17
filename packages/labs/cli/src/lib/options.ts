@@ -35,6 +35,13 @@ export const globalOptions: OptionDefinition[] = [
     type: Boolean,
     // group: 'global',
   },
+  {
+    name: 'autoinstall',
+    description:
+      'automatically install commands that are not installed without asking for permission',
+    type: Boolean,
+    // group: 'global',
+  },
 ];
 
 /**
