@@ -1,0 +1,80 @@
+{
+  "name": "@lit-labs/mcp-server",
+  "version": "0.1.0",
+  "description": "MCP Server with Lit-related tools.",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://lit.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/mcp-server"
+  },
+  "type": "module",
+  "main": "index.js",
+  "module": "index.js",
+  "types": "index.d.ts",
+  "bin": {
+    "lit-mcp-server": "./lib/index.js"
+  },
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "lib": "./lib/index.js",
+      "default": "./index.js"
+    }
+  },
+  "files": [
+    "/lib/",
+    "!/lib/test/",
+    "/index.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit",
+    "build:rollup": "echo 'rollup build not configured for this package'",
+    "start": "wireit",
+    "test": "echo 'test not configured for this package'"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "tsconfig.tsbuildinfo"
+      ]
+    },
+    "start": {
+      "command": "node lib/index.js",
+      "dependencies": [
+        "build:ts"
+      ],
+      "service": true,
+      "files": [
+        "lib/index.js"
+      ]
+    }
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.3",
+    "algoliasearch": "^5.25.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^18.19.100",
+    "typescript": "~5.5.0"
+  }
+}
