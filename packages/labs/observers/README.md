@@ -46,7 +46,7 @@ $ npm install @lit-labs/observers
 
 ### IntersectionController
 
-IntersectionController attaches a IntersectionObserver to the host and requests
+IntersectionController attaches a [IntersectionObserver](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API) to the host and requests
 updates whenever the IntersectionObserver observes changes to the intersection
 state of the targets.
 
@@ -95,7 +95,7 @@ constructor(
 
 ### MutationController
 
-MutationController attaches a MutationObserver to the host and requests updates
+MutationController attaches a [MutationObserver](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver) to the host and requests updates
 whenever the MutationObserver observes changes to the DOM.
 
 The controller can also compute and store an arbitrary value each time changes
@@ -161,7 +161,7 @@ type of the `callback` option.
 
 ### PerformanceController
 
-PerformanceController attaches a PerformanceObserver to the host and requests
+PerformanceController attaches a [PerformanceObserver](https://developer.mozilla.org/en-US/docs/Web/API/PerformanceObserver) to the host and requests
 updates whenever the PerformanceObserver observes receives new performance
 metrics.
 
@@ -200,7 +200,7 @@ constructor(
 
 ### ResizeController
 
-ResizeController attaches a ResizeObserver to the host and requests updates
+ResizeController attaches a [ResizeObserver](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver) to the host and requests updates
 whenever the ResizeObserver detects size changes to its targets. The controller
 can also compute and store an arbitrary value each time changes occur.
 

@@ -19,7 +19,7 @@ Full documentation is available at [lit.dev/docs/components/overview/](https://l
 
 LitElement is a base class for custom elements that extends the Lit project's
 core ReactiveElement (from
-[`@lit/reactive-element'](https://www.npmjs.com/package/lit)) base class with
+[`@lit/reactive-element'](https://www.npmjs.com/package/@lit/reactive-element)) base class with
 lit-html templating. ReactiveElement enhances HTMLElement with reactive
 properties, additional lifecycle callbacks, convenient inline CSS authoring, and
 a set of useful class decorators, while lit-html provides fast, declarative HTML
