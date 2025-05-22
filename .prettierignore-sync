@@ -11,3 +11,8 @@ package-lock.json
 packages/localize/examples/
 packages/localize-tools/testdata/
 packages/localize-tools/config.schema.json
+# Symlinks
+.clinerules
+.roorules
+.cursorrules
+CLAUDE.md
