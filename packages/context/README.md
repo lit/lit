@@ -1,5 +1,17 @@
 # @lit/context
 
+Make data available to entire component subtrees with the context protocol
+implementation for Lit.
+
+[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/@lit/context.svg?logo=npm)](https://www.npmjs.com/package/@lit/context)
+[![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
+[![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
+
+## Documentation
+
+Full documentation is available at [lit.dev/docs/data/context/](https://lit.dev/docs/data/context/).
+
 ## Overview
 
 This module defines an implementation of controllers and decorators for using the [Context Protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md) as defined by the Web Components Community Group.
