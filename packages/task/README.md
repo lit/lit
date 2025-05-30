@@ -1,6 +1,6 @@
 # @lit/task
 
-Easiy manage and render asynchronous tasks for Lit.
+Easily manage and render asynchronous tasks for Lit.
 
 [![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
 [![Published on npm](https://img.shields.io/npm/v/@lit/task.svg?logo=npm)](https://www.npmjs.com/package/@lit/task)
@@ -93,4 +93,4 @@ If your arguments are objects, you will want to use a more sophisticated equalit
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).
+Please see [CONTRIBUTING.md](../../CONTRIBUTING.md).

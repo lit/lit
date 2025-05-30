@@ -178,4 +178,4 @@ $ npm install @lit/react
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).
+Please see [CONTRIBUTING.md](../../CONTRIBUTING.md).
