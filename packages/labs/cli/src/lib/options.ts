@@ -35,6 +35,13 @@ export const globalOptions: OptionDefinition[] = [
     type: Boolean,
     // group: 'global',
   },
+  {
+    name: 'skip-permissions',
+    description:
+      'skip asking for permission to install commands that are not installed',
+    type: Boolean,
+    // group: 'global',
+  },
 ];
 
 /**
