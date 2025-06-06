@@ -66,6 +66,6 @@
   "dependencies": {
     "@lit-labs/analyzer": "^0.13.0",
     "@typescript-eslint/utils": "^6.19.0",
-    "typescript": "~5.5.0"
+    "typescript": "~5.8.0"
   }
 }
