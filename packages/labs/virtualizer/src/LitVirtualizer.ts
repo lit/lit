@@ -15,9 +15,13 @@ import {
   defaultRenderItem,
   defaultKeyFunction,
   RenderItemFunction,
+  type VirtualizeDirectiveConfig,
 } from './virtualize.js';
 
-export class LitVirtualizer<T = unknown> extends LitElement {
+export class LitVirtualizer<T = unknown>
+  extends LitElement
+  implements VirtualizeDirectiveConfig<T>
+{
   @property({attribute: false})
   items: T[] = [];
 
@@ -58,7 +62,11 @@ export class LitVirtualizer<T = unknown> extends LitElement {
 
   /**
    * This scrollToIndex() shim is here to provide backwards compatibility with other 0.x versions of
-   * lit-virtualizer. It is deprecated and will likely be removed in the 1.0.0 release.
+   * lit-virtualizer.
+   *
+   * Use LitVirtualizer.element(index)?.scrollIntoView() instead.
+   *
+   * @deprecated Will be removed in or before the 1.0.0 release.
    */
   scrollToIndex(
     index: number,
