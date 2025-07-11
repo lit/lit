@@ -1,5 +1,16 @@
 # @lit-labs/nextjs
 
+## 0.2.4
+
+### Patch Changes
+
+- [#4993](https://github.com/lit/lit/pull/4993) [`a33d6792`](https://github.com/lit/lit/commit/a33d67921780bbded0be51c29e66f3a08830d0e6) Thanks [@ADNolan](https://github.com/ADNolan)! - Prevent duplicative patching of React.createElement.
+
+- [#4960](https://github.com/lit/lit/pull/4960) [`6a72c869`](https://github.com/lit/lit/commit/6a72c86944decd35a4f5ead107f505a9194b2bf5) Thanks [@fernandofranca](https://github.com/fernandofranca)! - Add additional options for configuring webpack rules:
+
+  - `webpackModuleRulesTest` accepts a RegExp that will match modules where Lit SSR support will be injected. Ideally it should match entrypoint to your routes. This used to be internally set as, and now defaults to, `/\/pages\/.*\.(?:j\|t)sx?$\|\/app\/.*\.(?:j\|t)sx?$/`.
+  - `webpackModuleRulesExclude` accepts an array of RegExp to exclude from any modules selected with above option. This used to be internally set as, and now defaults to, `[/next\/dist\//, /node_modules/]`.
+
 ## 0.2.3
 
 ### Patch Changes

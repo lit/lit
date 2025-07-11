@@ -1,7 +1,7 @@
 {
   "name": "@lit-internal/scripts",
   "private": true,
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Internal scripts for the Lit monorepo",
   "repository": {
     "type": "git",

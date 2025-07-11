@@ -1,6 +1,6 @@
 {
   "name": "@lit/reactive-element",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "publishConfig": {
     "access": "public"
   },
@@ -453,7 +453,7 @@
     "/node/"
   ],
   "dependencies": {
-    "@lit-labs/ssr-dom-shim": "^1.2.0"
+    "@lit-labs/ssr-dom-shim": "^1.4.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.10",
