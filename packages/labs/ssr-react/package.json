@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/ssr-react",
-  "version": "0.3.2",
+  "version": "0.3.3",
   "publishConfig": {
     "access": "public"
   },
@@ -99,7 +99,7 @@
     }
   },
   "devDependencies": {
-    "@lit/react": "1.0.7",
+    "@lit/react": "1.0.8",
     "@types/node": "^20.11.25",
     "@types/react": "^18.0.27",
     "@types/react-dom": "^18.0.10",

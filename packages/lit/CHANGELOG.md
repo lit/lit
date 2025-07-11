@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.3.1
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+- [#4988](https://github.com/lit/lit/pull/4988) [`6792b7ef`](https://github.com/lit/lit/commit/6792b7ef422a090374e67581b5c8f07dd779edc9) Thanks [@ADNolan](https://github.com/ADNolan)! - Adjusted the comparison to use the name property of the \_$resolve function and the resolveOverrideFn in private ssr support to prevent duplicated patching of the directive class.
+
+- [#4976](https://github.com/lit/lit/pull/4976) [`a126d8df`](https://github.com/lit/lit/commit/a126d8dfb05df0bbf30d771685b9c8034d7be542) - Fix minor regression in property converters. fromAttribute may return either null or undefined.
+
 ## 3.3.0
 
 ### Minor Changes

@@ -1,5 +1,11 @@
 # @lit-labs/virtualizer
 
+## 2.1.1
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
 ## 2.1.0
 
 ### Minor Changes

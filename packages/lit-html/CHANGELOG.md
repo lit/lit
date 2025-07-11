@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.3.1
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+- [#4988](https://github.com/lit/lit/pull/4988) [`6792b7ef`](https://github.com/lit/lit/commit/6792b7ef422a090374e67581b5c8f07dd779edc9) Thanks [@ADNolan](https://github.com/ADNolan)! - Adjusted the comparison to use the name property of the \_$resolve function and the resolveOverrideFn in private ssr support to prevent duplicated patching of the directive class.
+
+- [#4975](https://github.com/lit/lit/pull/4975) [`43a3f4dc`](https://github.com/lit/lit/commit/43a3f4dc9a130d053f787a0ec150278d78e2442d) - Remove some redundant code from removePart()
+
 ## 3.3.0
 
 ### Minor Changes
