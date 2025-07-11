@@ -1,0 +1,13 @@
+/**
+ * @license
+ * Copyright 2024 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
+/**
+ * This file only serves the purpose of detecting wheter
+ * CSS importing is possible in the current environment.
+ */
+.noop {
+  display: none;
+}
