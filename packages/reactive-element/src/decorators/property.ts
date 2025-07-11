@@ -150,7 +150,7 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
           this as unknown as C,
           v
         );
-        this.requestUpdate(name, oldValue, options);
+        this.requestUpdate(name, oldValue, options, true, v);
       },
       init(this: ReactiveElement, v: V): V {
         if (v !== undefined) {
@@ -164,7 +164,7 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
     return function (this: ReactiveElement, value: V) {
       const oldValue = this[name as keyof ReactiveElement];
       (target as (value: V) => void).call(this, value);
-      this.requestUpdate(name, oldValue, options);
+      this.requestUpdate(name, oldValue, options, true, value);
     } as unknown as (this: C, value: V) => void;
   }
   throw new Error(`Unsupported decorator location: ${kind}`);
