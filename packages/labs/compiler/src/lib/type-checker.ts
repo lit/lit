@@ -5,7 +5,7 @@
  */
 
 import ts from 'typescript';
-import {isLitTaggedTemplateExpression} from '@lit-labs/analyzer/lib/lit-html/template.js';
+import {isLitTaggedTemplateExpression} from '@lit-labs/analyzer/lib/lit/template.js';
 
 const compilerOptions = {
   target: ts.ScriptTarget.ESNext,
