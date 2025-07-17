@@ -7,7 +7,7 @@
 import {LitElement, html} from 'lit';
 import {assert} from '@esm-bundle/chai';
 
-import {SignalWatcher, Signal, effect} from '../index.js';
+import {SignalWatcher, Signal} from '../index.js';
 import {customElement, property} from 'lit/decorators.js';
 
 let elementNameId = 0;
@@ -312,7 +312,7 @@ suite('SignalWatcher', () => {
     assert.isTrue(survivingElements.length < elementCount);
   });
 
-  test('effect notifies signal updates (after update by default)', async () => {
+  test('updateEffect notifies signal updates (after update by default)', async () => {
     const count = new Signal.State(0);
     const other = new Signal.State(0);
     let effectCount = 0;
@@ -321,14 +321,11 @@ suite('SignalWatcher', () => {
     class TestElement extends SignalWatcher(LitElement) {
       constructor() {
         super();
-        effect(
-          () => {
-            effectCount = count.get();
-            effectOther = other.get();
-            effectCalled++;
-          },
-          {element: this}
-        );
+        this.updateEffect(() => {
+          effectCount = count.get();
+          effectOther = other.get();
+          effectCalled++;
+        });
       }
       override render() {
         return html`<p>count: ${count.get()}</p>`;
@@ -375,7 +372,7 @@ suite('SignalWatcher', () => {
     assert.equal(effectCalled, 4);
   });
 
-  test('effect notifies signal updates beforeUpdate', async () => {
+  test('updateEffect notifies signal updates beforeUpdate', async () => {
     const count = new Signal.State(0);
     const other = new Signal.State(0);
     let effectCount = 0;
@@ -385,7 +382,7 @@ suite('SignalWatcher', () => {
     class TestElement extends SignalWatcher(LitElement) {
       constructor() {
         super();
-        effect(
+        this.updateEffect(
           () => {
             effectTextContent = this.hasUpdated
               ? el.shadowRoot!.querySelector('p')!.textContent!
@@ -394,7 +391,7 @@ suite('SignalWatcher', () => {
             effectOther = other.get();
             effectCalled++;
           },
-          {element: this, beforeUpdate: true}
+          {beforeUpdate: true}
         );
       }
       override render() {
@@ -457,12 +454,9 @@ suite('SignalWatcher', () => {
     container.append(el);
     await el.updateComplete;
     let effectCount = 0;
-    effect(
-      () => {
-        effectCount = count.get();
-      },
-      {element: el}
-    );
+    el.updateEffect(() => {
+      effectCount = count.get();
+    });
     await el.updateComplete;
     assert.equal(effectCount, 0);
     el.remove();
@@ -485,12 +479,9 @@ suite('SignalWatcher', () => {
     container.append(el);
     await el.updateComplete;
     let effectOther = undefined;
-    const disposeEffect = effect(
-      () => {
-        effectOther = other.get();
-      },
-      {element: el}
-    );
+    const disposeEffect = el.updateEffect(() => {
+      effectOther = other.get();
+    });
     await el.updateComplete;
     assert.equal(effectOther, 0);
     other.set(1);
@@ -502,23 +493,58 @@ suite('SignalWatcher', () => {
     assert.equal(effectOther, 1);
   });
 
-  test('standalone effects', async () => {
+  test('effects not disposed when manualDispose set', async () => {
     const count = new Signal.State(0);
-    const frame = () => new Promise(requestAnimationFrame);
-    let effectCount;
-    const dispose = effect(() => {
-      effectCount = count.get();
+    class TestElement extends SignalWatcher(LitElement) {
+      override render() {
+        return html`<p>count: ${count.get()}</p>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.append(el);
+    await el.updateComplete;
+    let effectManualCount1 = 0;
+    let effectManualCount2 = 0;
+    let effectAutoCount = 0;
+    const disposeEffectManual1 = el.updateEffect(
+      () => {
+        effectManualCount1 = count.get();
+      },
+      {manualDispose: true}
+    );
+    const disposeEffectManual2 = el.updateEffect(
+      () => {
+        effectManualCount2 = count.get();
+      },
+      {manualDispose: true}
+    );
+    el.updateEffect(() => {
+      effectAutoCount = count.get();
     });
-    await frame();
-    // Called initially
-    assert.equal(effectCount, 0);
+    await el.updateComplete;
+    assert.equal(effectManualCount1, 0);
+    assert.equal(effectManualCount2, 0);
+    assert.equal(effectAutoCount, 0);
+    el.remove();
+    await new Promise((r) => setTimeout(r, 0));
     count.set(1);
-    await frame();
-    assert.equal(effectCount, 1);
-    dispose();
+    await new Promise((r) => setTimeout(r, 0));
+    assert.equal(effectManualCount1, 1);
+    assert.equal(effectManualCount2, 1);
+    assert.equal(effectAutoCount, 0);
+    disposeEffectManual1();
     count.set(2);
-    await frame();
-    assert.equal(effectCount, 1);
+    await new Promise((r) => setTimeout(r, 0));
+    assert.equal(effectManualCount1, 1);
+    assert.equal(effectManualCount2, 2);
+    assert.equal(effectAutoCount, 0);
+    disposeEffectManual2();
+    count.set(3);
+    await new Promise((r) => setTimeout(r, 0));
+    assert.equal(effectManualCount1, 1);
+    assert.equal(effectManualCount2, 2);
+    assert.equal(effectAutoCount, 0);
   });
 });
 

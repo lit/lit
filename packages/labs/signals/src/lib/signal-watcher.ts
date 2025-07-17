@@ -12,7 +12,17 @@ export interface SignalWatcher extends ReactiveElement {
 }
 
 interface EffectOptions {
+  /**
+   * By default effects run after the element has updated. If `beforeUpdate`
+   * is set to `true`, the effect will run before the element updates.
+   */
   beforeUpdate?: boolean;
+  /**
+   * By default, effects are automatically disposed when the element is
+   * disconnected. If `manualDispose` is set to `true`, the effect will not
+   * be automatically disposed, and you must call the returned function to
+   * dispose of the effect manually.
+   */
   manualDispose?: boolean;
 }
 
@@ -35,38 +45,8 @@ const effectWatcher = new Signal.subtle.Watcher(() => {
   });
 });
 
-/**
- * Executes the provided callback function when any of the signals it accesses
- * change. If an options object is provided, the `element` property can be used
- * to specify the element to associate the effect with. The `beforeUpdate`
- * property can be used to specify that the effect should run before the element
- * updates. An effect is automatically disposed when an element specified in
- * the options is disconnected. The `manualDispose` property can be set to
- * `true` to prevent the effect from being automatically disposed.
- *
- * @param callback
- * @param options {element, beforeUpdate, manualDispose}
- */
-export const effect = (
-  callback: () => void,
-  options?: ElementEffectOptions
-) => {
-  const {element} = options ?? {};
-  if (element === undefined) {
-    const computed = new Signal.Computed(callback);
-    effectWatcher.watch(computed);
-    Signal.subtle.untrack(() => computed.get());
-    return () => {
-      effectWatcher.unwatch(computed);
-    };
-  } else {
-    return element._effect(callback, options);
-  }
-};
-
 interface SignalWatcherApi {
-  /** @internal */
-  _effect(fn: () => void, options?: EffectOptions): () => void;
+  updateEffect(fn: () => void, options?: EffectOptions): () => void;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -199,19 +179,26 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
       if (this._watcher === undefined) {
         return;
       }
+      let keepAlive = false;
       // We unwatch all signals that are not manually disposed, so that we don't
       // keep the element alive by holding references to it.
       this._watcher.unwatch(
-        ...Signal.subtle
-          .introspectSources(this._watcher!)
-          .filter(
-            (signal) =>
-              this.__effects.get(signal as Signal.Computed<void>)
-                ?.manualDispose !== true
-          )
+        ...Signal.subtle.introspectSources(this._watcher!).filter((signal) => {
+          const shouldUnwatch =
+            this.__effects.get(signal as Signal.Computed<void>)
+              ?.manualDispose !== true;
+          if (shouldUnwatch) {
+            this.__effects.delete(signal as Signal.Computed<void>);
+          }
+          keepAlive ||= !shouldUnwatch;
+          return shouldUnwatch;
+        })
       );
-      this.__performUpdateSignal = undefined;
-      this._watcher = undefined;
+      if (!keepAlive) {
+        this.__performUpdateSignal = undefined;
+        this._watcher = undefined;
+        this.__effects.clear();
+      }
     }
 
     // list signals managing effects, stored with effect options.
@@ -220,8 +207,19 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
       EffectOptions | undefined
     >();
 
-    /** @internal exposed via `effect` */
-    _effect(fn: () => void, options?: EffectOptions): () => void {
+    /**
+     * Executes the provided callback function when any of the signals it
+     * accesses change. By default, the function is called after any pending
+     * element update. Set the `beforeUpdate` property to `true` to run the
+     * effect before the element updates. An effect is automatically disposed
+     * when the element is disconnected. Set the `manualDispose` property to
+     * `true` to prevent this. Call the returned function to manually dispose
+     * of the effect.
+     *
+     * @param callback
+     * @param options {beforeUpdate, manualDispose}
+     */
+    updateEffect(fn: () => void, options?: EffectOptions): () => void {
       this.__watch();
       const signal = new Signal.Computed(() => {
         fn();
@@ -241,6 +239,9 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
       return () => {
         this.__effects.delete(signal);
         this._watcher!.unwatch(signal);
+        if (this.isConnected === false) {
+          this.__unwatch();
+        }
       };
     }
 

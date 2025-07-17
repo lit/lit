@@ -8,7 +8,7 @@ import {LitElement, html, render} from 'lit';
 import {property} from 'lit/decorators.js';
 import {cache} from 'lit/directives/cache.js';
 import {assert} from '@esm-bundle/chai';
-import {watch, signal, computed, SignalWatcher, effect} from '../index.js';
+import {watch, signal, computed, SignalWatcher} from '../index.js';
 
 let elementNameId = 0;
 const generateElementName = () => `test-${elementNameId++}`;
@@ -165,7 +165,7 @@ suite('watch directive', () => {
     );
   });
 
-  test('effect + watch', async () => {
+  test('updateEffect + watch', async () => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     let renderCount = 0;
     const count = signal(0);
@@ -183,22 +183,19 @@ suite('watch directive', () => {
     await el.updateComplete;
     let effectBeforeValue = -1;
     let effectBeforeDom: string | null | undefined = '';
-    const disposeEffectBefore = effect(
+    const disposeEffectBefore = el.updateEffect(
       () => {
         effectBeforeValue = count.get();
         effectBeforeDom = el.shadowRoot?.querySelector('p')?.textContent;
       },
-      {element: el, beforeUpdate: true}
+      {beforeUpdate: true}
     );
     let effectValue = -1;
     let effectDom: string | null | undefined = '';
-    const disposeEffect = effect(
-      () => {
-        effectValue = count.get();
-        effectDom = el.shadowRoot?.querySelector('p')?.textContent;
-      },
-      {element: el}
-    );
+    const disposeEffect = el.updateEffect(() => {
+      effectValue = count.get();
+      effectDom = el.shadowRoot?.querySelector('p')?.textContent;
+    });
     await el.updateComplete;
     assert.equal(effectBeforeValue, 0);
     assert.equal(effectBeforeDom, 'count: 0');
