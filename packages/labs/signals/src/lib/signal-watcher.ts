@@ -40,12 +40,12 @@ const effectWatcher = new Signal.subtle.Watcher(() => {
  * change. If an options object is provided, the `element` property can be used
  * to specify the element to associate the effect with. The `beforeUpdate`
  * property can be used to specify that the effect should run before the element
- * updates. The `manualDispose` property can be used to specify that the effect
- * should not be automatically disposed when the element is disconnected.
+ * updates. An effect is automatically disposed when an element specified in
+ * the options is disconnected. The `manualDispose` property can be set to
+ * `true` to prevent the effect from being automatically disposed.
  *
  * @param callback
  * @param options {element, beforeUpdate, manualDispose}
- * @returns
  */
 export const effect = (
   callback: () => void,
@@ -65,6 +65,7 @@ export const effect = (
 };
 
 interface SignalWatcherApi {
+  /** @internal */
   _effect(fn: () => void, options?: EffectOptions): () => void;
 }
 
@@ -219,7 +220,7 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
       EffectOptions | undefined
     >();
 
-    // @internal exposed via `effect`
+    /** @internal exposed via `effect` */
     _effect(fn: () => void, options?: EffectOptions): () => void {
       this.__watch();
       const signal = new Signal.Computed(() => {
