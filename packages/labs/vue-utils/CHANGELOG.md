@@ -1,5 +1,11 @@
 # @lit-labs/vue-utils
 
+## 0.1.3
+
+### Patch Changes
+
+- [#4991](https://github.com/lit/lit/pull/4991) [`909ea738`](https://github.com/lit/lit/commit/909ea738ff25dd9c07e119179204ee080459232c) - Fixed an issue where assignSlotNodes would throw an error due to it processing an internal Vue implementation slotname
+
 ## 0.1.2
 
 ### Patch Changes

@@ -82,31 +82,39 @@ const polyfillSupport = DEV_MODE
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
-  const issuedWarnings: Set<string | undefined> = (global.litIssuedWarnings ??=
-    new Set());
+  global.litIssuedWarnings ??= new Set();
 
-  // Issue a warning, if we haven't already.
+  /**
+   * Issue a warning if we haven't already, based either on `code` or `warning`.
+   * Warnings are disabled automatically only by `warning`; disabling via `code`
+   * can be done by users.
+   */
   issueWarning = (code: string, warning: string) => {
     warning += ` See https://lit.dev/msg/${code} for more information.`;
-    if (!issuedWarnings.has(warning)) {
+    if (
+      !global.litIssuedWarnings!.has(warning) &&
+      !global.litIssuedWarnings!.has(code)
+    ) {
       console.warn(warning);
-      issuedWarnings.add(warning);
+      global.litIssuedWarnings!.add(warning);
     }
   };
 
-  issueWarning(
-    'dev-mode',
-    `Lit is in dev mode. Not recommended for production!`
-  );
-
-  // Issue polyfill support warning.
-  if (global.ShadyDOM?.inUse && polyfillSupport === undefined) {
+  queueMicrotask(() => {
     issueWarning(
-      'polyfill-support-missing',
-      `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
-        `the \`polyfill-support\` module has not been loaded.`
+      'dev-mode',
+      `Lit is in dev mode. Not recommended for production!`
     );
-  }
+
+    // Issue polyfill support warning.
+    if (global.ShadyDOM?.inUse && polyfillSupport === undefined) {
+      issueWarning(
+        'polyfill-support-missing',
+        `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
+          `the \`polyfill-support\` module has not been loaded.`
+      );
+    }
+  });
 }
 
 /**
@@ -1239,11 +1247,12 @@ export abstract class ReactiveElement
             : defaultConverter;
       // mark state reflecting
       this.__reflectingProperty = propName;
+      const convertedValue = converter.fromAttribute!(value, options.type);
       this[propName as keyof this] =
-        converter.fromAttribute!(value, options.type) ??
+        convertedValue ??
         this.__defaultValues?.get(propName) ??
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (null as any);
+        (convertedValue as any);
       // mark state not reflecting
       this.__reflectingProperty = null;
     }
@@ -1309,32 +1318,37 @@ export abstract class ReactiveElement
   _$changeProperty(
     name: PropertyKey,
     oldValue: unknown,
-    options: PropertyDeclaration,
+    {useDefault, reflect, wrapped}: PropertyDeclaration,
     initializeValue?: unknown
   ) {
     // Record default value when useDefault is used. This allows us to
     // restore this value when the attribute is removed.
-    if (options.useDefault && !(this.__defaultValues ??= new Map()).has(name)) {
+    if (useDefault && !(this.__defaultValues ??= new Map()).has(name)) {
       this.__defaultValues.set(
         name,
         initializeValue ?? oldValue ?? this[name as keyof this]
       );
       // if this is not wrapping an accessor, it must be an initial setting
       // and in this case we do not want to record the change or reflect.
-      if (options.wrapped !== true || initializeValue !== undefined) {
+      if (wrapped !== true || initializeValue !== undefined) {
         return;
       }
     }
     // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
     // vs just Map.set()
     if (!this._$changedProperties.has(name)) {
+      // On the initial change, the old value should be `undefined`, except
+      // with `useDefault`
+      if (!this.hasUpdated && !useDefault) {
+        oldValue = undefined;
+      }
       this._$changedProperties.set(name, oldValue);
     }
     // Add to reflecting properties set.
     // Note, it's important that every change has a chance to add the
     // property to `__reflectingProperties`. This ensures setting
     // attribute + property reflects correctly.
-    if (options.reflect === true && this.__reflectingProperty !== name) {
+    if (reflect === true && this.__reflectingProperty !== name) {
       (this.__reflectingProperties ??= new Set<PropertyKey>()).add(name);
     }
   }
@@ -1718,11 +1732,13 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(global.reactiveElementVersions ??= []).push('2.0.4');
+(global.reactiveElementVersions ??= []).push('2.1.1');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
-  issueWarning!(
-    'multiple-versions',
-    `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended.`
-  );
+  queueMicrotask(() => {
+    issueWarning!(
+      'multiple-versions',
+      `Multiple versions of Lit loaded. Loading multiple versions ` +
+        `is not recommended.`
+    );
+  });
 }

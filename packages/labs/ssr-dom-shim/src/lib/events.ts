@@ -21,15 +21,13 @@ export interface EventTargetShimMeta {
    * in capture phase and the next event target for a bubbling event.
    * Note that this is not the element parent
    */
-  __eventTargetParent: EventTarget | undefined;
+  __eventTargetParent: globalThis.EventTarget | undefined;
   /**
    * The host event target/element of this event target, if this event target
    * is inside a Shadow DOM.
    */
-  __host: EventTarget | undefined;
+  __host: globalThis.EventTarget | undefined;
 }
-
-type EventTargetInterface = EventTarget;
 
 const isCaptureEventListener = (
   options: undefined | AddEventListenerOptions | boolean
@@ -42,9 +40,7 @@ const AT_TARGET = 2;
 const BUBBLING_PHASE = 3;
 
 // Shim the global EventTarget object
-const EventTargetShim = class EventTarget
-  implements EventTargetInterface, EventTargetShimMeta
-{
+class EventTarget implements globalThis.EventTarget, EventTargetShimMeta {
   private __eventListeners = new Map<
     string,
     Map<EventListenerOrEventListenerObject, AddEventListenerOptions>
@@ -278,10 +274,10 @@ const EventTargetShim = class EventTarget
     }
     return finishDispatch();
   }
-};
+}
 
 const EventTargetShimWithRealType =
-  EventTargetShim as object as typeof EventTarget;
+  EventTarget as object as typeof globalThis.EventTarget;
 export {
   EventTargetShimWithRealType as EventTarget,
   EventTargetShimWithRealType as EventTargetShim,
@@ -304,7 +300,7 @@ const EventShim = class Event implements EventInterface {
   #timestamp = Date.now();
   #propagationStopped = false;
   #type: string;
-  #target: EventTarget | null;
+  #target: globalThis.EventTarget | null;
   #isBeingDispatched: boolean;
   readonly NONE = NONE;
   readonly CAPTURING_PHASE = CAPTURING_PHASE;
@@ -343,15 +339,15 @@ const EventShim = class Event implements EventInterface {
     this.#defaultPrevented = true;
   }
 
-  get target(): EventTarget | null {
+  get target(): globalThis.EventTarget | null {
     return this.#target;
   }
 
-  get currentTarget(): EventTarget | null {
+  get currentTarget(): globalThis.EventTarget | null {
     return this.#target;
   }
 
-  get srcElement(): EventTarget | null {
+  get srcElement(): globalThis.EventTarget | null {
     return this.#target;
   }
 
@@ -371,7 +367,7 @@ const EventShim = class Event implements EventInterface {
     return this.#timestamp;
   }
 
-  composedPath(): EventTarget[] {
+  composedPath(): globalThis.EventTarget[] {
     return this.#isBeingDispatched ? [this.#target!] : [];
   }
 
