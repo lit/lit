@@ -5644,6 +5644,24 @@ export const tests: {[name: string]: SSRTest} = {
     stableSelectors: ['server-only-attr'],
     serverOnly: true,
   },
+
+  'Comments are not parsed': () => {
+    return {
+      render() {
+        return html`
+          <!-- a \`<slot>\` element -->
+          <slot></slot>
+        `;
+      },
+      expectations: [
+        {
+          args: [],
+          html: '<slot></slot>',
+        },
+      ],
+      stableSelectors: ['slot'],
+    };
+  },
 };
 
 const serverClientHydrationTest: SSRTestDescription = {
