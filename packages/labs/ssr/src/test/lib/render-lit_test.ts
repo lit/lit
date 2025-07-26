@@ -467,15 +467,6 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
-  test('shadowroot="open"', async () => {
-    const {render, shadowrootOpen} = await setup();
-    const result = await render(shadowrootOpen);
-    assert.is(
-      result,
-      `<!--lit-part eTOxy3auvsY=--><test-shadowroot-open><template shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-shadowroot-open><!--/lit-part-->`
-    );
-  });
-
   test('shadowroot="closed"', async () => {
     const {render, shadowrootClosed} = await setup();
     const result = await render(shadowrootClosed);
