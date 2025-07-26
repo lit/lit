@@ -293,7 +293,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     });
     assert.is(
       result,
-      `<!--lit-part tjmYe1kHIVM=--><test-simple><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
+      `<!--lit-part tjmYe1kHIVM=--><test-simple><template shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
     );
     assert.is(customElementsRendered.length, 1);
     assert.is(customElementsRendered[0], 'test-simple');
@@ -307,7 +307,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     });
     assert.is(
       result,
-      `<!--lit-part tjmYe1kHIVM=--><test-simple defer-hydration><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
+      `<!--lit-part tjmYe1kHIVM=--><test-simple defer-hydration><template shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->`
     );
   });
 
@@ -336,7 +336,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part v2CxGIW+qHI=--><!--lit-node 0--><test-property ><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part v2CxGIW+qHI=--><!--lit-node 0--><test-property ><template shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -346,7 +346,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo="bar"><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo="bar"><template shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->bar<!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -356,7 +356,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo><template shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -366,7 +366,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo><template shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -376,7 +376,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
+      `<!--lit-part ZI1U/5CYP1o=--><!--lit-node 0--><test-property  foo><template shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part--><!--/lit-part--></main><!--/lit-part--></template></test-property><!--/lit-part-->`
     );
   });
 
@@ -431,7 +431,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part 7z41MJchKXM=--><!--lit-node 0--><test-reflected-properties   bar baz="default reflected string" reflect-foo="badazzled"><template shadowroot="open" shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
+      `<!--lit-part 7z41MJchKXM=--><!--lit-node 0--><test-reflected-properties   bar baz="default reflected string" reflect-foo="badazzled"><template shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
     );
   });
 
@@ -440,7 +440,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(elementWithDefaultReflectedProperties);
     assert.is(
       result,
-      `<!--lit-part tktTsdmfB74=--><test-reflected-properties baz="default reflected string"><template shadowroot="open" shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
+      `<!--lit-part tktTsdmfB74=--><test-reflected-properties baz="default reflected string"><template shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-reflected-properties><!--/lit-part-->`
     );
   });
 
@@ -450,7 +450,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     // TODO: we'd like to remove the extra space in the start tag
     assert.is(
       result,
-      `<!--lit-part Q0bbGrx71ic=--><!--lit-node 0--><test-will-update  ><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->Foo Bar<!--/lit-part--></main><!--/lit-part--></template></test-will-update><!--/lit-part-->`
+      `<!--lit-part Q0bbGrx71ic=--><!--lit-node 0--><test-will-update  ><template shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main><!--lit-part-->Foo Bar<!--/lit-part--></main><!--/lit-part--></template></test-will-update><!--/lit-part-->`
     );
   });
 
@@ -463,7 +463,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(noSlot);
     assert.is(
       result,
-      `<!--lit-part OpS0yFtM48Q=--><test-simple><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template><p>Hi</p></test-simple><!--/lit-part-->`
+      `<!--lit-part OpS0yFtM48Q=--><test-simple><template shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template><p>Hi</p></test-simple><!--/lit-part-->`
     );
   });
 
@@ -472,7 +472,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(shadowrootOpen);
     assert.is(
       result,
-      `<!--lit-part eTOxy3auvsY=--><test-shadowroot-open><template shadowroot="open" shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-shadowroot-open><!--/lit-part-->`
+      `<!--lit-part eTOxy3auvsY=--><test-shadowroot-open><template shadowrootmode="open"><!--lit-part--><!--/lit-part--></template></test-shadowroot-open><!--/lit-part-->`
     );
   });
 
@@ -490,7 +490,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     const result = await render(shadowrootdelegatesfocus);
     assert.is(
       result,
-      `<!--lit-part Nim07tlWyJ0=--><test-shadowrootdelegatesfocus><template shadowroot="open" shadowrootmode="open" shadowrootdelegatesfocus><!--lit-part--><!--/lit-part--></template></test-shadowrootdelegatesfocus><!--/lit-part-->`
+      `<!--lit-part Nim07tlWyJ0=--><test-shadowrootdelegatesfocus><template shadowrootmode="open" shadowrootdelegatesfocus><!--lit-part--><!--/lit-part--></template></test-shadowrootdelegatesfocus><!--/lit-part-->`
     );
   });
 
@@ -504,12 +504,12 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       const result = await render(eventParentAndSingleChildWithoutValue);
       assert.is(
         result,
-        '<!--lit-part RSGZngXXsLg=--><test-events-parent><template shadowroot="open" shadowrootmode="open"><style>\n' +
+        '<!--lit-part RSGZngXXsLg=--><test-events-parent><template shadowrootmode="open"><style>\n' +
           '    :host {\n' +
           '      display: block;\n' +
           '    }\n' +
           '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
-          '<test-events-child data-test><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
+          '<test-events-child data-test><template shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
       );
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
@@ -535,12 +535,12 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       const result = await render(eventParentAndSingleChildWithValue);
       assert.is(
         result,
-        '<!--lit-part pLrHZ32UrRU=--><test-events-parent  value="my-test"><template shadowroot="open" shadowrootmode="open"><style>\n' +
+        '<!--lit-part pLrHZ32UrRU=--><test-events-parent  value="my-test"><template shadowrootmode="open"><style>\n' +
           '    :host {\n' +
           '      display: block;\n' +
           '    }\n' +
           '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
-          '<test-events-child data-test="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
+          '<test-events-child data-test="my-test"><template shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></test-events-parent><!--/lit-part-->'
       );
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
@@ -565,17 +565,17 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       const result = await render(eventParentNesting);
       assert.is(
         result,
-        '<!--lit-part 4D0mmmUOBvU=--><test-events-parent   capture="oc" value="ov"><template shadowroot="open" shadowrootmode="open"><style>\n' +
+        '<!--lit-part 4D0mmmUOBvU=--><test-events-parent   capture="oc" value="ov"><template shadowrootmode="open"><style>\n' +
           '    :host {\n' +
           '      display: block;\n' +
           '    }\n' +
           '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>\n' +
-          '  <test-events-parent   capture="ic" value="iv"><template shadowroot="open" shadowrootmode="open"><style>\n' +
+          '  <test-events-parent   capture="ic" value="iv"><template shadowrootmode="open"><style>\n' +
           '    :host {\n' +
           '      display: block;\n' +
           '    }\n' +
           '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
-          '<test-events-child data-test="ocicivov"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child>' +
+          '<test-events-child data-test="ocicivov"><template shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child>' +
           '</test-events-parent></test-events-parent><!--/lit-part-->'
       );
       // structuredClone is necessary, as the identity across module loader is not equal.
@@ -605,19 +605,19 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       const result = await render(eventShadowNested);
       assert.is(
         result,
-        '<!--lit-part QSPfkaBogFk=--><test-events-parent  value="my-test"><template shadowroot="open" shadowrootmode="open"><style>\n' +
+        '<!--lit-part QSPfkaBogFk=--><test-events-parent  value="my-test"><template shadowrootmode="open"><style>\n' +
           '    :host {\n' +
           '      display: block;\n' +
           '    }\n' +
           '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
-          '<test-events-shadow-nested><template shadowroot="open" shadowrootmode="open"><!--lit-part GQHLzN3QO5Q=--><slot></slot><!--lit-node 1--><test-events-parent  value="shadow" defer-hydration>' +
-          '<template shadowroot="open" shadowrootmode="open"><style>\n' +
+          '<test-events-shadow-nested><template shadowrootmode="open"><!--lit-part GQHLzN3QO5Q=--><slot></slot><!--lit-node 1--><test-events-parent  value="shadow" defer-hydration>' +
+          '<template shadowrootmode="open"><style>\n' +
           '    :host {\n' +
           '      display: block;\n' +
           '    }\n' +
           '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template><slot name="a"></slot></test-events-parent><!--/lit-part--></template>\n' +
-          '  <div><test-events-child data-test="my-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child>' +
-          '</div><div slot="a"><test-events-child data-test="shadowmy-test"><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></div>\n' +
+          '  <div><test-events-child data-test="my-test"><template shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child>' +
+          '</div><div slot="a"><test-events-child data-test="shadowmy-test"><template shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=--><div>events child</div><!--/lit-part--></template></test-events-child></div>\n' +
           '  </test-events-shadow-nested></test-events-parent><!--/lit-part-->'
       );
       // structuredClone is necessary, as the identity across module loader is not equal.
