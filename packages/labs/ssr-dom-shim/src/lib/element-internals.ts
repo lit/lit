@@ -4,8 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+type StringKeys<T extends object> = {
+  [K in keyof T]: T[K] extends string | null ? K : never;
+}[keyof T];
+
 type ARIAAttributeMap = {
-  [K in keyof ARIAMixin]: string;
+  [K in StringKeys<ARIAMixin>]: string;
 };
 
 /**
@@ -66,6 +70,7 @@ type ElementInternalsInterface = ElementInternals;
 export const ElementInternalsShim = class ElementInternals
   implements ElementInternalsInterface
 {
+  ariaActiveDescendantElement = null;
   ariaAtomic = '';
   ariaAutoComplete = '';
   ariaBrailleLabel = '';
@@ -76,21 +81,28 @@ export const ElementInternalsShim = class ElementInternals
   ariaColIndex = '';
   ariaColIndexText = '';
   ariaColSpan = '';
+  ariaControlsElements = null;
   ariaCurrent = '';
+  ariaDescribedByElements = null;
   ariaDescription = '';
+  ariaDetailsElements = null;
   ariaDisabled = '';
+  ariaErrorMessageElements = null;
   ariaExpanded = '';
+  ariaFlowToElements = null;
   ariaHasPopup = '';
   ariaHidden = '';
   ariaInvalid = '';
   ariaKeyShortcuts = '';
   ariaLabel = '';
+  ariaLabelledByElements = null;
   ariaLevel = '';
   ariaLive = '';
   ariaModal = '';
   ariaMultiLine = '';
   ariaMultiSelectable = '';
   ariaOrientation = '';
+  ariaOwnsElements = null;
   ariaPlaceholder = '';
   ariaPosInSet = '';
   ariaPressed = '';
