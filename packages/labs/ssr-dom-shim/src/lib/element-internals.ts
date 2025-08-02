@@ -8,6 +8,9 @@ type StringKeys<T extends object> = {
   [K in keyof T]: T[K] extends string | null ? K : never;
 }[keyof T];
 
+// Since TypeScript 5.9, ARIAMixin has properties with the type Element | null
+// or Element[] | null. However, we can only support string attributes,
+// which is why we filter for string properties.
 type ARIAAttributeMap = {
   [K in StringKeys<ARIAMixin>]: string;
 };
