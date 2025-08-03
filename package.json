@@ -271,7 +271,7 @@
     "@rollup/plugin-virtual": "^3.0.2",
     "@types/chai": "^4.3.1",
     "@types/mocha": "^9.1.1",
-    "@types/node": "^18.19.44",
+    "@types/node": "^22.17.0",
     "@typescript-eslint/eslint-plugin": "^6.4.1",
     "@typescript-eslint/parser": "^6.4.1",
     "@web/dev-server": "^0.1.32",
@@ -295,7 +295,7 @@
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-summary": "^2.0.1",
     "rollup-plugin-terser": "^7.0.2",
-    "typescript": "~5.5.0",
+    "typescript": "~5.9.0",
     "uvu": "^0.5.6",
     "wireit": "^0.14.12"
   },

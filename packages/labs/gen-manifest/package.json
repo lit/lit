@@ -58,7 +58,7 @@
   },
   "devDependencies": {
     "@lit-internal/tests": "^0.0.1",
-    "@types/node": "^17.0.31",
+    "@types/node": "^22.17.0",
     "lit": "^3.2.0",
     "uvu": "^0.5.3"
   },
