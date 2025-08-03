@@ -1,12 +1,12 @@
 {
   "name": "@lit/react",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "A React component wrapper for web components.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/react"
   },
   "type": "module",

@@ -2,6 +2,11 @@
 
 Lit directives for making things move.
 
+[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/@lit-labs/motion.svg?logo=npm)](https://www.npmjs.com/package/@lit-labs/motion)
+[![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
+[![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
+
 > [!WARNING]
 >
 > This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It

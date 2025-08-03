@@ -14,6 +14,14 @@ interface LitSsrPluginOptions {
    * Whether to include the polyfill for Declarative Shadow DOM. Defaults to true.
    */
   addDeclarativeShadowDomPolyfill?: boolean;
+  /**
+   * Allows to pass a specific RegExp to match the files to be processed by the plugin.
+   */
+  webpackModuleRulesTest?: RegExp;
+  /**
+   * Allows to pass a specific RegExp to exclude files from being processed by the plugin.
+   */
+  webpackModuleRulesExclude?: Array<RegExp>;
 }
 
 export = (
@@ -24,7 +32,11 @@ export = (
       webpack: (config, options) => {
         const {isServer} = options;
 
-        const {addDeclarativeShadowDomPolyfill = true} = pluginOptions;
+        const {
+          addDeclarativeShadowDomPolyfill = true,
+          webpackModuleRulesTest = /\/pages\/.*\.(?:j|t)sx?$|\/app\/.*\.(?:j|t)sx?$/,
+          webpackModuleRulesExclude = [/next\/dist\//, /node_modules/],
+        } = pluginOptions;
 
         // This adds a side-effectful import which monkey patches
         // `React.createElement` and Runtime JSX functions in the server and
@@ -45,10 +57,10 @@ export = (
           // TODO(augustjk) It would nicer to inject only once in either
           // `pages/_document.tsx`, `pages/_app.tsx`, or `app/layout.tsx` but
           // they're not guaranteed to exist.
-          test: /\/pages\/.*\.(?:j|t)sx?$|\/app\/.*\.(?:j|t)sx?$/,
+          test: webpackModuleRulesTest,
           // Exclude Next's own distributed files as they're commonjs and won't
           // play nice with `imports-loader`.
-          exclude: /next\/dist\//,
+          exclude: webpackModuleRulesExclude,
           loader: 'imports-loader',
           options: {
             imports,

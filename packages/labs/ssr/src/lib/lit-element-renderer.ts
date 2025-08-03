@@ -62,7 +62,7 @@ export class LitElementRenderer extends ElementRenderer {
       for (const [ariaProp, ariaAttribute] of Object.entries(
         ariaMixinAttributes
       )) {
-        const value = internals[ariaProp as keyof ARIAMixin];
+        const value = internals[ariaProp as keyof typeof ariaMixinAttributes];
         if (value && !this.element.hasAttribute(ariaAttribute)) {
           this.element.setAttribute(ariaAttribute, value);
           this.element.setAttribute(

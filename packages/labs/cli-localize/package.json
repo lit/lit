@@ -10,7 +10,11 @@
   "bugs": "https://github.com/lit/lit/issues",
   "type": "module",
   "main": "lib/index.js",
-  "repository": "lit/lit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/cli-localize"
+  },
   "scripts": {
     "build": "wireit",
     "test": "wireit",
@@ -65,7 +69,7 @@
     "@lit/localize-tools": "^0.8.0"
   },
   "devDependencies": {
-    "typescript": "~5.5.0"
+    "typescript": "~5.9.0"
   },
   "engines": {
     "node": ">=14.8.0"

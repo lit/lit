@@ -1,5 +1,11 @@
 # @lit-labs/ssr-dom-shim
 
+## 1.4.0
+
+### Minor Changes
+
+- [#4987](https://github.com/lit/lit/pull/4987) [`3ac01aee`](https://github.com/lit/lit/commit/3ac01aeee8de3182c48c842d1a6084e58d729b14) - Implement the full CustomElementRegistry type for the ssr shim. Improves fidelity and compilability.
+
 ## 1.3.0
 
 ### Minor Changes

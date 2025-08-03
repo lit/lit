@@ -1,5 +1,17 @@
 # @lit-labs/ssr-react
 
+## 0.3.3
+
+### Patch Changes
+
+- [#4993](https://github.com/lit/lit/pull/4993) [`a33d6792`](https://github.com/lit/lit/commit/a33d67921780bbded0be51c29e66f3a08830d0e6) Thanks [@ADNolan](https://github.com/ADNolan)! - Prevent duplicative patching of React.createElement.
+
+## 0.3.2
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
 ## 0.3.1
 
 ### Patch Changes

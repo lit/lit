@@ -215,10 +215,15 @@ suite('directive-helpers', () => {
         // Create two parts and remove the first, then the second to make sure
         // that removing the first doesn't move the second's markers. This
         // fails if the parts accidentally share a marker.
-        const childPart2 = insertPart(part, undefined);
-        const childPart1 = insertPart(part, undefined, childPart2);
+        const childPart2 = insertPart(part);
+        const childPart1 = insertPart(part, childPart2);
+
+        // Check that the test is correctly inserting two different parts:
+        assert.notEqual(childPart1, childPart2);
+
         removePart(childPart1);
         removePart(childPart2);
+
         return v;
       }
     }
@@ -229,6 +234,31 @@ suite('directive-helpers', () => {
 
     go('A');
     assertContent('<div>A</div>');
+  });
+
+  test('removePart removes the start marker', () => {
+    let testPart: ChildPart | undefined;
+    const testDirective = directive(
+      class TestDirective extends Directive {
+        render(v: unknown) {
+          return v;
+        }
+
+        override update(part: ChildPart, [v]: Parameters<this['render']>) {
+          testPart = part;
+          return v;
+        }
+      }
+    );
+
+    const go = (v: unknown) =>
+      render(html`<div>${testDirective(v)}</div>`, container);
+
+    go('A');
+    assertContent('<div>A</div>');
+    removePart(testPart!);
+    assertContent('<div></div>');
+    assert.strictEqual(container.firstElementChild?.childNodes.length, 0);
   });
 
   test('insertPart keeps connection state in sync', () => {

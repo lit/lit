@@ -2,7 +2,20 @@
 
 React integration for Web Components and Reactive Controllers.
 
+[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/@lit/react.svg?logo=npm)](https://www.npmjs.com/package/@lit/react)
+[![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
+[![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
+
+## Documentation
+
+Full documentation is available at
+[lit.dev/docs/frameworks/react/](https://lit.dev/docs/frameworks/react/).
+
 ## Overview
+
+`@lit/react` lets you create React components from web components, and React
+hooks from Reactive Controllers.
 
 ## `createComponent`
 
@@ -165,4 +178,4 @@ $ npm install @lit/react
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).
+Please see [CONTRIBUTING.md](../../CONTRIBUTING.md).

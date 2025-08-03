@@ -12,7 +12,7 @@ jobs:
   release:
     # Don't run on forks. We can and should only release from the main repo.
     permissions:
-      contents: write  # for Git to git push
+      contents: write # for Git to git push
       pull-requests: write # to allow creating PR
       id-token: write # for npm provenance
 
@@ -54,7 +54,9 @@ jobs:
         # run, and its output will appear in the raw logs). Unknown why this is the case,
         # see https://github.com/changesets/action/issues/149 for discussion.
         id: cs
-        uses: changesets/action@v1
+        # Pinning to v1.5.1 as v1.5.2 introduced a bug with sub directories
+        # See https://github.com/changesets/action/issues/501
+        uses: changesets/action@v1.5.1
         with:
           # The `working-directory` option is only available for steps that use
           # `run`. This `cwd` option is the same, but specific to this action.

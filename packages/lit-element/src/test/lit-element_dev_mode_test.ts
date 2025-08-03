@@ -14,12 +14,11 @@ const DEV_MODE = !!LitElement.enableWarning;
 if (DEV_MODE) {
   suite('Developer mode warnings', () => {
     let container: HTMLElement;
-    let warnings: string[] = [];
 
     const consoleWarn = console.warn;
 
     suiteSetup(() => {
-      console.warn = (message: string) => warnings.push(message);
+      console.warn = () => {};
     });
 
     suiteTeardown(() => {
@@ -27,7 +26,6 @@ if (DEV_MODE) {
     });
 
     setup(() => {
-      warnings = [];
       container = document.createElement('div');
       document.body.appendChild(container);
     });

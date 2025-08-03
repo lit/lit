@@ -159,6 +159,110 @@ suite('ReactiveElement', () => {
     assert.equal(el.updatedCount, 3);
   });
 
+  test('changedProperties', async () => {
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {
+          prop: {},
+          acc: {},
+          gs: {},
+        };
+      }
+
+      prop!: string;
+
+      accessor acc = 'acc';
+
+      #gs = 'gs';
+      get gs() {
+        return this.#gs;
+      }
+
+      set gs(v: string) {
+        this.#gs = v;
+      }
+
+      changes = new Map<PropertyKey, any>();
+
+      constructor() {
+        super();
+        this.prop = 'prop';
+        this.changes = new Map<PropertyKey, any>();
+      }
+
+      override updated(changed: PropertyValues) {
+        this.changes = new Map(changed);
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.deepEqual(Array.from(el.changes), [
+      ['prop', undefined],
+      ['acc', undefined],
+      ['gs', undefined],
+    ]);
+    el.prop = '1';
+    el.acc = '2';
+    el.gs = '3';
+    await el.updateComplete;
+    assert.deepEqual(Array.from(el.changes), [
+      ['prop', 'prop'],
+      ['acc', 'acc'],
+      ['gs', 'gs'],
+    ]);
+  });
+
+  test('changedProperties initial values when user set', async () => {
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {
+          prop: {},
+          acc: {},
+          gs: {},
+        };
+      }
+
+      prop!: string;
+
+      accessor acc = 'acc';
+
+      #gs = 'gs';
+      get gs() {
+        return this.#gs;
+      }
+
+      set gs(v: string) {
+        this.#gs = v;
+      }
+
+      changes = new Map<PropertyKey, any>();
+
+      constructor() {
+        super();
+        this.prop = 'prop';
+        this.changes = new Map<PropertyKey, any>();
+      }
+
+      override updated(changed: PropertyValues) {
+        this.changes = new Map(changed);
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    el.prop = '1';
+    el.acc = '2';
+    el.gs = '3';
+    await el.updateComplete;
+    assert.deepEqual(Array.from(el.changes), [
+      ['prop', undefined],
+      ['acc', undefined],
+      ['gs', undefined],
+    ]);
+  });
+
   test('property options', async () => {
     const hasChanged = (value: any, old: any) =>
       old === undefined || value > old;
@@ -257,6 +361,214 @@ suite('ReactiveElement', () => {
     await el.updateComplete;
     assert.equal(el.all, 15);
     assert.equal(el.updateCount, 6);
+  });
+
+  test('property options useDefault', async () => {
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {
+          prop: {useDefault: true},
+          acc: {useDefault: true},
+          gs: {useDefault: true},
+        };
+      }
+
+      prop!: string;
+
+      accessor acc = 'acc';
+
+      #gs = 'gs';
+      get gs() {
+        return this.#gs;
+      }
+
+      set gs(v: string) {
+        this.#gs = v;
+      }
+
+      constructor() {
+        super();
+        this.prop = 'prop';
+      }
+
+      changes = new Map<PropertyKey, any>();
+
+      override updated(changed: PropertyValues) {
+        this.changes = new Map(changed);
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    assert.equal(el.prop, 'prop');
+    assert.equal(el.acc, 'acc');
+    assert.equal(el.gs, 'gs');
+    await el.updateComplete;
+    assert.equal(el.prop, 'prop');
+    assert.equal(el.acc, 'acc');
+    assert.equal(el.gs, 'gs');
+    assert.deepEqual(Array.from(el.changes), []);
+    el.prop = '1';
+    el.acc = '2';
+    el.gs = '3';
+    await el.updateComplete;
+    assert.equal(el.prop, '1');
+    assert.equal(el.acc, '2');
+    assert.equal(el.gs, '3');
+    assert.deepEqual(Array.from(el.changes), [
+      ['prop', 'prop'],
+      ['acc', 'acc'],
+      ['gs', 'gs'],
+    ]);
+    const el2 = new E();
+    container.appendChild(el2);
+    el2.prop = '1';
+    el2.acc = '2';
+    el2.gs = '3';
+    await el2.updateComplete;
+    assert.equal(el2.prop, '1');
+    assert.equal(el2.acc, '2');
+    assert.equal(el2.gs, '3');
+    assert.deepEqual(Array.from(el2.changes), [
+      ['prop', 'prop'],
+      ['acc', 'acc'],
+      ['gs', 'gs'],
+    ]);
+    const late = generateElementName();
+    const el3 = document.createElement(late) as any;
+    container.append(el3);
+    el3.prop = '1';
+    el3.acc = '2';
+    el3.gs = '3';
+    customElements.define(late, class extends E {});
+    await el3.updateComplete;
+    assert.equal(el3.prop, '1');
+    assert.equal(el3.acc, '2');
+    assert.equal(el3.gs, '3');
+    assert.deepEqual(Array.from(el3.changes), [
+      ['prop', 'prop'],
+      ['acc', 'acc'],
+      ['gs', 'gs'],
+    ]);
+  });
+
+  test('property options useDefault does not reflect', async () => {
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {
+          prop: {reflect: true, useDefault: true},
+          acc: {reflect: true, useDefault: true},
+          gs: {reflect: true, useDefault: true},
+        };
+      }
+
+      prop!: string;
+
+      accessor acc = 'acc';
+
+      #gs = 'gs';
+      get gs() {
+        return this.#gs;
+      }
+
+      set gs(v: string) {
+        this.#gs = v;
+      }
+
+      constructor() {
+        super();
+        this.prop = 'prop';
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.isFalse(el.hasAttributes());
+    el.prop = 'prop';
+    el.acc = 'acc';
+    el.gs = 'gs';
+    await el.updateComplete;
+    assert.equal(el.getAttribute('prop'), 'prop');
+    assert.equal(el.getAttribute('acc'), 'acc');
+    assert.equal(el.getAttribute('gs'), 'gs');
+    el.prop = '1';
+    el.acc = '2';
+    el.gs = '3';
+    await el.updateComplete;
+    assert.equal(el.getAttribute('prop'), '1');
+    assert.equal(el.getAttribute('acc'), '2');
+    assert.equal(el.getAttribute('gs'), '3');
+
+    const el2 = new E();
+    container.appendChild(el2);
+    el2.prop = '1';
+    el2.acc = '2';
+    el2.gs = '3';
+    await el2.updateComplete;
+    assert.equal(el2.getAttribute('prop'), '1');
+    assert.equal(el2.getAttribute('acc'), '2');
+    assert.equal(el2.getAttribute('gs'), '3');
+    const late = generateElementName();
+    const el3 = document.createElement(late) as any;
+    container.append(el3);
+    el3.prop = '1';
+    el3.acc = '2';
+    el3.gs = '3';
+    customElements.define(late, class extends E {});
+    await el3.updateComplete;
+    assert.equal(el3.getAttribute('prop'), '1');
+    assert.equal(el3.getAttribute('acc'), '2');
+    assert.equal(el3.getAttribute('gs'), '3');
+  });
+
+  test('changedProperties initial values with useDefault when user set', async () => {
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {
+          prop: {reflect: true, useDefault: true},
+          acc: {reflect: true, useDefault: true},
+          gs: {reflect: true, useDefault: true},
+        };
+      }
+
+      prop!: string;
+
+      accessor acc = 'acc';
+
+      #gs = 'gs';
+      get gs() {
+        return this.#gs;
+      }
+
+      set gs(v: string) {
+        this.#gs = v;
+      }
+
+      changes = new Map<PropertyKey, any>();
+
+      constructor() {
+        super();
+        this.prop = 'prop';
+        this.changes = new Map<PropertyKey, any>();
+      }
+
+      override updated(changed: PropertyValues) {
+        this.changes = new Map(changed);
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    el.prop = '1';
+    el.acc = '2';
+    el.gs = '3';
+    await el.updateComplete;
+    assert.deepEqual(Array.from(el.changes), [
+      ['prop', 'prop'],
+      ['acc', 'acc'],
+      ['gs', 'gs'],
+    ]);
   });
 
   test('PropertyDeclaration field `hasChanged` can be passed concrete types', () => {
@@ -525,6 +837,308 @@ suite('ReactiveElement', () => {
     assert.equal(el.defaultReflectStr, null);
     assert.deepEqual(el.defaultReflectObj, null);
     assert.deepEqual(el.defaultReflectArr, null);
+  });
+
+  test('property/attribute values when attributes removed and useDefault is set', async () => {
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {
+          bool: {type: Boolean, useDefault: true},
+          num: {type: Number, useDefault: true},
+          str: {type: String, useDefault: true},
+          obj: {type: Object, useDefault: true},
+          arr: {type: Array, useDefault: true},
+          reflectBool: {type: Boolean, reflect: true, useDefault: true},
+          reflectNum: {type: Number, reflect: true, useDefault: true},
+          reflectStr: {type: String, reflect: true, useDefault: true},
+          reflectObj: {type: Object, reflect: true, useDefault: true},
+          reflectArr: {type: Array, reflect: true, useDefault: true},
+          accBool: {type: Boolean, useDefault: true},
+          accNum: {type: Number, useDefault: true},
+          accStr: {type: String, useDefault: true},
+          accObj: {type: Object, useDefault: true},
+          accArr: {type: Array, useDefault: true},
+          accReflectBool: {type: Boolean, reflect: true, useDefault: true},
+          accReflectNum: {type: Number, reflect: true, useDefault: true},
+          accReflectStr: {type: String, reflect: true, useDefault: true},
+          accReflectObj: {type: Object, reflect: true, useDefault: true},
+          accReflectArr: {type: Array, reflect: true, useDefault: true},
+          gsBool: {type: Boolean, useDefault: true},
+          gsNum: {type: Number, useDefault: true},
+          gsStr: {type: String, useDefault: true},
+          gsObj: {type: Object, useDefault: true},
+          gsArr: {type: Array, useDefault: true},
+          gsReflectBool: {type: Boolean, reflect: true, useDefault: true},
+          gsReflectNum: {type: Number, reflect: true, useDefault: true},
+          gsReflectStr: {type: String, reflect: true, useDefault: true},
+          gsReflectObj: {type: Object, reflect: true, useDefault: true},
+          gsReflectArr: {type: Array, reflect: true, useDefault: true},
+        };
+      }
+
+      bool = false;
+      num = 0;
+      str = 'str';
+      obj: Record<string, unknown> = {obj: true};
+      arr = [0];
+      reflectBool = false;
+      reflectNum = 0;
+      reflectStr = 'str';
+      reflectObj: Record<string, unknown> = {obj: true};
+      reflectArr = [0];
+      accessor accBool = false;
+      accessor accNum = 0;
+      accessor accStr = 'str';
+      accessor accObj: Record<string, unknown> = {obj: true};
+      accessor accArr = [0];
+      accessor accReflectBool = false;
+      accessor accReflectNum = 0;
+      accessor accReflectStr = 'str';
+      accessor accReflectObj: Record<string, unknown> = {obj: true};
+      accessor accReflectArr = [0];
+
+      #gsBool = false;
+      get gsBool() {
+        return this.#gsBool;
+      }
+      set gsBool(value: boolean) {
+        this.#gsBool = value;
+      }
+      #gsNum = 0;
+      get gsNum() {
+        return this.#gsNum;
+      }
+      set gsNum(value: number) {
+        this.#gsNum = value;
+      }
+      #gsStr = 'str';
+      get gsStr() {
+        return this.#gsStr;
+      }
+      set gsStr(value: string) {
+        this.#gsStr = value;
+      }
+      #gsObj = {obj: true} as Record<string, unknown>;
+      get gsObj() {
+        return this.#gsObj;
+      }
+      set gsObj(value: Record<string, unknown>) {
+        this.#gsObj = value;
+      }
+      #gsArr = [0] as unknown[];
+      get gsArr() {
+        return this.#gsArr;
+      }
+      set gsArr(value: unknown[]) {
+        this.#gsArr = value;
+      }
+      #gsReflectBool = false;
+      get gsReflectBool() {
+        return this.#gsReflectBool;
+      }
+      set gsReflectBool(value: boolean) {
+        this.#gsReflectBool = value;
+      }
+      #gsReflectNum = 0;
+      get gsReflectNum() {
+        return this.#gsReflectNum;
+      }
+      set gsReflectNum(value: number) {
+        this.#gsReflectNum = value;
+      }
+      #gsReflectStr = 'str';
+      get gsReflectStr() {
+        return this.#gsReflectStr;
+      }
+      set gsReflectStr(value: string) {
+        this.#gsReflectStr = value;
+      }
+      #gsReflectObj = {obj: true} as Record<string, unknown>;
+      get gsReflectObj() {
+        return this.#gsReflectObj;
+      }
+      set gsReflectObj(value: Record<string, unknown>) {
+        this.#gsReflectObj = value;
+      }
+      #gsReflectArr = [0] as unknown[];
+      get gsReflectArr() {
+        return this.#gsReflectArr;
+      }
+      set gsReflectArr(value: unknown[]) {
+        this.#gsReflectArr = value;
+      }
+    }
+    const name = generateElementName();
+    customElements.define(name, E);
+    container.innerHTML = `<${name} bool num="1" str="str1" obj='{"obj1": true}'
+      arr='[1]' reflectBool reflectNum="1" reflectStr="str1"
+      reflectObj ='{"obj1": true}' reflectArr="[1]"
+      accbool accnum="1" accstr="str1" accobj='{"obj1": true}'
+      accarr='[1]' accreflectbool accreflectnum="1" accreflectstr="str1"
+      accreflectobj ='{"obj1": true}' accreflectarr="[1]"
+      gsbool gsnum="1" gsstr="str1" gsobj='{"obj1": true}'
+      gsarr='[1]' gsreflectbool gsreflectnum="1" gsreflectstr="str1"
+      gsreflectobj ='{"obj1": true}' gsreflectarr="[1]">
+      </${name}>`;
+    const el = container.firstChild as E;
+    await el.updateComplete;
+    assert.equal(el.bool, true);
+    assert.equal(el.num, 1);
+    assert.equal(el.str, 'str1');
+    assert.deepEqual(el.obj, {obj1: true});
+    assert.deepEqual(el.arr, [1]);
+    assert.equal(el.reflectBool, true);
+    assert.equal(el.reflectNum, 1);
+    assert.equal(el.reflectStr, 'str1');
+    assert.deepEqual(el.reflectObj, {obj1: true});
+    assert.deepEqual(el.reflectArr, [1]);
+    assert.equal(el.accBool, true);
+    assert.equal(el.accNum, 1);
+    assert.equal(el.accStr, 'str1');
+    assert.deepEqual(el.accObj, {obj1: true});
+    assert.deepEqual(el.accArr, [1]);
+    assert.equal(el.accReflectBool, true);
+    assert.equal(el.accReflectNum, 1);
+    assert.equal(el.accReflectStr, 'str1');
+    assert.deepEqual(el.accReflectObj, {obj1: true});
+    assert.deepEqual(el.accReflectArr, [1]);
+    assert.equal(el.gsBool, true);
+    assert.equal(el.gsNum, 1);
+    assert.equal(el.gsStr, 'str1');
+    assert.deepEqual(el.gsObj, {obj1: true});
+    assert.deepEqual(el.gsArr, [1]);
+    assert.equal(el.gsReflectBool, true);
+    assert.equal(el.gsReflectNum, 1);
+    assert.equal(el.gsReflectStr, 'str1');
+    assert.deepEqual(el.gsReflectObj, {obj1: true});
+    assert.deepEqual(el.gsReflectArr, [1]);
+    //
+    el.removeAttribute('bool');
+    el.removeAttribute('num');
+    el.removeAttribute('str');
+    el.removeAttribute('obj');
+    el.removeAttribute('arr');
+    el.removeAttribute('reflectbool');
+    el.removeAttribute('reflectnum');
+    el.removeAttribute('reflectstr');
+    el.removeAttribute('reflectobj');
+    el.removeAttribute('reflectarr');
+    el.removeAttribute('accbool');
+    el.removeAttribute('accnum');
+    el.removeAttribute('accstr');
+    el.removeAttribute('accobj');
+    el.removeAttribute('accarr');
+    el.removeAttribute('accreflectbool');
+    el.removeAttribute('accreflectnum');
+    el.removeAttribute('accreflectstr');
+    el.removeAttribute('accreflectobj');
+    el.removeAttribute('accreflectarr');
+    el.removeAttribute('gsbool');
+    el.removeAttribute('gsnum');
+    el.removeAttribute('gsstr');
+    el.removeAttribute('gsobj');
+    el.removeAttribute('gsarr');
+    el.removeAttribute('gsreflectbool');
+    el.removeAttribute('gsreflectnum');
+    el.removeAttribute('gsreflectstr');
+    el.removeAttribute('gsreflectobj');
+    el.removeAttribute('gsreflectarr');
+    assert.equal(el.bool, false);
+    assert.equal(el.num, 0);
+    assert.equal(el.str, 'str');
+    assert.deepEqual(el.obj, {obj: true});
+    assert.deepEqual(el.arr, [0]);
+    assert.equal(el.reflectBool, false);
+    assert.equal(el.reflectNum, 0);
+    assert.equal(el.reflectStr, 'str');
+    assert.deepEqual(el.reflectObj, {obj: true});
+    assert.deepEqual(el.reflectArr, [0]);
+    assert.equal(el.accBool, false);
+    assert.equal(el.accNum, 0);
+    assert.equal(el.accStr, 'str');
+    assert.deepEqual(el.accObj, {obj: true});
+    assert.deepEqual(el.accArr, [0]);
+    assert.equal(el.accReflectBool, false);
+    assert.equal(el.accReflectNum, 0);
+    assert.equal(el.accReflectStr, 'str');
+    assert.deepEqual(el.accReflectObj, {obj: true});
+    assert.deepEqual(el.accReflectArr, [0]);
+    assert.equal(el.gsBool, false);
+    assert.equal(el.gsNum, 0);
+    assert.equal(el.gsStr, 'str');
+    assert.deepEqual(el.gsObj, {obj: true});
+    assert.deepEqual(el.gsArr, [0]);
+    assert.equal(el.gsReflectBool, false);
+    assert.equal(el.gsReflectNum, 0);
+    assert.equal(el.gsReflectStr, 'str');
+    assert.deepEqual(el.gsReflectObj, {obj: true});
+    assert.deepEqual(el.gsReflectArr, [0]);
+    await el.updateComplete;
+    assert.isFalse(el.hasAttributes());
+    assert.equal(el.bool, false);
+    assert.equal(el.num, 0);
+    assert.equal(el.str, 'str');
+    assert.deepEqual(el.obj, {obj: true});
+    assert.deepEqual(el.arr, [0]);
+    assert.equal(el.reflectBool, false);
+    assert.equal(el.reflectNum, 0);
+    assert.equal(el.reflectStr, 'str');
+    assert.deepEqual(el.reflectObj, {obj: true});
+    assert.deepEqual(el.reflectArr, [0]);
+    assert.equal(el.accBool, false);
+    assert.equal(el.accNum, 0);
+    assert.equal(el.accStr, 'str');
+    assert.deepEqual(el.accObj, {obj: true});
+    assert.deepEqual(el.accArr, [0]);
+    assert.equal(el.accReflectBool, false);
+    assert.equal(el.accReflectNum, 0);
+    assert.equal(el.accReflectStr, 'str');
+    assert.deepEqual(el.accReflectObj, {obj: true});
+    assert.deepEqual(el.accReflectArr, [0]);
+    assert.equal(el.gsBool, false);
+    assert.equal(el.gsNum, 0);
+    assert.equal(el.gsStr, 'str');
+    assert.deepEqual(el.gsObj, {obj: true});
+    assert.deepEqual(el.gsArr, [0]);
+    assert.equal(el.gsReflectBool, false);
+    assert.equal(el.gsReflectNum, 0);
+    assert.equal(el.gsReflectStr, 'str');
+    assert.deepEqual(el.gsReflectObj, {obj: true});
+    assert.deepEqual(el.gsReflectArr, [0]);
+  });
+
+  test('fromAttribute can set prop to null or undefined', () => {
+    class A extends ReactiveElement {
+      static override get properties() {
+        return {
+          foo: {
+            converter: {
+              fromAttribute: (value: string | null) => {
+                if (value === 'undef') {
+                  return undefined;
+                }
+                if (value === 'nll') {
+                  return null;
+                }
+                return value;
+              },
+            },
+          },
+        };
+      }
+
+      foo?: string;
+    }
+    customElements.define(generateElementName(), A);
+    const el = new A();
+    container.appendChild(el);
+    assert.equal(el.foo, undefined);
+    el.setAttribute('foo', 'bar');
+    assert.equal(el.foo, 'bar');
+    el.setAttribute('foo', 'undef');
+    assert.equal(el.foo, undefined);
+    el.setAttribute('foo', 'nll');
+    assert.equal(el.foo, null);
   });
 
   test("attributes removed when a reflecting property's value becomes null", async () => {
