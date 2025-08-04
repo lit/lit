@@ -17,6 +17,27 @@ declare global {
   }
 }
 
+// Feature detection used to install creationScope in the renderOptions
+const hasLegacyScopedCustomRegistry =
+  'importNode' in ShadowRoot.prototype &&
+  'createElement' in ShadowRoot.prototype &&
+  !('initialize' in CustomElementRegistry.prototype);
+
+// https://github.com/whatwg/html/issues/10854
+// https://github.com/whatwg/html/pull/10869
+const hasSpecCustomRegistry = 'customElements' in Element.prototype;
+if (hasLegacyScopedCustomRegistry) {
+  console.warn(
+    'Old version of the scoped custom elements polyfill detected, please ' +
+      'update. Support for this version will be removed in the future.'
+  );
+} else if (!hasSpecCustomRegistry) {
+  console.warn(
+    'Scoped registry mixin is not supported in this browser. ' +
+      'Scoped custom elements will not work as expected.'
+  );
+}
+
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type LitElementConstructor = new (...args: any[]) => LitElement;
 
@@ -48,10 +69,29 @@ export function ScopedRegistryHost<SuperClass extends LitElementConstructor>(
         );
       }
 
-      const renderRoot = (this.renderOptions.creationScope = this.attachShadow({
+      const renderRoot = this.attachShadow({
         ...shadowRootOptions,
         customElements: constructor.registry,
-      }));
+      });
+
+      /**
+       * Note, support for the initial spec proposal polyfill is maintained in
+       * addition to the current spec proposal to facilitate element piecemeal
+       * migration.
+       *
+       * When all elements are migrated to this version of the mixin, the
+       * polyfill should be upgraded.
+       */
+      this.renderOptions.creationScope = hasLegacyScopedCustomRegistry
+        ? renderRoot
+        : {
+            importNode(node: Node, deep?: boolean): Node {
+              return document.importNode(node, {
+                customElements: constructor.registry,
+                selfOnly: !deep,
+              } as unknown as boolean);
+            },
+          };
 
       adoptStyles(
         renderRoot,

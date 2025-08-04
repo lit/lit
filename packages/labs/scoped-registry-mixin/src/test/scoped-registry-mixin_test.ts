@@ -14,9 +14,7 @@ import {assert} from 'chai';
 export const canTest =
   window.ShadowRoot &&
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  !(window as any).ShadyDOM?.inUse &&
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).ShadowRootInit;
+  !(window as any).ShadyDOM?.inUse;
 
 class SimpleGreeting extends LitElement {
   private name: String;
@@ -51,20 +49,36 @@ class ScopedComponent extends ScopedRegistryHost(LitElement) {
 
   override render() {
     return html` <simple-greeting
-      id="greeting"
-      name="scoped world"
-    ></simple-greeting>`;
+        id="greeting"
+        name="scoped world"
+      ></simple-greeting>
+      <global-element></global-element>`;
   }
 }
 
 customElements.define('scoped-component', ScopedComponent);
 
-(canTest ? suite : suite.skip)('scoped-registry-mixin', () => {
-  test(`host element should have a registry`, async () => {
-    const container = document.createElement('div');
-    container.innerHTML = `<scoped-component></scoped-component>`;
+class GlobalElement extends LitElement {
+  override render() {
+    return html`${this.localName}`;
+  }
+}
+customElements.define('global-element', GlobalElement);
 
+(canTest ? suite : suite.skip)('scoped-registry-mixin', () => {
+  let container: HTMLElement;
+
+  setup(() => {
+    container = document.createElement('div');
     document.body.appendChild(container);
+  });
+
+  teardown(() => {
+    container?.remove();
+  });
+
+  test(`host element should have a registry`, async () => {
+    container.innerHTML = `<scoped-component></scoped-component>`;
 
     const scopedComponent = container.firstChild as LitElement;
     await scopedComponent.updateComplete;
@@ -74,25 +88,7 @@ customElements.define('scoped-component', ScopedComponent);
     assert.exists(registry);
   });
 
-  test(`hosted element should not have a registry`, async () => {
-    const container = document.createElement('div');
-    container.innerHTML = `<scoped-component></scoped-component>`;
-
-    document.body.appendChild(container);
-
-    const scopedComponent = container.firstChild as LitElement;
-    await scopedComponent.updateComplete;
-    const simpleGreeting = scopedComponent?.shadowRoot?.getElementById(
-      'greeting'
-    ) as LitElement;
-    // @ts-expect-error: customElements not yet in ShadowRoot type
-    const registry = simpleGreeting?.shadowRoot?.customElements;
-
-    assert.notExists(registry);
-  });
-
   test(`hosted element should be defined inside the host element registry`, async () => {
-    const container = document.createElement('div');
     container.innerHTML = `<scoped-component></scoped-component>`;
 
     document.body.appendChild(container);
@@ -106,25 +102,27 @@ customElements.define('scoped-component', ScopedComponent);
     assert.isTrue(simpleGreeting instanceof SimpleGreeting);
   });
 
+  test(`global elements should not be defined inside the host element registry`, async () => {
+    container.innerHTML = `<scoped-component></scoped-component>`;
+
+    const scopedComponent = container.firstChild as LitElement;
+    await new Promise(requestAnimationFrame);
+    const globalEl = scopedComponent?.shadowRoot?.lastElementChild;
+    assert.isFalse(globalEl instanceof GlobalElement);
+  });
+
   test(`hosted element should not be defined in the global registry`, async () => {
-    const container = document.createElement('div');
     container.innerHTML = `<simple-greeting id="global-greeting"></simple-greeting>`;
-
-    document.body.appendChild(container);
-
-    const simpleGreeting = document.getElementById('global-greeting');
+    const simpleGreeting = container.firstElementChild as LitElement;
 
     assert.isFalse(simpleGreeting instanceof SimpleGreeting);
     assert.isTrue(simpleGreeting instanceof HTMLElement);
   });
 
   test(`host element should apply static styles`, async () => {
-    const container = document.createElement('div');
     container.innerHTML = `<scoped-component></scoped-component>`;
 
-    document.body.appendChild(container);
-
-    const scopedComponent = container.firstChild as LitElement;
+    const scopedComponent = container.firstElementChild as LitElement;
     await scopedComponent.updateComplete;
     const simpleGreeting =
       scopedComponent?.shadowRoot?.getElementById('greeting');
