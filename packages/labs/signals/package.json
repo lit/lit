@@ -135,6 +135,6 @@
   },
   "dependencies": {
     "lit": "^2.0.0 || ^3.0.0",
-    "signal-polyfill": "^0.2.0"
+    "signal-polyfill": "^0.2.2"
   }
 }
