@@ -288,7 +288,7 @@
     "husky": "^8.0.1",
     "ignore-sync": "^5.0.1",
     "lint-staged": "^13.0.3",
-    "mocha": "^10.0.0",
+    "mocha": "^10.8.2",
     "prettier": "^3.2.5",
     "rollup": "^4.18.0",
     "rollup-plugin-copy": "^3.5.0",
