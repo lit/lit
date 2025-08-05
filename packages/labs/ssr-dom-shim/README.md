@@ -3,8 +3,9 @@
 ## Overview
 
 This package provides minimal implementations of `Element`, `HTMLElement`,
-`EventTarget`, `Event`, `CustomEvent`, `CustomElementRegistry`, and
-`customElements`, designed to be used when Server Side Rendering (SSR) web
+`EventTarget`, `Event`, `CustomEvent`, `MutationObserver`, `ResizeObserver`,
+`IntersectionObserver`, `CustomElementRegistry`, and `customElements`,
+designed to be used when Server Side Rendering (SSR) web
 components from Node, including Lit components.
 
 ## Usage
@@ -61,6 +62,22 @@ this module.
 - [`customElements`](https://developer.mozilla.org/en-US/docs/Web/API/Window/customElements)
 - [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event)
 - [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
+- [`MutationObserver`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe)
+  - [`takeRecords`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/takeRecords)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/disconnect)
+- [`ResizeObserver`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/observe)
+  - [`unobserve`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/unobserve)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/disconnect)
+- [`IntersectionObserver`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver)
+  - [`root`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/root)
+  - [`rootMargin`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/rootMargin)
+  - [`thresholds`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/thresholds)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/observe)
+  - [`takeRecords`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/takeRecords)
+  - [`unobserve`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/unobserve)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/disconnect)
 
 ## Contributing
 
