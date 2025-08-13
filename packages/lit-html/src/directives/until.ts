@@ -6,23 +6,25 @@
 
 import {Part, noChange} from '../lit-html.js';
 import {isPrimitive} from '../directive-helpers.js';
-import {directive, AsyncDirective} from '../async-directive.js';
+import {directive, AsyncDirective, DirectiveResult} from '../async-directive.js';
 import {Pauser, PseudoWeakRef} from './private-async-helpers.js';
 
-const isPromise = (x: unknown) => {
+const isPromise = (x: unknown): x is Promise<unknown> => {
   return !isPrimitive(x) && typeof (x as {then?: unknown}).then === 'function';
 };
 // Effectively infinity, but a SMI.
 const _infinity = 0x3fffffff;
 
-export class UntilDirective extends AsyncDirective {
+type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
+
+export class UntilDirective<T> extends AsyncDirective<UnwrapPromise<T>> {
   private __lastRenderedIndex: number = _infinity;
   private __values: unknown[] = [];
   private __weakThis = new PseudoWeakRef(this);
   private __pauser = new Pauser();
 
-  render(...args: Array<unknown>): unknown {
-    return args.find((x) => !isPromise(x)) ?? noChange;
+  render(...args: Array<T>): UnwrapPromise<T> {
+    return (args.find((x) => !isPromise(x)) ?? noChange) as UnwrapPromise<T>;
   }
 
   override update(_part: Part, args: Array<unknown>) {
@@ -107,6 +109,25 @@ export class UntilDirective extends AsyncDirective {
   }
 }
 
+interface Until {
+  <T>(val: T): DirectiveResult<typeof UntilDirective<T>>;
+  <T, U>(v1: T, v2: U): DirectiveResult<typeof UntilDirective<T | U>>;
+  <T, U, V>(v1: T, v2: U, v3: V): DirectiveResult<typeof UntilDirective<T | U | V>>;
+  <T, U, V, W>(v1: T, v2: U, v3: V, v4: W): DirectiveResult<typeof UntilDirective<T | U | V | W>>;
+  <T, U, V, W, X>(v1: T, v2: U, v3: V, v4: W, v5: X): DirectiveResult<typeof UntilDirective<T | U | V | W | X>>;
+  <T, U, V, W, X, Y>(v1: T, v2: U, v3: V, v4: W, v5: X, v6: Y): DirectiveResult<typeof UntilDirective<T | U | V | W | X | Y>>;
+  <T, U, V, W, X, Y, Z>(
+    v1: T,
+    v2: U,
+    v3: V,
+    v4: W,
+    v5: X,
+    v6: Y,
+    v7: Z
+  ): DirectiveResult<typeof UntilDirective<T | U | V | W | X | Y | Z>>;
+  <T>(...args: Array<T>): DirectiveResult<typeof UntilDirective<T>>;
+}
+
 /**
  * Renders one of a series of values, including Promises, to a Part.
  *
@@ -128,7 +149,7 @@ export class UntilDirective extends AsyncDirective {
  * html`${until(content, html`<span>Loading...</span>`)}`
  * ```
  */
-export const until = directive(UntilDirective);
+export const until: Until = directive(UntilDirective);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
