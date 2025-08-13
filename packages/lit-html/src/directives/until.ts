@@ -6,7 +6,11 @@
 
 import {Part, noChange} from '../lit-html.js';
 import {isPrimitive} from '../directive-helpers.js';
-import {directive, AsyncDirective, DirectiveResult} from '../async-directive.js';
+import {
+  directive,
+  AsyncDirective,
+  DirectiveResult,
+} from '../async-directive.js';
 import {Pauser, PseudoWeakRef} from './private-async-helpers.js';
 
 const isPromise = (x: unknown): x is Promise<unknown> => {
@@ -112,10 +116,32 @@ export class UntilDirective<T> extends AsyncDirective<UnwrapPromise<T>> {
 interface Until {
   <T>(val: T): DirectiveResult<typeof UntilDirective<T>>;
   <T, U>(v1: T, v2: U): DirectiveResult<typeof UntilDirective<T | U>>;
-  <T, U, V>(v1: T, v2: U, v3: V): DirectiveResult<typeof UntilDirective<T | U | V>>;
-  <T, U, V, W>(v1: T, v2: U, v3: V, v4: W): DirectiveResult<typeof UntilDirective<T | U | V | W>>;
-  <T, U, V, W, X>(v1: T, v2: U, v3: V, v4: W, v5: X): DirectiveResult<typeof UntilDirective<T | U | V | W | X>>;
-  <T, U, V, W, X, Y>(v1: T, v2: U, v3: V, v4: W, v5: X, v6: Y): DirectiveResult<typeof UntilDirective<T | U | V | W | X | Y>>;
+  <T, U, V>(
+    v1: T,
+    v2: U,
+    v3: V
+  ): DirectiveResult<typeof UntilDirective<T | U | V>>;
+  <T, U, V, W>(
+    v1: T,
+    v2: U,
+    v3: V,
+    v4: W
+  ): DirectiveResult<typeof UntilDirective<T | U | V | W>>;
+  <T, U, V, W, X>(
+    v1: T,
+    v2: U,
+    v3: V,
+    v4: W,
+    v5: X
+  ): DirectiveResult<typeof UntilDirective<T | U | V | W | X>>;
+  <T, U, V, W, X, Y>(
+    v1: T,
+    v2: U,
+    v3: V,
+    v4: W,
+    v5: X,
+    v6: Y
+  ): DirectiveResult<typeof UntilDirective<T | U | V | W | X | Y>>;
   <T, U, V, W, X, Y, Z>(
     v1: T,
     v2: U,

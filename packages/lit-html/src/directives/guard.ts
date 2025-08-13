@@ -5,7 +5,12 @@
  */
 
 import {noChange, Part} from '../lit-html.js';
-import {directive, Directive, DirectiveParameters, DirectiveResult} from '../directive.js';
+import {
+  directive,
+  Directive,
+  DirectiveParameters,
+  DirectiveResult,
+} from '../directive.js';
 
 // A sentinel that indicates guard() hasn't rendered anything yet
 const initialValue = {};
@@ -40,8 +45,8 @@ class GuardDirective<T> extends Directive<T> {
   }
 }
 
-interface Guard  {
-  <T>(vals: unknown[], f: () => T): DirectiveResult<typeof GuardDirective<T>>
+interface Guard {
+  <T>(vals: unknown[], f: () => T): DirectiveResult<typeof GuardDirective<T>>;
 }
 
 /**
