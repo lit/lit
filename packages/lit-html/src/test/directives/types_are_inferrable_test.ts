@@ -12,6 +12,9 @@ type GetRenderAs<D extends DirectiveResult> =
       : unknown
     : unknown;
 
+// We're using ts-expect-error and friends to implement these tests.
+/* eslint-disable @typescript-eslint/ban-ts-comment */
+
 // This test is entirely in the type checkeer, it doesn't need to run,
 // it passes if it compiles without error.
 if (false as boolean) {
