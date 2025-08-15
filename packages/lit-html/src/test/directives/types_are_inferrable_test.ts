@@ -1,4 +1,4 @@
-import {DirectiveClass, DirectiveResult} from '../../directive.js';
+import {DirectiveResult} from '../../directive.js';
 import {guard} from '../../directives/guard.js';
 import {classMap} from '../../directives/class-map.js';
 import {keyed} from '../../directives/keyed.js';
@@ -7,7 +7,7 @@ import {until} from '../../directives/until.js';
 
 type GetRenderAs<D extends DirectiveResult> =
   D extends DirectiveResult<infer C>
-    ? C extends DirectiveClass<infer RenderAs>
+    ? C extends {new (...args: any[]): {render(...args: any[]): infer RenderAs}}
       ? RenderAs
       : unknown
     : unknown;

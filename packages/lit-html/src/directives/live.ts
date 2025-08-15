@@ -15,7 +15,7 @@ import {
 } from '../directive.js';
 import {isSingleExpression, setCommittedValue} from '../directive-helpers.js';
 
-class LiveDirective<T> extends Directive<T> {
+class LiveDirective<T> extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (

@@ -21,7 +21,7 @@ const _infinity = 0x3fffffff;
 
 type UnwrapPromise<T> = T extends Promise<infer U> ? U : T;
 
-export class UntilDirective<T> extends AsyncDirective<UnwrapPromise<T>> {
+export class UntilDirective<T> extends AsyncDirective {
   private __lastRenderedIndex: number = _infinity;
   private __values: unknown[] = [];
   private __weakThis = new PseudoWeakRef(this);

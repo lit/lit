@@ -14,7 +14,7 @@ import {
 } from '../directive.js';
 import {setCommittedValue} from '../directive-helpers.js';
 
-class Keyed<T> extends Directive<T> {
+class Keyed<T> extends Directive {
   key: unknown = nothing;
 
   render(k: unknown, v: T): T {

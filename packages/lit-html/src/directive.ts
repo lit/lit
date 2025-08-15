@@ -16,8 +16,8 @@ export {
   PropertyPart,
 } from './lit-html.js';
 
-export interface DirectiveClass<RenderAs = unknown> {
-  new (part: PartInfo): Directive<RenderAs>;
+export interface DirectiveClass {
+  new (part: PartInfo): Directive;
 }
 
 /**
@@ -95,7 +95,7 @@ export const directive =
  * implement `render` and/or `update`, and then pass their subclass to
  * `directive`.
  */
-export abstract class Directive<RenderAs = unknown> implements Disconnectable {
+export abstract class Directive implements Disconnectable {
   //@internal
   __part!: Part;
   //@internal
@@ -135,7 +135,7 @@ export abstract class Directive<RenderAs = unknown> implements Disconnectable {
     return this.update(part, props);
   }
 
-  abstract render(...props: Array<unknown>): RenderAs;
+  abstract render(...props: Array<unknown>): unknown;
 
   update(_part: Part, props: Array<unknown>): unknown {
     return this.render(...props);

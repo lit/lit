@@ -292,7 +292,7 @@ const installDisconnectAPI = (obj: Disconnectable) => {
  * render/update to determine whether it is safe to subscribe to resources
  * that may prevent garbage collection.
  */
-export abstract class AsyncDirective<T = unknown> extends Directive<T> {
+export abstract class AsyncDirective extends Directive {
   // As opposed to other Disconnectables, AsyncDirectives always get notified
   // when the RootPart connection changes, so the public `isConnected`
   // is a locally stored variable initialized via its part's getter and synced

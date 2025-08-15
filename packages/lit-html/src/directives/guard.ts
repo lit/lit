@@ -15,7 +15,7 @@ import {
 // A sentinel that indicates guard() hasn't rendered anything yet
 const initialValue = {};
 
-class GuardDirective<T> extends Directive<T> {
+class GuardDirective<T> extends Directive {
   private _previousValue: unknown = initialValue;
 
   render(_value: unknown, f: () => T): T {
