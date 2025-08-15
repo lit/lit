@@ -1,9 +1,9 @@
-import {DirectiveResult} from '../../directive.js';
-import {guard} from '../../directives/guard.js';
-import {classMap} from '../../directives/class-map.js';
-import {keyed} from '../../directives/keyed.js';
-import {live} from '../../directives/live.js';
-import {until} from '../../directives/until.js';
+import {DirectiveResult} from 'lit-html/directive.js';
+import {guard} from 'lit-html/directives/guard.js';
+import {classMap} from 'lit-html/directives/class-map.js';
+import {keyed} from 'lit-html/directives/keyed.js';
+import {live} from 'lit-html/directives/live.js';
+import {until} from 'lit-html/directives/until.js';
 
 type GetRenderAs<D extends DirectiveResult> =
   D extends DirectiveResult<infer C>
