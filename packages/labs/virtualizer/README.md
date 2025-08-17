@@ -452,6 +452,12 @@ Type: `(item: T, index?: number) => TemplateResult`
 
 A function that returns a Lit `TemplateResult`. It will be used to generate a child element for each item in the `items` array.
 
+### `keyFunction` property
+
+Type: `(item: T, index: number) => unknown`
+
+A function that is given the item being rendered and the index of the item in the `items` array. This must return a unique identifier for the item itself.
+
 ### `scroller` attribute / property
 
 Type: `Boolean`
