@@ -248,6 +248,15 @@ for (const lang of languages) {
     assert.equal(type.references[1].isGlobal, false);
   });
 
+  if (lang === 'ts') {
+    test('nestedTypeParameter', ({analyzer, module}) => {
+      const type = typeForVariable(module, 'nestedTypeParameter');
+      type.references;
+      const diagnostics = [...analyzer.getDiagnostics()];
+      assert.equal(diagnostics.length, 0);
+    });
+  }
+
   test('getImportsStringForReferences', ({module}) => {
     const type = typeForVariable(module, 'complexType');
     assert.equal(
