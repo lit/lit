@@ -14,6 +14,16 @@ import {
 } from '../directive.js';
 import {isSingleExpression, setCommittedValue} from '../directive-helpers.js';
 
+type ValidPartType = 1 | 3 | 4;
+type EqualFn = (value: unknown, elementValue: unknown) => boolean;
+
+const defaults: Record<ValidPartType, EqualFn> = {
+  [PartType.PROPERTY]: (value, elementValue) => value === elementValue,
+  [PartType.BOOLEAN_ATTRIBUTE]: (value, elementValue) =>
+    !!value === elementValue,
+  [PartType.ATTRIBUTE]: (value, elementValue) => elementValue === String(value),
+};
+
 class LiveDirective extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -33,31 +43,33 @@ class LiveDirective extends Directive {
     }
   }
 
-  render(value: unknown) {
+  render(value: unknown, _equal?: EqualFn) {
     return value;
   }
 
-  override update(part: AttributePart, [value]: DirectiveParameters<this>) {
+  override update(
+    part: AttributePart & {
+      readonly type: ValidPartType;
+    },
+    [value, equal = defaults[part.type]]: DirectiveParameters<this>
+  ) {
     if (value === noChange || value === nothing) {
       return value;
     }
-    const element = part.element;
-    const name = part.name;
 
-    if (part.type === PartType.PROPERTY) {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      if (value === (element as any)[name]) {
-        return noChange;
-      }
-    } else if (part.type === PartType.BOOLEAN_ATTRIBUTE) {
-      if (!!value === element.hasAttribute(name)) {
-        return noChange;
-      }
-    } else if (part.type === PartType.ATTRIBUTE) {
-      if (element.getAttribute(name) === String(value)) {
-        return noChange;
-      }
+    const {type, name, element} = part;
+
+    const currentValue =
+      type === PartType.PROPERTY
+        ? element[name as keyof typeof element]
+        : type === PartType.ATTRIBUTE
+          ? element.getAttribute(name)
+          : element.hasAttribute(name);
+
+    if (equal(value, currentValue)) {
+      return noChange;
     }
+
     // Resets the part's value, causing its dirty-check to fail so that it
     // always sets the value.
     setCommittedValue(part);
@@ -83,11 +95,19 @@ class LiveDirective extends Directive {
  * html`<input .value=${live(x)}>`
  * ```
  *
- * `live()` performs a strict equality check against the live DOM value, and if
- * the new value is equal to the live value, does nothing. This means that
- * `live()` should not be used when the binding will cause a type conversion. If
- * you use `live()` with an attribute binding, make sure that only strings are
- * passed in, or the binding will update every render.
+ * By default, `live()` performs a strict equality check against the live DOM
+ * value, and if the new value is equal to the live value, does nothing. This
+ * means that `live()` should not be used when the binding will cause a type
+ * conversion. If you use `live()` with an attribute binding, make sure that
+ * only strings are passed in, or the binding will update every render.
+ *
+ * To customize the equality check, you can pass in a function as the second
+ * argument.
+ *
+ * ```js
+ * const eqAsString = (value, elementValue) => String(value) === elementValue)
+ * html`<input .value=${live(x, eqAsString}>`
+ * ```
  */
 export const live = directive(LiveDirective);
 
