@@ -16,37 +16,29 @@ export class WatchDirective<T> extends AsyncDirective {
 
   private __watcher?: Signal.subtle.Watcher;
 
-  // We have to wrap the signal in a computed to work around a bug in the
-  // signal-polyfill: https://github.com/proposal-signals/signal-polyfill/issues/27
-  private __computed?: Signal.Computed<T | undefined>;
-
   private __watch() {
     if (this.__watcher !== undefined) {
       return;
     }
-    this.__computed = new Signal.Computed(() => {
-      return this.__signal?.get();
-    });
     const watcher = (this.__watcher = new Signal.subtle.Watcher(() => {
       // TODO: If we're not running inside a SignalWatcher, we can commit to
       // the DOM independently.
       this.__host?._updateWatchDirective(this as WatchDirective<unknown>);
       watcher.watch();
     }));
-    watcher.watch(this.__computed);
+    watcher.watch(this.__signal!);
   }
 
   private __unwatch() {
     if (this.__watcher !== undefined) {
-      this.__watcher.unwatch(this.__computed!);
-      this.__computed = undefined;
+      this.__watcher.unwatch(this.__signal!);
       this.__watcher = undefined;
       this.__host?._clearWatchDirective(this as WatchDirective<unknown>);
     }
   }
 
   commit() {
-    this.setValue(Signal.subtle.untrack(() => this.__computed?.get()));
+    this.setValue(Signal.subtle.untrack(() => this.__signal?.get()));
   }
 
   render(signal: Signal.State<T> | Signal.Computed<T>): T {
@@ -70,7 +62,7 @@ export class WatchDirective<T> extends AsyncDirective {
     // created by SignalWatcher. This means that an can use both SignalWatcher
     // and watch() and a signal update won't trigger a full element update if
     // it's only passed to watch() and not otherwise accessed by the element.
-    return Signal.subtle.untrack(() => this.__computed!.get());
+    return Signal.subtle.untrack(() => this.__signal?.get());
   }
 
   protected override disconnected(): void {

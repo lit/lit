@@ -1,5 +1,32 @@
 # @lit-labs/context
 
+## 1.1.6
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+## 1.1.5
+
+### Patch Changes
+
+- [#4917](https://github.com/lit/lit/pull/4917) [`aced5a93`](https://github.com/lit/lit/commit/aced5a93b70a17aa34e6b5ee9654d161eb484031) Thanks [@djrenren](https://github.com/djrenren)! - Fixed a bug where initial values were not handled by the @provide() decorator
+  when using standard decorators (#4675)
+- Updated dependencies [[`c9160405`](https://github.com/lit/lit/commit/c9160405deaf8de68bb1e587ef9b2484cb58b353), [`3e2f87f6`](https://github.com/lit/lit/commit/3e2f87f688d7f447f5bd8517cc5a2f29ee1f3ce5), [`4824c4ce`](https://github.com/lit/lit/commit/4824c4ce094fabf9d96c92f0d986827b046b2705)]:
+  - @lit/reactive-element@2.1.0
+
+## 1.1.4
+
+### Patch Changes
+
+- [#4734](https://github.com/lit/lit/pull/4734) [`0f535d48`](https://github.com/lit/lit/commit/0f535d483ba32c57e49ffaa7f7e4ce70a9f6f26d) Thanks [@sorin-davidoi](https://github.com/sorin-davidoi)! - Avoid calling Event.composedPath() when it is not needed
+
+## 1.1.3
+
+### Patch Changes
+
+- [#4684](https://github.com/lit/lit/pull/4684) [`619449b8`](https://github.com/lit/lit/commit/619449b84cb63d9c00e4316551246957c939a64b) Thanks [@tomherni](https://github.com/tomherni)! - Fix syntax typo in code example in the Context README
+
 ## 1.1.2
 
 ### Patch Changes

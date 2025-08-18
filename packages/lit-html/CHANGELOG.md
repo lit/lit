@@ -1,5 +1,32 @@
 # Change Log
 
+## 3.3.1
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+- [#4988](https://github.com/lit/lit/pull/4988) [`6792b7ef`](https://github.com/lit/lit/commit/6792b7ef422a090374e67581b5c8f07dd779edc9) Thanks [@ADNolan](https://github.com/ADNolan)! - Adjusted the comparison to use the name property of the \_$resolve function and the resolveOverrideFn in private ssr support to prevent duplicated patching of the directive class.
+
+- [#4975](https://github.com/lit/lit/pull/4975) [`43a3f4dc`](https://github.com/lit/lit/commit/43a3f4dc9a130d053f787a0ec150278d78e2442d) - Remove some redundant code from removePart()
+
+## 3.3.0
+
+### Minor Changes
+
+- [#4901](https://github.com/lit/lit/pull/4901) [`c9160405`](https://github.com/lit/lit/commit/c9160405deaf8de68bb1e587ef9b2484cb58b353) Thanks [@maxpatiiuk](https://github.com/maxpatiiuk)! - Dev mode warnings are now emitted on the next microtask after package import, allowing for a wider opportunity to suppress the warnings by consumers.
+
+### Patch Changes
+
+- [#4956](https://github.com/lit/lit/pull/4956) [`0a9bc720`](https://github.com/lit/lit/commit/0a9bc72016812f3c3cfb00e1e41e1cae418dde0b) Thanks [@louis-bompart](https://github.com/louis-bompart)! - Import barrels explicitly for compatibility with modern Node resolution w/ ESM
+
+## 3.2.1
+
+### Patch Changes
+
+- [#4782](https://github.com/lit/lit/pull/4782) [`99703a03`](https://github.com/lit/lit/commit/99703a03b68ed800a8a0f5784c10a32fbc6e2db6) - Revert the Terser plugin for Rollup to `rollup-plugin-terser` from `@rollup/plugin-terser`
+  due to a bug that prevented our minified name prefixing from working.
+
 ## 3.2.0
 
 ### Minor Changes

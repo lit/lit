@@ -1,5 +1,41 @@
 # Change Log
 
+## 3.3.1
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+- [#4988](https://github.com/lit/lit/pull/4988) [`6792b7ef`](https://github.com/lit/lit/commit/6792b7ef422a090374e67581b5c8f07dd779edc9) Thanks [@ADNolan](https://github.com/ADNolan)! - Adjusted the comparison to use the name property of the \_$resolve function and the resolveOverrideFn in private ssr support to prevent duplicated patching of the directive class.
+
+- [#4976](https://github.com/lit/lit/pull/4976) [`a126d8df`](https://github.com/lit/lit/commit/a126d8dfb05df0bbf30d771685b9c8034d7be542) - Fix minor regression in property converters. fromAttribute may return either null or undefined.
+
+## 3.3.0
+
+### Minor Changes
+
+- [#4901](https://github.com/lit/lit/pull/4901) [`c9160405`](https://github.com/lit/lit/commit/c9160405deaf8de68bb1e587ef9b2484cb58b353) Thanks [@maxpatiiuk](https://github.com/maxpatiiuk)! - Dev mode warnings are now emitted on the next microtask after package import, allowing for a wider opportunity to suppress the warnings by consumers.
+
+- [#4934](https://github.com/lit/lit/pull/4934) [`4824c4ce`](https://github.com/lit/lit/commit/4824c4ce094fabf9d96c92f0d986827b046b2705) - Adds property option for `useDefault`. When set, the initial default value is not considered a change and does _not_ reflect when `reflect` is set. In addition, when the attribute is removed, the default value is restored.
+
+### Patch Changes
+
+- [#4949](https://github.com/lit/lit/pull/4949) [`3e2f87f6`](https://github.com/lit/lit/commit/3e2f87f688d7f447f5bd8517cc5a2f29ee1f3ce5) - fixes inconsistent initial changed properties values
+
+- [#4956](https://github.com/lit/lit/pull/4956) [`0a9bc720`](https://github.com/lit/lit/commit/0a9bc72016812f3c3cfb00e1e41e1cae418dde0b) Thanks [@louis-bompart](https://github.com/louis-bompart)! - Import barrels explicitly for compatibility with modern Node resolution w/ ESM
+
+- Updated dependencies [[`c9160405`](https://github.com/lit/lit/commit/c9160405deaf8de68bb1e587ef9b2484cb58b353), [`3e2f87f6`](https://github.com/lit/lit/commit/3e2f87f688d7f447f5bd8517cc5a2f29ee1f3ce5), [`4824c4ce`](https://github.com/lit/lit/commit/4824c4ce094fabf9d96c92f0d986827b046b2705), [`0a9bc720`](https://github.com/lit/lit/commit/0a9bc72016812f3c3cfb00e1e41e1cae418dde0b)]:
+  - @lit/reactive-element@2.1.0
+  - lit-element@4.2.0
+  - lit-html@3.3.0
+
+## 3.2.1
+
+### Patch Changes
+
+- [#4782](https://github.com/lit/lit/pull/4782) [`99703a03`](https://github.com/lit/lit/commit/99703a03b68ed800a8a0f5784c10a32fbc6e2db6) - Revert the Terser plugin for Rollup to `rollup-plugin-terser` from `@rollup/plugin-terser`
+  due to a bug that prevented our minified name prefixing from working.
+
 ## 3.2.0
 
 ### Minor Changes

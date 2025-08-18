@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.0.3
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+## 1.0.2
+
+### Patch Changes
+
+- [#4836](https://github.com/lit/lit/pull/4836) [`05691ba4`](https://github.com/lit/lit/commit/05691ba4848f1bcbec06df7dcd63ee024589ed47) Thanks [@maxpatiiuk](https://github.com/maxpatiiuk)! - Improve type inference of tuples returned by the args function being used as task function parameter.
+
 ## 1.0.1
 
 ### Patch Changes

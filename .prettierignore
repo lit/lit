@@ -12,6 +12,9 @@ node_modules/
 /temp
 .idea
 /scripts/check-size-out.md
+/playground/p/**/package-lock.json
+/playground/p/scratch/*/
+!/playground/p/scratch/*.*
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
@@ -443,3 +446,7 @@ package-lock.json
 packages/localize/examples/
 packages/localize-tools/testdata/
 packages/localize-tools/config.schema.json
+.clinerules
+.roorules
+.cursorrules
+CLAUDE.md

@@ -1,15 +1,15 @@
 {
   "name": "eslint-plugin-lit",
   "private": true,
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Lit support for ESLint",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
   "homepage": "https://github.com/lit/lit/tree/main/packages/labs/esling-plugin-lit",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
-    "directory": "packages/labs/eslint-plugin-lit"
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/eslint-plugin"
   },
   "main": "index.js",
   "type": "module",
@@ -58,7 +58,7 @@
     ".": "./index.js"
   },
   "devDependencies": {
-    "@types/node": "^20.11.5",
+    "@types/node": "^22.17.0",
     "@typescript-eslint/parser": "^6.19.0",
     "@typescript-eslint/rule-tester": "^6.19.0",
     "eslint": "^8.56.0"
@@ -66,6 +66,6 @@
   "dependencies": {
     "@lit-labs/analyzer": "^0.13.0",
     "@typescript-eslint/utils": "^6.19.0",
-    "typescript": "~5.5.0"
+    "typescript": "~5.9.0"
   }
 }

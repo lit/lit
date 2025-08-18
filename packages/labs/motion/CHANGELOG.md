@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.0.9
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+## 1.0.8
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
 ## 1.0.7
 
 ### Patch Changes

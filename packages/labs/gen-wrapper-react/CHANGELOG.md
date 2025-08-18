@@ -1,5 +1,11 @@
 # @lit-labs/gen-wrapper-react
 
+## 0.3.4
+
+### Patch Changes
+
+- [#4935](https://github.com/lit/lit/pull/4935) [`e52e580f`](https://github.com/lit/lit/commit/e52e580f3e3f555d9c5b98a952bdf87dab1ba77d) Thanks [@tibnor](https://github.com/tibnor)! - Widen range of React peerdependency to include React 19
+
 ## 0.3.3
 
 ### Patch Changes

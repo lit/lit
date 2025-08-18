@@ -4,8 +4,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+type StringKeys<T extends object> = {
+  [K in keyof T]: T[K] extends string | null ? K : never;
+}[keyof T];
+
+// Since TypeScript 5.9, ARIAMixin has properties with the type Element | null
+// or Element[] | null. However, we can only support string attributes,
+// which is why we filter for string properties.
 type ARIAAttributeMap = {
-  [K in keyof ARIAMixin]: string;
+  [K in StringKeys<ARIAMixin>]: string;
 };
 
 /**
@@ -20,6 +27,7 @@ export const ariaMixinAttributes: ARIAAttributeMap = {
   ariaChecked: 'aria-checked',
   ariaColCount: 'aria-colcount',
   ariaColIndex: 'aria-colindex',
+  ariaColIndexText: 'aria-colindextext',
   ariaColSpan: 'aria-colspan',
   ariaCurrent: 'aria-current',
   ariaDescription: 'aria-description',
@@ -40,10 +48,12 @@ export const ariaMixinAttributes: ARIAAttributeMap = {
   ariaPosInSet: 'aria-posinset',
   ariaPressed: 'aria-pressed',
   ariaReadOnly: 'aria-readonly',
+  ariaRelevant: 'aria-relevant',
   ariaRequired: 'aria-required',
   ariaRoleDescription: 'aria-roledescription',
   ariaRowCount: 'aria-rowcount',
   ariaRowIndex: 'aria-rowindex',
+  ariaRowIndexText: 'aria-rowindextext',
   ariaRowSpan: 'aria-rowspan',
   ariaSelected: 'aria-selected',
   ariaSetSize: 'aria-setsize',
@@ -63,6 +73,7 @@ type ElementInternalsInterface = ElementInternals;
 export const ElementInternalsShim = class ElementInternals
   implements ElementInternalsInterface
 {
+  ariaActiveDescendantElement = null;
   ariaAtomic = '';
   ariaAutoComplete = '';
   ariaBrailleLabel = '';
@@ -71,30 +82,40 @@ export const ElementInternalsShim = class ElementInternals
   ariaChecked = '';
   ariaColCount = '';
   ariaColIndex = '';
+  ariaColIndexText = '';
   ariaColSpan = '';
+  ariaControlsElements = null;
   ariaCurrent = '';
+  ariaDescribedByElements = null;
   ariaDescription = '';
+  ariaDetailsElements = null;
   ariaDisabled = '';
+  ariaErrorMessageElements = null;
   ariaExpanded = '';
+  ariaFlowToElements = null;
   ariaHasPopup = '';
   ariaHidden = '';
   ariaInvalid = '';
   ariaKeyShortcuts = '';
   ariaLabel = '';
+  ariaLabelledByElements = null;
   ariaLevel = '';
   ariaLive = '';
   ariaModal = '';
   ariaMultiLine = '';
   ariaMultiSelectable = '';
   ariaOrientation = '';
+  ariaOwnsElements = null;
   ariaPlaceholder = '';
   ariaPosInSet = '';
   ariaPressed = '';
   ariaReadOnly = '';
+  ariaRelevant = '';
   ariaRequired = '';
   ariaRoleDescription = '';
   ariaRowCount = '';
   ariaRowIndex = '';
+  ariaRowIndexText = '';
   ariaRowSpan = '';
   ariaSelected = '';
   ariaSetSize = '';

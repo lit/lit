@@ -1,12 +1,12 @@
 {
   "name": "@lit/context",
-  "version": "1.1.2",
+  "version": "1.1.6",
   "description": "Helpers and controllers for using Context protocol",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/context"
   },
   "type": "module",
@@ -182,6 +182,7 @@
       "command": "MODE=dev node ../tests/run-web-tests.js \"development/**/*_test.js\" --config ../tests/web-test-runner.config.js",
       "dependencies": [
         "build:ts",
+        "build:ts:std-decorators-tests",
         "../tests:build"
       ],
       "env": {
@@ -209,14 +210,14 @@
   },
   "author": "Google LLC",
   "dependencies": {
-    "@lit/reactive-element": "^1.6.2 || ^2.0.0"
+    "@lit/reactive-element": "^1.6.2 || ^2.1.0"
   },
   "devDependencies": {
     "chai": "^5.1.0",
     "@lit-internal/scripts": "^1.0.1",
     "@lit-labs/testing": "^0.2.2",
     "@types/trusted-types": "^2.0.2",
-    "lit": "^3.1.0"
+    "lit": "^3.3.0"
   },
   "publishConfig": {
     "access": "public"

@@ -91,21 +91,29 @@ const JSCompiler_renameProperty = <P extends PropertyKey>(
 ): P => prop;
 
 const DEV_MODE = true;
+// Allows minifiers to rename references to globalThis
+const global = globalThis;
 
 let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
-  const issuedWarnings: Set<string | undefined> =
-    (globalThis.litIssuedWarnings ??= new Set());
+  global.litIssuedWarnings ??= new Set();
 
-  // Issue a warning, if we haven't already.
+  /**
+   * Issue a warning if we haven't already, based either on `code` or `warning`.
+   * Warnings are disabled automatically only by `warning`; disabling via `code`
+   * can be done by users.
+   */
   issueWarning = (code: string, warning: string) => {
     warning += ` See https://lit.dev/msg/${code} for more information.`;
-    if (!issuedWarnings.has(warning)) {
+    if (
+      !global.litIssuedWarnings!.has(warning) &&
+      !global.litIssuedWarnings!.has(code)
+    ) {
       console.warn(warning);
-      issuedWarnings.add(warning);
+      global.litIssuedWarnings!.add(warning);
     }
   };
 }
@@ -236,12 +244,12 @@ export class LitElement extends ReactiveElement {
 ] = true;
 
 // Install hydration if available
-globalThis.litElementHydrateSupport?.({LitElement});
+global.litElementHydrateSupport?.({LitElement});
 
 // Apply polyfills if available
 const polyfillSupport = DEV_MODE
-  ? globalThis.litElementPolyfillSupportDevMode
-  : globalThis.litElementPolyfillSupport;
+  ? global.litElementPolyfillSupportDevMode
+  : global.litElementPolyfillSupport;
 polyfillSupport?.({LitElement});
 
 /**
@@ -277,11 +285,13 @@ export const _$LE = {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
-(globalThis.litElementVersions ??= []).push('4.1.0');
-if (DEV_MODE && globalThis.litElementVersions.length > 1) {
-  issueWarning!(
-    'multiple-versions',
-    `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended.`
-  );
+(global.litElementVersions ??= []).push('4.2.1');
+if (DEV_MODE && global.litElementVersions.length > 1) {
+  queueMicrotask(() => {
+    issueWarning!(
+      'multiple-versions',
+      `Multiple versions of Lit loaded. Loading multiple versions ` +
+        `is not recommended.`
+    );
+  });
 }

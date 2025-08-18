@@ -68,7 +68,7 @@ export const _$LH = {
       values: unknown[]
     ) => unknown
   ) => {
-    if (directiveClass.prototype._$resolve !== resolveOverrideFn) {
+    if (directiveClass.prototype._$resolve.name !== resolveOverrideFn.name) {
       resolveMethodName ??= directiveClass.prototype._$resolve
         .name as NonNullable<typeof resolveMethodName>;
       for (

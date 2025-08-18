@@ -6,7 +6,7 @@
 
 // IMPORTANT: these imports must be type-only
 import type {Directive, DirectiveResult, PartInfo} from './directive.js';
-import type {TrustedHTML, TrustedTypesWindow} from 'trusted-types/lib';
+import type {TrustedHTML, TrustedTypesWindow} from 'trusted-types/lib/index.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -217,21 +217,30 @@ let issueWarning: (code: string, warning: string) => void;
 if (DEV_MODE) {
   global.litIssuedWarnings ??= new Set();
 
-  // Issue a warning, if we haven't already.
+  /**
+   * Issue a warning if we haven't already, based either on `code` or `warning`.
+   * Warnings are disabled automatically only by `warning`; disabling via `code`
+   * can be done by users.
+   */
   issueWarning = (code: string, warning: string) => {
     warning += code
       ? ` See https://lit.dev/msg/${code} for more information.`
       : '';
-    if (!global.litIssuedWarnings!.has(warning)) {
+    if (
+      !global.litIssuedWarnings!.has(warning) &&
+      !global.litIssuedWarnings!.has(code)
+    ) {
       console.warn(warning);
       global.litIssuedWarnings!.add(warning);
     }
   };
 
-  issueWarning(
-    'dev-mode',
-    `Lit is in dev mode. Not recommended for production!`
-  );
+  queueMicrotask(() => {
+    issueWarning(
+      'dev-mode',
+      `Lit is in dev mode. Not recommended for production!`
+    );
+  });
 }
 
 const wrap =
@@ -1037,10 +1046,7 @@ class Template {
               ? (trustedTypes.emptyScript as unknown as '')
               : '';
             // Generate a new text node for each literal section
-            // These nodes are also used as the markers for node parts
-            // We can't use empty text nodes as markers because they're
-            // normalized when cloning in IE (could simplify when
-            // IE is no longer supported)
+            // These nodes are also used as the markers for child parts
             for (let i = 0; i < lastIndex; i++) {
               (node as Element).append(strings[i], createMarker());
               // Walk past the marker node we just added
@@ -1728,8 +1734,8 @@ class ChildPart implements Disconnectable {
    * @param start Start node to clear from, for clearing a subset of the part's
    *     DOM (used when truncating iterables)
    * @param from  When `start` is specified, the index within the iterable from
-   *     which ChildParts are being removed, used for disconnecting directives in
-   *     those Parts.
+   *     which ChildParts are being removed, used for disconnecting directives
+   *     in those Parts.
    *
    * @internal
    */
@@ -1738,12 +1744,16 @@ class ChildPart implements Disconnectable {
     from?: number
   ) {
     this._$notifyConnectionChanged?.(false, true, from);
-    while (start && start !== this._$endNode) {
+    while (start !== this._$endNode) {
+      // The non-null assertion is safe because if _$startNode.nextSibling is
+      // null, then _$endNode is also null, and we would not have entered this
+      // loop.
       const n = wrap(start!).nextSibling;
-      (wrap(start!) as Element).remove();
+      wrap(start!).remove();
       start = n;
     }
   }
+
   /**
    * Implementation of RootPart's `isConnected`. Note that this method
    * should only be called on `RootPart`s (the `ChildPart` returned from a
@@ -2085,9 +2095,6 @@ class EventPart extends AttributePart {
       );
     }
     if (shouldAddListener) {
-      // Beware: IE11 and Chrome 41 don't like using the listener as the
-      // options object. Figure out how to deal w/ this in IE11 - maybe
-      // patch addEventListener?
       this.element.addEventListener(
         this.name,
         this,
@@ -2195,13 +2202,15 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(global.litHtmlVersions ??= []).push('3.2.0');
+(global.litHtmlVersions ??= []).push('3.3.1');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
-  issueWarning!(
-    'multiple-versions',
-    `Multiple versions of Lit loaded. ` +
-      `Loading multiple versions is not recommended.`
-  );
+  queueMicrotask(() => {
+    issueWarning!(
+      'multiple-versions',
+      `Multiple versions of Lit loaded. ` +
+        `Loading multiple versions is not recommended.`
+    );
+  });
 }
 
 /**

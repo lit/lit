@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/gen-wrapper-vue",
   "description": "Code generator for Vue wrapper for Lit components",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "publishConfig": {
     "access": "public"
   },
@@ -10,7 +10,11 @@
   "bugs": "https://github.com/lit/lit/issues",
   "type": "module",
   "main": "lib/index.js",
-  "repository": "lit/lit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/gen-wrapper-vue"
+  },
   "scripts": {
     "build": "wireit",
     "test": "wireit",
