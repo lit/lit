@@ -8,7 +8,7 @@ import {assert} from 'chai';
 import {LitElement, render} from 'lit';
 import {createRef, ref} from 'lit/directives/ref.js';
 import {html, unsafeStatic} from 'lit/static-html.js';
-import {formValue, getInternals, isDisabled} from '../form-associated.js';
+import {formValue, isDisabled} from '../form-associated.js';
 import {FormControl} from '../form-control.js';
 
 let count = 0;
@@ -22,7 +22,7 @@ export const generateElementName = () => `x-${count++}`;
 class TestElement extends FormControl(LitElement) {
   static tagName = generateElementName();
 
-  _internals = getInternals(TestElement, this);
+  _internals = this.attachInternals();
 
   @formValue()
   accessor value = '';

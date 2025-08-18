@@ -67,10 +67,7 @@ type Access<T = unknown> = ClassAccessorDecoratorContext<
 
 // #region Shared State
 
-const internalsCache = new WeakMap<
-  FormAssociated,
-  {internals: ElementInternals; classes: WeakSet<Function>}
->();
+const internalsCache = new WeakMap<FormAssociated, ElementInternals>();
 
 const valueAccessors = new WeakMap<DecoratorMetadataObject, Access>();
 
@@ -106,38 +103,6 @@ const formValueOptions = new WeakMap<
 // #endregion
 
 // #region Utilities
-
-/**
- * Returns the ElementInternals for a FormAssociated element. This should only
- * be called by subclasses of FormAssociated.
- */
-export const getInternals = (
-  c: FormAssociatedConstructor,
-  element: FormAssociated
-) => {
-  // TODO (justinfagnani): outlaw any constructor below the FormAssociated
-  // mixin, like LitElement, ReactiveElement, etc.
-  if (!(element instanceof c)) {
-    throw new Error('Element is not an instance of the constructor');
-  }
-  const state = internalsCache.get(element);
-  if (state === undefined) {
-    throw new Error('ElementInternals not found');
-  }
-  if (state.classes.has(c)) {
-    throw new Error('getInternals called twice with the same constructor');
-  }
-  state.classes.add(c);
-  return state.internals;
-};
-
-/*
- * Private function to get the internals for a FormAssociated element. For use
- * in decorators.
- */
-const _getInternals = (element: FormAssociated) => {
-  return internalsCache.get(element)!.internals;
-};
 
 /**
  * Returns true if the element is disabled.
@@ -188,18 +153,26 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
   class C extends base implements FormAssociatedInterface {
     static formAssociated = true;
 
-    #internals: ElementInternals;
+    // This must be a `super` call, not a `this` call!
+    #internals = super.attachInternals();
+    #attachInternalsCalled = false;
 
     _getValidity?(): ValidityResult;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(...args: any[]) {
       super(...args);
-      const internals = this.attachInternals();
-      this.#internals = internals;
-      internalsCache.set(this, {internals, classes: new WeakSet()});
-      internals.role =
+      internalsCache.set(this, this.#internals);
+      this.#internals.role =
         (this.constructor as FormAssociatedConstructor).role ?? null;
+    }
+
+    override attachInternals(): ElementInternals {
+      if (this.#attachInternalsCalled) {
+        throw new Error('attachInternals has already been called');
+      }
+      this.#attachInternalsCalled = true;
+      return this.#internals;
     }
 
     _validate() {
@@ -284,7 +257,10 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
 const setFormValue = (el: FormAssociated, value: unknown) => {
   const metadata = el.constructor[Symbol.metadata]!;
   const options = formValueOptions.get(metadata);
-  const internals = _getInternals(el);
+  const internals = internalsCache.get(el);
+  if (internals === undefined) {
+    throw new Error('ElementInternals not found');
+  }
   const state = stateAccessors.get(metadata)?.get?.(el);
   internals.setFormValue(
     options?.converter === undefined

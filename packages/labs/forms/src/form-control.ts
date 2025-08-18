@@ -5,7 +5,7 @@
  */
 
 import {type ReactiveElement} from '@lit/reactive-element';
-import {FormAssociated, getInternals} from './form-associated.js';
+import {FormAssociated} from './form-associated.js';
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
@@ -39,12 +39,22 @@ export const FormControl = <T extends Constructor<ReactiveElement>>(
   base: T
 ) => {
   class C extends FormAssociated(base) implements FormControl {
-    #internals = getInternals(C, this);
+    // This must be a `super` call
+    #internals = super.attachInternals();
+    #attachInternalsCalled = false;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(...args: any[]) {
       super(...args);
       this.disabled = false;
+    }
+
+    override attachInternals(): ElementInternals {
+      if (this.#attachInternalsCalled) {
+        throw new Error('attachInternals has already been called');
+      }
+      this.#attachInternalsCalled = true;
+      return this.#internals;
     }
 
     /**

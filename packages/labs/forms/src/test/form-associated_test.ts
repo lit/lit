@@ -4,10 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {property} from '@lit/reactive-element/decorators.js';
 import {assert} from 'chai';
 import {LitElement, type TemplateResult, render} from 'lit';
+import {createRef, ref} from 'lit/directives/ref.js';
 import {html, unsafeStatic} from 'lit/static-html.js';
-import {ref, createRef} from 'lit/directives/ref.js';
 import {
   FormAssociated,
   formDefaultValue,
@@ -15,10 +16,8 @@ import {
   formStateGetter,
   formStateSetter,
   formValue,
-  getInternals,
   isDisabled,
 } from '../form-associated.js';
-import {property} from '@lit/reactive-element/decorators.js';
 
 let count = 0;
 export const generateElementName = () => `x-${count++}`;
@@ -31,7 +30,7 @@ export const generateElementName = () => `x-${count++}`;
 class TestElement extends FormAssociated(LitElement) {
   static tagName = generateElementName();
 
-  _internals = getInternals(TestElement, this);
+  _internals = this.attachInternals();
 
   @formValue()
   accessor value = '';
@@ -59,7 +58,7 @@ const testElementTag = unsafeStatic(TestElement.tagName);
 class DefaultElement extends FormAssociated(LitElement) {
   static tagName = generateElementName();
 
-  _internals = getInternals(DefaultElement, this);
+  _internals = this.attachInternals();
 
   @formValue()
   accessor value = '';
@@ -78,7 +77,7 @@ class CustomRoleElement extends FormAssociated(LitElement) {
 
   static override role = 'button';
 
-  _internals = getInternals(CustomRoleElement, this);
+  _internals = this.attachInternals();
 }
 customElements.define(CustomRoleElement.tagName, CustomRoleElement);
 
@@ -88,7 +87,7 @@ customElements.define(CustomRoleElement.tagName, CustomRoleElement);
 class InitiallyInvalidElement extends FormAssociated(LitElement) {
   static tagName = generateElementName();
 
-  _internals = getInternals(InitiallyInvalidElement, this);
+  _internals = this.attachInternals();
 
   constructor() {
     super();
@@ -110,7 +109,7 @@ customElements.define(InitiallyInvalidElement.tagName, InitiallyInvalidElement);
 class InvalidValueTypeElement extends FormAssociated(LitElement) {
   static tagName = generateElementName();
 
-  _internals = getInternals(InvalidValueTypeElement, this);
+  _internals = this.attachInternals();
 
   // @ts-expect-error value is not a FormValue
   @formValue()
@@ -124,7 +123,7 @@ customElements.define(InvalidValueTypeElement.tagName, InvalidValueTypeElement);
 class CustomConverterElement extends FormAssociated(LitElement) {
   static tagName = generateElementName();
 
-  _internals = getInternals(CustomConverterElement, this);
+  _internals = this.attachInternals();
 
   @formValue({
     converter: {
@@ -147,7 +146,7 @@ const customConverterTag = unsafeStatic(CustomConverterElement.tagName);
 class CustomStateElement extends FormAssociated(LitElement) {
   static tagName = generateElementName();
 
-  _internals = getInternals(CustomStateElement, this);
+  _internals = this.attachInternals();
 
   @formValue()
   accessor value = 'bar';
@@ -438,17 +437,6 @@ suite('FormAssociated', () => {
     assert.equal(el.value, 789);
     formData = new FormData(form);
     assert.equal(formData.get('foo'), '789');
-  });
-
-  test('getInternals can only be called once', async () => {
-    const el = new TestElement();
-    assert.throws(() => getInternals(TestElement, el));
-  });
-
-  test('getInternals can not be called with a random ctor', async () => {
-    const el = new TestElement();
-    class RandomCtor extends FormAssociated(LitElement) {}
-    assert.throws(() => getInternals(RandomCtor, el));
   });
 
   // TODO (justinfagnani): How can we test form state restoration and
