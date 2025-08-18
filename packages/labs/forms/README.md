@@ -77,7 +77,7 @@ form values and they should be able to derive a value from state.
 
 To enable this two decorators are provided to read and write form state:
 `@formStateGetter()` and `@formStateSetter()`. They are applied to a getter and
-setter to mark them as beind use to readn adn write state. When present,
+setter to mark them as being used to read and write state. When present,
 FormAssociated will use them when setting a value and restoring the form.
 
 The `@formState()` decorator marks a field as being part of the form state so
@@ -141,7 +141,7 @@ element will have a familiar and more compatible API:
 - `validationMessage`: a readonly property that returns the error message that
   would be shown to the user if the element was to be checked for validity.
 - `willValidate`: a readonly property that returns true if internals's target
-  element will be validated when the form is submitted. For example, disbabled
+  element will be validated when the form is submitted. For example, disabled
   or hidden elements are not validated.
 - `checkValidity()`: If the element is invalid, returns `false` and fires an
   `invalid` event.
@@ -158,7 +158,7 @@ element will have a familiar and more compatible API:
   internals. `getInternals()` requires the element class as a parameter and is
   guarded against multiple calls similar to `attachInternals()`.
 
-- `isDisabled()`: An element can be disabled because ti's fieldset is disabled,
+- `isDisabled()`: An element can be disabled because its fieldset is disabled,
   so checking the `disabled` attribute is insufficient. `isDisabled()` is a
   simple alias for `element.matches(':disabled')` which returns true when the
   browser understands an element to be disabled.
