@@ -10,7 +10,7 @@ import {FormAssociated} from './form-associated.js';
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
 
-interface FormControl extends FormAssociated {
+export interface FormControl extends FormAssociated {
   get form(): HTMLFormElement | null;
   disabled: boolean;
   get validity(): ValidityState;
@@ -22,7 +22,7 @@ interface FormControl extends FormAssociated {
 
 // This should extends FormAssociatedConstructor, but that causes a type error
 // due to different constructor return types.
-interface FormControlConstructor {
+export interface FormControlConstructor {
   role?: ElementInternals['role'];
 
   formAssociated: true;
