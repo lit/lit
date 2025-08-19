@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/analyzer",
-  "version": "0.13.1",
+  "version": "0.13.2",
   "publishConfig": {
     "access": "public"
   },
@@ -10,7 +10,7 @@
   "homepage": "https://github.com/lit/lit/tree/main/packages/labs/analyzer",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/analyzer"
   },
   "main": "index.js",
@@ -67,7 +67,7 @@
     },
     "test:server:uvu": {
       "#comment": "The quotes around the file regex must be double quotes on windows!",
-      "command": "uvu test/server \"_test\\.js$\" -i \"lit-html/\"",
+      "command": "uvu test/server \"_test\\.js$\" -i \"lit/template_test\"",
       "env": {
         "NODE_OPTIONS": "--enable-source-maps"
       },
@@ -80,7 +80,7 @@
       "output": []
     },
     "test:server:node": {
-      "command": "node --enable-source-maps --test-reporter=spec --test test/server/lit-html/*_test.js",
+      "command": "node --enable-source-maps --test-reporter=spec --test test/server/lit/template_test.js",
       "dependencies": [
         "build"
       ],
@@ -122,7 +122,7 @@
     "lit-html": "^3.1.2",
     "package-json-type": "^1.0.3",
     "parse5": "^7.2.0",
-    "typescript": "~5.5.0"
+    "typescript": "~5.9.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^25.0.7",

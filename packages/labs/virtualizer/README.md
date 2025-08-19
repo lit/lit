@@ -2,7 +2,28 @@
 
 `@lit-labs/virtualizer` provides viewport-based virtualization (including virtual scrolling) for [Lit](https://lit.dev).
 
-⚠️ `@lit-labs/virtualizer` is in late prerelease. Its API is intended to remain quite stable going forward, but you should expect (increasingly minor) changes before 1.0. Some of these changes may be technically breaking, but we anticipate that they will be mechanical and straightforward to make.
+[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/@lit-labs/virtualizer.svg?logo=npm)](https://www.npmjs.com/package/@lit-labs/virtualizer)
+[![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
+[![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
+
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Give feedback: https://github.com/lit/lit/discussions/3362
+
+> [!WARNING]
+>
+> `@lit-labs/virtualizer` is in late prerelease. Its API is intended to remain
+> quite stable going forward, but you should expect (increasingly minor) changes
+> before 1.0. Some of these changes may be technically breaking, but we
+> anticipate that they will be mechanical and straightforward to make.
 
 ## Getting Started
 

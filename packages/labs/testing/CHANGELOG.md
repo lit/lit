@@ -1,5 +1,22 @@
 # @lit-labs/testing
 
+## 0.2.7
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+## 0.2.6
+
+### Patch Changes
+
+- [#4821](https://github.com/lit/lit/pull/4821) [`f93f51be`](https://github.com/lit/lit/commit/f93f51be00ae120f7e29be13ff2c7b3dc1d98262) Thanks [@kyubisation](https://github.com/kyubisation)! - Fix fixture base url resolution when running browsers in containers
+
+- [#4730](https://github.com/lit/lit/pull/4730) [`267d243a`](https://github.com/lit/lit/commit/267d243aeec13a6f0e8184420919db4c519b8caf) Thanks [@kyubisation](https://github.com/kyubisation)! - Add option for init script for ssr worker to allow registering Node.js hooks
+
+- Updated dependencies [[`25962bf5`](https://github.com/lit/lit/commit/25962bf58f33f32abef6487689438bf095780b63)]:
+  - @lit-labs/ssr@3.3.0
+
 ## 0.2.5
 
 ### Patch Changes

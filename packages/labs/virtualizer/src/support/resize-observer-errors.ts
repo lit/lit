@@ -9,6 +9,17 @@ import {
   MethodInterceptorTeardown,
 } from './method-interception.js';
 
+type IgnoreWindowOnErrorOptions = {
+  /**
+   * If this option is set to `true`, `ignoreWindowOnError` will not only prevent
+   * `window.onerror` from being called, but also prevent the error message from
+   * being logged to the console. This is useful for keeping your test output
+   * clean, but it will prevent you from observing whether / how many times the
+   * targeted error has been ignored.
+   */
+  suppressErrorLogging?: boolean;
+};
+
 /**
  * In a testing environment with a setup/before and teardown/after callback pattern, this function
  * can be used as a succinct declaration to ignore these errors in tests.
@@ -17,10 +28,11 @@ import {
  */
 export function setupIgnoreWindowResizeObserverLoopErrors(
   before: Function,
-  after: Function
+  after: Function,
+  options: IgnoreWindowOnErrorOptions = {}
 ) {
   let teardown: MethodInterceptorTeardown | undefined;
-  before(() => (teardown = ignoreWindowResizeObserverLoopErrors()));
+  before(() => (teardown = ignoreWindowResizeObserverLoopErrors(options)));
   after(() => {
     teardown?.();
     teardown = undefined;
@@ -51,16 +63,38 @@ export function isResizeObserverLoopErrorMessage(message: string): boolean {
  * cause the skip the call to the original window.onerror.
  */
 export function ignoreWindowOnError(
-  messagePredicate: (message: string) => boolean
+  messagePredicate: (message: string) => boolean,
+  options: IgnoreWindowOnErrorOptions = {}
 ): MethodInterceptorTeardown {
-  return interceptMethod(window, 'onerror', (originalOnError, ...args) => {
-    const message =
-      typeof args[0] === 'string' ? args[0] : (<ErrorEvent>args[0]).message;
-    if (messagePredicate(message)) {
-      return;
+  const {suppressErrorLogging = false} = options;
+
+  const teardownWindowOnError = interceptMethod(
+    window,
+    'onerror',
+    (originalOnError, ...args) => {
+      const message =
+        typeof args[0] === 'string' ? args[0] : (<ErrorEvent>args[0]).message;
+      if (messagePredicate(message)) {
+        return;
+      }
+      return originalOnError?.apply(window, args);
     }
-    return originalOnError?.apply(window, args);
-  });
+  );
+
+  const teardownConsoleError = suppressErrorLogging
+    ? interceptMethod(console, 'error', (originalConsoleError, ...args) => {
+        const message = args[0] as string;
+        if (messagePredicate(message)) {
+          return;
+        }
+        return originalConsoleError?.apply(console, args);
+      })
+    : undefined;
+
+  return () => {
+    teardownWindowOnError();
+    teardownConsoleError?.();
+  };
 }
 
 /**
@@ -68,8 +102,10 @@ export function ignoreWindowOnError(
  * exceeded" errors.
  * @returns A function that can be used to restore the original window.onerror to the unpatched version.
  */
-export function ignoreWindowResizeObserverLoopErrors() {
-  return ignoreWindowOnError(isResizeObserverLoopErrorMessage);
+export function ignoreWindowResizeObserverLoopErrors(
+  options: IgnoreWindowOnErrorOptions = {}
+) {
+  return ignoreWindowOnError(isResizeObserverLoopErrorMessage, options);
 }
 
 /**

@@ -45,12 +45,18 @@ const assignWrappedNode = (v: VNode, name: string) =>
 // Converts Vue slot data to native slot-able nodes by directly manipulating
 // vNodes.
 export const assignSlotNodes = (slots: Slots) =>
-  Object.keys(slots).map((name) =>
-    slots[name]().map((v: VNode) =>
-      name === 'default'
-        ? v
-        : isElementNode(v)
-          ? assignNode(v, name)
-          : assignWrappedNode(v, name)
-    )
-  );
+  Object.keys(slots)
+    // Vue seems to have introduced a `__` slot name that holds metadata
+    // in the form of number[] rather than vNodes.
+    .filter((name) => name !== '__')
+    .map((name) => {
+      const slotValue = slots[name];
+      const nodes = Array.isArray(slotValue) ? slotValue : slotValue();
+      return nodes.map((v: VNode) =>
+        name === 'default'
+          ? v
+          : isElementNode(v)
+            ? assignNode(v, name)
+            : assignWrappedNode(v, name)
+      );
+    });

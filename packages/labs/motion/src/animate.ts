@@ -630,7 +630,7 @@ function noAwait(_p: null | undefined | Promise<unknown>) {}
  * render to DOM and when they are removed.
  *
  * Options include:
- * * animationOptions:  configure animation via standard KeyframeAnimationOptions
+ * * keyframeOptions:  configure animation via standard KeyframeAnimationOptions
  * * properties: list of properties to animate, defaults to
  * ['left', 'top','width', 'height', 'opacity', 'color', 'background']
  * * disabled: disables animation

@@ -1,5 +1,36 @@
 # @lit-labs/nextjs
 
+## 0.2.4
+
+### Patch Changes
+
+- [#4993](https://github.com/lit/lit/pull/4993) [`a33d6792`](https://github.com/lit/lit/commit/a33d67921780bbded0be51c29e66f3a08830d0e6) Thanks [@ADNolan](https://github.com/ADNolan)! - Prevent duplicative patching of React.createElement.
+
+- [#4960](https://github.com/lit/lit/pull/4960) [`6a72c869`](https://github.com/lit/lit/commit/6a72c86944decd35a4f5ead107f505a9194b2bf5) Thanks [@fernandofranca](https://github.com/fernandofranca)! - Add additional options for configuring webpack rules:
+
+  - `webpackModuleRulesTest` accepts a RegExp that will match modules where Lit SSR support will be injected. Ideally it should match entrypoint to your routes. This used to be internally set as, and now defaults to, `/\/pages\/.*\.(?:j\|t)sx?$\|\/app\/.*\.(?:j\|t)sx?$/`.
+  - `webpackModuleRulesExclude` accepts an array of RegExp to exclude from any modules selected with above option. This used to be internally set as, and now defaults to, `[/next\/dist\//, /node_modules/]`.
+
+## 0.2.3
+
+### Patch Changes
+
+- [#4940](https://github.com/lit/lit/pull/4940) [`b42e0465`](https://github.com/lit/lit/commit/b42e0465e659f3eecae43d96b3fcef81ace82f6a) Thanks [@raoufswe](https://github.com/raoufswe)! - [Changed] - update webpack exclude to filter node_modules
+
+## 0.2.2
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+## 0.2.1
+
+### Patch Changes
+
+- [#4840](https://github.com/lit/lit/pull/4840) [`37c02502`](https://github.com/lit/lit/commit/37c025029a085a4837496b6a4fa7203034c3d16f) Thanks [@kyubisation](https://github.com/kyubisation)! - Fix type of nextjs config wrapper
+
+- [#4815](https://github.com/lit/lit/pull/4815) [`d3ce79a7`](https://github.com/lit/lit/commit/d3ce79a7a7efdbb8645e41810d00eaa09f61251f) Thanks [@JamesIves](https://github.com/JamesIves)! - Adds support for Next.js 15
+
 ## 0.2.0
 
 ### Minor Changes

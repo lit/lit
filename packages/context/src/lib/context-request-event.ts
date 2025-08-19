@@ -30,6 +30,7 @@ export type ContextCallback<ValueType> = (
  */
 export interface ContextRequest<C extends Context<unknown, unknown>> {
   readonly context: C;
+  readonly contextTarget: Element;
   readonly callback: ContextCallback<ContextType<C>>;
   readonly subscribe?: boolean;
 }
@@ -52,22 +53,26 @@ export class ContextRequestEvent<C extends Context<unknown, unknown>>
   implements ContextRequest<C>
 {
   readonly context: C;
+  readonly contextTarget: Element;
   readonly callback: ContextCallback<ContextType<C>>;
   readonly subscribe?: boolean;
 
   /**
    *
    * @param context the context key to request
+   * @param contextTarget the original context target of the requester
    * @param callback the callback that should be invoked when the context with the specified key is available
    * @param subscribe when, true indicates we want to subscribe to future updates
    */
   constructor(
     context: C,
+    contextTarget: Element,
     callback: ContextCallback<ContextType<C>>,
     subscribe?: boolean
   ) {
     super('context-request', {bubbles: true, composed: true});
     this.context = context;
+    this.contextTarget = contextTarget;
     this.callback = callback;
     this.subscribe = subscribe ?? false;
   }

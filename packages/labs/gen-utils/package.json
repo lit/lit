@@ -10,7 +10,11 @@
   "bugs": "https://github.com/lit/lit/issues",
   "type": "module",
   "main": "index.js",
-  "repository": "lit/lit",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/gen"
+  },
   "scripts": {
     "build": "wireit",
     "test": "wireit"
@@ -50,7 +54,7 @@
   },
   "devDependencies": {
     "@lit-internal/tests": "^0.0.1",
-    "@types/node": "^20.14.8"
+    "@types/node": "^22.17.0"
   },
   "engines": {
     "node": ">=14.8.0"

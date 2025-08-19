@@ -1,5 +1,17 @@
 # Change Log
 
+## 1.0.8
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+## 1.0.7
+
+### Patch Changes
+
+- [#4865](https://github.com/lit/lit/pull/4865) [`dd2fdc96`](https://github.com/lit/lit/commit/dd2fdc96441a585f735f3d1daffe65c652bad0df) Thanks [@Artur-](https://github.com/Artur-)! - fix: Widen range for React types to include React 19
+
 ## 1.0.6
 
 ### Patch Changes

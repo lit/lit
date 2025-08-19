@@ -4,12 +4,28 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {ElementInternalsShim} from './lib/element-internals.js';
+import {
+  EventTargetShim,
+  EventShim,
+  CustomEventShim,
+  EventTargetShimMeta,
+} from './lib/events.js';
 
 export {
   ariaMixinAttributes,
   ElementInternals,
   HYDRATE_INTERNALS_ATTR_PREFIX,
 } from './lib/element-internals.js';
+export {CustomEvent, Event, EventTarget} from './lib/events.js';
+
+// In an empty Node.js vm, we need to patch the global context.
+// TODO: Remove these globalThis assignments when we remove support
+// for vm modules (--experimental-vm-modules).
+globalThis.Event ??= EventShim;
+globalThis.CustomEvent ??= CustomEventShim;
+
+// Internal type to be used for the event polyfill functionality.
+export type HTMLElementWithEventMeta = HTMLElement & EventTargetShimMeta;
 
 const attributes = new WeakMap<
   InstanceType<typeof HTMLElementShim>,
@@ -36,7 +52,7 @@ const attributesForElement = (
 //    `const ElementShimWithRealType = ElementShim as object as typeof Element;`.
 // 4. We want the exported names to match the real ones, hence e.g.
 //    `export {ElementShimWithRealType as Element}`.
-const ElementShim = class Element {
+const ElementShim = class Element extends EventTargetShim {
   get attributes() {
     return Array.from(attributesForElement(this)).map(([name, value]) => ({
       name,
@@ -124,6 +140,23 @@ const HTMLElementShimWithRealType =
   HTMLElementShim as object as typeof HTMLElement;
 export {HTMLElementShimWithRealType as HTMLElement};
 
+// For convenience, we provide a global instance of a HTMLElement as an event
+// target. This facilitates registering global event handlers
+// (e.g. for @lit/context ContextProvider).
+// We use this in in the SSR render function.
+// Note, this is a bespoke element and not simply `document` or `window` since
+// user code relies on these being undefined in the server environment.
+globalThis.litServerRoot ??= Object.defineProperty(
+  new HTMLElementShimWithRealType(),
+  'localName',
+  {
+    // Patch localName (and tagName) to return a unique name.
+    get() {
+      return 'lit-server-root';
+    },
+  }
+);
+
 interface CustomHTMLElementConstructor {
   new (): HTMLElement;
   observedAttributes?: string[];
@@ -139,8 +172,36 @@ type CustomElementRegistration = {
   observedAttributes: string[];
 };
 
-const CustomElementRegistryShim = class CustomElementRegistry {
+type RealCustomElementRegistry = (typeof globalThis)['customElements'];
+type RealCustomElementRegistryClass =
+  (typeof globalThis)['CustomElementRegistry'];
+
+// Ponyfill for PromiseWithResolvers, remove once we can assume its presence.
+type PromiseWithResolvers<T> = {
+  promise: Promise<T>;
+  resolve: (value: T) => void;
+  reject: (reason?: unknown) => void;
+};
+function promiseWithResolvers<T>(): PromiseWithResolvers<T> {
+  let resolve: (value: T) => void;
+  let reject: (reason?: unknown) => void;
+  const promise = new Promise<T>((res, rej) => {
+    resolve = res;
+    reject = rej;
+  });
+  return {promise, resolve: resolve!, reject: reject!};
+}
+
+class CustomElementRegistry implements RealCustomElementRegistry {
   private __definitions = new Map<string, CustomElementRegistration>();
+  private __reverseDefinitions = new Map<
+    CustomHTMLElementConstructor,
+    string
+  >();
+  private __pendingWhenDefineds = new Map<
+    string,
+    PromiseWithResolvers<CustomElementConstructor>
+  >();
 
   define(name: string, ctor: CustomHTMLElementConstructor) {
     if (this.__definitions.has(name)) {
@@ -159,6 +220,13 @@ const CustomElementRegistryShim = class CustomElementRegistry {
         );
       }
     }
+    if (this.__reverseDefinitions.has(ctor)) {
+      throw new Error(
+        `Failed to execute 'define' on 'CustomElementRegistry': ` +
+          `the constructor has already been used with this registry for the ` +
+          `tag name ${this.__reverseDefinitions.get(ctor)}`
+      );
+    }
     // Provide tagName and localName for the component.
     (ctor as NamedCustomHTMLElementConstructor).__localName = name;
     this.__definitions.set(name, {
@@ -174,15 +242,44 @@ const CustomElementRegistryShim = class CustomElementRegistry {
       // returns the constructor).
       observedAttributes: ctor.observedAttributes ?? [],
     });
+    this.__reverseDefinitions.set(ctor, name);
+    this.__pendingWhenDefineds.get(name)?.resolve(ctor);
+    this.__pendingWhenDefineds.delete(name);
   }
 
   get(name: string) {
     const definition = this.__definitions.get(name);
     return definition?.ctor;
   }
-};
+
+  getName(ctor: CustomHTMLElementConstructor) {
+    return this.__reverseDefinitions.get(ctor) ?? null;
+  }
+
+  upgrade(_element: HTMLElement) {
+    // In SSR this doesn't make a lot of sense, so we do nothing.
+    throw new Error(
+      `customElements.upgrade is not currently supported in SSR. ` +
+        `Please file a bug if you need it.`
+    );
+  }
+
+  async whenDefined(name: string): Promise<CustomElementConstructor> {
+    const definition = this.__definitions.get(name);
+    if (definition) {
+      return definition.ctor;
+    }
+    let withResolvers = this.__pendingWhenDefineds.get(name);
+    if (!withResolvers) {
+      withResolvers = promiseWithResolvers<CustomElementConstructor>();
+      this.__pendingWhenDefineds.set(name, withResolvers);
+    }
+    return withResolvers.promise;
+  }
+}
+
 const CustomElementRegistryShimWithRealType =
-  CustomElementRegistryShim as object as typeof CustomElementRegistry;
+  CustomElementRegistry as object as RealCustomElementRegistryClass;
 export {CustomElementRegistryShimWithRealType as CustomElementRegistry};
 
 export const customElements = new CustomElementRegistryShimWithRealType();
