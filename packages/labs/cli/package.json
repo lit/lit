@@ -91,7 +91,7 @@
     "command-line-commands": "^3.0.2",
     "command-line-usage": "^6.1.1",
     "tslib": "^2.0.3",
-    "typescript": "~5.5.0"
+    "typescript": "~5.9.0"
   },
   "devDependencies": {
     "@lit-internal/tests": "^0.0.1",

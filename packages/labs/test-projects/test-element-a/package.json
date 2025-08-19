@@ -18,10 +18,10 @@
     "/special-event.{js,js.map,d.ts,d.ts.map}"
   ],
   "dependencies": {
-    "lit": "^3.0.0"
+    "lit": "file:../../../lit"
   },
   "devDependencies": {
-    "typescript": "~5.5.0"
+    "typescript": "~5.9.0"
   },
   "wireit": {
     "build": {

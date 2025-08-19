@@ -69,7 +69,7 @@
     "@lit/localize-tools": "^0.8.0"
   },
   "devDependencies": {
-    "typescript": "~5.5.0"
+    "typescript": "~5.9.0"
   },
   "engines": {
     "node": ">=14.8.0"

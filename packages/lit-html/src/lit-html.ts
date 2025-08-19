@@ -6,7 +6,7 @@
 
 // IMPORTANT: these imports must be type-only
 import type {Directive, DirectiveResult, PartInfo} from './directive.js';
-import type {TrustedHTML, TrustedTypesWindow} from 'trusted-types/lib';
+import type {TrustedHTML, TrustedTypesWindow} from 'trusted-types/lib/index.js';
 
 const DEV_MODE = true;
 const ENABLE_EXTRA_SECURITY_HOOKS = true;
@@ -1734,8 +1734,8 @@ class ChildPart implements Disconnectable {
    * @param start Start node to clear from, for clearing a subset of the part's
    *     DOM (used when truncating iterables)
    * @param from  When `start` is specified, the index within the iterable from
-   *     which ChildParts are being removed, used for disconnecting directives in
-   *     those Parts.
+   *     which ChildParts are being removed, used for disconnecting directives
+   *     in those Parts.
    *
    * @internal
    */
@@ -1744,12 +1744,16 @@ class ChildPart implements Disconnectable {
     from?: number
   ) {
     this._$notifyConnectionChanged?.(false, true, from);
-    while (start && start !== this._$endNode) {
+    while (start !== this._$endNode) {
+      // The non-null assertion is safe because if _$startNode.nextSibling is
+      // null, then _$endNode is also null, and we would not have entered this
+      // loop.
       const n = wrap(start!).nextSibling;
-      (wrap(start!) as Element).remove();
+      wrap(start!).remove();
       start = n;
     }
   }
+
   /**
    * Implementation of RootPart's `isConnected`. Note that this method
    * should only be called on `RootPart`s (the `ChildPart` returned from a
@@ -2198,7 +2202,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(global.litHtmlVersions ??= []).push('3.2.1');
+(global.litHtmlVersions ??= []).push('3.3.1');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
   queueMicrotask(() => {
     issueWarning!(
