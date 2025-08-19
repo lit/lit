@@ -194,7 +194,7 @@ class CompiledTemplatePass {
         nodeStack.push(node);
         if (
           ts.isTaggedTemplateExpression(node) &&
-          this.checker.isLitTaggedTemplateExpression(node)
+          this.checker.isLitHtmlTaggedTemplateExpression(node)
         ) {
           const topStatement = nodeStack[1] as ts.Statement;
           const templateInfo = {
