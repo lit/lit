@@ -462,26 +462,31 @@ export const parseLitTemplate = (
                 spanIndex,
                 spanIndex + strings.length - 1
               );
+
               for (const span of spans) {
-                const expressionStart = span.expression.getFullStart();
-                const expressionEnd = span.expression.getEnd();
-                const expressionLength = expressionEnd - expressionStart + 3;
+                const expressionLength = span.expression.getFullWidth();
                 const trailingWhitespaceLength = span.literal
                   .getFullText()
                   .search(/\S|$/);
-
-                offsetAdjust +=
-                  expressionLength + trailingWhitespaceLength - marker.length;
-
                 const expressionText = span.expression.getFullText();
                 const expressionLines = expressionText.split(/\r?\n/);
+
+                offsetAdjust +=
+                  expressionLength +
+                  trailingWhitespaceLength -
+                  marker.length +
+                  3 /* For the ${} */;
+
                 lineAdjust += expressionLines.length - 1;
 
                 if (expressionLines.length > 1) {
                   colAdjust = expressionLines.at(-1)!.length;
                 } else {
                   colAdjust +=
-                    expressionLength + trailingWhitespaceLength - marker.length;
+                    expressionLength +
+                    trailingWhitespaceLength -
+                    marker.length +
+                    3;
                 }
               }
 
@@ -563,12 +568,26 @@ const getTemplateStrings = (
   ts: TypeScript
 ) => {
   let strings: TemplateStringsArray;
-  if (ts.isNoSubstitutionTemplateLiteral(node.template)) {
-    strings = [node.template.text] as unknown as TemplateStringsArray;
-  } else {
+  const {template} = node;
+  if (ts.isNoSubstitutionTemplateLiteral(template)) {
+    // The slice removes the backticks
     strings = [
-      node.template.head.text,
-      ...node.template.templateSpans.map((s) => s.literal.text),
+      template.getFullText().slice(1, -1),
+    ] as unknown as TemplateStringsArray;
+  } else {
+    const spanCount = template.templateSpans.length;
+    strings = [
+      // The slice removes the opening backtick and opening ${
+      template.head.getFullText().slice(1, -2),
+      ...template.templateSpans.map((s, i) =>
+        i === spanCount - 1
+          ? // trimStart() removes trailing whitespace of the expression
+            // slice() removes the closing } and closing backtick
+            s.literal.getFullText().trimStart().slice(1, -1)
+          : // trimStart() removes trailing whitespace of the expression
+            // slice() removes the closing } and opening ${
+            s.literal.getFullText().trimStart().slice(1, -2)
+      ),
     ] as unknown as TemplateStringsArray;
   }
   (strings as Mutable<TemplateStringsArray, 'raw'>).raw = strings;
