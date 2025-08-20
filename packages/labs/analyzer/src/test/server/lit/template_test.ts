@@ -97,18 +97,61 @@ const testFilesDir = url.fileURLToPath(
   new URL('../../../test-files/ts/templates', import.meta.url)
 );
 
-const getTestSourceFile = (filename: string) => {
+// Set to true to emulate Windows line endings on Unixes
+const emulateWindows = false;
+
+const getTestSourceFile = (testFileName: string) => {
+  const options = {
+    target: ts.ScriptTarget.Latest,
+    module: ts.ModuleKind.ES2020,
+  };
+  const systemHost = ts.createCompilerHost(options);
   const program = ts.createProgram({
-    rootNames: [filename],
-    options: {
-      target: ts.ScriptTarget.Latest,
-      module: ts.ModuleKind.ES2020,
+    rootNames: [testFileName],
+    options,
+    host: {
+      ...systemHost,
+      getSourceFile(
+        fileName,
+        languageVersionOrOptions,
+        onError,
+        shouldCreateNewSourceFile
+      ) {
+        // This getSourceFile() override optionally converts line endings
+        // to Windows-style (\r\n). We can't do this in readFile() because not
+        // every file is read via readFile() for some reason.
+        const sourceFile = systemHost.getSourceFile(
+          fileName,
+          languageVersionOrOptions,
+          onError,
+          shouldCreateNewSourceFile
+        );
+
+        if (
+          !emulateWindows ||
+          fileName !== testFileName ||
+          sourceFile === undefined
+        ) {
+          return sourceFile;
+        }
+
+        const originalText = sourceFile.text;
+        const modifiedText = originalText.replaceAll(/(?<!\r)\n/g, '\r\n');
+
+        return ts.createSourceFile(
+          sourceFile.fileName,
+          modifiedText,
+          sourceFile.languageVersion,
+          true,
+          ts.ScriptKind.TS
+        );
+      },
     },
   });
   const checker = program.getTypeChecker();
-  const sourceFile = program.getSourceFile(filename);
+  const sourceFile = program.getSourceFile(testFileName);
   if (sourceFile === undefined) {
-    throw new Error(`Test file not found: ${filename}`);
+    throw new Error(`Test file not found: ${testFileName}`);
   }
   return {sourceFile, checker};
 };
@@ -123,6 +166,9 @@ const assertTemplateNodeText = (
   templateExpression: ts.TaggedTemplateExpression,
   expected: string
 ) => {
+  if (emulateWindows || ts.sys.newLine === '\r\n') {
+    expected = expected.replaceAll(/(?<!\r)\n/g, '\r\n');
+  }
   // Trim off the leading and trailing backticks
   const templateText = templateExpression.template.getFullText().slice(1, -1);
 
