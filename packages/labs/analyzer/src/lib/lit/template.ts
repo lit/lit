@@ -201,12 +201,18 @@ export const getChildPartExpression = (node: CommentNode, ts: TypeScript) => {
     // Template not found. Should be error
     return undefined;
   }
+
   const template = parent as LitTemplate;
+  if (template.tsNode === undefined) {
+    // This shouldn't happen if `hasChildPart(node)` is true, but just to be
+    // safe...
+    return undefined;
+  }
   const taggedTemplate = template.tsNode;
 
   if (ts.isNoSubstitutionTemplateLiteral(taggedTemplate.template)) {
     // Invalid case!
-    return;
+    return undefined;
   }
   const {templateSpans} = taggedTemplate.template;
   const span = templateSpans[valueIndex];
