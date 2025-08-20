@@ -118,10 +118,10 @@
     "./lib/*.js": "./lib/*.js"
   },
   "dependencies": {
-    "@parse5/tools": "^0.5.0",
+    "@parse5/tools": "^0.7.0",
     "lit-html": "^3.1.2",
     "package-json-type": "^1.0.3",
-    "parse5": "^7.2.0",
+    "parse5": "^7.3.0",
     "typescript": "~5.9.0"
   },
   "devDependencies": {
