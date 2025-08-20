@@ -217,7 +217,7 @@
     "@webcomponents/template-shadowroot": "^0.1.0",
     "command-line-args": "^5.1.1",
     "deepmerge": "^4.2.2",
-    "koa": "^2.7.0",
+    "koa": "^3.0.1",
     "koa-cors": "^0.0.16",
     "koa-mount": "^4.0.0",
     "koa-node-resolve": "^1.0.0-pre.5",
