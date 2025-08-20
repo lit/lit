@@ -185,7 +185,9 @@ test('without plugin', async ({rig}) => {
   );
 });
 
-const modes = ['worker', 'vm'] as const;
+// Note: VM tests are failing on GitHub actions
+// See https://github.com/lit/lit/issues/5043
+const modes = ['worker' /*, 'vm' */] as Array<'worker' | 'vm'>;
 
 modes.forEach((mode) => {
   const myElementDefinitionAndConfig = {
