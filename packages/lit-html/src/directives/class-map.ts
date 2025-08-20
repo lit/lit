@@ -17,7 +17,7 @@ import {
  * A key-value set of class names to truthy values.
  */
 export interface ClassInfo {
-  readonly [name: string]: string | boolean | number;
+  [name: string]: string | boolean | number;
 }
 
 class ClassMapDirective extends Directive {
