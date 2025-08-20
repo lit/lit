@@ -1,0 +1,38 @@
+name: 👷‍♂️ Task
+description: Add a task that needs to be done
+
+body:
+  - type: dropdown
+    id: affected
+    validations:
+      required: true
+    attributes:
+      label: Which package(s) are affected?
+      multiple: true
+      description: Note you can select more than one.
+      options:
+        - Lit Core (lit / lit-html / lit-element / reactive-element)
+        - Context (@lit/context)
+        - Eleventy Plugin (@lit-labs/eleventy-plugin-lit)
+        - Localize (@lit/localize)
+        - Motion (@lit-labs/motion)
+        - Observers (@lit-labs/observers)
+        - React (@lit/react)
+        - SSR (@lit-labs/ssr)
+        - Starter Kits (@lit/lit-starter-js / @lit/lit-starter-ts)
+        - Task (@lit/task)
+        - Virtualizer (@lit-labs/virtualizer)
+        - Analyzer (@lit-labs/analyzer)
+        - Other/unknown (please mention in description)
+
+  - type: textarea
+    id: description
+    validations:
+      required: true
+    attributes:
+      label: Description
+      description: |
+        Please describe the task in as much detail as possible.
+      placeholder: |
+        We need to...
+        ```
