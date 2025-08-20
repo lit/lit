@@ -200,7 +200,6 @@ _NOTE: As of this release, virtualizer is moving away from 0.x-based versioning 
 ### Minor Changes
 
 - [#3263](https://github.com/lit/lit/pull/3263) [`4271dffa`](https://github.com/lit/lit/commit/4271dffaac2126d9b1147f87208dd3aa9c59e129)
-
   - Add experimental masonry layout (API and behavior subject to change)
   - Fix [#3342: Gap miscalculation in grid base layout](https://github.com/lit/lit/issues/3342)
 
@@ -242,7 +241,6 @@ _NOTE: As of this release, virtualizer is moving away from 0.x-based versioning 
 - The `scroll` directive has been renamed to `virtualize`. Note that the `<lit-virtualizer>` element remains the recommended way to use virtualizer in most cases; the directive exists primarily for developers who are using Lit's `lit-html` templating system standalone and don't need the `LitElement` base class elsewhere in their project.
 
 - By default, a virtualizer instance is no longer itself a scroller; rather, it is a block-level container that:
-
   - Determines its own size by calculating or estimating the total size of all of its children (both those that are currently in the DOM and those that are not)
   - Adds and removes children from the DOM as the visible portion of the virtualizer changes (i.e., when any of its containing ancestors, including the window, is scrolled, resized, etc.).
 
@@ -305,7 +303,6 @@ The following are also believed to be fixed, but didn't have specific repro case
 - The `scroll` directive has been renamed to `virtualize`. Note that the `<lit-virtualizer>` element remains the recommended way to use virtualizer in most cases; the directive exists primarily for developers who are using Lit's `lit-html` templating system standalone and don't need the `LitElement` base class elsewhere in their project.
 
 - By default, a virtualizer instance is no longer itself a scroller; rather, it is a block-level container that:
-
   - Determines its own size by calculating or estimating the total size of all of its children (both those that are currently in the DOM and those that are not)
   - Adds and removes children from the DOM as the visible portion of the virtualizer changes (i.e., when any of its containing ancestors, including the window, is scrolled, resized, etc.).
 

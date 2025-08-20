@@ -141,7 +141,6 @@
 - [#3710](https://github.com/lit/lit/pull/3710) [`09949234`](https://github.com/lit/lit/commit/09949234445388d51bfb4ee24ff28a4c9f82fe17) - Add `undefined` to the return type of PropertyValues.get()
 
 - Updated dependencies:
-
   - @lit/reactive-element@2.0.0
   - lit-html@3.0.0
 
