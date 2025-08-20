@@ -39,7 +39,6 @@ The end result of this document is a release of all unreleased changes on the ma
 ![A screenshot of a GitHub pull request title "Version Packages"](./images/lit-release-process/version-packages-pr.png)
 
 4. Request code reviews from members of the team familiar with the packages that will be released.
-
    1. The purpose of this pull request is to:
       1. Delete all the changeset files, moving their contents into the various Changelog files.
       1. Bump the versions global.
