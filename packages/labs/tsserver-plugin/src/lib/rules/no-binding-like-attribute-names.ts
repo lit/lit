@@ -1,12 +1,16 @@
 import {
   getLitTemplateExpressions,
   parseLitTemplate,
-} from '@lit-labs/analyzer/lib/lit-html/template.js';
+} from '@lit-labs/analyzer/lib/lit/template.js';
 import {type Element, traverse} from '@parse5/tools';
 import type ts from 'typescript';
 
 // TODO(justinfagnani): Make rule interface with a `name` property that can be
 // used for error messages and configuration.
+
+/**
+ * Checks that no unbound attribute names start with a lit-html binding prefix.
+ */
 export const noBindingLikeAttributeNames = {
   getSemanticDiagnostics(
     sourceFile: ts.SourceFile,
