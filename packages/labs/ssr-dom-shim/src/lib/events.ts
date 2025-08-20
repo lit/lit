@@ -31,7 +31,7 @@ export interface EventTargetShimMeta {
 
 const isCaptureEventListener = (
   options: undefined | AddEventListenerOptions | boolean
-) => (typeof options === 'boolean' ? options : options?.capture ?? false);
+) => (typeof options === 'boolean' ? options : (options?.capture ?? false));
 
 // Event phases
 const NONE = 0;
