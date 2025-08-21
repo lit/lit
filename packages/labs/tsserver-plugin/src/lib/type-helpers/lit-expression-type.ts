@@ -131,7 +131,7 @@ function isSpecialValue(
   type: ts.Type,
   typescript: typeof ts
 ): SpecialValuesEnum {
-  const escapedName = type.symbol.getEscapedName();
+  const escapedName = type.symbol?.getEscapedName();
   if (
     escapedName !== 'noChange' &&
     escapedName !== 'nothing' &&
