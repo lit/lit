@@ -40,7 +40,7 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 24.5
           cache: 'npm'
           cache-dependency-path: lit/package-lock.json
 

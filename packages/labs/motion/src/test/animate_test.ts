@@ -204,12 +204,12 @@ const testSkipSafari = isSafari ? test.skip : test;
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
-    assert.ok(theAnimate!);
+    assert.ok(theAnimate);
     assert.equal(el.div, animateElement);
-    await theAnimate!.finished;
+    await theAnimate.finished;
     el.shift = true;
     await el.updateComplete;
-    await theAnimate!.finished;
+    await theAnimate.finished;
     assert.equal(el.div, completeEl);
   });
 
@@ -225,25 +225,27 @@ const testSkipSafari = isSafari ? test.skip : test;
     el.shift = true;
     await el.updateComplete;
     await theAnimate!.finished;
-    assert.ok(frames!);
+    assert.ok(frames);
     assert.equal(
-      (frames![0].transform as string).trim(),
+      (frames[0].transform as string).trim(),
       'translateX(-200px) translateY(-200px)'
     );
-    assert.equal(frames![1].opacity, 0);
+    assert.equal(frames[1].opacity, 0);
     const r2 = el.div.getBoundingClientRect();
     assert.equal(r2.left - b.left, 200);
     assert.equal(r2.top - b.top, 200);
 
     theAnimate = undefined;
-    frames = undefined;
+    // The cast prevents too-aggressive type narrowing. TypeScript can't see
+    // that frames is mutated to be possibly defined elsewhere.
+    frames = undefined as Keyframe[] | undefined;
     el.shift = false;
     await el.updateComplete;
     await theAnimate!.finished;
     const r3 = el.div.getBoundingClientRect();
-    assert.ok(frames!);
+    assert.ok(frames);
     assert.equal(
-      (frames![0].transform as string).trim(),
+      (frames[0].transform as string).trim(),
       'translateX(200px) translateY(200px)'
     );
     assert.equal(r3.left - r2.left, -200);
@@ -415,7 +417,7 @@ const testSkipSafari = isSafari ? test.skip : test;
     el.shift = true;
     await el.updateComplete;
     await theAnimate!.finished;
-    assert.ok(frames!);
+    assert.ok(frames);
     assert.deepEqual(animateProps, {left: -200});
     assert.equal((frames![0].transform as string).trim(), 'translateX(-200px)');
     assert.equal((frames![0].color as string).trim(), 'rgb(0, 0, 0)');

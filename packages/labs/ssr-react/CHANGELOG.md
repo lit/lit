@@ -74,7 +74,6 @@
 ### Minor Changes
 
 - [#3885](https://github.com/lit/lit/pull/3885) [`7932f7dd`](https://github.com/lit/lit/commit/7932f7ddc21308dc0bf7b1bbd0dde781a6c8dece) - `@lit-labs/ssr-react` and `@lit-labs/react` now coordinate prop handling during server rendering and hydration.
-
   - [Breaking] `@lit-labs/ssr-react` will call `setAttribute()` with all props provided during server rendering unless they are provided in <code>\_$litProps$</code> object made by `@lit-labs/react`. Previously, it would call `setProperty()` for props that were found in the element's prototype, and `setAttribute()` for those that weren't. If you wish to server render custom elements that take properties that can not be set as attributes (i.e. not serializeable or have different name as attribute/property), you must use `@lit-labs/react` to create a React wrapper component.
   - `@lit-labs/react` now has a Node build and export condition to do special prop handling during server rendering. It detects the presence of `React.createElement` monkey patch by `@lit-labs/ssr-react` and provides props to be set as properties to the `createElement()` call.
   - `@lit-labs/ssr-react` will add the `defer-hydration` attribute to custom elements that had properties set so that `@lit-labs/react` wrapped elements have a chance to set properties on the element before Lit element hydration is triggered.
