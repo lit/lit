@@ -6,6 +6,7 @@
 
 import {LitElement, html} from 'lit';
 import {customElement} from 'lit/decorators.js';
+import './external-element.d.ts';
 
 @customElement('x-foo')
 export class XFoo extends LitElement {
@@ -14,4 +15,7 @@ export class XFoo extends LitElement {
   }
 }
 
-export const templateA = html`<x-foo></x-foo>`;
+export const templateA = html`
+  <x-foo></x-foo>
+  <external-element></external-element>
+`;
