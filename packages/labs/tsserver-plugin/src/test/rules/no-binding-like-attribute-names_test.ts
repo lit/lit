@@ -29,6 +29,6 @@ suite('no-binding-like-attribute-names', () => {
       'Attribute name starts with a binding prefix (.)'
     );
     assert.equal(diagnostics[0].code, 6301);
-    assert.equal(diagnostics[0].source, '.foo="bar"');
+    assert.equal(diagnostics[0].source, '.foo');
   });
 });

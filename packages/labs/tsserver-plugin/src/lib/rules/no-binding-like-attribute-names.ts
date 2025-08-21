@@ -1,6 +1,7 @@
 import {
   getLitTemplateExpressions,
   parseLitTemplate,
+  type LitTemplateAttribute,
 } from '@lit-labs/analyzer/lib/lit/template.js';
 import {type Element, traverse} from '@parse5/tools';
 import type ts from 'typescript';
@@ -32,9 +33,10 @@ export const noBindingLikeAttributeNames = {
           element.attrs.forEach((attr) => {
             const {name} = attr;
             if (
-              name.startsWith('.') ||
-              name.startsWith('@') ||
-              name.startsWith('?')
+              (name.startsWith('.') ||
+                name.startsWith('@') ||
+                name.startsWith('?')) &&
+              (attr as LitTemplateAttribute).litPart === undefined
             ) {
               const location = element.sourceCodeLocation?.attrs?.[name];
               // +1 for the backtick character
@@ -49,7 +51,7 @@ export const noBindingLikeAttributeNames = {
                   ? tsNode.template.getStart()
                   : tsNode.template.head.getStart()) + 1;
               const start = templateStart + (location?.startOffset ?? 0);
-              const end = templateStart + (location?.endOffset ?? 0);
+              const end = start + name.length;
               const length = end - start;
               const source = sourceFile.getFullText().slice(start, end);
               diagnostics.push({
