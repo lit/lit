@@ -65,7 +65,7 @@ function testDefinitionAtPosition(
 }
 
 suite('lit-language-service', () => {
-  test('getDefinitionAtPosition via analyzerxx', async () => {
+  test('getDefinitionAtPosition via analyzer', async () => {
     const pathName = path.resolve(
       'test-files/basic-templates/src/custom-element.ts'
     );
