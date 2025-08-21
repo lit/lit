@@ -12,7 +12,12 @@
     "Snippets",
     "Linters"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onLanguage:javascript",
+    "onLanguage:javascriptreact",
+    "onLanguage:typescript",
+    "onLanguage:typescriptreact"
+  ],
   "main": "./extension.cjs",
   "contributes": {
     "configuration": {
@@ -23,6 +28,12 @@
       {
         "command": "lit.hello",
         "title": "Hello Lit"
+      }
+    ],
+    "typescriptServerPlugins": [
+      {
+        "name": "@lit-labs/tsserver-plugin",
+        "enableForWorkspaceTypeScriptVersions": true
       }
     ]
   },
@@ -36,7 +47,8 @@
     "test:vscode": "wireit"
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.13.2"
+    "@lit-labs/analyzer": "^0.13.2",
+    "@lit-labs/tsserver-plugin": "^0.0.1"
   },
   "devDependencies": {
     "@types/node": "^22.17.0",
@@ -48,10 +60,11 @@
     "build": {
       "command": "tsc --pretty",
       "dependencies": [
-        "../analyzer:build"
+        "../analyzer:build",
+        "../tsserver-plugin:build"
       ],
       "files": [
-        "src/**/*.ts",
+        "src/**/*.{ts,cts}",
         "tsconfig.json"
       ],
       "output": [

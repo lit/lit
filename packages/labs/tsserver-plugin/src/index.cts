@@ -8,6 +8,9 @@ const init: ts.server.PluginModuleFactory = ({typescript}) => {
     create(info: ts.server.PluginCreateInfo) {
       const {logger} = info.project.projectService;
 
+      // TODO (justinfagnani): Figure out where this logs to or remove.
+      console.log('tsserver-plugin create()');
+
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       // if ((info.languageService as any)[litLanguageServiceApplied] === true) {
       //   logger.info(
