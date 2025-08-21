@@ -23,6 +23,25 @@ export class LitExtension {
 
     const {context} = this;
 
+    // Begin: Try to force our tsserver-plugin to show diagnostics automatically
+    const extension = vscode.extensions.getExtension(
+      'vscode.typescript-language-features'
+    );
+    if (extension === undefined) {
+      logChannel.appendLine(
+        'Could not find vscode.typescript-language-features'
+      );
+      return;
+    }
+
+    await extension.activate();
+    if (extension.exports.getAPI) {
+      logChannel.appendLine('Configuring @lit-labs/tsserver-plugin');
+      const api = extension.exports.getAPI(0);
+      api.configurePlugin('@lit-labs/tsserver-plugin', {});
+    }
+    // End: Try to force our tsserver-plugin to show diagnostics automatically
+
     // lit.hello command
     const disposable = vscode.commands.registerCommand('lit.hello', () => {
       logChannel.appendLine('lit.hello');
