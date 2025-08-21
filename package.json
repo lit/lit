@@ -4,7 +4,7 @@
   "type": "module",
   "engines": {
     "node": ">=18.15.0",
-    "npm": ">=7.0.0"
+    "npm": ">=11.5.1"
   },
   "workspaces": [
     "packages/*",
