@@ -215,7 +215,7 @@ export const makeLitLanguageService = (
         false
       );
 
-      if (tagNameMapSymbol?.declarations?.[0]) {
+      if (tagNameMapSymbol !== undefined) {
         const tagNameMapType =
           checker.getDeclaredTypeOfSymbol(tagNameMapSymbol);
         const propertySymbol = checker.getPropertyOfType(
