@@ -64,4 +64,57 @@ export class XFoo extends LitElement {
 }`
     );
   });
+
+  test('getReferencesAtPosition', async () => {
+    const {projectService, loaded} = createTestProjectService();
+
+    const pathName = path.resolve(
+      'test-files/basic-templates/src/custom-element-children.ts'
+    );
+    const result = projectService.openClientFile(pathName);
+    assert.ok(result.configFileName);
+    await loaded;
+
+    const info = projectService.getScriptInfo(pathName);
+    const project = info!.containingProjects[0];
+    const languageService = project.getLanguageService();
+    const program = languageService.getProgram()!;
+    const testSourceFile = program.getSourceFile(pathName);
+    assert.ok(testSourceFile);
+
+    const templates = getLitTemplateExpressions(
+      testSourceFile,
+      ts,
+      program.getTypeChecker()
+    );
+
+    const standaloneTemplate = templates[0];
+    const xFooPosition =
+      standaloneTemplate.getFullStart() +
+      standaloneTemplate.getFullText().indexOf('x-foo') +
+      1;
+
+    const refs = languageService.getReferencesAtPosition(
+      pathName,
+      xFooPosition
+    );
+    const firstRef = refs![0];
+
+    const definitionSourceFile = program.getSourceFile(firstRef.fileName);
+    const definitionSourceText = definitionSourceFile!
+      .getFullText()
+      .slice(
+        firstRef.textSpan.start,
+        firstRef.textSpan.start + firstRef.textSpan.length
+      );
+    assert.equal(
+      definitionSourceText,
+      `@customElement('x-foo')
+export class XFoo extends LitElement {
+  render() {
+    return html\`<slot></slot>\`;
+  }
+}`
+    );
+  });
 });
