@@ -94,6 +94,35 @@
       "rules": {
         "import/no-extraneous-dependencies": "off"
       }
+    },
+    {
+      // Files listed here don't need to declare their imports in their
+      // immediate package.json "dependencies". This should include all
+      // internal-only files, like tests, which are allowed to import from
+      // "devDependencies", and also from packages declared only in the root
+      // monorepo "package.json".
+      "files": [
+        "**/goldens/**",
+        "**/rollup.config.js",
+        "**/rollup.config.*.js",
+        "**/src/test-gen/**",
+        "**/src/test/**",
+        "**/src/tests/**",
+        "**/test-output/**",
+        "**/web-test-runner.config.js",
+        "packages/benchmarks/**",
+        "packages/labs/compiler/rollup.source_map_tests.js",
+        "packages/labs/ssr/src/demo/**",
+        "packages/labs/eleventy-plugin-lit/demo/**",
+        "packages/labs/parser/src/playground/**",
+        "packages/labs/parser/vite.config.mjs",
+        "packages/tests/**",
+        "playground/**",
+        "rollup-common.js"
+      ],
+      "rules": {
+        "import/no-extraneous-dependencies": "off"
+      }
     }
   ]
 }

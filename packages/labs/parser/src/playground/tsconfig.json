@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "es2021",
+    "lib": ["es2021", "DOM"],
+    "noEmit": true,
+    "rootDir": "..",
+    "useDefineForClassFields": false,
+    "experimentalDecorators": true
+  },
+  "include": [
+    "**/*.ts",
+    "../../../../../node_modules/@types/codemirror/index.d.ts",
+    "../lib/**/*"
+  ],
+  "exclude": []
+}
