@@ -1,5 +1,4 @@
 import ts from 'typescript';
-import init from '../index.cjs';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -90,5 +89,5 @@ export const createTestProjectService = () => {
     allowLocalPluginLoads: true,
     serverMode: ts.LanguageServiceMode.Semantic,
   });
-  return {projectService, loaded: init.loadedPromise};
+  return projectService;
 };

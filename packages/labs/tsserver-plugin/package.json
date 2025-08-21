@@ -21,7 +21,7 @@
     "build": {
       "command": "tsc --build --pretty",
       "files": [
-        "src/**/*.ts",
+        "src/**/*.{ts,cts}",
         "tsconfig.json"
       ],
       "output": [
