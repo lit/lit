@@ -150,18 +150,19 @@ export const PartType = {
 
 export type PartType = (typeof PartType)[keyof typeof PartType];
 
-export interface PartInfo {
-  type: PartType;
+export type PartInfo = SinglePartInfo | AttributePartInfo;
+
+interface BasePartInfo {
   valueIndex: number;
 }
 
 // TODO (justinfagnani): separate into ChildPartInfo and ElementPartInfo
-export interface SinglePartInfo extends PartInfo {
+export interface SinglePartInfo extends BasePartInfo {
   type: typeof PartType.CHILD | typeof PartType.ELEMENT;
   expression: ts.Expression;
 }
 
-export interface AttributePartInfo extends PartInfo {
+export interface AttributePartInfo extends BasePartInfo {
   type:
     | typeof PartType.ATTRIBUTE
     | typeof PartType.BOOLEAN_ATTRIBUTE
@@ -225,9 +226,7 @@ export const hasAttributePart = (
   return (node as LitTemplateAttribute).litPart !== undefined;
 };
 
-export type LitTemplateNode = Node & {
-  litNodeIndex: number;
-};
+export type LitTemplateNode = Node & {litNodeIndex: number};
 
 /**
  * A parsed lit-html template. This extends a parse5 DocumentFragment with
@@ -352,9 +351,7 @@ export const parseLitTemplate = (
   // TODO (justinfagnani): to support server-only templates that include
   // non-fragment-parser supported tags (<html>, <body>, etc) we need to
   // inspect the string and conditionally use parse() here.
-  const ast = parseFragment(source, {
-    sourceCodeLocationInfo: true,
-  });
+  const ast = parseFragment(source, {sourceCodeLocationInfo: true});
 
   traverse(ast, {
     ['pre:node'](node, _parent) {

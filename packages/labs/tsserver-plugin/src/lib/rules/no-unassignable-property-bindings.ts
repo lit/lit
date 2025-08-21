@@ -3,6 +3,10 @@ import {
   parseLitTemplate,
 } from '@lit-labs/analyzer/lib/lit/template.js';
 import {traverse, type Element} from '@parse5/tools';
+import {
+  PartType,
+  hasAttributePart,
+} from '@lit-labs/analyzer/lib/lit/template.js';
 import type ts from 'typescript';
 
 /**
@@ -30,7 +34,14 @@ export const noUnassignablePropertyBindings = {
       traverse(litTemplate, {
         element(element: Element) {
           for (const attr of element.attrs) {
-            if (!attr.name.startsWith('.')) continue;
+            if (!hasAttributePart(attr)) {
+              continue;
+            }
+            const part = attr.litPart;
+            if (part.type !== PartType.PROPERTY) {
+              continue;
+            }
+
             const {name} = attr;
             const location = element.sourceCodeLocation?.attrs?.[name];
             const templateStart =

@@ -18,10 +18,7 @@ suite('no-binding-like-attribute-names', () => {
     assert.ok(project);
 
     const languageService = project.getLanguageService();
-    const diagnostics = languageService
-      .getSemanticDiagnostics(info.path)
-      .filter((d) => d.code === 6301);
-
+    const diagnostics = languageService.getSemanticDiagnostics(info.path);
     assert.equal(diagnostics.length, 1);
     assert.equal(
       diagnostics[0].messageText,
