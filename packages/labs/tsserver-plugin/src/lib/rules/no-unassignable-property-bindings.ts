@@ -7,8 +7,9 @@ import {
   PartType,
   hasAttributePart,
 } from '@lit-labs/analyzer/lib/lit/template.js';
-import type ts from 'typescript';
+import type * as ts from 'typescript';
 import type {LitLanguageService} from '../lit-language-service.js';
+import {getLitExpressionType} from '../type-helpers/lit-expression-type.js';
 
 /**
  * TEMP: Placeholder rule for type checking property bindings.
@@ -56,7 +57,11 @@ export const noUnassignablePropertyBindings = {
                 );
               }
               const rhsExpression: ts.Expression = part.expressions[0];
-              rightHandSideType = checker.getTypeAtLocation(rhsExpression);
+              rightHandSideType = getLitExpressionType(
+                checker.getTypeAtLocation(rhsExpression),
+                typescript,
+                litLanguageService.getProgram()!
+              );
             }
             // get the type of the left hand side
             const elementType = litLanguageService.getElementClassType(
