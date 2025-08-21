@@ -7,7 +7,6 @@ node_modules/
 *.tgz
 *.tsbuildinfo
 .DS_Store
-.vscode/
 .wireit
 /temp
 .idea
@@ -411,6 +410,12 @@ packages/labs/virtualizer/test/screenshot/cases/*/actual.*.png
 packages/labs/virtualizer/events.d.ts*
 packages/labs/virtualizer/events.js
 packages/labs/virtualizer/events.js.map
+
+packages/labs/vscode-extension/lib/
+packages/labs/vscode-extension/test/
+packages/labs/vscode-extension/.vscode-test/
+packages/labs/vscode-extension/**/extension.cjs
+packages/labs/vscode-extension/**/extension.cjs.map
 
 packages/labs/vue-utils/development/
 packages/labs/vue-utils/test/
