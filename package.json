@@ -83,6 +83,7 @@
         "./packages/labs/ssr-react:build",
         "./packages/labs/task:build",
         "./packages/labs/testing:build",
+        "./packages/labs/tsserver-plugin:build",
         "./packages/labs/virtualizer:build",
         "./packages/labs/vue-utils:build",
         "./packages/labs/test-projects/test-element-a:build",
@@ -121,6 +122,7 @@
         "./packages/labs/ssr-react:build:ts",
         "./packages/labs/task:build:ts",
         "./packages/labs/testing:build:ts",
+        "./packages/labs/tsserver-plugin:build",
         "./packages/labs/virtualizer:build:ts",
         "./packages/labs/vue-utils:build:ts"
       ]
@@ -181,6 +183,7 @@
         "./packages/labs/ssr-dom-shim:test",
         "./packages/labs/ssr-react:test",
         "./packages/labs/testing:test",
+        "./packages/labs/tsserver-plugin:test",
         "./packages/labs/virtualizer:test",
         "./examples/preact:test"
       ]

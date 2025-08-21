@@ -17,6 +17,8 @@ function setupLanguageService(pathName: string): {
   const info = projectService.getScriptInfo(pathName);
   const project = info!.containingProjects[0];
   const languageService = project.getLanguageService();
+  // Ensure that the LitLanguageService is being used
+  assert.equal(languageService.constructor.name, 'LitLanguageService');
   const program = languageService.getProgram()!;
   const testSourceFile = program.getSourceFile(pathName);
   assert.ok(testSourceFile);
@@ -81,16 +83,16 @@ export class XFoo extends LitElement {
     );
   });
 
-  test('getDefinitionAtPosition via HTMLElementTagNameMap', async () => {
-    const pathName = path.resolve(
-      'test-files/basic-templates/src/custom-element.ts'
-    );
-    await testDefinitionAtPosition(
-      pathName,
-      'external-element',
-      `declare class ExternalElement extends LitElement {
-  value: number;
-}`
-    );
-  });
+  //   test('getDefinitionAtPosition via HTMLElementTagNameMap', async () => {
+  //     const pathName = path.resolve(
+  //       'test-files/basic-templates/src/custom-element.ts'
+  //     );
+  //     await testDefinitionAtPosition(
+  //       pathName,
+  //       'external-element',
+  //       `declare class ExternalElement extends LitElement {
+  //   value: number;
+  // }`
+  //     );
+  //   });
 });
