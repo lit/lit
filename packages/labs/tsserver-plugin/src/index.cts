@@ -16,15 +16,6 @@ const init: ts.server.PluginModuleFactory = ({typescript}) => {
 
       makeLitLanguageService(instance, info, typescript);
 
-      // Seems to be a private API
-      if ('markAsDirty' in info.project) {
-        logger.info(`@lit-labs/tsserver-plugin project.markAsDirty()`);
-        (info.project.markAsDirty as Function)();
-      } else {
-        logger.info(
-          `Skipping project.markAsDirty. Not available in this version of TypeScript`
-        );
-      }
       return instance;
     },
   };

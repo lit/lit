@@ -9,3 +9,4 @@ node_modules/
 /playground/p/**/package-lock.json
 /playground/p/scratch/*/
 !/playground/p/scratch/*.*
+.direnv/

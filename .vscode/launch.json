@@ -17,7 +17,8 @@
       "type": "extensionHost",
       "request": "launch",
       "args": [
-        "--extensionDevelopmentPath=${workspaceFolder}/packages/labs/vscode-extension"
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/labs/vscode-extension",
+        "--disable-extensions"
       ],
       "outFiles": [
         "${workspaceFolder}/packages/labs/vscode-extension/out/**/*.{js|cjs}"
