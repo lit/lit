@@ -1,5 +1,5 @@
 ---
-"lit": minor
+"lit": patch
 "lit-element": patch
 "lit-html": patch
 "@lit/reactive-element": patch
