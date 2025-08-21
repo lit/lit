@@ -169,7 +169,7 @@ export interface AttributePartInfo extends BasePartInfo {
     | typeof PartType.PROPERTY
     | typeof PartType.EVENT;
   prefix: string | undefined;
-  name: string | undefined;
+  name: string;
   strings: string[];
   expressions: Array<ts.Expression>;
 }

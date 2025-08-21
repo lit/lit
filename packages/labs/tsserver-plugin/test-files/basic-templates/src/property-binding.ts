@@ -7,4 +7,4 @@
 import {html} from 'lit';
 
 const value: string = 'hello';
-export const templateA = html`<span .textContent=${value}></span>`;
+export const templateA = html` <span .unknown=${value}></span> `;
