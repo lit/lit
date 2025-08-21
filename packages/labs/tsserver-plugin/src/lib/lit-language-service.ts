@@ -1,11 +1,11 @@
-import {Analyzer} from '@lit-labs/analyzer';
+import {Analyzer, LitElementExport} from '@lit-labs/analyzer';
 import {
   isLitHtmlTaggedTemplateExpression,
   parseLitTemplate,
 } from '@lit-labs/analyzer/lib/lit/template.js';
 import * as path from 'node:path';
 import type ts from 'typescript';
-import {Diagnostic, LanguageService} from 'typescript';
+import {Diagnostic, LanguageService, ReferenceEntry} from 'typescript';
 import {noBindingLikeAttributeNames} from './rules/no-binding-like-attribute-names.js';
 import {type Element, traverse} from '@parse5/tools';
 
@@ -74,66 +74,48 @@ export const makeLitLanguageService = (
       return [...(prevDiagnostics ?? []), ...diagnostics];
     }
 
+    override getReferencesAtPosition(
+      fileName: string,
+      position: number
+    ): ReferenceEntry[] | undefined {
+      const definition = this.#getElementAtPosition(fileName, position);
+      if (definition !== undefined) {
+        const tsDefinition = definition.node;
+        const sourceFile = tsDefinition.getSourceFile();
+        const start = tsDefinition.getStart();
+
+        return super.getReferencesAtPosition(sourceFile.fileName, start);
+      }
+
+      return super.getReferencesAtPosition(fileName, position);
+    }
+
     override getDefinitionAtPosition(
       fileName: string,
       position: number
     ): readonly ts.DefinitionInfo[] | undefined {
-      const program = this.getProgram()!;
-      const checker = program.getTypeChecker();
-      const sourceFile = program.getSourceFile(fileName)!;
+      const definition = this.#getElementAtPosition(fileName, position);
+      if (definition !== undefined) {
+        const tsDefinition = definition.node;
 
-      const tsNode = this.#findNodeAtPosition(sourceFile!, position);
-      if (tsNode !== undefined && typescript.isTemplateLiteral(tsNode)) {
-        if (
-          isLitHtmlTaggedTemplateExpression(tsNode.parent, typescript, checker)
-        ) {
-          const litTemplate = parseLitTemplate(
-            tsNode.parent,
-            typescript,
-            checker
-          );
+        // Get a ts.DefinitionInfo from this tsDefinition
+        const sourceFile = tsDefinition.getSourceFile();
+        const start = tsDefinition.getStart();
+        const length = tsDefinition.getEnd() - start;
 
-          // Get the Lit template node at this position
-          const templatePosition = tsNode.getFullStart();
-          let foundDefinition: ts.DefinitionInfo | undefined;
-
-          traverse(litTemplate, {
-            element: (element: Element) => {
-              const {startTag} = element.sourceCodeLocation!;
-              if (
-                startTag !== undefined &&
-                startTag.startOffset + templatePosition < position &&
-                startTag.endOffset + templatePosition > position
-              ) {
-                const definition = this.#getElementDefinition(element.tagName);
-                if (definition !== undefined) {
-                  const tsDefinition = definition.node;
-
-                  // Get a ts.DefinitionInfo from this tsDefinition
-                  const sourceFile = tsDefinition.getSourceFile();
-                  const start = tsDefinition.getStart();
-                  const length = tsDefinition.getEnd() - start;
-
-                  foundDefinition = {
-                    fileName: sourceFile.fileName,
-                    textSpan: {
-                      start,
-                      length,
-                    },
-                    kind: typescript.ScriptElementKind.classElement,
-                    name: definition.name,
-                    containerKind: typescript.ScriptElementKind.moduleElement,
-                    containerName: '',
-                  };
-                }
-              }
+        return [
+          {
+            fileName: sourceFile.fileName,
+            textSpan: {
+              start,
+              length,
             },
-          });
-
-          if (foundDefinition) {
-            return [foundDefinition];
-          }
-        }
+            kind: typescript.ScriptElementKind.classElement,
+            name: definition.name,
+            containerKind: typescript.ScriptElementKind.moduleElement,
+            containerName: '',
+          },
+        ];
       }
 
       return super.getDefinitionAtPosition(fileName, position);
@@ -145,6 +127,46 @@ export const makeLitLanguageService = (
     ): ts.DefinitionInfoAndBoundSpan | undefined {
       console.log('getDefinitionAndBoundSpan', fileName, position);
       return super.getDefinitionAndBoundSpan(fileName, position);
+    }
+
+    #getElementAtPosition(
+      fileName: string,
+      position: number
+    ): LitElementExport | undefined {
+      const program = this.getProgram()!;
+      const checker = program.getTypeChecker();
+      const sourceFile = program.getSourceFile(fileName)!;
+      const tsNode = this.#findNodeAtPosition(sourceFile!, position);
+      let foundElement: LitElementExport | undefined = undefined;
+
+      if (tsNode !== undefined && typescript.isTemplateLiteral(tsNode)) {
+        if (
+          isLitHtmlTaggedTemplateExpression(tsNode.parent, typescript, checker)
+        ) {
+          const litTemplate = parseLitTemplate(
+            tsNode.parent,
+            typescript,
+            checker
+          );
+          const templatePosition = tsNode.getFullStart();
+
+          traverse(litTemplate, {
+            element: (element: Element) => {
+              const {startTag} = element.sourceCodeLocation!;
+              if (
+                startTag !== undefined &&
+                startTag.startOffset + templatePosition < position &&
+                startTag.endOffset + templatePosition > position
+              ) {
+                const definition = this.#getElementDefinition(element.tagName);
+                foundElement = definition;
+              }
+            },
+          });
+        }
+      }
+
+      return foundElement;
     }
 
     /**
