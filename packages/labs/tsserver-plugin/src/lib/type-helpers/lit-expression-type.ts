@@ -11,6 +11,8 @@ import type * as ts from 'typescript';
  *
  * DirectiveResults should be type checked as the return type of the `render`
  * method on the directive class.
+ *
+ * TODO: Move into the analyzer.
  */
 export function getLitExpressionType(
   type: ts.Type,
