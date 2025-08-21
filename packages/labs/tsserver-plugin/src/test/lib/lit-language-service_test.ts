@@ -83,16 +83,14 @@ export class XFoo extends LitElement {
     );
   });
 
-  //   test('getDefinitionAtPosition via HTMLElementTagNameMap', async () => {
-  //     const pathName = path.resolve(
-  //       'test-files/basic-templates/src/custom-element.ts'
-  //     );
-  //     await testDefinitionAtPosition(
-  //       pathName,
-  //       'external-element',
-  //       `declare class ExternalElement extends LitElement {
-  //   value: number;
-  // }`
-  //     );
-  //   });
+  test('getDefinitionAtPosition via HTMLElementTagNameMap', async () => {
+    const pathName = path.resolve(
+      'test-files/basic-templates/src/custom-element.ts'
+    );
+    await testDefinitionAtPosition(
+      pathName,
+      'external-element',
+      `declare class ExternalElement extends LitElement {\n  value: number;\n}`
+    );
+  });
 });
