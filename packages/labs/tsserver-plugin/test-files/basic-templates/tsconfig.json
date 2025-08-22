@@ -1,0 +1,21 @@
+{
+  "compilerOptions": {
+    "plugins": [
+      {
+        "name": "@lit-labs/tsserver-plugin"
+      }
+    ],
+    "target": "es2021",
+    "lib": ["es2021", "DOM"],
+    "module": "ES2020",
+    "rootDir": "./src",
+    "outDir": "./out",
+    "moduleResolution": "node",
+    "experimentalDecorators": true,
+    "skipDefaultLibCheck": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  },
+  "include": ["src/**/*.ts"],
+  "exclude": []
+}
