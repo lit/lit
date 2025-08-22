@@ -6,4 +6,4 @@
 
 import {html} from 'lit';
 
-export const templateA = html`<span .foo="bar">A</span>`;
+export const templateA = html`<span .foo="bar" .bar="${'ok'}">A</span>`;
