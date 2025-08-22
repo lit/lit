@@ -2,9 +2,10 @@ import assert from 'node:assert';
 import * as path from 'node:path';
 import {describe as suite, test} from 'node:test';
 import {createTestProjectService} from '../project-service.js';
+import {LitDiagnosticCode} from '../../lib/diagnostic-codes.js';
 
 suite('no-unassignable-property-bindings', () => {
-  test('Unknown property diagnostic (6303)', () => {
+  test('Unknown property diagnostic', () => {
     const projectService = createTestProjectService();
     const file = path.resolve(
       'test-files/basic-templates/src/property-binding-unknown.ts'
@@ -16,7 +17,7 @@ suite('no-unassignable-property-bindings', () => {
     const languageService = project.getLanguageService();
     const diagnostics = languageService
       .getSemanticDiagnostics(info.path)
-      .filter((d) => d.code === 6303);
+      .filter((d) => d.code === LitDiagnosticCode.UnknownProperty);
     assert.equal(diagnostics.length, 1);
     assert.equal(
       diagnostics[0].messageText,
@@ -36,11 +37,15 @@ suite('no-unassignable-property-bindings', () => {
     const languageService = project.getLanguageService();
     const diagnostics = languageService
       .getSemanticDiagnostics(info.path)
-      .filter((d) => d.code === 6302 || d.code === 6303);
+      .filter(
+        (d) =>
+          d.code === LitDiagnosticCode.UnassignablePropertyBinding ||
+          d.code === LitDiagnosticCode.UnknownProperty
+      );
     assert.equal(diagnostics.length, 0);
   });
 
-  test('Unassignable bindings produce 6302 diagnostics', () => {
+  test('Unassignable bindings produce diagnostics', () => {
     const projectService = createTestProjectService();
     const file = path.resolve(
       'test-files/basic-templates/src/property-binding-unassignable.ts'
@@ -52,16 +57,15 @@ suite('no-unassignable-property-bindings', () => {
     const languageService = project.getLanguageService();
     const diagnostics = languageService
       .getSemanticDiagnostics(info.path)
-      .filter((d) => d.code === 6302);
+      .filter((d) => d.code === LitDiagnosticCode.UnassignablePropertyBinding);
     assert.equal(diagnostics.length, 2);
-    const messages = diagnostics.map((d) => String(d.messageText));
-    assert.ok(
-      messages.some((m) => /is not assignable to string$/.test(m)),
-      `Expected string assignability error. Got: ${messages.join('\n')}`
-    );
-    assert.ok(
-      messages.some((m) => /is not assignable to boolean$/.test(m)),
-      `Expected boolean assignability error. Got: ${messages.join('\n')}`
+    const messages = diagnostics.map((d) => String(d.messageText)).sort();
+    assert.deepEqual(
+      messages,
+      [
+        `'123' is not assignable to 'string'`,
+        `'"not-bool"' is not assignable to 'boolean'`,
+      ].sort()
     );
   });
 });

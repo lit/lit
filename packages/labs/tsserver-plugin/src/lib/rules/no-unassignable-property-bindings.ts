@@ -8,6 +8,7 @@ import {
   hasAttributePart,
 } from '@lit-labs/analyzer/lib/lit/template.js';
 import type * as ts from 'typescript';
+import {LitDiagnosticCode} from '../diagnostic-codes.js';
 import type {LitLanguageService} from '../lit-language-service.js';
 import {getLitExpressionType} from '../type-helpers/lit-expression-type.js';
 
@@ -87,7 +88,7 @@ export const noUnassignablePropertyBindings = {
               const length = end - start;
               diagnostics.push({
                 category: typescript.DiagnosticCategory.Error,
-                code: 6303, // distinct from 6301 used elsewhere
+                code: LitDiagnosticCode.UnknownProperty,
                 file: sourceFile,
                 start,
                 length,
@@ -120,11 +121,11 @@ export const noUnassignablePropertyBindings = {
             const length = end - start;
             diagnostics.push({
               category: typescript.DiagnosticCategory.Error,
-              code: 6302, // distinct from 6301 used elsewhere
+              code: LitDiagnosticCode.UnassignablePropertyBinding,
               file: sourceFile,
               start,
               length,
-              messageText: `${checker.typeToString(rightHandSideType)} is not assignable to ${checker.typeToString(leftHandSide)}`,
+              messageText: `'${checker.typeToString(rightHandSideType)}' is not assignable to '${checker.typeToString(leftHandSide)}'`,
             });
           }
         },

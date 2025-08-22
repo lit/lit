@@ -6,6 +6,7 @@ import {
 } from '@lit-labs/analyzer/lib/lit/template.js';
 import {type Element, traverse} from '@parse5/tools';
 import type ts from 'typescript';
+import {LitDiagnosticCode} from '../diagnostic-codes.js';
 import type {LitLanguageService} from '../lit-language-service.js';
 
 // TODO(justinfagnani): Make rule interface with a `name` property that can be
@@ -65,7 +66,7 @@ export const noBindingLikeAttributeNames = {
                 source,
                 category: typescript.DiagnosticCategory.Warning,
                 // random-ish number. How are we supposed to pick these?
-                code: 6301,
+                code: LitDiagnosticCode.BindingLikeAttributeName,
                 file: sourceFile,
                 start,
                 length,
