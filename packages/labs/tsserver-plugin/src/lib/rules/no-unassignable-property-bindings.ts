@@ -19,10 +19,12 @@ import type {LitLanguageService} from '../lit-language-service.js';
 import {getLitExpressionType} from '../type-helpers/lit-expression-type.js';
 
 /**
- * TEMP: Placeholder rule for type checking property bindings.
- * For now it simply reports a diagnostic on every property binding it finds
- * (attributes whose name starts with '.'). We'll refine the logic in follow-up
- * changes to actually validate assignability.
+ * Type check property bindings. Gives an error if the property can't be found
+ * on the element, or if the expression is not assignable to the property type.
+ *
+ * Handles all the tricky cases, like `noChange`, `nothing`, and directives,
+ * provided that the directives are typed with enough information to infer
+ * the correct type of the directive class's `render` method.
  */
 export const noUnassignablePropertyBindings = {
   getSemanticDiagnostics(
