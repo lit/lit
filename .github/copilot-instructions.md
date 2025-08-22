@@ -17,3 +17,8 @@ This repository is a monorepo that uses Lit for building web components and no o
   - Specify script dependencies
   - Cache build artifacts in `.wireit` directories
   - Prepending `WIREIT_LOGGER=simple npm run <command>` outputs the full logs to the console
+
+## MCP
+
+If you are unsure about a feature of Lit, lit-html, or LitElement, consider
+referencing the Lit MCP's `search_lit_dev_docs` tool if available.
