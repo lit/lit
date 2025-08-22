@@ -15,3 +15,9 @@ export const alsoGood = html`<div .textContent=${'value-' + num}></div>`;
 export const simpleNothing = html`<div .id=${nothing}></div>`;
 
 export const simpleNoChange = html`<div .id=${noChange}></div>`;
+
+export const prefixBinding = html`<div .id="hello ${3}"></div>`;
+
+export const postfixBinding = html`<div .id="${3} world"></div>`;
+
+export const multiBinding = html`<div .id="${3}${4}"></div>`;

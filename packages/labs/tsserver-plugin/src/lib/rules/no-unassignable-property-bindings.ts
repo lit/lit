@@ -45,12 +45,12 @@ export const noUnassignablePropertyBindings = {
             if (part.type !== PartType.PROPERTY) {
               continue;
             }
+            let rightHandSideType: ts.Type;
             // If there are more than two strings, or if either of the strings
             // are not empty string, then the type of the right hand side is
             // 'string'.
-            let rightHandSideType: ts.Type;
             if (part.strings.length > 2 || part.strings.some((s) => s !== '')) {
-              throw new Error('todo: get/construct the `string` type');
+              rightHandSideType = checker.getStringType();
             } else {
               if (part.expressions.length !== 1) {
                 throw new Error(

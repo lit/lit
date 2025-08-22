@@ -66,6 +66,9 @@ suite('no-unassignable-property-bindings', () => {
         `'"not-bool"' is not assignable to 'boolean'`,
         `'unique symbol' is not assignable to 'string'`,
         `'unique symbol' is not assignable to 'boolean'`,
+        `'string' is not assignable to 'FailureType1'`,
+        `'string' is not assignable to 'FailureType2'`,
+        `'string' is not assignable to 'FailureType3'`,
       ].sort()
     );
   });

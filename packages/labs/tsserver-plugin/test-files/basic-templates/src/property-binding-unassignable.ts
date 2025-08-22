@@ -17,3 +17,39 @@ const fakeNoChange: unique symbol = Symbol('noChange');
 export const moreBad = html`<div .id=${fakeNothing}></div>`;
 
 export const moreBad2 = html`<div .hidden=${fakeNoChange}></div>`;
+
+// Use bespoke types so that when we assert on the messages they are
+// unique.
+class FailureType1 {
+  failureType1!: never;
+}
+class FailureType2 {
+  failureType2!: never;
+}
+class FailureType3 {
+  failureType3!: never;
+}
+
+class SimpleElement extends HTMLElement {
+  failureType1: FailureType1;
+  failureType2: FailureType2;
+  failureType3: FailureType3;
+}
+customElements.define('simple-element', SimpleElement);
+declare global {
+  interface HTMLElementTagNameMap {
+    'simple-element': SimpleElement;
+  }
+}
+
+export const prefixBindingBad = html`<simple-element
+  .failureType1="hello ${3}"
+></simple-element>`;
+
+export const postfixBindingBad = html`<simple-element
+  .failureType2="${4} world"
+></simple-element>`;
+
+export const multiBindingBad = html`<simple-element
+  .failureType3="${3}${4}"
+></simple-element>`;
