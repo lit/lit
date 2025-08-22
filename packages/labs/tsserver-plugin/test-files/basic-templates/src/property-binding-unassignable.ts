@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {html} from 'lit';
+import {simpleDirective, genericDirective} from './directives.js';
 
 // .id is a string, passing a number should produce unassignable diagnostic (6302)
 export const bad = html`<div .id=${123}></div>`;
@@ -29,11 +30,19 @@ class FailureType2 {
 class FailureType3 {
   failureType3!: never;
 }
+class FailureType4 {
+  failureType4!: never;
+}
+class FailureType5 {
+  failureType5!: never;
+}
 
 class SimpleElement extends HTMLElement {
   failureType1: FailureType1;
   failureType2: FailureType2;
   failureType3: FailureType3;
+  failureType4: FailureType4;
+  failureType5: FailureType5;
 }
 customElements.define('simple-element', SimpleElement);
 declare global {
@@ -52,4 +61,12 @@ export const postfixBindingBad = html`<simple-element
 
 export const multiBindingBad = html`<simple-element
   .failureType3="${3}${4}"
+></simple-element>`;
+
+export const simpleDirectiveBad = html`<simple-element
+  .failureType4=${simpleDirective('ok')}
+></simple-element>`;
+
+export const genericDirectiveBad = html`<simple-element
+  .failureType5=${genericDirective('ok')}
 ></simple-element>`;

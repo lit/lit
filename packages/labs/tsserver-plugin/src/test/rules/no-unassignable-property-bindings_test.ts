@@ -3,6 +3,15 @@ import * as path from 'node:path';
 import {describe as suite, test} from 'node:test';
 import {createTestProjectService} from '../project-service.js';
 import {LitDiagnosticCode} from '../../lib/diagnostic-codes.js';
+import type {Diagnostic} from 'typescript';
+
+function assertDiagnosticMessages(
+  diagnostics: readonly Diagnostic[],
+  expectedMessages: string[]
+) {
+  const messages = diagnostics.map((d) => String(d.messageText)).sort();
+  assert.deepEqual(messages, expectedMessages.sort());
+}
 
 suite('no-unassignable-property-bindings', () => {
   test('Unknown property diagnostic', () => {
@@ -42,7 +51,7 @@ suite('no-unassignable-property-bindings', () => {
           d.code === LitDiagnosticCode.UnassignablePropertyBinding ||
           d.code === LitDiagnosticCode.UnknownProperty
       );
-    assert.equal(diagnostics.length, 0);
+    assertDiagnosticMessages(diagnostics, []);
   });
 
   test('Unassignable bindings produce diagnostics', () => {
@@ -58,9 +67,8 @@ suite('no-unassignable-property-bindings', () => {
     const diagnostics = languageService
       .getSemanticDiagnostics(info.path)
       .filter((d) => d.code === LitDiagnosticCode.UnassignablePropertyBinding);
-    const messages = diagnostics.map((d) => String(d.messageText)).sort();
-    assert.deepEqual(
-      messages,
+    assertDiagnosticMessages(
+      diagnostics,
       [
         `'123' is not assignable to 'string'`,
         `'"not-bool"' is not assignable to 'boolean'`,
@@ -69,6 +77,8 @@ suite('no-unassignable-property-bindings', () => {
         `'string' is not assignable to 'FailureType1'`,
         `'string' is not assignable to 'FailureType2'`,
         `'string' is not assignable to 'FailureType3'`,
+        "'string' is not assignable to 'FailureType4'",
+        "'string' is not assignable to 'FailureType5'",
       ].sort()
     );
   });
