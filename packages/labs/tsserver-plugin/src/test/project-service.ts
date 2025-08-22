@@ -2,9 +2,7 @@ import ts from 'typescript';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-const fakeFileWatcher: ts.FileWatcher = {
-  close() {},
-};
+const fakeFileWatcher: ts.FileWatcher = {close() {}};
 
 const serverHost: ts.server.ServerHost = {
   ...ts.sys,
@@ -90,4 +88,20 @@ export const createTestProjectService = () => {
     serverMode: ts.LanguageServiceMode.Semantic,
   });
   return projectService;
+};
+
+let reusableProjectService: ts.server.ProjectService | undefined;
+export const getReusableTestProjectService = () => {
+  if (!reusableProjectService) {
+    reusableProjectService = createTestProjectService();
+  }
+  const projectService = reusableProjectService;
+  return {
+    projectService,
+    [Symbol.dispose]() {
+      for (const [path] of projectService.openFiles) {
+        projectService.closeClientFile(path);
+      }
+    },
+  };
 };

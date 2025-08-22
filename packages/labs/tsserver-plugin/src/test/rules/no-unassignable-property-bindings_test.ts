@@ -7,7 +7,7 @@
 import assert from 'node:assert';
 import * as path from 'node:path';
 import {describe as suite, test} from 'node:test';
-import {createTestProjectService} from '../project-service.js';
+import {getReusableTestProjectService} from '../project-service.js';
 import {LitDiagnosticCode} from '../../lib/diagnostic-codes.js';
 import type {Diagnostic} from 'typescript';
 
@@ -21,7 +21,8 @@ function assertDiagnosticMessages(
 
 suite('no-unassignable-property-bindings', () => {
   test('Unknown property diagnostic', () => {
-    const projectService = createTestProjectService();
+    using cleanup = getReusableTestProjectService();
+    const projectService = cleanup.projectService;
     const file = path.resolve(
       'test-files/basic-templates/src/property-binding-unknown.ts'
     );
@@ -40,7 +41,8 @@ suite('no-unassignable-property-bindings', () => {
   });
 
   test('No diagnostics for assignable bindings', () => {
-    const projectService = createTestProjectService();
+    using cleanup = getReusableTestProjectService();
+    const projectService = cleanup.projectService;
     const file = path.resolve(
       'test-files/basic-templates/src/property-binding-assignable.ts'
     );
@@ -60,7 +62,8 @@ suite('no-unassignable-property-bindings', () => {
   });
 
   test('Unassignable bindings produce diagnostics', () => {
-    const projectService = createTestProjectService();
+    using cleanup = getReusableTestProjectService();
+    const projectService = cleanup.projectService;
     const file = path.resolve(
       'test-files/basic-templates/src/property-binding-unassignable.ts'
     );
