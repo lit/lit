@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2025 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import {nothing} from 'lit';
 import {directive, Directive, DirectiveResult} from 'lit/directive.js';
 

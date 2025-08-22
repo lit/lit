@@ -1,3 +1,9 @@
+/**
+ * @license
+ * Copyright 2025 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 import assert from 'node:assert';
 import * as path from 'node:path';
 import {describe as suite, test} from 'node:test';
