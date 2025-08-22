@@ -419,7 +419,14 @@ export const parseLitTemplate = (
 
         if (node.attrs.length > 0) {
           for (const attr of node.attrs) {
-            // TODO (justinfagnani): adjust attribute locations
+            const attrSourceLocation =
+              node.sourceCodeLocation?.attrs?.[attr.name];
+
+            if (attrSourceLocation !== undefined) {
+              attrSourceLocation.startLine += lineAdjust;
+              attrSourceLocation.startCol += colAdjust;
+              attrSourceLocation.startOffset += offsetAdjust;
+            }
 
             if (attr.name.startsWith(marker)) {
               // An element binding, like <div ${}>
@@ -514,6 +521,12 @@ export const parseLitTemplate = (
                 } as AttributePartInfo)
               );
               spanIndex += strings.length - 1;
+            }
+
+            if (attrSourceLocation !== undefined) {
+              attrSourceLocation.endLine += lineAdjust;
+              attrSourceLocation.endCol += colAdjust;
+              attrSourceLocation.endOffset += offsetAdjust;
             }
           }
         }

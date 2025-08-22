@@ -193,6 +193,27 @@ const assertTemplateNodeText = (
   assert.equal(elementTextFromLinesAndCols, expected);
 };
 
+const assertAttributeText = (
+  node: Element,
+  attrName: string,
+  templateExpression: ts.TaggedTemplateExpression,
+  expected: string
+) => {
+  // Trim off the leading and trailing backticks
+  const templateText = templateExpression.template.getFullText().slice(1, -1);
+  assert.ok(node.sourceCodeLocation?.attrs);
+  const sourceLocation = node.sourceCodeLocation?.attrs?.[attrName];
+  assert.ok(
+    sourceLocation,
+    `source location for attribute not found: ${attrName}`
+  );
+  const {startOffset, endOffset} = sourceLocation;
+
+  // Check that the offsets are correct:
+  const textFromOffsets = templateText.substring(startOffset, endOffset);
+  assert.equal(textFromOffsets, expected);
+};
+
 suite('parseLitTemplate', () => {
   const testFilePath = path.resolve(testFilesDir, 'hello.ts');
   const {sourceFile, checker} = getTestSourceFile(testFilePath);
@@ -323,6 +344,13 @@ suite('parseLitTemplate', () => {
         div as Element,
         templateExpression,
         `<div class="\${'a'}"><span>Hello, world!</span></div>`
+      );
+
+      assertAttributeText(
+        div as Element,
+        'class$lit$',
+        templateExpression,
+        `class="\${'a'}"`
       );
 
       const span = (div as Element).childNodes[0];
