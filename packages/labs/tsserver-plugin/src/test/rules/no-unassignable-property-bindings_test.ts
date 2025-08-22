@@ -58,13 +58,14 @@ suite('no-unassignable-property-bindings', () => {
     const diagnostics = languageService
       .getSemanticDiagnostics(info.path)
       .filter((d) => d.code === LitDiagnosticCode.UnassignablePropertyBinding);
-    assert.equal(diagnostics.length, 2);
     const messages = diagnostics.map((d) => String(d.messageText)).sort();
     assert.deepEqual(
       messages,
       [
         `'123' is not assignable to 'string'`,
         `'"not-bool"' is not assignable to 'boolean'`,
+        `'unique symbol' is not assignable to 'string'`,
+        `'unique symbol' is not assignable to 'boolean'`,
       ].sort()
     );
   });
