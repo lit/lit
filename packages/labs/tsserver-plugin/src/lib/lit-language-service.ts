@@ -125,6 +125,24 @@ export const makeLitLanguageService = (
                     containerKind: typescript.ScriptElementKind.moduleElement,
                     containerName: '',
                   };
+                } else {
+                  const classType = this.#getElementClassType(element.tagName);
+                  if (classType !== undefined) {
+                    const sourceFile = classType.getSourceFile();
+                    const start = classType.getStart();
+                    const length = classType.getEnd() - start;
+                    foundDefinition = {
+                      fileName: sourceFile.fileName,
+                      textSpan: {
+                        start,
+                        length,
+                      },
+                      kind: typescript.ScriptElementKind.classElement,
+                      name: classType.getText(),
+                      containerKind: typescript.ScriptElementKind.moduleElement,
+                      containerName: '',
+                    };
+                  }
                 }
               }
             },
@@ -180,6 +198,44 @@ export const makeLitLanguageService = (
         for (const ce of customElementExports) {
           if (ce.tagname === tagname) {
             return ce;
+          }
+        }
+      }
+      return undefined;
+    }
+
+    #getElementClassType(tagname: string) {
+      const checker = this.#analyzer.program.getTypeChecker();
+      // Use the type checker to get the symbol for the ambient/global
+      // HTMLElementTagNameMap type.
+      const tagNameMapSymbol = checker.resolveName(
+        'HTMLElementTagNameMap',
+        undefined,
+        typescript.SymbolFlags.Interface,
+        false
+      );
+
+      if (tagNameMapSymbol !== undefined) {
+        const tagNameMapType =
+          checker.getDeclaredTypeOfSymbol(tagNameMapSymbol);
+        const propertySymbol = checker.getPropertyOfType(
+          tagNameMapType,
+          tagname
+        );
+
+        if (propertySymbol?.valueDeclaration) {
+          // We found the property on HTMLElementTagNameMap, like `div: HTMLDivElement`.
+          // Now we need to get the type of that property.
+          const propertyType = checker.getTypeOfSymbolAtLocation(
+            propertySymbol,
+            propertySymbol.valueDeclaration
+          );
+
+          // The type is the element's class (e.g. HTMLDivElement). Get the
+          // symbol for that class.
+          const elementClassSymbol = propertyType.getSymbol();
+          if (elementClassSymbol?.valueDeclaration) {
+            return elementClassSymbol?.valueDeclaration;
           }
         }
       }

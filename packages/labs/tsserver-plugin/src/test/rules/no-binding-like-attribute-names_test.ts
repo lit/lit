@@ -4,17 +4,14 @@ import {describe as suite, test} from 'node:test';
 import {createTestProjectService} from '../project-service.js';
 
 suite('no-binding-like-attribute-names', () => {
-  test('Reports on property-binding-like attribute names', async () => {
-    const {projectService, loaded} = createTestProjectService();
+  test('Reports on property-binding-like attribute names', () => {
+    const projectService = createTestProjectService();
 
     const pathName = path.resolve(
       'test-files/basic-templates/src/bad-attribute-name.ts'
     );
     const result = projectService.openClientFile(pathName);
     assert.ok(result.configFileName);
-
-    // The plugin is loaded async, so we need to wait for it to be loaded
-    await loaded;
 
     const info = projectService.getScriptInfo(pathName);
     const project = info?.containingProjects[0];
