@@ -201,6 +201,7 @@ packages/labs/cli/test-gen/
 packages/labs/cli-localize/lib/
 packages/labs/cli-localize/node_modules/
 
+packages/labs/cli-mcp-server/lib/
 packages/labs/compiler/**/test_files
 packages/labs/compiler/development/
 packages/labs/compiler/node_modules/
@@ -389,10 +390,7 @@ packages/labs/tsserver-plugin/example/node_modules/
 packages/labs/tsserver-plugin/lib/
 packages/labs/tsserver-plugin/test/
 
-packages/labs/tsserver-plugin/**/index.js
-packages/labs/tsserver-plugin/**/index.js.map
-packages/labs/tsserver-plugin/**/index.d.ts
-packages/labs/tsserver-plugin/**/index.d.ts.map
+packages/labs/tsserver-plugin/index.*
 
 packages/labs/virtualizer/polyfills/resize-observer-polyfill/ResizeObserver.js
 packages/labs/virtualizer/src/polyfills/resize-observer-polyfill/ResizeObserver.js

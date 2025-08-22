@@ -11,8 +11,8 @@
     "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/tsserver-plugin"
   },
-  "main": "index.js",
-  "type": "commonjs",
+  "main": "index.cjs",
+  "type": "module",
   "scripts": {
     "build": "wireit",
     "test": "wireit"
@@ -21,7 +21,7 @@
     "build": {
       "command": "tsc --build --pretty",
       "files": [
-        "src/**/*.ts",
+        "src/**/*.{ts,cts}",
         "tsconfig.json"
       ],
       "output": [
@@ -30,14 +30,19 @@
         "index.{js,js.map,d.ts,d.ts.map}",
         "tsconfig.tsbuildinfo"
       ],
+      "dependencies": [
+        "../analyzer:build"
+      ],
       "clean": "if-file-deleted"
     },
     "test": {
-      "command": "node --enable-sourcemaps --test-reporter=spec --test test/**/*_test.js",
+      "command": "node --enable-source-maps --test-reporter=spec --test test/**/*_test.js",
       "dependencies": [
         "build"
       ],
-      "files": [],
+      "files": [
+        "test-files/**/*"
+      ],
       "output": []
     }
   },
@@ -49,6 +54,11 @@
     ".": "./index.js"
   },
   "devDependencies": {
+    "@types/node": "^22.7.7"
+  },
+  "dependencies": {
+    "@lit-labs/analyzer": "^0.13.1",
+    "@parse5/tools": "^0.5.0",
     "typescript": "~5.9.0"
   }
 }

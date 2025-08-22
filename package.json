@@ -68,6 +68,7 @@
         "./packages/labs/gen-wrapper-angular:build",
         "./packages/labs/gen-wrapper-react:build",
         "./packages/labs/gen-wrapper-vue:build",
+        "./packages/labs/cli-mcp-server:build",
         "./packages/labs/motion:build",
         "./packages/labs/nextjs:build",
         "./packages/labs/observers:build",
@@ -263,6 +264,7 @@
     "@babel/eslint-parser": "^7.17.0",
     "@changesets/cli": "^2.24.4",
     "@changesets/get-github-info": "^0.5.0",
+    "@lit-labs/eleventy-plugin-lit": "^1.0.5",
     "@rollup/plugin-commonjs": "^26.0.1",
     "@rollup/plugin-inject": "^5.0.5",
     "@rollup/plugin-node-resolve": "^15.2.3",
@@ -295,6 +297,7 @@
     "rollup-plugin-sourcemaps": "^0.6.3",
     "rollup-plugin-summary": "^2.0.1",
     "rollup-plugin-terser": "^7.0.2",
+    "strip-indent": "^4.0.0",
     "typescript": "~5.9.0",
     "uvu": "^0.5.6",
     "wireit": "^0.14.12"

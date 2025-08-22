@@ -74,6 +74,7 @@
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
+        "../../lit-html:build:ts:types",
         "../../reactive-element:build:ts:types"
       ],
       "clean": "if-file-deleted",

@@ -97,11 +97,9 @@
 ### Minor Changes
 
 - [#3529](https://github.com/lit/lit/pull/3529) [`389d0c55`](https://github.com/lit/lit/commit/389d0c558d78982d8265588d1935ede91f46f3a0) - Added CLI improvements:
-
   - Add support for --exclude options (important for excluding test files from e.g. manifest or wrapper generation)
 
   Added more analysis support and manifest emit:
-
   - TS enum type variables
   - description, summary, and deprecated for all models
   - module-level description & summary

@@ -3,7 +3,10 @@
   "private": true,
   "type": "module",
   "devDependencies": {
-    "@lit-labs/tsserver-plugin": "file:..",
+    "@lit-labs/tsserver-plugin": "file:.."
+  },
+  "dependencies": {
+    "lit": "^3.2.1",
     "typescript": "~5.9.0"
   }
 }
