@@ -7,15 +7,16 @@
     "chai": "^5.1.0",
     "@types/chai": "^4.0.1",
     "@types/mocha": "^9.0.0",
-    "vue": "^3.2.25",
+    "vue": "^3.5.19",
     "@lit-labs/vue-utils": "../../vue-utils",
     "@lit-internal/test-element-a": "file:../../test-projects/test-element-a/lit-internal-test-element-a-1.0.1.tgz",
     "@lit-internal/test-element-a-vue": "file:../gen-output/test-element-a-vue/lit-internal-test-element-a-vue-1.0.1.tgz"
   },
   "devDependencies": {
-    "@vitejs/plugin-vue": "^2.3.1",
+    "@vitejs/plugin-vue": "^6.0.1",
+    "@rollup/plugin-replace": "^5.0.7",
     "typescript": "~5.9.0",
-    "vite": "^2.9.2",
+    "vite": "^7.1.3",
     "vue-tsc": "^2.0.22"
   },
   "scripts": {
@@ -44,6 +45,7 @@
       "files": [
         "src/**/*.ts",
         "src/**/*.vue",
+        "vite.config.ts",
         "tsconfig.json"
       ],
       "command": "vue-tsc --noEmit && vite build",

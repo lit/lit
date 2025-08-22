@@ -10,13 +10,14 @@ import {
   Directive,
   ChildPart,
   DirectiveParameters,
+  DirectiveResult,
 } from '../directive.js';
 import {setCommittedValue} from '../directive-helpers.js';
 
-class Keyed extends Directive {
+class Keyed<T> extends Directive {
   key: unknown = nothing;
 
-  render(k: unknown, v: unknown) {
+  render(k: unknown, v: T): T {
     this.key = k;
     return v;
   }
@@ -33,6 +34,10 @@ class Keyed extends Directive {
   }
 }
 
+interface KeyedFunc {
+  <V>(k: unknown, v: V): DirectiveResult<typeof Keyed<V>>;
+}
+
 /**
  * Associates a renderable value with a unique key. When the key changes, the
  * previous DOM is removed and disposed before rendering the next value, even
@@ -42,7 +47,7 @@ class Keyed extends Directive {
  * with code that expects new data to generate new HTML elements, such as some
  * animation techniques.
  */
-export const keyed = directive(Keyed);
+export const keyed: KeyedFunc = directive(Keyed);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
