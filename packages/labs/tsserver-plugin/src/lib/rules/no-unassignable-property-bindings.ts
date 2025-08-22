@@ -96,13 +96,13 @@ export const noUnassignablePropertyBindings = {
               continue;
             }
 
-            const propertyType = checker.getTypeAtLocation(
+            const leftHandSide = checker.getTypeAtLocation(
               propertySymbol.valueDeclaration
             );
 
             const isAssignable = checker.isTypeAssignableTo(
               rightHandSideType,
-              propertyType
+              leftHandSide
             );
 
             if (isAssignable) {
@@ -124,7 +124,7 @@ export const noUnassignablePropertyBindings = {
               file: sourceFile,
               start,
               length,
-              messageText: '(placeholder) Property binding',
+              messageText: `${checker.typeToString(rightHandSideType)} is not assignable to ${checker.typeToString(leftHandSide)}`,
             });
           }
         },
