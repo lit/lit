@@ -2,6 +2,7 @@ import assert from 'node:assert';
 import * as path from 'node:path';
 import {describe as suite, test} from 'node:test';
 import {createTestProjectService} from '../project-service.js';
+import {LitDiagnosticCode} from '../../lib/diagnostic-codes.js';
 
 suite('no-binding-like-attribute-names', () => {
   test('Reports on property-binding-like attribute names', () => {
@@ -19,13 +20,15 @@ suite('no-binding-like-attribute-names', () => {
 
     const languageService = project.getLanguageService();
     const diagnostics = languageService.getSemanticDiagnostics(info.path);
-
     assert.equal(diagnostics.length, 1);
     assert.equal(
       diagnostics[0].messageText,
       'Attribute name starts with a binding prefix (.)'
     );
-    assert.equal(diagnostics[0].code, 6301);
+    assert.equal(
+      diagnostics[0].code,
+      LitDiagnosticCode.BindingLikeAttributeName
+    );
     assert.equal(diagnostics[0].source, '.foo="bar"');
   });
 });

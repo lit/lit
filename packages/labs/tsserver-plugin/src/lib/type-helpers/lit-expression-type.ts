@@ -32,7 +32,10 @@ export function getLitExpressionType(
       typescript,
       checker
     );
-    return directiveResultType ?? type;
+    if (directiveResultType) {
+      return getLitExpressionType(directiveResultType, typescript, program);
+    }
+    return type;
   }
   // If our checker can't create new unions, we can't do anything more.
   if (checker.getUnionType == null) {
@@ -52,10 +55,25 @@ export function getLitExpressionType(
     if (!hasSpecial) {
       return type;
     }
-    // Apply the same transform to each subtype.
-    const newSubtypes = type.types.map((subtype) =>
-      getLitExpressionType(subtype, typescript, program)
-    );
+    // Some subtlety in unions. If any of the types of a union are a sentinel
+    // value, we want to exclude them from the resulting union. But we want
+    // to transform directives in place.
+    const newSubtypes = [];
+    for (const subtype of type.types) {
+      const specialType = isSpecialValue(subtype, typescript);
+      if (specialType === SpecialValuesEnum.SentinelSymbol) {
+        continue;
+      }
+      const newSubtype = getLitExpressionType(subtype, typescript, program);
+      newSubtypes.push(newSubtype);
+    }
+    if (newSubtypes.length === 0) {
+      // If we filtered out all types, we return any.
+      return checker.getAnyType();
+    }
+    if (newSubtypes.length === 1) {
+      return newSubtypes[0];
+    }
     return checker.getUnionType(newSubtypes);
   }
   return type;
