@@ -65,32 +65,65 @@ function testDefinitionAtPosition(
 }
 
 suite('lit-language-service', () => {
-  test('getDefinitionAtPosition via analyzer', async () => {
-    const pathName = path.resolve(
-      'test-files/basic-templates/src/custom-element.ts'
-    );
-    await testDefinitionAtPosition(
-      pathName,
-      'x-foo',
-      `@customElement('x-foo')
+  suite('getDefinitionAtPosition', () => {
+    test('getDefinitionAtPosition via analyzer', async () => {
+      const pathName = path.resolve(
+        'test-files/basic-templates/src/custom-element.ts'
+      );
+      await testDefinitionAtPosition(
+        pathName,
+        'x-foo',
+        `@customElement('x-foo')
 export class XFoo extends LitElement {
   render() {
     return html\`<slot></slot>\`;
   }
 }`
-    );
-  });
+      );
+    });
 
-  test('getDefinitionAtPosition via HTMLElementTagNameMap', async () => {
-    const pathName = path.resolve(
-      'test-files/basic-templates/src/custom-element.ts'
-    );
-    await testDefinitionAtPosition(
-      pathName,
-      'external-element',
-      `declare class ExternalElement extends LitElement {
+    test('getDefinitionAtPosition via HTMLElementTagNameMap', async () => {
+      const pathName = path.resolve(
+        'test-files/basic-templates/src/custom-element.ts'
+      );
+      await testDefinitionAtPosition(
+        pathName,
+        'external-element',
+        `declare class ExternalElement extends LitElement {
   value: number;
 }`
-    );
+      );
+    });
+  });
+
+  suite('getQuickInfoAtPosition', () => {
+    test('getQuickInfoAtPosition via analyzer', async () => {
+      const pathName = path.resolve(
+        'test-files/basic-templates/src/custom-element.ts'
+      );
+      const {languageService, program, testSourceFile} =
+        setupLanguageService(pathName);
+
+      const templates = getLitTemplateExpressions(
+        testSourceFile,
+        ts,
+        program.getTypeChecker()
+      );
+      const standaloneTemplate = templates[1];
+      const tagNamePosition = standaloneTemplate.getFullText().indexOf('x-foo');
+      const position = standaloneTemplate.getFullStart() + tagNamePosition + 1;
+      const infos = languageService.getQuickInfoAtPosition(pathName, position);
+      assert.deepEqual(infos, {
+        kind: 'label',
+        textSpan: {start: 415, length: 7},
+        kindModifiers: '',
+        displayParts: [
+          {
+            kind: 'text',
+            text: `Lit Element <x-foo>:\nA test element.\n\nIt's a great element.`,
+          },
+        ],
+      });
+    });
   });
 });
