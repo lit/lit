@@ -165,6 +165,81 @@ export const makeLitLanguageService = (
       return super.getDefinitionAndBoundSpan(fileName, position);
     }
 
+    override getQuickInfoAtPosition(
+      fileName: string,
+      position: number
+    ): ts.QuickInfo | undefined {
+      const program = this.getProgram()!;
+      const checker = program.getTypeChecker();
+      const sourceFile = program.getSourceFile(fileName)!;
+
+      const tsNode = this.#findNodeAtPosition(sourceFile!, position);
+      if (tsNode !== undefined && typescript.isTemplateLiteral(tsNode)) {
+        if (
+          isLitHtmlTaggedTemplateExpression(tsNode.parent, typescript, checker)
+        ) {
+          const litTemplate = parseLitTemplate(
+            tsNode.parent,
+            typescript,
+            checker
+          );
+
+          // Get the Lit template node at this position
+          const templatePosition = tsNode.getFullStart();
+          let quickInfo: ts.QuickInfo | undefined;
+
+          traverse(litTemplate, {
+            element: (element: Element) => {
+              const {startTag} = element.sourceCodeLocation!;
+              if (
+                startTag !== undefined &&
+                startTag.startOffset + templatePosition < position &&
+                startTag.endOffset + templatePosition > position
+              ) {
+                const definition = this.#getElementDefinition(element.tagName);
+                // TODO(kschaaf): This doesn't seem to work, but would be better to be
+                // able to super to the original language service's quickInfo for the
+                // class declaration; for now make a new quick info using the docs found
+                // in the analyzer.
+                // const definitionSourceFile =
+                //   definition?.node.getSourceFile().fileName;
+                // const definitionPos = definition?.node.getFullStart() ?? 0;
+                // if (definitionSourceFile !== undefined) {
+                //   quickInfo = super.getQuickInfoAtPosition(
+                //     definitionSourceFile,
+                //     definitionPos
+                //   );
+                // }
+                if (definition !== undefined) {
+                  quickInfo = {
+                    kind: typescript.ScriptElementKind.label,
+                    textSpan: {
+                      start: templatePosition + startTag.startOffset,
+                      length: startTag.endOffset - startTag.startOffset,
+                    },
+                    kindModifiers: '',
+                    displayParts: [
+                      {
+                        kind: 'text',
+                        // TODO: This may get formatted weird, haven't figured out
+                        // the right fields of QuickInfo to use.
+                        text: `Lit Element <${definition.tagname}>${definition.description ? ':\n' + definition.description : ''}`,
+                      },
+                    ],
+                  };
+                }
+              }
+            },
+          });
+
+          if (quickInfo) {
+            return quickInfo;
+          }
+        }
+      }
+      return super.getQuickInfoAtPosition(fileName, position);
+    }
+
     /**
      * Find the TypeScript AST node at the given position using depth-first traversal.
      */
