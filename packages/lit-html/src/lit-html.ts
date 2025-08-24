@@ -356,7 +356,7 @@ const markerMatch = '?' + marker;
 const nodeMarker = `<${markerMatch}>`;
 
 const d =
-  NODE_MODE && global.document === undefined
+  NODE_MODE && typeof global.document?.createTreeWalker !== 'function'
     ? ({
         createTreeWalker() {
           return {};
