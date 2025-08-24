@@ -20,6 +20,7 @@ import type {
   ReactiveController,
   ReactiveControllerHost,
 } from './reactive-controller.js';
+import type {RenderRootNode} from 'lit-html';
 
 // In the Node build, this import will be injected by Rollup:
 // import {HTMLElement, customElements} from '@lit-labs/ssr-dom-shim';
@@ -966,7 +967,7 @@ export abstract class ReactiveElement
    * to an open shadowRoot.
    * @category rendering
    */
-  readonly renderRoot!: HTMLElement | DocumentFragment;
+  readonly renderRoot!: RenderRootNode;
 
   /**
    * Returns the property name for the given attribute `name`.
@@ -1116,7 +1117,7 @@ export abstract class ReactiveElement
    * @return Returns a node into which to render.
    * @category rendering
    */
-  protected createRenderRoot(): HTMLElement | DocumentFragment {
+  protected createRenderRoot(): RenderRootNode {
     const renderRoot =
       this.shadowRoot ??
       this.attachShadow(
