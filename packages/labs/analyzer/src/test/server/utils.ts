@@ -11,7 +11,7 @@ import {AbsolutePath, Analyzer, Module} from '../../index.js';
 import {fileURLToPath} from 'url';
 import {createPackageAnalyzer} from '../../package-analyzer.js';
 
-type Language = 'ts' | 'js';
+export type Language = 'ts' | 'js';
 
 export const languages: Language[] = ['ts', 'js'];
 
@@ -247,6 +247,18 @@ export const setupAnalyzerForNodeTest = (lang: Language, pkg: string) => {
     analyzer,
     typescript: analyzer.typescript,
     getModule,
+  };
+};
+
+export const setupAnalyzerForNodeTestWithModule = (
+  lang: Language,
+  pkg: string,
+  module: string
+) => {
+  const result = setupAnalyzerForNodeTest(lang, pkg);
+  return {
+    ...result,
+    module: result.getModule(module),
   };
 };
 
