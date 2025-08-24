@@ -1,0 +1,1 @@
+These JSON files are vendored in from https://github.com/styled-components/vscode-styled-components/blob/fe0107ead786d36411bc7609eb3cc73a76e43e60/syntaxes and are licensed under the license in ./LICENSE

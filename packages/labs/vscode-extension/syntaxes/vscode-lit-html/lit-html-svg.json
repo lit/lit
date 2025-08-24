@@ -1,0 +1,48 @@
+{
+  "fileTypes": [],
+  "injectionSelector": "L:source.js -comment -(string -meta.embedded), L:source.jsx -comment -(string -meta.embedded),  L:source.js.jsx -comment -(string -meta.embedded), L:source.ts -comment -(string -meta.embedded), L:source.tsx -comment -(string -meta.embedded)",
+  "injections": {
+    "L:source": {
+      "patterns": [
+        {
+          "match": "<",
+          "name": "invalid.illegal.bad-angle-bracket.html"
+        }
+      ]
+    }
+  },
+  "patterns": [
+    {
+      "name": "string.js.taggedTemplate.svg",
+      "contentName": "meta.embedded.block.svg",
+      "begin": "(?x)(\\b(?:\\w+\\.)*(?:svg)\\s*)(`)",
+      "beginCaptures": {
+        "1": {
+          "name": "entity.name.function.tagged-template.js"
+        },
+        "2": {
+          "name": "punctuation.definition.string.template.begin.js"
+        }
+      },
+
+      "end": "(`)",
+      "endCaptures": {
+        "0": {
+          "name": "string.js"
+        },
+        "1": {
+          "name": "punctuation.definition.string.template.end.js"
+        }
+      },
+      "patterns": [
+        {
+          "include": "source.ts#template-substitution-element"
+        },
+        {
+          "include": "text.xml"
+        }
+      ]
+    }
+  ],
+  "scopeName": "inline.lit-html-svg"
+}
