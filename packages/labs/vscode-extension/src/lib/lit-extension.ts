@@ -23,6 +23,28 @@ export class LitExtension {
 
     const {context} = this;
 
+    // Begin: Configure the extension
+    // We don't have any custom settings yet, but here's where we would add
+    // them. This pattern is copied from Rune's vscode-lit-plugin. Not sure if
+    // it's documented anywhere else.
+    const extension = vscode.extensions.getExtension(
+      'vscode.typescript-language-features'
+    );
+    if (extension === undefined) {
+      logChannel.appendLine(
+        'Could not find vscode.typescript-language-features'
+      );
+      return;
+    }
+
+    await extension.activate();
+    if (extension.exports.getAPI) {
+      logChannel.appendLine('Configuring @lit-labs/tsserver-plugin');
+      const api = extension.exports.getAPI(0);
+      api.configurePlugin('@lit-labs/tsserver-plugin', {});
+    }
+    // End: Configure the extension
+
     // lit.hello command
     const disposable = vscode.commands.registerCommand('lit.hello', () => {
       logChannel.appendLine('lit.hello');
