@@ -56,8 +56,8 @@
   <target>described 0</target>
 </trans-unit>
 <trans-unit id="h02c268d9b1fcb031">
-  <source>&lt;Hello<ph id="0">&lt;b></ph>&lt;World &amp; Friends><ph id="1">&lt;/b></ph>!></source>
-  <target>&lt;Hola<ph id="0">&lt;b></ph>&lt;Mundo &amp; Amigos><ph id="1">&lt;/b></ph>!></target>
+  <source>&amp;lt;Hello<ph id="0">&lt;b></ph>&amp;lt;World &amp;amp; Friends&amp;gt;<ph id="1">&lt;/b></ph>!&amp;gt;</source>
+  <target>&amp;lt;Hola<ph id="0">&lt;b></ph>&amp;lt;Mundo &amp;amp; Amigos&amp;gt;<ph id="1">&lt;/b></ph>!&amp;gt;</target>
 </trans-unit>
 <trans-unit id="s372f95c2b25986c8">
   <source>Different <ph id="0">${user}</ph></source>

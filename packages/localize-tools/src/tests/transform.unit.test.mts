@@ -347,7 +347,7 @@ test('msg(string(msg(string))) translated', async () => {
 test('msg(string(<b>msg(string)</b>)) translated', async () => {
   await checkTransform(
     'msg(str`Hello <b>${msg("World", {id: "bar"})}</b>!`, {id: "foo"});',
-    '`Hola &lt;b&gt;Mundo&lt;/b&gt;!`;',
+    '`Hola <b>Mundo</b>!`;',
     {
       messages: [
         {
