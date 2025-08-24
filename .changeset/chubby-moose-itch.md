@@ -5,4 +5,4 @@
 '@lit/reactive-element': patch
 ---
 
-Handle mock document without createTreeWalker (#4855)
+In Node builds, handle the case where document exists, but document.createTreeWalker does't (#4855)
