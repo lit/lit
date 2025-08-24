@@ -11,6 +11,7 @@
  */
 
 import type {PropertyValues} from '@lit/reactive-element';
+import type {RenderRootNode} from 'lit-html';
 import {render, RenderOptions} from 'lit-html';
 import {hydrate} from './lib/hydrate-lit-html.js';
 
@@ -22,7 +23,7 @@ interface PatchableLitElement extends HTMLElement {
   new (...args: any[]): PatchableLitElement;
   enableUpdating(requestedUpdate?: boolean): void;
   createRenderRoot(): Element | ShadowRoot;
-  renderRoot: HTMLElement | DocumentFragment;
+  renderRoot: RenderRootNode;
   render(): unknown;
   renderOptions: RenderOptions;
   _$needsHydration: boolean;
