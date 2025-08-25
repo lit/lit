@@ -3,16 +3,16 @@ import {
   isLitHtmlTaggedTemplateExpression,
   parseLitTemplate,
 } from '@lit-labs/analyzer/lib/lit/template.js';
+import {type Element, traverse} from '@parse5/tools';
 import * as path from 'node:path';
 import type ts from 'typescript';
 import {Diagnostic, LanguageService} from 'typescript';
 import {noBindingLikeAttributeNames} from './rules/no-binding-like-attribute-names.js';
-import {type Element, traverse} from '@parse5/tools';
 
 const rules = [noBindingLikeAttributeNames];
 
 /**
- * Initialized a Lit language service onto the given language service instance,
+ * Initialize a Lit language service onto the given language service instance,
  * which is assumed to already extend another language service via its
  * prototype.
  *
@@ -21,21 +21,20 @@ const rules = [noBindingLikeAttributeNames];
  * as its prototype.
  */
 export const makeLitLanguageService = (
-  instance: LanguageService,
   info: ts.server.PluginCreateInfo,
   typescript: typeof ts
 ) => {
   /**
-   * This class returns the inner language service from the constructor so that
-   * it'll become the prototype of the instance, all of the original language
-   * service methods will be inherited, and let us use `this` and `super` to
-   * call the original language service methods.
+   * This class tricks TypeScript into thinking that we're extending a
+   * LanguageService class and makes LitLanguageService's prototype inherit from
+   * the innerLanguageService.
    */
-  const InnerLanguageService = class {
-    constructor() {
-      return instance;
-    }
-  } as new () => LanguageService;
+  const InnerLanguageService = function (this: LanguageService) {
+    return this as LanguageService;
+  } as unknown as {new (): LanguageService};
+  // Set up the prototype chain of our LitLanguageService instance to be:
+  // instance -> LitLanguageService.prototype -> innerLanguageService
+  InnerLanguageService.prototype = info.languageService;
 
   /**
    * A language service that provides diagnostics for Lit modules.
@@ -43,7 +42,7 @@ export const makeLitLanguageService = (
   class LitLanguageService extends InnerLanguageService {
     #analyzer: Analyzer;
 
-    constructor(_info: ts.server.PluginCreateInfo, typescript: typeof ts) {
+    constructor(typescript: typeof ts) {
       super();
       this.#analyzer = new Analyzer({
         typescript,
@@ -318,11 +317,5 @@ export const makeLitLanguageService = (
     }
   }
 
-  // Set up the prototype chain to be:
-  // instance -> InnerLanguageService.prototype -> instance.__proto__
-  const innerLanguageService = Object.getPrototypeOf(instance);
-  Object.setPrototypeOf(instance, LitLanguageService.prototype);
-  Object.setPrototypeOf(LitLanguageService.prototype, innerLanguageService);
-
-  new LitLanguageService(info, typescript);
+  return new LitLanguageService(typescript);
 };
