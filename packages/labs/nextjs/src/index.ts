@@ -34,7 +34,7 @@ export = (
 
         const {
           addDeclarativeShadowDomPolyfill = true,
-          webpackModuleRulesTest = /\/pages\/.*\.(?:j|t)sx?$|\/app\/.*\.(?:j|t)sx?$/,
+          webpackModuleRulesTest = /[\\/]pages[\\/].*\.(?:j|t)sx?$|[\\/]app[\\/].*\.(?:j|t)sx?$/,
           webpackModuleRulesExclude = [/next\/dist\//, /node_modules/],
         } = pluginOptions;
 
