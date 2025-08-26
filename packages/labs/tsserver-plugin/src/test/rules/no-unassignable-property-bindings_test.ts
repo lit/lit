@@ -33,11 +33,10 @@ suite('no-unassignable-property-bindings', () => {
     const diagnostics = languageService
       .getSemanticDiagnostics(info.path)
       .filter((d) => d.code === LitDiagnosticCode.UnknownProperty);
-    assert.equal(diagnostics.length, 1);
-    assert.equal(
-      diagnostics[0].messageText,
-      'Unknown property "unknown" on element <span>'
-    );
+    assertDiagnosticMessages(diagnostics, [
+      'Unknown property "unknown" on element <span>',
+      'Unknown property "unknownelprop" on element <unknownel>',
+    ]);
   });
 
   test('No diagnostics for assignable bindings', () => {

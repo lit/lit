@@ -6,5 +6,8 @@
 
 import {html} from 'lit';
 
-const value: string = 'hello';
-export const templateA = html` <span .unknown=${value}></span> `;
+export const templateA = html` <span .unknown=${'hello'}></span> `;
+
+export const unknownElementUnknownProp = html` <unknownel
+  .unknownelprop=${''}
+></unknownel>`;
