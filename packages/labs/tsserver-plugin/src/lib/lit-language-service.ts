@@ -9,8 +9,13 @@ import {Diagnostic, LanguageService} from 'typescript';
 import {noBindingLikeAttributeNames} from './rules/no-binding-like-attribute-names.js';
 import {noUnassignablePropertyBindings} from './rules/no-unassignable-property-bindings.js';
 import {type Element, traverse} from '@parse5/tools';
+import {noInvalidElementBindings} from './rules/no-invalid-element-bindings.js';
 
-const rules = [noBindingLikeAttributeNames, noUnassignablePropertyBindings];
+const rules = [
+  noBindingLikeAttributeNames,
+  noUnassignablePropertyBindings,
+  noInvalidElementBindings,
+];
 
 /**
  * Initialized a Lit language service onto the given language service instance,

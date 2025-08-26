@@ -139,15 +139,15 @@ function getRenderTypeFromDirectiveResult(
   return finalTypes[0];
 }
 
-const SpecialValuesEnum = {
+export const SpecialValuesEnum = {
   NormalType: 0 as const,
   SentinelSymbol: 1 as const,
   DirectiveResult: 2 as const,
 };
-type SpecialValuesEnum =
+export type SpecialValuesEnum =
   (typeof SpecialValuesEnum)[keyof typeof SpecialValuesEnum];
 
-function isSpecialValue(
+export function isSpecialValue(
   type: ts.Type,
   typescript: typeof ts
 ): SpecialValuesEnum {

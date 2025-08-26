@@ -7,4 +7,5 @@ export const LitDiagnosticCode = {
   BindingLikeAttributeName: 548870001,
   UnassignablePropertyBinding: 548870002,
   UnknownProperty: 548870003,
+  ElementBindingNotDirectiveResult: 548870004,
 };
