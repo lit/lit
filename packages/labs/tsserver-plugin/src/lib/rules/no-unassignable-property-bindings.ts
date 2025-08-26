@@ -104,8 +104,8 @@ export const noUnassignablePropertyBindings = {
               const location = element.sourceCodeLocation?.attrs?.[attr.name];
               const templateStart =
                 (typescript.isNoSubstitutionTemplateLiteral(tsNode.template)
-                  ? tsNode.template.getStart()
-                  : tsNode.template.head.getStart()) + 1; // +1 for backtick
+                  ? tsNode.template.getFullStart()
+                  : tsNode.template.head.getFullStart()) + 1; // +1 for backtick
               const start = templateStart + (location?.startOffset ?? 0);
               const end = templateStart + (location?.endOffset ?? 0);
               const length = end - start;
@@ -137,8 +137,8 @@ export const noUnassignablePropertyBindings = {
             const location = element.sourceCodeLocation?.attrs?.[name];
             const templateStart =
               (typescript.isNoSubstitutionTemplateLiteral(tsNode.template)
-                ? tsNode.template.getStart()
-                : tsNode.template.head.getStart()) + 1; // +1 for backtick
+                ? tsNode.template.getFullStart()
+                : tsNode.template.head.getFullStart()) + 1; // +1 for backtick
             const start = templateStart + (location?.startOffset ?? 0);
             const end = templateStart + (location?.endOffset ?? 0);
             const length = end - start;
