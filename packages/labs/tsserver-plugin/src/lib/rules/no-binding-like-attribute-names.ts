@@ -65,7 +65,6 @@ export const noBindingLikeAttributeNames = {
               diagnostics.push({
                 source,
                 category: typescript.DiagnosticCategory.Warning,
-                // random-ish number. How are we supposed to pick these?
                 code: LitDiagnosticCode.BindingLikeAttributeName,
                 file: sourceFile,
                 start,

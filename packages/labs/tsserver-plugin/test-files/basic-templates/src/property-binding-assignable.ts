@@ -32,3 +32,11 @@ const maybeStr = Math.random() > 0.5 ? 'hello' : undefined;
 export const useGenericDirective = html`<div
   .id=${genericDirective(maybeStr)}
 ></div>`;
+
+// Good assignment to unknown non-custom element.
+
+html` <unknownel .id=${'hello'}></unknownel> `;
+
+// Good assignment to unknown custom element.
+
+html` <unknown-el .id=${'hello'}></unknown-el> `;

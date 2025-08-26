@@ -62,7 +62,7 @@ export const noUnassignablePropertyBindings = {
             } else {
               if (part.expressions.length !== 1) {
                 throw new Error(
-                  'InternalError: Expected exactly one expression'
+                  `InternalError: Expected exactly one expression but got ${part.expressions.length} in a property binding to ${attr.name} on a <${element.tagName}>`
                 );
               }
               const rhsExpression: ts.Expression = part.expressions[0];
@@ -73,12 +73,27 @@ export const noUnassignablePropertyBindings = {
               );
             }
             // get the type of the left hand side
-            const elementType = litLanguageService.getElementClassType(
+            let elementType = litLanguageService.getElementClassType(
               element.tagName
             );
             if (elementType === undefined) {
-              // Unknown element. Other rules will warn in this case.
-              continue;
+              // Unknown element. Type check as an HTMLElement, which is
+              // their runtime type.
+              const htmlElementSymbol = checker.resolveName(
+                'HTMLElement',
+                undefined,
+                typescript.SymbolFlags.Interface,
+                false
+              );
+              if (htmlElementSymbol === undefined) {
+                // We don't have lib.dom.d.ts available, can't do much
+                // useful.
+                continue;
+              }
+              elementType = checker.getDeclaredTypeOfSymbol(htmlElementSymbol);
+              if (elementType === undefined) {
+                continue;
+              }
             }
 
             const propertySymbol = elementType.getProperty(part.name);

@@ -1,8 +1,10 @@
 /**
  * Central definition of diagnostic codes.
+ *
+ * The prefix 54887 maps to lit-ts on a phone keypad.
  */
 export const LitDiagnosticCode = {
-  BindingLikeAttributeName: 6301,
-  UnassignablePropertyBinding: 6302,
-  UnknownProperty: 6303,
+  BindingLikeAttributeName: 548870001,
+  UnassignablePropertyBinding: 548870002,
+  UnknownProperty: 548870003,
 };

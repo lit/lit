@@ -85,6 +85,8 @@ suite('no-unassignable-property-bindings', () => {
         `'string' is not assignable to 'FailureType3'`,
         "'string' is not assignable to 'FailureType4'",
         "'string' is not assignable to 'FailureType5'",
+        "'FailureType6' is not assignable to 'string'",
+        "'FailureType7' is not assignable to 'string'",
       ].sort()
     );
   });

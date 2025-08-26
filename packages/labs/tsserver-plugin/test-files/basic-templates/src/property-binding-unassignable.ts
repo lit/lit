@@ -36,6 +36,12 @@ class FailureType4 {
 class FailureType5 {
   failureType5!: never;
 }
+class FailureType6 {
+  failureType6!: never;
+}
+class FailureType7 {
+  failureType7!: never;
+}
 
 class SimpleElement extends HTMLElement {
   failureType1: FailureType1;
@@ -70,3 +76,13 @@ export const simpleDirectiveBad = html`<simple-element
 export const genericDirectiveBad = html`<simple-element
   .failureType5=${genericDirective('ok')}
 ></simple-element>`;
+
+// Type error assigning to a known field on an unknown element
+export const unknownElementBad = html`
+  <unknownel .id=${new FailureType6()}></unknownel>
+`;
+
+// Type error assigning to a known field on an unknown custom element.
+export const unknownCustomElementBad = html`
+  <unknown-el .id=${new FailureType7()}></unknown-el>
+`;
