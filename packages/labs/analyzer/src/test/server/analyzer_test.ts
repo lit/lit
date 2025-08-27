@@ -11,13 +11,13 @@ import {
   getOutputFilename,
   getSourceFilename,
   languages,
-  setupAnalyzerForNodeTest,
+  setupAnalyzerForTest,
 } from './utils.js';
 import {DiagnosticCode} from '../../lib/diagnostic-code.js';
 
 for (const lang of languages) {
   suite(`Basic Analyzer tests (${lang})`, () => {
-    const {analyzer, packagePath} = setupAnalyzerForNodeTest(
+    const {analyzer, packagePath} = setupAnalyzerForTest(
       lang,
       'basic-elements'
     );

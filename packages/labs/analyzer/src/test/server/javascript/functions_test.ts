@@ -6,11 +6,11 @@
 
 import * as assert from 'node:assert';
 import {describe as suite, test} from 'node:test';
-import {languages, setupAnalyzerForNodeTestWithModule} from '../utils.js';
+import {languages, setupAnalyzerForTestWithModule} from '../utils.js';
 
 for (const lang of languages) {
   suite(`Function tests (${lang})`, () => {
-    const {module} = setupAnalyzerForNodeTestWithModule(
+    const {module} = setupAnalyzerForTestWithModule(
       lang,
       'functions',
       'functions'

@@ -6,7 +6,7 @@
 
 import * as assert from 'node:assert';
 import {describe as suite, test} from 'node:test';
-import {languages, setupAnalyzerForNodeTest} from '../utils.js';
+import {languages, setupAnalyzerForTest} from '../utils.js';
 import {
   ClassDeclaration,
   LitElementDeclaration,
@@ -16,7 +16,7 @@ import {DiagnosticCode} from '../../../lib/diagnostic-code.js';
 
 for (const lang of languages) {
   suite(`Mixin tests (${lang})`, () => {
-    const {getModule, analyzer} = setupAnalyzerForNodeTest(lang, 'mixins');
+    const {getModule, analyzer} = setupAnalyzerForTest(lang, 'mixins');
 
     test('vanilla HTMLElement mixin declaration', () => {
       const decl = getModule('mixins-vanilla').getDeclaration('MixinA');

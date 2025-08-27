@@ -204,7 +204,7 @@ export class InMemoryAnalyzer extends Analyzer {
   }
 }
 
-export const setupAnalyzerForNodeTest = (lang: Language, pkg: string) => {
+export const setupAnalyzerForTest = (lang: Language, pkg: string) => {
   const packagePath = fileURLToPath(
     new URL(`../../test-files/${lang}/${pkg}`, import.meta.url).href
   ) as AbsolutePath;
@@ -228,12 +228,12 @@ export const setupAnalyzerForNodeTest = (lang: Language, pkg: string) => {
   };
 };
 
-export const setupAnalyzerForNodeTestWithModule = (
+export const setupAnalyzerForTestWithModule = (
   lang: Language,
   pkg: string,
   module: string
 ) => {
-  const result = setupAnalyzerForNodeTest(lang, pkg);
+  const result = setupAnalyzerForTest(lang, pkg);
   return {
     ...result,
     module: result.getModule(module),

@@ -7,11 +7,11 @@
 import * as assert from 'node:assert';
 import {describe as suite, test} from 'node:test';
 import {LitElementDeclaration} from '../../../lib/model.js';
-import {languages, setupAnalyzerForNodeTestWithModule} from '../utils.js';
+import {languages, setupAnalyzerForTestWithModule} from '../utils.js';
 
 for (const lang of languages) {
   suite(`LitElement event tests (${lang})`, () => {
-    const {module} = setupAnalyzerForNodeTestWithModule(
+    const {module} = setupAnalyzerForTestWithModule(
       lang,
       'events',
       'element-a'

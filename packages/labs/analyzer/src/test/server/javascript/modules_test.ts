@@ -13,13 +13,13 @@ import {
   getSourceFilename,
   InMemoryAnalyzer,
   languages,
-  setupAnalyzerForNodeTest,
-  setupAnalyzerForNodeTestWithModule,
+  setupAnalyzerForTest,
+  setupAnalyzerForTestWithModule,
 } from '../utils.js';
 
 for (const lang of languages) {
   suite(`Module tests (${lang})`, () => {
-    const {module} = setupAnalyzerForNodeTestWithModule(
+    const {module} = setupAnalyzerForTestWithModule(
       lang,
       'modules',
       'module-a'
@@ -197,7 +197,7 @@ for (const lang of languages) {
   });
 
   suite(`Circular module cache (${lang})`, () => {
-    const {analyzer} = setupAnalyzerForNodeTest(lang, 'circular-modules');
+    const {analyzer} = setupAnalyzerForTest(lang, 'circular-modules');
 
     test('getModule processes circular re-exports', async () => {
       const modules = analyzer.getPackage().modules;

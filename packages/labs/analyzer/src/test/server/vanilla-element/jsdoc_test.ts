@@ -6,11 +6,11 @@
 
 import * as assert from 'node:assert';
 import {describe as suite, test} from 'node:test';
-import {languages, setupAnalyzerForNodeTest} from '../utils.js';
+import {languages, setupAnalyzerForTest} from '../utils.js';
 
 for (const lang of languages) {
   suite(`Vanilla element JSDoc tests (${lang})`, () => {
-    const {getModule} = setupAnalyzerForNodeTest(lang, 'vanilla-jsdoc');
+    const {getModule} = setupAnalyzerForTest(lang, 'vanilla-jsdoc');
 
     // slots
 

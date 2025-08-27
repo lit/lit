@@ -6,14 +6,14 @@
 
 import * as assert from 'node:assert';
 import {describe as suite, test} from 'node:test';
-import {languages, setupAnalyzerForNodeTestWithModule} from '../utils.js';
+import {languages, setupAnalyzerForTestWithModule} from '../utils.js';
 
 import {LitElementDeclaration} from '../../../index.js';
 import {DiagnosticCode} from '../../../lib/diagnostic-code.js';
 
 for (const lang of languages) {
   suite(`LitElement property tests (${lang})`, () => {
-    const {analyzer, module} = setupAnalyzerForNodeTestWithModule(
+    const {analyzer, module} = setupAnalyzerForTestWithModule(
       lang,
       'properties',
       'element-a'

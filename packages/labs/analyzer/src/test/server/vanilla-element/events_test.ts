@@ -6,13 +6,13 @@
 
 import * as assert from 'node:assert';
 import {describe as suite, test} from 'node:test';
-import {languages, setupAnalyzerForNodeTestWithModule} from '../utils.js';
+import {languages, setupAnalyzerForTestWithModule} from '../utils.js';
 
 import {CustomElementDeclaration} from '../../../index.js';
 
 for (const lang of languages) {
   suite(`Vanilla element event tests (${lang})`, () => {
-    const {module} = setupAnalyzerForNodeTestWithModule(
+    const {module} = setupAnalyzerForTestWithModule(
       lang,
       'vanilla-events',
       'element-a'

@@ -8,7 +8,7 @@ import * as assert from 'node:assert';
 import {describe as suite, test} from 'node:test';
 import {Module, getImportsStringForReferences} from '../../index.js';
 import {Reference} from '../../lib/model.js';
-import {languages, setupAnalyzerForNodeTestWithModule} from './utils.js';
+import {languages, setupAnalyzerForTestWithModule} from './utils.js';
 
 for (const lang of languages) {
   suite(`Types tests (${lang})`, () => {
@@ -21,11 +21,7 @@ for (const lang of languages) {
       return type;
     };
 
-    const {module} = setupAnalyzerForNodeTestWithModule(
-      lang,
-      'types',
-      'module'
-    );
+    const {module} = setupAnalyzerForTestWithModule(lang, 'types', 'module');
 
     test('testString', () => {
       const type = typeForVariable(module, 'testString');

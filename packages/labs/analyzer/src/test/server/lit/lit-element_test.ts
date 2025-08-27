@@ -6,7 +6,7 @@
 
 import * as assert from 'node:assert';
 import {describe as suite, test} from 'node:test';
-import {languages, setupAnalyzerForNodeTest} from '../utils.js';
+import {languages, setupAnalyzerForTest} from '../utils.js';
 import {VariableDeclaration} from '../../../package-analyzer.js';
 
 // Get actual constructor to test internal ability to assert the type
@@ -15,7 +15,7 @@ import {ClassDeclaration, LitElementDeclaration} from '../../../lib/model.js';
 
 // Regression test suite for errors that can happen with NodeNext resolution
 suite('LitElement regression tests', () => {
-  const {getModule} = setupAnalyzerForNodeTest('ts', 'node-next-resolution');
+  const {getModule} = setupAnalyzerForTest('ts', 'node-next-resolution');
 
   test('Analyzer finds LitElement declarations with NodeNext resolution', () => {
     const elementAModule = getModule('element-a');
@@ -36,7 +36,7 @@ suite('LitElement regression tests', () => {
 
 for (const lang of languages) {
   suite(`LitElement tests (${lang})`, () => {
-    const {getModule} = setupAnalyzerForNodeTest(lang, 'basic-elements');
+    const {getModule} = setupAnalyzerForTest(lang, 'basic-elements');
 
     test('isLitElementDeclaration returns false for non-LitElement', () => {
       const elementAModule = getModule('not-lit');

@@ -6,11 +6,11 @@
 
 import * as assert from 'node:assert';
 import {describe as suite, test} from 'node:test';
-import {languages, setupAnalyzerForNodeTest} from '../utils.js';
+import {languages, setupAnalyzerForTest} from '../utils.js';
 
 for (const lang of languages) {
   suite(`Class tests (${lang})`, () => {
-    const {getModule} = setupAnalyzerForNodeTest(lang, 'classes');
+    const {getModule} = setupAnalyzerForTest(lang, 'classes');
 
     // Class description, summary, deprecated
 
