@@ -10,6 +10,7 @@ import {noBindingLikeAttributeNames} from './rules/no-binding-like-attribute-nam
 import {noUnassignablePropertyBindings} from './rules/no-unassignable-property-bindings.js';
 import {type Element, traverse} from '@parse5/tools';
 import {noInvalidElementBindings} from './rules/no-invalid-element-bindings.js';
+import {getElementClassType} from './type-helpers/get-element-class.js';
 
 const rules = [
   noBindingLikeAttributeNames,
@@ -130,7 +131,11 @@ export const makeLitLanguageService = (
                     containerName: '',
                   };
                 } else {
-                  const elementType = this.getElementClassType(element.tagName);
+                  const elementType = getElementClassType(
+                    element.tagName,
+                    checker,
+                    typescript
+                  );
                   // Get the declaration from the element's type.
                   const classDeclaration =
                     elementType?.getSymbol()?.valueDeclaration;
@@ -279,37 +284,6 @@ export const makeLitLanguageService = (
           if (ce.tagname === tagname) {
             return ce;
           }
-        }
-      }
-      return undefined;
-    }
-
-    getElementClassType(tagname: string): ts.Type | undefined {
-      const checker = this.#analyzer.program.getTypeChecker();
-      // Use the type checker to get the symbol for the ambient/global
-      // HTMLElementTagNameMap type.
-      const tagNameMapSymbol = checker.resolveName(
-        'HTMLElementTagNameMap',
-        undefined,
-        typescript.SymbolFlags.Interface,
-        false
-      );
-
-      if (tagNameMapSymbol !== undefined) {
-        const tagNameMapType =
-          checker.getDeclaredTypeOfSymbol(tagNameMapSymbol);
-        const propertySymbol = checker.getPropertyOfType(
-          tagNameMapType,
-          tagname
-        );
-
-        if (propertySymbol?.valueDeclaration) {
-          // We found the property on HTMLElementTagNameMap, like `div: HTMLDivElement`.
-          // Now we need to get the type of that property.
-          return checker.getTypeOfSymbolAtLocation(
-            propertySymbol,
-            propertySymbol.valueDeclaration
-          );
         }
       }
       return undefined;

@@ -17,6 +17,10 @@ import type * as ts from 'typescript';
 import {LitDiagnosticCode} from '../diagnostic-codes.js';
 import type {LitLanguageService} from '../lit-language-service.js';
 import {getLitExpressionType} from '../type-helpers/lit-expression-type.js';
+import {
+  getElementClassType,
+  getHTMLElementType,
+} from '../type-helpers/get-element-class.js';
 
 /**
  * Type check property bindings. Gives an error if the property can't be found
@@ -73,25 +77,17 @@ export const noUnassignablePropertyBindings = {
               );
             }
             // get the type of the left hand side
-            let elementType = litLanguageService.getElementClassType(
-              element.tagName
+            let elementType = getElementClassType(
+              element.tagName,
+              checker,
+              typescript
             );
             if (elementType === undefined) {
               // Unknown element. Type check as an HTMLElement, which is
               // their runtime type.
-              const htmlElementSymbol = checker.resolveName(
-                'HTMLElement',
-                undefined,
-                typescript.SymbolFlags.Interface,
-                false
-              );
-              if (htmlElementSymbol === undefined) {
-                // We don't have lib.dom.d.ts available, can't do much
-                // useful.
-                continue;
-              }
-              elementType = checker.getDeclaredTypeOfSymbol(htmlElementSymbol);
+              elementType = getHTMLElementType(checker, typescript);
               if (elementType === undefined) {
+                // Probably no lib.dom.d.ts in this program.
                 continue;
               }
             }
