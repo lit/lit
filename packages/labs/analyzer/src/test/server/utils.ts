@@ -4,14 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as path from 'path';
 import * as fs from 'fs';
+import * as path from 'path';
 import ts from 'typescript';
-import {AbsolutePath, Analyzer, Module} from '../../index.js';
 import {fileURLToPath} from 'url';
+import {AbsolutePath, Analyzer} from '../../index.js';
 import {createPackageAnalyzer} from '../../package-analyzer.js';
 
-type Language = 'ts' | 'js';
+export type Language = 'ts' | 'js';
 
 export const languages: Language[] = ['ts', 'js'];
 
@@ -204,29 +204,7 @@ export class InMemoryAnalyzer extends Analyzer {
   }
 }
 
-export interface AnalyzerTestContext {
-  analyzer: Analyzer;
-  typescript: typeof ts;
-  packagePath: AbsolutePath;
-  getModule: (name: string) => Module;
-}
-
-export const setupAnalyzerForTest = (
-  ctx: AnalyzerTestContext,
-  lang: Language,
-  pkg: string
-) => {
-  try {
-    Object.assign(ctx, setupAnalyzerForNodeTest(lang, pkg));
-  } catch (error) {
-    // Uvu has a bug where it silently ignores failures in before and after,
-    // see https://github.com/lukeed/uvu/issues/191.
-    console.error('uvu before error', error);
-    process.exit(1);
-  }
-};
-
-export const setupAnalyzerForNodeTest = (lang: Language, pkg: string) => {
+export const setupAnalyzerForTest = (lang: Language, pkg: string) => {
   const packagePath = fileURLToPath(
     new URL(`../../test-files/${lang}/${pkg}`, import.meta.url).href
   ) as AbsolutePath;
@@ -250,9 +228,17 @@ export const setupAnalyzerForNodeTest = (lang: Language, pkg: string) => {
   };
 };
 
-export interface AnalyzerModuleTestContext extends AnalyzerTestContext {
-  module: Module;
-}
+export const setupAnalyzerForTestWithModule = (
+  lang: Language,
+  pkg: string,
+  module: string
+) => {
+  const result = setupAnalyzerForTest(lang, pkg);
+  return {
+    ...result,
+    module: result.getModule(module),
+  };
+};
 
 export const makeDiagnosticError = (diagnostics: ts.Diagnostic[]) => {
   return new Error(
@@ -262,21 +248,4 @@ export const makeDiagnosticError = (diagnostics: ts.Diagnostic[]) => {
       getNewLine: () => ts.sys.newLine,
     })
   );
-};
-
-export const setupAnalyzerForTestWithModule = (
-  ctx: AnalyzerModuleTestContext,
-  lang: Language,
-  pkg: string,
-  module: string
-) => {
-  try {
-    setupAnalyzerForTest(ctx, lang, pkg);
-    ctx.module = ctx.getModule(module);
-  } catch (error) {
-    // Uvu has a bug where it silently ignores failures in before and after,
-    // see https://github.com/lukeed/uvu/issues/191.
-    console.error('uvu before error', error);
-    process.exit(1);
-  }
 };

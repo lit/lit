@@ -18,12 +18,12 @@ import {
   parseLitTemplate,
 } from '../../../lib/lit/template.js';
 import type {ClassDeclaration} from '../../../lib/model.js';
-import {languages, setupAnalyzerForNodeTest} from '../utils.js';
+import {languages, setupAnalyzerForTest} from '../utils.js';
 
 // Multi-language tests
 for (const lang of languages) {
   suite(`lit-html template utility tests (${lang})`, () => {
-    const {getModule, analyzer, typescript} = setupAnalyzerForNodeTest(
+    const {getModule, analyzer, typescript} = setupAnalyzerForTest(
       lang,
       'basic-elements'
     );
