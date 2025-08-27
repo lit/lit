@@ -27,23 +27,29 @@ const serverHost: ts.server.ServerHost = {
   },
 
   setTimeout(
-    _callback: (...args: any[]) => void,
-    _ms: number,
-    ..._args: any[]
+    callback: (...args: any[]) => void,
+    ms: number,
+    ...args: any[]
   ): any {
-    throw new Error('Method not implemented.');
+    return globalThis.setTimeout(callback, ms, ...args);
   },
 
-  clearTimeout(_timeoutId: any): void {
-    throw new Error('Method not implemented.');
+  clearTimeout(timeoutId: any): void {
+    globalThis.clearTimeout(timeoutId);
   },
 
-  setImmediate(_callback: (...args: any[]) => void, ..._args: any[]): any {
-    throw new Error('Method not implemented.');
+  setImmediate(callback: (...args: any[]) => void, ...args: any[]): any {
+    return (globalThis as any).setImmediate
+      ? (globalThis as any).setImmediate(callback, ...args)
+      : globalThis.setTimeout(callback, 0, ...args);
   },
 
-  clearImmediate(_timeoutId: any): void {
-    throw new Error('Method not implemented.');
+  clearImmediate(timeoutId: any): void {
+    if ((globalThis as any).clearImmediate) {
+      (globalThis as any).clearImmediate(timeoutId);
+    } else {
+      globalThis.clearTimeout(timeoutId);
+    }
   },
 };
 
