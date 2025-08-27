@@ -1,10 +1,13 @@
 import {
   getLitTemplateExpressions,
+  hasAttributePart,
   parseLitTemplate,
   type LitTemplateAttribute,
 } from '@lit-labs/analyzer/lib/lit/template.js';
 import {type Element, traverse} from '@parse5/tools';
 import type ts from 'typescript';
+import {LitDiagnosticCode} from '../diagnostic-codes.js';
+import type {LitLanguageService} from '../lit-language-service.js';
 
 // TODO(justinfagnani): Make rule interface with a `name` property that can be
 // used for error messages and configuration.
@@ -16,7 +19,8 @@ export const noBindingLikeAttributeNames = {
   getSemanticDiagnostics(
     sourceFile: ts.SourceFile,
     typescript: typeof ts,
-    checker: ts.TypeChecker
+    checker: ts.TypeChecker,
+    _litLanguageService: LitLanguageService
   ) {
     const diagnostics: ts.Diagnostic[] = [];
     const templates = getLitTemplateExpressions(
@@ -31,6 +35,10 @@ export const noBindingLikeAttributeNames = {
       traverse(litTemplate, {
         element(element: Element) {
           element.attrs.forEach((attr) => {
+            if (hasAttributePart(attr)) {
+              // Has a lit binding, skip.
+              return;
+            }
             const {name} = attr;
             if (
               (name.startsWith('.') ||
@@ -57,8 +65,7 @@ export const noBindingLikeAttributeNames = {
               diagnostics.push({
                 source,
                 category: typescript.DiagnosticCategory.Warning,
-                // random-ish number. How are we supposed to pick these?
-                code: 6301,
+                code: LitDiagnosticCode.BindingLikeAttributeName,
                 file: sourceFile,
                 start,
                 length,

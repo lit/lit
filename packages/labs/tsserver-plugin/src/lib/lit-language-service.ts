@@ -7,9 +7,16 @@ import * as path from 'node:path';
 import type ts from 'typescript';
 import {Diagnostic, LanguageService} from 'typescript';
 import {noBindingLikeAttributeNames} from './rules/no-binding-like-attribute-names.js';
+import {noUnassignablePropertyBindings} from './rules/no-unassignable-property-bindings.js';
 import {type Element, traverse} from '@parse5/tools';
+import {noInvalidElementBindings} from './rules/no-invalid-element-bindings.js';
+import {getElementClassType} from './type-helpers/get-element-class.js';
 
-const rules = [noBindingLikeAttributeNames];
+const rules = [
+  noBindingLikeAttributeNames,
+  noUnassignablePropertyBindings,
+  noInvalidElementBindings,
+];
 
 /**
  * Initialized a Lit language service onto the given language service instance,
@@ -66,7 +73,8 @@ export const makeLitLanguageService = (
           ...rule.getSemanticDiagnostics(
             sourceFile,
             this.#analyzer.typescript,
-            this.#analyzer.program.getTypeChecker()
+            this.#analyzer.program.getTypeChecker(),
+            this
           )
         );
       }
@@ -116,29 +124,31 @@ export const makeLitLanguageService = (
 
                   foundDefinition = {
                     fileName: sourceFile.fileName,
-                    textSpan: {
-                      start,
-                      length,
-                    },
+                    textSpan: {start, length},
                     kind: typescript.ScriptElementKind.classElement,
                     name: definition.name,
                     containerKind: typescript.ScriptElementKind.moduleElement,
                     containerName: '',
                   };
                 } else {
-                  const classType = this.#getElementClassType(element.tagName);
-                  if (classType !== undefined) {
-                    const sourceFile = classType.getSourceFile();
-                    const start = classType.getStart();
-                    const length = classType.getEnd() - start;
+                  const elementType = getElementClassType(
+                    element.tagName,
+                    checker,
+                    typescript
+                  );
+                  // Get the declaration from the element's type.
+                  const classDeclaration =
+                    elementType?.getSymbol()?.valueDeclaration;
+
+                  if (classDeclaration !== undefined) {
+                    const sourceFile = classDeclaration.getSourceFile();
+                    const start = classDeclaration.getStart();
+                    const length = classDeclaration.getEnd() - start;
                     foundDefinition = {
                       fileName: sourceFile.fileName,
-                      textSpan: {
-                        start,
-                        length,
-                      },
+                      textSpan: {start, length},
                       kind: typescript.ScriptElementKind.classElement,
-                      name: classType.getText(),
+                      name: classDeclaration.getText(),
                       containerKind: typescript.ScriptElementKind.moduleElement,
                       containerName: '',
                     };
@@ -278,44 +288,6 @@ export const makeLitLanguageService = (
       }
       return undefined;
     }
-
-    #getElementClassType(tagname: string) {
-      const checker = this.#analyzer.program.getTypeChecker();
-      // Use the type checker to get the symbol for the ambient/global
-      // HTMLElementTagNameMap type.
-      const tagNameMapSymbol = checker.resolveName(
-        'HTMLElementTagNameMap',
-        undefined,
-        typescript.SymbolFlags.Interface,
-        false
-      );
-
-      if (tagNameMapSymbol !== undefined) {
-        const tagNameMapType =
-          checker.getDeclaredTypeOfSymbol(tagNameMapSymbol);
-        const propertySymbol = checker.getPropertyOfType(
-          tagNameMapType,
-          tagname
-        );
-
-        if (propertySymbol?.valueDeclaration) {
-          // We found the property on HTMLElementTagNameMap, like `div: HTMLDivElement`.
-          // Now we need to get the type of that property.
-          const propertyType = checker.getTypeOfSymbolAtLocation(
-            propertySymbol,
-            propertySymbol.valueDeclaration
-          );
-
-          // The type is the element's class (e.g. HTMLDivElement). Get the
-          // symbol for that class.
-          const elementClassSymbol = propertyType.getSymbol();
-          if (elementClassSymbol?.valueDeclaration) {
-            return elementClassSymbol?.valueDeclaration;
-          }
-        }
-      }
-      return undefined;
-    }
   }
 
   // Set up the prototype chain to be:
@@ -324,5 +296,6 @@ export const makeLitLanguageService = (
   Object.setPrototypeOf(instance, LitLanguageService.prototype);
   Object.setPrototypeOf(LitLanguageService.prototype, innerLanguageService);
 
-  new LitLanguageService(info, typescript);
+  return new LitLanguageService(info, typescript);
 };
+export type LitLanguageService = ReturnType<typeof makeLitLanguageService>;

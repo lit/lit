@@ -133,21 +133,16 @@ suite('getLitExpressionType', () => {
     );
   });
 
-  test('Union with sentinel symbol collapses to any', () => {
+  test('Union with sentinel symbol filters out the sentinel', () => {
     const program = buildProgram();
     const checker = program.getTypeChecker();
     const sentinelUnion = getExportType(program, 'sentinelUnion');
-    const originalStr = checker.typeToString(sentinelUnion!);
     const transformed = getLitExpressionType(sentinelUnion!, ts, program);
-    assert.ok(
-      transformed.flags & ts.TypeFlags.Any,
-      'Expected any from union including sentinel'
+    assert.strictEqual(
+      normalizeUnion(checker.typeToString(sentinelUnion!)),
+      normalizeUnion('number | unique symbol')
     );
-    // The sentinel side is a value symbol reference; we assert membership not order.
-    const parts = normalizeUnion(originalStr).split(' | ');
-    assert.ok(parts.includes('number')); // union with number
-    assert.ok(parts.includes('unique symbol'));
-    assert.strictEqual(checker.typeToString(transformed), 'any');
+    assert.strictEqual(checker.typeToString(transformed), 'number');
   });
 
   test('Plain non-special type is unchanged', () => {
