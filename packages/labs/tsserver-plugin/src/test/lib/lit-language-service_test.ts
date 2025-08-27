@@ -1,7 +1,7 @@
 import assert from 'node:assert';
 import * as path from 'node:path';
 import {describe as suite, test} from 'node:test';
-import {createTestProjectService} from '../project-service.js';
+import {getReusableTestProjectService} from '../project-service.js';
 import {getLitTemplateExpressions} from '@lit-labs/analyzer/lib/lit/template.js';
 import ts from 'typescript';
 
@@ -10,7 +10,8 @@ function setupLanguageService(pathName: string): {
   program: ts.Program;
   testSourceFile: ts.SourceFile;
 } {
-  const projectService = createTestProjectService();
+  using cleanup = getReusableTestProjectService();
+  const projectService = cleanup.projectService;
   const result = projectService.openClientFile(pathName);
   assert.ok(result.configFileName);
 

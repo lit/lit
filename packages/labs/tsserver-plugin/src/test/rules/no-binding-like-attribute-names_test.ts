@@ -1,12 +1,13 @@
 import assert from 'node:assert';
 import * as path from 'node:path';
 import {describe as suite, test} from 'node:test';
-import {createTestProjectService} from '../project-service.js';
 import {LitDiagnosticCode} from '../../lib/diagnostic-codes.js';
+import {getReusableTestProjectService} from '../project-service.js';
 
 suite('no-binding-like-attribute-names', () => {
   test('Reports on property-binding-like attribute names', () => {
-    const projectService = createTestProjectService();
+    using cleanup = getReusableTestProjectService();
+    const projectService = cleanup.projectService;
 
     const pathName = path.resolve(
       'test-files/basic-templates/src/bad-attribute-name.ts'

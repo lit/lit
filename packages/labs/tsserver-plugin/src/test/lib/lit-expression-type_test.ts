@@ -3,25 +3,23 @@ import path from 'node:path';
 import {describe as suite, test} from 'node:test';
 import * as ts from 'typescript';
 import {getLitExpressionType} from '../../lib/type-helpers/lit-expression-type.js';
+import {getReusableTestProjectService} from '../project-service.js';
 
-// Ensure the declarations are part of the program (side-effect import only).
-import './fake-lit-html-types.js';
-
-// Helper to build a Program including our fake lit-html types file.
-function buildProgram(): ts.Program {
-  // Build the path relative to the package root (cwd during tests) to avoid
-  // accidentally duplicating path segments. The previous value incorrectly
-  // prefixed the repository path twice when running inside the package.
-  const fakeTypesPath = path.resolve('src/test/lib/fake-lit-html-types.ts');
-  const options: ts.CompilerOptions = {
-    target: ts.ScriptTarget.ES2022,
-    module: ts.ModuleKind.NodeNext,
-    moduleResolution: ts.ModuleResolutionKind.NodeNext,
-    strict: true,
-    esModuleInterop: true,
-    skipLibCheck: true,
-  };
-  return ts.createProgram([fakeTypesPath], options);
+function getProgram(): ts.Program {
+  using cleanup = getReusableTestProjectService();
+  const projectService = cleanup.projectService;
+  const expressionTypesPath = path.resolve(
+    'test-files/basic-templates/src/expression-types.ts'
+  );
+  const result = projectService.openClientFile(expressionTypesPath);
+  if (!result.configFileName) {
+    throw new Error('Did not associate file with a config');
+  }
+  const info = projectService.getScriptInfo(expressionTypesPath)!;
+  const project = info.containingProjects[0];
+  const program = project.getLanguageService().getProgram();
+  if (!program) throw new Error('No program');
+  return program;
 }
 
 function getExportType(
@@ -30,7 +28,7 @@ function getExportType(
 ): ts.Type | undefined {
   const sourceFiles = program.getSourceFiles();
   const fakeFile = sourceFiles.find((f) =>
-    /fake-lit-html-types\.ts$/.test(f.fileName)
+    /expression-types\.ts$/.test(f.fileName)
   );
   if (!fakeFile) return undefined;
   const checker = program.getTypeChecker();
@@ -54,7 +52,7 @@ suite('getLitExpressionType', () => {
   }
 
   test('sentinel unique symbols map to any', () => {
-    const program = buildProgram();
+    const program = getProgram();
     const checker = program.getTypeChecker();
     // Use the direct exported sentinel symbols so the type has the correct symbol name.
     const noChangeType = getExportType(program, 'noChange');
@@ -70,7 +68,7 @@ suite('getLitExpressionType', () => {
   });
 
   test('DirectiveResult unwraps to render return type (primitive)', () => {
-    const program = buildProgram();
+    const program = getProgram();
     const checker = program.getTypeChecker();
     const directiveResultNumber = getExportType(
       program,
@@ -86,7 +84,7 @@ suite('getLitExpressionType', () => {
   });
 
   test('DirectiveResult unwraps to union of render return types', () => {
-    const program = buildProgram();
+    const program = getProgram();
     const checker = program.getTypeChecker();
     const directiveResultUnion = getExportType(program, 'directiveResultUnion');
     assert.strictEqual(
@@ -110,7 +108,7 @@ suite('getLitExpressionType', () => {
   });
 
   test('Union containing DirectiveResult unwraps only that member', () => {
-    const program = buildProgram();
+    const program = getProgram();
     const checker = program.getTypeChecker();
     const mixed = getExportType(program, 'directiveResultOrString');
     assert.strictEqual(
@@ -134,7 +132,7 @@ suite('getLitExpressionType', () => {
   });
 
   test('Union with sentinel symbol filters out the sentinel', () => {
-    const program = buildProgram();
+    const program = getProgram();
     const checker = program.getTypeChecker();
     const sentinelUnion = getExportType(program, 'sentinelUnion');
     const transformed = getLitExpressionType(sentinelUnion!, ts, program);
@@ -146,21 +144,21 @@ suite('getLitExpressionType', () => {
   });
 
   test('Plain non-special type is unchanged', () => {
-    const plainProgram = buildProgram();
-    const checker = plainProgram.getTypeChecker();
-    const plainNumber = getExportType(plainProgram, 'plainNumber');
+    const program = getProgram();
+    const checker = program.getTypeChecker();
+    const plainNumber = getExportType(program, 'plainNumber');
     assert.strictEqual(checker.typeToString(plainNumber!), '123');
-    const result = getLitExpressionType(plainNumber!, ts, plainProgram);
+    const result = getLitExpressionType(plainNumber!, ts, program);
     assert.strictEqual(result, plainNumber);
     // literal 123 keeps its literal type.
     assert.strictEqual(checker.typeToString(result), '123');
   });
 
   test('Union without special values is unchanged', () => {
-    const plainProgram = buildProgram();
-    const checker = plainProgram.getTypeChecker();
-    const plainUnion = getExportType(plainProgram, 'plainUnion');
-    const result = getLitExpressionType(plainUnion!, ts, plainProgram);
+    const program = getProgram();
+    const checker = program.getTypeChecker();
+    const plainUnion = getExportType(program, 'plainUnion');
+    const result = getLitExpressionType(plainUnion!, ts, program);
     assert.strictEqual(result, plainUnion);
     assert.strictEqual(
       normalizeUnion(checker.typeToString(plainUnion!)),
@@ -171,39 +169,27 @@ suite('getLitExpressionType', () => {
   test('Sentinel-like symbol outside lit-html scope not treated as special', () => {
     // Create a synthetic unique symbol type named noChange but from a different file.
     const sourceText = 'export const noChange = Symbol("local");';
-    const tempFile = path.resolve('src/test/lib/local-file.ts');
-    const compilerOptions: ts.CompilerOptions = {
-      target: ts.ScriptTarget.ES2022,
-      module: ts.ModuleKind.NodeNext,
-      moduleResolution: ts.ModuleResolutionKind.NodeNext,
-      strict: true,
-    };
-    const host = ts.createCompilerHost(compilerOptions);
-    host.readFile = (fileName) => {
-      if (fileName === tempFile) return sourceText;
-      return ts.sys.readFile(fileName);
-    };
-    host.fileExists = (fileName) => {
-      if (fileName === tempFile) return true;
-      return ts.sys.fileExists(fileName);
-    };
-    const shadowProgram = ts.createProgram(
-      [path.resolve('src/test/lib/fake-lit-html-types.ts'), tempFile],
-      compilerOptions,
-      host
+    const tempFile = path.resolve(
+      'test-files/basic-templates/src/local-sentinel.ts'
     );
-    const checker = shadowProgram.getTypeChecker();
-    const sf = shadowProgram
+    using cleanup = getReusableTestProjectService();
+    const projectService = cleanup.projectService;
+    // Simulate the file existing in memory only: open with content.
+    projectService.openClientFile(tempFile, sourceText);
+    const info = projectService.getScriptInfo(tempFile)!;
+    const project = info.containingProjects[0];
+    const program = project.getLanguageService().getProgram()!;
+    const checker = program.getTypeChecker();
+    const sf = program
       .getSourceFiles()
-      .find((f) => /local-file\.ts$/.test(f.fileName))!;
+      .find((f) => /local-sentinel\.ts$/.test(f.fileName))!;
     const moduleSymbol = checker.getSymbolAtLocation(sf)!;
     const localSymbol = checker
       .getExportsOfModule(moduleSymbol)
       .find((s) => s.getEscapedName() === 'noChange')!;
     const localType = checker.getTypeOfSymbol(localSymbol);
     assert.ok(localType, 'got localtype');
-    const result = getLitExpressionType(localType, ts, shadowProgram);
-    // Should be unchanged (unique symbol stays unique symbol) not widened to any.
+    const result = getLitExpressionType(localType, ts, program);
     assert.strictEqual(result, localType);
     assert.strictEqual(checker.typeToString(localType), 'unique symbol');
     assert.strictEqual(checker.typeToString(result), 'unique symbol');
