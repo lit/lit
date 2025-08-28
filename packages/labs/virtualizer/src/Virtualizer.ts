@@ -504,9 +504,7 @@ export class Virtualizer {
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       const idx = this._first + i;
-      if (this._itemsChanged || this._toBeMeasured.has(child)) {
-        mm[idx] = fn.call(this, child, this._items[idx]);
-      }
+      mm[idx] = fn.call(this, child, this._items[idx]);
     }
     this._childMeasurements = mm;
     this._schedule(this._updateLayout);
@@ -720,17 +718,14 @@ export class Virtualizer {
         if (child) {
           child.style.position = 'absolute';
           child.style.boxSizing = 'border-box';
-          child.style.transform = `translate(${left}px, ${top}px)`;
           if (width !== undefined) {
             child.style.width = width + 'px';
           }
           if (height !== undefined) {
             child.style.height = height + 'px';
           }
-          (child.style.left as string | null) =
-            xOffset === undefined ? null : xOffset + 'px';
-          (child.style.top as string | null) =
-            yOffset === undefined ? null : yOffset + 'px';
+          child.style.left = `${(xOffset === undefined ? 0 : xOffset) + left}px`;
+          child.style.top = `${(yOffset === undefined ? 0 : yOffset) + top}px`;
         }
       });
     }
