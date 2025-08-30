@@ -466,7 +466,7 @@ const digestCache = new WeakMap<TemplateStringsArray, string>();
 // We don't care about cryptographic suitability.
 export const digestForTemplateResult = (templateResult: TemplateResult) => {
   let digest = digestCache.get(templateResult.strings);
-  if (digest) {
+  if (digest !== undefined) {
     return digest;
   }
 
