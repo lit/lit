@@ -14,6 +14,9 @@ node_modules/
 /playground/p/**/package-lock.json
 /playground/p/scratch/*/
 !/playground/p/scratch/*.*
+/.direnv/
+/.envrc
+/.actrc
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
