@@ -185,7 +185,8 @@ export abstract class ElementRenderer {
    * The default implementation serializes all attributes on the element
    * instance.
    */
-  *renderAttributes(): RenderResult {
+  renderAttributes(): RenderResult {
+    let result = '';
     if (this.element !== undefined) {
       const {attributes} = this.element;
       for (
@@ -194,12 +195,13 @@ export abstract class ElementRenderer {
         i++
       ) {
         if (value === '' || value === undefined || value === null) {
-          yield ` ${name}`;
+          result += ` ${name}`;
         } else {
-          yield ` ${name}="${escapeHtml(value)}"`;
+          result += ` ${name}="${escapeHtml(value)}"`;
         }
       }
     }
+    return [result];
   }
 }
 
@@ -215,13 +217,15 @@ export class FallbackRenderer extends ElementRenderer {
     this._attributes[name.toLowerCase()] = value;
   }
 
-  override *renderAttributes(): RenderResult {
+  override renderAttributes(): RenderResult {
+    let result = '';
     for (const [name, value] of Object.entries(this._attributes)) {
       if (value === '' || value === undefined || value === null) {
-        yield ` ${name}`;
+        result += ` ${name}`;
       } else {
-        yield ` ${name}="${escapeHtml(value)}"`;
+        result += ` ${name}="${escapeHtml(value)}"`;
       }
     }
+    return [result];
   }
 }

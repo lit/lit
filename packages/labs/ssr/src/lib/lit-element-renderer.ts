@@ -137,13 +137,13 @@ export class LitElementRenderer extends ElementRenderer {
     yield* renderValue((this.element as any).render(), renderInfo);
   }
 
-  override *renderLight(renderInfo: RenderInfo): RenderResult {
+  override renderLight(renderInfo: RenderInfo): RenderResult {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {
-      yield* renderValue(value, renderInfo);
+      return renderValue(value, renderInfo);
     } else {
-      yield '';
+      return [];
     }
   }
 }
