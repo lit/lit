@@ -26,7 +26,7 @@ export type {RenderResult} from './render-result.js';
  *   to any reentrant calls to `render`, e.g. from a `renderShadow` callback
  *   on an ElementRenderer.
  */
-export function* render(
+export function render(
   value: unknown,
   renderInfo?: Partial<RenderInfo>
 ): RenderResult {
@@ -43,5 +43,5 @@ export function* render(
   if (isTemplateResult(value)) {
     hydratable = isHydratable(value);
   }
-  yield* renderValue(value, renderInfo as RenderInfo, hydratable);
+  return renderValue(value, renderInfo as RenderInfo, hydratable);
 }

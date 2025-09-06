@@ -879,12 +879,12 @@ And the inner template was:
             ? getLast(renderInfo.customElementInstanceStack)
             : undefined;
           if (part.type === PartType.PROPERTY) {
-            yield* renderPropertyPart(instance, op, committedValue);
+            yield renderPropertyPart(instance, op, committedValue);
           } else if (part.type === PartType.BOOLEAN_ATTRIBUTE) {
             // Boolean attribute binding
-            yield* renderBooleanAttributePart(instance, op, committedValue);
+            yield renderBooleanAttributePart(instance, op, committedValue);
           } else {
-            yield* renderAttributePart(instance, op, committedValue);
+            yield renderAttributePart(instance, op, committedValue);
           }
         }
         partIndex += statics.length - 1;
@@ -1078,7 +1078,7 @@ function throwErrorForPartIndexMismatch(
   throw new Error(errorMsg);
 }
 
-function* renderPropertyPart(
+function renderPropertyPart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
@@ -1090,11 +1090,12 @@ function* renderPropertyPart(
     instance.setProperty(op.name, value);
   }
   if (reflectedName !== undefined) {
-    yield `${reflectedName}="${escapeHtml(String(value))}"`;
+    return `${reflectedName}="${escapeHtml(String(value))}"`;
   }
+  return '';
 }
 
-function* renderBooleanAttributePart(
+function renderBooleanAttributePart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
@@ -1103,12 +1104,13 @@ function* renderBooleanAttributePart(
     if (instance !== undefined) {
       instance.setAttribute(op.name, '');
     } else {
-      yield op.name;
+      return op.name;
     }
   }
+  return '';
 }
 
-function* renderAttributePart(
+function renderAttributePart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
@@ -1117,9 +1119,10 @@ function* renderAttributePart(
     if (instance !== undefined) {
       instance.setAttribute(op.name, String(value ?? ''));
     } else {
-      yield `${op.name}="${escapeHtml(String(value ?? ''))}"`;
+      return `${op.name}="${escapeHtml(String(value ?? ''))}"`;
     }
   }
+  return '';
 }
 
 /**
