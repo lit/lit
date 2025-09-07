@@ -25,6 +25,15 @@ test('loads a single module', async () => {
   assert.is(moduleRecord?.imports.length, 0);
 });
 
+test('supports import.meta.url', async () => {
+  const loader = new ModuleLoader();
+  const result = await loader.importModule('./import-meta-url.js', testIndex);
+  const {module} = result;
+
+  const expectedUrl = path.resolve(testIndex, '../import-meta-url.js');
+  assert.equal(module.namespace.importMetaUrl, expectedUrl);
+});
+
 test('loads a module with an import', async () => {
   const loader = new ModuleLoader();
   const result = await loader.importModule('./index.js', testIndex);
