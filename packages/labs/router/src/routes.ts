@@ -157,6 +157,56 @@ export class Routes implements ReactiveController {
    * pattern with a tail wildcard pattern (`/*`).
    */
   async goto(pathname: string) {
+    await this._goto(pathname);
+  }
+
+  /**
+   * The result of calling the current route's render() callback.
+   */
+  outlet() {
+    return this._currentRoute?.render?.(this._currentParams);
+  }
+
+  /**
+   * The current parsed route parameters.
+   */
+  get params() {
+    return this._currentParams;
+  }
+
+  private _getFallback(): BaseRouteConfig | undefined {
+    let fallback = this.fallback;
+    let parentRoutes: Routes | undefined = this._parentRoutes;
+    while (fallback === undefined && parentRoutes !== undefined) {
+      fallback = parentRoutes.fallback;
+      parentRoutes = parentRoutes._parentRoutes;
+    }
+
+    return fallback;
+  }
+
+  /**
+   * Matches `url` against the installed routes and returns the first match.
+   */
+  private _getRoute(pathname: string): RouteConfig | undefined {
+    const matchedRoute = this.routes.find((r) =>
+      getPattern(r).test({pathname: pathname})
+    );
+    if (matchedRoute || this.fallback === undefined) {
+      return matchedRoute;
+    }
+    if (this.fallback) {
+      // The fallback route behaves like it has a "/*" path. This is hidden from
+      // the public API but is added here to return a valid RouteConfig.
+      return {...this.fallback, path: '/*'};
+    }
+    return undefined;
+  }
+
+  private async _goto(
+    pathname: string,
+    initial = true
+  ): Promise<boolean | undefined> {
     // TODO (justinfagnani): handle absolute vs relative paths separately.
     // TODO (justinfagnani): do we need to detect when goto() is called while
     // a previous goto() call is still pending?
@@ -177,9 +227,22 @@ export class Routes implements ReactiveController {
       this._currentParams = {0: tailGroup};
     } else {
       const route = this._getRoute(pathname);
-      if (route === undefined) {
-        throw new Error(`No route found for ${pathname}`);
+      if (route === undefined && initial) {
+        const fallback = this._getFallback();
+        if (fallback) {
+          console.log(`Fallback route found for ${pathname}`, fallback);
+
+          this._currentRoute = fallback as RouteConfig;
+          this._currentParams = {0: pathname};
+          this._currentPathname = '';
+          return;
+        } else {
+          throw new Error(`No route found for ${pathname}`);
+        }
+      } else if (route === undefined) {
+        return undefined;
       }
+
       const pattern = getPattern(route);
       const result = pattern.exec({pathname});
       const params = result?.pathname.groups ?? {};
@@ -188,7 +251,7 @@ export class Routes implements ReactiveController {
         const success = await route.enter(params);
         // If enter() returns false, cancel this navigation
         if (success === false) {
-          return;
+          return false;
         }
       }
       // Only update route state if the enter handler completes successfully
@@ -198,47 +261,44 @@ export class Routes implements ReactiveController {
         tailGroup === undefined
           ? pathname
           : pathname.substring(0, pathname.length - tailGroup.length);
-    }
 
-    // Propagate the tail match to children
-    if (tailGroup !== undefined) {
-      for (const childRoutes of this._childRoutes) {
-        childRoutes.goto(tailGroup);
+      // Propagate the tail match to children
+      if (tailGroup !== undefined) {
+        for (const childRoutes of this._childRoutes) {
+          const result: boolean | undefined = await childRoutes._goto(
+            tailGroup,
+            false
+          );
+
+          if (typeof result === 'boolean') {
+            return result;
+          } else if (initial) {
+            let fallback = this.fallback;
+            let parentRoutes: Routes | undefined = this._parentRoutes;
+            while (fallback === undefined && parentRoutes !== undefined) {
+              fallback = parentRoutes.fallback;
+              parentRoutes = parentRoutes._parentRoutes;
+            }
+
+            console.log(`Fallback route found for ${pathname}`, this.fallback);
+
+            this._currentRoute = fallback as RouteConfig;
+            this._currentParams = {0: pathname};
+            this._currentPathname = '';
+
+            this._host.requestUpdate();
+
+            return true;
+          } else {
+            return undefined;
+          }
+        }
       }
     }
+
     this._host.requestUpdate();
-  }
 
-  /**
-   * The result of calling the current route's render() callback.
-   */
-  outlet() {
-    return this._currentRoute?.render?.(this._currentParams);
-  }
-
-  /**
-   * The current parsed route parameters.
-   */
-  get params() {
-    return this._currentParams;
-  }
-
-  /**
-   * Matches `url` against the installed routes and returns the first match.
-   */
-  private _getRoute(pathname: string): RouteConfig | undefined {
-    const matchedRoute = this.routes.find((r) =>
-      getPattern(r).test({pathname: pathname})
-    );
-    if (matchedRoute || this.fallback === undefined) {
-      return matchedRoute;
-    }
-    if (this.fallback) {
-      // The fallback route behaves like it has a "/*" path. This is hidden from
-      // the public API but is added here to return a valid RouteConfig.
-      return {...this.fallback, path: '/*'};
-    }
-    return undefined;
+    return true;
   }
 
   hostConnected() {
