@@ -275,7 +275,7 @@ const openChildPart = (
       throw new Error('compiled templates are not supported');
     }
     // Check for a template result digest
-    const markerWithDigest = `lit-part ${digestForTemplateResult(value)}`;
+    const markerWithDigest = `lit-part ${digestForTemplateResult(value).digest}`;
     if (marker.data === markerWithDigest) {
       const template = (
         ChildPart.prototype as ChildPart & {
@@ -467,7 +467,7 @@ const digestCache = new WeakMap<TemplateStringsArray, string>();
 export const digestForTemplateResult = (templateResult: TemplateResult) => {
   let digest = digestCache.get(templateResult.strings);
   if (digest !== undefined) {
-    return digest;
+    return {digest, cacheHit: true};
   }
 
   const hashes = new Uint32Array(digestSize).fill(5381);
@@ -492,5 +492,5 @@ export const digestForTemplateResult = (templateResult: TemplateResult) => {
     ? Buffer.from(str, 'binary').toString('base64')
     : btoa(str);
   digestCache.set(templateResult.strings, digest);
-  return digest;
+  return {digest, cacheHit: false};
 };

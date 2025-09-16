@@ -12,7 +12,16 @@ export type {RenderInfo} from './render-value.js';
 import type {RenderResult} from './render-result.js';
 import {isTemplateResult} from 'lit-html/directive-helpers.js';
 import {isHydratable} from './server-template.js';
+import {mark, measure} from './util/performance-utils.js';
 export type {RenderResult} from './render-result.js';
+
+export type RenderOptions = {
+  emitPerformanceMetrics: boolean;
+};
+
+const defaultRenderOptions = {
+  emitPerformanceMetrics: false,
+};
 
 /**
  * Renders a lit-html template (or any renderable lit-html value) to a string
@@ -28,8 +37,12 @@ export type {RenderResult} from './render-result.js';
  */
 export function* render(
   value: unknown,
-  renderInfo?: Partial<RenderInfo>
+  renderInfo?: Partial<RenderInfo>,
+  renderOptions?: Partial<RenderOptions>
 ): RenderResult {
+  const options = {...defaultRenderOptions, ...renderOptions};
+
+  const startMark = mark(options.emitPerformanceMetrics, 'ssr-render-start');
   const defaultRenderInfo = {
     elementRenderers: [LitElementRenderer],
     customElementInstanceStack: [],
@@ -43,5 +56,14 @@ export function* render(
   if (isTemplateResult(value)) {
     hydratable = isHydratable(value);
   }
-  yield* renderValue(value, renderInfo as RenderInfo, hydratable);
+  yield* renderValue(value, renderInfo as RenderInfo, options, hydratable);
+
+  const endMark = mark(options.emitPerformanceMetrics, 'ssr-rsender-end');
+  measure(options.emitPerformanceMetrics, 'ssr-render-complete', {
+    start: startMark?.startTime,
+    end: endMark?.startTime,
+    detail: {
+      template: value,
+    },
+  });
 }

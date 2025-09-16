@@ -14,6 +14,7 @@ import {
 import {renderValue} from './render-value.js';
 import type {RenderInfo} from './render-value.js';
 import type {RenderResult} from './render-result.js';
+import {RenderOptions} from './render.js';
 
 export type Constructor<T> = {new (): T};
 
@@ -46,8 +47,8 @@ export class LitElementRenderer extends ElementRenderer {
     return (ctor as unknown as typeof LitElement)['_$litElement$'];
   }
 
-  constructor(tagName: string) {
-    super(tagName);
+  constructor(tagName: string, options: RenderOptions) {
+    super(tagName, options);
     this.element = new (customElements.get(this.tagName)!)() as LitElement;
 
     // Reflect internals AOM attributes back to the DOM prior to hydration to
@@ -133,15 +134,19 @@ export class LitElementRenderer extends ElementRenderer {
       yield '</style>';
     }
     // Render template
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    yield* renderValue((this.element as any).render(), renderInfo);
+    yield* renderValue(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (this.element as any).render(),
+      renderInfo,
+      this.options
+    );
   }
 
   override *renderLight(renderInfo: RenderInfo): RenderResult {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {
-      yield* renderValue(value, renderInfo);
+      yield* renderValue(value, renderInfo, this.options);
     } else {
       yield '';
     }

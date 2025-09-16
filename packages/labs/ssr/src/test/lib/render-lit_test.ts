@@ -71,7 +71,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
   test('simple TemplateResult', async () => {
     const {render, simpleTemplateResult, digestForTemplateResult} =
       await setup();
-    const digest = digestForTemplateResult(simpleTemplateResult);
+    const {digest} = digestForTemplateResult(simpleTemplateResult);
     const customElementsRendered: Array<string> = [];
     const result = await render(simpleTemplateResult, {
       customElementRendered(tagName: string) {

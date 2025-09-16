@@ -9,13 +9,15 @@
 import {escapeHtml} from './util/escape-html.js';
 import type {RenderInfo} from './render-value.js';
 import type {RenderResult} from './render-result.js';
+import type {RenderOptions} from './render.js';
 
 type Interface<T> = {
   [P in keyof T]: T[P];
 };
 
 export type ElementRendererConstructor = (new (
-  tagName: string
+  tagName: string,
+  options: RenderOptions
 ) => Interface<ElementRenderer>) &
   typeof ElementRenderer;
 
@@ -25,11 +27,12 @@ export const getElementRenderer = (
   {elementRenderers}: RenderInfo,
   tagName: string,
   ceClass: typeof HTMLElement | undefined = customElements.get(tagName),
-  attributes: AttributesMap = new Map()
+  attributes: AttributesMap = new Map(),
+  options: RenderOptions
 ): ElementRenderer => {
   if (ceClass === undefined) {
     console.warn(`Custom element ${tagName} was not registered.`);
-    return new FallbackRenderer(tagName);
+    return new FallbackRenderer(tagName, options);
   }
   // TODO(kschaaf): Should we implement a caching scheme, e.g. keyed off of
   // ceClass's base class to prevent O(n) lookups for every element (probably
@@ -38,10 +41,10 @@ export const getElementRenderer = (
   // custom elements with a `client-only` attribute, so punting for now.
   for (const renderer of elementRenderers) {
     if (renderer.matchesClass(ceClass, tagName, attributes)) {
-      return new renderer(tagName);
+      return new renderer(tagName, options);
     }
   }
-  return new FallbackRenderer(tagName);
+  return new FallbackRenderer(tagName, options);
 };
 
 // TODO (justinfagnani): remove in favor of ShadowRootInit
@@ -59,7 +62,7 @@ export abstract class ElementRenderer {
   // do.
   element?: HTMLElement;
   tagName: string;
-
+  options: RenderOptions;
   /**
    * Should be implemented to return true when the given custom element class
    * and/or tagName should be handled by this renderer.
@@ -83,8 +86,9 @@ export abstract class ElementRenderer {
    * An ElementRenderer can actually instantiate the custom element class, or
    * it could emulate the element in some other way.
    */
-  constructor(tagName: string) {
+  constructor(tagName: string, options: RenderOptions) {
     this.tagName = tagName;
+    this.options = options;
   }
 
   /**

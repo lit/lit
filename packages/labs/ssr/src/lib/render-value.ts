@@ -64,6 +64,8 @@ import {reflectedAttributeName} from './reflected-attributes.js';
 import type {RenderResult} from './render-result.js';
 import {isHydratable} from './server-template.js';
 import type {Part} from 'lit-html';
+import type {RenderOptions} from './render.js';
+import {mark, measure} from './util/performance-utils.js';
 
 declare module 'parse5/dist/tree-adapters/default.js' {
   interface Element {
@@ -333,11 +335,15 @@ const REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG =
  * - `custom-element-close`
  *   - Pop the CE `instance`+`renderer` off the `customElementInstanceStack`
  */
-const getTemplateOpcodes = (result: TemplateResult) => {
+const getTemplateOpcodes = (result: TemplateResult, options: RenderOptions) => {
   const template = templateCache.get(result.strings);
   if (template !== undefined) {
     return template;
   }
+  const startMark = mark(
+    options.emitPerformanceMetrics,
+    'ssr-get-template-opcodes-start'
+  );
   const [html, attrNames] = getTemplateHtml(
     result.strings,
     // SVG TemplateResultType functionality is only required on the client,
@@ -674,6 +680,17 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   // Flush remaining static text in the template (e.g. closing tags)
   flushTo();
   templateCache.set(result.strings, ops);
+  const endMark = mark(
+    options.emitPerformanceMetrics,
+    'ssr-get-template-opcodes-end'
+  );
+  measure(options.emitPerformanceMetrics, 'ssr-get-template-opcodes-complete', {
+    start: startMark?.startTime,
+    end: endMark?.startTime,
+    detail: {
+      template: result,
+    },
+  });
   return ops;
 };
 
@@ -726,6 +743,7 @@ declare global {
 export function* renderValue(
   value: unknown,
   renderInfo: RenderInfo,
+  options: RenderOptions,
   hydratable = true
 ): RenderResult {
   if (renderInfo.customElementHostStack.length === 0) {
@@ -766,11 +784,33 @@ export function* renderValue(
   }
   if (value != null && isTemplateResult(value)) {
     if (hydratable) {
-      yield `<!--lit-part ${digestForTemplateResult(
+      const {digest, cacheHit} = digestForTemplateResult(
         value as TemplateResult
-      )}-->`;
+      );
+      const shouldEmitPerformanceMetrics =
+        !cacheHit && options.emitPerformanceMetrics;
+      const startMark = mark(
+        shouldEmitPerformanceMetrics,
+        'ssr-digest-cold-creation-start'
+      );
+      yield `<!--lit-part ${digest}-->`;
+      const endMark = mark(
+        shouldEmitPerformanceMetrics,
+        'ssr-digest-cold-creation-end'
+      );
+      measure(
+        shouldEmitPerformanceMetrics,
+        'ssr-digest-cold-creation-complete',
+        {
+          start: startMark?.startTime,
+          end: endMark?.startTime,
+          detail: {
+            template: value,
+          },
+        }
+      );
     }
-    yield* renderTemplateResult(value as TemplateResult, renderInfo);
+    yield* renderTemplateResult(value as TemplateResult, renderInfo, options);
     if (hydratable) {
       yield `<!--/lit-part-->`;
     }
@@ -788,7 +828,7 @@ export function* renderValue(
     } else if (!isPrimitive(value) && isIterable(value)) {
       // Check that value is not a primitive, since strings are iterable
       for (const item of value) {
-        yield* renderValue(item, renderInfo, hydratable);
+        yield* renderValue(item, renderInfo, options, hydratable);
       }
     } else {
       yield escapeHtml(String(value));
@@ -801,7 +841,8 @@ export function* renderValue(
 
 function* renderTemplateResult(
   result: TemplateResult,
-  renderInfo: RenderInfo
+  renderInfo: RenderInfo,
+  options: RenderOptions
 ): RenderResult {
   // In order to render a TemplateResult we have to handle and stream out
   // different parts of the result separately:
@@ -819,7 +860,7 @@ function* renderTemplateResult(
   // previous span of HTML.
 
   const hydratable = isHydratable(result);
-  const ops = getTemplateOpcodes(result);
+  const ops = getTemplateOpcodes(result, options);
 
   /* The next value in result.values to render */
   let partIndex = 0;
@@ -845,7 +886,7 @@ And the inner template was:
             );
           }
         }
-        yield* renderValue(value, renderInfo, isValueHydratable);
+        yield* renderValue(value, renderInfo, options, isValueHydratable);
         break;
       }
       case 'attribute-part': {
@@ -903,7 +944,8 @@ And the inner template was:
           renderInfo,
           op.tagName,
           op.ctor,
-          op.staticAttributes
+          op.staticAttributes,
+          options
         );
         if (instance.element) {
           // In the case the renderer has created an instance, we want to set
