@@ -723,11 +723,12 @@ declare global {
   }
 }
 
-export function* renderValue(
+export function renderValue(
   value: unknown,
   renderInfo: RenderInfo,
   hydratable = true
 ): RenderResult {
+  const renderResult = [];
   if (renderInfo.customElementHostStack.length === 0) {
     // If the SSR root event target is not at the start of the event target
     // stack, we add it to the beginning of the array.
@@ -754,7 +755,7 @@ export function* renderValue(
     if (instance !== undefined) {
       const renderLightResult = instance.renderLight(renderInfo);
       if (renderLightResult !== undefined) {
-        yield* renderLightResult;
+        renderResult.push(...renderLightResult);
       }
     }
     value = null;
@@ -766,17 +767,19 @@ export function* renderValue(
   }
   if (value != null && isTemplateResult(value)) {
     if (hydratable) {
-      yield `<!--lit-part ${digestForTemplateResult(
-        value as TemplateResult
-      )}-->`;
+      renderResult.push(
+        `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`
+      );
     }
-    yield* renderTemplateResult(value as TemplateResult, renderInfo);
+    renderResult.push(
+      ...renderTemplateResult(value as TemplateResult, renderInfo)
+    );
     if (hydratable) {
-      yield `<!--/lit-part-->`;
+      renderResult.push(`<!--/lit-part-->`);
     }
   } else {
     if (hydratable) {
-      yield `<!--lit-part-->`;
+      renderResult.push(`<!--lit-part-->`);
     }
     if (
       value === undefined ||
@@ -788,18 +791,19 @@ export function* renderValue(
     } else if (!isPrimitive(value) && isIterable(value)) {
       // Check that value is not a primitive, since strings are iterable
       for (const item of value) {
-        yield* renderValue(item, renderInfo, hydratable);
+        renderResult.push(...renderValue(item, renderInfo, hydratable));
       }
     } else {
-      yield escapeHtml(String(value));
+      renderResult.push(escapeHtml(String(value)));
     }
     if (hydratable) {
-      yield `<!--/lit-part-->`;
+      renderResult.push(`<!--/lit-part-->`);
     }
   }
+  return renderResult;
 }
 
-function* renderTemplateResult(
+function renderTemplateResult(
   result: TemplateResult,
   renderInfo: RenderInfo
 ): RenderResult {
@@ -824,10 +828,11 @@ function* renderTemplateResult(
   /* The next value in result.values to render */
   let partIndex = 0;
 
+  const renderResult = [];
   for (const op of ops) {
     switch (op.type) {
       case 'text':
-        yield op.value;
+        renderResult.push(op.value);
         break;
       case 'child-part': {
         const value = result.values[partIndex++];
@@ -845,7 +850,7 @@ And the inner template was:
             );
           }
         }
-        yield* renderValue(value, renderInfo, isValueHydratable);
+        renderResult.push(...renderValue(value, renderInfo, isValueHydratable));
         break;
       }
       case 'attribute-part': {
@@ -879,12 +884,16 @@ And the inner template was:
             ? getLast(renderInfo.customElementInstanceStack)
             : undefined;
           if (part.type === PartType.PROPERTY) {
-            yield* renderPropertyPart(instance, op, committedValue);
+            renderResult.push(renderPropertyPart(instance, op, committedValue));
           } else if (part.type === PartType.BOOLEAN_ATTRIBUTE) {
             // Boolean attribute binding
-            yield* renderBooleanAttributePart(instance, op, committedValue);
+            renderResult.push(
+              ...renderBooleanAttributePart(instance, op, committedValue)
+            );
           } else {
-            yield* renderAttributePart(instance, op, committedValue);
+            renderResult.push(
+              ...renderAttributePart(instance, op, committedValue)
+            );
           }
         }
         partIndex += statics.length - 1;
@@ -946,7 +955,7 @@ And the inner template was:
         }
         // Render out any attributes on the instance (both static and those
         // that may have been dynamically set by the renderer)
-        yield* instance.renderAttributes();
+        renderResult.push(...instance.renderAttributes());
         // If deferHydration flag is true or if this element is nested in
         // another, add the `defer-hydration` attribute, so that it does not
         // enable before the host element hydrates
@@ -954,7 +963,7 @@ And the inner template was:
           renderInfo.deferHydration ||
           renderInfo.customElementHostStack.length > 0
         ) {
-          yield ' defer-hydration';
+          renderResult.push(' defer-hydration');
         }
         break;
       }
@@ -968,7 +977,7 @@ And the inner template was:
           renderInfo.customElementHostStack.length > 0
         ) {
           if (hydratable) {
-            yield `<!--lit-node ${op.nodeIndex}-->`;
+            renderResult.push(`<!--lit-node ${op.nodeIndex}-->`);
           }
         }
         break;
@@ -992,9 +1001,11 @@ And the inner template was:
           const delegatesfocusAttr = delegatesFocus
             ? ' shadowrootdelegatesfocus'
             : '';
-          yield `<template shadowroot="${mode}" shadowrootmode="${mode}"${delegatesfocusAttr}>`;
-          yield* shadowContents;
-          yield '</template>';
+          renderResult.push(
+            `<template shadowroot="${mode}" shadowrootmode="${mode}"${delegatesfocusAttr}>`
+          );
+          renderResult.push(...shadowContents);
+          renderResult.push('</template>');
         }
         renderInfo.customElementHostStack.pop();
         break;
@@ -1057,6 +1068,7 @@ And the inner template was:
   if (partIndex !== result.values.length) {
     throwErrorForPartIndexMismatch(partIndex, result);
   }
+  return renderResult;
 }
 
 function throwErrorForPartIndexMismatch(
@@ -1078,11 +1090,12 @@ function throwErrorForPartIndexMismatch(
   throw new Error(errorMsg);
 }
 
-function* renderPropertyPart(
+function renderPropertyPart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
 ) {
+  let renderResult = '';
   value = value === nothing ? undefined : value;
   // Property should be reflected to attribute
   const reflectedName = reflectedAttributeName(op.tagName, op.name);
@@ -1090,36 +1103,41 @@ function* renderPropertyPart(
     instance.setProperty(op.name, value);
   }
   if (reflectedName !== undefined) {
-    yield `${reflectedName}="${escapeHtml(String(value))}"`;
+    renderResult = `${reflectedName}="${escapeHtml(String(value))}"`;
   }
+  return renderResult;
 }
 
-function* renderBooleanAttributePart(
+function renderBooleanAttributePart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
 ) {
+  let renderResult = '';
   if (value && value !== nothing) {
     if (instance !== undefined) {
       instance.setAttribute(op.name, '');
     } else {
-      yield op.name;
+      renderResult = op.name;
     }
   }
+  return renderResult;
 }
 
-function* renderAttributePart(
+function renderAttributePart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
 ) {
+  let renderResult = '';
   if (value !== nothing) {
     if (instance !== undefined) {
       instance.setAttribute(op.name, String(value ?? ''));
     } else {
-      yield `${op.name}="${escapeHtml(String(value ?? ''))}"`;
+      renderResult = `${op.name}="${escapeHtml(String(value ?? ''))}"`;
     }
   }
+  return renderResult;
 }
 
 /**

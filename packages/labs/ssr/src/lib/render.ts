@@ -43,5 +43,20 @@ export function* render(
   if (isTemplateResult(value)) {
     hydratable = isHydratable(value);
   }
-  yield* renderValue(value, renderInfo as RenderInfo, hydratable);
+
+  const renderResult = renderValue(value, renderInfo as RenderInfo, hydratable);
+  // Reduce generator overhead by combining sequential string results into a single string before yielding
+  let currentStringResult = '';
+  for (const item of renderResult) {
+    if (typeof item === 'string') {
+      currentStringResult += item;
+    } else {
+      // When we encounter a non-string result, we yield + reset the current string and yield the non-string result
+      yield currentStringResult;
+      currentStringResult = '';
+      yield item;
+    }
+  }
+  // Yield the final string result since we may not have ended on a Promise above
+  yield currentStringResult;
 }

@@ -121,29 +121,35 @@ export class LitElementRenderer extends ElementRenderer {
     attributeToProperty(this.element as LitElement, name, value);
   }
 
-  override *renderShadow(renderInfo: RenderInfo): RenderResult {
+  override renderShadow(renderInfo: RenderInfo): RenderResult {
+    const renderResult = [];
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
     if (styles !== undefined && styles.length > 0) {
-      yield '<style>';
+      renderResult.push('<style>');
       for (const style of styles) {
-        yield (style as CSSResult).cssText;
+        renderResult.push((style as CSSResult).cssText);
       }
-      yield '</style>';
+      renderResult.push('</style>');
     }
     // Render template
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    yield* renderValue((this.element as any).render(), renderInfo);
+    renderResult.push(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ...renderValue((this.element as any).render(), renderInfo)
+    );
+    return renderResult;
   }
 
-  override *renderLight(renderInfo: RenderInfo): RenderResult {
+  override renderLight(renderInfo: RenderInfo): RenderResult {
+    const renderResult = [];
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {
-      yield* renderValue(value, renderInfo);
+      renderResult.push(...renderValue(value, renderInfo));
     } else {
-      yield '';
+      renderResult.push('');
     }
+    return renderResult;
   }
 }
