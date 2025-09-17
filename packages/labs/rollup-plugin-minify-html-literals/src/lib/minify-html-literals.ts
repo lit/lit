@@ -236,10 +236,10 @@ export const defaultValidation: Validation = {
  * @param options minification options
  * @returns the minified code, or null if no minification occurred.
  */
-export function minifyHTMLLiterals(
+export async function minifyHTMLLiterals(
   source: string,
   options?: DefaultOptions
-): Result | null;
+): Promise<Result | null>;
 /**
  * Minifies all HTML template literals in the provided source string.
  *
@@ -247,14 +247,14 @@ export function minifyHTMLLiterals(
  * @param options minification options
  * @returns the minified code, or null if no minification occurred.
  */
-export function minifyHTMLLiterals<S extends Strategy>(
+export async function minifyHTMLLiterals<S extends Strategy>(
   source: string,
   options?: CustomOptions<S>
-): Result | null;
-export function minifyHTMLLiterals(
+): Promise<Result | null>;
+export async function minifyHTMLLiterals(
   source: string,
   options: Options = {}
-): Result | null {
+): Promise<Result | null> {
   options.minifyOptions = {
     ...defaultMinifyOptions,
     ...(options.minifyOptions || {}),
@@ -291,7 +291,7 @@ export function minifyHTMLLiterals(
   }
 
   const ms = new options.MagicString(source);
-  templates.forEach((template) => {
+  for (const template of templates) {
     const minifyHTML = shouldMinify(template);
     const minifyCSS = !!strategy.minifyCSS && shouldMinifyCSS(template);
     if (minifyHTML || minifyCSS) {
@@ -316,7 +316,7 @@ export function minifyHTMLLiterals(
           min = strategy.minifyCSS!(combined, cssOptions);
         }
       } else {
-        min = strategy.minifyHTML(combined, options.minifyOptions);
+        min = await strategy.minifyHTML(combined, options.minifyOptions);
       }
 
       const minParts = strategy.splitHTMLByPlaceholder(min, placeholder);
@@ -331,7 +331,7 @@ export function minifyHTMLLiterals(
         }
       });
     }
-  });
+  }
 
   const sourceMin = ms.toString();
   if (source === sourceMin) {
