@@ -728,7 +728,7 @@ export function renderValue(
   renderInfo: RenderInfo,
   hydratable = true
 ): RenderResult {
-  const renderResult = [];
+  const renderResult: (string | Promise<RenderResult>)[] = [];
   if (renderInfo.customElementHostStack.length === 0) {
     // If the SSR root event target is not at the start of the event target
     // stack, we add it to the beginning of the array.
@@ -755,7 +755,7 @@ export function renderValue(
     if (instance !== undefined) {
       const renderLightResult = instance.renderLight(renderInfo);
       if (renderLightResult !== undefined) {
-        renderResult.push(...renderLightResult);
+        pushRenderResult(renderResult, renderLightResult);
       }
     }
     value = null;
@@ -767,19 +767,21 @@ export function renderValue(
   }
   if (value != null && isTemplateResult(value)) {
     if (hydratable) {
-      renderResult.push(
+      pushRenderResult(
+        renderResult,
         `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`
       );
     }
-    renderResult.push(
-      ...renderTemplateResult(value as TemplateResult, renderInfo)
+    pushRenderResult(
+      renderResult,
+      renderTemplateResult(value as TemplateResult, renderInfo)
     );
     if (hydratable) {
-      renderResult.push(`<!--/lit-part-->`);
+      pushRenderResult(renderResult, `<!--/lit-part-->`);
     }
   } else {
     if (hydratable) {
-      renderResult.push(`<!--lit-part-->`);
+      pushRenderResult(renderResult, `<!--lit-part-->`);
     }
     if (
       value === undefined ||
@@ -791,13 +793,16 @@ export function renderValue(
     } else if (!isPrimitive(value) && isIterable(value)) {
       // Check that value is not a primitive, since strings are iterable
       for (const item of value) {
-        renderResult.push(...renderValue(item, renderInfo, hydratable));
+        pushRenderResult(
+          renderResult,
+          renderValue(item, renderInfo, hydratable)
+        );
       }
     } else {
-      renderResult.push(escapeHtml(String(value)));
+      pushRenderResult(renderResult, escapeHtml(String(value)));
     }
     if (hydratable) {
-      renderResult.push(`<!--/lit-part-->`);
+      pushRenderResult(renderResult, `<!--/lit-part-->`);
     }
   }
   return renderResult;
@@ -828,11 +833,11 @@ function renderTemplateResult(
   /* The next value in result.values to render */
   let partIndex = 0;
 
-  const renderResult = [];
+  const renderResult: (string | Promise<RenderResult>)[] = [];
   for (const op of ops) {
     switch (op.type) {
       case 'text':
-        renderResult.push(op.value);
+        pushRenderResult(renderResult, op.value);
         break;
       case 'child-part': {
         const value = result.values[partIndex++];
@@ -850,7 +855,10 @@ And the inner template was:
             );
           }
         }
-        renderResult.push(...renderValue(value, renderInfo, isValueHydratable));
+        pushRenderResult(
+          renderResult,
+          renderValue(value, renderInfo, isValueHydratable)
+        );
         break;
       }
       case 'attribute-part': {
@@ -884,15 +892,20 @@ And the inner template was:
             ? getLast(renderInfo.customElementInstanceStack)
             : undefined;
           if (part.type === PartType.PROPERTY) {
-            renderResult.push(renderPropertyPart(instance, op, committedValue));
+            pushRenderResult(
+              renderResult,
+              renderPropertyPart(instance, op, committedValue)
+            );
           } else if (part.type === PartType.BOOLEAN_ATTRIBUTE) {
             // Boolean attribute binding
-            renderResult.push(
-              ...renderBooleanAttributePart(instance, op, committedValue)
+            pushRenderResult(
+              renderResult,
+              renderBooleanAttributePart(instance, op, committedValue)
             );
           } else {
-            renderResult.push(
-              ...renderAttributePart(instance, op, committedValue)
+            pushRenderResult(
+              renderResult,
+              renderAttributePart(instance, op, committedValue)
             );
           }
         }
@@ -955,7 +968,7 @@ And the inner template was:
         }
         // Render out any attributes on the instance (both static and those
         // that may have been dynamically set by the renderer)
-        renderResult.push(...instance.renderAttributes());
+        pushRenderResult(renderResult, instance.renderAttributes());
         // If deferHydration flag is true or if this element is nested in
         // another, add the `defer-hydration` attribute, so that it does not
         // enable before the host element hydrates
@@ -963,7 +976,7 @@ And the inner template was:
           renderInfo.deferHydration ||
           renderInfo.customElementHostStack.length > 0
         ) {
-          renderResult.push(' defer-hydration');
+          pushRenderResult(renderResult, ' defer-hydration');
         }
         break;
       }
@@ -977,7 +990,7 @@ And the inner template was:
           renderInfo.customElementHostStack.length > 0
         ) {
           if (hydratable) {
-            renderResult.push(`<!--lit-node ${op.nodeIndex}-->`);
+            pushRenderResult(renderResult, `<!--lit-node ${op.nodeIndex}-->`);
           }
         }
         break;
@@ -1001,11 +1014,12 @@ And the inner template was:
           const delegatesfocusAttr = delegatesFocus
             ? ' shadowrootdelegatesfocus'
             : '';
-          renderResult.push(
+          pushRenderResult(
+            renderResult,
             `<template shadowroot="${mode}" shadowrootmode="${mode}"${delegatesfocusAttr}>`
           );
-          renderResult.push(...shadowContents);
-          renderResult.push('</template>');
+          pushRenderResult(renderResult, shadowContents);
+          pushRenderResult(renderResult, '</template>');
         }
         renderInfo.customElementHostStack.pop();
         break;
@@ -1069,6 +1083,17 @@ And the inner template was:
     throwErrorForPartIndexMismatch(partIndex, result);
   }
   return renderResult;
+}
+
+function pushRenderResult(
+  renderResult: (string | Promise<RenderResult>)[],
+  value: RenderResult
+) {
+  if (typeof value === 'string') {
+    renderResult.push(value);
+  } else {
+    renderResult.push(...value);
+  }
 }
 
 function throwErrorForPartIndexMismatch(
