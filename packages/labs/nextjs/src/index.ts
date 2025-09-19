@@ -30,7 +30,17 @@ export = (
   (nextConfig: NextConfig = {}) => {
     return Object.assign({}, nextConfig, {
       webpack: (config, options) => {
-        const {isServer} = options;
+        const {isServer, nextRuntime} = options;
+
+        // Skip patching when bundling for next's edge runtime
+        if (nextRuntime === 'edge') {
+          // Apply user provided custom webpack config function if it exists.
+          if (typeof nextConfig.webpack === 'function') {
+            return nextConfig.webpack(config, options);
+          }
+
+          return config;
+        }
 
         const {
           addDeclarativeShadowDomPolyfill = true,
