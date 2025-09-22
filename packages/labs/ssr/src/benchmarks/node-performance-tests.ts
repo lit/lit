@@ -22,6 +22,7 @@ import {
   renderCommentThread,
   renderCommentThreadMinimal,
 } from './comment-templates.js';
+import {type RenderResult} from '../lib/render-result.js';
 
 interface BenchmarkResult {
   variant: 'dsd' | 'no-dsd' | 'dsd-minimal' | 'no-dsd-minimal';
@@ -79,56 +80,43 @@ const LIT_SSR_OPTIONS = {
 /**
  * Renders a template to string using SSR and measures performance
  */
-function renderTemplateToString(
+async function renderTemplateToString(
   template: unknown,
   disableDsd = false
-): {html: string; duration: number; size: number} {
+): Promise<{duration: number; size: number}> {
   const startTime = performance.now();
 
-  try {
-    const renderResult = disableDsd
-      ? render(template, LIT_SSR_OPTIONS)
-      : render(template);
-    let html = '';
+  const renderResult = disableDsd
+    ? render(template, LIT_SSR_OPTIONS)
+    : render(template);
+  let size = 0;
 
-    // Iterate through the generator to get all HTML chunks
-    for (const chunk of renderResult) {
-      html += chunk;
-    }
-
-    const duration = performance.now() - startTime;
-    const size = html.length;
-
-    return {html, duration, size};
-  } catch (error) {
-    console.error('Render error:', error);
-    throw error;
+  // Iterate through the generator to get all HTML chunks
+  for (const chunk of renderResult) {
+    size += await countResult(await chunk);
   }
+
+  const duration = performance.now() - startTime;
+
+  return {duration, size};
 }
 
-/**
- * Validates rendered HTML for basic correctness
- */
-function validateHtml(html: string): boolean {
-  if (html.length === 0) return false;
-
-  // Check for comment indicators
-  if (!html.includes('data-comment-id') && !html.includes('data-id'))
-    return false;
-
-  // Basic check for balanced div tags
-  const openDivs = (html.match(/<div/g) || []).length;
-  const closeDivs = (html.match(/<\/div>/g) || []).length;
-  return openDivs === closeDivs;
+async function countResult(result: RenderResult): Promise<number> {
+  let count = 0;
+  for (const chunk of result) {
+    count +=
+      typeof chunk === 'string' ? chunk.length : await countResult(await chunk);
+  }
+  return count;
 }
 
 /**
  * Runs a single benchmark iteration for a specific variant
  */
-function runSingleBenchmark(
+async function runSingleBenchmark(
   variant: 'dsd' | 'no-dsd' | 'dsd-minimal' | 'no-dsd-minimal',
   comments: Comment[]
-): BenchmarkResult {
+): Promise<BenchmarkResult> {
   const stats = analyzeCommentTree(comments);
 
   const isMinimal = variant.includes('-minimal');
@@ -140,8 +128,8 @@ function runSingleBenchmark(
     : renderCommentThread(comments);
 
   try {
-    const {html, duration, size} = renderTemplateToString(template, disableDsd);
-    const isValid = validateHtml(html);
+    const {duration, size} = await renderTemplateToString(template, disableDsd);
+    const isValid = size > 0;
 
     return {
       variant,
@@ -198,11 +186,11 @@ function calculateVariantStats(results: BenchmarkResult[]): VariantStats {
 /**
  * Runs multiple iterations of a benchmark and returns statistics for all 4 variants
  */
-function runBenchmarkSuite(
+async function runBenchmarkSuite(
   scenario: string,
   config: CommentTreeConfig,
   options: Partial<BenchmarkOptions> = {}
-): ScenarioResults {
+): Promise<ScenarioResults> {
   // Use scenario-specific defaults, then global defaults, then provided options
   const scenarioDefaults = {
     iterations: config.iterations,
@@ -240,7 +228,7 @@ function runBenchmarkSuite(
   // Warmup iterations - one for each variant
   for (let i = 0; i < opts.warmupIterations; i++) {
     for (const variant of variants) {
-      runSingleBenchmark(variant, comments);
+      await runSingleBenchmark(variant, comments);
     }
     if (
       opts.logProgress &&
@@ -257,7 +245,7 @@ function runBenchmarkSuite(
   // Test iterations - all 4 variants per iteration
   for (let i = 0; i < opts.iterations; i++) {
     for (const variant of variants) {
-      const result = runSingleBenchmark(variant, comments);
+      const result = await runSingleBenchmark(variant, comments);
       results.push(result);
     }
 
@@ -396,7 +384,11 @@ export async function runAllBenchmarks(
   const allResults: Array<{scenario: string; data: ScenarioResults}> = [];
 
   for (const scenario of scenarios) {
-    const data = runBenchmarkSuite(scenario.name, scenario.config, options);
+    const data = await runBenchmarkSuite(
+      scenario.name,
+      scenario.config,
+      options
+    );
     formatResults(scenario.name, data);
     allResults.push({scenario: scenario.name, data});
   }
@@ -449,6 +441,6 @@ export async function runScenario(
   console.log(`🎯 Running ${scenarioName} benchmark`);
   console.log('='.repeat(30 + scenarioName.length));
 
-  const data = runBenchmarkSuite(scenarioName, config, options);
+  const data = await runBenchmarkSuite(scenarioName, config, options);
   formatResults(scenarioName, data);
 }
