@@ -18,14 +18,11 @@ import {
   type CommentTreeConfig,
   type Comment,
 } from './comment-tree-generator.js';
-import {
-  renderCommentThread,
-  renderCommentThreadMinimal,
-} from './comment-templates.js';
+import {renderCommentThread} from './comment-templates.js';
 import {type RenderResult} from '../lib/render-result.js';
 
 interface BenchmarkResult {
-  variant: 'dsd' | 'no-dsd' | 'dsd-minimal' | 'no-dsd-minimal';
+  variant: 'dsd' | 'no-dsd';
   totalComments: number;
   maxDepth: number;
   renderTime: number;
@@ -42,8 +39,6 @@ interface ScenarioResults {
   stats: {
     dsd: VariantStats;
     'no-dsd': VariantStats;
-    'dsd-minimal': VariantStats;
-    'no-dsd-minimal': VariantStats;
   };
 }
 
@@ -114,18 +109,15 @@ async function countResult(result: RenderResult): Promise<number> {
  * Runs a single benchmark iteration for a specific variant
  */
 async function runSingleBenchmark(
-  variant: 'dsd' | 'no-dsd' | 'dsd-minimal' | 'no-dsd-minimal',
+  variant: 'dsd' | 'no-dsd',
   comments: Comment[]
 ): Promise<BenchmarkResult> {
   const stats = analyzeCommentTree(comments);
 
-  const isMinimal = variant.includes('-minimal');
   const disableDsd = variant.includes('no-dsd');
 
   // Choose rendering template based on variant
-  const template = isMinimal
-    ? renderCommentThreadMinimal(comments)
-    : renderCommentThread(comments);
+  const template = renderCommentThread(comments);
 
   try {
     const {duration, size} = await renderTemplateToString(template, disableDsd);
@@ -218,12 +210,7 @@ async function runBenchmarkSuite(
     );
   }
 
-  const variants: Array<'dsd' | 'no-dsd' | 'dsd-minimal' | 'no-dsd-minimal'> = [
-    'dsd',
-    'no-dsd',
-    'dsd-minimal',
-    'no-dsd-minimal',
-  ];
+  const variants: Array<'dsd' | 'no-dsd'> = ['dsd', 'no-dsd'];
 
   // Warmup iterations - one for each variant
   for (let i = 0; i < opts.warmupIterations; i++) {
@@ -265,8 +252,6 @@ async function runBenchmarkSuite(
   const variantResults = {
     dsd: results.filter((r) => r.variant === 'dsd'),
     'no-dsd': results.filter((r) => r.variant === 'no-dsd'),
-    'dsd-minimal': results.filter((r) => r.variant === 'dsd-minimal'),
-    'no-dsd-minimal': results.filter((r) => r.variant === 'no-dsd-minimal'),
   };
 
   return {
@@ -275,8 +260,6 @@ async function runBenchmarkSuite(
     stats: {
       dsd: calculateVariantStats(variantResults.dsd),
       'no-dsd': calculateVariantStats(variantResults['no-dsd']),
-      'dsd-minimal': calculateVariantStats(variantResults['dsd-minimal']),
-      'no-dsd-minimal': calculateVariantStats(variantResults['no-dsd-minimal']),
     },
   };
 }
@@ -295,7 +278,6 @@ function formatResults(scenario: string, benchmarkData: ScenarioResults): void {
   ).length;
   console.log(`   Iterations: ${iterationsPerVariant} per variant\n`);
 
-  // Table header - sized to fit " ✅ No DSD Minimal " (longest content + space)
   console.log(
     '   ┌───────────────────┬──────────────┬─────────────┬─────────────┬─────────────┬──────────────┐'
   );
@@ -310,8 +292,6 @@ function formatResults(scenario: string, benchmarkData: ScenarioResults): void {
   const variants: Array<{key: keyof typeof stats; label: string}> = [
     {key: 'dsd', label: 'DSD'},
     {key: 'no-dsd', label: 'No DSD'},
-    {key: 'dsd-minimal', label: 'DSD Minimal'},
-    {key: 'no-dsd-minimal', label: 'No DSD Minimal'},
   ];
 
   variants.forEach((variant, index) => {
@@ -321,7 +301,6 @@ function formatResults(scenario: string, benchmarkData: ScenarioResults): void {
     const status = variantStats.successRate >= 0.95 ? '✅' : '❌';
 
     // Build first column with proper spacing for longest content
-    // " ✅ No DSD Minimal " needs 18 JS chars (19 terminal chars with emoji)
     const baseText = ` ${status} ${variant.label}`;
     const col1 = baseText.padEnd(18, ' '); // 18 JS chars = 19 terminal chars with emoji
     const col2 = ` ${variantStats.avgRenderTime.toFixed(1)}`.padEnd(14, ' '); // " 132.3        "
@@ -348,19 +327,10 @@ function formatResults(scenario: string, benchmarkData: ScenarioResults): void {
 
   // Performance comparisons
   const dsdVsNoDsd = stats.dsd.avgRenderTime / stats['no-dsd'].avgRenderTime;
-  const fullVsMinimal =
-    ((stats.dsd.avgRenderTime + stats['no-dsd'].avgRenderTime) /
-      2 /
-      (stats['dsd-minimal'].avgRenderTime +
-        stats['no-dsd-minimal'].avgRenderTime)) *
-    2;
 
   console.log(`\n   📊 Performance Impact:`);
   console.log(
     `      DSD vs No DSD: ${dsdVsNoDsd.toFixed(2)}x (${dsdVsNoDsd > 1 ? 'DSD slower' : 'DSD faster'})`
-  );
-  console.log(
-    `      Full vs Minimal: ${fullVsMinimal.toFixed(2)}x speedup with minimal templates`
   );
 }
 
@@ -396,22 +366,12 @@ export async function runAllBenchmarks(
   // Summary table
   console.log('\n📋 BENCHMARK SUMMARY');
   console.log('====================');
-  console.log(
-    'Scenario         │ DSD Avg    │ No DSD Avg │ DSD Min Avg │ No DSD Min Avg │'
-  );
-  console.log(
-    '─────────────────┼────────────┼────────────┼─────────────┼────────────────┤'
-  );
+  console.log('Scenario         │ DSD Avg    │ No DSD Avg │');
+  console.log('─────────────────┼────────────┼────────────┤');
 
   allResults.forEach(({scenario, data}) => {
     const dsdAvg = data.stats.dsd.avgRenderTime.toFixed(1).padStart(6);
     const noDsdAvg = data.stats['no-dsd'].avgRenderTime.toFixed(1).padStart(7);
-    const dsdMinAvg = data.stats['dsd-minimal'].avgRenderTime
-      .toFixed(1)
-      .padStart(7);
-    const noDsdMinAvg = data.stats['no-dsd-minimal'].avgRenderTime
-      .toFixed(1)
-      .padStart(10);
 
     const allSuccess = Object.values(data.stats).every(
       (s) => s.successRate >= 0.95
@@ -419,7 +379,7 @@ export async function runAllBenchmarks(
     const status = allSuccess ? '✅' : '❌';
 
     console.log(
-      `${status} ${scenario.padEnd(13)} │ ${dsdAvg}ms   │ ${noDsdAvg}ms    │ ${dsdMinAvg}ms     │ ${noDsdMinAvg}ms       │`
+      `${status} ${scenario.padEnd(13)} │ ${dsdAvg}ms   │ ${noDsdAvg}ms    │`
     );
   });
 

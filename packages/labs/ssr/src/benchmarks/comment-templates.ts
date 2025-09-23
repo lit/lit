@@ -220,41 +220,6 @@ export function renderCommentThread(comments: Comment[]): TemplateResult {
 }
 
 /**
- * Renders a simplified version for performance testing (no styling)
- */
-export function renderCommentThreadMinimal(
-  comments: Comment[]
-): TemplateResult {
-  return html`
-    <div class="comment-thread-minimal">
-      ${comments.map((comment) => renderCommentMinimal(comment))}
-    </div>
-  `;
-}
-
-/**
- * Minimal comment rendering for performance testing
- */
-function renderCommentMinimal(comment: Comment): TemplateResult {
-  return html`
-    <div data-id="${comment.id}" data-depth="${comment.depth}">
-      <header>
-        ${comment.author} • ${formatScore(comment.score)} •
-        ${formatTimestamp(comment.timestamp)}
-      </header>
-      <content>${comment.content}</content>
-      ${comment.replies.length > 0
-        ? html`
-            <replies>
-              ${comment.replies.map((reply) => renderCommentMinimal(reply))}
-            </replies>
-          `
-        : ''}
-    </div>
-  `;
-}
-
-/**
  * Renders comment statistics for benchmarking info
  */
 export function renderBenchmarkInfo(stats: {
