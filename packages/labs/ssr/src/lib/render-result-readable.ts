@@ -5,9 +5,9 @@
  */
 
 import {Readable} from 'stream';
-import {RenderResult} from './render-result.js';
+import {RenderResult, Thunk} from './render-result.js';
 
-type RenderResultIterator = Iterator<string | Promise<RenderResult>>;
+type RenderResultIterator = Iterator<string | Thunk>;
 
 /**
  * A Readable that reads from a RenderResult.
@@ -86,12 +86,21 @@ export class RenderResultReadable extends Readable {
           return;
         }
       } else {
-        // Must be a Promise
+        // Must be a thunk
         this._iterators.push(this._currentIterator);
         this._waiting = true;
-        this._currentIterator = (await value)[
-          Symbol.iterator
-        ]() as RenderResultIterator;
+        const thunkResult = await value();
+        let newIterator: RenderResultIterator;
+        if (typeof thunkResult === 'string') {
+          // If the thunk returned a string, create a single-item iterator
+          newIterator = [thunkResult][
+            Symbol.iterator
+          ]() as RenderResultIterator;
+        } else {
+          // If the thunk returned an array, iterate over it
+          newIterator = thunkResult[Symbol.iterator]() as RenderResultIterator;
+        }
+        this._currentIterator = newIterator;
         this._waiting = false;
       }
     }

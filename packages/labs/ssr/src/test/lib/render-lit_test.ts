@@ -425,6 +425,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  // eslint-disable-next-line no-only-tests/no-only-tests
   test('element with reflected properties', async () => {
     const {render, elementWithReflectedProperties} = await setup();
     const result = await render(elementWithReflectedProperties);

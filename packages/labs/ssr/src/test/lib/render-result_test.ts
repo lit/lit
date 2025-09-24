@@ -15,8 +15,8 @@ test('collectResultSync collects strings', () => {
 
 test('collectResultSync throws for a Promise', () => {
   assert.throws(
-    () => collectResultSync(['a', Promise.resolve(['b']), 'c']),
-    'abc'
+    () => collectResultSync(['a', () => Promise.resolve(['b']), 'c']),
+    'Promises not supported in collectResultSync'
   );
 });
 
@@ -24,26 +24,23 @@ test('collectResult collects strings', async () => {
   assert.equal(await collectResult(['a', 'b', 'c']), 'abc');
 });
 
-test('collectResult collects strings and Promises', async () => {
-  assert.equal(await collectResult(['a', Promise.resolve(['b']), 'c']), 'abc');
+test('collectResult collects strings and thunks', async () => {
+  assert.equal(await collectResult(['a', () => ['b'], 'c']), 'abc');
 });
 
-test('collectResult collects strings and Promises of iterables', async () => {
+test('collectResult collects strings and thunks returning arrays', async () => {
+  assert.equal(await collectResult(['a', () => ['b', 'c'], 'd']), 'abcd');
+});
+
+test('collectResult collects strings and thunks returning Promises', async () => {
   assert.equal(
-    await collectResult(['a', Promise.resolve(['b', 'c']), 'd']),
+    await collectResult(['a', () => Promise.resolve(['b', 'c']), 'd']),
     'abcd'
   );
 });
 
-test('collectResult collects strings and nested Promises of iterables', async () => {
-  assert.equal(
-    await collectResult([
-      'a',
-      Promise.resolve([Promise.resolve(['b', 'c'])]),
-      'd',
-    ]),
-    'abcd'
-  );
+test('collectResult collects nested thunks', async () => {
+  assert.equal(await collectResult(['a', () => [() => 'b', 'c'], 'd']), 'abcd');
 });
 
 test.run();

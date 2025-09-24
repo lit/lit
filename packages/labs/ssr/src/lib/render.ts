@@ -15,8 +15,8 @@ import {isHydratable} from './server-template.js';
 export type {RenderResult} from './render-result.js';
 
 /**
- * Renders a lit-html template (or any renderable lit-html value) to a string
- * iterator. Any custom elements encountered will be rendered if a matching
+ * Renders a lit-html template (or any renderable lit-html value) to a thunk array.
+ * Any custom elements encountered will be rendered if a matching
  * ElementRenderer is found.
  *
  * This method is suitable for streaming the contents of the element.
@@ -26,7 +26,7 @@ export type {RenderResult} from './render-result.js';
  *   to any reentrant calls to `render`, e.g. from a `renderShadow` callback
  *   on an ElementRenderer.
  */
-export function* render(
+export function render(
   value: unknown,
   renderInfo?: Partial<RenderInfo>
 ): RenderResult {
@@ -43,5 +43,5 @@ export function* render(
   if (isTemplateResult(value)) {
     hydratable = isHydratable(value);
   }
-  yield* renderValue(value, renderInfo as RenderInfo, hydratable);
+  return renderValue(value, renderInfo as RenderInfo, hydratable);
 }

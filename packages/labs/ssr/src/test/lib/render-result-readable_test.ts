@@ -15,27 +15,23 @@ test('RenderResultReadable collects strings', async () => {
   assert.equal(s, 'abc');
 });
 
-test('RenderResultReadable collects strings and Promises', async () => {
+test('RenderResultReadable collects strings and thunks', async () => {
   const s = await collectReadable(
-    new RenderResultReadable(['a', Promise.resolve(['b']), 'c'])
+    new RenderResultReadable(['a', () => ['b'], 'c'])
   );
   assert.equal(s, 'abc');
 });
 
-test('RenderResultReadable collects strings and Promises of iterables', async () => {
+test('RenderResultReadable collects strings and thunks returning arrays', async () => {
   const s = await collectReadable(
-    new RenderResultReadable(['a', Promise.resolve(['b', 'c']), 'd'])
+    new RenderResultReadable(['a', () => ['b', 'c'], 'd'])
   );
   assert.equal(s, 'abcd');
 });
 
-test('RenderResultReadable collects strings and nested Promises of iterables', async () => {
+test('RenderResultReadable collects strings and nested thunks', async () => {
   const s = await collectReadable(
-    new RenderResultReadable([
-      'a',
-      Promise.resolve([Promise.resolve(['b', 'c'])]),
-      'd',
-    ])
+    new RenderResultReadable(['a', () => [() => ['b', 'c']], 'd'])
   );
   assert.equal(s, 'abcd');
 });
@@ -52,7 +48,7 @@ test('RenderResultReadable collects all iterables when stream is back pressured'
 
   const readable = new TestRenderResultReadable([
     'a',
-    Promise.resolve([Promise.resolve(['__', 'b'])]),
+    () => [() => ['__', 'b']],
     '__',
     'c',
   ]);
@@ -61,11 +57,11 @@ test('RenderResultReadable collects all iterables when stream is back pressured'
   assert.equal(s, 'a__b__c');
 });
 
-test('RenderResultReadable yields for some time until promises resolve', async () => {
+test('RenderResultReadable yields for some time until thunk promises resolve', async () => {
   const readable = new RenderResultReadable([
     'a',
-    new Promise((res) => setTimeout(res, 50)).then((_) => ['b', 'c']),
-    new Promise((res) => setTimeout(res, 50)).then((_) => ['d', 'e']),
+    () => new Promise((res) => setTimeout(res, 50)).then((_) => ['b', 'c']),
+    () => new Promise((res) => setTimeout(res, 50)).then((_) => ['d', 'e']),
     'f',
   ]);
   const s = await collectReadable(readable);
@@ -75,13 +71,13 @@ test('RenderResultReadable yields for some time until promises resolve', async (
 test('pulling synchronously from RenderResultReadable cannot skip async work', async () => {
   const readable = new RenderResultReadable([
     'a',
-    new Promise((res) => setTimeout(res, 50)).then((_) => ['b']),
+    () => new Promise((res) => setTimeout(res, 50)).then((_) => ['b']),
     'c',
   ]);
   readable.setEncoding('utf8');
   assert.equal(readable.read(), 'a');
   // Regression test where it was possible to skip Promises by calling `.read`
-  // while a promise was still resolving.
+  // while a thunk promise was still resolving.
   assert.equal(readable.read(), null);
 });
 
