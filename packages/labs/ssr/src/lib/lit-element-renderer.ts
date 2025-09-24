@@ -13,7 +13,6 @@ import {
 } from '@lit-labs/ssr-dom-shim';
 import {renderValue} from './render-value.js';
 import type {RenderInfo} from './render-value.js';
-import type {RenderResult} from './render-result.js';
 
 export type Constructor<T> = {new (): T};
 
@@ -121,29 +120,31 @@ export class LitElementRenderer extends ElementRenderer {
     attributeToProperty(this.element as LitElement, name, value);
   }
 
-  override *renderShadow(renderInfo: RenderInfo): RenderResult {
+  override renderShadow(renderInfo: RenderInfo): string {
     // Render styles.
+    let result = '';
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
     if (styles !== undefined && styles.length > 0) {
-      yield '<style>';
+      result += '<style>';
       for (const style of styles) {
-        yield (style as CSSResult).cssText;
+        result += (style as CSSResult).cssText;
       }
-      yield '</style>';
+      result += '</style>';
     }
     // Render template
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    yield* renderValue((this.element as any).render(), renderInfo);
+    result += renderValue((this.element as any).render(), renderInfo);
+    return result;
   }
 
-  override renderLight(renderInfo: RenderInfo): RenderResult {
+  override renderLight(renderInfo: RenderInfo): string | undefined {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {
       return renderValue(value, renderInfo);
     } else {
-      return [];
+      return undefined;
     }
   }
 }
