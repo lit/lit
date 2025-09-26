@@ -19,7 +19,6 @@ import {
   type Comment,
 } from './comment-tree-generator.js';
 import {renderCommentThread} from './comment-templates.js';
-import {type RenderResult} from '../lib/render-result.js';
 
 interface BenchmarkResult {
   variant: 'dsd' | 'no-dsd';
@@ -75,10 +74,10 @@ const LIT_SSR_OPTIONS = {
 /**
  * Renders a template to string using SSR and measures performance
  */
-async function renderTemplateToString(
+function renderTemplateToString(
   template: unknown,
   disableDsd = false
-): Promise<{duration: number; size: number}> {
+): {duration: number; size: number} {
   const startTime = performance.now();
 
   const renderResult = disableDsd
@@ -88,21 +87,14 @@ async function renderTemplateToString(
 
   // Iterate through the generator to get all HTML chunks
   for (const chunk of renderResult) {
-    size += await countResult(await chunk);
+    if (typeof chunk !== 'string') {
+      throw new Error('Promises not supported in renderTemplateToString');
+    }
+    size += chunk.length;
   }
-
   const duration = performance.now() - startTime;
 
   return {duration, size};
-}
-
-async function countResult(result: RenderResult): Promise<number> {
-  let count = 0;
-  for (const chunk of result) {
-    count +=
-      typeof chunk === 'string' ? chunk.length : await countResult(await chunk);
-  }
-  return count;
 }
 
 /**
