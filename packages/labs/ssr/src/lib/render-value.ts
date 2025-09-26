@@ -397,7 +397,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
    * previous opcode was not `text)
    */
   const flush = (value: string) => {
-    const op = getLast(ops);
+    const op = ops.at(-1);
     if (op !== undefined && op.type === 'text') {
       op.value += value;
     } else {
@@ -750,7 +750,7 @@ export function renderValue(
   if (isRenderLightDirective(value)) {
     // If a value was produced with renderLight(), we want to call and render
     // the renderLight() method.
-    const instance = getLast(renderInfo.customElementInstanceStack);
+    const instance = renderInfo.customElementInstanceStack.at(-1);
     if (instance !== undefined) {
       const renderLightResult = instance.renderLight(renderInfo);
       if (renderLightResult !== undefined) {
@@ -892,7 +892,7 @@ And the inner template was:
           // `nothing`
           if (committedValue !== noChange) {
             const instance = op.useCustomElementInstance
-              ? getLast(renderInfo.customElementInstanceStack)
+              ? renderInfo.customElementInstanceStack.at(-1)
               : undefined;
             if (part.type === PartType.PROPERTY) {
               attributeResult = renderPropertyPart(
@@ -949,15 +949,14 @@ And the inner template was:
             // Note that the event target parent is either the unnamed/named slot
             // in the parent event target if it exists or the parent event target
             // if no matching slot exists.
-            const eventTarget = getLast(
-              renderInfo.eventTargetStack
+            const eventTarget = renderInfo.eventTargetStack.at(
+              -1
             ) as HTMLElementWithEventMeta;
-            const slotName = getLast(renderInfo.slotStack);
+            const slotName = renderInfo.slotStack.at(-1);
             (instance.element as HTMLElementWithEventMeta).__eventTargetParent =
               elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
-            (instance.element as HTMLElementWithEventMeta).__host = getLast(
-              renderInfo.customElementHostStack
-            )?.element;
+            (instance.element as HTMLElementWithEventMeta).__host =
+              renderInfo.customElementHostStack.at(-1)?.element;
             renderInfo.eventTargetStack.push(instance.element);
           }
           // Set static attributes to the element renderer
@@ -971,7 +970,7 @@ And the inner template was:
       }
       case 'custom-element-attributes': {
         renderResult.push(() => {
-          const instance = getLast(renderInfo.customElementInstanceStack);
+          const instance = renderInfo.customElementInstanceStack.at(-1);
           if (instance === undefined) {
             throw new Error(
               `Internal error: ${op.type} outside of custom element context`
@@ -1017,7 +1016,7 @@ And the inner template was:
       }
       case 'custom-element-shadow': {
         renderResult.push(() => {
-          const instance = getLast(renderInfo.customElementInstanceStack);
+          const instance = renderInfo.customElementInstanceStack.at(-1);
           if (instance === undefined) {
             throw new Error(
               `Internal error: ${op.type} outside of custom element context`
@@ -1058,7 +1057,7 @@ And the inner template was:
         break;
       case 'slot-element-open': {
         renderResult.push(() => {
-          const host = getLast(renderInfo.customElementHostStack);
+          const host = renderInfo.customElementHostStack.at(-1);
           if (host === undefined) {
             throw new Error(
               `Internal error: ${op.type} outside of custom element context`
@@ -1078,15 +1077,14 @@ And the inner template was:
               const element = new HTMLSlotElement() as HTMLSlotElement &
                 HTMLElementWithEventMeta;
               element.name = op.name ?? '';
-              const eventTarget = getLast(
-                renderInfo.eventTargetStack
+              const eventTarget = renderInfo.eventTargetStack.at(
+                -1
               ) as HTMLElementWithEventMeta;
-              const slotName = getLast(renderInfo.slotStack);
+              const slotName = renderInfo.slotStack.at(-1);
               element.__eventTargetParent =
                 elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
-              element.__host = getLast(
-                renderInfo.customElementHostStack
-              )?.element;
+              element.__host =
+                renderInfo.customElementHostStack.at(-1)?.element;
               slots.set(op.name, element);
               renderInfo.eventTargetStack.push(element);
             }
@@ -1206,8 +1204,6 @@ function displayTemplateResult(
   }
   return result.strings.join('${...}');
 }
-
-const getLast = <T>(a: Array<T>) => a[a.length - 1];
 
 /**
  * Returns true if the given node is a <script> node that the browser will
