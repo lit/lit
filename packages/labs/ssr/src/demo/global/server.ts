@@ -10,7 +10,7 @@ import koaNodeResolve from 'koa-node-resolve';
 import staticFiles from 'koa-static';
 import * as path from 'path';
 import {URL} from 'url';
-import {ThunkedRenderResultReadable} from '../../lib/render-result-readable.js';
+import {RenderResultReadable} from '../../lib/render-result-readable.js';
 import {renderAppWithInitialData} from './app-server.js';
 const {nodeResolve} = koaNodeResolve;
 
@@ -32,7 +32,7 @@ app.use(async (ctx: Koa.Context, next: Function) => {
 
   const ssrResult = renderAppWithInitialData();
   ctx.type = 'text/html';
-  ctx.body = new ThunkedRenderResultReadable(ssrResult);
+  ctx.body = new RenderResultReadable(ssrResult);
 });
 app.use(nodeResolve({root: monorepoRoot}));
 app.use(

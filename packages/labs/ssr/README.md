@@ -36,7 +36,7 @@ including defining `customElements` on the global object.
 
 Web servers should prefer rendering to a stream, as they have a lower memory
 footprint and allow sending data in chunks as they are being processed. For this
-case use `ThunkedRenderResultReadable`, which is a Node `Readable` stream
+case use `RenderResultReadable`, which is a Node `Readable` stream
 implementation that provides values from `RenderResult`. This can be piped
 into a `Writable` stream, or passed to web server frameworks like [Koa](https://koajs.com/).
 
@@ -44,14 +44,14 @@ into a `Writable` stream, or passed to web server frameworks like [Koa](https://
 // Example: server.js:
 
 import {renderThunked} from '@lit-labs/ssr';
-import {ThunkedRenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
+import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import {myTemplate} from './my-template.js';
 
 //...
 
 const ssrResult = renderThunked(myTemplate(data));
 // Assume `context` is a Koa.Context.
-context.body = new ThunkedRenderResultReadable(ssrResult);
+context.body = new RenderResultReadable(ssrResult);
 ```
 
 #### Rendering to a string
@@ -101,7 +101,7 @@ export const renderTemplate = (someData) => {
 ```js
 // Example: server.js:
 
-import {ThunkedRenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
+import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import {renderModule} from '@lit-labs/ssr/lib/render-module.js';
 
 // Execute the above `renderTemplate` in a separate VM context with a minimal DOM shim
@@ -115,7 +115,7 @@ const ssrResult = await (renderModule(
 // ...
 
 // Assume `context` is a Koa.Context, or other API that accepts a Readable.
-context.body = new ThunkedRenderResultReadable(ssrResult);
+context.body = new RenderResultReadable(ssrResult);
 ```
 
 ## Client usage
@@ -203,7 +203,7 @@ Here's an example that shows how to use a server-only template to render a full 
 
 ```js
 import {renderThunked, html} from '@lit-labs/ssr';
-import {ThunkedRenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
+import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import './app-shell.js';
 import {getContent} from './content-template.js';
 
@@ -253,7 +253,7 @@ const ssrResult = renderThunked(html`
 
 // ...
 
-context.body = new ThunkedRenderResultReadable(ssrResult);
+context.body = new RenderResultReadable(ssrResult);
 ```
 
 ## Thunked vs non-Thunked Rendering
