@@ -53,22 +53,39 @@ export const collectResult = async (
   let str = '';
   for (const chunk of result) {
     let value:
-      | void
       | string
-      | Promise<RenderResult | ThunkedRenderResult>
       | Thunk
-      | ThunkedRenderResult = chunk;
+      | Promise<string | RenderResult | ThunkedRenderResult>
+      | RenderResult
+      | ReturnType<Thunk> = chunk;
 
-    while (typeof value === 'function') {
-      value = value();
-    }
-
-    if (typeof value === 'string') {
-      str += value;
-    } else if (Array.isArray(value)) {
-      str += await collectResult(value);
-    } else if (value !== undefined) {
-      str += await collectResult(await value);
+    // This inner loop lets us repeatedly resolve thunks and Promises
+    // until we get to a string, array, or iterator.
+    while (value !== undefined) {
+      while (typeof value === 'function') {
+        value = value();
+      }
+      if (value === undefined) {
+        break;
+      }
+      if (typeof value === 'string') {
+        str += value;
+        break;
+      }
+      if (
+        Array.isArray(value) ||
+        typeof (value as RenderResult)[Symbol.iterator] === 'function'
+      ) {
+        str += await collectResult(value as RenderResult | ThunkedRenderResult);
+        break;
+      }
+      // Must be a Promise
+      if (typeof (value as Promise<unknown>).then !== 'function') {
+        throw new Error(
+          `Unexpected value in RenderResult: ${value} (${typeof value})`
+        );
+      }
+      value = await value;
     }
   }
 
@@ -86,11 +103,11 @@ export const collectResultSync = (
   let str = '';
   for (const chunk of result) {
     let value:
-      | void
       | string
-      | Promise<RenderResult | ThunkedRenderResult>
       | Thunk
-      | ThunkedRenderResult = chunk;
+      | Promise<string | RenderResult | ThunkedRenderResult>
+      | RenderResult
+      | ReturnType<Thunk> = chunk;
 
     while (typeof value === 'function') {
       value = value();

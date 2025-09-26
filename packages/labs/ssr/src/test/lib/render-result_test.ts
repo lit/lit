@@ -59,8 +59,13 @@ test('collectResult collects strings and thunks returning arrays', async () => {
 
 test('collectResult collects strings and thunks returning Promises', async () => {
   assert.equal(
-    await collectResult(['a', () => Promise.resolve(['b', 'c']), 'd']),
-    'abcd'
+    await collectResult([
+      'a',
+      () => Promise.resolve(['b', 'c']),
+      'd',
+      () => Promise.resolve('e'),
+    ]),
+    'abcde'
   );
 });
 
@@ -72,6 +77,15 @@ test('collectResult collects nested thunks', async () => {
 
 test('collectResult collects strings and Promises', async () => {
   assert.equal(await collectResult(['a', Promise.resolve(['b']), 'c']), 'abc');
+});
+
+test('collectResult collects non-array iterables', async () => {
+  assert.equal(
+    await collectResult(
+      ['a', Promise.resolve(['b'][Symbol.iterator]()), 'c'][Symbol.iterator]()
+    ),
+    'abc'
+  );
 });
 
 test('collectResultSync throws for a Promise', () => {
