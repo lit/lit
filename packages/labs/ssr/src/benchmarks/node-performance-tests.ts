@@ -10,7 +10,7 @@
  */
 
 import {performance} from 'perf_hooks';
-import {render} from '../lib/render.js';
+import {renderThunked} from '../lib/render.js';
 import {
   generateCommentTreeData,
   analyzeCommentTree,
@@ -19,6 +19,7 @@ import {
   type Comment,
 } from './comment-tree-generator.js';
 import {renderCommentThread} from './comment-templates.js';
+import {Thunk, ThunkedRenderResult} from '../lib/render-result.js';
 
 interface BenchmarkResult {
   variant: 'dsd' | 'no-dsd';
@@ -81,20 +82,39 @@ function renderTemplateToString(
   const startTime = performance.now();
 
   const renderResult = disableDsd
-    ? render(template, LIT_SSR_OPTIONS)
-    : render(template);
-  let size = 0;
+    ? renderThunked(template, LIT_SSR_OPTIONS)
+    : renderThunked(template);
 
-  // Iterate through the generator to get all HTML chunks
-  for (const chunk of renderResult) {
-    if (typeof chunk !== 'string') {
-      throw new Error('Promises not supported in renderTemplateToString');
-    }
-    size += chunk.length;
-  }
+  const size = countResult(renderResult);
+
   const duration = performance.now() - startTime;
 
   return {duration, size};
+}
+
+function countResult(result: ThunkedRenderResult): number {
+  let size = 0;
+  for (const chunk of result) {
+    let value:
+      | string
+      | Thunk
+      | Promise<string | ThunkedRenderResult>
+      | ReturnType<Thunk> = chunk;
+
+    while (typeof value === 'function') {
+      value = value();
+    }
+
+    if (typeof value === 'string') {
+      size += value.length;
+    } else if (Array.isArray(value)) {
+      size += countResult(value);
+    } else if (value !== undefined) {
+      // Promise
+      throw new Error('Async thunks are not supported in this benchmark');
+    }
+  }
+  return size;
 }
 
 /**
