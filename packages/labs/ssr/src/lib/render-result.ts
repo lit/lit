@@ -33,9 +33,10 @@ export type Thunk = () =>
 /**
  * A rendered value as an array of strings or thunks.
  *
- * This type allows for synchronous iteration while supporting both sync and async
- * rendering. Strings can be emitted immediately, while thunks must be called to
- * produce their values. Thunks can return Promises for asynchronous rendering.
+ * This type allows for synchronous iteration while supporting both sync and
+ * async rendering. Strings can be emitted immediately, while thunks must be
+ * called to produce their values. Thunks can return Promises for asynchronous
+ * rendering.
  *
  * The utility functions {@link collectResult} and {@link collectResultSync}
  * handle the iteration and thunk calling for you.
@@ -43,51 +44,66 @@ export type Thunk = () =>
 export type ThunkedRenderResult = Array<string | Thunk>;
 
 /**
- * Joins a RenderResult into a string
+ * Joins a RenderResult or ThunkedRenderResult into a string.
  */
 export const collectResult = async (
-  result: ThunkedRenderResult
+  result: RenderResult | ThunkedRenderResult
 ): Promise<string> => {
-  let value = '';
+  let str = '';
   for (const chunk of result) {
-    if (typeof chunk === 'string') {
-      value += chunk;
+    let value:
+      | string
+      | Promise<RenderResult | ThunkedRenderResult>
+      | Thunk
+      | ThunkedRenderResult = chunk;
+
+    while (typeof value === 'function') {
+      value = value();
+    }
+
+    if (typeof value === 'string') {
+      str += value;
+    } else if (Array.isArray(value)) {
+      str += await collectResult(value);
     } else {
-      // chunk is a thunk
-      const thunkResult = await chunk();
-      value +=
-        typeof thunkResult === 'string'
-          ? thunkResult
-          : await collectResult(thunkResult);
+      str += await collectResult(await value);
     }
   }
-  return value;
+
+  return str;
 };
 
 /**
- * Joins a RenderResult into a string synchronously.
+ * Joins a RenderResult or ThunkedRenderResult into a string synchronously.
  *
- * This function throws if a thunk returns a Promise.
+ * This function throws if a RenderResult contains a Promise.
  */
-export const collectResultSync = (result: ThunkedRenderResult): string => {
-  let value = '';
+export const collectResultSync = (
+  result: RenderResult | ThunkedRenderResult
+): string => {
+  let str = '';
   for (const chunk of result) {
-    if (typeof chunk === 'string') {
-      value += chunk;
+    let value:
+      | string
+      | Promise<RenderResult | ThunkedRenderResult>
+      | Thunk
+      | ThunkedRenderResult = chunk;
+
+    while (typeof value === 'function') {
+      value = value();
+    }
+
+    if (typeof value === 'string') {
+      str += value;
+    } else if (Array.isArray(value)) {
+      str += collectResultSync(value);
     } else {
-      // chunk is a thunk
-      const thunkResult = chunk();
-      if (thunkResult instanceof Promise) {
-        throw new Error(
-          'Promises not supported in collectResultSync. ' +
-            'Please use collectResult.'
-        );
-      }
-      value +=
-        typeof thunkResult === 'string'
-          ? thunkResult
-          : collectResultSync(thunkResult);
+      throw new Error(
+        'Promises not supported in collectResultSync. ' +
+          'Please use collectResult.'
+      );
     }
   }
-  return value;
+
+  return str;
 };
