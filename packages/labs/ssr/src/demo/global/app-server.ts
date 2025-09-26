@@ -8,8 +8,8 @@
  * This is a server-only module that renders the HTML file shell.
  */
 
-import {render} from '../../lib/render.js';
-import {RenderResult} from '../../lib/render-result.js';
+import {renderThunked} from '../../lib/render.js';
+import {ThunkedRenderResult} from '../../lib/render-result.js';
 import {template, initialData} from './module.js';
 
 export function renderAppWithInitialData() {
@@ -21,7 +21,7 @@ export function renderAppWithInitialData() {
 // shell in unbalanced fragments. By yielding the HTML preamble immediately
 // with no lit-html template preparation or rendering needed, we minimize TTFB,
 // And can get the browser to start prefetch as soon as possible.
-export function renderApp(data: typeof initialData): RenderResult {
+export function renderApp(data: typeof initialData): ThunkedRenderResult {
   return [
     `
     <!doctype html>
@@ -44,7 +44,7 @@ export function renderApp(data: typeof initialData): RenderResult {
         <div>`,
 
     // Call the SSR render() function to render a client/server shared template.
-    () => render(template(data)),
+    () => renderThunked(template(data)),
 
     `
         </div>

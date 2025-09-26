@@ -13,7 +13,7 @@ import {
 } from '@lit-labs/ssr-dom-shim';
 import {renderValue} from './render-value.js';
 import type {RenderInfo} from './render-value.js';
-import type {RenderResult} from './render-result.js';
+import type {ThunkedRenderResult} from './render-result.js';
 
 export type Constructor<T> = {new (): T};
 
@@ -121,8 +121,8 @@ export class LitElementRenderer extends ElementRenderer {
     attributeToProperty(this.element as LitElement, name, value);
   }
 
-  override renderShadow(renderInfo: RenderInfo): RenderResult {
-    const result: RenderResult = [];
+  override renderShadow(renderInfo: RenderInfo): ThunkedRenderResult {
+    const result: ThunkedRenderResult = [];
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
@@ -139,7 +139,7 @@ export class LitElementRenderer extends ElementRenderer {
     return result;
   }
 
-  override renderLight(renderInfo: RenderInfo): RenderResult {
+  override renderLight(renderInfo: RenderInfo): ThunkedRenderResult {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {

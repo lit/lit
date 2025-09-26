@@ -61,7 +61,7 @@ import {
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
 
-import type {RenderResult} from './render-result.js';
+import type {ThunkedRenderResult} from './render-result.js';
 import {isHydratable} from './server-template.js';
 import type {Part} from 'lit-html';
 
@@ -727,7 +727,7 @@ export function renderValue(
   value: unknown,
   renderInfo: RenderInfo,
   hydratable = true
-): RenderResult {
+): ThunkedRenderResult {
   if (renderInfo.customElementHostStack.length === 0) {
     // If the SSR root event target is not at the start of the event target
     // stack, we add it to the beginning of the array.
@@ -765,7 +765,7 @@ export function renderValue(
     );
   }
 
-  const result: RenderResult = [];
+  const result: ThunkedRenderResult = [];
 
   if (value != null && isTemplateResult(value)) {
     if (hydratable) {
@@ -809,7 +809,7 @@ export function renderValue(
 function renderTemplateResult(
   result: TemplateResult,
   renderInfo: RenderInfo
-): RenderResult {
+): ThunkedRenderResult {
   // In order to render a TemplateResult we have to handle and stream out
   // different parts of the result separately:
   //   - Literal sections of the template
@@ -830,7 +830,7 @@ function renderTemplateResult(
 
   /* The next value in result.values to render */
   let partIndex = 0;
-  const renderResult: RenderResult = [];
+  const renderResult: ThunkedRenderResult = [];
 
   for (const op of ops) {
     switch (op.type) {
@@ -885,7 +885,7 @@ And the inner template was:
               partIndex
             );
           }
-          let attributeResult: RenderResult = [];
+          let attributeResult: ThunkedRenderResult = [];
           // We don't emit anything on the server when value is `noChange` or
           // `nothing`
           if (committedValue !== noChange) {
@@ -1028,7 +1028,7 @@ And the inner template was:
           const shadowContents = instance.renderShadow(renderInfo);
           // Only emit a DSR if renderShadow() emitted something (returning
           // undefined allows effectively no-op rendering the element)
-          const shadowResult: RenderResult = [];
+          const shadowResult: ThunkedRenderResult = [];
           if (shadowContents !== undefined) {
             const {mode = 'open', delegatesFocus} =
               instance.shadowRootOptions ?? {};
@@ -1154,7 +1154,7 @@ function renderPropertyPart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
-): RenderResult {
+): ThunkedRenderResult {
   value = value === nothing ? undefined : value;
   // Property should be reflected to attribute
   const reflectedName = reflectedAttributeName(op.tagName, op.name);
@@ -1171,7 +1171,7 @@ function renderBooleanAttributePart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
-): RenderResult {
+): ThunkedRenderResult {
   if (value && value !== nothing) {
     if (instance !== undefined) {
       instance.setAttribute(op.name, '');
@@ -1186,7 +1186,7 @@ function renderAttributePart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
-): RenderResult {
+): ThunkedRenderResult {
   if (value !== nothing) {
     if (instance !== undefined) {
       instance.setAttribute(op.name, String(value ?? ''));

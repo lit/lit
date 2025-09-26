@@ -8,36 +8,38 @@ import {Readable} from 'stream';
 import {test} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {RenderResultReadable} from '../../lib/render-result-readable.js';
+import {ThunkedRenderResultReadable} from '../../lib/render-result-readable.js';
 
 test('RenderResultReadable collects strings', async () => {
-  const s = await collectReadable(new RenderResultReadable(['a', 'b', 'c']));
+  const s = await collectReadable(
+    new ThunkedRenderResultReadable(['a', 'b', 'c'])
+  );
   assert.equal(s, 'abc');
 });
 
 test('RenderResultReadable collects strings and thunks', async () => {
   const s = await collectReadable(
-    new RenderResultReadable(['a', () => ['b'], 'c'])
+    new ThunkedRenderResultReadable(['a', () => ['b'], 'c'])
   );
   assert.equal(s, 'abc');
 });
 
 test('RenderResultReadable collects strings and thunks returning arrays', async () => {
   const s = await collectReadable(
-    new RenderResultReadable(['a', () => ['b', 'c'], 'd'])
+    new ThunkedRenderResultReadable(['a', () => ['b', 'c'], 'd'])
   );
   assert.equal(s, 'abcd');
 });
 
 test('RenderResultReadable collects strings and nested thunks', async () => {
   const s = await collectReadable(
-    new RenderResultReadable(['a', () => [() => ['b', 'c']], 'd'])
+    new ThunkedRenderResultReadable(['a', () => [() => ['b', 'c']], 'd'])
   );
   assert.equal(s, 'abcd');
 });
 
 test('RenderResultReadable collects all iterables when stream is back pressured', async () => {
-  class TestRenderResultReadable extends RenderResultReadable {
+  class TestRenderResultReadable extends ThunkedRenderResultReadable {
     override push(value: any) {
       super.push(value);
 
@@ -58,7 +60,7 @@ test('RenderResultReadable collects all iterables when stream is back pressured'
 });
 
 test('RenderResultReadable yields for some time until thunk promises resolve', async () => {
-  const readable = new RenderResultReadable([
+  const readable = new ThunkedRenderResultReadable([
     'a',
     () => new Promise((res) => setTimeout(res, 50)).then((_) => ['b', 'c']),
     () => new Promise((res) => setTimeout(res, 50)).then((_) => ['d', 'e']),
@@ -69,7 +71,7 @@ test('RenderResultReadable yields for some time until thunk promises resolve', a
 });
 
 test('pulling synchronously from RenderResultReadable cannot skip async work', async () => {
-  const readable = new RenderResultReadable([
+  const readable = new ThunkedRenderResultReadable([
     'a',
     () => new Promise((res) => setTimeout(res, 50)).then((_) => ['b']),
     'c',

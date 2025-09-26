@@ -5,13 +5,13 @@
  */
 
 import Koa from 'koa';
-import staticFiles from 'koa-static';
-import koaNodeResolve from 'koa-node-resolve';
-import {URL} from 'url';
-import * as path from 'path';
-import {renderAppWithInitialData} from './app-server.js';
-import {RenderResultReadable} from '../../lib/render-result-readable.js';
 import mount from 'koa-mount';
+import koaNodeResolve from 'koa-node-resolve';
+import staticFiles from 'koa-static';
+import * as path from 'path';
+import {URL} from 'url';
+import {ThunkedRenderResultReadable} from '../../lib/render-result-readable.js';
+import {renderAppWithInitialData} from './app-server.js';
 const {nodeResolve} = koaNodeResolve;
 
 const moduleUrl = new URL(import.meta.url);
@@ -32,7 +32,7 @@ app.use(async (ctx: Koa.Context, next: Function) => {
 
   const ssrResult = renderAppWithInitialData();
   ctx.type = 'text/html';
-  ctx.body = new RenderResultReadable(ssrResult);
+  ctx.body = new ThunkedRenderResultReadable(ssrResult);
 });
 app.use(nodeResolve({root: monorepoRoot}));
 app.use(

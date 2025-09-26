@@ -8,7 +8,7 @@
 
 import {escapeHtml} from './util/escape-html.js';
 import type {RenderInfo} from './render-value.js';
-import type {RenderResult} from './render-result.js';
+import type {ThunkedRenderResult} from './render-result.js';
 
 type Interface<T> = {
   [P in keyof T]: T[P];
@@ -168,14 +168,14 @@ export abstract class ElementRenderer {
    * If `renderShadow()` returns undefined, no declarative shadow root is
    * emitted.
    */
-  renderShadow(_renderInfo: RenderInfo): RenderResult | undefined {
+  renderShadow(_renderInfo: RenderInfo): ThunkedRenderResult | undefined {
     return undefined;
   }
 
   /**
    * Render the element's light DOM children.
    */
-  renderLight(_renderInfo: RenderInfo): RenderResult | undefined {
+  renderLight(_renderInfo: RenderInfo): ThunkedRenderResult | undefined {
     return undefined;
   }
 
@@ -185,8 +185,8 @@ export abstract class ElementRenderer {
    * The default implementation serializes all attributes on the element
    * instance.
    */
-  renderAttributes(): RenderResult {
-    const result: RenderResult = [];
+  renderAttributes(): ThunkedRenderResult {
+    const result: ThunkedRenderResult = [];
     if (this.element !== undefined) {
       const {attributes} = this.element;
       for (
@@ -217,8 +217,8 @@ export class FallbackRenderer extends ElementRenderer {
     this._attributes[name.toLowerCase()] = value;
   }
 
-  override renderAttributes(): RenderResult {
-    const result: RenderResult = [];
+  override renderAttributes(): ThunkedRenderResult {
+    const result: ThunkedRenderResult = [];
     for (const [name, value] of Object.entries(this._attributes)) {
       if (value === '' || value === undefined || value === null) {
         result.push(` ${name}`);

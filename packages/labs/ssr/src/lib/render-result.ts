@@ -5,6 +5,21 @@
  */
 
 /**
+ * A rendered value as an iterable of strings or Promises of a RenderResult.
+ *
+ * This type is a synchronous Iterable so that consumers do not have to await
+ * every value according to the JS asynchronous iterator protocol, which would
+ * cause additional overhead compared to a sync iterator.
+ *
+ * Consumers should check the type of each value emitted by the iterator, and
+ * if it is a Promise await it if possible, or throw an error.
+ *
+ * The utility functions {@link collectRenderResult} and
+ * {@link collectRenderResultSync} do this for you.
+ */
+export type RenderResult = Iterable<string | Promise<RenderResult>>;
+
+/**
  * A thunk is a function that when called returns either:
  * - A string
  * - An array of strings and/or thunks
@@ -12,8 +27,8 @@
  */
 export type Thunk = () =>
   | string
-  | RenderResult
-  | Promise<string | RenderResult>;
+  | ThunkedRenderResult
+  | Promise<string | ThunkedRenderResult>;
 
 /**
  * A rendered value as an array of strings or thunks.
@@ -25,12 +40,14 @@ export type Thunk = () =>
  * The utility functions {@link collectResult} and {@link collectResultSync}
  * handle the iteration and thunk calling for you.
  */
-export type RenderResult = Array<string | Thunk>;
+export type ThunkedRenderResult = Array<string | Thunk>;
 
 /**
  * Joins a RenderResult into a string
  */
-export const collectResult = async (result: RenderResult): Promise<string> => {
+export const collectResult = async (
+  result: ThunkedRenderResult
+): Promise<string> => {
   let value = '';
   for (const chunk of result) {
     if (typeof chunk === 'string') {
@@ -52,7 +69,7 @@ export const collectResult = async (result: RenderResult): Promise<string> => {
  *
  * This function throws if a thunk returns a Promise.
  */
-export const collectResultSync = (result: RenderResult): string => {
+export const collectResultSync = (result: ThunkedRenderResult): string => {
   let value = '';
   for (const chunk of result) {
     if (typeof chunk === 'string') {
