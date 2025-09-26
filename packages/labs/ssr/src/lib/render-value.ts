@@ -924,7 +924,6 @@ And the inner template was:
         // running them), but we still need to advance the part index
         renderResult.push(() => {
           partIndex++;
-          return '';
         });
         break;
       }
@@ -965,7 +964,6 @@ And the inner template was:
           }
           renderInfo.customElementInstanceStack.push(instance);
           renderInfo.customElementRendered?.(op.tagName);
-          return '';
         });
         break;
       }
@@ -1005,14 +1003,13 @@ And the inner template was:
           // since the hydration node walk will need to stop at this element
           // to hydrate it
           if (
-            op.boundAttributesCount > 0 ||
-            renderInfo.customElementHostStack.length > 0
+            (op.boundAttributesCount > 0 ||
+              renderInfo.customElementHostStack.length > 0) &&
+            hydratable
           ) {
-            if (hydratable) {
-              return `<!--lit-node ${op.nodeIndex}-->`;
-            }
+            return `<!--lit-node ${op.nodeIndex}-->`;
           }
-          return '';
+          return undefined;
         });
         break;
       }
@@ -1044,7 +1041,6 @@ And the inner template was:
             shadowResult.push('</template>');
             shadowResult.push(() => {
               renderInfo.customElementHostStack.pop();
-              return '';
             });
           }
           // renderInfo.customElementHostStack.pop();
@@ -1056,7 +1052,6 @@ And the inner template was:
         renderResult.push(() => {
           renderInfo.customElementInstanceStack.pop();
           renderInfo.eventTargetStack.pop();
-          return '';
         });
         break;
       case 'slot-element-open': {
@@ -1094,26 +1089,22 @@ And the inner template was:
               renderInfo.eventTargetStack.push(element);
             }
           }
-          return '';
         });
         break;
       }
       case 'slot-element-close':
         renderResult.push(() => {
           renderInfo.eventTargetStack.pop();
-          return '';
         });
         break;
       case 'slotted-element-open':
         renderResult.push(() => {
           renderInfo.slotStack.push(op.name);
-          return '';
         });
         break;
       case 'slotted-element-close':
         renderResult.push(() => {
           renderInfo.slotStack.pop();
-          return '';
         });
         break;
       default:
@@ -1125,7 +1116,6 @@ And the inner template was:
     if (partIndex !== result.values.length) {
       throwErrorForPartIndexMismatch(partIndex, result);
     }
-    return '';
   });
 
   return renderResult;

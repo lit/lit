@@ -26,6 +26,7 @@ export type RenderResult = Iterable<string | Promise<RenderResult>>;
  * - A Promise of the above
  */
 export type Thunk = () =>
+  | void
   | string
   | ThunkedRenderResult
   | Promise<string | ThunkedRenderResult>;
@@ -52,6 +53,7 @@ export const collectResult = async (
   let str = '';
   for (const chunk of result) {
     let value:
+      | void
       | string
       | Promise<RenderResult | ThunkedRenderResult>
       | Thunk
@@ -65,7 +67,7 @@ export const collectResult = async (
       str += value;
     } else if (Array.isArray(value)) {
       str += await collectResult(value);
-    } else {
+    } else if (value !== undefined) {
       str += await collectResult(await value);
     }
   }
@@ -84,6 +86,7 @@ export const collectResultSync = (
   let str = '';
   for (const chunk of result) {
     let value:
+      | void
       | string
       | Promise<RenderResult | ThunkedRenderResult>
       | Thunk
@@ -97,7 +100,7 @@ export const collectResultSync = (
       str += value;
     } else if (Array.isArray(value)) {
       str += collectResultSync(value);
-    } else {
+    } else if (value !== undefined) {
       throw new Error(
         'Promises not supported in collectResultSync. ' +
           'Please use collectResult.'

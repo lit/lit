@@ -185,7 +185,10 @@ export class ThunkedRenderResultReadable extends Readable {
         this._waiting = true;
         const thunkResult = await value();
         let newIterator: ThunkedRenderResultIterator;
-        if (typeof thunkResult === 'string') {
+        if (thunkResult === undefined) {
+          // If the thunk returned undefined, create an empty iterator
+          newIterator = [][Symbol.iterator]() as ThunkedRenderResultIterator;
+        } else if (typeof thunkResult === 'string') {
           // If the thunk returned a string, create a single-item iterator
           newIterator = [thunkResult][
             Symbol.iterator

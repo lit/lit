@@ -124,6 +124,11 @@ export class RenderResultIterator
       value = value();
     }
 
+    // If the value is undefined, return the next value:
+    if (value === undefined) {
+      return this.next();
+    }
+
     // If the value is a string, return a new iterator result:
     if (typeof value === 'string') {
       return {done: false, value};
