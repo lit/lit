@@ -21,6 +21,10 @@ export type {RenderInfo} from './render-value.js';
 /**
  * Renders a lit-html renderable, usually a template result, to an iterable.
  *
+ * When consuming the result, Promises *must* be awaited before retrieving
+ * subsequent values. If Promises are not awaited, or not awaited in the correct
+ * order, the output will be incorrect.
+ *
  * @param value Value to render
  * @param renderInfo Optional render context object that should be passed to any
  *   reentrant calls to `render`, e.g. from a `renderShadow` callback on an
@@ -39,6 +43,10 @@ export function render(
  * ElementRenderer is found.
  *
  * This method is suitable for streaming the contents of the element.
+ *
+ * When consuming the result, thunks *must* be called in order to obtain their
+ * values. If thunks are not called, or not called in the correct order, the
+ * output will be incorrect.
  *
  * @param value Value to render
  * @param renderInfo Optional render context object that should be passed to any
@@ -70,7 +78,9 @@ type InternalRenderResultIterator = Iterator<string | Thunk>;
 /**
  * Wraps a ThunkedRenderResult to implement a RenderResult.
  */
-class RenderResultIterator implements Iterator<string | Promise<RenderResult>> {
+export class RenderResultIterator
+  implements Iterator<string | Promise<RenderResult>>
+{
   /**
    * A stack of open iterators.
    *
