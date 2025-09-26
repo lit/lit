@@ -885,7 +885,7 @@ And the inner template was:
               partIndex
             );
           }
-          let attributeResult: ThunkedRenderResult = [];
+          let attributeResult: string | undefined = undefined;
           // We don't emit anything on the server when value is `noChange` or
           // `nothing`
           if (committedValue !== noChange) {
@@ -1144,47 +1144,46 @@ function renderPropertyPart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
-): ThunkedRenderResult {
+): string | undefined {
   value = value === nothing ? undefined : value;
   // Property should be reflected to attribute
   const reflectedName = reflectedAttributeName(op.tagName, op.name);
   if (instance !== undefined) {
     instance.setProperty(op.name, value);
   }
-  if (reflectedName !== undefined) {
-    return [`${reflectedName}="${escapeHtml(String(value))}"`];
-  }
-  return [];
+  return reflectedName !== undefined
+    ? `${reflectedName}="${escapeHtml(String(value))}"`
+    : undefined;
 }
 
 function renderBooleanAttributePart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
-): ThunkedRenderResult {
+): string | undefined {
   if (value && value !== nothing) {
     if (instance !== undefined) {
       instance.setAttribute(op.name, '');
     } else {
-      return [`${op.name}`];
+      return op.name;
     }
   }
-  return [];
+  return undefined;
 }
 
 function renderAttributePart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
-): ThunkedRenderResult {
+): string | undefined {
   if (value !== nothing) {
     if (instance !== undefined) {
       instance.setAttribute(op.name, String(value ?? ''));
     } else {
-      return [`${op.name}="${escapeHtml(String(value ?? ''))}"`];
+      return `${op.name}="${escapeHtml(String(value ?? ''))}"`;
     }
   }
-  return [];
+  return undefined;
 }
 
 /**
