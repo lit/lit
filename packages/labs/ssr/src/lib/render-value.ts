@@ -796,7 +796,9 @@ export function renderValue(
         result.push(() => renderValue(item, renderInfo, hydratable));
       }
     } else {
-      result.push(escapeHtml(String(value)));
+      result.push(
+        escapeHtml(typeof value === 'string' ? value : String(value))
+      );
     }
     if (hydratable) {
       result.push(`<!--/lit-part-->`);
@@ -1152,7 +1154,7 @@ function renderPropertyPart(
     instance.setProperty(op.name, value);
   }
   return reflectedName !== undefined
-    ? `${reflectedName}="${escapeHtml(String(value))}"`
+    ? `${reflectedName}="${escapeHtml(typeof value === 'string' ? value : String(value))}"`
     : undefined;
 }
 
@@ -1177,10 +1179,16 @@ function renderAttributePart(
   value: unknown
 ): string | undefined {
   if (value !== nothing) {
+    value =
+      typeof value === 'string'
+        ? value
+        : value == null || value === noChange
+          ? ''
+          : String(value);
     if (instance !== undefined) {
-      instance.setAttribute(op.name, String(value ?? ''));
+      instance.setAttribute(op.name, value as string);
     } else {
-      return `${op.name}="${escapeHtml(String(value ?? ''))}"`;
+      return `${op.name}="${escapeHtml(value as string)}"`;
     }
   }
   return undefined;
