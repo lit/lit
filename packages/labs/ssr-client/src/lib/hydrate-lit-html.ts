@@ -449,6 +449,10 @@ const createAttributeParts = (
 
 // Number of 32 bit elements to use to create template digests
 const digestSize = 2;
+
+// Digest cache
+const digestCache = new WeakMap<TemplateStringsArray, string>();
+
 // We need to specify a digest to use across rendering environments. This is a
 // simple digest build from a DJB2-ish hash modified from:
 // https://github.com/darkskyapp/string-hash/blob/master/index.js
@@ -461,6 +465,11 @@ const digestSize = 2;
 //  - Easily specifiable and implementable in multiple languages.
 // We don't care about cryptographic suitability.
 export const digestForTemplateResult = (templateResult: TemplateResult) => {
+  let digest = digestCache.get(templateResult.strings);
+  if (digest !== undefined) {
+    return digest;
+  }
+
   const hashes = new Uint32Array(digestSize).fill(5381);
 
   for (const s of templateResult.strings) {
@@ -469,6 +478,7 @@ export const digestForTemplateResult = (templateResult: TemplateResult) => {
     }
   }
   const str = String.fromCharCode(...new Uint8Array(hashes.buffer));
+
   // Use `btoa` in browsers because it is supported universally.
   //
   // In Node, we are sometimes executing in an isolated VM context, which means
@@ -478,5 +488,9 @@ export const digestForTemplateResult = (templateResult: TemplateResult) => {
   // for `btoa` when they set up their VM context, we instead inject an import
   // for `Buffer` from Node's built-in `buffer` module in our Rollup config (see
   // note at the top of this file), and use that.
-  return NODE_MODE ? Buffer.from(str, 'binary').toString('base64') : btoa(str);
+  digest = NODE_MODE
+    ? Buffer.from(str, 'binary').toString('base64')
+    : btoa(str);
+  digestCache.set(templateResult.strings, digest);
+  return digest;
 };

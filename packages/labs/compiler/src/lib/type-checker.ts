@@ -5,7 +5,7 @@
  */
 
 import ts from 'typescript';
-import {isLitTaggedTemplateExpression} from '@lit-labs/analyzer/lib/lit-html/template.js';
+import {isLitHtmlTaggedTemplateExpression} from '@lit-labs/analyzer/lib/lit/template.js';
 
 const compilerOptions = {
   target: ts.ScriptTarget.ESNext,
@@ -52,8 +52,10 @@ class TypeChecker {
    * @returns if the tagged template expression is a lit template that can be
    * compiled.
    */
-  isLitTaggedTemplateExpression(node: ts.TaggedTemplateExpression): boolean {
-    return isLitTaggedTemplateExpression(node, ts, this.checker);
+  isLitHtmlTaggedTemplateExpression(
+    node: ts.TaggedTemplateExpression
+  ): boolean {
+    return isLitHtmlTaggedTemplateExpression(node, ts, this.checker);
   }
 }
 

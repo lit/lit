@@ -1,6 +1,6 @@
 {
   "name": "@lit-internal/test-elements-react",
-  "version": "1.0.8",
+  "version": "1.0.9",
   "private": true,
   "description": "React components made by wrapping @lit-internal/test-element-a with @lit/react used for testing.",
   "type": "module",
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@lit-internal/test-element-a": "1.0.1",
-    "@lit/react": "1.0.7"
+    "@lit/react": "1.0.8"
   },
   "peerDependencies": {
     "react": "^17 || ^18",

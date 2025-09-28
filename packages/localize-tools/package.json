@@ -140,7 +140,7 @@
     "minimist": "^1.2.5",
     "parse5": "^7.1.1",
     "source-map-support": "^0.5.19",
-    "typescript": "~5.5.0"
+    "typescript": "~5.9.0"
   },
   "devDependencies": {
     "@lit-internal/tests": "0.0.1",

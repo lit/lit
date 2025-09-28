@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/rollup-plugin-minify-html-literals",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Rollup plugin to minify HTML template literal strings",
   "main": "index.js",
   "types": "index.d.ts",
@@ -74,7 +74,7 @@
   "devDependencies": {
     "@types/clean-css": "^4.2.0",
     "@types/html-minifier": "^4.0.5",
-    "@types/node": "^22.4.1",
+    "@types/node": "^22.17.0",
     "@types/sinon": "^5.0.1",
     "c8": "^10.1.2",
     "husky": "^0.14.3",

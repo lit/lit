@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/gen-wrapper-react",
   "description": "Code generator for React wrapper for Lit components",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "publishConfig": {
     "access": "public"
   },

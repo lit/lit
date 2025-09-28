@@ -1,5 +1,18 @@
 # Change Log
 
+## 4.2.1
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+- [#4988](https://github.com/lit/lit/pull/4988) [`6792b7ef`](https://github.com/lit/lit/commit/6792b7ef422a090374e67581b5c8f07dd779edc9) Thanks [@ADNolan](https://github.com/ADNolan)! - Adjusted the comparison to use the name property of the \_$resolve function and the resolveOverrideFn in private ssr support to prevent duplicated patching of the directive class.
+
+- [#4976](https://github.com/lit/lit/pull/4976) [`a126d8df`](https://github.com/lit/lit/commit/a126d8dfb05df0bbf30d771685b9c8034d7be542) - Fix minor regression in property converters. fromAttribute may return either null or undefined.
+
+- Updated dependencies [[`3ac01aee`](https://github.com/lit/lit/commit/3ac01aeee8de3182c48c842d1a6084e58d729b14)]:
+  - @lit-labs/ssr-dom-shim@1.4.0
+
 ## 4.2.0
 
 ### Minor Changes
@@ -128,7 +141,6 @@
 - [#3710](https://github.com/lit/lit/pull/3710) [`09949234`](https://github.com/lit/lit/commit/09949234445388d51bfb4ee24ff28a4c9f82fe17) - Add `undefined` to the return type of PropertyValues.get()
 
 - Updated dependencies:
-
   - @lit/reactive-element@2.0.0
   - lit-html@3.0.0
 

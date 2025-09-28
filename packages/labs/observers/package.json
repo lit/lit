@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/observers",
-  "version": "2.0.5",
+  "version": "2.0.6",
   "description": "A set of reactive controllers that facilitate using the platform observer objects.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -74,6 +74,7 @@
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
+        "../../lit-html:build:ts:types",
         "../../reactive-element:build:ts:types"
       ],
       "clean": "if-file-deleted",

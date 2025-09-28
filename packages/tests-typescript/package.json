@@ -4,21 +4,30 @@
   "private": true,
   "type": "module",
   "dependencies": {
-    "typescript": "5.8.2",
+    "typescript": "5.9.2",
+    "typescript5_5": "npm:typescript@~5.5.0",
+    "typescript5_6": "npm:typescript@~5.6.0",
+    "typescript5_7": "npm:typescript@~5.7.0",
+    "typescript5_8": "npm:typescript@~5.8.0",
     "lit": "*"
   },
   "scripts": {
     "test": "wireit",
     "test:node": "wireit",
     "test:nodenext": "wireit",
-    "test:bundler": "wireit"
+    "test:bundler": "wireit",
+    "test:ts5_5": "wireit"
   },
   "wireit": {
     "test": {
       "dependencies": [
         "test:node",
         "test:nodenext",
-        "test:bundler"
+        "test:bundler",
+        "test:ts5_5",
+        "test:ts5_6",
+        "test:ts5_7",
+        "test:ts5_8"
       ]
     },
     "test:node": {
@@ -35,6 +44,30 @@
     },
     "test:bundler": {
       "command": "npx tsc --module es2020 --moduleResolution bundler --lib DOM --noEmit src/test-entry.ts",
+      "dependencies": [
+        "../lit:build"
+      ]
+    },
+    "test:ts5_5": {
+      "command": "node ../../node_modules/typescript5_5/bin/tsc --module es2020 --moduleResolution node --lib DOM --noEmit src/test-entry.ts",
+      "dependencies": [
+        "../lit:build"
+      ]
+    },
+    "test:ts5_6": {
+      "command": "node ../../node_modules/typescript5_6/bin/tsc --module es2020 --moduleResolution node --lib DOM --noEmit src/test-entry.ts",
+      "dependencies": [
+        "../lit:build"
+      ]
+    },
+    "test:ts5_7": {
+      "command": "node ../../node_modules/typescript5_7/bin/tsc --module es2020 --moduleResolution node --lib DOM --noEmit src/test-entry.ts",
+      "dependencies": [
+        "../lit:build"
+      ]
+    },
+    "test:ts5_8": {
+      "command": "node ../../node_modules/typescript5_8/bin/tsc --module es2020 --moduleResolution node --lib DOM --noEmit src/test-entry.ts",
       "dependencies": [
         "../lit:build"
       ]

@@ -55,7 +55,7 @@ export namespace LitUnstable {
       kind: 'begin render';
       id: number;
       value: unknown;
-      container: HTMLElement | DocumentFragment;
+      container: RenderRootNode;
       options: RenderOptions | undefined;
       part: ChildPart | undefined;
     }
@@ -63,7 +63,7 @@ export namespace LitUnstable {
       kind: 'end render';
       id: number;
       value: unknown;
-      container: HTMLElement | DocumentFragment;
+      container: RenderRootNode;
       options: RenderOptions | undefined;
       part: ChildPart;
     }
@@ -721,6 +721,11 @@ export interface RenderOptions {
    */
   isConnected?: boolean;
 }
+
+/**
+ * The root DOM node for rendering.
+ */
+export type RenderRootNode = HTMLElement | SVGElement | DocumentFragment;
 
 const walker = d.createTreeWalker(
   d,
@@ -2202,7 +2207,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(global.litHtmlVersions ??= []).push('3.3.0');
+(global.litHtmlVersions ??= []).push('3.3.1');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
   queueMicrotask(() => {
     issueWarning!(
@@ -2240,7 +2245,7 @@ if (DEV_MODE && global.litHtmlVersions.length > 1) {
  */
 export const render = (
   value: unknown,
-  container: HTMLElement | DocumentFragment,
+  container: RenderRootNode,
   options?: RenderOptions
 ): RootPart => {
   if (DEV_MODE && container == null) {
