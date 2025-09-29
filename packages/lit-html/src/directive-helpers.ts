@@ -169,7 +169,8 @@ export const insertPart = (
       const moveMethod =
         _endNode.getRootNode({composed: true}) ===
         container.getRootNode({composed: true}) /* && start?.nodeType !== 8 */
-          ? (container.moveBefore ?? container.insertBefore)
+          ? ((container as NodeWithMoveBefore).moveBefore ??
+            container.insertBefore)
           : container.insertBefore;
       while (start !== endNode) {
         const n: Node | null = wrap(start!).nextSibling;
@@ -182,10 +183,8 @@ export const insertPart = (
   return part;
 };
 
-declare global {
-  interface Node {
-    moveBefore<T extends Node>(node: T, child: Node | null): T;
-  }
+interface NodeWithMoveBefore extends Node {
+  moveBefore<T extends Node>(node: T, child: Node | null): T;
 }
 
 /**
