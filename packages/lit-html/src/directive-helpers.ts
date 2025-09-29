@@ -164,7 +164,7 @@ export const insertPart = (
     if (endNode !== refNode || parentChanged) {
       let start: Node | null = part._$startNode;
       // moveBefore() cannot be called if the old parent and new parent do not
-      // have the same connected shadow-including-root, so we fall back to
+      // have the same shadow-including-root, so we fall back to
       // insertBefore() in that case. See https://dom.spec.whatwg.org/#move
       const moveMethod =
         _endNode.getRootNode({composed: true}) ===
