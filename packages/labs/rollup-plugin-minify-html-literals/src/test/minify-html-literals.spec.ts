@@ -252,7 +252,9 @@ suite('minify-html-literals', () => {
   });
 
   test('should minify html with attribute placeholders that have no quotes and JS comments', async () => {
-    const result = await minifyHTMLLiterals(COMMENT_SOURCE, {fileName: 'test.js'});
+    const result = await minifyHTMLLiterals(COMMENT_SOURCE, {
+      fileName: 'test.js',
+    });
     assert.equal(typeof result, 'object');
     assert.equal(result!.code, COMMENT_SOURCE_MIN);
   });
@@ -296,8 +298,8 @@ suite('minify-html-literals', () => {
 
   // TODO: fix this case
   test('fails to minify static html templates', async () => {
-    await assert.rejects(async () =>
-      await minifyHTMLLiterals(STATIC_SOURCE, {fileName: 'test.js'})
+    await assert.rejects(
+      async () => await minifyHTMLLiterals(STATIC_SOURCE, {fileName: 'test.js'})
     );
   });
 
@@ -328,7 +330,10 @@ suite('minify-html-literals', () => {
 
     test('should allow custom partial minifyOptions', async () => {
       const minifyOptions = {caseSensitive: false};
-      const result = await minifyHTMLLiterals(SOURCE, {fileName: 'test.js', minifyOptions});
+      const result = await minifyHTMLLiterals(SOURCE, {
+        fileName: 'test.js',
+        minifyOptions,
+      });
       // Verify that minification actually happened
       assert.notEqual(result, null);
       assert.ok(minifyHTMLSpy.called);
