@@ -138,7 +138,8 @@ export const insertPart = (
       containerPart.options
     );
   } else {
-    const endNode = wrap(part._$endNode!).nextSibling;
+    const _endNode = wrap(part._$endNode!);
+    const endNode = _endNode.nextSibling;
     const oldParent = part._$parent;
     const parentChanged = oldParent !== containerPart;
     if (parentChanged) {
@@ -162,20 +163,18 @@ export const insertPart = (
     }
     if (endNode !== refNode || parentChanged) {
       let start: Node | null = part._$startNode;
-      // moveBefore() cannot be called if either the new parent or the node to
-      // move is disconnected, so we fall back to insertBefore() in that case.
-      // The node's old parent's connected state will match the node's connected
-      // state, so we can use that to determine whether to use insertBefore().
-      // See https://github.com/whatwg/dom/pull/1307/commits/fbbde69efac33d3e4ee36a818101975a37941f8e
+      // moveBefore() cannot be called if the old parent and new parent do not
+      // have the same connected shadow-including-root, so we fall back to
+      // insertBefore() in that case. See https://dom.spec.whatwg.org/#move
       const moveMethod =
-        wrap(part._$endNode!).isConnected === false ||
-        container.isConnected === false
-          ? container.insertBefore
-          : container.moveBefore ?? container.insertBefore;
+        _endNode.getRootNode({composed: true}) ===
+        container.getRootNode({composed: true}) /* && start?.nodeType !== 8 */
+          ? (container.moveBefore ?? container.insertBefore)
+          : container.insertBefore;
       while (start !== endNode) {
         const n: Node | null = wrap(start!).nextSibling;
-        moveMethod.call(container, start!, refNode);
-        start = n;
+        moveMethod.call(container, wrap(start!), refNode && wrap(refNode));
+        start = n == null ? n : wrap(n);
       }
     }
   }
