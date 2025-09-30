@@ -268,7 +268,7 @@ has lower overhead compared to the `RenderResult` returned by `render()`.
 You should prefer `renderThunked()` over `render()`, which exists for backwards
 compatibility.
 
-In the future we may introduce APIs like `renderToStream()` and
+In the future we may introduce APIs like `renderToString()` and
 `renderToStream()` that eliminate the need to expose the underlying
 representation.
 

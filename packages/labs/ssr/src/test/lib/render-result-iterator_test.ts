@@ -155,6 +155,10 @@ test('RenderResultIterator converts Promise<string> to Promise<RenderResult>', a
 
   const resolvedValue = await result2.value;
   assert.equal(resolvedValue, 'async-value');
+
+  const result3 = iterator.next();
+  assert.equal(result3.done, false);
+  assert.equal(result3.value, 'b');
 });
 
 test('RenderResultIterator converts Promise<array> to Promise<RenderResult>', async () => {
@@ -185,32 +189,6 @@ test('RenderResultIterator converts Promise<array> to Promise<RenderResult>', as
   const result5 = iterator.next();
   assert.equal(result5.done, false);
   assert.equal(result5.value, 'b');
-});
-
-test('RenderResultIterator demonstrates proper async usage pattern', async () => {
-  // This test shows that you cannot manually iterate through async results
-  // with next() - you must use the async iteration protocols properly
-  const thunk: Thunk = () => Promise.resolve('async-value');
-  const thunked: ThunkedRenderResult = ['sync', thunk];
-  const iterator = new RenderResultIterator(thunked);
-
-  // First iteration gets sync value
-  const result1 = iterator.next();
-  assert.equal(result1.done, false);
-  assert.equal(result1.value, 'sync');
-
-  // Second iteration gets a promise
-  const result2 = iterator.next();
-  assert.equal(result2.done, false);
-  assert.ok(result2.value instanceof Promise);
-
-  // The promise resolves to the async value
-  const resolved = await result2.value;
-  assert.equal(resolved, 'async-value');
-
-  // Note: We cannot call next() again here because the iterator
-  // is still in "waiting" state. This is by design - async iteration
-  // should use for-await-of or similar patterns, not manual next() calls.
 });
 
 //

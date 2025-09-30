@@ -888,8 +888,7 @@ And the inner template was:
             );
           }
           let attributeResult: string | undefined = undefined;
-          // We don't emit anything on the server when value is `noChange` or
-          // `nothing`
+          // We don't emit anything on the server when value is `noChange`
           if (committedValue !== noChange) {
             const instance = op.useCustomElementInstance
               ? renderInfo.customElementInstanceStack.at(-1)
@@ -978,12 +977,11 @@ And the inner template was:
           }
           // Perform any connect-time work via the renderer (e.g. reflecting any
           // properties to attributes, for example)
-          if (instance.connectedCallback) {
-            instance.connectedCallback();
-          }
+          instance?.connectedCallback();
+
           // Render out any attributes on the instance (both static and those
           // that may have been dynamically set by the renderer)
-          const result = instance.renderAttributes();
+          let result = instance.renderAttributes();
           // If deferHydration flag is true or if this element is nested in
           // another, add the `defer-hydration` attribute, so that it does not
           // enable before the host element hydrates
@@ -991,7 +989,7 @@ And the inner template was:
             renderInfo.deferHydration ||
             renderInfo.customElementHostStack.length > 0
           ) {
-            result.push(' defer-hydration');
+            result = result.concat(' defer-hydration');
           }
           return result;
         });
@@ -1044,7 +1042,6 @@ And the inner template was:
               renderInfo.customElementHostStack.pop();
             });
           }
-          // renderInfo.customElementHostStack.pop();
           return shadowResult;
         });
         break;

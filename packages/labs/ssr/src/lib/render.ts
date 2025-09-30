@@ -79,7 +79,7 @@ type InternalRenderResultIterator = Iterator<string | Thunk>;
  * Wraps a ThunkedRenderResult to implement a RenderResult.
  */
 export class RenderResultIterator
-  implements Iterator<string | Promise<RenderResult>>
+  implements IterableIterator<string | Promise<RenderResult>>
 {
   /**
    * A stack of open iterators.
@@ -101,65 +101,68 @@ export class RenderResultIterator
         'Cannot call next() while waiting for a Promise to resolve'
       );
     }
-    const iterator = this._iterators.at(-1);
-    if (iterator === undefined) {
-      return {done: true, value: undefined};
-    }
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const iterator = this._iterators.at(-1);
+      if (iterator === undefined) {
+        return {done: true, value: undefined};
+      }
 
-    // Get the next value from the current iterator
-    const result = iterator.next();
-    if (result.done) {
-      this._iterators.pop();
-      return this.next();
-    }
-    let value: string | Thunk | ReturnType<Thunk> = result.value;
+      // Get the next value from the current iterator
+      const result = iterator.next();
+      if (result.done) {
+        this._iterators.pop();
+        continue;
+      }
+      let value: string | Thunk | ReturnType<Thunk> = result.value;
 
-    // If the value is a string, return the result as-is:
-    if (typeof value === 'string') {
-      return result as IteratorResult<string, unknown>;
-    }
+      // If the value is a string, return the result as-is:
+      if (typeof value === 'string') {
+        return result as IteratorResult<string, unknown>;
+      }
 
-    // Otherwise, it's a thunk. Trampoline to fully evaluate thunks:
-    while (typeof value === 'function') {
-      value = value();
-    }
+      // Otherwise, it's a thunk. Trampoline to fully evaluate thunks:
+      while (typeof value === 'function') {
+        value = value();
+      }
 
-    // If the value is undefined, return the next value:
-    if (value === undefined) {
-      return this.next();
-    }
+      // If the value is undefined, return the next value:
+      if (value === undefined) {
+        continue;
+      }
 
-    // If the value is a string, return a new iterator result:
-    if (typeof value === 'string') {
-      return {done: false, value};
-    }
+      // If the value is a string, return a new iterator result:
+      if (typeof value === 'string') {
+        return {done: false, value};
+      }
 
-    // If the value is an array, push a new iterator for it onto the stack, and
-    // recurse to start consuming it:
-    if (Array.isArray(value)) {
-      this._iterators.push(value[Symbol.iterator]());
-      return this.next();
-    }
+      // If the value is an array, push a new iterator for it onto the stack, and
+      // recurse to start consuming it:
+      if (Array.isArray(value)) {
+        this._iterators.push(value[Symbol.iterator]());
+        continue;
+      }
 
-    // The value is a Promise. Convert to a Promise<RenderResult>:
-    this._waiting = true;
-    return {
-      done: false,
-      value: value.then((r) => {
-        if (typeof r === 'string') {
-          return r;
-        }
-        // Instead of returning a new iterator, flatten the array into our
-        // iterator stack:
-        this._iterators.push(r[Symbol.iterator]());
-        this._waiting = false;
-        return this;
-      }),
-    };
+      // The value is a Promise. Convert to a Promise<RenderResult>:
+      this._waiting = true;
+      return {
+        done: false,
+        value: value.then((r) => {
+          this._waiting = false;
+          if (typeof r === 'string') {
+            return r;
+          }
+          // Instead of returning a new iterator, flatten the array into our
+          // iterator stack:
+          this._iterators.push(r[Symbol.iterator]());
+          return this;
+        }),
+      };
+    }
   }
 
   // Make the iterator itself iterable
-  [Symbol.iterator](): Iterator<string | Promise<RenderResult>> {
+  [Symbol.iterator](): IterableIterator<string | Promise<RenderResult>> {
     return this;
   }
 }
