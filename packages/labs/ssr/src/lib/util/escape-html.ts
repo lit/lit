@@ -14,12 +14,11 @@ const replacements = {
   "'": '&#39;',
 };
 
+const replacer = (char: string) =>
+  replacements[char as keyof typeof replacements];
+
 /**
  * Replaces characters which have special meaning in HTML (&<>"') with escaped
  * HTML entities ("&amp;", "&lt;", etc.).
  */
-export const escapeHtml = (str: string) =>
-  str.replace(
-    /[&<>"']/g,
-    (char) => replacements[char as keyof typeof replacements]
-  );
+export const escapeHtml = (str: string) => str.replace(/[&<>"']/g, replacer);

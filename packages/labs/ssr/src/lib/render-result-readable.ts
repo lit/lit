@@ -6,15 +6,14 @@
 
 import {Readable} from 'stream';
 import {RenderResult} from './render-result.js';
+import {ThunkedRenderResult, Thunk} from './render-result.js';
 
-type RenderResultIterator = Iterator<string | Promise<RenderResult>>;
+type RenderResultIterator = Iterator<string | Thunk | Promise<RenderResult>>;
 
 /**
  * A Readable that reads from a RenderResult.
  */
 export class RenderResultReadable extends Readable {
-  private _result: RenderResult;
-
   /**
    * A stack of open iterators.
    *
@@ -24,6 +23,7 @@ export class RenderResultReadable extends Readable {
    */
   private _iterators: Array<RenderResultIterator>;
   private _currentIterator?: RenderResultIterator;
+
   /**
    * `_waiting` flag is used to prevent multiple concurrent reads.
    *
@@ -34,10 +34,9 @@ export class RenderResultReadable extends Readable {
    */
   private _waiting = false;
 
-  constructor(result: RenderResult) {
+  constructor(result: RenderResult | ThunkedRenderResult) {
     super();
-    this._result = result;
-    this._iterators = [this._result[Symbol.iterator]()];
+    this._iterators = [result[Symbol.iterator]()];
   }
 
   override async _read(_size: number) {
@@ -77,22 +76,58 @@ export class RenderResultReadable extends Readable {
         continue;
       }
 
-      const value = next.value;
+      let value:
+        | string
+        | Thunk
+        | Promise<string | RenderResult | ThunkedRenderResult>
+        | RenderResult
+        | ReturnType<Thunk> = next.value;
 
-      if (typeof value === 'string') {
-        if (this.push(value) === false) {
-          // The consumer doesn't want any more values. Return for now and
-          // we may get a new call to _read()
-          return;
+      // This inner loop lets us repeatedly resolve thunks and Promises
+      // until we get to a string, array, or iterator.
+      while (value !== undefined) {
+        // Trampoline in case of nested thunks
+        while (typeof value === 'function') {
+          value = value();
         }
-      } else {
-        // Must be a Promise
-        this._iterators.push(this._currentIterator);
-        this._waiting = true;
-        this._currentIterator = (await value)[
-          Symbol.iterator
-        ]() as RenderResultIterator;
-        this._waiting = false;
+
+        if (value === undefined) {
+          // Just continue to the next value from the iterator
+          break;
+        }
+
+        if (typeof value === 'string') {
+          if (this.push(value) === false) {
+            // Backpressure: The consumer doesn't want any more values. Return
+            // for now and we may get a new call to _read()
+            return;
+          }
+          break;
+        }
+
+        if (
+          Array.isArray(value) ||
+          typeof (value as unknown as RenderResult)[Symbol.iterator] ===
+            'function'
+        ) {
+          // If it's an array or iterable, iterate over it by pushing the
+          // current iterator on the stack and making the new one current. The
+          // next loop of the outer while() will call next() on it.
+          this._iterators.push(this._currentIterator);
+          this._currentIterator = (value as RenderResult)[Symbol.iterator]();
+          break;
+        } else {
+          // Must be a Promise. Await it can continue the inner loop to handle
+          // whatever it resolves to.
+          if (typeof (value as Promise<unknown>).then !== 'function') {
+            throw new Error(
+              `Unexpected value in RenderResult: ${value} (${typeof value})`
+            );
+          }
+          this._waiting = true;
+          value = await value;
+          this._waiting = false;
+        }
       }
     }
     // Pushing `null` ends the stream
