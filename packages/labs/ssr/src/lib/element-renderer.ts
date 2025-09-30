@@ -52,6 +52,16 @@ export type ShadowRootOptions = ShadowRootInit;
 
 /**
  * An object that renders elements of a certain type.
+ *
+ * The `render*()` methods return a ThunkedRenderResult, which is an array of
+ * strings and/or thunks that return strings or Promises for strings. This allows
+ * the renderer to emit content in chunks, and to perform async work (e.g.
+ * fetching data) as part of rendering. Renderers can assume that their
+ * thunks will be invoked in order, and that any Promises will be awaited before
+ * subsequent thunks are invoked.
+ *
+ * If a renderer does not need to emit content in chunks or perform async work,
+ * it can simply return an array of strings.
  */
 export abstract class ElementRenderer {
   // TODO (justinfagnani): We shouldn't assume that ElementRenderer subclasses
