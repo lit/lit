@@ -108,12 +108,44 @@ export const literal = (
 
 const stringsCache = new Map<string, TemplateStringsArray>();
 
+interface Cache {
+  get(s: string): TemplateStringsArray | undefined;
+  set(s: string, v: TemplateStringsArray): void;
+}
+interface WithStaticOptions {
+  /**
+   * Optional static template cache factory.
+   *
+   * Provide this option to customize caching, for example to provide a per
+   * template expression cache that doesn't grow without bound, use caches that
+   * collect metrics or to disable caching entirely by returning `undefined`.
+   *
+   * If this option is not provided, a global cache is used which grows without
+   * bound.
+   *
+   * If `undefined` is returned from `getCache`, no caching will be applied.
+   * This can be appropriate when the number of unique templates is known to be
+   * very large and the cache hit rate would be very low. This can happen in
+   * SSR scenarios where templates are generated dynamically based on user
+   * input.
+   */
+  getCache?: (strings: TemplateStringsArray) => Cache | undefined;
+}
+
 /**
- * Wraps a lit-html template tag (`html` or `svg`) to add static value support.
+ * Wraps a lit-html template tag (`html`, `svg`, or `mathml`) to add static
+ * value support.
  */
 export const withStatic =
-  (coreTag: typeof coreHtml | typeof coreSvg | typeof coreMathml) =>
+  (
+    coreTag: typeof coreHtml | typeof coreSvg | typeof coreMathml,
+    options?: WithStaticOptions
+  ) =>
   (strings: TemplateStringsArray, ...values: unknown[]): TemplateResult => {
+    const cache =
+      options?.getCache === undefined
+        ? stringsCache
+        : options.getCache(strings);
     const l = values.length;
     let staticValue: string | undefined;
     let dynamicValue: unknown;
@@ -151,14 +183,14 @@ export const withStatic =
 
     if (hasStatics) {
       const key = staticStrings.join('$$lit$$');
-      strings = stringsCache.get(key)!;
+      (strings as TemplateStringsArray | undefined) = cache?.get(key);
       if (strings === undefined) {
         // Beware: in general this pattern is unsafe, and doing so may bypass
         // lit's security checks and allow an attacker to execute arbitrary
         // code and inject arbitrary content.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (staticStrings as any).raw = staticStrings;
-        stringsCache.set(
+        cache?.set(
           key,
           (strings = staticStrings as unknown as TemplateStringsArray)
         );
