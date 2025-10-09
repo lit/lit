@@ -98,8 +98,9 @@ globalThis.litElementHydrateSupport = ({
     if (this._$needsHydration) {
       this._$needsHydration = false;
       // Remove aria attributes added by internals shim during SSR
-      for (let i = 0; i < this.attributes.length; i++) {
-        const attr = this.attributes[i];
+      const attributes = [...this.attributes];
+      for (let i = 0; i < attributes.length; i++) {
+        const attr = attributes[i];
         if (attr.name.startsWith(HYDRATE_INTERNALS_ATTR_PREFIX)) {
           const ariaAttr = attr.name.slice(
             HYDRATE_INTERNALS_ATTR_PREFIX.length
