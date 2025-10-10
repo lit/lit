@@ -676,6 +676,11 @@ const getTemplateOpcodes = (result: TemplateResult, renderInfo: RenderInfo) => {
   return ops;
 };
 
+type Cache = {
+  get: (key: TemplateStringsArray) => Array<Op> | undefined;
+  set: (key: TemplateStringsArray, value: Array<Op>) => void;
+};
+
 export type RenderInfo = {
   /**
    * Element renderers to use
@@ -719,7 +724,7 @@ export type RenderInfo = {
    * The cache instance to use for internal op-code caching. Defaults to a
    * WeakMap.
    */
-  opCodeCache: Map<TemplateStringsArray, Array<Op>>;
+  opCodeCache: Cache;
 };
 
 declare global {
