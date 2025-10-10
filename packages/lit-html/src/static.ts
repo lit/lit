@@ -13,6 +13,7 @@ import {
   mathml as coreMathml,
   TemplateResult,
 } from './lit-html.js';
+import {LRUCache} from './lru-cache.js';
 
 export interface StaticValue {
   /** The value to interpolate as-is into the template. */
@@ -106,7 +107,10 @@ export const literal = (
   r: brand,
 });
 
-const stringsCache = new Map<string, TemplateStringsArray>();
+const stringsCache = new Map<
+  TemplateStringsArray,
+  LRUCache<string, TemplateStringsArray>
+>();
 
 /**
  * Wraps a lit-html template tag (`html` or `svg`) to add static value support.
@@ -150,15 +154,21 @@ export const withStatic =
     }
 
     if (hasStatics) {
+      let lruCache = stringsCache.get(strings);
+      if (lruCache === undefined) {
+        lruCache = new LRUCache<string, TemplateStringsArray>(10);
+        stringsCache.set(strings, lruCache);
+      }
+
       const key = staticStrings.join('$$lit$$');
-      strings = stringsCache.get(key)!;
+      strings = lruCache.get(key)!;
       if (strings === undefined) {
         // Beware: in general this pattern is unsafe, and doing so may bypass
         // lit's security checks and allow an attacker to execute arbitrary
         // code and inject arbitrary content.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (staticStrings as any).raw = staticStrings;
-        stringsCache.set(
+        lruCache.set(
           key,
           (strings = staticStrings as unknown as TemplateStringsArray)
         );
