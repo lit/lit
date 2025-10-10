@@ -7,6 +7,7 @@
 // Any new exports need to be added to the export statement in
 // `packages/lit/src/index.all.ts`.
 
+import {isServer} from './is-server.js';
 import {
   html as coreHtml,
   svg as coreSvg,
@@ -107,10 +108,18 @@ export const literal = (
   r: brand,
 });
 
-const stringsCache = new Map<
-  TemplateStringsArray,
-  LRUCache<string, TemplateStringsArray>
->();
+let stringsCache: Map<TemplateStringsArray, Map<string, TemplateStringsArray>>;
+if (isServer) {
+  stringsCache = new Map<
+    TemplateStringsArray,
+    LRUCache<string, TemplateStringsArray>
+  >();
+} else {
+  stringsCache = new Map<
+    TemplateStringsArray,
+    Map<string, TemplateStringsArray>
+  >();
+}
 
 /**
  * Wraps a lit-html template tag (`html` or `svg`) to add static value support.
@@ -156,7 +165,11 @@ export const withStatic =
     if (hasStatics) {
       let lruCache = stringsCache.get(strings);
       if (lruCache === undefined) {
-        lruCache = new LRUCache<string, TemplateStringsArray>(10);
+        if (isServer) {
+          lruCache = new LRUCache<string, TemplateStringsArray>(10);
+        } else {
+          lruCache = new Map<string, TemplateStringsArray>();
+        }
         stringsCache.set(strings, lruCache);
       }
 
