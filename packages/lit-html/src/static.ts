@@ -108,7 +108,17 @@ export const literal = (
   r: brand,
 });
 
-let stringsCache: Map<TemplateStringsArray, Map<string, TemplateStringsArray>>;
+export interface Cache {
+  get(key: TemplateStringsArray): InnerCache | undefined;
+  set(key: TemplateStringsArray, value: InnerCache): Cache;
+}
+
+interface InnerCache {
+  get(key: string): TemplateStringsArray | undefined;
+  set(key: string, value: TemplateStringsArray): InnerCache;
+}
+
+let stringsCache: Cache;
 if (isServer) {
   stringsCache = new Map<
     TemplateStringsArray,
