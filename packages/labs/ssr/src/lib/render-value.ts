@@ -107,8 +107,6 @@ const patchAnyDirectives = (
   }
 };
 
-const templateCache = new WeakMap<TemplateStringsArray, Array<Op>>();
-
 // This is a map for which slots exist for a given custom element.
 // With a named slot, it is represented as a string with the name
 // and the unnamed slot is represented as undefined.
@@ -248,7 +246,7 @@ type PossibleNodeMarkerOp = {
   nodeIndex: number;
 };
 
-type Op =
+export type Op =
   | TextOp
   | ChildPartOp
   | AttributePartOp
@@ -333,7 +331,8 @@ const REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG =
  * - `custom-element-close`
  *   - Pop the CE `instance`+`renderer` off the `customElementInstanceStack`
  */
-const getTemplateOpcodes = (result: TemplateResult) => {
+const getTemplateOpcodes = (result: TemplateResult, renderInfo: RenderInfo) => {
+  const templateCache = renderInfo.opCodeCache;
   const template = templateCache.get(result.strings);
   if (template !== undefined) {
     return template;
@@ -715,6 +714,12 @@ export type RenderInfo = {
    * Flag to defer hydration of top level custom element. Defaults to false.
    */
   deferHydration: boolean;
+
+  /**
+   * The cache instance to use for internal op-code caching. Defaults to a
+   * WeakMap.
+   */
+  opCodeCache: Map<TemplateStringsArray, Array<Op>>;
 };
 
 declare global {
@@ -828,7 +833,7 @@ function renderTemplateResult(
   // previous span of HTML.
 
   const hydratable = isHydratable(result);
-  const ops = getTemplateOpcodes(result);
+  const ops = getTemplateOpcodes(result, renderInfo);
 
   /* The next value in result.values to render */
   let partIndex = 0;
