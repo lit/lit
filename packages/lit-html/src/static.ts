@@ -108,6 +108,13 @@ export const literal = (
   r: brand,
 });
 
+// We double-key this cache so that usage of high cardinality static html
+// templates doesn't cause a memory leak when running on the server. The
+// browser environment is less prone to this issue because pages are
+// frequently opened/closed/refreshed. We use an LRUCache in the server
+// environment to limit the memory usage and a normal Map in the browser
+// environment to avoid the payload size increase of including the LRUCache
+// class in the bundle.
 export interface Cache {
   get(key: TemplateStringsArray): InnerCache | undefined;
   set(key: TemplateStringsArray, value: InnerCache): Cache;
@@ -173,25 +180,25 @@ export const withStatic =
     }
 
     if (hasStatics) {
-      let lruCache = stringsCache.get(strings);
-      if (lruCache === undefined) {
+      let innerCache = stringsCache.get(strings);
+      if (innerCache === undefined) {
         if (isServer) {
-          lruCache = new LRUCache<string, TemplateStringsArray>(10);
+          innerCache = new LRUCache<string, TemplateStringsArray>(10);
         } else {
-          lruCache = new Map<string, TemplateStringsArray>();
+          innerCache = new Map<string, TemplateStringsArray>();
         }
-        stringsCache.set(strings, lruCache);
+        stringsCache.set(strings, innerCache);
       }
 
       const key = staticStrings.join('$$lit$$');
-      strings = lruCache.get(key)!;
+      strings = innerCache.get(key)!;
       if (strings === undefined) {
         // Beware: in general this pattern is unsafe, and doing so may bypass
         // lit's security checks and allow an attacker to execute arbitrary
         // code and inject arbitrary content.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (staticStrings as any).raw = staticStrings;
-        lruCache.set(
+        innerCache.set(
           key,
           (strings = staticStrings as unknown as TemplateStringsArray)
         );
