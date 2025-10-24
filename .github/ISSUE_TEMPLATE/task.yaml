@@ -1,6 +1,6 @@
 name: 👷‍♂️ Task
 description: Add a task that needs to be done
-
+type: Task
 body:
   - type: dropdown
     id: affected
@@ -35,4 +35,3 @@ body:
         Please describe the task in as much detail as possible.
       placeholder: |
         We need to...
-        ```
