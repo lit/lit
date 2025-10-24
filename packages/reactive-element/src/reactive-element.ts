@@ -10,12 +10,7 @@
  * @packageDocumentation
  */
 
-import {
-  getCompatibleStyle,
-  adoptStyles,
-  CSSResultGroup,
-  CSSResultOrNative,
-} from './css-tag.js';
+import {adoptStyles, CSSResultGroup, CSSResultOrNative} from './css-tag.js';
 import type {
   ReactiveController,
   ReactiveControllerHost,
@@ -945,18 +940,22 @@ export abstract class ReactiveElement
   protected static finalizeStyles(
     styles?: CSSResultGroup
   ): Array<CSSResultOrNative> {
-    const elementStyles = [];
+    const elementStyles: Array<CSSResultOrNative> = [];
     if (Array.isArray(styles)) {
       // Dedupe the flattened array in reverse order to preserve the last items.
       // Casting to Array<unknown> works around TS error that
       // appears to come from trying to flatten a type CSSResultArray.
-      const set = new Set((styles as Array<unknown>).flat(Infinity).reverse());
+      const set = new Set(
+        (styles as Array<unknown>)
+          .flat(Infinity)
+          .reverse() as Array<CSSResultOrNative>
+      );
       // Then preserve original order by adding the set items in reverse order.
       for (const s of set) {
-        elementStyles.unshift(getCompatibleStyle(s as CSSResultOrNative));
+        elementStyles.unshift(s);
       }
     } else if (styles !== undefined) {
-      elementStyles.push(getCompatibleStyle(styles));
+      elementStyles.push(styles);
     }
     return elementStyles;
   }
