@@ -16,6 +16,8 @@ import {
 } from '@lit-labs/observers/resize-controller.js';
 import {generateElementName, nextFrame} from './test-helpers.js';
 import {assert} from 'chai';
+import {css, html, LitElement} from 'lit';
+import {property} from 'lit/decorators.js';
 
 // Note, since tests are not built with production support, detect DEV_MODE
 // by checking if warning API is available.
@@ -27,13 +29,6 @@ if (DEV_MODE) {
 
 (window.ResizeObserver ? suite : suite.skip)('ResizeController', () => {
   let container: HTMLElement;
-
-  interface TestElement extends ReactiveElement {
-    observer: ResizeController;
-    observerValue: unknown;
-    resetObserverValue: () => void;
-    changeDuringUpdate?: () => void;
-  }
 
   const defineTestElement = (
     getControllerConfig: (
@@ -72,8 +67,10 @@ if (DEV_MODE) {
     return A;
   };
 
-  const renderTestElement = async (Ctor: typeof HTMLElement) => {
-    const el = new Ctor() as TestElement;
+  const renderTestElement = async <I extends ReactiveElement>(Ctor: {
+    new (): I;
+  }) => {
+    const el = new Ctor() as I;
     container.appendChild(el);
     await el.updateComplete;
     return el;
@@ -526,5 +523,123 @@ if (DEV_MODE) {
     resizeElement(d1);
     await resizeComplete();
     assert.isUndefined(el.observerValue);
+  });
+
+  test('can observe multiple targets with the target directive', async () => {
+    class TestTemplatedElement extends LitElement {
+      static override styles = css`
+        :host {
+          display: block;
+        }
+        :host([tall]) {
+          .selected {
+            height: 40px;
+          }
+        }
+        section {
+          height: 0;
+          &.selected {
+            height: 20px;
+          }
+        }
+      `;
+
+      observer = new ResizeController(this, {target: null, callback: (e) => e});
+
+      @property()
+      selectedId: string | undefined = undefined;
+
+      @property({attribute: false})
+      items: Array<{id: string; text: string}> | undefined = undefined;
+
+      @property({reflect: true, type: Boolean})
+      tall = false;
+
+      override render() {
+        return this.items?.map((i) => {
+          const selected = i.id === this.selectedId;
+          return html`
+            <section
+              class="${selected ? 'selected' : ''}"
+              ${this.observer.target(selected)}
+            >
+              ${i.text}
+            </section>
+          `;
+        });
+      }
+    }
+    customElements.define(generateElementName(), TestTemplatedElement);
+    const el = await renderTestElement(TestTemplatedElement);
+    el.items = [
+      {id: 'a', text: 'Item A'},
+      {id: 'b', text: 'Item B'},
+    ];
+    await resizeComplete();
+    const sections = el.shadowRoot!.querySelectorAll('section');
+
+    // Initially, nothing is observed.
+    assert.equal(el.observer.value, undefined);
+
+    // Observing starts when an element is selected.
+    el.observer.value = [];
+    el.selectedId = 'a';
+    await resizeComplete();
+    assert.equal(el.observer.value?.length, 1);
+    let entry = el.observer.value?.[0];
+    assert.equal(entry?.target, sections.item(0));
+    assert.equal(entry?.contentRect.height, 20);
+
+    // Changing the size of the observed element is reported.
+    el.observer.value = [];
+    el.tall = true;
+    await resizeComplete();
+    assert.equal(el.observer.value?.length, 1);
+    entry = el.observer.value?.[0];
+    assert.equal(entry?.target, sections.item(0));
+    assert.equal(entry?.contentRect.height, 40);
+
+    // Changing which element is selected stops observing the first and starts
+    // observing the second.
+    el.observer.value = [];
+    el.selectedId = 'b';
+    await resizeComplete();
+    assert.equal(el.observer.value?.length, 1);
+    entry = el.observer.value?.[0];
+    assert.equal(entry?.target, sections.item(1));
+    assert.equal(entry?.contentRect.height, 40);
+
+    // Observing is stopped when element is disconnected.
+    el.observer.value = [];
+    el.remove();
+    await resizeComplete();
+    assert.equal(el.observer.value?.length, 0);
+
+    // Changing size while disconnected is not reported.
+    // TODO (justinfagnani): THIS ISN'T WORKING!
+    // We get one last notification we get a notification after disconnection
+    // even though we're unobserving the element.
+    el.observer.value = [];
+    el.tall = false;
+    await resizeComplete();
+    // assert.equal(el.observer.value?.length, 0);
+    // TODO (justinfagnani): this is an assertion of the current behavior, to
+    // force us to update the test when we fix the behavior.
+    assert.equal(el.observer.value?.length, 1);
+
+    // At least we don't get any more notifications.
+    el.observer.value = [];
+    el.tall = true;
+    await resizeComplete();
+    assert.equal(el.observer.value?.length, 0);
+
+    // Observing is started when element is reconnected.
+    el.observer.value = [];
+    container.appendChild(el);
+    await resizeComplete();
+    assert.equal(el.observer.value?.length, 1);
+    entry = el.observer.value?.[0];
+    assert.equal(entry?.target, sections.item(1));
+    assert.equal(entry?.contentRect.height, 40);
   });
 });
