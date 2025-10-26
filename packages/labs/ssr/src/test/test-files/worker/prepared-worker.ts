@@ -8,9 +8,9 @@ interface Data {
   value: string;
 }
 
-registerRenderRequestHandler<Data>(async (data, context) => {
+registerRenderRequestHandler<Data>(async (data, renderInfo, context) => {
   const template = templateWithTextExpression(data.value);
-  for await (const chunk of render(template)) {
+  for await (const chunk of render(template, renderInfo)) {
     context.write(chunk as string);
   }
 });

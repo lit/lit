@@ -5,87 +5,111 @@
  */
 
 import {Readable} from 'node:stream';
+import {Worker} from 'node:worker_threads';
 import {test} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {Worker} from 'node:worker_threads';
-import {RenderResultReadable} from '../../lib/worker/render-result-readable.js';
+import {html} from 'lit';
+import {
+  createRenderWorker,
+  render,
+  RenderResultReadable,
+} from '../../worker.js';
+import {simpleTemplateWithElement} from '../test-files/render-test-module.js';
 
-test('render via internal worker', async () => {
-  const readable = new RenderResultReadable({
-    workerUrl: new URL(
-      '../test-files/worker/internal-worker.js',
-      import.meta.url
-    ),
-    data: {value: 'test'},
-  });
-  const result = await collectReadable(readable);
-  assert.equal(
-    result,
-    '<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->test<!--/lit-part--></div><!--/lit-part-->'
-  );
+test('render via worker', async () => {
+  const worker = createRenderWorker();
+  try {
+    const result = render(html`<div>${'test'}</div>`, {worker});
+    const value = await collectReadable(new RenderResultReadable(result));
+    assert.equal(
+      value,
+      '<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->test<!--/lit-part--></div><!--/lit-part-->'
+    );
+  } finally {
+    worker.terminate();
+  }
 });
 
-test('render via prepared worker', async () => {
-  const worker = new Worker(
-    new URL('../test-files/worker/prepared-worker.js', import.meta.url)
-  );
+test('render multiple requests via worker', async () => {
+  const worker = createRenderWorker();
+  try {
+    const result = await collectReadable(
+      new RenderResultReadable(render(html`<div>${'test'}</div>`, {worker}))
+    );
+    assert.equal(
+      result,
+      '<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->test<!--/lit-part--></div><!--/lit-part-->'
+    );
 
-  const readable = new RenderResultReadable({data: {value: 'test'}, worker});
-  const result = await collectReadable(readable);
-  assert.equal(
-    result,
-    '<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->test<!--/lit-part--></div><!--/lit-part-->'
-  );
-
-  worker.terminate();
-});
-
-test('render multiple requests via prepared worker', async () => {
-  const worker = new Worker(
-    new URL('../test-files/worker/prepared-worker.js', import.meta.url)
-  );
-
-  const result = await collectReadable(
-    new RenderResultReadable({data: {value: 'test'}, worker})
-  );
-  assert.equal(
-    result,
-    '<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->test<!--/lit-part--></div><!--/lit-part-->'
-  );
-
-  const result2 = await collectReadable(
-    new RenderResultReadable({data: {value: 'test2'}, worker})
-  );
-  assert.equal(
-    result2,
-    '<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->test2<!--/lit-part--></div><!--/lit-part-->'
-  );
-
-  worker.terminate();
+    const result2 = await collectReadable(
+      new RenderResultReadable(render(html`<div>${'test2'}</div>`, {worker}))
+    );
+    assert.equal(
+      result2,
+      '<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->test2<!--/lit-part--></div><!--/lit-part-->'
+    );
+  } finally {
+    worker.terminate();
+  }
 });
 
 test('render multiple requests in parallel via prepared worker', async () => {
+  const worker = createRenderWorker();
+  try {
+    const results = await Promise.all(
+      [0, 1, 2, 3].map(async (i) => {
+        return collectReadable(
+          new RenderResultReadable(
+            render(html`<div>${`test${i}`}</div>`, {worker})
+          )
+        );
+      })
+    );
+
+    results.forEach((result, i) => {
+      assert.equal(
+        result,
+        `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->test${i}<!--/lit-part--></div><!--/lit-part-->`
+      );
+    });
+  } finally {
+    worker.terminate();
+  }
+});
+
+test('render with custom worker', async () => {
   const worker = new Worker(
     new URL('../test-files/worker/prepared-worker.js', import.meta.url)
   );
-
-  const results = await Promise.all(
-    [1, 2, 3].map(async (i) => {
-      return collectReadable(
-        new RenderResultReadable({data: {value: `test${i}`}, worker})
-      );
-    })
-  );
-
-  results.forEach((result, i) => {
+  try {
+    const result = render({value: 'custom worker'}, {worker});
+    const value = await collectReadable(new RenderResultReadable(result));
     assert.equal(
-      result,
-      `<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->test${i + 1}<!--/lit-part--></div><!--/lit-part-->`
+      value,
+      '<!--lit-part AEmR7W+R0Ak=--><div><!--lit-part-->custom worker<!--/lit-part--></div><!--/lit-part-->'
     );
-  });
+  } finally {
+    worker.terminate();
+  }
+});
 
-  worker.terminate();
+test('render web components via worker', async () => {
+  const worker = createRenderWorker({
+    modules: [
+      new URL('../test-files/render-test-module.js', import.meta.url).href,
+    ],
+  });
+  try {
+    const result = render(simpleTemplateWithElement, {worker});
+    const value = await collectReadable(new RenderResultReadable(result));
+    assert.equal(
+      value,
+      '<!--lit-part tjmYe1kHIVM=--><test-simple><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple><!--/lit-part-->'
+    );
+  } finally {
+    worker.terminate();
+  }
 });
 
 test.run();
