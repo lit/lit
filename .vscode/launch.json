@@ -5,6 +5,14 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Launch Program",
+      "program": "${file}",
+      "request": "launch",
+      "skipFiles": ["<node_internals>/**"],
+      "type": "node",
+      "runtimeVersion": "22.20.0"
+    },
+    {
       // See: https://github.com/microsoft/TypeScript/wiki/Debugging-Language-Service-in-VS-Code
       "type": "node",
       "request": "attach",

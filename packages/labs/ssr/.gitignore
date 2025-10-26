@@ -6,4 +6,5 @@
 /test/**/*.d.ts
 /test/**/*.d.ts.map
 /index.*
+/worker.*
 !/custom_typings/*.d.ts
