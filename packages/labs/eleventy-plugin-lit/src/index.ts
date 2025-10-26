@@ -163,20 +163,24 @@ ${reset}`
       )
     );
     contextifiedRender = (
-      await loader.importModule(
-        '@lit-labs/ssr/lib/render-lit-html.js',
-        renderModulePath
-      )
-    ).module.namespace.render as typeof contextifiedRender;
+      (
+        await loader.importModule(
+          '@lit-labs/ssr/lib/render-lit-html.js',
+          renderModulePath
+        )
+      ).module.namespace as Record<string, unknown>
+    ).render as typeof contextifiedRender;
     // TOOD(aomarks) We could also directly synthesize an html TemplateResult
     // instead of doing so via the unsafeHTML directive. The directive is
     // performing some extra validation that doesn't really apply to us.
     contextifiedUnsafeHTML = (
-      await loader.importModule(
-        'lit/directives/unsafe-html.js',
-        renderModulePath
-      )
-    ).module.namespace.unsafeHTML as typeof contextifiedUnsafeHTML;
+      (
+        await loader.importModule(
+          'lit/directives/unsafe-html.js',
+          renderModulePath
+        )
+      ).module.namespace as Record<string, unknown>
+    ).unsafeHTML as typeof contextifiedUnsafeHTML;
   });
 
   eleventyConfig.addTransform(
