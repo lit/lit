@@ -4,19 +4,19 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html, svg, render} from 'lit-html';
-import {ClassInfo, classMap} from 'lit-html/directives/class-map.js';
+import {html, render, svg} from 'lit-html';
+import {type ClassInfo, classMap} from 'lit-html/directives/class-map.js';
 import {assert} from 'chai';
 
 suite('classMap directive', () => {
   let container: HTMLDivElement;
 
-  function renderClassMap(cssInfo: ClassInfo) {
-    render(html`<div class="${classMap(cssInfo)}"></div>`, container);
+  function renderClassMap(...cssInfo: ClassInfo[]) {
+    render(html`<div class="${classMap(...cssInfo)}"></div>`, container);
   }
 
-  function renderClassMapStatic(cssInfo: ClassInfo) {
-    render(html`<div class="aa ${classMap(cssInfo)} bb"></div>`, container);
+  function renderClassMapStatic(...cssInfo: ClassInfo[]) {
+    render(html`<div class="aa ${classMap(...cssInfo)} bb"></div>`, container);
   }
 
   setup(() => {
