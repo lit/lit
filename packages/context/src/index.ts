@@ -16,8 +16,14 @@ export {
   createContext,
 } from './lib/create-context.js';
 
-export {ContextConsumer} from './lib/controllers/context-consumer.js';
-export {ContextProvider} from './lib/controllers/context-provider.js';
+export {
+  ContextConsumer,
+  Options as ContextConsumerOptions
+} from './lib/controllers/context-consumer.js';
+export {
+  ContextProvider,
+  Options as ContextProviderOptions
+} from './lib/controllers/context-provider.js';
 export {ContextRoot} from './lib/context-root.js';
 
 export {provide} from './lib/decorators/provide.js';
