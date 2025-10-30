@@ -17,7 +17,7 @@ import {
  * A key-value set of class names to truthy values.
  */
 interface KeyValueClassInfo {
-  [name: string]: string | boolean | number;
+  [name: string]: string | boolean | number | null | undefined;
 }
 
 /**
