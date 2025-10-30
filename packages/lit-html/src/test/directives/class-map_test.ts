@@ -79,6 +79,14 @@ suite('classMap directive', () => {
     renderClassMap({foo: false});
     assert.isFalse(el.classList.contains('foo'));
     assert.isTrue(el.classList.contains('bar'));
+
+    renderClassMap({bar: false, baz: true}, 'aa bb cc');
+    assert.isFalse(el.classList.contains('foo'));
+    assert.isTrue(el.classList.contains('bar'));
+    assert.isTrue(el.classList.contains('baz'));
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('cc'));
   });
 
   test('can not override static classes', () => {
@@ -118,21 +126,21 @@ suite('classMap directive', () => {
   });
 
   test('changes classes when used with the same nested object', () => {
-    const classInfo = {foo: true};
+    const classInfo1 = {foo: true};
     const classInfo2 = {bar: true};
     const classInfo3 = ['baz'];
 
-    renderClassMapStatic(classInfo, classInfo3, classInfo2);
+    renderClassMapStatic(classInfo1, classInfo3, classInfo2);
     const el = container.firstElementChild!;
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
     assert.isTrue(el.classList.contains('foo'));
     assert.isTrue(el.classList.contains('bar'));
     assert.isTrue(el.classList.contains('baz'));
-    classInfo.foo = false;
+    classInfo1.foo = false;
     classInfo2.bar = false;
     classInfo3.length = 0;
-    renderClassMapStatic(classInfo);
+    renderClassMapStatic(classInfo1);
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
     assert.isFalse(el.classList.contains('foo'));
@@ -149,6 +157,22 @@ suite('classMap directive', () => {
     assert.isTrue(classes.indexOf('foo') === -1);
     assert.isTrue(classes.indexOf('bar') > -1);
     assert.isTrue(classes.indexOf('zonk') > -1);
+  });
+
+  test('adds spread classes on SVG elements', () => {
+    const cssInfo = {foo: 0, bar: true, zonk: true};
+    render(
+      svg`<circle class="${classMap(cssInfo, 'aa', 'bb')}"></circle>`,
+      container
+    );
+    const el = container.firstElementChild!;
+    const classes = el.getAttribute('class')!.split(' ');
+    // Sigh, IE.
+    assert.isTrue(classes.indexOf('foo') === -1);
+    assert.isTrue(classes.indexOf('bar') > -1);
+    assert.isTrue(classes.indexOf('zonk') > -1);
+    assert.isTrue(classes.indexOf('aa') > -1);
+    assert.isTrue(classes.indexOf('bb') > -1);
   });
 
   test('works if there are no spaces next to directive', () => {
@@ -180,7 +204,6 @@ suite('classMap directive', () => {
     );
     const el = container.firstElementChild!;
     assert.isTrue(el.classList.contains('aa'));
-    assert.isTrue(el.classList.contains('bb'));
     assert.isTrue(el.classList.contains('bb'));
     assert.isTrue(el.classList.contains('cc'));
     assert.isTrue(el.classList.contains('dd'));
