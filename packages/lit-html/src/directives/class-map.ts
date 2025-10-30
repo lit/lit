@@ -69,10 +69,11 @@ class ClassMapDirective extends Directive {
     if (
       partInfo.type !== PartType.ATTRIBUTE ||
       partInfo.name !== 'class' ||
-      (partInfo.strings?.length ?? 0) > 2
+      (partInfo.strings?.length as number) > 2
     ) {
       throw new Error(
-        '`classes()` can only be used in the `class` attribute and must be the only part in the attribute.'
+        '`classMap()` can only be used in the `class` attribute ' +
+          'and must be the only part in the attribute.'
       );
     }
   }
@@ -87,15 +88,17 @@ class ClassMapDirective extends Directive {
     // Remember dynamic classes on the first render
     if (this._previousClasses === undefined) {
       this._previousClasses = new Set();
-      this._staticClasses = new Set(
-        part.strings
-          ?.join(' ')
-          .split(/\s/)
-          .filter((s) => s !== '')
-      );
+      if (part.strings !== undefined) {
+        this._staticClasses = new Set(
+          part.strings
+            .join(' ')
+            .split(RX_CLASS_SPLIT)
+            .filter((s) => s !== '')
+        );
+      }
 
       for (const name of merged) {
-        if (!this._staticClasses!.has(name)) {
+        if (!this._staticClasses?.has(name)) {
           this._previousClasses!.add(name);
         }
       }
@@ -109,18 +112,18 @@ class ClassMapDirective extends Directive {
     for (const name of this._previousClasses) {
       if (!merged.has(name)) {
         classList.remove(name);
-        this._previousClasses?.delete(name);
+        this._previousClasses!.delete(name);
       }
     }
 
     // Add or remove classes based on their classMap value
     for (const name of merged) {
       if (
-        !this._staticClasses!.has(name) &&
+        !this._staticClasses?.has(name) &&
         !this._previousClasses!.has(name)
       ) {
         classList.add(name);
-        this._previousClasses?.add(name);
+        this._previousClasses!.add(name);
       }
     }
     return noChange;
