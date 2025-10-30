@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html, render, svg} from 'lit-html';
+import {html, nothing, render, svg} from 'lit-html';
 import {type ClassInfo, classMap} from 'lit-html/directives/class-map.js';
 import {assert} from 'chai';
 
@@ -96,6 +96,11 @@ suite('classMap directive', () => {
     renderClassMapStatic({});
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
+
+    // both are now omitted
+    renderClassMapStatic({}, {aa: false});
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
   });
 
   test('changes classes when used with the same object', () => {
@@ -110,6 +115,29 @@ suite('classMap directive', () => {
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
     assert.isFalse(el.classList.contains('foo'));
+  });
+
+  test('changes classes when used with the same nested object', () => {
+    const classInfo = {foo: true};
+    const classInfo2 = {bar: true};
+    const classInfo3 = ['baz'];
+
+    renderClassMapStatic(classInfo, classInfo3, classInfo2);
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('foo'));
+    assert.isTrue(el.classList.contains('bar'));
+    assert.isTrue(el.classList.contains('baz'));
+    classInfo.foo = false;
+    classInfo2.bar = false;
+    classInfo3.length = 0;
+    renderClassMapStatic(classInfo);
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isFalse(el.classList.contains('foo'));
+    assert.isFalse(el.classList.contains('bar'));
+    assert.isFalse(el.classList.contains('baz'));
   });
 
   test('adds classes on SVG elements', () => {
@@ -129,6 +157,77 @@ suite('classMap directive', () => {
     assert.isTrue(el.classList.contains('aa'));
     assert.isTrue(el.classList.contains('bb'));
     assert.isTrue(el.classList.contains('cc'));
+  });
+
+  test('works with spreading if there are no spaces next to directive', () => {
+    render(
+      html`<div class="aa${classMap({bb: true}, ['dd', 'ee'], 'ff')}cc"></div>`,
+      container
+    );
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('cc'));
+    assert.isTrue(el.classList.contains('dd'));
+    assert.isTrue(el.classList.contains('ee'));
+    assert.isTrue(el.classList.contains('ff'));
+  });
+
+  test('works with deep nesting', () => {
+    render(
+      html`<div class="aa${classMap([[['bb'], {cc: true}]], [[[['dd']]]])}ee"></div>`,
+      container
+    );
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('cc'));
+    assert.isTrue(el.classList.contains('dd'));
+    assert.isTrue(el.classList.contains('ee'));
+    assert.isTrue(el.classList.length === 5);
+  });
+
+  test('works with blanks, null, undefined, false, and nothing', () => {
+    render(
+      html`<div class="aa${classMap(undefined, null, nothing, ' ', false, [undefined, ' ', null, nothing, false], 'bb')}cc"></div>`,
+      container
+    );
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('cc'));
+    assert.isTrue(el.classList.length === 3);
+  });
+
+  test('works with spaces in class names', () => {
+    const classInfo1 = ['ee', 'ff gg'];
+    const classInfo2 = {'hh ii': true};
+    renderClassMapStatic('cc  dd', classInfo1, classInfo2);
+    const el = container.firstElementChild!;
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('cc'));
+    assert.isTrue(el.classList.contains('dd'));
+    assert.isTrue(el.classList.contains('ee'));
+    assert.isTrue(el.classList.contains('ff'));
+    assert.isTrue(el.classList.contains('gg'));
+    assert.isTrue(el.classList.contains('hh'));
+    assert.isTrue(el.classList.contains('ii'));
+    assert.isTrue(el.classList.length === 9);
+    classInfo1.pop();
+    classInfo2['hh ii'] = false;
+    renderClassMapStatic('cc  dd', classInfo1, classInfo2);
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('cc'));
+    assert.isTrue(el.classList.contains('dd'));
+    assert.isTrue(el.classList.contains('ee'));
+    assert.isFalse(el.classList.contains('ff'));
+    assert.isFalse(el.classList.contains('gg'));
+    assert.isFalse(el.classList.contains('hh'));
+    assert.isFalse(el.classList.contains('ii'));
+    assert.isTrue(el.classList.length === 5);
   });
 
   test('throws when used on non-class attribute', () => {
