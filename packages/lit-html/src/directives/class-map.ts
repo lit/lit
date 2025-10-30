@@ -39,18 +39,17 @@ const RX_CLASS_SPLIT = /\s+/;
 const mapClassesRecursive = (classInfo: ClassInfo): string[] => {
   if (!classInfo || classInfo === nothing) {
     return [];
-  } else if (Array.isArray(classInfo)) {
+  }
+  if (Array.isArray(classInfo)) {
     return classInfo.flatMap((c) => mapClassesRecursive(c));
-  } else if (typeof classInfo === 'object') {
+  }
+  if (typeof classInfo === 'object') {
     return Object.entries(classInfo)
       .filter(([, value]) => !!value)
-      .reduce(
-        (arr, [key]) => arr.concat(mapClassesRecursive(key)),
-        [] as string[]
-      );
+      .flatMap(([key]) => mapClassesRecursive(key));
   }
   // Take the toString() value as a fallback
-  return `${classInfo}`.split(RX_CLASS_SPLIT);
+  return String(classInfo).split(RX_CLASS_SPLIT);
 };
 
 // Join the classes back to a single string
