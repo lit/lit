@@ -26,33 +26,58 @@ suite('classMap directive', () => {
   test('adds classes', () => {
     renderClassMap({foo: 0, bar: true, zonk: true});
     const el = container.firstElementChild!;
-    assert.isFalse(el.classList.contains('foo'));
+    assert.equal(el.classList.length, 2);
     assert.isTrue(el.classList.contains('bar'));
     assert.isTrue(el.classList.contains('zonk'));
+    renderClassMap({foo: 0, bar: true, zonk: true}, 'aa bb cc', 'dd');
+    assert.equal(el.classList.length, 6);
+    assert.isTrue(el.classList.contains('bar'));
+    assert.isTrue(el.classList.contains('zonk'));
+    assert.isTrue(el.classList.contains('aa'));
+    assert.isTrue(el.classList.contains('bb'));
+    assert.isTrue(el.classList.contains('cc'));
+    assert.isTrue(el.classList.contains('dd'));
   });
 
   test('removes classes', () => {
     renderClassMap({foo: true, bar: true, baz: true});
     const el = container.firstElementChild!;
+    assert.equal(el.classList.length, 3);
     assert.isTrue(el.classList.contains('foo'));
     assert.isTrue(el.classList.contains('bar'));
     assert.isTrue(el.classList.contains('baz'));
     renderClassMap({foo: false, bar: true, baz: false});
-    assert.isFalse(el.classList.contains('foo'));
+    assert.equal(el.classList.length, 1);
     assert.isTrue(el.classList.contains('bar'));
-    assert.isFalse(el.classList.contains('baz'));
+    renderClassMap(
+      {foo: false, bar: true, baz: true},
+      {foo: true}, // once true, it will be added
+      {foo: false},
+      'baz'
+    );
+    assert.isTrue(el.classList.contains('foo'));
+    assert.isTrue(el.classList.contains('bar'));
+    assert.isTrue(el.classList.contains('baz'));
+    renderClassMap();
+    assert.equal(el.classList.length, 0);
   });
 
   test('removes omitted classes', () => {
     renderClassMap({foo: true, bar: true, baz: true});
     const el = container.firstElementChild!;
+    assert.equal(el.classList.length, 3);
     assert.isTrue(el.classList.contains('foo'));
     assert.isTrue(el.classList.contains('bar'));
     assert.isTrue(el.classList.contains('baz'));
     renderClassMap({});
-    assert.isFalse(el.classList.contains('foo'));
-    assert.isFalse(el.classList.contains('bar'));
-    assert.isFalse(el.classList.contains('baz'));
+    assert.equal(el.classList.length, 0);
+    renderClassMap({}, {foo: true}, 'bar', [[{baz: true}], 'aa']);
+    assert.equal(el.classList.length, 4);
+    assert.isTrue(el.classList.contains('foo'));
+    assert.isTrue(el.classList.contains('bar'));
+    assert.isTrue(el.classList.contains('baz'));
+    assert.isTrue(el.classList.contains('aa'));
+    renderClassMap({});
     assert.equal(el.classList.length, 0);
   });
 
@@ -63,9 +88,20 @@ suite('classMap directive', () => {
     assert.isTrue(el.classList.contains('bb'), 'bb 1');
     assert.isTrue(el.classList.contains('foo'), 'foo 1');
     renderClassMapStatic({});
-    assert.isTrue(el.classList.contains('aa'), 'aa');
-    assert.isTrue(el.classList.contains('bb'), 'bb');
-    assert.isFalse(el.classList.contains('foo'), 'foo');
+    assert.isTrue(el.classList.contains('aa'), 'aa 2');
+    assert.isTrue(el.classList.contains('bb'), 'bb 2');
+    assert.isFalse(el.classList.contains('foo'), 'foo 2');
+    renderClassMapStatic({}, {foo: true}, 'bar', [[{baz: true}], 'cc']);
+    assert.isTrue(el.classList.contains('aa'), 'aa 3');
+    assert.isTrue(el.classList.contains('bb'), 'bb 3');
+    assert.isTrue(el.classList.contains('cc'), 'cc 3');
+    assert.isTrue(el.classList.contains('foo'), 'foo 3');
+    assert.isTrue(el.classList.contains('bar'), 'bar 3');
+    assert.isTrue(el.classList.contains('baz'), 'baz 3');
+    renderClassMapStatic({});
+    assert.equal(el.classList.length, 2, 'aa bb 4');
+    assert.isTrue(el.classList.contains('aa'), 'aa 4');
+    assert.isTrue(el.classList.contains('bb'), 'bb 4');
   });
 
   test('works with imperatively added classes', () => {

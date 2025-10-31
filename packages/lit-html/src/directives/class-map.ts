@@ -134,7 +134,7 @@ class ClassMapDirective extends Directive {
  *
  * This must be used in the `class` attribute and must be the only part used in
  * the attribute. Each property in the `classInfo` arguments can either be
- * a key-value object, a String or an Array.
+ * a key-value object, a String, or an Array.
  * Arrays are processed recursively, while strings are added
  * as such. For objects, the keys are added to the element's `classList`
  * if the property value is truthy; if the property value is falsy,
