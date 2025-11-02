@@ -9,12 +9,13 @@ import {
   directive,
   Directive,
   DirectiveParameters,
+  DirectiveResult,
   PartInfo,
   PartType,
 } from '../directive.js';
 import {isSingleExpression, setCommittedValue} from '../directive-helpers.js';
 
-class LiveDirective extends Directive {
+class LiveDirective<T> extends Directive {
   constructor(partInfo: PartInfo) {
     super(partInfo);
     if (
@@ -33,7 +34,7 @@ class LiveDirective extends Directive {
     }
   }
 
-  render(value: unknown) {
+  render(value: T): T {
     return value;
   }
 
@@ -65,6 +66,10 @@ class LiveDirective extends Directive {
   }
 }
 
+interface Live {
+  <T>(value: T): DirectiveResult<typeof LiveDirective<T>>;
+}
+
 /**
  * Checks binding values against live DOM values, instead of previously bound
  * values, when determining whether to update the value.
@@ -89,7 +94,7 @@ class LiveDirective extends Directive {
  * you use `live()` with an attribute binding, make sure that only strings are
  * passed in, or the binding will update every render.
  */
-export const live = directive(LiveDirective);
+export const live: Live = directive(LiveDirective);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the

@@ -32,10 +32,6 @@ export class WatchDirective<T> extends AsyncDirective {
 
   private __watcher?: Signal.subtle.Watcher;
 
-  // We have to wrap the signal in a computed to work around a bug in the
-  // signal-polyfill: https://github.com/proposal-signals/signal-polyfill/issues/27
-  private __computed?: Signal.Computed<T | undefined>;
-
   private __watch() {
     if (this.__watcher !== undefined) {
       return;
@@ -52,8 +48,7 @@ export class WatchDirective<T> extends AsyncDirective {
 
   private __unwatch() {
     if (this.__watcher !== undefined) {
-      this.__watcher.unwatch(this.__computed!);
-      this.__computed = undefined;
+      this.__watcher.unwatch(this.__signal!);
       this.__watcher = undefined;
     }
   }

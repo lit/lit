@@ -14,7 +14,7 @@ import type {HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
 import {html as serverhtml} from '../../lib/server-template.js';
 export {digestForTemplateResult} from '@lit-labs/ssr-client';
 
-export {render} from '../../lib/render-lit-html.js';
+export {renderThunked as render} from '../../lib/render.js';
 
 /* Real Tests */
 // prettier-ignore

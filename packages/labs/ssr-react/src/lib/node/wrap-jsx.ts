@@ -74,7 +74,7 @@ export function wrapJsxs(originalJsxs: typeof jsxs) {
         const templateShadowRoot = createElement('template', {
           ...templateAttributes,
           dangerouslySetInnerHTML: {
-            __html: [...shadowContents].join(''),
+            __html: collectResultSync(shadowContents),
           },
         });
 

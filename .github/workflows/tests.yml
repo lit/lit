@@ -19,7 +19,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 21
+          node-version: 24.5
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
@@ -43,12 +43,15 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 21
+          node-version: 24.5
           cache: 'npm'
           cache-dependency-path: package-lock.json
 
       # - uses: google/wireit@setup-github-actions-caching/v2
 
+      - name: Log Node and NPM versions
+        run: node --version && npm --version
+        
       - name: NPM install
         run: npm ci
 
@@ -75,7 +78,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 21
+          node-version: 24.5
           cache: 'npm'
           cache-dependency-path: package-lock.json
 

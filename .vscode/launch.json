@@ -10,6 +10,20 @@
       "request": "attach",
       "name": "Attach to VS Code TS Server via Port",
       "processId": "${command:PickProcess}"
+    },
+    // A launch configuration that compiles the extension and then opens it inside a new window
+    {
+      "name": "Run Lit VS Code Extension",
+      "type": "extensionHost",
+      "request": "launch",
+      "args": [
+        "--extensionDevelopmentPath=${workspaceFolder}/packages/labs/vscode-extension",
+        "--disable-extensions"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/packages/labs/vscode-extension/out/**/*.{js|cjs}"
+      ],
+      "preLaunchTask": "build-vscode-extension"
     }
   ]
 }
