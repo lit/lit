@@ -26,10 +26,6 @@ interface EffectOptions {
   manualDispose?: boolean;
 }
 
-export interface ElementEffectOptions extends EffectOptions {
-  element?: SignalWatcher & SignalWatcherApi;
-}
-
 let effectsPending = false;
 const effectWatcher = new Signal.subtle.Watcher(() => {
   if (effectsPending) {
