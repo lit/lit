@@ -32,13 +32,16 @@ export class WatchDirective<T> extends AsyncDirective {
 
   private __watcher?: Signal.subtle.Watcher;
 
+  private __computed: Signal.Computed<T | undefined> | undefined;
+
   private __watch() {
     if (this.__watcher !== undefined) {
       return;
     }
     this.__computed = new Signal.Computed(() => {
-      this.setValue(this.__signal?.get());
-      return this.__signal?.get();
+      const value = this.__signal?.get();
+      this.setValue(value);
+      return value;
     });
     this.__watcher = this.__host?._watcher ?? hostlessWatcher;
     this.__watcher.watch(this.__computed);
