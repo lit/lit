@@ -7,17 +7,17 @@ Form helpers for Lit
 The `FormAssociated` mixin helps define a form-associated custom element.
 
 `FormAssociated` creates a new form-associated base class and implements a
-number of best-practice behaviors for form associated elements:
+number of best-practice behaviors for form-associated elements:
 
-- Sets the element's ARIA role with `internals.role`.
-- Sets the element's form value and state with `internals.setFormState()`.
+- Sets the element's ARIA role using `internals.role`.
+- Updates the element's form value and state using `internals.setFormState()`.
 - Saves the initial form value and state.
-- Implements form reset with the `formResetCallback()`.
-- Implements form state restoration with the `formStateRestoreCallback()`.
-- Syncs disability state to `internals.ariaDisabled` with the
+- Implements form reset via `formResetCallback()`.
+- Implements form state restoration via `formStateRestoreCallback()`.
+- Syncs the disabled state to `internals.ariaDisabled` via
   `formDisabledCallback()`.
 - Calls the element's custom validator method, `_getValidity()`, when the form
-  value changes and calls `internals.setValidity()` with the result.
+  value changes and updates `internals.setValidity()` with the result.
 
 ### Example
 
@@ -37,20 +37,19 @@ export class MyElement extends FormAssociated(LitElement) {
 }
 ```
 
-`FormAssociated` doesn't add any public API to the element. It's behavior can be
+`FormAssociated` doesn't add any public API to the element. Its behavior can be
 controlled with a few decorators.
 
 ### `@formValue()`
 
-The form value can be stored in any field, decorated with the `@formValue`
-decorator.
+The form value can be stored in any class field decorated with `@formValue`.
 
 ```ts
   @formValue()
   accessor value = '';
 ```
 
-By default, the field has to have the type of `string | File | FormData | null`.
+By default, the field must be of type `string | File | FormData | null`.
 If your element has a value of a different type, you can use a custom form value
 converter:
 
@@ -70,30 +69,29 @@ converter:
 
 ### `@formStateGetter()`, `@formStateSetter()`, and `@formState()`
 
-Form state is an additional object that can be stored with a form that
-represents state that is not neccessarily part of the value and submitted with
-the form. If elements have additional state, they should pass it when setting
-form values and they should be able to derive a value from state.
+Form state is additional data stored by the browser alongside the form value.
+While the form _value_ is what gets submitted to the server, the form _state_ is
+used to restore the element's user interface when the user navigates back or
+forward, or when the browser restores a session.
 
-To enable this two decorators are provided to read and write form state:
-`@formStateGetter()` and `@formStateSetter()`. They are applied to a getter and
-setter to mark them as being used to read and write state. When present,
-FormAssociated will use them when setting a value and restoring the form.
+The underlying browser API is `ElementInternals.setFormValue(value, state)`. The
+`FormAssociated` mixin automatically calls this method whenever the `@formValue`
+property changes. If you provide form state, it is passed as the second
+argument.
 
-The `@formState()` decorator marks a field as being part of the form state so
-that the state is stored with the form and validation is performed.
+When the browser restores the element, `FormAssociated` receives the stored
+state and uses it to reset the element's properties.
 
-### `@defaultFormValue()` and `@defaultFormState()`
+To provide this state, you can use the `@formState` decorator on a property, or
+`@formStateGetter` and `@formStateSetter` on methods.
 
-These decorators mark fields as representing the default for value and state.
-These fields will be used to set the form state and `@formValue()` and
-`@formState()` fields when the form is reset.
+The `@formState()` decorator marks a field as being part of the form state. Its
+value will be included in the state passed to `setFormValue`.
 
-Each default field must have the same type as the corresponding value or state
-field.
-
-If there is no field decorated as the default, the initial values are used to
-reset the form.
+`@formStateGetter()` and `@formStateSetter()` allow for more complex state
+handling. They are applied to a getter and setter. The getter is called to
+retrieve the state object to pass to `setFormValue`. The setter is called with
+the restored state object when the browser restores the element.
 
 ```ts
 class CustomStateElement extends FormAssociated(LitElement) {
@@ -131,8 +129,8 @@ class CustomStateElement extends FormAssociated(LitElement) {
 The `FormControl` mixin extends the `FormAssociated` mixin to add new
 form-related public API.
 
-The fields and methods added are similar to native form controls, so that the
-element will have a familiar and more compatible API:
+The added fields and methods mimic native form controls, providing a familiar
+and compatible API:
 
 - `form`: a readonly property that returns the associated form element.
 - `disabled`: a read/write property that reflects the `disabled` attribute.
@@ -150,18 +148,10 @@ element will have a familiar and more compatible API:
 
 ## Utilities
 
-- `getInternals()`: returns the `ElementInternals` instance for the element.
-  `ElementInternals` are supposed to be accessible only to the element itself,
-  so `element.attachInternals()` throws if called multiple times and can't be
-  used by both a base class and subclass. Since `FormAssociated` calls
-  `element.attachInternals()`, it must provide another way for subclasses to get
-  internals. `getInternals()` requires the element class as a parameter and is
-  guarded against multiple calls similar to `attachInternals()`.
-
-- `isDisabled()`: An element can be disabled because its fieldset is disabled,
-  so checking the `disabled` attribute is insufficient. `isDisabled()` is a
-  simple alias for `element.matches(':disabled')` which returns true when the
-  browser understands an element to be disabled.
+- `isDisabled()`: An element can be disabled because its ancestor fieldset is
+  disabled, so checking the `disabled` attribute is insufficient. `isDisabled()`
+  checks if the element matches `:disabled`, correctly handling inherited
+  disabled state.
 
 ## Contributing
 

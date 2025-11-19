@@ -43,12 +43,6 @@ export const FormControl = <T extends Constructor<ReactiveElement>>(
     #internals = super.attachInternals();
     #attachInternalsCalled = false;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    constructor(...args: any[]) {
-      super(...args);
-      this.disabled = false;
-    }
-
     override attachInternals(): ElementInternals {
       if (this.#attachInternalsCalled) {
         throw new Error('attachInternals has already been called');

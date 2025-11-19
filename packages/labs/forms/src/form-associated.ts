@@ -362,6 +362,10 @@ export const formState = (): FormStateDecorator =>
             setFormValue(this, valueAccess.get(this));
           }
         },
+        init(value: V) {
+          initialStates.set(this, value as FormValue);
+          return value;
+        },
       };
     } else {
       return function (this: C, value: V) {
