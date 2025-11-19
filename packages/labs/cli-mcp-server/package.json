@@ -1,0 +1,69 @@
+{
+  "name": "@lit-labs/cli-mcp-server",
+  "description": "Implements the `lit mcp` command. Use from @lit-labs/cli",
+  "version": "0.1.0",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://lit.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/cli-mcp-server"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "module": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "import": "./lib/index.js",
+      "require": "./lib/index.js",
+      "default": "./lib/index.js"
+    }
+  },
+  "files": [
+    "/lib/",
+    "!/lib/test/",
+    "/index.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib",
+        "tsconfig.tsbuildinfo"
+      ],
+      "dependencies": [
+        "../cli:build"
+      ]
+    }
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.11.3",
+    "algoliasearch": "^5.25.0",
+    "zod": "^3.24.4"
+  },
+  "devDependencies": {
+    "@types/node": "^22.17.0",
+    "typescript": "~5.9.0",
+    "@lit-labs/cli": "^0.6.5"
+  }
+}

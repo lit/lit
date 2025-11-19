@@ -4,23 +4,56 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {PropertyDeclaration, PropertyValueMap, ReactiveElement} from 'lit';
+import type {ReactiveElement} from 'lit';
 import {Signal} from 'signal-polyfill';
-import {WatchDirective} from './watch.js';
-
-type ReactiveElementConstructor = abstract new (
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  ...args: any[]
-) => ReactiveElement;
 
 export interface SignalWatcher extends ReactiveElement {
-  _updateWatchDirective(d: WatchDirective<unknown>): void;
-  _clearWatchDirective(d: WatchDirective<unknown>): void;
+  _watcher?: Signal.subtle.Watcher;
 }
+
+interface EffectOptions {
+  /**
+   * By default effects run after the element has updated. If `beforeUpdate`
+   * is set to `true`, the effect will run before the element updates.
+   */
+  beforeUpdate?: boolean;
+  /**
+   * By default, effects are automatically disposed when the element is
+   * disconnected. If `manualDispose` is set to `true`, the effect will not
+   * be automatically disposed, and you must call the returned function to
+   * dispose of the effect manually.
+   */
+  manualDispose?: boolean;
+}
+
+let effectsPending = false;
+const effectWatcher = new Signal.subtle.Watcher(() => {
+  if (effectsPending) {
+    return;
+  }
+  effectsPending = true;
+  queueMicrotask(() => {
+    effectsPending = false;
+    for (const signal of effectWatcher.getPending()) {
+      signal.get();
+    }
+    effectWatcher.watch();
+  });
+});
+
+interface SignalWatcherApi {
+  updateEffect(fn: () => void, options?: EffectOptions): () => void;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type Constructor<T = {}> = new (...args: any[]) => T;
 
 interface SignalWatcherInterface extends SignalWatcher {}
 interface SignalWatcherInternal extends SignalWatcher {
   __forcingUpdate: boolean;
+  __performUpdateSignal?: Signal.Computed<void>;
+  requestUpdate(): void;
+  __queueEffects: () => void;
 }
 
 const signalWatcherBrand: unique symbol = Symbol('SignalWatcherBrand');
@@ -30,13 +63,10 @@ const signalWatcherBrand: unique symbol = Symbol('SignalWatcherBrand');
 // by the signals it watches. To avoid this, we break the cycle by using a
 // WeakMap to store the watcher for each element, and a FinalizationRegistry to
 // clean up the watcher when the element is garbage collected.
-
-const elementFinalizationRegistry = new FinalizationRegistry<{
-  watcher: Signal.subtle.Watcher;
-  signal: Signal.Computed<void>;
-}>(({watcher, signal}) => {
-  watcher.unwatch(signal);
-});
+const elementFinalizationRegistry =
+  new FinalizationRegistry<Signal.subtle.Watcher>((watcher) => {
+    watcher.unwatch(...Signal.subtle.introspectSources(watcher));
+  });
 
 const elementForWatcher = new WeakMap<
   Signal.subtle.Watcher,
@@ -48,24 +78,61 @@ const elementForWatcher = new WeakMap<
  * watch for access to signals during the update lifecycle and trigger a new
  * update when signals values change.
  */
-export function SignalWatcher<T extends ReactiveElementConstructor>(
-  Base: T
-): T {
+export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
   // Only apply the mixin once
   if ((Base as typeof SignalWatcher)[signalWatcherBrand] === true) {
     console.warn(
       'SignalWatcher should not be applied to the same class more than once.'
     );
-    return Base;
+    return Base as T & Constructor<SignalWatcherApi>;
   }
 
-  abstract class SignalWatcher extends Base implements SignalWatcherInterface {
+  class SignalWatcher extends Base implements SignalWatcherInterface {
     static [signalWatcherBrand]: true;
 
-    private __watcher?: Signal.subtle.Watcher;
+    // @internal used in watch directive
+    _watcher?: Signal.subtle.Watcher;
+
+    /**
+     * Flushes effects in required order:
+     * 1. Before update effects
+     * 2. Perform update
+     * 3. Pending watches
+     * 4. After update effects
+     * */
+    private __flushEffects() {
+      const beforeEffects = [] as Signal.Computed<void>[];
+      const afterEffects = [] as Signal.Computed<void>[];
+      this.__effects.forEach((options, signal) => {
+        const list = options?.beforeUpdate ? beforeEffects : afterEffects;
+        list.push(signal);
+      });
+      const pendingWatches = this._watcher
+        ?.getPending()
+        .filter(
+          (signal) =>
+            signal !== this.__performUpdateSignal && !this.__effects.has(signal)
+        );
+      beforeEffects.forEach((signal) => signal.get());
+      this.__performUpdateSignal?.get();
+      pendingWatches!.forEach((signal) => signal.get());
+      afterEffects.forEach((signal) => signal.get());
+    }
+
+    // @ts-expect-error This method is called anonymously in a watcher function
+    private __queueEffects() {
+      if (this.isUpdatePending) {
+        return;
+      }
+      queueMicrotask(() => {
+        if (!this.isUpdatePending) {
+          this.__flushEffects();
+        }
+      });
+    }
 
     private __watch() {
-      if (this.__watcher !== undefined) {
+      if (this._watcher !== undefined) {
         return;
       }
       // We create a fresh computed instead of just re-using the existing one
@@ -74,11 +141,11 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
         this.__forceUpdateSignal.get();
         super.performUpdate();
       });
-      const watcher = (this.__watcher = new Signal.subtle.Watcher(function (
+      const watcher = (this._watcher = new Signal.subtle.Watcher(function (
         this: Signal.subtle.Watcher
       ) {
         // All top-level references in this function body must either be `this`
-        // (the watcher) or a module global to prevent this closure from keeping
+        // (the `watcher`) or a module global to prevent this closure from keeping
         // the enclosing scopes alive, which would keep the element alive. So
         // The only two references are `this` and `elementForWatcher`.
         const el = elementForWatcher.get(this);
@@ -87,25 +154,91 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
           return;
         }
         if (el.__forcingUpdate === false) {
-          el.requestUpdate();
+          const needsUpdate = new Set(this.getPending()).has(
+            el.__performUpdateSignal as Signal.Computed<void>
+          );
+          if (needsUpdate) {
+            el.requestUpdate();
+          } else {
+            el.__queueEffects();
+          }
         }
         this.watch();
       }));
       elementForWatcher.set(watcher, this as unknown as SignalWatcherInternal);
-      elementFinalizationRegistry.register(this, {
-        watcher,
-        signal: this.__performUpdateSignal,
-      });
+      elementFinalizationRegistry.register(this, watcher);
       watcher.watch(this.__performUpdateSignal);
+      watcher.watch(...Array.from(this.__effects).map(([signal]) => signal));
     }
 
     private __unwatch() {
-      if (this.__watcher === undefined) {
+      if (this._watcher === undefined) {
         return;
       }
-      this.__watcher.unwatch(this.__performUpdateSignal!);
-      this.__performUpdateSignal = undefined;
-      this.__watcher = undefined;
+      let keepAlive = false;
+      // We unwatch all signals that are not manually disposed, so that we don't
+      // keep the element alive by holding references to it.
+      this._watcher.unwatch(
+        ...Signal.subtle.introspectSources(this._watcher!).filter((signal) => {
+          const shouldUnwatch =
+            this.__effects.get(signal as Signal.Computed<void>)
+              ?.manualDispose !== true;
+          if (shouldUnwatch) {
+            this.__effects.delete(signal as Signal.Computed<void>);
+          }
+          keepAlive ||= !shouldUnwatch;
+          return shouldUnwatch;
+        })
+      );
+      if (!keepAlive) {
+        this.__performUpdateSignal = undefined;
+        this._watcher = undefined;
+        this.__effects.clear();
+      }
+    }
+
+    // list signals managing effects, stored with effect options.
+    private __effects = new Map<
+      Signal.Computed<void>,
+      EffectOptions | undefined
+    >();
+
+    /**
+     * Executes the provided callback function when any of the signals it
+     * accesses change. By default, the function is called after any pending
+     * element update. Set the `beforeUpdate` property to `true` to run the
+     * effect before the element updates. An effect is automatically disposed
+     * when the element is disconnected. Set the `manualDispose` property to
+     * `true` to prevent this. Call the returned function to manually dispose
+     * of the effect.
+     *
+     * @param callback
+     * @param options {beforeUpdate, manualDispose}
+     */
+    updateEffect(fn: () => void, options?: EffectOptions): () => void {
+      this.__watch();
+      const signal = new Signal.Computed(() => {
+        fn();
+      });
+      this._watcher!.watch(signal);
+      this.__effects.set(signal, options);
+      const beforeUpdate = options?.beforeUpdate ?? false;
+      // An untracked read is safer and all that it takes to
+      // tell the watcher to go.
+      if (beforeUpdate) {
+        Signal.subtle.untrack(() => signal.get());
+      } else {
+        this.updateComplete.then(() =>
+          Signal.subtle.untrack(() => signal.get())
+        );
+      }
+      return () => {
+        this.__effects.delete(signal);
+        this._watcher!.unwatch(signal);
+        if (this.isConnected === false) {
+          this.__unwatch();
+        }
+      };
     }
 
     /**
@@ -138,29 +271,6 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
      */
     private __performUpdateSignal?: Signal.Computed<void>;
 
-    /**
-     * Whether or not the next update should perform a full render, or if only
-     * pending watches should be committed.
-     *
-     * If requestUpdate() was called only because of watch() directive updates,
-     * then we can just commit those directives without a full render. If
-     * requestUpdate() was called for any other reason, we need to perform a
-     * full render, and don't need to separately commit the watch() directives.
-     *
-     * This is set to `true` initially, and whenever requestUpdate() is called
-     * outside of a watch() directive update. It is set to `false` when
-     * update() is called, so that a requestUpdate() is required to do another
-     * full render.
-     */
-    private __doFullRender = true;
-
-    /**
-     * Set of watch directives that have been updated since the last update.
-     * These will be committed in update() to ensure that the latest value is
-     * rendered and that all updates are batched.
-     */
-    private __pendingWatches = new Set<WatchDirective<unknown>>();
-
     protected override performUpdate() {
       if (!this.isUpdatePending) {
         // super.performUpdate() performs this check, so we bail early so that
@@ -176,41 +286,8 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
       this.__forcingUpdate = true;
       this.__forceUpdateSignal.set(this.__forceUpdateSignal.get() + 1);
       this.__forcingUpdate = false;
-      // Always read from the signal to ensure that it's tracked
-      this.__performUpdateSignal!.get();
-    }
-
-    protected override update(
-      changedProperties: PropertyValueMap<this> | Map<PropertyKey, unknown>
-    ): void {
-      // We need a try block because both super.update() and
-      // WatchDirective.commit() can throw, and we need to ensure that post-
-      // update cleanup happens.
-      try {
-        if (this.__doFullRender) {
-          // Force future updates to not perform full renders by default.
-          this.__doFullRender = false;
-          super.update(changedProperties);
-        } else {
-          // For a partial render, just commit the pending watches.
-          // TODO (justinfagnani): Should we access each signal in a separate
-          // try block?
-          this.__pendingWatches.forEach((d) => d.commit());
-        }
-      } finally {
-        // If we didn't call super.update(), we need to set this to false
-        this.isUpdatePending = false;
-        this.__pendingWatches.clear();
-      }
-    }
-
-    override requestUpdate(
-      name?: PropertyKey | undefined,
-      oldValue?: unknown,
-      options?: PropertyDeclaration<unknown, unknown> | undefined
-    ): void {
-      this.__doFullRender = true;
-      super.requestUpdate(name, oldValue, options);
+      // Flush all queued effects...
+      this.__flushEffects();
     }
 
     override connectedCallback(): void {
@@ -243,36 +320,7 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
         }
       });
     }
-
-    /**
-     * Enqueues an update caused by a signal change observed by a watch()
-     * directive.
-     *
-     * Note: the method is not part of the public API and is subject to change.
-     * In particular, it may be removed if the watch() directive is updated to
-     * work with standalone lit-html templates.
-     *
-     * @internal
-     */
-    _updateWatchDirective(d: WatchDirective<unknown>): void {
-      this.__pendingWatches.add(d);
-      // requestUpdate() will set __doFullRender to true, so remember the
-      // current value and restore it after calling requestUpdate().
-      const shouldRender = this.__doFullRender;
-      this.requestUpdate();
-      this.__doFullRender = shouldRender;
-    }
-
-    /**
-     * Clears a watch() directive from the set of pending watches.
-     *
-     * Note: the method is not part of the public API and is subject to change.
-     *
-     * @internal
-     */
-    _clearWatchDirective(d: WatchDirective<unknown>): void {
-      this.__pendingWatches.delete(d);
-    }
   }
-  return SignalWatcher;
+
+  return SignalWatcher as T & Constructor<SignalWatcherApi>;
 }

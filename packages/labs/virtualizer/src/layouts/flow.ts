@@ -244,7 +244,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     const item = this._getPhysicalItem(idx);
     const {averageMarginSize} = this._metricsCache;
     return idx === 0
-      ? this._metricsCache.getMarginSize(0) ?? averageMarginSize
+      ? (this._metricsCache.getMarginSize(0) ?? averageMarginSize)
       : item
         ? item.pos
         : this._estimatePosition(idx);

@@ -22,6 +22,7 @@ import {makeLabsCommand} from './commands/labs.js';
 import {makeInitCommand} from './commands/init.js';
 import {createRequire} from 'module';
 import * as childProcess from 'child_process';
+export type {Command, ResolvedCommand, ReferenceToCommand} from './command.js';
 
 export interface Options {
   // Mandatory, so that all tests must specify it.
@@ -37,6 +38,7 @@ export class LitCli {
   /** The current working directory. */
   readonly cwd: string;
   private readonly stdin: NodeJS.ReadableStream;
+  private skipPermissions = false;
 
   constructor(args: string[], options: Options) {
     this.cwd = options.cwd;
@@ -55,6 +57,12 @@ export class LitCli {
     // to verbose mode. Also set the level on the logger we've already created.
     if (args.indexOf('--verbose') > -1 || args.indexOf('-v') > -1) {
       this.console.logLevel = 'debug';
+    }
+
+    // If the "--autoinstall" flag is ever present, it will automatically
+    // install commands that are not installed without asking for permission.
+    if (args.indexOf('--autoinstall') > -1) {
+      this.skipPermissions = true;
     }
 
     this.args = args;
@@ -281,7 +289,10 @@ export class LitCli {
   private async installDepWithPermission(
     reference: ReferenceToCommand
   ): Promise<boolean> {
-    const havePermission = await this.getPermissionToInstall(reference);
+    const havePermission = this.skipPermissions
+      ? true
+      : await this.getPermissionToInstall(reference);
+
     if (!havePermission) {
       return false;
     }

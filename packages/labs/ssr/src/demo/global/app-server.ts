@@ -8,7 +8,8 @@
  * This is a server-only module that renders the HTML file shell.
  */
 
-import {render} from '../../lib/render.js';
+import {renderThunked} from '../../lib/render.js';
+import {ThunkedRenderResult} from '../../lib/render-result.js';
 import {template, initialData} from './module.js';
 
 export function renderAppWithInitialData() {
@@ -20,8 +21,9 @@ export function renderAppWithInitialData() {
 // shell in unbalanced fragments. By yielding the HTML preamble immediately
 // with no lit-html template preparation or rendering needed, we minimize TTFB,
 // And can get the browser to start prefetch as soon as possible.
-export function* renderApp(data: typeof initialData) {
-  yield `
+export function renderApp(data: typeof initialData): ThunkedRenderResult {
+  return [
+    `
     <!doctype html>
     <html>
       <head>
@@ -34,19 +36,20 @@ export function* renderApp(data: typeof initialData) {
           });
         </script>
         <script src="./node_modules/@webcomponents/template-shadowroot/template-shadowroot.min.js"></script>
-        `;
-  yield `
+        `,
+    `
       </head>
       <body>
         <button>Hydrate</button>
-        <div>`;
+        <div>`,
 
-  // Call the SSR render() function to render a client/server shared template.
-  yield* render(template(data));
+    // Call the SSR render() function to render a client/server shared template.
+    () => renderThunked(template(data)),
 
-  yield `
+    `
         </div>
         <script>TemplateShadowRoot.hydrateShadowRoots(document.body);</script>
       </body>
-</html>`;
+    </html>`,
+  ];
 }
