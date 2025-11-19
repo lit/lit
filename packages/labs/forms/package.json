@@ -32,6 +32,7 @@
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
+    "build:ts:experimental-decorators-tests": "wireit",
     "build:ts:types": "wireit",
     "build:rollup": "wireit",
     "test": "wireit",
@@ -42,6 +43,7 @@
     "build": {
       "dependencies": [
         "build:ts",
+        "build:ts:experimental-decorators-tests",
         "build:ts:types",
         "build:rollup",
         "../../lit:build"
@@ -56,11 +58,29 @@
       "clean": "if-file-deleted",
       "files": [
         "src/**/*.ts",
+        "!src/test/experimental-decorators",
         "tsconfig.json"
       ],
       "output": [
         "development",
+        "!development/test/experimental-decorators",
         "tsconfig.tsbuildinfo"
+      ]
+    },
+    "build:ts:experimental-decorators-tests": {
+      "#comment": "This is a separate script from build:ts because it needs a tsconfig with experimentalDecorators.",
+      "command": "tsc --pretty --project tsconfig.experimental-decorators-tests.json",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "src/test/experimental-decorators/**/*.ts",
+        "tsconfig.experimental-decorators-tests.json"
+      ],
+      "output": [
+        "development/test/experimental-decorators",
+        "tsconfig.experimental-decorators-tests.tsbuildinfo"
       ]
     },
     "build:ts:types": {

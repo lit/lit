@@ -67,21 +67,28 @@ type Access<T = unknown> = ClassAccessorDecoratorContext<
 
 // #region Shared State
 
+/**
+ * Returns an key suitable for storing metadata about the class, either
+ * from Symbol.metadata or the constructor itself.
+ *
+ * In environments with Symbol.metadata support, this will return the metadata
+ * object for both standard and experimental decorators. In environments without
+ * Symbol.metadata support, this will return the constructor itself as a
+ * unique key, but this will only work correctly with experimental decorators.
+ */
+const getClassKey = (ctor: Function): object => {
+  return ctor[Symbol.metadata] ?? ctor;
+};
+
 const internalsCache = new WeakMap<FormAssociated, ElementInternals>();
 
-const valueAccessors = new WeakMap<DecoratorMetadataObject, Access>();
+const valueAccessors = new WeakMap<object, Access>();
 
-const defaultValueAccessors = new WeakMap<DecoratorMetadataObject, Access>();
+const defaultValueAccessors = new WeakMap<object, Access>();
 
-const defaultStateAccessors = new WeakMap<
-  DecoratorMetadataObject,
-  Access<FormValue>
->();
+const defaultStateAccessors = new WeakMap<object, Access<FormValue>>();
 
-const stateAccessors = new WeakMap<
-  DecoratorMetadataObject,
-  Partial<Access<FormValue>>
->();
+const stateAccessors = new WeakMap<object, Partial<Access<FormValue>>>();
 
 /*
  * A store of initial values for FormAssociated elements so that they can be
@@ -95,10 +102,7 @@ const initialValues = new WeakMap<FormAssociated, unknown>();
  */
 const initialStates = new WeakMap<FormAssociated, FormValue>();
 
-const formValueOptions = new WeakMap<
-  DecoratorMetadataObject,
-  FormValueOptions<unknown>
->();
+const formValueOptions = new WeakMap<object, FormValueOptions<unknown>>();
 
 // #endregion
 
@@ -189,11 +193,11 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
     }
 
     formResetCallback() {
-      const metadata = this.constructor[Symbol.metadata]!;
+      const classKey = getClassKey(this.constructor);
 
       // Restore the initial value
-      const valueAccess = valueAccessors.get(metadata);
-      const defaultValueAccess = defaultValueAccessors.get(metadata);
+      const valueAccess = valueAccessors.get(classKey);
+      const defaultValueAccess = defaultValueAccessors.get(classKey);
 
       let defaultValue: unknown;
 
@@ -205,8 +209,8 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       valueAccess?.set(this, defaultValue);
 
       // Restore the initial state
-      const stateAccess = stateAccessors.get(metadata);
-      const defaultStateAccess = defaultStateAccessors.get(metadata);
+      const stateAccess = stateAccessors.get(classKey);
+      const defaultStateAccess = defaultStateAccessors.get(classKey);
 
       let defaultState: FormValue | undefined;
 
@@ -222,7 +226,7 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       state: string | File | FormData | null,
       mode: 'restore' | 'autocomplete'
     ) {
-      const metadata = this.constructor[Symbol.metadata]!;
+      const metadata = getClassKey(this.constructor);
       const stateAccess = stateAccessors.get(metadata);
       if (mode === 'restore' && stateAccess?.set !== undefined) {
         // When restoring a value we should get the state previously passed to
@@ -255,13 +259,13 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
  * Sets the ElementInternals form value and state and triggers validation.
  */
 const setFormValue = (el: FormAssociated, value: unknown) => {
-  const metadata = el.constructor[Symbol.metadata]!;
-  const options = formValueOptions.get(metadata);
+  const classKey = getClassKey(el.constructor);
+  const options = formValueOptions.get(classKey);
   const internals = internalsCache.get(el);
   if (internals === undefined) {
     throw new Error('ElementInternals not found');
   }
-  const state = stateAccessors.get(metadata)?.get?.(el);
+  const state = stateAccessors.get(classKey)?.get?.(el);
   internals.setFormValue(
     options?.converter === undefined
       ? (value as FormValue)
@@ -275,30 +279,127 @@ const setFormValue = (el: FormAssociated, value: unknown) => {
  * A class accessor decorator that marks a field as the form value for the
  * FormAssociated mixin.
  */
-export const formValue =
-  <T = FormValue>(options?: FormValueOptions<T>) =>
+type FormValueDecorator<T> = {
+  // accessor decorator signature
   <C extends FormAssociated, V extends T>(
     target: ClassAccessorDecoratorTarget<C, V>,
     context: ClassAccessorDecoratorContext<C, V>
-  ): ClassAccessorDecoratorResult<C, V> => {
-    // Store the value accessor and options for later use
-    valueAccessors.set(context.metadata, context.access);
-    if (options !== undefined) {
-      formValueOptions.set(context.metadata, options);
-    }
+  ): ClassAccessorDecoratorResult<C, V>;
 
-    return {
-      get: target.get,
-      set(value: V) {
-        target.set.call(this, value);
-        setFormValue(this, value);
-      },
-      init(value: V) {
-        initialValues.set(this, value);
-        return value;
-      },
-    };
-  };
+  // legacy decorator signature
+  (
+    proto: Object,
+    name: PropertyKey,
+    descriptor?: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+};
+
+/**
+ * A class accessor decorator that marks a field as the form value for the
+ * FormAssociated mixin.
+ */
+export const formValue = <T = FormValue>(
+  options?: FormValueOptions<T>
+): FormValueDecorator<T> =>
+  ((
+    target: ClassAccessorDecoratorTarget<FormAssociated, T> | Object,
+    context: ClassAccessorDecoratorContext<FormAssociated, T> | PropertyKey,
+    descriptor?: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any => {
+    if (typeof context === 'object') {
+      // Standard decorator
+      const access = context.access;
+      const metadata = context.metadata;
+      // Store the value accessor and options for later use
+      valueAccessors.set(metadata, access);
+      if (options !== undefined) {
+        formValueOptions.set(metadata, options);
+      }
+
+      return {
+        get: (target as ClassAccessorDecoratorTarget<FormAssociated, T>).get,
+        set(value: T) {
+          (target as ClassAccessorDecoratorTarget<FormAssociated, T>).set.call(
+            this,
+            value
+          );
+          setFormValue(this, value);
+        },
+        init(value: T) {
+          initialValues.set(this, value);
+          return value;
+        },
+      };
+    } else {
+      // Legacy decorator
+      const proto = target as Object;
+      const name = context;
+      const ctor = proto.constructor;
+      const classKey = getClassKey(ctor);
+
+      if (options !== undefined) {
+        formValueOptions.set(classKey, options);
+      }
+
+      valueAccessors.set(classKey, {
+        has(obj: FormAssociated) {
+          return name in obj;
+        },
+        get(obj: FormAssociated) {
+          return obj[name as keyof typeof obj];
+        },
+        set(obj: FormAssociated, v: T) {
+          // @ts-expect-error We know we're writing to a valid property
+          obj[name as keyof typeof obj] = v;
+        },
+      });
+
+      const key = Symbol.for(`__formValue_${String(name)}`);
+      const hasOwnProperty = Object.prototype.hasOwnProperty.call(proto, name);
+
+      if (descriptor) {
+        // Accessor
+        const originalSet = descriptor.set;
+        if (originalSet) {
+          descriptor.set = function (this: FormAssociated, value: T) {
+            if (!initialValues.has(this)) {
+              const currentValue = descriptor.get?.call(this);
+              if (currentValue !== undefined) {
+                initialValues.set(this, currentValue as unknown as FormValue);
+              } else {
+                initialValues.set(this, value as unknown as FormValue);
+              }
+            }
+            originalSet.call(this, value);
+            setFormValue(this, value);
+          };
+        }
+        return descriptor;
+      }
+
+      // Field
+      Object.defineProperty(proto, name, {
+        get() {
+          return this[key];
+        },
+        set(value: T) {
+          if (!initialValues.has(this)) {
+            initialValues.set(this, value);
+          }
+          this[key] = value;
+          setFormValue(this, value);
+        },
+        configurable: true,
+        enumerable: true,
+      });
+
+      return hasOwnProperty
+        ? Object.getOwnPropertyDescriptor(proto, name)
+        : undefined;
+    }
+  }) as FormValueDecorator<T>;
 
 /**
  * A class accessor decorator that marks a field as the default value for the
@@ -338,6 +439,14 @@ type FormStateDecorator = {
     target: (this: C, v: V) => void,
     context: ClassSetterDecoratorContext<C, V>
   ): (this: C, v: V) => void;
+
+  // Legacy decorator signature
+  (
+    proto: Object,
+    name: PropertyKey,
+    descriptor?: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
 };
 
 /**
@@ -347,79 +456,241 @@ type FormStateDecorator = {
  */
 export const formState = (): FormStateDecorator =>
   (<C extends FormAssociated, V>(
-    target: ClassAccessorDecoratorTarget<C, V> | ((this: C, v: V) => void),
+    target:
+      | ClassAccessorDecoratorTarget<C, V>
+      | ((this: C, v: V) => void)
+      | Object,
     context:
       | ClassAccessorDecoratorContext<C, V>
       | ClassSetterDecoratorContext<C, V>
-  ): ClassAccessorDecoratorResult<C, V> | ((this: C, v: V) => void) => {
-    if (context.kind === 'accessor') {
-      return {
-        get: (target as ClassAccessorDecoratorTarget<C, V>).get,
-        set(value: V) {
-          (target as ClassAccessorDecoratorTarget<C, V>).set.call(this, value);
-          const valueAccess = valueAccessors.get(context.metadata);
+      | PropertyKey,
+    descriptor?: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): ClassAccessorDecoratorResult<C, V> | ((this: C, v: V) => void) | any => {
+    if (typeof context === 'object') {
+      // Standard decorator
+      const metadata = (context as ClassAccessorDecoratorContext<C, V>)
+        .metadata;
+      if (context.kind === 'accessor') {
+        // Accessor
+        return {
+          get: (target as ClassAccessorDecoratorTarget<C, V>).get,
+          set(value: V) {
+            (target as ClassAccessorDecoratorTarget<C, V>).set.call(
+              this,
+              value
+            );
+            const valueAccess = valueAccessors.get(metadata);
+            if (valueAccess !== undefined) {
+              setFormValue(this, valueAccess.get(this));
+            }
+          },
+          init(value: V) {
+            initialStates.set(this, value as FormValue);
+            return value;
+          },
+        };
+      } else {
+        // Setter
+        return function (this: C, value: V) {
+          (target as (this: C, v: V) => void).call(this, value);
+          const valueAccess = valueAccessors.get(metadata);
           if (valueAccess !== undefined) {
             setFormValue(this, valueAccess.get(this));
           }
-        },
-        init(value: V) {
-          initialStates.set(this, value as FormValue);
-          return value;
-        },
-      };
+        };
+      }
     } else {
-      return function (this: C, value: V) {
-        (target as (this: C, v: V) => void).call(this, value);
-        const valueAccess = valueAccessors.get(context.metadata);
-        if (valueAccess !== undefined) {
-          setFormValue(this, valueAccess.get(this));
+      // Legacy decorator
+      const proto = target as Object;
+      const name = context as PropertyKey;
+      const ctor = proto.constructor;
+      const classKey = getClassKey(ctor);
+
+      if (descriptor) {
+        // Accessor or method
+        const originalSet = descriptor.set;
+        if (originalSet) {
+          descriptor.set = function (this: C, value: V) {
+            if (!initialStates.has(this)) {
+              const currentValue = descriptor.get?.call(this);
+              if (currentValue !== undefined) {
+                initialStates.set(this, currentValue as unknown as FormValue);
+              } else {
+                initialStates.set(this, value as unknown as FormValue);
+              }
+            }
+            originalSet.call(this, value);
+            const valueAccess = valueAccessors.get(classKey);
+            if (valueAccess?.get) {
+              setFormValue(this, valueAccess.get(this));
+            }
+          };
         }
-      };
+
+        const access = stateAccessors.get(classKey) ?? {};
+        if (descriptor.get) {
+          access.get = (obj: FormAssociated) => {
+            try {
+              return descriptor.get!.call(obj);
+            } catch (e) {
+              // If the property is an accessor, it may not be initialized yet.
+              return undefined as unknown as FormValue;
+            }
+          };
+        }
+        if (descriptor.set) {
+          access.set = (obj: FormAssociated, v: FormValue) =>
+            descriptor.set!.call(obj, v as V);
+        }
+        stateAccessors.set(classKey, access as Access<FormValue>);
+
+        return descriptor;
+      } else {
+        // Field
+        const key = Symbol.for(`__formState_${String(name)}`);
+        Object.defineProperty(proto, name, {
+          get() {
+            return this[key];
+          },
+          set(value: V) {
+            if (!initialStates.has(this)) {
+              initialStates.set(this, value as FormValue);
+            }
+            this[key] = value;
+            const valueAccess = valueAccessors.get(classKey);
+            if (valueAccess?.get) {
+              setFormValue(this, valueAccess.get(this));
+            }
+          },
+          configurable: true,
+          enumerable: true,
+        });
+
+        const access = stateAccessors.get(classKey) ?? {};
+        access.get = (obj: FormAssociated) =>
+          obj[name as keyof typeof obj] as FormValue;
+        access.set = (obj: FormAssociated, v: FormValue) => {
+          // @ts-expect-error We know we're writing to a valid property
+          obj[name as keyof typeof obj] = v as V;
+        };
+        stateAccessors.set(classKey, access as Access<FormValue>);
+      }
     }
   }) as FormStateDecorator;
 
-/**
- * A class getter decorator that marks a getter as the form state for the
- * FormAssociated mixin.
- *
- * This getter should usually be private. The getter should only be called by
- * the FormAssociated mixin, not by the element itself.
- */
-export const formStateGetter =
-  () =>
+type FormStateGetterDecorator = {
   <C extends FormAssociated, V extends FormValue>(
     target: (this: C) => V,
-    context: ClassGetterDecoratorContext<C, V>
-  ): ((this: C) => V) => {
-    const access = stateAccessors.get(context.metadata) ?? {};
-    Object.assign(
-      access,
-      (context as ClassGetterDecoratorContext<C, V>).access
-    );
-    stateAccessors.set(context.metadata, access as Access<FormValue>);
-    return target;
-  };
+    context: ClassMethodDecoratorContext<C, (this: C) => V>
+  ): void;
+
+  (
+    proto: Object,
+    name: PropertyKey,
+    descriptor: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+};
 
 /**
- * A class setter decorator that marks a setter as the form state for the
+ * A class method decorator that marks a method as the form state getter for the
  * FormAssociated mixin.
  *
- * This setter should usually be private. The setter should only be called by
+ * This method should usually be private. The method should only be called by
  * the FormAssociated mixin, not by the element itself.
  */
-export const formStateSetter =
-  () =>
+export const formStateGetter = (): FormStateGetterDecorator =>
+  (<C extends FormAssociated, V extends FormValue>(
+    target: ((this: C) => V) | Object,
+    context: ClassMethodDecoratorContext<C, (this: C) => V> | PropertyKey,
+    descriptor?: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any => {
+    if (typeof context === 'object') {
+      // Standard decorator
+      const metadata = (
+        context as ClassMethodDecoratorContext<C, (this: C) => V>
+      ).metadata;
+      const access = stateAccessors.get(metadata) ?? {};
+      const methodAccess = (
+        context as ClassMethodDecoratorContext<C, (this: C) => V>
+      ).access;
+      access.get = (obj: FormAssociated) =>
+        methodAccess.get(obj as C).call(obj as C);
+      stateAccessors.set(metadata, access as Access<FormValue>);
+    } else {
+      // Legacy decorator
+      const proto = target as Object;
+      const name = context as PropertyKey;
+      const ctor = proto.constructor;
+      const classKey = getClassKey(ctor);
+      const access = stateAccessors.get(classKey) ?? {};
+      access.get = (obj: FormAssociated) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        return (obj as any)[name].call(obj);
+      };
+      stateAccessors.set(classKey, access as Access<FormValue>);
+      return descriptor;
+    }
+  }) as FormStateGetterDecorator;
+
+type FormStateSetterDecorator = {
   <C extends FormAssociated, V extends FormValue>(
     target: (this: C, v: V) => void,
-    context: ClassSetterDecoratorContext<C, V>
-  ): ((this: C, v: V) => void) => {
-    const access = stateAccessors.get(context.metadata) ?? {};
-    Object.assign(
-      access,
-      (context as ClassSetterDecoratorContext<C, V>).access
-    );
-    stateAccessors.set(context.metadata, access as Access<FormValue>);
-    return target;
-  };
+    context: ClassMethodDecoratorContext<C, (this: C, v: V) => void>
+  ): void;
+
+  (
+    proto: Object,
+    name: PropertyKey,
+    descriptor: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any;
+};
+
+/**
+ * A class method decorator that marks a method as the form state setter for the
+ * FormAssociated mixin.
+ *
+ * This method should usually be private. The method should only be called by
+ * the FormAssociated mixin, not by the element itself.
+ */
+export const formStateSetter = (): FormStateSetterDecorator =>
+  (<C extends FormAssociated, V extends FormValue>(
+    target: ((this: C, v: V) => void) | Object,
+    context:
+      | ClassMethodDecoratorContext<C, (this: C, v: V) => void>
+      | PropertyKey,
+    descriptor?: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): void | any => {
+    if (typeof context === 'object') {
+      // Standard decorator
+      const metadata = (
+        context as ClassMethodDecoratorContext<C, (this: C, v: V) => void>
+      ).metadata;
+      const access = stateAccessors.get(metadata) ?? {};
+      const methodAccess = (
+        context as ClassMethodDecoratorContext<C, (this: C, v: V) => void>
+      ).access;
+      access.set = (obj: FormAssociated, v: V) =>
+        methodAccess.get(obj as C).call(obj as C, v);
+      stateAccessors.set(metadata, access as Access<FormValue>);
+    } else {
+      // Legacy decorator
+      const proto = target as Object;
+      const name = context as PropertyKey;
+      const ctor = proto.constructor;
+      const classKey = getClassKey(ctor);
+      const access = stateAccessors.get(classKey) ?? {};
+      access.set = (obj: FormAssociated, v: V) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        (obj as any)[name].call(obj, v);
+      };
+      stateAccessors.set(classKey, access as Access<FormValue>);
+      return descriptor;
+    }
+  }) as FormStateSetterDecorator;
 
 // #endregion

@@ -3,7 +3,7 @@
     "composite": true,
     "target": "es2021",
     "module": "NodeNext",
-    "lib": ["es2021", "DOM", "DOM.Iterable", "ESNext.Decorators"],
+    "lib": ["es2021", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -19,10 +19,11 @@
     "noImplicitThis": true,
     "moduleResolution": "NodeNext",
     "allowSyntheticDefaultImports": true,
-    "experimentalDecorators": false,
+    "experimentalDecorators": true,
     "noImplicitOverride": true,
     "types": ["mocha"]
   },
-  "include": ["src/**/*.ts"],
-  "exclude": ["src/test/experimental-decorators/**/*"]
+  "include": ["src/test/experimental-decorators/**/*.ts"],
+  "exclude": [],
+  "references": [{"path": "./tsconfig.json"}]
 }

@@ -151,8 +151,9 @@ The `@formState()` decorator marks a field as being part of the form state. Its
 value will be included in the state passed to `internals.setFormValue()`.
 
 `@formStateGetter()` and `@formStateSetter()` allow for more complex state
-handling. They are applied to a getter and setter. The getter is called to
-retrieve the state object to pass to `internals.setFormValue()`. The setter is
+handling. They are applied to methods called to get or set the form state. The
+`@formStateGetter()` decorated method is called to retrieve the state object to
+pass to `internals.setFormValue()`. The `@formStateSetter()` decorated method is
 called with the restored state object when the browser restores the element.
 
 ```ts
@@ -165,13 +166,14 @@ class CustomStateElement extends FormAssociated(LitElement) {
   accessor count = 0;
 
   @formStateGetter()
-  // @ts-expect-error #formState is called dynamically
-  get #formState() {
+  // @ts-expect-error #getFormState is called dynamically
+  #getFormState() {
     return this.value + '#' + this.count;
   }
 
   @formStateSetter()
-  set #formState(state: string) {
+  // @ts-expect-error #setFormState is called dynamically
+  #setFormState(state: string) {
     const [value, count] = state.split('#');
     this.value = value;
     this.count = Number(count);

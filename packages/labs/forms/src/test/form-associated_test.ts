@@ -157,12 +157,13 @@ class CustomStateElement extends FormAssociated(LitElement) {
 
   @formStateGetter()
   // @ts-expect-error #formState is called dynamically
-  get #formState() {
+  #getFormState() {
     return this.value + '#' + this.count;
   }
 
   @formStateSetter()
-  set #formState(state: string) {
+  // @ts-expect-error #setFormState is called dynamically
+  #setFormState(state: string) {
     const [value, count] = state.split('#');
     this.value = value;
     this.count = Number(count);
