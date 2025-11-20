@@ -51,6 +51,7 @@ export const ariaMixinAttributes: ARIAAttributeMap = {
   ariaRelevant: 'aria-relevant',
   ariaRequired: 'aria-required',
   ariaRoleDescription: 'aria-roledescription',
+  ariaRelevant: 'aria-relevant',
   ariaRowCount: 'aria-rowcount',
   ariaRowIndex: 'aria-rowindex',
   ariaRowIndexText: 'aria-rowindextext',
@@ -112,6 +113,7 @@ export const ElementInternalsShim = class ElementInternals
   ariaReadOnly = '';
   ariaRelevant = '';
   ariaRequired = '';
+  ariaRelevant = '';
   ariaRoleDescription = '';
   ariaRowCount = '';
   ariaRowIndex = '';
