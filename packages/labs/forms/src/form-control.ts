@@ -51,7 +51,9 @@ export const FormControl = <T extends Constructor<ReactiveElement>>(
 
     override attachInternals(): ElementInternals {
       if (this.#attachInternalsCalled) {
-        throw new Error('attachInternals has already been called');
+        // Call super.attachInternals() if attachInternals has already been
+        // called to provoke the native error.
+        super.attachInternals();
       }
       this.#attachInternalsCalled = true;
       return this.#internals;

@@ -22,7 +22,9 @@ export type FormValue = string | File | FormData | null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
 
-export interface FormAssociated extends ReactiveElement {
+export interface FormAssociated extends ReactiveElement {}
+
+interface FormAssociatedInternal extends FormAssociated {
   /**
    * Implement this method to validate the element. Return a `ValidityResult`.
    */
@@ -41,7 +43,6 @@ export interface FormAssociated extends ReactiveElement {
    */
   _validate(): boolean;
 }
-type FormAssociatedInterface = FormAssociated;
 
 export interface FormAssociatedConstructor {
   role?: ElementInternals['role'];
@@ -111,6 +112,7 @@ const formValueOptions = new WeakMap<object, FormValueOptions<unknown>>();
 /**
  * Returns true if the element is disabled.
  */
+// TODO (justinfagnani): Make this work in SSR
 export const isDisabled = (element: FormAssociated) =>
   element.matches(':disabled');
 
@@ -131,8 +133,8 @@ export const isDisabled = (element: FormAssociated) =>
  *   type must be assignable to `string | File | FormData | null`. The state
  *   field should be private, as it is only intended to be set by the
  *   FormAssociated mixin. The state field should usually be a getter/setter
- *   pair so that the form value can be derived from the state during form
- *   state restoration.
+ *   pair so that the form value can be derived from the state during form state
+ *   restoration.
  * - Form reset: When the form is reset, the value field is set to its initial
  *   value, and the state field is set to its initial state. This means that the
  *   initial value and state will be stored for the lifetime of the element.
@@ -150,18 +152,31 @@ export const isDisabled = (element: FormAssociated) =>
  * - Validation: An element can implement the  `_getValidity()` method to
  *   validate its state. This method is called automatically when the form value
  *   changes, and can be called manually by the element.
+ *
+ * Implement a `_getValidity()` method that returns a `ValidityResult` to
+ * validate the element.
+ *
+ * Implement a `_validate(): boolean` method to validate the element. This
+ * method should be called by the element when its state might have changed in a
+ * way that would affect its validity.
+ *
+ * Calls `_getValidity()` and sets the validity flags on the element's
+ * internals, then returns the result of `internals.checkValidity()`.
+ *
+ * It's often a good idea to call this method in the constructor to set the
+ * initial validity state.
  */
 export const FormAssociated = <T extends Constructor<ReactiveElement>>(
   base: T
 ) => {
-  class C extends base implements FormAssociatedInterface {
+  class C extends base implements FormAssociated {
     static formAssociated = true;
 
     // This must be a `super` call, not a `this` call!
     #internals = super.attachInternals();
     #attachInternalsCalled = false;
 
-    _getValidity?(): ValidityResult;
+    protected _getValidity?(): ValidityResult;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(...args: any[]) {
@@ -173,13 +188,15 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
 
     override attachInternals(): ElementInternals {
       if (this.#attachInternalsCalled) {
-        throw new Error('attachInternals has already been called');
+        // Call super.attachInternals() if attachInternals has already been
+        // called to provoke the native error.
+        super.attachInternals();
       }
       this.#attachInternalsCalled = true;
       return this.#internals;
     }
 
-    _validate() {
+    protected _validate() {
       if (this._getValidity !== undefined) {
         const {flags, message, anchor} = this._getValidity();
         this.#internals.setValidity(flags, message, anchor);
@@ -272,7 +289,7 @@ const setFormValue = (el: FormAssociated, value: unknown) => {
       : options.converter.toFormValue(value),
     state
   );
-  el._validate();
+  (el as FormAssociatedInternal)._validate();
 };
 
 /**
@@ -310,8 +327,7 @@ export const formValue = <T = FormValue>(
   ): any => {
     if (typeof context === 'object') {
       // Standard decorator
-      const access = context.access;
-      const metadata = context.metadata;
+      const {access, metadata} = context;
       // Store the value accessor and options for later use
       valueAccessors.set(metadata, access);
       if (options !== undefined) {
