@@ -103,6 +103,22 @@ const initialStates = new WeakMap<FormAssociated, FormValue>();
 
 const formValueOptions = new WeakMap<object, FormValueOptions<unknown>>();
 
+const initializeValue = (
+  map: WeakMap<FormAssociated, unknown>,
+  obj: FormAssociated,
+  descriptor: PropertyDescriptor,
+  value: unknown
+) => {
+  if (!map.has(obj)) {
+    const currentValue = descriptor.get?.call(obj);
+    if (currentValue !== undefined) {
+      map.set(obj, currentValue);
+    } else {
+      map.set(obj, value);
+    }
+  }
+};
+
 // #endregion
 
 // #region Utilities
@@ -376,14 +392,7 @@ export const formValue = <T = FormValue>(
       const originalSet = descriptor.set;
       if (originalSet) {
         descriptor.set = function (this: FormAssociated, value: T) {
-          if (!initialValues.has(this)) {
-            const currentValue = descriptor.get?.call(this);
-            if (currentValue !== undefined) {
-              initialValues.set(this, currentValue as unknown as FormValue);
-            } else {
-              initialValues.set(this, value as unknown as FormValue);
-            }
-          }
+          initializeValue(initialValues, this, descriptor, value);
           originalSet.call(this, value);
           setFormValue(this, value);
         };
@@ -502,14 +511,7 @@ export const formState = (): FormStateDecorator =>
         const originalSet = descriptor.set;
         if (originalSet) {
           descriptor.set = function (this: C, value: V) {
-            if (!initialStates.has(this)) {
-              const currentValue = descriptor.get?.call(this);
-              if (currentValue !== undefined) {
-                initialStates.set(this, currentValue as unknown as FormValue);
-              } else {
-                initialStates.set(this, value as unknown as FormValue);
-              }
-            }
+            initializeValue(initialStates, this, descriptor, value);
             originalSet.call(this, value);
             const valueAccess = valueAccessors.get(classKey);
             if (valueAccess?.get) {
