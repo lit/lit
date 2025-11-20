@@ -22,9 +22,7 @@ export type FormValue = string | File | FormData | null;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type Constructor<T = object> = new (...args: any[]) => T;
 
-export interface FormAssociated extends ReactiveElement {}
-
-interface FormAssociatedInternal extends FormAssociated {
+export interface FormAssociated extends ReactiveElement {
   /**
    * Implement this method to validate the element. Return a `ValidityResult`.
    */
@@ -59,10 +57,10 @@ interface ValidityResult {
   anchor?: HTMLElement;
 }
 
-type Access<T = unknown> = ClassAccessorDecoratorContext<
-  FormAssociated,
-  T
->['access'];
+type Access<T = unknown> = {
+  get(obj: FormAssociated): T;
+  set(obj: FormAssociated, value: T): void;
+};
 
 // #endregion
 
@@ -176,7 +174,7 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
     #internals = super.attachInternals();
     #attachInternalsCalled = false;
 
-    protected _getValidity?(): ValidityResult;
+    _getValidity?(): ValidityResult;
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     constructor(...args: any[]) {
@@ -196,7 +194,7 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       return this.#internals;
     }
 
-    protected _validate() {
+    _validate() {
       if (this._getValidity !== undefined) {
         const {flags, message, anchor} = this._getValidity();
         this.#internals.setValidity(flags, message, anchor);
@@ -289,7 +287,7 @@ const setFormValue = (el: FormAssociated, value: unknown) => {
       : options.converter.toFormValue(value),
     state
   );
-  (el as FormAssociatedInternal)._validate();
+  el._validate();
 };
 
 /**
@@ -350,6 +348,12 @@ export const formValue = <T = FormValue>(
       };
     } else {
       // Legacy decorator
+
+      if (descriptor === undefined) {
+        // We don't support non-accessor fields in experimental decorators
+        throw new Error('@formValue must be used on an accessor');
+      }
+
       const proto = target as Object;
       const name = context;
       const ctor = proto.constructor;
@@ -360,9 +364,6 @@ export const formValue = <T = FormValue>(
       }
 
       valueAccessors.set(classKey, {
-        has(obj: FormAssociated) {
-          return name in obj;
-        },
         get(obj: FormAssociated) {
           return obj[name as keyof typeof obj];
         },
@@ -372,48 +373,22 @@ export const formValue = <T = FormValue>(
         },
       });
 
-      const key = Symbol.for(`__formValue_${String(name)}`);
-      const hasOwnProperty = Object.prototype.hasOwnProperty.call(proto, name);
-
-      if (descriptor) {
-        // Accessor
-        const originalSet = descriptor.set;
-        if (originalSet) {
-          descriptor.set = function (this: FormAssociated, value: T) {
-            if (!initialValues.has(this)) {
-              const currentValue = descriptor.get?.call(this);
-              if (currentValue !== undefined) {
-                initialValues.set(this, currentValue as unknown as FormValue);
-              } else {
-                initialValues.set(this, value as unknown as FormValue);
-              }
-            }
-            originalSet.call(this, value);
-            setFormValue(this, value);
-          };
-        }
-        return descriptor;
-      }
-
-      // Field
-      Object.defineProperty(proto, name, {
-        get() {
-          return this[key];
-        },
-        set(value: T) {
+      const originalSet = descriptor.set;
+      if (originalSet) {
+        descriptor.set = function (this: FormAssociated, value: T) {
           if (!initialValues.has(this)) {
-            initialValues.set(this, value);
+            const currentValue = descriptor.get?.call(this);
+            if (currentValue !== undefined) {
+              initialValues.set(this, currentValue as unknown as FormValue);
+            } else {
+              initialValues.set(this, value as unknown as FormValue);
+            }
           }
-          this[key] = value;
+          originalSet.call(this, value);
           setFormValue(this, value);
-        },
-        configurable: true,
-        enumerable: true,
-      });
-
-      return hasOwnProperty
-        ? Object.getOwnPropertyDescriptor(proto, name)
-        : undefined;
+        };
+      }
+      return descriptor;
     }
   }) as FormValueDecorator<T>;
 
@@ -519,7 +494,6 @@ export const formState = (): FormStateDecorator =>
     } else {
       // Legacy decorator
       const proto = target as Object;
-      const name = context as PropertyKey;
       const ctor = proto.constructor;
       const classKey = getClassKey(ctor);
 
@@ -564,33 +538,14 @@ export const formState = (): FormStateDecorator =>
         return descriptor;
       } else {
         // Field
-        const key = Symbol.for(`__formState_${String(name)}`);
-        Object.defineProperty(proto, name, {
-          get() {
-            return this[key];
-          },
-          set(value: V) {
-            if (!initialStates.has(this)) {
-              initialStates.set(this, value as FormValue);
-            }
-            this[key] = value;
-            const valueAccess = valueAccessors.get(classKey);
-            if (valueAccess?.get) {
-              setFormValue(this, valueAccess.get(this));
-            }
-          },
-          configurable: true,
-          enumerable: true,
-        });
-
-        const access = stateAccessors.get(classKey) ?? {};
-        access.get = (obj: FormAssociated) =>
-          obj[name as keyof typeof obj] as FormValue;
-        access.set = (obj: FormAssociated, v: FormValue) => {
-          // @ts-expect-error We know we're writing to a valid property
-          obj[name as keyof typeof obj] = v as V;
-        };
-        stateAccessors.set(classKey, access as Access<FormValue>);
+        // We don't support non-accessor fields in experimental decorators
+        // because we can't easily intercept the setter without defining a
+        // property on the prototype, which is what we do for accessors.
+        // To support fields we would need to use a different strategy, like
+        // defining a getter/setter on the instance, which is more expensive.
+        throw new Error(
+          '@formState must be used on an accessor when using experimental decorators'
+        );
       }
     }
   }) as FormStateDecorator;

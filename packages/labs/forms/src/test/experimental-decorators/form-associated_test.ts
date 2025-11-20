@@ -25,7 +25,7 @@ suite('FormAssociated experimental decorators', () => {
       _internals = this.attachInternals();
 
       @formValue()
-      value = 'foo';
+      accessor value = 'foo';
     }
     customElements.define(TestElement.tagName, TestElement);
 
@@ -39,7 +39,7 @@ suite('FormAssociated experimental decorators', () => {
       _internals = this.attachInternals();
 
       @formValue()
-      value = 'foo';
+      accessor value = 'foo';
     }
     customElements.define(TestElement.tagName, TestElement);
 
@@ -67,10 +67,10 @@ suite('FormAssociated experimental decorators', () => {
       _internals = this.attachInternals();
 
       @formValue()
-      value = 'foo';
+      accessor value = 'foo';
 
       @formState()
-      state = 'bar';
+      accessor state = 'bar';
 
       validateCalled = 0;
 
@@ -98,7 +98,7 @@ suite('FormAssociated experimental decorators', () => {
       _internals = this.attachInternals();
 
       @formValue()
-      value = 'foo';
+      accessor value = 'foo';
 
       _state = 'bar';
 
@@ -137,7 +137,7 @@ suite('FormAssociated experimental decorators', () => {
       _internals = this.attachInternals();
 
       @formValue()
-      value = 'foo';
+      accessor value = 'foo';
 
       _state = 'bar';
 
@@ -223,7 +223,7 @@ suite('FormAssociated experimental decorators', () => {
       _internals = this.attachInternals();
 
       @formValue()
-      value = 'foo';
+      accessor value = 'foo';
 
       @formState()
       accessor state = 'bar';
