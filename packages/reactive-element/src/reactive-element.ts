@@ -15,6 +15,7 @@ import {
   adoptStyles,
   CSSResultGroup,
   CSSResultOrNative,
+  adoptStyleSheets,
 } from './css-tag.js';
 import type {
   ReactiveController,
@@ -1178,6 +1179,19 @@ export abstract class ReactiveElement
     value: string | null
   ) {
     this._$attributeToProperty(name, value);
+  }
+
+  /**
+   * Rewires element styling  whenever it gets connected to a (new) document if `adoptedStyleSheets`
+   * is being used so that element styles are preserved between document hops. This is because `CSSStyleSheet`s
+   * cannot be shared across documents.
+   * @category lifecycle
+   */
+  adoptedCallback() {
+    adoptStyleSheets(
+      this.renderRoot as ShadowRoot,
+      (this.constructor as typeof ReactiveElement).elementStyles
+    );
   }
 
   private __propertyToAttribute(name: PropertyKey, value: unknown) {

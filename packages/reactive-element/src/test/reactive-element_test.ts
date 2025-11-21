@@ -6,6 +6,7 @@
 
 import {
   ComplexAttributeConverter,
+  css,
   defaultConverter,
   PropertyDeclaration,
   PropertyDeclarations,
@@ -3975,5 +3976,44 @@ suite('ReactiveElement', () => {
     if (A || B) {
       // Suppress no-unused-vars warnings
     }
+  });
+
+  test('Different `CSSStyleSheet`s are used across documents to ensure that element styles are preserved correctly', () => {
+    class E extends ReactiveElement {
+      static override styles = [
+        css`
+          div {
+            margin: 2px solid red;
+          }
+        `,
+        css`
+          div {
+            padding: 10px;
+          }
+        `,
+      ];
+    }
+    const name = generateElementName();
+    customElements.define(name, E);
+    const el = document.createElement(name);
+    document.body.appendChild(el);
+    assert.isNotNull(el.shadowRoot?.adoptedStyleSheets[0]);
+    const adoptedStyleSheets_1 = [...(el.shadowRoot?.adoptedStyleSheets ?? [])];
+    const iframe = document.createElement('iframe');
+    document.body.appendChild(iframe);
+    iframe.onload = function () {
+      iframe.contentWindow?.document.body.appendChild(el);
+      const adoptedStyleSheets_2 = [
+        ...(el.shadowRoot?.adoptedStyleSheets ?? []),
+      ];
+      assert.strictEqual(adoptedStyleSheets_1.length, 2);
+      assert.strictEqual(adoptedStyleSheets_2.length, 2);
+      adoptedStyleSheets_1.forEach((_, index) => {
+        assert.notStrictEqual(
+          adoptedStyleSheets_1[index],
+          adoptedStyleSheets_2[index]
+        );
+      });
+    };
   });
 });

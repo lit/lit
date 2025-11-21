@@ -9,6 +9,7 @@ import {
   CSSResult,
   unsafeCSS,
   supportsAdoptingStyleSheets,
+  adoptStyles,
 } from '@lit/reactive-element/css-tag.js';
 import {assert} from 'chai';
 
@@ -98,6 +99,57 @@ suite('Styling', () => {
       // document.body level.
       const bodyStyles = `${cssModule}`;
       assert.equal(bodyStyles.replace(/\s/g, ''), '.my-module{color:yellow;}');
+    });
+
+    test('`adoptStyles uses different cached `styleSheets` per document', async () => {
+      if (supportsAdoptingStyleSheets) {
+        const div = document.createElement('div');
+        document.body.appendChild(div);
+        const shadowRoot = div.attachShadow({mode: 'open'});
+        const styles = [
+          css`
+            div {
+              margin: 2px solid red;
+            }
+          `,
+          css`
+            div {
+              padding: 10px;
+            }
+          `,
+        ];
+        adoptStyles(shadowRoot, styles);
+        const adoptedStyleSheets_1 = [...shadowRoot.adoptedStyleSheets];
+        adoptStyles(shadowRoot, styles);
+        const adoptedStyleSheets_2 = [...shadowRoot.adoptedStyleSheets];
+        adoptedStyleSheets_1.forEach((_, index) => {
+          assert.strictEqual(
+            adoptedStyleSheets_1[index],
+            adoptedStyleSheets_2[index]
+          );
+        });
+        const iframe = document.createElement('iframe');
+        document.body.appendChild(iframe);
+        iframe.onload = function () {
+          iframe.contentWindow?.document.body.appendChild(div);
+          adoptStyles(shadowRoot, styles);
+          const adoptedStyleSheets_3 = [...shadowRoot.adoptedStyleSheets];
+          adoptStyles(shadowRoot, styles);
+          const adoptedStyleSheets_4 = [...shadowRoot.adoptedStyleSheets];
+          adoptedStyleSheets_1.forEach((_, index) => {
+            assert.strictEqual(
+              adoptedStyleSheets_3[index],
+              adoptedStyleSheets_4[index]
+            );
+          });
+          adoptedStyleSheets_1.forEach((_, index) => {
+            assert.notStrictEqual(
+              adoptedStyleSheets_2[index],
+              adoptedStyleSheets_3[index]
+            );
+          });
+        };
+      }
     });
   });
 });
