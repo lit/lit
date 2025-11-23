@@ -25,6 +25,7 @@ import 'lit/directives/async-replace.js';
 import 'lit/directives/cache.js';
 import 'lit/directives/choose.js';
 import 'lit/directives/class-map.js';
+import 'lit/directives/direct-html.js';
 import 'lit/directives/guard.js';
 import 'lit/directives/if-defined.js';
 import 'lit/directives/join.js';
