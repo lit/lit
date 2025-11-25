@@ -122,6 +122,7 @@ export function makeDefaultContextObject() {
 
 /**
  * A subset of the Node vm.Module API.
+ * @deprecated Use vm.Module instead.
  */
 export interface VmModule {
   /**
@@ -133,14 +134,14 @@ export interface VmModule {
 
 export interface ModuleRecord {
   path: string;
-  module?: VmModule;
+  module?: vm.Module;
   imports: Array<string>;
-  evaluated: Promise<VmModule>;
+  evaluated: Promise<vm.Module>;
 }
 
 interface ImportResult {
   path: string;
-  module: VmModule;
+  module: vm.Module;
 }
 
 export interface Options {
