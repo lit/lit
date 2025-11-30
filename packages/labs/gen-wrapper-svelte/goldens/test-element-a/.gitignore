@@ -1,0 +1,8 @@
+/lib/ElementA.svelte.*
+/lib/ElementEvents.svelte.*
+/lib/ElementMixins.svelte.*
+/lib/ElementProps.svelte.*
+/lib/ElementSlots.svelte.*
+/lib/ElementWithoutProps.svelte.*
+/lib/sub/ElementSub.svelte.*
+/lib/index.ts.*
