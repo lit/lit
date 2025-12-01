@@ -32,7 +32,7 @@ export const renderModule = async (
     referrerPathOrFileUrl
   );
   const {module} = importResult;
-  const f = module.namespace[functionName] as Function;
+  const f = (module.namespace as Record<string, Function>)[functionName];
   // TODO: should we require the result be an AsyncIterable?
   return f(...args);
 };
