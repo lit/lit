@@ -121,7 +121,7 @@ suite('Spring', () => {
       assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
 
       // Wait at least a frame
-      await new Promise((res) => requestAnimationFrame(res));
+      await new Promise((res) => setTimeout(res, 1));
 
       // Make sure it's moving
       assert.isFalse(el.spring.isAtRest);
