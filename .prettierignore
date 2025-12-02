@@ -224,6 +224,14 @@ packages/labs/eslint-plugin/**/index.js.map
 packages/labs/eslint-plugin/**/index.d.ts
 packages/labs/eslint-plugin/**/index.d.ts.map
 
+packages/labs/forms/development/
+packages/labs/forms/test/
+packages/labs/forms/lib/
+packages/labs/forms/node_modules/
+packages/labs/forms/index.*
+packages/labs/forms/form-associated.*
+packages/labs/forms/form-control.*
+
 packages/labs/gen-manifest/index.js
 packages/labs/gen-manifest/index.js.map
 packages/labs/gen-manifest/index.d.ts
