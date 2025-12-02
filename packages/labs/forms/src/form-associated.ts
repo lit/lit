@@ -153,32 +153,27 @@ export const isDisabled = (element: FormAssociated) =>
  *   value, and the state field is set to its initial state. This means that the
  *   initial value and state will be stored for the lifetime of the element.
  * - Form state restoration: When the form is restored, the mode can be either
- *   'restore' or 'autocomplete'. In 'restore' mode, the state field is set to
- *   the state setter, if present, is set to the state that was previously
- *   passed to `internals.setFormValue()`. It's the state setter's
- *   responsibility to update the value setter. If there is no state setter, the
- *   value setter is updated directly. In 'autocomplete' mode, the value setter
- *   is updated directly.
+ *   'restore' or 'autocomplete'. In 'restore' mode, if a state setter is
+ *   present, it is called with the state that was previously passed to
+ *   `internals.setFormValue()`. It's the state setter's responsibility to
+ *   update the value setter. If there is no state setter, the value setter is
+ *   updated directly. In 'autocomplete' mode, the value setter is updated
+ *   directly.
  * - Form disabled: When the element is disabled, the `ariaDisabled` property of
  *   the ElementInternals is set to "true". The element's disable state can be
  *   checked with the `isDisabled()` function (an alias for
  *   `element.matches(':disabled')`).
- * - Validation: An element can implement the  `_getValidity()` method to
+ * - Validation: An element can implement the `_getValidity()` method to
  *   validate its state. This method is called automatically when the form value
- *   changes, and can be called manually by the element.
+ *   changes.
  *
- * Implement a `_getValidity()` method that returns a `ValidityResult` to
- * validate the element.
+ *   The mixin provides a `_validate()` method which calls `_getValidity()` and
+ *   sets the validity on the element's internals. This method should be called
+ *   by the element when its state might have changed in a way that would affect
+ *   its validity, but the form value hasn't changed.
  *
- * Implement a `_validate(): boolean` method to validate the element. This
- * method should be called by the element when its state might have changed in a
- * way that would affect its validity.
- *
- * Calls `_getValidity()` and sets the validity flags on the element's
- * internals, then returns the result of `internals.checkValidity()`.
- *
- * It's often a good idea to call this method in the constructor to set the
- * initial validity state.
+ *   It's often a good idea to call `_validate()` in the constructor to set the
+ *   initial validity state.
  */
 export const FormAssociated = <T extends Constructor<ReactiveElement>>(
   base: T
