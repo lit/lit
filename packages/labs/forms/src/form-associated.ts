@@ -223,6 +223,18 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       this.requestUpdate();
     }
 
+    /**
+     * Called when the form is reset. Restores the default or initial value and
+     * state.
+     *
+     * The restored value is taken from the field decorated with
+     * `@formDefaultValue()`, if present, or the initial value set when the
+     * element was constructed.
+     *
+     * The restored state is taken from the field decorated with
+     * `@formDefaultState()`, if present, or the initial state set when the
+     * element was constructed.
+     */
     formResetCallback() {
       const classKey = getClassKey(this.constructor);
 
@@ -230,29 +242,42 @@ export const FormAssociated = <T extends Constructor<ReactiveElement>>(
       const valueAccess = valueAccessors.get(classKey);
       const defaultValueAccess = defaultValueAccessors.get(classKey);
 
-      let defaultValue: unknown;
-
-      if (defaultValueAccess !== undefined) {
-        defaultValue = defaultValueAccess.get(this);
-      } else {
-        defaultValue = initialValues.get(this);
-      }
-      valueAccess?.set(this, defaultValue);
+      valueAccess?.set(
+        this,
+        defaultValueAccess !== undefined
+          ? defaultValueAccess.get(this)
+          : initialValues.get(this)
+      );
 
       // Restore the initial state
       const stateAccess = stateAccessors.get(classKey);
       const defaultStateAccess = defaultStateAccessors.get(classKey);
 
-      let defaultState: FormValue | undefined;
-
-      if (defaultStateAccess !== undefined) {
-        defaultState = defaultStateAccess.get(this);
-      } else {
-        defaultState = initialStates.get(this);
-      }
-      stateAccess?.set?.(this, defaultState ?? null);
+      stateAccess?.set?.(
+        this,
+        defaultStateAccess !== undefined
+          ? defaultStateAccess.get(this)
+          : (initialStates.get(this) ?? null)
+      );
     }
 
+    /**
+     * Called when the form is restored.
+     *
+     * Called either when:
+     * - The browser restores the state of the element, such as after navigation
+     *   or when the browser restarts. The mode argument is "restore".
+     * - The browser's input-assist features such as form auto-filling sets a
+     *   value. The mode argument is "autocomplete".
+     *
+     * In 'restore' mode, the state setter, if present, is set to the state
+     * that was previously passed to `internals.setFormValue()`. It's the state
+     * setter's responsibility to update the value setter. If there is no state
+     * setter, the value setter is updated directly.
+     *
+     * In 'autocomplete' mode, the value setter is updated directly because no
+     * state is provided to the callback.
+     */
     formStateRestoreCallback(
       state: string | File | FormData | null,
       mode: 'restore' | 'autocomplete'
@@ -450,105 +475,65 @@ type FormStateDecorator = {
 };
 
 /**
- * A class accessor or setter decorator that marks a field as being part of the
- * form state for the FormAssociated mixin. When this value is set, the form
- * value is updated with the new state.
+ * A class accessor decorator that marks a field as being part of the form state
+ * for the FormAssociated mixin. When this value is set, the form value is
+ * updated with the new state.
  */
 export const formState = (): FormStateDecorator =>
   (<C extends FormAssociated, V>(
-    target:
-      | ClassAccessorDecoratorTarget<C, V>
-      | ((this: C, v: V) => void)
-      | Object,
-    context:
-      | ClassAccessorDecoratorContext<C, V>
-      | ClassSetterDecoratorContext<C, V>
-      | PropertyKey,
+    target: ClassAccessorDecoratorTarget<C, V> | Object,
+    context: ClassAccessorDecoratorContext<C, V> | PropertyKey,
     descriptor?: PropertyDescriptor
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): ClassAccessorDecoratorResult<C, V> | ((this: C, v: V) => void) | any => {
     if (typeof context === 'object') {
       // Standard decorator
-      const metadata = (context as ClassAccessorDecoratorContext<C, V>)
-        .metadata;
-      if (context.kind === 'accessor') {
-        // Accessor
-        return {
-          get: (target as ClassAccessorDecoratorTarget<C, V>).get,
-          set(value: V) {
-            (target as ClassAccessorDecoratorTarget<C, V>).set.call(
-              this,
-              value
-            );
-            const valueAccess = valueAccessors.get(metadata);
-            if (valueAccess !== undefined) {
-              setFormValue(this, valueAccess.get(this));
-            }
-          },
-          init(value: V) {
-            initialStates.set(this, value as FormValue);
-            return value;
-          },
-        };
-      } else {
-        // Setter
-        return function (this: C, value: V) {
-          (target as (this: C, v: V) => void).call(this, value);
+      const {metadata} = context;
+      return {
+        get: (target as ClassAccessorDecoratorTarget<C, V>).get,
+        set(value: V) {
+          (target as ClassAccessorDecoratorTarget<C, V>).set.call(this, value);
           const valueAccess = valueAccessors.get(metadata);
           if (valueAccess !== undefined) {
             setFormValue(this, valueAccess.get(this));
           }
-        };
-      }
+        },
+        init(value: V) {
+          initialStates.set(this, value as FormValue);
+          return value;
+        },
+      };
     } else {
       // Legacy decorator
-      const proto = target as Object;
-      const ctor = proto.constructor;
-      const classKey = getClassKey(ctor);
-
-      if (descriptor) {
-        // Accessor or method
-        const originalSet = descriptor.set;
-        if (originalSet) {
-          descriptor.set = function (this: C, value: V) {
-            initializeValue(initialStates, this, descriptor, value);
-            originalSet.call(this, value);
-            const valueAccess = valueAccessors.get(classKey);
-            if (valueAccess?.get) {
-              setFormValue(this, valueAccess.get(this));
-            }
-          };
-        }
-
-        const access = stateAccessors.get(classKey) ?? {};
-        if (descriptor.get) {
-          access.get = (obj: FormAssociated) => {
-            try {
-              return descriptor.get!.call(obj);
-            } catch (e) {
-              // If the property is an accessor, it may not be initialized yet.
-              return undefined as unknown as FormValue;
-            }
-          };
-        }
-        if (descriptor.set) {
-          access.set = (obj: FormAssociated, v: FormValue) =>
-            descriptor.set!.call(obj, v as V);
-        }
-        stateAccessors.set(classKey, access as Access<FormValue>);
-
-        return descriptor;
-      } else {
-        // Field
-        // We don't support non-accessor fields in experimental decorators
-        // because we can't easily intercept the setter without defining a
-        // property on the prototype, which is what we do for accessors.
-        // To support fields we would need to use a different strategy, like
-        // defining a getter/setter on the instance, which is more expensive.
-        throw new Error(
-          '@formState must be used on an accessor when using experimental decorators'
-        );
+      if (descriptor == null) {
+        throw new Error('@formState must be used on an accessor');
       }
+
+      const classKey = getClassKey(target.constructor);
+
+      const originalSet = descriptor.set;
+      if (originalSet) {
+        descriptor.set = function (this: C, value: V) {
+          initializeValue(initialStates, this, descriptor, value);
+          originalSet.call(this, value);
+          const valueAccess = valueAccessors.get(classKey);
+          if (valueAccess?.get) {
+            setFormValue(this, valueAccess.get(this));
+          }
+        };
+      }
+
+      const access = stateAccessors.get(classKey) ?? {};
+      if (descriptor.get) {
+        access.get = (obj: FormAssociated) => descriptor.get!.call(obj);
+      }
+      if (descriptor.set) {
+        access.set = (obj: FormAssociated, v: FormValue) =>
+          descriptor.set!.call(obj, v as V);
+      }
+      stateAccessors.set(classKey, access as Access<FormValue>);
+
+      return descriptor;
     }
   }) as FormStateDecorator;
 
@@ -576,35 +561,26 @@ type FormStateGetterDecorator = {
 export const formStateGetter = (): FormStateGetterDecorator =>
   (<C extends FormAssociated, V extends FormValue>(
     target: ((this: C) => V) | Object,
-    context: ClassMethodDecoratorContext<C, (this: C) => V> | PropertyKey,
-    descriptor?: PropertyDescriptor
+    context: ClassMethodDecoratorContext<C, (this: C) => V> | PropertyKey
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): void | any => {
     if (typeof context === 'object') {
       // Standard decorator
-      const metadata = (
-        context as ClassMethodDecoratorContext<C, (this: C) => V>
-      ).metadata;
-      const access = stateAccessors.get(metadata) ?? {};
-      const methodAccess = (
-        context as ClassMethodDecoratorContext<C, (this: C) => V>
-      ).access;
-      access.get = (obj: FormAssociated) =>
-        methodAccess.get(obj as C).call(obj as C);
-      stateAccessors.set(metadata, access as Access<FormValue>);
+      const {access, metadata} = context;
+      stateAccessors.set(metadata, {
+        ...stateAccessors.get(metadata),
+        get: (obj: FormAssociated) => access.get(obj as C).call(obj as C),
+      });
     } else {
       // Legacy decorator
-      const proto = target as Object;
-      const name = context as PropertyKey;
-      const ctor = proto.constructor;
-      const classKey = getClassKey(ctor);
-      const access = stateAccessors.get(classKey) ?? {};
-      access.get = (obj: FormAssociated) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        return (obj as any)[name].call(obj);
-      };
-      stateAccessors.set(classKey, access as Access<FormValue>);
-      return descriptor;
+      const classKey = getClassKey(target.constructor);
+      stateAccessors.set(classKey, {
+        ...stateAccessors.get(classKey),
+        get: (obj: FormAssociated) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          return (obj as any)[context].call(obj);
+        },
+      });
     }
   }) as FormStateGetterDecorator;
 
@@ -634,35 +610,27 @@ export const formStateSetter = (): FormStateSetterDecorator =>
     target: ((this: C, v: V) => void) | Object,
     context:
       | ClassMethodDecoratorContext<C, (this: C, v: V) => void>
-      | PropertyKey,
-    descriptor?: PropertyDescriptor
+      | PropertyKey
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
   ): void | any => {
     if (typeof context === 'object') {
       // Standard decorator
-      const metadata = (
-        context as ClassMethodDecoratorContext<C, (this: C, v: V) => void>
-      ).metadata;
-      const access = stateAccessors.get(metadata) ?? {};
-      const methodAccess = (
-        context as ClassMethodDecoratorContext<C, (this: C, v: V) => void>
-      ).access;
-      access.set = (obj: FormAssociated, v: V) =>
-        methodAccess.get(obj as C).call(obj as C, v);
-      stateAccessors.set(metadata, access as Access<FormValue>);
+      const {access, metadata} = context;
+      stateAccessors.set(metadata, {
+        ...stateAccessors.get(metadata),
+        set: (obj: FormAssociated, v: V) =>
+          access.get(obj as C).call(obj as C, v),
+      });
     } else {
       // Legacy decorator
-      const proto = target as Object;
-      const name = context as PropertyKey;
-      const ctor = proto.constructor;
-      const classKey = getClassKey(ctor);
-      const access = stateAccessors.get(classKey) ?? {};
-      access.set = (obj: FormAssociated, v: V) => {
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (obj as any)[name].call(obj, v);
-      };
-      stateAccessors.set(classKey, access as Access<FormValue>);
-      return descriptor;
+      const classKey = getClassKey(target.constructor);
+      stateAccessors.set(classKey, {
+        ...stateAccessors.get(classKey),
+        set: (obj: FormAssociated, v: V) => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          (obj as any)[context].call(obj, v);
+        },
+      });
     }
   }) as FormStateSetterDecorator;
 
