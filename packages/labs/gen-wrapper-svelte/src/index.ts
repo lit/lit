@@ -16,6 +16,7 @@ import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {viteConfigTemplate} from './lib/vite.config-template.js';
 import {svelteConfigTemplate} from './lib/svelteconf-template.js';
 import {appHtmlTemplate} from './lib/app-html-template.js';
+import {utilTemplate} from './lib/util-template.js';
 
 export const getCommand = () => {
   return {
@@ -57,6 +58,7 @@ export const generateSvelteWrapper = async (
         'vite.config.ts': viteConfigTemplate(pkg.packageJson),
         'svelte.config.js': svelteConfigTemplate(),
         'src/app.html': appHtmlTemplate(),
+        'src/lib/util.ts': utilTemplate(),
         ...sfcFiles,
       },
     };

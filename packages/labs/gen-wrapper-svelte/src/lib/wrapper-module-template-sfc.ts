@@ -17,6 +17,21 @@ import {
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
+const nameToSvelteName = (name: string) => {
+  return name
+    .replace(/_[a-z]/g, (match) => match.toUpperCase()[1])
+    .replace(/æ/g, 'ae')
+    .replace(/ø/g, 'oe')
+    .replace(/å/g, 'aa')
+    .replace(/Æ/g, 'Ae')
+    .replace(/Ø/g, 'Oe')
+    .replace(/Å/g, 'Aa');
+};
+
+const isValidSvelteName = (name: string) => {
+  return !/[_æøåÆØÅ]/.test(name);
+};
+
 /**
  * Generates a Svelte wrapper component as a Svelte single file component. This
  * approach relies on the Svelte compiler to generate a JavaScript property types
@@ -29,10 +44,14 @@ export const wrapperModuleTemplateSFC = (
 ) => {
   moduleJsPath = moduleJsPath.replace(/\\/g, '/');
   const wcPath = `${packageJson.name}/${moduleJsPath}`;
-  return elements.map((element) => [
-    element.name!,
-    wrapperTemplate(element, wcPath),
-  ]);
+  return elements
+    .filter((element) => isValidSvelteName(element.name!))
+    .map((element) => {
+      return [
+        nameToSvelteName(element.name!),
+        wrapperTemplate(element, wcPath),
+      ];
+    });
 };
 
 const defaultEventType = `CustomEvent<unknown>`;
@@ -46,8 +65,15 @@ const getEventInfo = (event: EventModel) => {
 
 const renderPropsInterface = (props: Map<string, ModelProperty>) =>
   `export interface Props {
+     class?: string;
+     style?: string;
      ${Array.from(props.values())
-       .map((prop) => `${prop.name}?: ${prop.type?.text || 'any'}`)
+       .map((prop) => {
+         // @ts-expect-error - jsDoc is not typed
+         const comment = prop.node.jsDoc?.map((doc) => doc.comment).join(' ');
+         const description = comment ? ` /** ${comment} */\n` : '';
+         return `${description}${prop.name}?: ${prop.type?.text || 'any'}`;
+       })
        .join(';\n     ')}
    }`;
 
@@ -58,10 +84,35 @@ const renderEventsInterface = (events: Map<string, EventModel>) =>
     ${Array.from(events.values())
       .map((event) => {
         const {type} = getEventInfo(event);
-        return `${dashToCamel(event.name)}: (event: ${type}) => void`;
+        return `${dashToCamel(event.name)}?: (event: ${type}) => void`;
       })
       .join(';\n    ')}
   }`;
+
+export const renderEventsMapper = (events: Map<string, EventModel>) => {
+  return Array.from(events.values())
+    .map((event) => {
+      const {name} = event;
+      return `on${name}={${dashToCamel(name)}}`;
+    })
+    .join('\n   ');
+};
+
+export const renderPropsMapper = (props: Map<string, ModelProperty>) => {
+  return (
+    'class={props.class}\n   style={props.style}\n   ' +
+    Array.from(props.values())
+      .map((prop) => {
+        const {name} = prop;
+        let defaultValue = '';
+        if (prop.default !== undefined) {
+          defaultValue = ` ?? ${prop.default}`;
+        }
+        return `${name}={props.${name}${defaultValue}}`;
+      })
+      .join('\n   ')
+  );
+};
 
 const getTypeReferencesForMap = (
   map: Map<string, ModelProperty | EventModel>
@@ -73,26 +124,32 @@ const getElementTypeImports = (declaration: LitElementDeclaration) => {
     ...getTypeReferencesForMap(events),
     ...getTypeReferencesForMap(reactiveProperties),
   ];
-  return getImportsStringForReferences(refs);
+  return getImportsStringForReferences(refs).replace(
+    /(?:^import)/gm,
+    'import type'
+  );
 };
 
 // TODO(sorvell): add support for getting exports in analyzer.
 const getElementTypeExportsFromImports = (imports: string) =>
-  imports.replace(/(?:^import)/gm, 'export type');
+  imports.replace(/(?:^import)/gm, 'export');
 
 const renderSlots = (slots: Map<string, NamedDescribed>) => {
   return Array.from(slots.values())
     .map((slot) => {
       if (slot.name === 'default') {
-        return javascript`
-        <slot />
-      `;
+        return javascript`<slot />`;
       }
-      return javascript`
-      <slot name="${slot.name}" />
-    `;
+      return javascript`<slot name="${slot.name}" />`;
     })
     .join('\n');
+};
+
+const renderEventsProps = (events: Map<string, EventModel>) => {
+  const eventsProps = Array.from(events.keys())
+    .map((event) => dashToCamel(event))
+    .join(', ');
+  return eventsProps ? `${eventsProps},` : '';
 };
 
 const wrapperTemplate = (
@@ -106,14 +163,19 @@ const wrapperTemplate = (
   <script lang="ts">
     ${typeExports ?? ''}
       import '${wcPath}';
+      import { setProperties } from './util.js';
       ${typeImports}
       
       ${renderPropsInterface(reactiveProperties)}
       ${renderEventsInterface(events)}
-      const props = $props<{...Props, ...Events}>();
+      const {${renderEventsProps(events)} class: className, style, ...props} = $props<Props & Events>();
 
     </script>
-    <${tagname} {...props} >
+    <${tagname} 
+    use:setProperties={props}
+    class={className}
+    style={style}
+    ${renderEventsMapper(events)} >
       ${renderSlots(slots)}
     </${tagname}>`;
 };
