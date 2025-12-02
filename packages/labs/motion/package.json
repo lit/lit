@@ -29,8 +29,7 @@
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/animate.{d.ts,d.ts.map,js,js.map}",
     "/animate-controller.{d.ts,d.ts.map,js,js.map}",
-    "/position.{d.ts,d.ts.map,js,js.map}",
-    "/spring.{d.ts,d.ts.map,js,js.map}"
+    "/position.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "start": "wireit",
