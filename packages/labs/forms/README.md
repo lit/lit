@@ -3,6 +3,27 @@
 A library for building [form-associated custom
 elements](https://web.dev/articles/more-capable-form-controls) with Lit.
 
+[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/@lit-labs/forms.svg?logo=npm)](https://www.npmjs.com/package/@lit-labs/forms)
+[![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
+
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+
+## Installation
+
+From inside your project folder, run:
+
+```bash
+$ npm install @lit-labs/forms
+```
+
 Form-associated custom elements are web components that participate in form
 submission, validation, and state restoration, just like built-in form elements.
 `@lit-labs/forms` helps builds correct form-associated custom elements by
@@ -30,7 +51,7 @@ restoration.
 > ElementInternals integration and enables the decorators, but doesn't add any
 > public API to the class.
 >
-> It's recommendation that most developers use `FormControl` instead of
+> It's recommended that most developers use `FormControl` instead of
 > `FormAssociated` in order to add the idiomatic API that users expect from form
 > controls (like `.disabled`, `.form`, `.checkValidity()`, etc.). Use
 > `FormAssociated` only if you need to implement a completely custom API
@@ -72,7 +93,7 @@ API:
   element.
 - `validationMessage`: a readonly property that returns the error message that
   would be shown to the user if the element was to be checked for validity.
-- `willValidate`: a readonly property that returns `true` if internals's target
+- `willValidate`: a readonly property that returns `true` if internals' target
   element will be validated when the form is submitted. For example, disabled or
   hidden elements are not validated.
 - `checkValidity()`: If the element is invalid, returns `false` and fires an
@@ -193,6 +214,10 @@ class CustomStateElement extends FormAssociated(LitElement) {
   disabled, so checking the `disabled` attribute is insufficient. `isDisabled()`
   checks if the element matches `:disabled`, correctly handling inherited
   disabled state.
+
+  ```ts
+  import {isDisabled} from '@lit-labs/forms';
+  ```
 
 ## Contributing
 
