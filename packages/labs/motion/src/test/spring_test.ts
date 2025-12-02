@@ -5,7 +5,7 @@
  */
 import {LitElement} from 'lit';
 import {customElement} from 'lit/decorators.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import {
   SpringConfig,
   Spring2DConfig,
