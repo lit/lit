@@ -2,7 +2,7 @@
   <script lang="ts">
     
       import '@lit-internal/test-element-a/sub/element-sub.js';
-      import { setProperties } from './util.js';
+      import { setProperties } from "$lib/util.js";
       
       
       export interface Props {
@@ -11,16 +11,16 @@
      foo?: string | undefined
    }
       export interface Events {
-    subChanged?: (event: CustomEvent<unknown>) => void
+    onSubChanged?: (event: CustomEvent<unknown>) => void
   }
-      const {subChanged, class: className, style, ...props} = $props<Props & Events>();
+      const {onSubChanged, class: className, style, ...props} = $props<Props & Events>();
 
     </script>
     <element-sub 
     use:setProperties={props}
     class={className}
     style={style}
-    onsub-changed={subChanged} >
+    onsub-changed={onSubChanged} >
       <slot />
 <slot name="stuff" />
     </element-sub>

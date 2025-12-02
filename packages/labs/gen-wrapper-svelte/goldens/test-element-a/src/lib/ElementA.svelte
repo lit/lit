@@ -2,7 +2,7 @@
   <script lang="ts">
     
       import '@lit-internal/test-element-a/element-a.js';
-      import { setProperties } from './util.js';
+      import { setProperties } from "$lib/util.js";
       
       
       export interface Props {
@@ -11,16 +11,16 @@
      foo?: string | undefined
    }
       export interface Events {
-    aChanged?: (event: CustomEvent<unknown>) => void
+    onAChanged?: (event: CustomEvent<unknown>) => void
   }
-      const {aChanged, class: className, style, ...props} = $props<Props & Events>();
+      const {onAChanged, class: className, style, ...props} = $props<Props & Events>();
 
     </script>
     <element-a 
     use:setProperties={props}
     class={className}
     style={style}
-    ona-changed={aChanged} >
+    ona-changed={onAChanged} >
       <slot />
 <slot name="stuff" />
     </element-a>

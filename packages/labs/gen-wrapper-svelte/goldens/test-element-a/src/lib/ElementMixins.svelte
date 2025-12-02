@@ -2,7 +2,7 @@
   <script lang="ts">
     
       import '@lit-internal/test-element-a/element-mixins.js';
-      import { setProperties } from './util.js';
+      import { setProperties } from "$lib/util.js";
       
       
       export interface Props {

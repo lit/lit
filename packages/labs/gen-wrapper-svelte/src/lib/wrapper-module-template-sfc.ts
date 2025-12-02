@@ -77,14 +77,12 @@ const renderPropsInterface = (props: Map<string, ModelProperty>) =>
        .join(';\n     ')}
    }`;
 
-const dashToCamel = (name: string) =>
-  name.replace(/-([a-z])/g, (_, letter) => letter.toUpperCase());
 const renderEventsInterface = (events: Map<string, EventModel>) =>
   `export interface Events {
     ${Array.from(events.values())
       .map((event) => {
         const {type} = getEventInfo(event);
-        return `${dashToCamel(event.name)}?: (event: ${type}) => void`;
+        return `${kabobToOnEvent(event.name)}?: (event: ${type}) => void`;
       })
       .join(';\n    ')}
   }`;
@@ -93,7 +91,7 @@ export const renderEventsMapper = (events: Map<string, EventModel>) => {
   return Array.from(events.values())
     .map((event) => {
       const {name} = event;
-      return `on${name}={${dashToCamel(name)}}`;
+      return `on${name}={${kabobToOnEvent(name)}}`;
     })
     .join('\n   ');
 };
@@ -147,7 +145,7 @@ const renderSlots = (slots: Map<string, NamedDescribed>) => {
 
 const renderEventsProps = (events: Map<string, EventModel>) => {
   const eventsProps = Array.from(events.keys())
-    .map((event) => dashToCamel(event))
+    .map((event) => kabobToOnEvent(event))
     .join(', ');
   return eventsProps ? `${eventsProps},` : '';
 };
@@ -163,7 +161,7 @@ const wrapperTemplate = (
   <script lang="ts">
     ${typeExports ?? ''}
       import '${wcPath}';
-      import { setProperties } from './util.js';
+      import { setProperties } from "$lib/util.js";
       ${typeImports}
       
       ${renderPropsInterface(reactiveProperties)}

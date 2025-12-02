@@ -5,7 +5,7 @@ export type {EventSubclass} from '@lit-internal/test-element-a/element-events.js
 export type {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
 export type {TemplateResult} from 'lit';
       import '@lit-internal/test-element-a/element-events.js';
-      import { setProperties } from './util.js';
+      import { setProperties } from "$lib/util.js";
       import type {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
 import type {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
 import type {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
@@ -17,25 +17,25 @@ import type {TemplateResult} from 'lit';
      foo?: string | undefined
    }
       export interface Events {
-    stringCustomEvent?: (event: CustomEvent<string>) => void;
-    numberCustomEvent?: (event: CustomEvent<number>) => void;
-    myDetailCustomEvent?: (event: CustomEvent<MyDetail>) => void;
-    eventSubclass?: (event: EventSubclass) => void;
-    specialEvent?: (event: SpecialEvent) => void;
-    templateResultCustomEvent?: (event: CustomEvent<TemplateResult>) => void
+    onStringCustomEvent?: (event: CustomEvent<string>) => void;
+    onNumberCustomEvent?: (event: CustomEvent<number>) => void;
+    onMyDetailCustomEvent?: (event: CustomEvent<MyDetail>) => void;
+    onEventSubclass?: (event: EventSubclass) => void;
+    onSpecialEvent?: (event: SpecialEvent) => void;
+    onTemplateResultCustomEvent?: (event: CustomEvent<TemplateResult>) => void
   }
-      const {stringCustomEvent, numberCustomEvent, myDetailCustomEvent, eventSubclass, specialEvent, templateResultCustomEvent, class: className, style, ...props} = $props<Props & Events>();
+      const {onStringCustomEvent, onNumberCustomEvent, onMyDetailCustomEvent, onEventSubclass, onSpecialEvent, onTemplateResultCustomEvent, class: className, style, ...props} = $props<Props & Events>();
 
     </script>
     <element-events 
     use:setProperties={props}
     class={className}
     style={style}
-    onstring-custom-event={stringCustomEvent}
-   onnumber-custom-event={numberCustomEvent}
-   onmy-detail-custom-event={myDetailCustomEvent}
-   onevent-subclass={eventSubclass}
-   onspecial-event={specialEvent}
-   ontemplate-result-custom-event={templateResultCustomEvent} >
+    onstring-custom-event={onStringCustomEvent}
+   onnumber-custom-event={onNumberCustomEvent}
+   onmy-detail-custom-event={onMyDetailCustomEvent}
+   onevent-subclass={onEventSubclass}
+   onspecial-event={onSpecialEvent}
+   ontemplate-result-custom-event={onTemplateResultCustomEvent} >
       
     </element-events>
