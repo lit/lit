@@ -182,12 +182,13 @@ The SpringController constructor takes the host element and a `SpringConfig` obj
 | `restVelocityThreshold`     | `number`  | When spring's velocity is below restVelocityThreshold, it is at rest. Defaults to `.001`.                             |
 | `restDisplacementThreshold` | `number`  | When the spring's displacement (current value) is below restDisplacementThreshold, it is at rest. Defaults to `.001`. |
 
-The SpringController2D constructor's `Spring2DConfig` has the same properties except `fromValue` and `toValue`, which are replaces with 2D equivalents:
+The SpringController2D constructor's `Spring2DConfig` has the same properties except `fromValue`, `toValue`, and `initialVelocity`, which are replaced with 2D equivalents:
 
-| Property       | Type                     | Usage                                                        |
-| -------------- | ------------------------ | ------------------------------------------------------------ |
-| `fromPosition` | `{x: number, y: number}` | Starting value of the animation. Defaults to `{x: 0, y: 0}`. |
-| `toPosition`   | `{x: number, y: number}` | Ending value of the animation. Defaults to `{x: 1, y: 1}`.   |
+| Property          | Type                     | Usage                                                                                                |
+| ----------------- | ------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `fromPosition`    | `{x: number, y: number}` | Starting value of the animation. Defaults to `{x: 0, y: 0}`.                                         |
+| `toPosition`      | `{x: number, y: number}` | Ending value of the animation. Defaults to `{x: 1, y: 1}`.                                           |
+| `initialVelocity` | `{x: number, y: number}` | The initial velocity (in units/ms) of the object attached to the spring. Defaults to `{x: 0, y: 0}`. |
 
 ## Contributing
 

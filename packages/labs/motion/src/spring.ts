@@ -103,9 +103,10 @@ export interface Position2D {
 }
 
 export interface Spring2DConfig
-  extends Omit<SpringConfig, 'fromValue' | 'toValue'> {
+  extends Omit<SpringConfig, 'fromValue' | 'toValue' | 'initialVelocity'> {
   toPosition?: Position2D;
   fromPosition?: Position2D;
+  initialVelocity?: Position2D;
 }
 
 /**
@@ -124,6 +125,7 @@ export class SpringController2D implements ReactiveController {
     const {
       fromPosition = {x: 0, y: 0},
       toPosition = {x: 1, y: 1},
+      initialVelocity = {x: 0, y: 0},
       ...rest
     } = options || {};
 
@@ -131,12 +133,14 @@ export class SpringController2D implements ReactiveController {
       ...rest,
       fromValue: fromPosition.x,
       toValue: toPosition.x,
+      initialVelocity: initialVelocity.x,
     });
 
     this._springY = new SpringController(host, {
       ...rest,
       fromValue: fromPosition.y,
       toValue: toPosition.y,
+      initialVelocity: initialVelocity.y,
     });
   }
 
