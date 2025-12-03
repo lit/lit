@@ -1,5 +1,6 @@
 /**
  * @license
+ * Copyright The Lit Project
  * Copyright 2023 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -64,16 +65,16 @@ test('basic.ts', async () => {
   //                                                                         ^
   assertSourceMapLocationMapping({
     smc,
-    generatedPosition: [10, 74],
-    authoredPosition: [7, 59],
+    generatedPosition: [11, 74],
+    authoredPosition: [8, 59],
     msg: "Identifier 'name' in `[name, '!']` maps to `${name}`",
   });
   // const sayHello = (name) => ({ ["_$litType$"]: lit_template_1, values: [name, '!'] });
   //         ^
   assertSourceMapLocationMapping({
     smc,
-    generatedPosition: [10, 10],
-    authoredPosition: [7, 13],
+    generatedPosition: [11, 10],
+    authoredPosition: [8, 13],
     msg: "'sayHello' identifier declaration maps to authored declaration",
   });
   // const lit_template_1 = { h: b_1 `<h1>Hello <?><?></h1>`, parts: [{ type: 2, index: 1 }, { type: 2, index: 2 }] };
