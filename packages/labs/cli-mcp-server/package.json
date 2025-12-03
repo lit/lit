@@ -57,7 +57,7 @@
     }
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.11.3",
+    "@modelcontextprotocol/sdk": "^1.24.0",
     "algoliasearch": "^5.25.0",
     "zod": "^3.24.4"
   },
