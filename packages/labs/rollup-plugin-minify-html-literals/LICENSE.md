@@ -8,6 +8,7 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 BSD 3-Clause License
 
+Copyright (c) The Lit Project.
 Copyright (c) 2017 Google LLC. All rights reserved.
 
 Redistribution and use in source and binary forms, with or without
