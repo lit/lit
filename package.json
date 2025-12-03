@@ -182,6 +182,7 @@
         "./packages/labs/rollup-plugin-minify-html-literals:test",
         "./packages/labs/signals:test",
         "./packages/labs/ssr:test",
+        "./packages/labs/ssr-client:test",
         "./packages/labs/ssr-dom-shim:test",
         "./packages/labs/ssr-react:test",
         "./packages/labs/testing:test",
