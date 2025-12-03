@@ -21,6 +21,11 @@
       "types": "./development/index.d.ts",
       "development": "./development/index.js",
       "default": "./index.js"
+    },
+    "./spring.js": {
+      "types": "./development/spring.d.ts",
+      "development": "./development/spring.js",
+      "default": "./spring.js"
     }
   },
   "files": [
@@ -29,7 +34,8 @@
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/animate.{d.ts,d.ts.map,js,js.map}",
     "/animate-controller.{d.ts,d.ts.map,js,js.map}",
-    "/position.{d.ts,d.ts.map,js,js.map}"
+    "/position.{d.ts,d.ts.map,js,js.map}",
+    "/spring.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "start": "wireit",

@@ -133,22 +133,24 @@ The Spring and Spring2D controllers simulate physical springs with the [Wobble](
 To use a spring you set the `fromPosition` and `toPosition` properties, which puts the spring into tension, and the end of the spring into motion. `currentPosition` will update of the course of the spring simulation, and the spring controller will trigger an element update so that the element can read `currentPosition` and render using it.
 
 ```ts
+import {SpringController2D} from '@lit-labs/motion/spring.js';
+
 @customElement('goo-element')
 export class GooElement extends LitElement {
   // Both the MouseController and SpringController2D will
   // trigger a render when the mouse moves or the spring updates
-  _mouse = new MouseController(this);
-  _spring1 = new SpringController2D(this, fast);
+  #mouse = new MouseController(this);
+  #spring = new SpringController2D(this, fast);
 
   render() {
     // Set the spring to go to the mouse
-    this._spring1.toPosition = this._mouse.position;
+    this.#spring.toPosition = this.#mouse.position;
 
     // Position a div based on the current position of the spring.
     return html`
       <div
         class="b1"
-        style=${positionStyle(this._spring3.currentPosition)}
+        style=${positionStyle(this.#spring.currentPosition)}
       ></div>
     `;
   }

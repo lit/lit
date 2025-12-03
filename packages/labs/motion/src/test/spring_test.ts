@@ -3,15 +3,16 @@
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {LitElement} from 'lit';
-import {customElement} from 'lit/decorators.js';
-import {assert} from 'chai';
+
 import {
-  SpringConfig,
   Spring2DConfig,
+  SpringConfig,
   SpringController,
   SpringController2D,
-} from '../spring.js';
+} from '@lit-labs/motion/spring.js';
+import {assert} from 'chai';
+import {LitElement} from 'lit';
+import {customElement} from 'lit/decorators.js';
 
 suite('Spring', () => {
   let container: HTMLElement;
