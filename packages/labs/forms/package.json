@@ -1,13 +1,13 @@
 {
-  "name": "@lit-labs/motion",
-  "version": "1.0.9",
-  "description": "Lit directives for making things move.",
+  "name": "@lit-labs/forms",
+  "version": "1.0.0",
+  "description": "Form helpers for Lit",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lit/lit.git",
-    "directory": "packages/labs/motion"
+    "url": "https://github.com/lit/lit.git",
+    "directory": "packages/labs/forms"
   },
   "type": "module",
   "main": "index.js",
@@ -21,47 +21,29 @@
       "types": "./development/index.d.ts",
       "development": "./development/index.js",
       "default": "./index.js"
-    },
-    "./spring.js": {
-      "types": "./development/spring.d.ts",
-      "development": "./development/spring.js",
-      "default": "./spring.js"
     }
   },
   "files": [
     "/development/",
     "!/development/test/",
     "/index.{d.ts,d.ts.map,js,js.map}",
-    "/animate.{d.ts,d.ts.map,js,js.map}",
-    "/animate-controller.{d.ts,d.ts.map,js,js.map}",
-    "/position.{d.ts,d.ts.map,js,js.map}",
-    "/spring.{d.ts,d.ts.map,js,js.map}"
+    "/lib/"
   ],
   "scripts": {
-    "start": "wireit",
     "build": "wireit",
     "build:ts": "wireit",
+    "build:ts:experimental-decorators-tests": "wireit",
     "build:ts:types": "wireit",
     "build:rollup": "wireit",
     "test": "wireit",
     "test:dev": "wireit",
-    "test:prod": "wireit",
-    "checksize": "wireit"
+    "test:prod": "wireit"
   },
   "wireit": {
-    "start": {
-      "command": "web-dev-server -- --watch --preserve-sym-links --open demo/index.html",
-      "service": true,
-      "dependencies": [
-        {
-          "script": "build:ts",
-          "cascade": false
-        }
-      ]
-    },
     "build": {
       "dependencies": [
         "build:ts",
+        "build:ts:experimental-decorators-tests",
         "build:ts:types",
         "build:rollup",
         "../../lit:build"
@@ -70,16 +52,35 @@
     "build:ts": {
       "command": "tsc --build --pretty",
       "dependencies": [
-        "../../lit:build:ts:types"
+        "../../lit:build:ts:types",
+        "../../reactive-element:build:ts:types"
       ],
       "clean": "if-file-deleted",
       "files": [
         "src/**/*.ts",
+        "!src/test/experimental-decorators",
         "tsconfig.json"
       ],
       "output": [
         "development",
+        "!development/test/experimental-decorators",
         "tsconfig.tsbuildinfo"
+      ]
+    },
+    "build:ts:experimental-decorators-tests": {
+      "#comment": "This is a separate script from build:ts because it needs a tsconfig with experimentalDecorators.",
+      "command": "tsc --pretty --project tsconfig.experimental-decorators-tests.json",
+      "clean": "if-file-deleted",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "src/test/experimental-decorators/**/*.ts",
+        "tsconfig.experimental-decorators-tests.json"
+      ],
+      "output": [
+        "development/test/experimental-decorators",
+        "tsconfig.experimental-decorators-tests.tsbuildinfo"
       ]
     },
     "build:ts:types": {
@@ -91,6 +92,7 @@
       "files": [],
       "output": [
         "*.d.ts{,.map}",
+        "lib/**/*.d.ts{,.map}",
         "test/**/*.d.ts{,.map}"
       ]
     },
@@ -105,22 +107,9 @@
       ],
       "output": [
         "index.js{,.map}",
-        "animate.js{,.map}",
-        "animate-controller.js{,.map}",
-        "position.js{,.map}",
+        "lib/**/*.d.ts{,.map}",
         "test/**/*.js{,.map}"
       ]
-    },
-    "checksize": {
-      "command": "rollup -c --environment=CHECKSIZE",
-      "dependencies": [
-        "build:ts"
-      ],
-      "files": [
-        "rollup.config.js",
-        "../../../rollup-common.js"
-      ],
-      "output": []
     },
     "test": {
       "dependencies": [
@@ -131,7 +120,7 @@
     "test:dev": {
       "command": "MODE=dev node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
-        "build:ts",
+        "build",
         "../../tests:build"
       ],
       "env": {
@@ -160,11 +149,10 @@
   "author": "Google LLC",
   "devDependencies": {
     "@lit-internal/scripts": "^1.0.1",
-    "@types/trusted-types": "^2.0.2"
+    "lit": "^3.0.0"
   },
   "dependencies": {
-    "lit": "^3.1.2",
-    "wobble": "^1.5.1"
+    "@lit/reactive-element": "^2.0.0"
   },
   "publishConfig": {
     "access": "public"

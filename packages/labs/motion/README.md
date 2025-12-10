@@ -126,6 +126,72 @@ in the host element: `isPlaying` returns true if any `animate`'s are
 currently playing; `isAnimating` returns true if any `animate`s currently have
 animations (which may be paused).
 
+## Spring and Spring2D controllers
+
+The Spring and Spring2D controllers simulate physical springs with the [Wobble](https://github.com/skevy/wobble) library.
+
+To use a spring you set the `fromPosition` and `toPosition` properties, which puts the spring into tension, and the end of the spring into motion. `currentPosition` will update of the course of the spring simulation, and the spring controller will trigger an element update so that the element can read `currentPosition` and render using it.
+
+```ts
+import {SpringController2D} from '@lit-labs/motion/spring.js';
+
+@customElement('goo-element')
+export class GooElement extends LitElement {
+  // Both the MouseController and SpringController2D will
+  // trigger a render when the mouse moves or the spring updates
+  #mouse = new MouseController(this);
+  #spring = new SpringController2D(this, fast);
+
+  render() {
+    // Set the spring to go to the mouse
+    this.#spring.toPosition = this.#mouse.position;
+
+    // Position a div based on the current position of the spring.
+    return html`
+      <div
+        class="b1"
+        style=${positionStyle(this.#spring.currentPosition)}
+      ></div>
+    `;
+  }
+}
+
+const fast = {
+  stiffness: 1200,
+  damping: 400,
+};
+
+const positionStyle = ({x, y}: Position2D) =>
+  styleMap({
+    transform: `translate3d(${x}px,${y}px,0) translate3d(-50%,-50%,0)`,
+  });
+```
+
+### Configuration
+
+The SpringController constructor takes the host element and a `SpringConfig` object with the following properties:
+
+| Property                    | Type      | Usage                                                                                                                 |
+| --------------------------- | --------- | --------------------------------------------------------------------------------------------------------------------- |
+| `fromValue`                 | `number`  | Starting value of the animation. Defaults to `0`.                                                                     |
+| `toValue`                   | `number`  | Ending value of the animation. Defaults to `1`.                                                                       |
+| `stiffness`                 | `number`  | The spring stiffness coefficient. Defaults to `100`.                                                                  |
+| `damping`                   | `number`  | Defines how the spring’s motion should be damped due to the forces of friction. Defaults to `10`.                     |
+| `mass`                      | `number`  | The mass of the object attached to the end of the spring. Defaults to `1`.                                            |
+| `initialVelocity`           | `number`  | The initial velocity (in units/ms) of the object attached to the spring. Defaults to `0`.                             |
+| `allowsOverdamping`         | `boolean` | Whether or not the spring allows "overdamping" (a damping ratio > 1). Defaults to `false`.                            |
+| `overshootClamping`         | `boolean` | False when overshooting is allowed, true when it is not. Defaults to `false`.                                         |
+| `restVelocityThreshold`     | `number`  | When spring's velocity is below restVelocityThreshold, it is at rest. Defaults to `.001`.                             |
+| `restDisplacementThreshold` | `number`  | When the spring's displacement (current value) is below restDisplacementThreshold, it is at rest. Defaults to `.001`. |
+
+The SpringController2D constructor's `Spring2DConfig` has the same properties except `fromValue`, `toValue`, and `initialVelocity`, which are replaced with 2D equivalents:
+
+| Property          | Type                     | Usage                                                                                                |
+| ----------------- | ------------------------ | ---------------------------------------------------------------------------------------------------- |
+| `fromPosition`    | `{x: number, y: number}` | Starting value of the animation. Defaults to `{x: 0, y: 0}`.                                         |
+| `toPosition`      | `{x: number, y: number}` | Ending value of the animation. Defaults to `{x: 1, y: 1}`.                                           |
+| `initialVelocity` | `{x: number, y: number}` | The initial velocity (in units/ms) of the object attached to the spring. Defaults to `{x: 0, y: 0}`. |
+
 ## Contributing
 
 Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).

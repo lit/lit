@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2020 Google LLC
+ * Copyright 2024 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -9,6 +9,6 @@ import {createRequire} from 'module';
 
 export default litProdConfig({
   packageName: createRequire(import.meta.url)('./package.json').name,
-  entryPoints: ['index', 'animate', 'position', 'animate-controller', 'spring'],
-  external: ['lit'],
+  entryPoints: ['index'],
+  external: ['@lit/reactive-element'],
 });
