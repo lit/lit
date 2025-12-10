@@ -517,6 +517,8 @@ function replaceHtmlWithPlaceholders(
 
   const traverse = (node: ChildNode): void => {
     if (node.nodeName === '#text') {
+      // Copy source range to preserve escape sequences from the source text intact.
+      // parse5 does not preserve escape sequences, so node.value has html like escape sequences removed.
       const location = node.sourceCodeLocation!;
       const text = html.substring(location.startOffset, location.endOffset);
       components.push(text);
