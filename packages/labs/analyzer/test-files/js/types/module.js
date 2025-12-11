@@ -40,6 +40,10 @@ export const testStringImportedClassUnion = 'hi';
 /** @type {string | ImportedClass | HTMLElement} */
 export const testStringImportedGlobalClassUnion = 'hi';
 
+/** @type {'hi' | 'hello'} */
+export const testStringLiteralUnion = 'hi';
+export const inferredStringLiteralUnion = /** @type {'hi' | 'hello'} */ ('hi');
+
 export const inferredLocalClass = new LocalClass();
 export const inferredImportedClass = new ImportedClass();
 export const inferredExternalClass = new LitElement();

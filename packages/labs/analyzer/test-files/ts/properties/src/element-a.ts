@@ -99,6 +99,12 @@ export class ElementA extends LitElement {
   @property()
   union: LocalClass | HTMLElement | ImportedClass;
 
+  @property()
+  stringLiteralUnion: 'hi' | 'hello';
+
+  @property({type: String, reflect: true})
+  reflectedStringLiteralUnion: 'hi' | 'hello';
+
   @state()
   private _stateField: number;
 

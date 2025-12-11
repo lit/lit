@@ -116,6 +116,18 @@ for (const lang of languages) {
       assert.equal(type.references[1].isGlobal, true);
     });
 
+    test('testStringLiteralUnion', () => {
+      const type = typeForVariable(module, 'testStringLiteralUnion');
+      assert.equal(type.text, '"hi" | "hello"');
+      assert.equal(type.references.length, 0);
+    });
+
+    test('inferredStringLiteralUnion', () => {
+      const type = typeForVariable(module, 'inferredStringLiteralUnion');
+      assert.equal(type.text, '"hi" | "hello"');
+      assert.equal(type.references.length, 0);
+    });
+
     test('inferredLocalClass', () => {
       const type = typeForVariable(module, 'inferredLocalClass');
       assert.equal(type.text, 'LocalClass');
