@@ -43,13 +43,13 @@ into a `Writable` stream, or passed to web server frameworks like [Koa](https://
 ```js
 // Example: server.js:
 
-import {render} from '@lit-labs/ssr';
+import {renderThunked} from '@lit-labs/ssr';
 import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import {myTemplate} from './my-template.js';
 
 //...
 
-const ssrResult = render(myTemplate(data));
+const ssrResult = renderThunked(myTemplate(data));
 // Assume `context` is a Koa.Context.
 context.body = new RenderResultReadable(ssrResult);
 ```
@@ -59,7 +59,7 @@ context.body = new RenderResultReadable(ssrResult);
 To render to a string, you can use the `collectResult` or `collectResultSync` helper functions.
 
 ```js
-import {render} from '@lit-labs/ssr';
+import {renderThunked} from '@lit-labs/ssr';
 import {
   collectResult,
   collectResultSync,
@@ -67,7 +67,7 @@ import {
 import {html} from 'lit';
 
 const myServerTemplate = (name) => html`<p>Hello ${name}</p>`;
-const ssrResult = render(myServerTemplate('SSR with Lit!'));
+const ssrResult = renderThunked(myServerTemplate('SSR with Lit!'));
 
 // Will throw if a Promise is encountered
 console.log(collectResultSync(ssrResult));
@@ -91,17 +91,17 @@ iterable that incrementally emits the serialized strings of the given template.
 ```js
 // Example: render-template.js
 
-import {render} from '@lit-labs/ssr';
-import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
+import {renderThunked} from '@lit-labs/ssr';
 import {myTemplate} from './my-template.js';
 export const renderTemplate = (someData) => {
-  return render(myTemplate(someData));
+  return renderThunked(myTemplate(someData));
 };
 ```
 
 ```js
 // Example: server.js:
 
+import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import {renderModule} from '@lit-labs/ssr/lib/render-module.js';
 
 // Execute the above `renderTemplate` in a separate VM context with a minimal DOM shim
@@ -202,7 +202,7 @@ Server-only templates can only be rendered on the server, they can't be rendered
 Here's an example that shows how to use a server-only template to render a full document, and then lazily hydrate both a custom element and a template:
 
 ```js
-import {render, html} from '@lit-labs/ssr';
+import {renderThunked, html} from '@lit-labs/ssr';
 import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import './app-shell.js';
 import {getContent} from './content-template.js';
@@ -211,7 +211,7 @@ const pageInfo = {
   /* ... */
 };
 
-const ssrResult = render(html`
+const ssrResult = renderThunked(html`
   <!DOCTYPE html>
   <html>
     <head><title>MyApp ${pageInfo.title}</head>
@@ -255,6 +255,22 @@ const ssrResult = render(html`
 
 context.body = new RenderResultReadable(ssrResult);
 ```
+
+## Thunked vs non-Thunked Rendering
+
+You may notice that SSR has two render function exports: `render()` and
+`renderThunked()`.
+
+The difference between the two is that `renderThunked()` returns a
+`ThunkedRenderResult`, which is a lower-level representation of a render that
+has lower overhead compared to the `RenderResult` returned by `render()`.
+
+You should prefer `renderThunked()` over `render()`, which exists for backwards
+compatibility.
+
+In the future we may introduce APIs like `renderToString()` and
+`renderToStream()` that eliminate the need to expose the underlying
+representation.
 
 ## Notes and limitations
 

@@ -13,7 +13,7 @@ import {
 } from '@lit-labs/ssr-dom-shim';
 import {renderValue} from './render-value.js';
 import type {RenderInfo} from './render-value.js';
-import type {RenderResult} from './render-result.js';
+import type {ThunkedRenderResult} from './render-result.js';
 
 export type Constructor<T> = {new (): T};
 
@@ -121,29 +121,31 @@ export class LitElementRenderer extends ElementRenderer {
     attributeToProperty(this.element as LitElement, name, value);
   }
 
-  override *renderShadow(renderInfo: RenderInfo): RenderResult {
+  override renderShadow(renderInfo: RenderInfo): ThunkedRenderResult {
+    const result: ThunkedRenderResult = [];
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
     if (styles !== undefined && styles.length > 0) {
-      yield '<style>';
+      result.push('<style>');
       for (const style of styles) {
-        yield (style as CSSResult).cssText;
+        result.push((style as CSSResult).cssText);
       }
-      yield '</style>';
+      result.push('</style>');
     }
     // Render template
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    yield* renderValue((this.element as any).render(), renderInfo);
+    result.push(() => renderValue((this.element as any).render(), renderInfo));
+    return result;
   }
 
-  override *renderLight(renderInfo: RenderInfo): RenderResult {
+  override renderLight(renderInfo: RenderInfo): ThunkedRenderResult {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {
-      yield* renderValue(value, renderInfo);
+      return [() => renderValue(value, renderInfo)];
     } else {
-      yield '';
+      return [''];
     }
   }
 }

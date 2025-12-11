@@ -1,6 +1,6 @@
 name: 🐛 Bug Report
 description: Report a bug that affects Lit or a Lit library/tool
-
+type: Bug
 body:
   - type: dropdown
     id: affected
