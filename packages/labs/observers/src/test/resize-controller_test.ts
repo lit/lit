@@ -531,16 +531,14 @@ if (DEV_MODE) {
         :host {
           display: block;
         }
-        :host([tall]) {
-          .selected {
-            height: 40px;
-          }
+        :host([tall]) .selected {
+          height: 40px;
         }
         section {
           height: 0;
-          &.selected {
-            height: 20px;
-          }
+        }
+        section.selected {
+          height: 20px;
         }
       `;
 
