@@ -124,6 +124,26 @@ test('msg(string) translated', async () => {
   });
 });
 
+test('msg(string) with symbols', async () => {
+  // "\" in code needs to be double escaped (string inside a string).
+  await checkTransform(
+    'msg("Hello World \\\\ ${} ` < > &", {id: "foo"});',
+    '"Hello World \\\\ ${} ` < > &";'
+  );
+});
+
+test('msg(string) translated with symbols', async () => {
+  // "\" in code needs to be double escaped (string inside a string).
+  // "$", "`" only needs to be escaped in template literal string
+  await checkTransform(
+    'msg("Hello World \\\\ ${} ` < > &", {id: "foo"});',
+    '`Hola Mundo \\\\ \\${} \\` < > &`;',
+    {
+      messages: [{name: 'foo', contents: ['Hola Mundo \\ ${} ` < > &']}],
+    }
+  );
+});
+
 test('html(msg(string))', async () => {
   await checkTransform(
     'html`<b>${msg("Hello World", {id: "foo"})}</b>`;',
@@ -136,6 +156,27 @@ test('html(msg(string)) translated', async () => {
     'html`<b>${msg("Hello World", {id: "foo"})}</b>`;',
     'html`<b>Hola Mundo</b>`;',
     {messages: [{name: 'foo', contents: ['Hola Mundo']}]}
+  );
+});
+
+// Fix: "<", ">", "&" need to be escaped in html literal
+test('html(msg(string)) with symbols', async () => {
+  // "\" in code needs to be double escaped (string inside a string).
+  // "$", "`" only needs to be escaped in template literal string
+  await checkTransform(
+    'html`<b>${msg("Hello World \\\\ ${} ` < > &", {id: "foo"})}</b>`;',
+    'html`<b>Hello World \\\\ \\${} \\` < > &</b>`;' // should be: 'html`<b>Hello World \\\\ \\${} \\` &lt; &gt; &amp;</b>`;'
+  );
+});
+
+// Fix: "<", ">", "&" need to be escaped in html literal
+test('html(msg(string)) translated with symbols', async () => {
+  // "\" in code needs to be double escaped (string inside a string).
+  // "$", "`" only needs to be escaped in template literal string
+  await checkTransform(
+    'html`<b>${msg("Hello World \\\\ ${} ` < > &", {id: "foo"})}</b>`;',
+    'html`<b>Hola Mundo \\\\ \\${} \\` < > &</b>`;', // should be: 'html`<b>Hola Mundo \\\\ \\${} \\` &lt; &gt; &amp;</b>`;'
+    {messages: [{name: 'foo', contents: ['Hola Mundo \\ ${} ` < > &']}]}
   );
 });
 
@@ -159,6 +200,38 @@ test('html(msg(html)) translated', async () => {
             {untranslatable: '<i>', index: 0},
             'Mundo',
             {untranslatable: '</i>', index: 1},
+          ],
+        },
+      ],
+    }
+  );
+});
+
+test('html(msg(html)) with symbols', async () => {
+  // "\" in code needs to be double escaped (string inside a string).
+  // "$", "`" only needs to be escaped in template literal string
+  await checkTransform(
+    'html`<b>${msg(html`Hello <i>World</i> \\\\ \\${} \\` &lt; &gt; &amp;`, {id: "foo"})}</b>`;',
+    'html`<b>Hello <i>World</i> \\\\ \\${} \\` &lt; &gt; &amp;</b>`;'
+  );
+});
+
+test('html(msg(html)) translated with symbols', async () => {
+  // "\" in code needs to be double escaped (string inside a string).
+  // "$", "`" only needs to be escaped in template literal string
+  await checkTransform(
+    'html`<b>${msg(html`Hello <i>World</i> \\\\ \\$ \\` &lt; &gt; &amp;`, {id: "foo"})}</b>`;',
+    'html`<b>Hola <i>Mundo</i> \\\\ \\$ \\` &lt; &gt; &amp;</b>`;',
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: [
+            'Hola ',
+            {untranslatable: '<i>', index: 0},
+            'Mundo',
+            {untranslatable: '</i>', index: 1},
+            ' \\ $ ` &lt; &gt; &amp;',
           ],
         },
       ],
@@ -338,6 +411,40 @@ test('msg(string(msg(string))) translated', async () => {
         {
           name: 'bar',
           contents: ['Mundo'],
+        },
+      ],
+    }
+  );
+});
+
+test('msg(string(msg(html)))', async () => {
+  await checkTransform(
+    'msg(str`Hello ${msg(html`<b>World</b>`, {id: "bar"})}!`, {id: "foo"});',
+    '`Hello ${html`<b>World</b>`}!`;'
+  );
+});
+
+test('msg(string(msg(html))) translated', async () => {
+  await checkTransform(
+    'msg(str`Hello ${msg(html`<b>World</b>`, {id: "bar"})}!`, {id: "foo"});',
+    '`Hola ${html`<b>Mundo</b>`}!`;',
+    {
+      messages: [
+        {
+          name: 'foo',
+          contents: [
+            'Hola ',
+            {untranslatable: '${msg("World", {id: "bar"})}', index: 0},
+            '!',
+          ],
+        },
+        {
+          name: 'bar',
+          contents: [
+            {untranslatable: '<b>', index: 0},
+            'Mundo',
+            {untranslatable: '</b>', index: 1},
+          ],
         },
       ],
     }

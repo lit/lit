@@ -6,7 +6,7 @@
 
 import ts from 'typescript';
 import * as parse5 from 'parse5';
-import {ChildNode, ParentNode, TextNode, CommentNode} from '@parse5/tools';
+import {ChildNode, ParentNode, CommentNode} from '@parse5/tools';
 import {ProgramMessage, Placeholder} from './messages.js';
 import {createDiagnostic} from './typescript.js';
 import {
