@@ -9,6 +9,7 @@ import {
   AsyncDirective,
   directive,
   DirectiveParameters,
+  DirectiveResult,
 } from '../async-directive.js';
 import {Pauser, PseudoWeakRef, forAwaitOf} from './private-async-helpers.js';
 
@@ -96,6 +97,23 @@ export class AsyncReplaceDirective extends AsyncDirective {
 }
 
 /**
+ * A directive that renders the items of an async iterable, replacing
+ * the previous value with the new value.
+ *
+ * @template V The type of the value yielded by the async iterable.
+ * @param value An async iterable to observe.
+ * @param mapper An optional function that maps the value yielded by the
+ *     async iterable to a value to render.
+ * @returns A directive result that renders the values from the async iterable.
+ */
+interface AsyncReplaceFunc {
+  <V>(
+    value: AsyncIterable<V>,
+    mapper?: Mapper<V> | undefined
+  ): DirectiveResult<typeof AsyncReplaceDirective>;
+}
+
+/**
  * A directive that renders the items of an async iterable[1], replacing
  * previous values with new values, so that only one value is ever rendered
  * at a time. This directive may be used in any expression type.
@@ -113,4 +131,6 @@ export class AsyncReplaceDirective extends AsyncDirective {
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the iterable.
  */
-export const asyncReplace = directive(AsyncReplaceDirective);
+export const asyncReplace = directive(
+  AsyncReplaceDirective
+) as AsyncReplaceFunc;
