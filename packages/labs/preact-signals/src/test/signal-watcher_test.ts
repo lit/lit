@@ -139,4 +139,95 @@ suite('SignalWatcher', () => {
     await el.updateComplete;
     assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 1');
   });
+
+  test('subscribes to a signal on disconnected element update', async () => {
+    let readCount = 0;
+    const count = signal(0);
+    const countPlusOne = computed(() => {
+      readCount++;
+      return count.value + 1;
+    });
+
+    class TestElement extends SignalWatcher(LitElement) {
+      override render() {
+        return html`<p>count: ${countPlusOne.value}</p>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.append(el);
+
+    // First render, expect one read of the signal
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 1');
+    assert.equal(readCount, 1);
+
+    // Disconnect the element
+    el.remove();
+
+    // Force an update; resubscribes to signals
+    el.requestUpdate();
+    await el.updateComplete;
+
+    // Expect reads if updated after disconnected
+    count.value = 1;
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 2');
+    assert.equal(readCount, 2);
+  });
+
+  ((window as any).gc ? test : test.skip)(
+    'unsubscribes to a signal when element is not reachable',
+    async () => {
+      let tries = 0;
+      const forceGc = async () => {
+        tries++;
+        if (tries > 3) {
+          return false;
+        }
+        const largeArray = [];
+        for (let i = 0; i < 1e6; i++) {
+          largeArray.push(new Array(1e3).fill(i));
+        }
+        await new Promise((r) => setTimeout(r));
+        for (let i = 0; i < 10; i++) {
+          (window as any).gc();
+        }
+        return true;
+      };
+
+      const count = signal(0);
+      const countPlusOne = computed(() => {
+        return count.value + 1;
+      });
+
+      class TestElement extends SignalWatcher(LitElement) {
+        override render() {
+          return html`<p>count: ${countPlusOne.value}</p>`;
+        }
+      }
+      customElements.define(generateElementName(), TestElement);
+      let el: TestElement | undefined = new TestElement();
+      container.append(el);
+      await el.updateComplete;
+      el.remove();
+
+      // Force element to update to resubscribe to signal
+      el.requestUpdate();
+      await el.updateComplete;
+
+      // Track if element is reachable
+      const ref = new WeakRef(el);
+      el = undefined;
+      assert.ok(ref.deref());
+
+      // Attempt to force garbage collection
+      while (ref.deref() && (await forceGc())) {
+        count.value++;
+      }
+
+      // Test if element is reachable
+      assert.isUndefined(ref.deref());
+    }
+  );
 });
