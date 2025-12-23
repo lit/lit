@@ -578,7 +578,11 @@ export class Animate extends AsyncDirective {
     frames: Keyframe[] | undefined,
     options = this.options.keyframeOptions
   ) {
-    this.start();
+    // Checking existence of frames to prevent situation 
+    // where options.onStart is called and options.onComplete is not. 
+    if (frames !== undefined) {
+      this.start();
+    }
     this.frames = frames;
     let didAnimate = false;
     if (!this.isAnimating() && !this.isDisabled()) {
