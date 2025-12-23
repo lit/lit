@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/tsserver-plugin",
   "private": true,
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "TypeScript Language Service Plugin for Lit",
   "license": "BSD-3-Clause",
   "author": "Google LLC",
@@ -57,7 +57,7 @@
     "@types/node": "^22.7.7"
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.13.1",
+    "@lit-labs/analyzer": "^0.14.0",
     "@parse5/tools": "^0.5.0",
     "typescript": "~5.9.0"
   }
