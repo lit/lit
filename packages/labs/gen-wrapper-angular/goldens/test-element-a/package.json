@@ -7,7 +7,7 @@
   },
   "version": "1.0.1",
   "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.1"
+    "@lit-internal/test-element-a": "^1.0.2"
   },
   "peerDependencies": {
     "@angular/common": "^13.3.0",
