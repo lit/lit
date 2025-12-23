@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/ssr-react",
-  "version": "0.3.3",
+  "version": "0.3.4",
   "publishConfig": {
     "access": "public"
   },
@@ -47,7 +47,7 @@
     "/jsx-runtime.{d.ts,d.ts.map,js,js.map}"
   ],
   "dependencies": {
-    "@lit-labs/ssr": "^3.3.0",
+    "@lit-labs/ssr": "^4.0.0",
     "@lit-labs/ssr-client": "^1.1.7"
   },
   "peerDependencies": {

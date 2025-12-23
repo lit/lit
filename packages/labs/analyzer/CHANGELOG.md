@@ -1,5 +1,23 @@
 # @lit-labs/analyzer
 
+## 0.14.0
+
+### Minor Changes
+
+- [#5056](https://github.com/lit/lit/pull/5056) [`a131af1be63f917a5e245bc0cf7e2b5eddce7180`](https://github.com/lit/lit/commit/a131af1be63f917a5e245bc0cf7e2b5eddce7180) - Support type checking lit-html property bindings in our tsserver-plugin.
+
+- [#4267](https://github.com/lit/lit/pull/4267) [`5a7ae16fe5afcfd434158852ad1aef18623318a2`](https://github.com/lit/lit/commit/5a7ae16fe5afcfd434158852ad1aef18623318a2) - Add a template parser
+
+- [#5177](https://github.com/lit/lit/pull/5177) [`e51a47b06163384961b639854627189f7c3d37fe`](https://github.com/lit/lit/commit/e51a47b06163384961b639854627189f7c3d37fe) Thanks [@ClaudioHoffmann](https://github.com/ClaudioHoffmann)! - Declared union types are now preserved instead of being widened to their base type. This fixes unexpected type errors in the property accessors created by the Angular wrapper generator.
+
+- [#4805](https://github.com/lit/lit/pull/4805) [`f570059d527de0f04bf4b02a67a35edf288998e0`](https://github.com/lit/lit/commit/f570059d527de0f04bf4b02a67a35edf288998e0) - Add template parser to analyzer
+
+### Patch Changes
+
+- [#5057](https://github.com/lit/lit/pull/5057) [`945f5aa7b1c01e514c69089bb6d13719dade928a`](https://github.com/lit/lit/commit/945f5aa7b1c01e514c69089bb6d13719dade928a) - Adjust attribute source locations in template parser
+
+- [#4984](https://github.com/lit/lit/pull/4984) [`ad23f26ae908a160d30ed2a939b322fe9cc2ee83`](https://github.com/lit/lit/commit/ad23f26ae908a160d30ed2a939b322fe9cc2ee83) Thanks [@kyubisation](https://github.com/kyubisation)! - Update TypeScript dependencies to version 5.8 with related ARIAMixin changes (ariaColIndexText, ariaRelevant and ariaRowIndexText)
+
 ## 0.13.2
 
 ### Patch Changes
