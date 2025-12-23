@@ -69,7 +69,6 @@
         "./packages/labs/gen-wrapper-angular:build",
         "./packages/labs/gen-wrapper-react:build",
         "./packages/labs/gen-wrapper-vue:build",
-        "./packages/labs/cli-mcp-server:build",
         "./packages/labs/motion:build",
         "./packages/labs/nextjs:build",
         "./packages/labs/observers:build",
