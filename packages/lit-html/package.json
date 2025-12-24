@@ -130,6 +130,19 @@
       "development": "./development/directives/class-map.js",
       "default": "./directives/class-map.js"
     },
+    "./directives/direct-html.js": {
+      "types": "./development/directives/direct-html.d.ts",
+      "browser": {
+        "development": "./development/directives/direct-html.js",
+        "default": "./directives/direct-html.js"
+      },
+      "node": {
+        "development": "./node/development/directives/direct-html.js",
+        "default": "./node/directives/direct-html.js"
+      },
+      "development": "./development/directives/direct-html.js",
+      "default": "./directives/direct-html.js"
+    },
     "./directives/guard.js": {
       "types": "./development/directives/guard.d.ts",
       "browser": {
