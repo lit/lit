@@ -8,10 +8,11 @@ import {ChildPart} from '../lit-html.js';
 import {
   directive,
   DirectiveParameters,
+  DirectiveResult,
   PartInfo,
   PartType,
 } from '../directive.js';
-import {AsyncReplaceDirective} from './async-replace.js';
+import {AsyncReplaceDirective, Mapper} from './async-replace.js';
 import {
   clearPart,
   insertPart,
@@ -49,6 +50,24 @@ class AsyncAppendDirective extends AsyncReplaceDirective {
 }
 
 /**
+ * A directive that renders the items of an async iterable, appending new
+ * values after previous values, similar to the built-in support for iterables.
+ * This directive is usable only in child expressions.
+ *
+ * @template V The type of the value yielded by the async iterable.
+ * @param value An async iterable to observe.
+ * @param mapper An optional function that maps the value yielded by the
+ *     async iterable to a value to render.
+ * @returns A directive result that renders the values from the async iterable.
+ */
+interface AsyncAppendFunc {
+  <V>(
+    value: AsyncIterable<V>,
+    mapper?: Mapper<V> | undefined
+  ): DirectiveResult<typeof AsyncAppendDirective>;
+}
+
+/**
  * A directive that renders the items of an async iterable[1], appending new
  * values after previous values, similar to the built-in support for iterables.
  * This directive is usable only in child expressions.
@@ -66,7 +85,7 @@ class AsyncAppendDirective extends AsyncReplaceDirective {
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the iterable.
  */
-export const asyncAppend = directive(AsyncAppendDirective);
+export const asyncAppend = directive(AsyncAppendDirective) as AsyncAppendFunc;
 
 /**
  * The type of the class that powers this directive. Necessary for naming the

@@ -13,7 +13,7 @@ import {
 } from '../async-directive.js';
 import {Pauser, PseudoWeakRef, forAwaitOf} from './private-async-helpers.js';
 
-type Mapper<T> = (v: T, index?: number) => unknown;
+export type Mapper<T> = (v: T, index?: number) => unknown;
 
 export class AsyncReplaceDirective extends AsyncDirective {
   private __value?: AsyncIterable<unknown>;
