@@ -1,5 +1,11 @@
 # Change Log
 
+## 1.1.0
+
+### Minor Changes
+
+- [#2261](https://github.com/lit/lit/pull/2261) [`ace127b15b0806dc55efa39047fe949a67065494`](https://github.com/lit/lit/commit/ace127b15b0806dc55efa39047fe949a67065494) - Add Spring and Spring2D controllers
+
 ## 1.0.9
 
 ### Patch Changes

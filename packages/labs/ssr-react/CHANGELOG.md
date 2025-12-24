@@ -1,5 +1,16 @@
 # @lit-labs/ssr-react
 
+## 0.3.4
+
+### Patch Changes
+
+- [#5106](https://github.com/lit/lit/pull/5106) [`5016b8f81091689282aa8a021c80e949f055e8ca`](https://github.com/lit/lit/commit/5016b8f81091689282aa8a021c80e949f055e8ca) - Convert all generator usage to a thunk/trampoline pattern to increase performance.
+
+  This is a breaking change to the ElementRenderer interface.
+
+- Updated dependencies [[`7fc24497242bce4d65f75c2ef4691ab7832dc016`](https://github.com/lit/lit/commit/7fc24497242bce4d65f75c2ef4691ab7832dc016), [`5016b8f81091689282aa8a021c80e949f055e8ca`](https://github.com/lit/lit/commit/5016b8f81091689282aa8a021c80e949f055e8ca), [`956d9579e5faa4933b208e32690cbbdbd7fa8e5c`](https://github.com/lit/lit/commit/956d9579e5faa4933b208e32690cbbdbd7fa8e5c)]:
+  - @lit-labs/ssr@4.0.0
+
 ## 0.3.3
 
 ### Patch Changes

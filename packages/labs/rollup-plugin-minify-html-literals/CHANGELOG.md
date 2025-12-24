@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.1.1
+
+### Patch Changes
+
+- [#5099](https://github.com/lit/lit/pull/5099) [`bbcd61ff08323d86171e6af3353b21321304ee67`](https://github.com/lit/lit/commit/bbcd61ff08323d86171e6af3353b21321304ee67) Thanks [@aaronmaxlevy](https://github.com/aaronmaxlevy)! - Replacing unmaintained html-minifier with html-minifier-next
+
 ## 0.1.0
 
 ### Minor Changes

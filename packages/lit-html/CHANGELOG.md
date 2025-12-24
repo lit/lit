@@ -1,5 +1,15 @@
 # Change Log
 
+## 3.3.2
+
+### Patch Changes
+
+- [#5044](https://github.com/lit/lit/pull/5044) [`0d0170e87b06edd8295a31893c820162d0f16a23`](https://github.com/lit/lit/commit/0d0170e87b06edd8295a31893c820162d0f16a23) Thanks [@ava-cassiopeia](https://github.com/ava-cassiopeia)! - Make ClassInfo mutable
+
+- [#5064](https://github.com/lit/lit/pull/5064) [`bc2926eb99a97ef4efb7eefbe133d6a33f216e18`](https://github.com/lit/lit/commit/bc2926eb99a97ef4efb7eefbe133d6a33f216e18) Thanks [@brysonbw](https://github.com/brysonbw)! - Add `SVGElement` to the `render()` container type, allowing SVG elements to be used as render roots without type errors.
+
+- [#5035](https://github.com/lit/lit/pull/5035) [`c36626b8018ca78a47e61abdfa5b5904bed06843`](https://github.com/lit/lit/commit/c36626b8018ca78a47e61abdfa5b5904bed06843) - Make some of our directives generic, so that their DirectiveResult types capture everything needed to infer their render types. This is useful in template type checking.
+
 ## 3.3.1
 
 ### Patch Changes

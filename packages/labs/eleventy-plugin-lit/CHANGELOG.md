@@ -1,5 +1,12 @@
 # @lit-labs/eleventy-plugin-lit
 
+## 1.0.6
+
+### Patch Changes
+
+- Updated dependencies [[`7fc24497242bce4d65f75c2ef4691ab7832dc016`](https://github.com/lit/lit/commit/7fc24497242bce4d65f75c2ef4691ab7832dc016), [`5016b8f81091689282aa8a021c80e949f055e8ca`](https://github.com/lit/lit/commit/5016b8f81091689282aa8a021c80e949f055e8ca), [`956d9579e5faa4933b208e32690cbbdbd7fa8e5c`](https://github.com/lit/lit/commit/956d9579e5faa4933b208e32690cbbdbd7fa8e5c)]:
+  - @lit-labs/ssr@4.0.0
+
 ## 1.0.5
 
 ### Patch Changes

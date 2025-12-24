@@ -1,7 +1,7 @@
 {
   "name": "@lit-internal/localize-examples-transform-js",
   "description": "Example of using lit-localize in transform mode with JavaScript",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "private": true,
   "type": "module",
   "scripts": {

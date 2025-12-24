@@ -1,5 +1,13 @@
 # Change Log
 
+## 3.3.2
+
+### Patch Changes
+
+- [#5044](https://github.com/lit/lit/pull/5044) [`0d0170e87b06edd8295a31893c820162d0f16a23`](https://github.com/lit/lit/commit/0d0170e87b06edd8295a31893c820162d0f16a23) Thanks [@ava-cassiopeia](https://github.com/ava-cassiopeia)! - Make ClassInfo mutable
+
+- [#4999](https://github.com/lit/lit/pull/4999) [`6c174c8d0ed0230ba765d699591d933d7ab5d4bb`](https://github.com/lit/lit/commit/6c174c8d0ed0230ba765d699591d933d7ab5d4bb) - Fix a bug in change detection with decorated standard private accessors.
+
 ## 3.3.1
 
 ### Patch Changes
