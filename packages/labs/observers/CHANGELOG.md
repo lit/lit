@@ -1,5 +1,11 @@
 # @lit-labs/observers
 
+## 2.1.0
+
+### Minor Changes
+
+- [#5111](https://github.com/lit/lit/pull/5111) [`57e052a7f32743013b313b5109c62bd42746f4a7`](https://github.com/lit/lit/commit/57e052a7f32743013b313b5109c62bd42746f4a7) - Add a target() method to ResizeController to allow observing individual elements in Lit templates.
+
 ## 2.0.6
 
 ### Patch Changes

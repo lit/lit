@@ -8,9 +8,9 @@
     "build:declarations": "vue-tsc --declaration --emitDeclarationOnly",
     "preview": "vite preview"
   },
-  "version": "1.0.1",
+  "version": "1.0.2",
   "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.1",
+    "@lit-internal/test-element-a": "^1.0.2",
     "vue": "^3.2.41",
     "@lit-labs/vue-utils": "^0.1.0"
   },

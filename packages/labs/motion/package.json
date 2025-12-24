@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/motion",
-  "version": "1.0.9",
+  "version": "1.1.0",
   "description": "Lit directives for making things move.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
@@ -21,6 +21,11 @@
       "types": "./development/index.d.ts",
       "development": "./development/index.js",
       "default": "./index.js"
+    },
+    "./spring.js": {
+      "types": "./development/spring.d.ts",
+      "development": "./development/spring.js",
+      "default": "./spring.js"
     }
   },
   "files": [
@@ -29,7 +34,8 @@
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/animate.{d.ts,d.ts.map,js,js.map}",
     "/animate-controller.{d.ts,d.ts.map,js,js.map}",
-    "/position.{d.ts,d.ts.map,js,js.map}"
+    "/position.{d.ts,d.ts.map,js,js.map}",
+    "/spring.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "start": "wireit",
@@ -157,7 +163,8 @@
     "@types/trusted-types": "^2.0.2"
   },
   "dependencies": {
-    "lit": "^3.1.2"
+    "lit": "^3.1.2",
+    "wobble": "^1.5.1"
   },
   "publishConfig": {
     "access": "public"

@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Command, ReferenceToCommand, ResolvedCommand} from '../command.js';
-import {LitCli} from '../lit-cli.js';
+import type {Command, ResolvedCommand} from '../command.js';
+import type {LitCli} from '../lit-cli.js';
 
 const gen = (cli: LitCli): ResolvedCommand => {
   return {
@@ -69,20 +69,12 @@ const gen = (cli: LitCli): ResolvedCommand => {
   };
 };
 
-const mcp: ReferenceToCommand = {
-  kind: 'reference',
-  name: 'mcp',
-  description: 'Lit MCP server.',
-  importSpecifier: '@lit-labs/cli-mcp-server',
-  installFrom: '@lit-labs/cli-mcp-server',
-};
-
 export const makeLabsCommand = (cli: LitCli): Command => {
   return {
     kind: 'resolved',
     name: 'labs',
     description: 'Experimental commands',
-    subcommands: [gen(cli), mcp],
+    subcommands: [gen(cli)],
     async run() {
       console.error(
         'Use one of the labs subcommands, like `lit gen`. ' +
