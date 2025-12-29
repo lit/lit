@@ -141,6 +141,8 @@ if (false as boolean) {
 
     type VRendersAs = GetRenderAs<typeof v>;
     const vRendersAs = null! as VRendersAs;
+    // GetRenderAs returns the render method's return type.
+    // For asyncReplace, the render method always returns noChange, which is a Symbol.
     vRendersAs satisfies symbol;
     // @ts-expect-error
     vRendersAs satisfies string;
@@ -162,6 +164,8 @@ if (false as boolean) {
 
     type VRendersAs = GetRenderAs<typeof v>;
     const vRendersAs = null! as VRendersAs;
+    // GetRenderAs returns the render method's return type.
+    // For asyncAppend, the render method always returns noChange, which is a Symbol.
     vRendersAs satisfies symbol;
     // @ts-expect-error
     vRendersAs satisfies string;
