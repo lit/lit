@@ -4,12 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {ElementInternalsShim} from './lib/element-internals.js';
-import {
-  EventTargetShim,
-  EventShim,
-  CustomEventShim,
-  EventTargetShimMeta,
-} from './lib/events.js';
+import {EventShim, CustomEventShim} from './lib/events.js';
 
 export {
   ariaMixinAttributes,
@@ -23,7 +18,7 @@ export {
   MediaList,
   StyleSheet,
 } from './lib/css.js';
-export {CustomEvent, Event, EventTarget} from './lib/events.js';
+export {CustomEvent, Event} from './lib/events.js';
 
 // In an empty Node.js vm, we need to patch the global context.
 // TODO: Remove these globalThis assignments when we remove support
@@ -31,8 +26,350 @@ export {CustomEvent, Event, EventTarget} from './lib/events.js';
 globalThis.Event ??= EventShim;
 globalThis.CustomEvent ??= CustomEventShim;
 
-// Internal type to be used for the event polyfill functionality.
+const constructionToken = Symbol();
+
+/**
+ * Internal type to be used for the event polyfill functionality.
+ * @deprecated Use EventTargetShimMeta directly, if needed.
+ */
 export type HTMLElementWithEventMeta = HTMLElement & EventTargetShimMeta;
+
+/**
+ * Properties necessary for the EventTarget shim to work.
+ */
+export interface EventTargetShimMeta {
+  /**
+   * The event target parent represents the previous event target for an event
+   * in capture phase and the next event target for a bubbling event.
+   * Note that this is not the element parent
+   */
+  __eventTargetParent: globalThis.EventTarget | undefined;
+  /**
+   * The host event target/element of this event target, if this event target
+   * is inside a Shadow DOM.
+   */
+  __host: globalThis.EventTarget | undefined;
+}
+
+const isCaptureEventListener = (
+  options: undefined | AddEventListenerOptions | boolean
+) => (typeof options === 'boolean' ? options : (options?.capture ?? false));
+
+const enumerableProperty: Record<string, unknown> = {__proto__: null};
+enumerableProperty.enumerable = true;
+Object.freeze(enumerableProperty);
+
+/**
+ * This is a basic implementation of an EventTarget.
+ *
+ * This is not fully spec compliant (e.g. validation),
+ * but should work well enough for our use cases.
+ *
+ * @see https://dom.spec.whatwg.org/#eventtarget
+ *
+ * Example Event Path
+ * ------------------
+ *
+ * Note that this depends on the logic in `packages/labs/ssr/src/lib/render-value.ts`.
+ * Any element that is not a custom element or a slot element is skipped in the chain.
+ *
+ * <main>
+ *   <my-el1>
+ *     #shadow-dom (open)
+ *       <div>
+ *         <slot></slot>
+ *         <my-el2>
+ *           #shadow-dom (closed)
+ *             <slot></slot>
+ *             <event-dispatcher3></event-dispatcher3>
+ *           <slot name="nested"></slot>
+ *         </my-el2>
+ *       </div>
+ *     <event-dispatcher1></event-dispatcher1>
+ *     <event-dispatcher2 slot="nested"></event-dispatcher2>
+ *   </my-el1>
+ * </main>
+ *
+ * Given the previous structure, the event path of this shim would be as follows,
+ * for the given dispatcher with an event that bubbles (document-fragment
+ * represents a ShadowRoot/#shadow-dom instance):
+ *
+ * <event-dispatcher1>:
+ * [event-dispatcher1, slot{my-el1}, document-fragment{my-el1}, my-el1, document]
+ *
+ * <event-dispatcher2>:
+ * [
+ *   event-dispatcher2,
+ *   slot[name="nested"]{my-el1},
+ *   slot{my-el2},
+ *   document-fragment{my-el2},
+ *   my-el2,
+ *   document-fragment{my-el1},
+ *   my-el1,
+ *   document
+ * ]
+ *
+ * <event-dispatcher3> (without composed):
+ * [event-dispatcher3, document-fragment{my-el2}]
+ *
+ * <event-dispatcher3> (composed):
+ * [
+ *   event-dispatcher3,
+ *   document-fragment{my-el2},
+ *   my-el2,
+ *   document-fragment{my-el1},
+ *   my-el1,
+ *   document
+ * ]
+ */
+class EventTarget implements globalThis.EventTarget, EventTargetShimMeta {
+  private __eventListeners = new Map<
+    string,
+    Map<EventListenerOrEventListenerObject, AddEventListenerOptions>
+  >();
+  private __captureEventListeners = new Map<
+    string,
+    Map<EventListenerOrEventListenerObject, AddEventListenerOptions>
+  >();
+  private __eventPathCache?: EventTarget[];
+  __eventTargetParent: EventTarget | undefined;
+  __host: EventTarget | undefined;
+
+  addEventListener(
+    type: string,
+    callback: EventListenerOrEventListenerObject | null,
+    options?: AddEventListenerOptions | boolean
+  ): void {
+    if (callback === undefined || callback === null) {
+      return;
+    }
+    const eventListenersMap = isCaptureEventListener(options)
+      ? this.__captureEventListeners
+      : this.__eventListeners;
+    let eventListeners = eventListenersMap.get(type);
+    if (eventListeners === undefined) {
+      eventListeners = new Map();
+      eventListenersMap.set(type, eventListeners);
+    } else if (eventListeners.has(callback)) {
+      return;
+    }
+
+    const normalizedOptions =
+      typeof options === 'object' && options ? options : {};
+    normalizedOptions.signal?.addEventListener('abort', () =>
+      this.removeEventListener(type, callback, options)
+    );
+    eventListeners.set(callback, normalizedOptions ?? {});
+  }
+  removeEventListener(
+    type: string,
+    callback: EventListenerOrEventListenerObject | null,
+    options?: EventListenerOptions | boolean
+  ): void {
+    if (callback === undefined || callback === null) {
+      return;
+    }
+    const eventListenersMap = isCaptureEventListener(options)
+      ? this.__captureEventListeners
+      : this.__eventListeners;
+    const eventListeners = eventListenersMap.get(type);
+    if (eventListeners !== undefined) {
+      eventListeners.delete(callback);
+      if (!eventListeners.size) {
+        eventListenersMap.delete(type);
+      }
+    }
+  }
+  dispatchEvent(event: Event): boolean {
+    let composedPath = this.__resolveFullEventPath();
+    if (!event.composed && this.__host) {
+      // If the event is not composed and the event was dispatched inside
+      // shadow DOM, we need to stop the event chain before the host of the
+      // shadow DOM.
+      composedPath = composedPath.slice(0, composedPath.indexOf(this.__host));
+    }
+
+    // We need to patch various properties that would either be empty or wrong
+    // in this scenario.
+    let stopPropagation = false;
+    let stopImmediatePropagation = false;
+    let eventPhase: number = EventShim.NONE;
+    let target: EventTarget | null = null;
+    let tmpTarget: EventTarget | null = null;
+    let currentTarget: EventTarget | null = null;
+    const originalStopPropagation = event.stopPropagation;
+    const originalStopImmediatePropagation = event.stopImmediatePropagation;
+    Object.defineProperties(event, {
+      target: {
+        get() {
+          return target ?? tmpTarget;
+        },
+        ...enumerableProperty,
+      },
+      srcElement: {
+        get() {
+          return event.target;
+        },
+        ...enumerableProperty,
+      },
+      currentTarget: {
+        get() {
+          return currentTarget;
+        },
+        ...enumerableProperty,
+      },
+      eventPhase: {
+        get() {
+          return eventPhase;
+        },
+        ...enumerableProperty,
+      },
+      composedPath: {
+        value: () => composedPath,
+        ...enumerableProperty,
+      },
+      stopPropagation: {
+        value: () => {
+          stopPropagation = true;
+          originalStopPropagation.call(event);
+        },
+        ...enumerableProperty,
+      },
+      stopImmediatePropagation: {
+        value: () => {
+          stopImmediatePropagation = true;
+          originalStopImmediatePropagation.call(event);
+        },
+        ...enumerableProperty,
+      },
+    });
+
+    // An event handler can either be a function, an object with a handleEvent
+    // method or null. This function takes care to call the event handler
+    // correctly.
+    const invokeEventListener = (
+      listener: EventListenerOrEventListenerObject,
+      options: AddEventListenerOptions,
+      eventListenerMap: Map<
+        EventListenerOrEventListenerObject,
+        AddEventListenerOptions
+      >
+    ) => {
+      if (typeof listener === 'function') {
+        listener(event);
+      } else if (typeof listener?.handleEvent === 'function') {
+        listener.handleEvent(event);
+      }
+      if (options.once) {
+        eventListenerMap.delete(listener);
+      }
+    };
+    // When an event is finished being dispatched, which can be after the event
+    // tree has been traversed or stopPropagation/stopImmediatePropagation has
+    // been called. Once that is the case, the currentTarget and eventPhase
+    // need to be reset and a value, representing whether the event has not
+    // been prevented, needs to be returned.
+    const finishDispatch = () => {
+      currentTarget = null;
+      eventPhase = EventShim.NONE;
+      return !event.defaultPrevented;
+    };
+
+    // An event starts with the capture order, where it starts from the top.
+    // This is done even if bubbles is set to false, which is the default.
+    const captureEventPath = composedPath.slice().reverse();
+    // If the event target, which dispatches the event, is either in the light DOM
+    // or the event is not composed, the target is always itself. If that is not
+    // the case, the target needs to be retargeted: https://dom.spec.whatwg.org/#retarget
+    target = !this.__host || !event.composed ? this : null;
+    const retarget = (eventTargets: EventTarget[]) => {
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
+      tmpTarget = this;
+      while (tmpTarget.__host && eventTargets.includes(tmpTarget.__host)) {
+        tmpTarget = tmpTarget.__host;
+      }
+    };
+    for (const eventTarget of captureEventPath) {
+      if (!target && (!tmpTarget || tmpTarget === eventTarget.__host)) {
+        retarget(captureEventPath.slice(captureEventPath.indexOf(eventTarget)));
+      }
+      currentTarget = eventTarget;
+      eventPhase =
+        eventTarget === event.target
+          ? EventShim.AT_TARGET
+          : EventShim.CAPTURING_PHASE;
+      const captureEventListeners = eventTarget.__captureEventListeners.get(
+        event.type
+      );
+      if (captureEventListeners) {
+        for (const [listener, options] of captureEventListeners) {
+          invokeEventListener(listener, options, captureEventListeners);
+          if (stopImmediatePropagation) {
+            // Event.stopImmediatePropagation() stops any following invocation
+            // of an event handler even on the same event target.
+            return finishDispatch();
+          }
+        }
+      }
+      if (stopPropagation) {
+        // Event.stopPropagation() stops any following invocation
+        // of an event handler for any following event targets.
+        return finishDispatch();
+      }
+    }
+
+    const bubbleEventPath = event.bubbles ? composedPath : [this];
+    tmpTarget = null;
+    for (const eventTarget of bubbleEventPath) {
+      if (
+        !target &&
+        (!tmpTarget || eventTarget === (tmpTarget as EventTarget).__host)
+      ) {
+        retarget(
+          bubbleEventPath.slice(0, bubbleEventPath.indexOf(eventTarget) + 1)
+        );
+      }
+      currentTarget = eventTarget;
+      eventPhase =
+        eventTarget === event.target
+          ? EventShim.AT_TARGET
+          : EventShim.BUBBLING_PHASE;
+      const eventListeners = eventTarget.__eventListeners.get(event.type);
+      if (eventListeners) {
+        for (const [listener, options] of eventListeners) {
+          invokeEventListener(listener, options, eventListeners);
+          if (stopImmediatePropagation) {
+            // Event.stopImmediatePropagation() stops any following invocation
+            // of an event handler even on the same event target.
+            return finishDispatch();
+          }
+        }
+      }
+      if (stopPropagation) {
+        // Event.stopPropagation() stops any following invocation
+        // of an event handler for any following event targets.
+        return finishDispatch();
+      }
+    }
+    return finishDispatch();
+  }
+  private __resolveFullEventPath(): EventTarget[] {
+    if (this.__eventPathCache) {
+      return this.__eventPathCache;
+    } else if (!this.__eventTargetParent) {
+      return (this.__eventPathCache = [this, documentShim, windowShim]);
+    } else {
+      return (this.__eventPathCache = [
+        this,
+        ...this.__eventTargetParent.__resolveFullEventPath(),
+      ]);
+    }
+  }
+}
+
+const EventTargetShimWithRealType =
+  EventTarget as object as typeof globalThis.EventTarget;
+export {EventTargetShimWithRealType as EventTarget};
 
 const attributes = new WeakMap<
   InstanceType<typeof HTMLElementShim>,
@@ -59,7 +396,88 @@ const attributesForElement = (
 //    `const ElementShimWithRealType = ElementShim as object as typeof Element;`.
 // 4. We want the exported names to match the real ones, hence e.g.
 //    `export {ElementShimWithRealType as Element}`.
-const ElementShim = class Element extends EventTargetShim {
+const NodeShim = class Node extends EventTarget {
+  getRootNode(options?: GetRootNodeOptions): globalThis.Node {
+    if (options?.composed) {
+      return document;
+    }
+    // getRootNode returns the containing ShadowRoot instance, even if that was
+    // created in closed mode.
+    const host = (this as Partial<EventTargetShimMeta>).__host as
+      | typeof ElementShim
+      | undefined;
+    return (
+      (host as {__shadowRoot?: null | ShadowRoot})?.__shadowRoot ?? document
+    );
+  }
+};
+const NodeShimWithRealType = NodeShim as object as typeof Node;
+export {NodeShimWithRealType as Node};
+
+type DocumentInterface = Document;
+
+const DocumentShim = class Document
+  extends NodeShim
+  implements Partial<DocumentInterface>
+{
+  get adoptedStyleSheets() {
+    return [];
+  }
+  createTreeWalker() {
+    return {} as TreeWalker;
+  }
+  createTextNode() {
+    return {} as Text;
+  }
+  createElement() {
+    return {} as HTMLElement;
+  }
+};
+const DocumentShimWithRealType = DocumentShim as object as typeof Document;
+export {DocumentShimWithRealType as Document};
+
+const documentShim = new DocumentShim();
+const document: Document = documentShim as object as typeof document;
+export {document};
+
+type WindowInterface = Window;
+
+const WindowShim = class Window
+  extends NodeShim
+  implements Partial<WindowInterface>
+{
+  [index: number]: WindowInterface;
+
+  constructor();
+  /**
+   * @internal
+   */
+  constructor(constructionToken: Symbol);
+  constructor(token?: Symbol) {
+    super();
+    if (token !== constructionToken) {
+      throw new TypeError('Illegal constructor');
+    }
+
+    Object.assign(this, globalThis, {
+      CustomElementRegistry,
+      customElements,
+      document,
+      Document: DocumentShim,
+      Element: ElementShim,
+      EventTarget,
+      HTMLElement: HTMLElementShim,
+      Node: NodeShim,
+      ShadowRoot: ShadowRootShim,
+      window: this,
+      Window: WindowShim,
+    });
+  }
+};
+const WindowShimWithRealType = WindowShim as object as typeof Window;
+export {WindowShimWithRealType as Window};
+
+const ElementShim = class Element extends NodeShim {
   get attributes() {
     return Array.from(attributesForElement(this)).map(([name, value]) => ({
       name,
@@ -116,12 +534,12 @@ const ElementShim = class Element extends EventTargetShim {
     return attributesForElement(this).has(name);
   }
   attachShadow(init: ShadowRootInit): ShadowRoot {
-    const shadowRoot = {host: this} as object as ShadowRoot;
     this.__shadowRootMode = init.mode;
-    if (init && init.mode === 'open') {
-      this.__shadowRoot = shadowRoot;
-    }
-    return shadowRoot;
+    const shadowRoot: Partial<ShadowRootInterface> & EventTargetShimMeta =
+      new ShadowRootShim(constructionToken, init);
+    shadowRoot.__eventTargetParent = this;
+    shadowRoot.__host = this;
+    return (this.__shadowRoot = shadowRoot as ShadowRootInterface);
   }
   attachInternals(): ElementInternals {
     if (this.__internals !== null) {
@@ -146,6 +564,44 @@ const HTMLElementShim = class HTMLElement extends ElementShim {};
 const HTMLElementShimWithRealType =
   HTMLElementShim as object as typeof HTMLElement;
 export {HTMLElementShimWithRealType as HTMLElement};
+
+const HTMLSlotElementShim = class HTMLSlotElement extends HTMLElementShim {
+  name!: string;
+  override get localName(): string {
+    return 'slot';
+  }
+};
+const HTMLSlotElementShimWithRealType =
+  HTMLSlotElementShim as object as typeof HTMLSlotElement;
+export {HTMLSlotElementShimWithRealType as HTMLSlotElement};
+
+type ShadowRootInterface = ShadowRoot;
+
+const ShadowRootShim = class ShadowRoot
+  extends NodeShim
+  implements Partial<ShadowRootInterface>
+{
+  get host(): Element {
+    return (this as Partial<EventTargetShimMeta>).__host! as Element;
+  }
+  mode: 'open' | 'closed';
+
+  constructor();
+  /**
+   * @internal
+   */
+  constructor(constructionToken: Symbol, init: ShadowRootInit);
+  constructor(constructionToken?: Symbol, init?: ShadowRootInit) {
+    super();
+    if (constructionToken !== constructionToken) {
+      throw new TypeError('Illegal constructor');
+    }
+    this.mode = init!.mode;
+  }
+};
+const ShadowRootShimWithRealType =
+  ShadowRootShim as object as typeof ShadowRoot;
+export {ShadowRootShimWithRealType as ShadowRoot};
 
 // For convenience, we provide a global instance of a HTMLElement as an event
 // target. This facilitates registering global event handlers
@@ -290,3 +746,9 @@ const CustomElementRegistryShimWithRealType =
 export {CustomElementRegistryShimWithRealType as CustomElementRegistry};
 
 export const customElements = new CustomElementRegistryShimWithRealType();
+
+// The window variable instantiation must happen after all shims
+// have been declared, as they will be included in the window instance.
+const windowShim = new WindowShim(constructionToken);
+const window: Window = windowShim as object as typeof window;
+export {window};

@@ -513,14 +513,18 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       );
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'document/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        '#shadow-root{test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'test-events-child{id:1}/capture/AT_TARGET/test-events-child{id:1}',
         'test-events-child{id:1}/non-capture/AT_TARGET/test-events-child{id:1}',
         'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        '#shadow-root{test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
         'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
       ]);
     } finally {
       reset();
@@ -544,14 +548,18 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       );
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'document/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        '#shadow-root{test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'test-events-child{id:1}/capture/AT_TARGET/test-events-child{id:1}',
         'test-events-child{id:1}/non-capture/AT_TARGET/test-events-child{id:1}',
         'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        '#shadow-root{test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
         'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
       ]);
     } finally {
       reset();
@@ -580,18 +588,24 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       );
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'document/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-parent{id:1}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'slot{id:4,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-child{id:3}/capture/AT_TARGET/test-events-child{id:3}',
         'test-events-child{id:3}/non-capture/AT_TARGET/test-events-child{id:3}',
         'slot{id:4,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'test-events-parent{id:1}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
       ]);
     } finally {
       reset();
@@ -623,37 +637,51 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
         // Event from first child
+        'document/capture/CAPTURING_PHASE/test-events-child{id:5}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:5}',
         'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:5}',
+        '#shadow-root{test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:5}',
         'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:5}',
         'test-events-shadow-nested{id:1}/capture/CAPTURING_PHASE/test-events-child{id:5}',
+        '#shadow-root{test-events-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:5}',
         'slot{id:4,host:test-events-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:5}',
         'test-events-child{id:5}/capture/AT_TARGET/test-events-child{id:5}',
         'test-events-child{id:5}/non-capture/AT_TARGET/test-events-child{id:5}',
         'slot{id:4,host:test-events-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
+        '#shadow-root{test-events-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
         'test-events-shadow-nested{id:1}/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
         'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
+        '#shadow-root{test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
         'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:5}',
         // Event from second child
+        'document/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        '#shadow-root{test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'test-events-shadow-nested{id:1}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        '#shadow-root{test-events-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'slot{id:4,host:test-events-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'test-events-parent{id:3,host:test-events-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        '#shadow-root{test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'slot{id:7,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'slot[name=a]{id:8,host:test-events-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'test-events-child{id:6}/capture/AT_TARGET/test-events-child{id:6}',
         'test-events-child{id:6}/non-capture/AT_TARGET/test-events-child{id:6}',
         'slot[name=a]{id:8,host:test-events-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
         'slot{id:7,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        '#shadow-root{test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
         'test-events-parent{id:3,host:test-events-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
         'slot{id:4,host:test-events-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        '#shadow-root{test-events-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
         'test-events-shadow-nested{id:1}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
         'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        '#shadow-root{test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
         'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
       ]);
     } finally {
       reset();
@@ -668,12 +696,14 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       await render(eventParentAndSingleWithNonExistentSlot);
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'document/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'test-events-child{id:1}/capture/AT_TARGET/test-events-child{id:1}',
         'test-events-child{id:1}/non-capture/AT_TARGET/test-events-child{id:1}',
         'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
       ]);
     } finally {
       reset();
@@ -687,8 +717,10 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       await render(eventChildShadowNested);
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        '#shadow-root{test-events-child-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'test-events-child{id:1,host:test-events-child-shadow-nested}/capture/AT_TARGET/test-events-child{id:1}',
         'test-events-child{id:1,host:test-events-child-shadow-nested}/non-capture/AT_TARGET/test-events-child{id:1}',
+        '#shadow-root{test-events-child-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
       ]);
     } finally {
       reset();
@@ -704,12 +736,16 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       await render(eventChildShadowNested);
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'document/capture/CAPTURING_PHASE/test-events-child-shadow-nested{id:0}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child-shadow-nested{id:0}',
         'test-events-child-shadow-nested{id:0}/capture/AT_TARGET/test-events-child-shadow-nested{id:0}',
+        '#shadow-root{test-events-child-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'test-events-child{id:1,host:test-events-child-shadow-nested}/capture/AT_TARGET/test-events-child{id:1}',
         'test-events-child{id:1,host:test-events-child-shadow-nested}/non-capture/AT_TARGET/test-events-child{id:1}',
+        '#shadow-root{test-events-child-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
         'test-events-child-shadow-nested{id:0}/non-capture/AT_TARGET/test-events-child-shadow-nested{id:0}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child-shadow-nested{id:0}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child-shadow-nested{id:0}',
       ]);
     } finally {
       delete TestEventsChild.eventOptions;
@@ -726,14 +762,20 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       await render(eventChildShadowNestedTwice);
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'document/capture/CAPTURING_PHASE/test-events-child-shadow-nested-twice{id:0}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child-shadow-nested-twice{id:0}',
         'test-events-child-shadow-nested-twice{id:0}/capture/AT_TARGET/test-events-child-shadow-nested-twice{id:0}',
+        '#shadow-root{test-events-child-shadow-nested-twice}/capture/CAPTURING_PHASE/test-events-child-shadow-nested{id:1}',
         'test-events-child-shadow-nested{id:1,host:test-events-child-shadow-nested-twice}/capture/AT_TARGET/test-events-child-shadow-nested{id:1}',
+        '#shadow-root{test-events-child-shadow-nested}/capture/CAPTURING_PHASE/test-events-child{id:2}',
         'test-events-child{id:2,host:test-events-child-shadow-nested}/capture/AT_TARGET/test-events-child{id:2}',
         'test-events-child{id:2,host:test-events-child-shadow-nested}/non-capture/AT_TARGET/test-events-child{id:2}',
+        '#shadow-root{test-events-child-shadow-nested}/non-capture/BUBBLING_PHASE/test-events-child{id:2}',
         'test-events-child-shadow-nested{id:1,host:test-events-child-shadow-nested-twice}/non-capture/AT_TARGET/test-events-child-shadow-nested{id:1}',
+        '#shadow-root{test-events-child-shadow-nested-twice}/non-capture/BUBBLING_PHASE/test-events-child-shadow-nested{id:1}',
         'test-events-child-shadow-nested-twice{id:0}/non-capture/AT_TARGET/test-events-child-shadow-nested-twice{id:0}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child-shadow-nested-twice{id:0}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child-shadow-nested-twice{id:0}',
       ]);
     } finally {
       delete TestEventsChild.eventOptions;
@@ -749,20 +791,26 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       await render(eventNestedSlotWithNamedSlotChild);
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'document/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-parent{id:1,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'slot{id:4,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'slot[name=a]{id:5,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-child{id:3}/capture/AT_TARGET/test-events-child{id:3}',
         'test-events-child{id:3}/non-capture/AT_TARGET/test-events-child{id:3}',
         'slot[name=a]{id:5,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'slot{id:4,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'test-events-parent{id:1,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
       ]);
     } finally {
       reset();
@@ -777,14 +825,18 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       await render(eventNestedSlotWithUnnamedSlotChild);
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'document/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-child{id:3}/capture/AT_TARGET/test-events-child{id:3}',
         'test-events-child{id:3}/non-capture/AT_TARGET/test-events-child{id:3}',
         'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
       ]);
     } finally {
       reset();
@@ -800,29 +852,39 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
         // Event from first child
+        'document/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-child{id:3}/capture/AT_TARGET/test-events-child{id:3}',
         'test-events-child{id:3}/non-capture/AT_TARGET/test-events-child{id:3}',
         'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         // Event from second child
+        'document/capture/CAPTURING_PHASE/test-events-child{id:4}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:4}',
         'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:4}',
+        '#shadow-root{test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:4}',
         'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:4}',
         'test-events-parent{id:1,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:4}',
+        '#shadow-root{test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:4}',
         'slot{id:5,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:4}',
         'slot[name=a]{id:6,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:4}',
         'test-events-child{id:4}/capture/AT_TARGET/test-events-child{id:4}',
         'test-events-child{id:4}/non-capture/AT_TARGET/test-events-child{id:4}',
         'slot[name=a]{id:6,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
         'slot{id:5,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
+        '#shadow-root{test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
         'test-events-parent{id:1,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
         'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
+        '#shadow-root{test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
         'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:4}',
       ]);
     } finally {
       reset();
@@ -838,29 +900,70 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
         // Event from first child
+        'document/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-parent{id:1,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'slot{id:4,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'slot[name=a]{id:5,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:3}',
         'test-events-child{id:3}/capture/AT_TARGET/test-events-child{id:3}',
         'test-events-child{id:3}/non-capture/AT_TARGET/test-events-child{id:3}',
         'slot[name=a]{id:5,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'slot{id:4,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'test-events-parent{id:1,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        '#shadow-root{test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:3}',
         // Event from second child
+        'document/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'test-events-nested-slots{id:0}/capture/CAPTURING_PHASE/test-events-child{id:6}',
+        '#shadow-root{test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'slot{id:2,host:test-events-nested-slots}/capture/CAPTURING_PHASE/test-events-child{id:6}',
         'test-events-child{id:6}/capture/AT_TARGET/test-events-child{id:6}',
         'test-events-child{id:6}/non-capture/AT_TARGET/test-events-child{id:6}',
         'slot{id:2,host:test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        '#shadow-root{test-events-nested-slots}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
         'test-events-nested-slots{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:6}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('event target works with duplicate slot names', async () => {
+    const {render, eventNestedDuplicateSlotNames, setupEvents} = await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      await render(eventNestedDuplicateSlotNames);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'document/capture/CAPTURING_PHASE/test-events-child{id:2}',
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:2}',
+        'test-events-parent-retarget{id:0}/capture/CAPTURING_PHASE/test-events-child{id:2}',
+        '#shadow-root{test-events-parent-retarget}/capture/CAPTURING_PHASE/test-events-child{id:2}',
+        'test-events-intermediate{id:1,host:test-events-parent-retarget}/capture/CAPTURING_PHASE/test-events-child{id:2}',
+        '#shadow-root{test-events-intermediate}/capture/CAPTURING_PHASE/test-events-child{id:2}',
+        'slot[name=b]{id:3,host:test-events-intermediate}/capture/CAPTURING_PHASE/test-events-child{id:2}',
+        'slot[name=a]{id:4,host:test-events-parent-retarget}/capture/CAPTURING_PHASE/test-events-child{id:2}',
+        'test-events-child{id:2}/capture/AT_TARGET/test-events-child{id:2}',
+        'test-events-child{id:2}/non-capture/AT_TARGET/test-events-child{id:2}',
+        'slot[name=a]{id:4,host:test-events-parent-retarget}/non-capture/BUBBLING_PHASE/test-events-child{id:2}',
+        'slot[name=b]{id:3,host:test-events-intermediate}/non-capture/BUBBLING_PHASE/test-events-child{id:2}',
+        '#shadow-root{test-events-intermediate}/non-capture/BUBBLING_PHASE/test-events-child{id:2}',
+        'test-events-intermediate{id:1,host:test-events-parent-retarget}/non-capture/BUBBLING_PHASE/test-events-child{id:2}',
+        '#shadow-root{test-events-parent-retarget}/non-capture/BUBBLING_PHASE/test-events-child{id:2}',
+        'test-events-parent-retarget{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:2}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:2}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:2}',
       ]);
     } finally {
       reset();
