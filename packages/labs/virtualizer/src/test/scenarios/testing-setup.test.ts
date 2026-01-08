@@ -7,10 +7,12 @@
 import {
   array,
   first,
+  deepEqual,
   last,
   ignoreBenignErrors,
   ignoreWindowErrors,
   pass,
+  getRelativeRect,
   until,
 } from '../helpers.js';
 import {expect} from '@open-wc/testing';
@@ -163,5 +165,35 @@ describe('until', () => {
       'Condition not met within 1000ms: "() => condition"'
     );
     expect(error!.message).to.contain('at o.<anonymous>');
+  });
+});
+
+describe('getRelativeRect', () => {
+  it('returns adjusted descendant with coords offset by ancestor top/left', () => {
+    const ancestor = {top: 100, left: 200, bottom: 300, right: 400};
+    const descendant = {top: 175, left: 250, bottom: 250, right: 375};
+    const relative = getRelativeRect(descendant, ancestor);
+    expect(relative).to.deep.equal({
+      top: 75,
+      left: 50,
+      bottom: 150,
+      right: 175,
+    });
+  });
+});
+
+describe('deepEqual', () => {
+  it('compares object properties', () => {
+    expect(deepEqual({a: 1, b: 2}, {a: 1, b: 2})).to.be.true;
+    expect(deepEqual({a: 1, b: 2}, {a: 1})).to.be.false;
+    expect(deepEqual({a: 1}, {a: 2})).to.be.false;
+  });
+  it('compares deeply nested object properties', () => {
+    expect(deepEqual({a: {b: {c: 1}}}, {a: {b: {c: 1}}})).to.be.true;
+    expect(deepEqual({a: {b: {c: 1}}}, {a: {b: {c: 2}}})).to.be.false;
+  });
+  it('compares arrays of non-object values', () => {
+    expect(deepEqual(1, 1, 1, 1, 1)).to.be.true;
+    expect(deepEqual(1, 1, 1, 1, 2)).to.be.false;
   });
 });
