@@ -8,7 +8,8 @@ import {nothing} from '../lit-html.js';
 
 /**
  * For AttributeParts, sets the attribute if the value is defined and removes
- * the attribute if the value is undefined.
+ * the attribute if the value is undefined by returning Lit's `nothing`
+ * sentinel value.
  *
  * For other part types, this directive is a no-op.
  */
