@@ -1,5 +1,11 @@
 # @lit-labs/ssr-dom-shim
 
+## 1.5.1
+
+### Patch Changes
+
+- [#5202](https://github.com/lit/lit/pull/5202) [`f7b60025d93463c74d59001c6f01c38c41b1e816`](https://github.com/lit/lit/commit/f7b60025d93463c74d59001c6f01c38c41b1e816) Thanks [@kyubisation](https://github.com/kyubisation)! - Add register css hook file to publishable files
+
 ## 1.5.0
 
 ### Minor Changes
