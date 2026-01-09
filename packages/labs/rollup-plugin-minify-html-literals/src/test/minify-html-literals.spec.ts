@@ -239,6 +239,44 @@ suite('minify-html-literals', () => {
     }
   `;
 
+  const CONTAINER_QUERY_SOURCE = `
+    function someFunction() {
+      return css\`
+        :host {
+          container-type: inline-size;
+        }
+
+        .some-class {
+          padding: 16px;
+        }
+      
+        @container (min-width: 768px) {
+          .some-class {
+            display: flex;
+          }
+
+          .another-class {
+            font-size: 20px;
+          }
+        }
+      \`;
+    }
+  `;
+
+  const CONTAINER_QUERY_SOURCE_MIN = `
+    function someFunction() {
+      return css\`:host{container-type:inline-size}.some-class{padding:16px}@container (min-width:768px){.some-class{display:flex}.another-class{font-size:20px}}\`;
+    }
+  `;
+
+  test('should preserve CSS inside @container queries', async () => {
+    const result = await minifyHTMLLiterals(CONTAINER_QUERY_SOURCE, {
+      fileName: 'test.js',
+    });
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, CONTAINER_QUERY_SOURCE_MIN);
+  });
+
   test('should minify "html" and "css" tagged templates', async () => {
     const result = await minifyHTMLLiterals(SOURCE, {fileName: 'test.js'});
     assert.equal(typeof result, 'object');
