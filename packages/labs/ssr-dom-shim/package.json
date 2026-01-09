@@ -21,7 +21,7 @@
       "types": "./index.d.ts",
       "default": "./index.js"
     },
-    "./register-css-hook.js": {
+    "./register": {
       "types": "./register-css-hook.d.ts",
       "default": "./register-css-hook.js"
     }
@@ -61,7 +61,7 @@
         "build"
       ],
       "env": {
-        "NODE_OPTIONS": "--enable-source-maps --import ./register-css-hook.js"
+        "NODE_OPTIONS": "--enable-source-maps --import @lit-labs/ssr-dom-shim/register"
       },
       "output": []
     }
