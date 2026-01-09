@@ -2,6 +2,8 @@
 
 A Rollup plugin to minify HTML and CSS markup inside JavaScript template literal strings.
 
+This plugin uses [html-minifier-next](https://www.npmjs.com/package/html-minifier-next) (a maintained continuation of html-minifier) for HTML minification and [lightningcss](https://lightningcss.dev/) for CSS minification, providing excellent support for modern CSS features including nesting, container queries, and more.
+
 ## Usage
 
 ```js
@@ -39,7 +41,24 @@ export default {
       failOnError: false,
       // minify-html-literals options
       // https://www.npmjs.com/package/minify-html-literals#options
-      options: null,
+      options: {
+        // html-minifier options
+        minifyOptions: {},
+        // Custom strategy for minification (optional)
+        strategy: {
+          // LightningCSS options for CSS minification
+          // These are passed directly to lightningcss transform()
+          // Note: filename, code, sourceMap options are managed internally
+          minifyCSSOptions: {
+            minify: true,
+            // Specify target browsers for CSS transformation
+            // targets: { chrome: 95 << 16 },
+            // Enable CSS modules (if needed)
+            // cssModules: false,
+            // Additional lightningcss options...
+          },
+        },
+      },
 
       // Advanced Options
       // Override minify-html-literals function
