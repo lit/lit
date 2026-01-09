@@ -43,21 +43,25 @@ export default {
       // https://www.npmjs.com/package/minify-html-literals#options
       options: {
         // html-minifier options
-        minifyOptions: {},
-        // Custom strategy for minification (optional)
-        strategy: {
-          // LightningCSS options for CSS minification
-          // These are passed directly to lightningcss transform()
-          // Note: filename, code, sourceMap options are managed internally
-          minifyCSSOptions: {
-            minify: true,
-            // Specify target browsers for CSS transformation
-            // targets: { chrome: 95 << 16 },
-            // Enable CSS modules (if needed)
-            // cssModules: false,
-            // Additional lightningcss options...
+        minifyOptions: {
+          minifyCSS: false, // Disable CSS minification
+          // OR pass LightningCSS options for CSS minification
+          minifyCSS: {
+            minify: true, // Enable minification (default)
+            // Browser targets for CSS feature transpilation
+            // Use bit-shift notation: version << 16
+            targets: {
+              chrome: 95 << 16,
+              firefox: 90 << 16,
+              safari: 14 << 16,
+            },
+            // Enable draft CSS features
+            drafts: {
+              customMedia: true,
+            },
           },
         },
+        // Custom strategy for minification (optional)
       },
 
       // Advanced Options
