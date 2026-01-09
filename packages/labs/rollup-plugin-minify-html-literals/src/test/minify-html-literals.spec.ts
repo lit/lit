@@ -133,7 +133,7 @@ suite('minify-html-literals', () => {
 
     function cssProperty(property) {
       const width = '20px';
-      return css\`.foo{font-size:1rem;width:\${width};color:\${property}}\`;
+      return css\`.foo{font-size:1rem;width:\${width}color:\${property}}\`;
     }
   `;
 
