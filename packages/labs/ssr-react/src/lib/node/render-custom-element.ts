@@ -6,7 +6,7 @@
 
 import {LitElementRenderer} from '@lit-labs/ssr/lib/lit-element-renderer.js';
 import {getElementRenderer} from '@lit-labs/ssr/lib/element-renderer.js';
-import type {RenderInfo} from '@lit-labs/ssr';
+import type {RenderInfo, Op} from '@lit-labs/ssr';
 
 const reservedReactProperties = new Set([
   'children',
@@ -37,6 +37,7 @@ export const renderCustomElement = (tagName: string, props: {} | null) => {
     eventTargetStack: [],
     slotStack: [],
     deferHydration: false,
+    opCodeCache: new WeakMap<TemplateStringsArray, Array<Op>>(),
   };
 
   // elementAttributes will be provided to React as props for the host element
