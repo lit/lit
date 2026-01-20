@@ -413,7 +413,7 @@ suite('minify-html-literals', () => {
     function cssNesting() {
       const spacing = '16px';
       const breakpoint = 768;
-      return css\`main{padding:\${spacing};display:flex;container-type:inline-size;& section{color:#00f;margin-bottom:\${spacing};font-size:14px;& h1{padding:8px \${spacing}font-weight:700;line-height:1.5}& .highlight{background-color:#ff0}}& article{background-color:#fff;@container (width>=768px){grid-template-columns:repeat(3,1fr);gap:24px;display:grid& .card{margin-top:\${breakpoint}px;border-radius:4px;padding:12px}}}&:hover{background-color:#d3d3d3}}\`;
+      return css\`main{padding:\${spacing};display:flex;container-type:inline-size;& section{color:#00f;margin-bottom:\${spacing};font-size:14px;& h1{padding:8px \${spacing}font-weight:700;line-height:1.5}& .highlight{background-color:#ff0}}& article{background-color:#fff;@container (width>=768px){grid-template-columns:repeat(3,1fr);gap:24px;display:grid;& .card{margin-top:\${breakpoint}px;border-radius:4px;padding:12px}}}&:hover{background-color:#d3d3d3}}\`;
     }
   `;
   test('should minify "html" and "css" tagged templates', async () => {
