@@ -195,7 +195,7 @@ suite('rollup-plugin-minify-html-literals', () => {
     assert.equal(result, null);
   });
 
-  test('Passing LighningCSS options should affect the minified output', async () => {
+  test('Passing LightningCSS options should affect the minified output', async () => {
     const source = `
       const styles = css\`
         @custom-media --small (max-width: 768px);
