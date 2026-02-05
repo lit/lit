@@ -135,7 +135,7 @@ const getElementTypeExportsFromImports = (imports: string) =>
 const renderSlots = (slots: Map<string, NamedDescribed>) => {
   return Array.from(slots.values())
     .map((slot) => {
-      if (slot.name === 'default') {
+      if (slot.name === 'default' || slot.name === '' || slot.name === '-') {
         return javascript`<slot />`;
       }
       return javascript`<slot name="${slot.name}" />`;
