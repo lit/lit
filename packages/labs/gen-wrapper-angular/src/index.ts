@@ -13,6 +13,7 @@ import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {packageJsonTemplate} from './lib/package-json-template.js';
 import {ngPackagrJsonTemplate} from './lib/ng-packagr-json-template.js';
 import {tsconfigTemplate} from './lib/tsconfig-template.js';
+import {publicApiTemplate} from './lib/public-api-template.js';
 import {wrapperModuleTemplate} from './lib/wrapper-module-template.js';
 import * as path from 'path';
 
@@ -59,6 +60,7 @@ export const generateAngularWrapper = async (
         ),
         'tsconfig.json': tsconfigTemplate(),
         'ng-packagr.json': ngPackagrJsonTemplate(),
+        'src/public-api.ts': publicApiTemplate(litModules),
         ...wrapperFiles(pkg.packageJson, litModules),
       },
     };
