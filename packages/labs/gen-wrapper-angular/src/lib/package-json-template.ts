@@ -23,6 +23,10 @@ export const packageJsonTemplate = (
     {
       name: angularPackageName,
       type: 'module',
+      scripts: {
+        build: 'tsc',
+        'build:watch': 'tsc --watch',
+      },
       // TODO(kschaaf): Version in lock-step with source?
       version: packageJson.version,
       dependencies: {
@@ -31,6 +35,9 @@ export const packageJsonTemplate = (
       peerDependencies: {
         '@angular/common': '>=13.3.0',
         '@angular/core': '>=13.3.0',
+      },
+      devDependencies: {
+        typescript: '~5.5.0',
       },
       files: [
         ...litModules.map(({module}) => module.sourcePath.replace(/\\/g, '/')),
