@@ -30,14 +30,20 @@ export const packageJsonTemplate = (
       // TODO(kschaaf): Version in lock-step with source?
       version: packageJson.version,
       dependencies: {
-        [packageJson.name!]: '^' + packageJson.version!,
+        [packageJson.name as string]: '^' + packageJson.version,
+        tslib: '^2.8.1',
       },
       peerDependencies: {
-        '@angular/common': '>=13.3.0',
-        '@angular/core': '>=13.3.0',
+        '@angular/common': '^20.0.0',
+        '@angular/core': '^20.0.0',
       },
       devDependencies: {
-        typescript: '~5.5.0',
+        typescript: '~5.8.0',
+        '@angular/core': '^20.0.1',
+        '@angular/common': '^20.0.1',
+        '@angular/compiler': '^20.0.1',
+        '@angular/compiler-cli': '^20.0.1',
+        'ng-packagr': '^20.0.1',
       },
       files: [
         ...litModules.map(({module}) => module.sourcePath.replace(/\\/g, '/')),

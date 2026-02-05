@@ -8,9 +8,9 @@ export const tsconfigTemplate = () => {
   return JSON.stringify(
     {
       compilerOptions: {
-        target: 'es2021',
+        target: 'es2022',
         module: 'es2022',
-        lib: ['es2021', 'DOM', 'DOM.Iterable'],
+        lib: ['es2022', 'DOM', 'DOM.Iterable'],
         declaration: true,
         declarationMap: true,
         sourceMap: true,

@@ -7,14 +7,20 @@
   },
   "version": "1.0.1",
   "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.1"
+    "@lit-internal/test-element-a": "^1.0.1",
+    "tslib": "^2.6.2"
   },
   "peerDependencies": {
-    "@angular/common": ">=13.3.0",
-    "@angular/core": ">=13.3.0"
+    "@angular/common": "^20.0.0",
+    "@angular/core": "^20.0.0"
   },
   "devDependencies": {
-    "typescript": "~5.5.0"
+    "typescript": "~5.8.0",
+    "@angular/core": "^20.0.1",
+    "@angular/common": "^20.0.1",
+    "@angular/compiler": "^20.0.1",
+    "@angular/compiler-cli": "^20.0.1",
+    "ng-packagr": "^20.0.1"
   },
   "files": [
     "src/element-a.ts",
