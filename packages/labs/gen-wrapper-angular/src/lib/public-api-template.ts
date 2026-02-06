@@ -10,12 +10,15 @@ import * as path from 'path';
 export const publicApiTemplate = (
   litModules: ModuleWithLitElementDeclarations[]
 ) => {
-  return litModules
-    .map(({module}) => {
-      return `export * from './${path
-        .relative('src', module.sourcePath)
-        .replace(/\\/g, '/')
-        .replace(/\.ts$/, '')}';`;
-    })
-    .join('\n');
+  return (
+    `/* eslint-disable import/extensions */\n` +
+    litModules
+      .map(({module}) => {
+        return `export * from './${path
+          .relative('src', module.sourcePath)
+          .replace(/\\/g, '/')
+          .replace(/\.ts$/, '')}';`;
+      })
+      .join('\n')
+  );
 };
