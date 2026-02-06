@@ -55,7 +55,12 @@ test('basic wrapper generation', async () => {
   // that runtime tests of this generated package are run as a separate `npm run
   // test:output` command via web-test-runner.
   const wrapperJsFile = fs.readFileSync(
-    path.join(outputPackage, 'element-a.js')
+    path.join(
+      outputPackage,
+      'dist',
+      'fesm2022',
+      'lit-internal-test-element-a-ng.mjs'
+    )
   );
   assert.ok(wrapperJsFile.length > 0);
 });

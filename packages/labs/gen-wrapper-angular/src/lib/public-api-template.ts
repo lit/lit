@@ -15,7 +15,7 @@ export const publicApiTemplate = (
       return `export * from './${path
         .relative('src', module.sourcePath)
         .replace(/\\/g, '/')
-        .replace(/\.ts$/, '.js')}';`;
+        .replace(/\.ts$/, '')}';`;
     })
     .join('\n');
 };

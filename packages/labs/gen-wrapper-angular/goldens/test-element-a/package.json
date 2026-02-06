@@ -2,8 +2,8 @@
   "name": "@lit-internal/test-element-a-ng",
   "type": "module",
   "scripts": {
-    "build": "tsc",
-    "build:watch": "tsc --watch"
+    "build": "ng-packagr -p ng-package.json",
+    "build:watch": "ng-packagr -p ng-package.json --watch"
   },
   "version": "1.0.1",
   "dependencies": {
