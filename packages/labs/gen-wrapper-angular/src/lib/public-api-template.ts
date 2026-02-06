@@ -13,11 +13,13 @@ export const publicApiTemplate = (
   return (
     `/* eslint-disable import/extensions */\n` +
     litModules
-      .map(({module}) => {
-        return `export * from './${path
+      .map(({module, declarations}) => {
+        const modulePath = path
           .relative('src', module.sourcePath)
           .replace(/\\/g, '/')
-          .replace(/\.ts$/, '')}';`;
+          .replace(/\.ts$/, '');
+        const componentNames = declarations.map((d) => d.name).join(', ');
+        return `export { ${componentNames} } from './${modulePath}';`;
       })
       .join('\n')
   );
