@@ -1,4 +1,4 @@
-export const ngPackagrJsonTemplate = () => {
+export const ngPackageJsonTemplate = () => {
   return JSON.stringify(
     {
       $schema: 'https://json.schemastore.org/ng-package',

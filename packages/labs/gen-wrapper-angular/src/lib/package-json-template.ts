@@ -34,16 +34,16 @@ export const packageJsonTemplate = (
         tslib: '^2.8.1',
       },
       peerDependencies: {
-        '@angular/common': '^20.0.0',
-        '@angular/core': '^20.0.0',
+        '@angular/common': '^20.0.1',
+        '@angular/core': '^20.0.1',
       },
       devDependencies: {
-        typescript: '~5.8.0',
         '@angular/core': '^20.0.1',
         '@angular/common': '^20.0.1',
         '@angular/compiler': '^20.0.1',
         '@angular/compiler-cli': '^20.0.1',
         'ng-packagr': '^20.0.1',
+        typescript: '~5.8.0',
       },
       files: [
         ...litModules.map(({module}) => module.sourcePath.replace(/\\/g, '/')),
