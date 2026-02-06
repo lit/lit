@@ -24,8 +24,8 @@ export const packageJsonTemplate = (
       name: angularPackageName,
       type: 'module',
       scripts: {
-        build: 'tsc',
-        'build:watch': 'tsc --watch',
+        build: 'ng-packagr -p ng-package.json',
+        'build:watch': 'ng-packagr -p ng-package.json --watch',
       },
       // TODO(kschaaf): Version in lock-step with source?
       version: packageJson.version,
