@@ -56,8 +56,7 @@ export const generateAngularWrapper = async (
         '.gitignore': gitIgnoreTemplate(litModules),
         'package.json': packageJsonTemplate(
           angularPackageName,
-          pkg.packageJson,
-          litModules
+          pkg.packageJson
         ),
         'tsconfig.json': tsconfigTemplate(),
         'tsconfig.lib.json': tsconfigLibTemplate(),

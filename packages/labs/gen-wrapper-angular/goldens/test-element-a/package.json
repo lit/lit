@@ -7,10 +7,10 @@
   },
   "version": "1.0.1",
   "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.1",
     "tslib": "^2.8.1"
   },
   "peerDependencies": {
+    "@lit-internal/test-element-a": "^1.0.1",
     "@angular/common": "^20.0.1",
     "@angular/core": "^20.0.1"
   },
@@ -21,14 +21,5 @@
     "@angular/compiler-cli": "^20.0.1",
     "ng-packagr": "^20.0.1",
     "typescript": "~5.8.0"
-  },
-  "files": [
-    "src/element-a.ts",
-    "src/element-events.ts",
-    "src/element-mixins.ts",
-    "src/element-props.ts",
-    "src/element-slots.ts",
-    "src/element-without-props.ts",
-    "src/sub/element-sub.ts"
-  ]
+  }
 }
