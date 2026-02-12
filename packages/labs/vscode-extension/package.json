@@ -7,6 +7,12 @@
   "engines": {
     "vscode": "^1.103.0"
   },
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/vscode-extension"
+  },
   "categories": [
     "Programming Languages",
     "Snippets",
