@@ -125,7 +125,8 @@ export class ContextProvider<
     }
     // Also, in case an element is a consumer AND a provider
     // of the same context it shouldn't provide to itself.
-    const childProviderHost = ev.contextTarget ?? ev.composedPath()[0];
+    const eventPath = ev.composedPath();
+    const childProviderHost = ev.contextTarget ?? eventPath[0];
     if (childProviderHost === this.host) {
       return;
     }
@@ -150,9 +151,30 @@ export class ContextProvider<
         continue;
       }
       seen.add(callback);
-      consumerHost.dispatchEvent(
-        new ContextRequestEvent(this.context, consumerHost, callback, true)
-      );
+      // if consumer is in the event path, then the new provider
+      // is inside it and shouldn't provide.
+      if (eventPath.includes(consumerHost)) {
+        continue;
+      }
+      // determine if consumer is "contained" within the new provider;
+      // this is required for it to provide.
+      let needsContext = false,
+        current = consumerHost;
+      while (current) {
+        needsContext = current === childProviderHost;
+        if (needsContext || current === this.host) {
+          break;
+        }
+        current =
+          current.assignedSlot ??
+          current.parentElement ??
+          (current.parentNode as ShadowRoot)?.host;
+      }
+      if (needsContext) {
+        consumerHost.dispatchEvent(
+          new ContextRequestEvent(this.context, consumerHost, callback, true)
+        );
+      }
     }
     ev.stopPropagation();
   };
