@@ -1,10 +1,18 @@
-import CleanCSS, {OptionsOutput} from 'clean-css';
 import {
-  OptimizationLevel,
-  optimizationLevelFrom,
-} from 'clean-css/lib/options/optimization-level.js';
-import {MinifierOptions as HTMLOptions, minify} from 'html-minifier-next';
+  MinifierOptions as HTMLMinifierOptions,
+  minify,
+} from 'html-minifier-next';
+import {transform, type TransformOptions} from 'lightningcss';
 import {TemplatePart} from './models.js';
+
+/**
+ * Allowed LightningCSS options that can be passed through.
+ * We exclude options that don't make sense for string-to-string transformation.
+ */
+export type CSSMinifierOptions = Omit<
+  TransformOptions<{}>,
+  'filename' | 'code' | 'sourceMap' | 'inputSourceMap' | 'projectRoot'
+>;
 
 /**
  * A strategy on how to minify HTML and optionally CSS.
@@ -64,16 +72,19 @@ export interface Strategy<O = unknown, C = unknown> {
 }
 
 /**
- * The default <code>clean-css</code> options, optimized for production
- * minification.
+ * The default LightningCSS options, optimized for production minification.
  */
-export const defaultMinifyCSSOptions: CleanCSS.Options = {};
+export const defaultMinifyCSSOptions: CSSMinifierOptions = {
+  minify: true,
+};
 
 /**
  * The default <code>html-minifier</code> options, optimized for production
  * minification.
  */
-export const defaultMinifyOptions: HTMLOptions = {
+export const defaultMinifyOptions: HTMLMinifierOptions & {
+  minifyCSS: CSSMinifierOptions | false;
+} = {
   caseSensitive: true,
   collapseWhitespace: true,
   decodeEntities: true,
@@ -90,14 +101,16 @@ export const defaultMinifyOptions: HTMLOptions = {
 
 /**
  * The default strategy. This uses <code>html-minifier</code> to minify HTML and
- * <code>clean-css</code> to minify CSS.
+ * <code>lightningcss</code> to minify CSS.
  */
-export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
+export const defaultStrategy: Strategy<
+  HTMLMinifierOptions,
+  CSSMinifierOptions
+> = {
   getPlaceholder(parts) {
-    // Using @ and (); will cause the expression not to be removed in CSS.
-    // However, sometimes the semicolon can be removed (ex: inline styles).
-    // In those cases, we want to make sure that the HTML splitting also
-    // accounts for the missing semicolon.
+    // Using @TEMPLATE_EXPRESSION(); as a unified placeholder that works in both
+    // HTML and as a CSS at-rule. The semicolon may be removed by CSS minifiers,
+    // which is handled in splitHTMLByPlaceholder().
     const suffix = '();';
     let placeholder = '@TEMPLATE_EXPRESSION';
     while (parts.some((part) => part.text.includes(placeholder + suffix))) {
@@ -110,7 +123,7 @@ export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
     return parts.map((part) => part.text).join(placeholder);
   },
   async minifyHTML(html, options = {}) {
-    let minifyCSSOptions: HTMLOptions['minifyCSS'];
+    let minifyCSSOptions: HTMLMinifierOptions['minifyCSS'];
     if (options.minifyCSS) {
       if (
         options.minifyCSS !== true &&
@@ -124,16 +137,24 @@ export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
       minifyCSSOptions = false;
     }
 
-    let adjustedMinifyCSSOptions:
-      | false
-      | ReturnType<typeof adjustMinifyCSSOptions> = false;
-    if (minifyCSSOptions) {
-      adjustedMinifyCSSOptions = adjustMinifyCSSOptions(minifyCSSOptions);
-    }
+    // Apply the same placeholder transformation for CSS property values
+    // This ensures @TEMPLATE_EXPRESSION(); in CSS property values is converted
+    // to __TEMPLATE_EXPRESSION__ so LightningCSS treats it as an identifier
+    // rather than trying to parse it as an at-rule.
+    const placeholderRegex = /:\s*(@TEMPLATE_EXPRESSION_*)\(\);/g;
+    html = html.replace(placeholderRegex, (match, id) => {
+      const prefix = match.substring(0, match.indexOf('@'));
+      return prefix + id.replace('@', '__') + '__';
+    });
 
     let result = await minify(html, {
       ...options,
-      minifyCSS: adjustedMinifyCSSOptions,
+      minifyCSS: minifyCSSOptions,
+    });
+
+    // Restore placeholders after minification
+    result = result.replace(/__TEMPLATE_EXPRESSION_*__/g, (match) => {
+      return match.replace(/^__/, '@').replace(/__$/, '();');
     });
 
     if (options.collapseWhitespace) {
@@ -157,34 +178,61 @@ export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
       }
     }
 
-    if (
-      adjustedMinifyCSSOptions &&
-      adjustedMinifyCSSOptions.level[OptimizationLevel.One].tidySelectors
-    ) {
-      // Fix https://github.com/jakubpawlowicz/clean-css/issues/996
-      result = fixCleanCssTidySelectors(html, result);
-    }
-
     return result;
   },
   minifyCSS(css, options = {}) {
-    const adjustedOptions = adjustMinifyCSSOptions(options);
-    const output = new CleanCSS(<OptionsOutput>adjustedOptions).minify(css);
-    if (output.errors && output.errors.length) {
-      throw new Error(output.errors.join('\n\n'));
-    }
+    // LightningCSS will parse @TEMPLATE_EXPRESSION(); as an at-rule, which
+    // causes it to strip the semicolon after it in CSS property values.
+    // To work around this, we replace the placeholder with an identifier which
+    // LightningCSS will parse as a property value.
+    const placeholderRegex = /:\s*(@TEMPLATE_EXPRESSION_*)\(\);/g;
+    css = css.replace(placeholderRegex, (match, id) => {
+      const prefix = match.substring(0, match.indexOf('@'));
+      return prefix + id.replace('@', '__') + '__';
+    });
 
-    if (adjustedOptions.level[OptimizationLevel.One].tidySelectors) {
-      output.styles = fixCleanCssTidySelectors(css, output.styles);
+    try {
+      const result = transform({
+        filename: 'style.css', // Placeholder filename
+        code: new Uint8Array(Buffer.from(css)),
+        minify: true,
+        ...options,
+      });
+      let code = result.code.toString();
+      // Restore placeholders
+      code = code.replace(/__TEMPLATE_EXPRESSION_*__/g, (match) => {
+        return match.replace(/^__/, '@').replace(/__$/, '();');
+      });
+      return code;
+    } catch (error) {
+      throw new Error(
+        `LightningCSS error: ${error instanceof Error ? error.message : String(error)}`
+      );
     }
-
-    return output.styles;
   },
   splitHTMLByPlaceholder(html, placeholder) {
-    const parts = html.split(placeholder);
-    // Make the last character (a semicolon) optional. See above.
-    if (placeholder.endsWith(';')) {
-      const withoutSemicolon = placeholder.substring(0, placeholder.length - 1);
+    let parts = html.split(placeholder);
+    let activePlaceholder = placeholder;
+
+    // LightningCSS may add a space before parentheses in at-rules
+    // Try splitting with a space-modified version if we don't have enough parts
+    if (placeholder.includes('()') && parts.length === 1) {
+      const withSpace = placeholder.replace('()', ' ()');
+      const spaceParts = html.split(withSpace);
+      if (spaceParts.length > 1) {
+        parts = spaceParts;
+        activePlaceholder = withSpace;
+      }
+    }
+
+    // Make the last character (a semicolon) optional for cases where
+    // the CSS minifier removes it (e.g., last property before closing brace).
+    // This handles: @TEMPLATE_EXPRESSION(); and @TEMPLATE_EXPRESSION() (without semicolon)
+    if (activePlaceholder.endsWith(';')) {
+      const withoutSemicolon = activePlaceholder.substring(
+        0,
+        activePlaceholder.length - 1
+      );
       for (let i = parts.length - 1; i >= 0; i--) {
         parts.splice(i, 1, ...parts[i].split(withoutSemicolon));
       }
@@ -193,55 +241,3 @@ export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
     return parts;
   },
 };
-
-export function adjustMinifyCSSOptions(options: CleanCSS.Options = {}) {
-  const level = optimizationLevelFrom(options.level);
-  const originalTransform =
-    typeof options.level === 'object' &&
-    options.level[1] &&
-    options.level[1].transform;
-  level[OptimizationLevel.One].transform = (property, value) => {
-    if (value.startsWith('@TEMPLATE_EXPRESSION') && !value.endsWith(';')) {
-      // The CSS minifier has removed the semicolon from the placeholder
-      // and we need to add it back.
-      return (value = `${value};`);
-    }
-    return originalTransform ? originalTransform(property, value) : value;
-  };
-
-  return {
-    ...options,
-    level,
-  };
-}
-
-function fixCleanCssTidySelectors(original: string, result: string) {
-  const regex = /(::?.+\((.*)\))[\s\r\n]*{/gm;
-  let match: RegExpMatchArray | null;
-  while ((match = regex.exec(original)) != null) {
-    const pseudoClass = match[1];
-    const parameters = match[2];
-    if (!parameters.match(/\s/)) {
-      continue;
-    }
-
-    const parametersWithoutSpaces = parameters.replace(/\s/g, '');
-    const resultPseudoClass = pseudoClass.replace(
-      parameters,
-      parametersWithoutSpaces
-    );
-    const resultStartIndex = result.indexOf(resultPseudoClass);
-    if (resultStartIndex < 0) {
-      continue;
-    }
-
-    const resultEndIndex = resultStartIndex + resultPseudoClass.length;
-    // Restore the original pseudo class with spaces
-    result =
-      result.substring(0, resultStartIndex) +
-      pseudoClass +
-      result.substring(resultEndIndex);
-  }
-
-  return result;
-}
