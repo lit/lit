@@ -107,6 +107,10 @@ export class ContextProvider<
       return;
     }
     ev.stopPropagation();
+    // avoid reprocessing callback if it's already a subscriber
+    if (this.subscriptions.has(ev.callback)) {
+      return;
+    }
     this.addCallback(ev.callback, consumerHost, ev.subscribe);
   };
 
@@ -125,8 +129,7 @@ export class ContextProvider<
     }
     // Also, in case an element is a consumer AND a provider
     // of the same context it shouldn't provide to itself.
-    const eventPath = ev.composedPath();
-    const childProviderHost = ev.contextTarget ?? eventPath[0];
+    const childProviderHost = ev.contextTarget ?? ev.composedPath()[0];
     if (childProviderHost === this.host) {
       return;
     }
@@ -151,15 +154,12 @@ export class ContextProvider<
         continue;
       }
       seen.add(callback);
-      // if consumer is in the event path, then the new provider
-      // is inside it and shouldn't provide.
-      if (eventPath.includes(consumerHost)) {
-        continue;
-      }
-      // determine if consumer is "contained" within the new provider;
+      // Determine if consumer is "contained" within the new provider;
       // this is required for it to provide.
-      let needsContext = false,
-        current = consumerHost;
+      // Note, the walk here is significantly faster than sending the event and
+      // short-circuiting based on the path.
+      let needsContext = false;
+      let current = consumerHost;
       while (current) {
         needsContext = current === childProviderHost;
         if (needsContext || current === this.host) {
