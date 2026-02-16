@@ -7,12 +7,14 @@
 // Any new exports need to be added to the export statement in
 // `packages/lit/src/index.all.ts`.
 
+import {isServer} from './is-server.js';
 import {
   html as coreHtml,
   svg as coreSvg,
   mathml as coreMathml,
   TemplateResult,
 } from './lit-html.js';
+import {LRUCache} from './lru-cache.js';
 
 export interface StaticValue {
   /** The value to interpolate as-is into the template. */
@@ -106,7 +108,35 @@ export const literal = (
   r: brand,
 });
 
-const stringsCache = new Map<string, TemplateStringsArray>();
+// We double-key this cache so that usage of high cardinality static html
+// templates doesn't cause a memory leak when running on the server. The
+// browser environment is less prone to this issue because pages are
+// frequently opened/closed/refreshed. We use an LRUCache in the server
+// environment to limit the memory usage and a normal Map in the browser
+// environment to avoid the payload size increase of including the LRUCache
+// class in the bundle.
+export interface Cache {
+  get(key: TemplateStringsArray): InnerCache | undefined;
+  set(key: TemplateStringsArray, value: InnerCache): Cache;
+}
+
+interface InnerCache {
+  get(key: string): TemplateStringsArray | undefined;
+  set(key: string, value: TemplateStringsArray): InnerCache;
+}
+
+let stringsCache: Cache;
+if (isServer) {
+  stringsCache = new Map<
+    TemplateStringsArray,
+    LRUCache<string, TemplateStringsArray>
+  >();
+} else {
+  stringsCache = new Map<
+    TemplateStringsArray,
+    Map<string, TemplateStringsArray>
+  >();
+}
 
 /**
  * Wraps a lit-html template tag (`html` or `svg`) to add static value support.
@@ -150,15 +180,25 @@ export const withStatic =
     }
 
     if (hasStatics) {
+      let innerCache = stringsCache.get(strings);
+      if (innerCache === undefined) {
+        if (isServer) {
+          innerCache = new LRUCache<string, TemplateStringsArray>(10);
+        } else {
+          innerCache = new Map<string, TemplateStringsArray>();
+        }
+        stringsCache.set(strings, innerCache);
+      }
+
       const key = staticStrings.join('$$lit$$');
-      strings = stringsCache.get(key)!;
+      strings = innerCache.get(key)!;
       if (strings === undefined) {
         // Beware: in general this pattern is unsafe, and doing so may bypass
         // lit's security checks and allow an attacker to execute arbitrary
         // code and inject arbitrary content.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         (staticStrings as any).raw = staticStrings;
-        stringsCache.set(
+        innerCache.set(
           key,
           (strings = staticStrings as unknown as TemplateStringsArray)
         );
