@@ -7,7 +7,12 @@
 import {LitElement, html} from 'lit';
 import {assert} from '@esm-bundle/chai';
 
-import {SignalWatcher, Signal} from '../index.js';
+import {
+  SignalWatcher,
+  Signal,
+  SignalWatcherApi,
+  EffectOptions,
+} from '../index.js';
 import {customElement, property} from 'lit/decorators.js';
 
 let elementNameId = 0;
@@ -545,6 +550,57 @@ suite('SignalWatcher', () => {
     assert.equal(effectManualCount1, 1);
     assert.equal(effectManualCount2, 2);
     assert.equal(effectAutoCount, 0);
+  });
+
+  // Regression test for https://github.com/lit/lit/issues/5192
+  // SignalWatcherApi and EffectOptions must be exported so that user-exported
+  // classes whose extends clause references them do not cause TS4020 errors.
+  test('type-only test: SignalWatcherApi and EffectOptions are usable as public types', () => {
+    if (true as boolean) {
+      // This is a type-only test. Do not run it.
+      return;
+    }
+    // Simulates a user extending the SignalWatcher mixin and annotating
+    // updateEffect with the now-public EffectOptions type.
+    // Before the fix, SignalWatcherApi was not exported, so TypeScript would
+    // emit TS4020 when users exported a class that extends SignalWatcher(Base).
+    class MyElement extends SignalWatcher(LitElement) {
+      override render() {
+        return html``;
+      }
+    }
+    // EffectOptions should be usable as a named type annotation without error.
+    const opts: EffectOptions = {beforeUpdate: true};
+    // SignalWatcherApi should be usable as a named type annotation.
+    const el = new MyElement() as unknown as SignalWatcherApi;
+    console.log(el, opts);
+  });
+
+  test('updateEffect works with EffectOptions typed options', async () => {
+    const count = new Signal.State(0);
+    class TestElement extends SignalWatcher(LitElement) {
+      effectCount = 0;
+      override connectedCallback() {
+        super.connectedCallback();
+        // Pass an EffectOptions-typed variable to verify the type is usable.
+        const opts: EffectOptions = {beforeUpdate: true};
+        this.updateEffect(() => {
+          this.effectCount = count.get();
+        }, opts);
+      }
+      override render() {
+        return html``;
+      }
+    }
+    const name = generateElementName();
+    customElements.define(name, TestElement);
+    const el = document.createElement(name) as TestElement;
+    container.appendChild(el);
+    await el.updateComplete;
+    assert.equal(el.effectCount, 0);
+    count.set(1);
+    await el.updateComplete;
+    assert.equal(el.effectCount, 1);
   });
 });
 
