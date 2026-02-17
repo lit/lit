@@ -867,6 +867,29 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     }
   });
 
+  test('events propagate through non-Lit custom element wrapper (FallbackRenderer)', async () => {
+    const {render, eventParentWithFallbackWrapper, setupEvents} = await setup();
+    const {eventPath, reset} = setupEvents();
+    try {
+      await render(eventParentWithFallbackWrapper);
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      // The FallbackRenderer-handled <test-fallback-wrapper> element has no
+      // event listeners registered, so it does not appear in the eventPath.
+      // However, the event must still propagate correctly through it so that
+      // test-events-parent (the context provider analogue) receives it.
+      assert.equal(structuredClone(eventPath), [
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'test-events-child{id:1}/capture/AT_TARGET/test-events-child{id:1}',
+        'test-events-child{id:1}/non-capture/AT_TARGET/test-events-child{id:1}',
+        'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
   test('enableUpdating is prevented from being called', async () => {
     const {
       render,
