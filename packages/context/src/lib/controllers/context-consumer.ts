@@ -103,6 +103,20 @@ export class ContextConsumer<
   // This function must have stable identity to properly dedupe in ContextRoot
   // if this element connects multiple times.
   private _callback: ContextCallback<ContextType<C>> = (value, unsubscribe) => {
+    // If we're already provided by the same provider (same unsubscribe
+    // function) and the value hasn't changed, skip the update entirely.
+    // This guards against redundant re-registrations that can occur when
+    // a provider dynamically created inside a consumer triggers
+    // context-provider event processing, preventing unnecessary re-renders
+    // that could lead to infinite loops.
+    if (
+      this.provided &&
+      this.unsubscribe === unsubscribe &&
+      Object.is(this.value, value)
+    ) {
+      return;
+    }
+
     // some providers will pass an unsubscribe function indicating they may provide future values
     if (this.unsubscribe) {
       // if the unsubscribe function changes this implies we have changed provider
