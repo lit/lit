@@ -18,6 +18,17 @@ import {
 } from './virtualize.js';
 
 export class LitVirtualizer<T = unknown> extends LitElement {
+  /**
+   * Safely defines the custom element if it has not already been registered.
+   * This is idempotent and safe to call multiple times, e.g. across
+   * microfrontends or multiple bundles sharing the same page.
+   */
+  static define(tagName = 'lit-virtualizer') {
+    if (!customElements.get(tagName)) {
+      customElements.define(tagName, this);
+    }
+  }
+
   @property({attribute: false})
   items: T[] = [];
 

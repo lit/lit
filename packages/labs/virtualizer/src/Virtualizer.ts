@@ -45,7 +45,12 @@ export function provideResizeObserver(Ctor: typeof ResizeObserver) {
   _ResizeObserver = Ctor;
 }
 
-export const virtualizerRef = Symbol('virtualizerRef');
+// Use Symbol.for so that multiple copies of this module (e.g. across
+// microfrontends or independently built bundles) share the same key
+// when accessing the virtualizer instance on a host element.
+export const virtualizerRef = Symbol.for(
+  '@lit-labs/virtualizer/virtualizerRef'
+);
 const SIZER_ATTRIBUTE = 'virtualizer-sizer';
 
 declare global {
