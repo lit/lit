@@ -16,5 +16,5 @@ export default litProdConfig({
     'intersection-controller',
     'performance-controller',
   ],
-  external: ['@lit/reactive-element'],
+  external: ['@lit/reactive-element', 'lit-html'],
 });
