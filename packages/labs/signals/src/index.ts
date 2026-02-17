@@ -10,6 +10,7 @@ export * from 'signal-polyfill';
 export * from './lib/signal-watcher.js';
 export * from './lib/watch.js';
 export * from './lib/html-tag.js';
+export type {Constructor, AbstractConstructor} from './lib/mixin-types.js';
 
 export const State = Signal.State;
 export const Computed = Signal.Computed;
