@@ -117,7 +117,7 @@ export abstract class Directive implements Disconnectable {
 
   // See comment in Disconnectable interface for why this is a getter
   get _$isConnected() {
-    return this._$parent._$isConnected;
+    return this._$parent?._$isConnected ?? false;
   }
 
   /** @internal */
