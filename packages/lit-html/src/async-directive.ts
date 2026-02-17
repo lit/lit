@@ -301,7 +301,7 @@ export abstract class AsyncDirective extends Directive {
   /**
    * The connection state for this Directive.
    */
-  isConnected!: boolean;
+  isConnected = false;
 
   // @internal
   override _$disconnectableChildren?: Set<Disconnectable> = undefined;
