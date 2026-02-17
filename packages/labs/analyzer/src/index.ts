@@ -31,6 +31,15 @@ export type {
 
 export type {AbsolutePath, PackagePath} from './lib/paths.js';
 
+export type {
+  DependencyCustomElement,
+  DependencyProperty,
+  DependencyAttribute,
+  DependencyEvent,
+} from './lib/dependency-analyzer.js';
+
+export {DependencyAnalyzer} from './lib/dependency-analyzer.js';
+
 // Any non-type exports below must be safe to use on objects between multiple
 // versions of the analyzer library
 export {getImportsStringForReferences} from './lib/model.js';
