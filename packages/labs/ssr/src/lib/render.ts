@@ -11,12 +11,12 @@ import type {
   RenderResult,
   Thunk,
 } from './render-result.js';
-import type {RenderInfo} from './render-value.js';
+import type {Op, RenderInfo} from './render-value.js';
 import {renderValue} from './render-value.js';
 import {isHydratable} from './server-template.js';
 
 export type {RenderResult} from './render-result.js';
-export type {RenderInfo} from './render-value.js';
+export type {RenderInfo, Op} from './render-value.js';
 
 /**
  * Renders a lit-html renderable, usually a template result, to an iterable.
@@ -64,6 +64,7 @@ export function renderThunked(
     eventTargetStack: [],
     slotStack: [],
     deferHydration: false,
+    opCodeCache: new WeakMap<TemplateStringsArray, Array<Op>>(),
   } satisfies RenderInfo;
   renderInfo = {...defaultRenderInfo, ...renderInfo};
   let hydratable = true;
