@@ -192,12 +192,20 @@ export class XliffFormatter implements Formatter {
     targetDocument?: XMLDocument
   ): string {
     const translationsByName = makeMessageIdMap(targetMessages);
-    const doc = targetDocument || this.initNewTargetDocument(targetLocale);
+    const doc = targetDocument || this.initNewTargetDocument();
     const indent = this.createIndentFunction(doc);
     const existingTranslationsByName = this.makeExistingTranslationsMap(doc);
-    const body = getOneElementByTagNameOrThrow(doc, 'body');
     const names = new Set();
-    for (const {name, contents: sourceContents, desc} of sourceMessages) {
+    for (const {name, contents: sourceContents, desc, file} of sourceMessages) {
+      const body = this.getOrCreateFileBody(
+        doc,
+        targetLocale,
+        this.config.sourceLocale,
+        pathLib.join(
+          pathLib.basename(pathLib.dirname(file.fileName)),
+          pathLib.basename(file.fileName)
+        )
+      );
       // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#trans-unit
       let transUnit = existingTranslationsByName.get(name);
       if (!transUnit) {
@@ -256,7 +264,10 @@ export class XliffFormatter implements Formatter {
     // clean up obsolete translations
     existingTranslationsByName.forEach((existingTransUnit, existingName) => {
       if (!names.has(existingName)) {
-        this.removeChildAndPrecedingText(body, existingTransUnit);
+        const matches = doc.getElementsByTagName('body');
+        for (let i = 0; i < matches.length; i++) {
+          this.removeChildAndPrecedingText(matches[i], existingTransUnit);
+        }
       }
     });
 
@@ -315,7 +326,7 @@ export class XliffFormatter implements Formatter {
     }
   }
 
-  private initNewTargetDocument(targetLocale: Locale): XMLDocument {
+  private initNewTargetDocument(): XMLDocument {
     const doc = new xmldom.DOMImplementation().createDocument('', '', null);
     const indent = this.createIndentFunction(doc);
     doc.appendChild(
@@ -329,26 +340,41 @@ export class XliffFormatter implements Formatter {
     xliff.setAttribute('xmlns', 'urn:oasis:names:tc:xliff:document:1.2');
     doc.appendChild(xliff);
     indent(xliff);
-
-    // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#file
-    const file = doc.createElement('file');
-    xliff.appendChild(file);
-    file.setAttribute('target-language', targetLocale);
-    file.setAttribute('source-language', this.config.sourceLocale);
-    // TODO The spec requires the source filename in the "original" attribute,
-    // but we don't currently track filenames.
-    file.setAttribute('original', 'lit-localize-inputs');
-    // Plaintext seems right, as opposed to HTML, since our translatable message
-    // text is just text, and all HTML markup is encoded into <x> or <ph>
-    // elements.
-    file.setAttribute('datatype', 'plaintext');
-    indent(file);
-
-    // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#body
-    const body = doc.createElement('body');
-    file.appendChild(body);
-
     return doc;
+  }
+
+  private getOrCreateFileBody(
+    doc: XMLDocument,
+    targetLocale: Locale,
+    sourceLocale: Locale,
+    filename: string
+  ): Element {
+    const xliff = getOneElementByTagNameOrThrow(doc, 'xliff');
+    const indent = this.createIndentFunction(doc);
+
+    let file: Element | undefined = Array.from(
+      xliff.getElementsByTagName('file')
+    ).find((elm) => elm.getAttribute('target-language') === targetLocale);
+    if (!file) {
+      // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#file
+      file = doc.createElement('file');
+      xliff.appendChild(file);
+      file.setAttribute('target-language', targetLocale);
+      file.setAttribute('source-language', sourceLocale);
+      file.setAttribute('original', filename);
+      // Plaintext seems right, as opposed to HTML, since our translatable message
+      // text is just text, and all HTML markup is encoded into <x> or <ph>
+      // elements.
+      file.setAttribute('datatype', 'plaintext');
+      indent(file);
+
+      // https://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#body
+      const body = doc.createElement('body');
+      file.appendChild(body);
+
+      return body;
+    }
+    return file.getElementsByTagName('body')[0];
   }
 
   private readTranslationFile(locale: Locale): string | undefined {
@@ -381,7 +407,7 @@ export class XliffFormatter implements Formatter {
   }
 
   private getElementByTagName(
-    element: Element,
+    element: Element | Document,
     tagName: string
   ): Element | undefined {
     const matches = element.getElementsByTagName(tagName);
