@@ -51,13 +51,13 @@ const patternCache = new WeakMap<PathRouteConfig, URLPattern>();
 const isPatternConfig = (route: RouteConfig): route is URLPatternRouteConfig =>
   (route as URLPatternRouteConfig).pattern !== undefined;
 
-const getPattern = (route: RouteConfig) => {
+const getPattern = (route: RouteConfig, origin: string) => {
   if (isPatternConfig(route)) {
     return route.pattern;
   }
   let pattern = patternCache.get(route);
   if (pattern === undefined) {
-    patternCache.set(route, (pattern = new URLPattern({pathname: route.path})));
+    patternCache.set(route, (pattern = new URLPattern(origin + route.path)));
   }
   return pattern;
 };
@@ -156,7 +156,7 @@ export class Routes implements ReactiveController {
    * navigation API. It does navigate child routes if pathname matches a
    * pattern with a tail wildcard pattern (`/*`).
    */
-  async goto(pathname: string) {
+  async goto(url: URL) {
     // TODO (justinfagnani): handle absolute vs relative paths separately.
     // TODO (justinfagnani): do we need to detect when goto() is called while
     // a previous goto() call is still pending?
@@ -171,18 +171,21 @@ export class Routes implements ReactiveController {
       // If a routes controller has none of its own routes it acts like it has
       // one route of `/*` so that it passes the whole pathname as a tail
       // match.
-      tailGroup = pathname;
+      tailGroup = url.pathname;
       this._currentPathname = '';
       // Simulate a tail group with the whole pathname
       this._currentParams = {0: tailGroup};
     } else {
-      const route = this._getRoute(pathname);
+      const route = this._getRoute(url);
       if (route === undefined) {
-        throw new Error(`No route found for ${pathname}`);
+        throw new Error(`No route found for ${url}`);
       }
-      const pattern = getPattern(route);
-      const result = pattern.exec({pathname});
-      const params = result?.pathname.groups ?? {};
+      const pattern = getPattern(route, url.origin);
+      const result = pattern.exec(url);
+      const pathnameParams = result?.pathname.groups ?? {};
+      const searchParams = result?.search.groups ?? {};
+      const hashParams = result?.hash.groups ?? {};
+      const params = {...pathnameParams, ...searchParams, ...hashParams};
       tailGroup = getTailGroup(params);
       if (typeof route.enter === 'function') {
         const success = await route.enter(params);
@@ -196,14 +199,14 @@ export class Routes implements ReactiveController {
       this._currentParams = params;
       this._currentPathname =
         tailGroup === undefined
-          ? pathname
-          : pathname.substring(0, pathname.length - tailGroup.length);
+          ? url.pathname
+          : url.pathname.substring(0, url.pathname.length - tailGroup.length);
     }
 
     // Propagate the tail match to children
     if (tailGroup !== undefined) {
       for (const childRoutes of this._childRoutes) {
-        childRoutes.goto(tailGroup);
+        //TODO MKI: childRoutes.goto(new URL(`${url.host}`tailGroup));
       }
     }
     this._host.requestUpdate();
@@ -226,9 +229,9 @@ export class Routes implements ReactiveController {
   /**
    * Matches `url` against the installed routes and returns the first match.
    */
-  private _getRoute(pathname: string): RouteConfig | undefined {
+  private _getRoute(url: URL): RouteConfig | undefined {
     const matchedRoute = this.routes.find((r) =>
-      getPattern(r).test({pathname: pathname})
+      getPattern(r, url.origin).test(url)
     );
     if (matchedRoute || this.fallback === undefined) {
       return matchedRoute;
@@ -282,7 +285,7 @@ export class Routes implements ReactiveController {
 
     const tailGroup = getTailGroup(this._currentParams);
     if (tailGroup !== undefined) {
-      childRoutes.goto(tailGroup);
+      //TODO MKI: childRoutes.goto(tailGroup);
     }
   };
 }
