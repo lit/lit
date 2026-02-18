@@ -4,6 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import type {
+  ComplexAttributeConverter,
+  PropertyDeclaration,
+  ReactiveElement,
+} from '@lit/reactive-element';
 import type React from 'react';
 
 const NODE_MODE = false;
@@ -106,6 +111,7 @@ export interface Options<I extends HTMLElement, E extends EventNames = {}> {
   elementClass: Constructor<I>;
   events?: E;
   displayName?: string;
+  renderAttributesOnCreate?: boolean;
 }
 
 type Constructor<T> = {new (): T};
@@ -213,6 +219,11 @@ const setProperty = <E extends Element>(
  * @param options.displayName A React component display name, used in debugging
  * messages. Default value is inferred from the name of custom element class
  * registered via `customElements.define`.
+ * @param options.renderAttributesOnCreate Whether values should be passed to the
+ * web component as attributes instead of properties.
+ * The attribute values are present during first rendering of the web component and
+ * this can therefore prevent potential FOUCs.
+ * Object values without converter available are excluded as they cannot be passed as attributes.
  */
 export const createComponent = <
   I extends HTMLElement,
@@ -223,6 +234,7 @@ export const createComponent = <
   elementClass,
   events,
   displayName,
+  renderAttributesOnCreate,
 }: Options<I, E>): ReactWebComponent<I, E> => {
   const eventProps = new Set(Object.keys(events ?? {}));
 
@@ -252,6 +264,9 @@ export const createComponent = <
     const reactProps: Record<string, unknown> = {};
     // Props to be set on element with setProperty
     const elementProps: Record<string, unknown> = {};
+    // A map of element properties with meta information.
+    const elementProperties: Map<PropertyKey, PropertyDeclaration> | undefined =
+      (elementClass as unknown as typeof ReactiveElement).elementProperties;
 
     for (const [k, v] of Object.entries(props)) {
       if (reservedReactProperties.has(k)) {
@@ -259,10 +274,46 @@ export const createComponent = <
         // coerce it to `class` so it's handled correctly.
         reactProps[k === 'className' ? 'class' : k] = v;
         continue;
-      }
+      } else if (eventProps.has(k) || k in elementClass.prototype) {
+        if (!renderAttributesOnCreate) {
+          elementProps[k] = v;
+          continue;
+        }
 
-      if (eventProps.has(k) || k in elementClass.prototype) {
-        elementProps[k] = v;
+        const elementProperty = elementProperties?.get(k);
+        const toAttribute = (
+          elementProperty?.converter as ComplexAttributeConverter
+        )?.toAttribute;
+
+        // If either attribute of element property is set to false
+        // or if value is an object without a specific converter, skip attribute serialization.
+        if (
+          !elementProperty ||
+          elementProperty.attribute === false ||
+          (typeof v === 'object' && !toAttribute)
+        ) {
+          elementProps[k] = v;
+          continue;
+        }
+
+        const attributeName =
+          elementProperty.attribute === true
+            ? k
+            : elementProperty.attribute || k;
+
+        if (elementProperty.type !== Boolean) {
+          // Use converter whenever available.
+          reactProps[attributeName] = toAttribute ? toAttribute(v) : v;
+        } else if (v) {
+          // Only render boolean properties/attributes if they evaluate to true.
+          reactProps[attributeName] = '';
+          // Some boolean props like `checked` don't react to mutations after user interaction.
+          // To ensure expectation from React/JSX, we set also the corresponding property in this case.
+          elementProps[k] = v;
+        } else {
+          // We set false for falsy values as we know it is a boolean
+          elementProps[k] = false;
+        }
         continue;
       }
 
