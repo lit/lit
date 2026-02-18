@@ -21,7 +21,7 @@ interface PatchableLitElement extends HTMLElement {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-misused-new
   new (...args: any[]): PatchableLitElement;
   enableUpdating(requestedUpdate?: boolean): void;
-  createRenderRoot(): Element | ShadowRoot;
+  createRenderRoot(): HTMLElement | DocumentFragment;
   renderRoot: HTMLElement | DocumentFragment;
   render(): unknown;
   renderOptions: RenderOptions;
