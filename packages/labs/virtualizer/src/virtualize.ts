@@ -19,13 +19,24 @@ export {virtualizerRef, VirtualizerHostElement} from './Virtualizer.js';
  */
 export interface VirtualizeDirectiveConfig<T> {
   /**
-   * A function that returns a lit-html TemplateResult. It will be used
-   * to generate the DOM for each item in the virtual list.
+   * A function used to render each individual child element
+   * in the `items` array.
    */
   renderItem?: RenderItemFunction<T>;
 
+  /**
+   * A function that is given the item being rendered and
+   * the index of the item in the `items` array. This must
+   * return a unique identifier for the item itself.
+   */
   keyFunction?: KeyFn<T>;
 
+  /**
+   * When `true` allows the virtualizer itself to be the
+   * scroll area. Otherwise, it will take up enough space to
+   * fit all of the items including those not present in
+   * the DOM.
+   */
   scroller?: boolean;
 
   // TODO (graynorton): Document...
