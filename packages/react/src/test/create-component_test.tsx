@@ -82,6 +82,16 @@ class BasicElement extends ReactiveElement {
   @property({type: Array, reflect: true})
   rarr: unknown[] | null | undefined = null;
 
+  @property({type: Boolean})
+  testPropertyAvailableBeforeConnected = false
+  public propertyAvailableBeforeConnected = false
+
+  override connectedCallback(){
+    super.connectedCallback();
+
+    this.propertyAvailableBeforeConnected = this.testPropertyAvailableBeforeConnected
+  }
+
   @property({type: Object})
   set customAccessors(customAccessors: Foo) {
     const oldValue = this._customAccessors;
@@ -558,5 +568,11 @@ suite('createComponent', () => {
     const el = document.querySelector(tagName)!;
     assert.equal(el.style.display, 'block');
     assert.equal(el.getAttribute('class'), 'foo bar');
+  });
+
+  test('Properties have their value set before connectedCallback runs', async () => {
+    render(<BasicElementComponent testPropertyAvailableBeforeConnected={true} />);
+    const el = document.querySelector(tagName)!;
+    assert.equal(el.propertyAvailableBeforeConnected, true);
   });
 });
