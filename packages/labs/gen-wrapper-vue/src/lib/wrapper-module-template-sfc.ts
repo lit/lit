@@ -13,6 +13,7 @@ import {
 import {
   ReactiveProperty as ModelProperty,
   Event as EventModel,
+  MixinDeclaration,
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
@@ -124,6 +125,39 @@ const renderPropsParam = (reactiveProperties: Map<string, ModelProperty>) => {
   return '';
 };
 
+const getHeritageReactiveProperties = (
+  declaration: LitElementDeclaration
+): Map<string, ModelProperty> => {
+  const {heritage} = declaration;
+  if (
+    heritage == null ||
+    (heritage.superClass?.name === 'LitElement' && heritage.mixins.length === 0)
+  ) {
+    return new Map();
+  }
+  const props = heritage.mixins
+    .flatMap(
+      (mixin) => (mixin.dereference() as MixinDeclaration).classDeclaration
+    )
+    .filter((mixin) => mixin.isLitElementDeclaration())
+    .flatMap((mixin) => {
+      const props = Array.from(mixin.reactiveProperties.entries());
+      props.push(...getHeritageReactiveProperties(mixin).entries());
+      return props;
+    });
+  if (heritage.superClass != null) {
+    const superClass =
+      heritage.superClass.dereference() as LitElementDeclaration;
+    if (superClass.isLitElementDeclaration()) {
+      props.push(...superClass.reactiveProperties.entries());
+    }
+    if (heritage.superClass.name !== 'LitElement') {
+      props.push(...getHeritageReactiveProperties(superClass).entries());
+    }
+  }
+  return new Map(props);
+};
+
 // TODO(sorvell): Add support for `v-bind`.
 // TODO(sorvell): Investigate if it's possible to save the ~15 lines related to
 // handling defaults by factoring the defaults directive and associated code
@@ -133,6 +167,8 @@ const wrapperTemplate = (
   wcPath: string
 ) => {
   const {tagname, events, reactiveProperties} = declaration;
+  const heritageProps = getHeritageReactiveProperties(declaration);
+  const allProps = new Map([...reactiveProperties, ...heritageProps]);
   const typeImports = getElementTypeImports(declaration);
   const typeExports = getElementTypeExportsFromImports(typeImports);
   const hasProps = reactiveProperties.size > 0;
@@ -150,9 +186,9 @@ const wrapperTemplate = (
       import '${wcPath}';
       ${typeImports}
 
-      ${renderPropsInterface(reactiveProperties)}
+      ${renderPropsInterface(allProps)}
 
-      ${renderVueProps(reactiveProperties)}
+      ${renderVueProps(allProps)}
 
       ${
         events.size
