@@ -93,6 +93,10 @@
       "types": "./development/directives/class-map.d.ts",
       "default": "./directives/class-map.js"
     },
+    "./directives/direct-html.js": {
+      "types": "./development/directives/direct-html.d.ts",
+      "default": "./directives/direct-html.js"
+    },
     "./directives/guard.js": {
       "types": "./development/directives/guard.d.ts",
       "default": "./directives/guard.js"

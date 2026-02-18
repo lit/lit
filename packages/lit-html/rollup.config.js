@@ -16,6 +16,7 @@ export const defaultConfig = (options = {}) =>
       'directives/cache',
       'directives/choose',
       'directives/class-map',
+      'directives/direct-html',
       'directives/guard',
       'directives/if-defined',
       'directives/join',
