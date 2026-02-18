@@ -41,7 +41,7 @@ jobs:
     steps:
       # Download the artifact from the triggering workflow that contains the
       # Tachometer results to report
-      - uses: dawidd6/action-download-artifact@v2
+      - uses: dawidd6/action-download-artifact@v6
         with:
           workflow: ${{ github.event.workflow.id }}
           run_id: ${{ github.event.workflow_run.id }}
