@@ -95,8 +95,8 @@ class RefDirective extends AsyncDirective {
       if (element !== undefined) {
         this._ref.call(this._context, element);
       }
-    } else {
-      (this._ref as RefInternal)!.value = element;
+    } else if (this._ref !== undefined) {
+      (this._ref as RefInternal).value = element;
     }
   }
 
