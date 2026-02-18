@@ -1,0 +1,26 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
+{
+  "name": "Lit Development Container",
+  "image": "mcr.microsoft.com/devcontainers/typescript-node:0-18",
+  // https://containers.dev/implementors/json_reference/#min-host-reqs
+  "hostRequirements": {
+    // Going under 4 cores makes running builds very tight
+    // on CPU capacity. 4 can still top out, but not generally
+    // long enough to trigger warnings.
+    "cpus": 4
+  },
+  // Features to add to the dev container. More info: https://containers.dev/features.
+  "features": {
+    // Github CLI for anyone accustomed to it in their workflow.
+    "ghcr.io/devcontainers/features/github-cli:1": {
+      "installDirectlyFromGitHubRelease": true,
+      "version": "latest"
+    },
+    // Install browser depenedencies for testing
+    "ghcr.io/devcontainers-contrib/features/bash-command:1": {
+      "command": "npx playwright install-deps"
+    }
+  },
+  "postCreateCommand": "npm ci"
+}
