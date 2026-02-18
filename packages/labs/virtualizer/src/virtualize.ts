@@ -74,7 +74,11 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     const itemsToRender: Array<T> = [];
 
     if (this._first >= 0 && this._last >= this._first) {
-      for (let i = this._first; i <= this._last; i++) {
+      for (
+        let i = this._first;
+        i <= this._last && i < this._items.length;
+        i++
+      ) {
         itemsToRender.push(this._items[i]);
       }
     }
