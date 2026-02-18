@@ -448,9 +448,9 @@ The types of values you use to represent your items are entirely up to you, as l
 
 ### `renderItem` property
 
-Type: `(item: T, index?: number) => TemplateResult`
+Type: `(item: T, index: number) => unknown`
 
-A function that returns a Lit `TemplateResult`. It will be used to generate a child element for each item in the `items` array.
+A function which the return value can be rendered by lit. It will be used to generate a child element for each item in the `items` array.
 
 ### `scroller` attribute / property
 
