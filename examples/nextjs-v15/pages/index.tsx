@@ -1,4 +1,5 @@
 import Head from 'next/head';
+import Link from 'next/link';
 import styles from '../styles/Home.module.css';
 import '../src/simple-greeter';
 import SimpleGreeter from '../src/simple-greeter-react';
@@ -10,6 +11,8 @@ export default function Home() {
         <title>Lit in Next.js</title>
         <link rel="icon" href="/flame-favicon.svg" />
       </Head>
+
+      <span>Node</span> | <Link href="/edge">Edge Runtime</Link>
 
       <main className={styles.main}>
         <h1 className={styles.title}>

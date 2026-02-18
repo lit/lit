@@ -1,12 +1,14 @@
 import Link from 'next/link';
-import styles from './Home.module.css';
-import SimpleGreeter from './simple-greeter';
-import SimpleGreeterReact from '../src/simple-greeter-react';
+import styles from '../Home.module.css';
+import SimpleGreeter from '../simple-greeter';
+import SimpleGreeterReact from '../../src/simple-greeter-react';
+
+export const runtime = 'edge';
 
 export default function Home() {
   return (
     <div className={styles.container}>
-      <span>Node</span> | <Link href="/edge">Edge Runtime</Link>
+      <Link href="/">Node</Link> | <span>Edge Runtime</span>
       <main className={styles.main}>
         <h1 className={styles.title}>
           Welcome to <a href="https://lit.dev">Lit</a> and{' '}
