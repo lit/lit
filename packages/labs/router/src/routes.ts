@@ -126,7 +126,7 @@ export class Routes implements ReactiveController {
 
   constructor(
     host: ReactiveControllerHost & HTMLElement,
-    routes: Array<RouteConfig>,
+    routes: Array<RouteConfig> = [],
     options?: {fallback?: BaseRouteConfig}
   ) {
     (this._host = host).addController(this);
