@@ -6,7 +6,7 @@
 
 import {LitElement, html} from 'lit';
 import {customElement} from 'lit/decorators.js';
-import {Router} from '@lit-labs/router/router.js';
+import {Router, onLinkClick} from '@lit-labs/router/router.js';
 import {Routes} from '@lit-labs/router/routes.js';
 
 @customElement('router-test-1')
@@ -60,9 +60,9 @@ export class Test1 extends LitElement {
   override render() {
     return html`
       <h1>Test</h1>
-      <a id="test1" href="/test1/abc">Test 1</a>
-      <a id="child1" href="/child1/abc">Child 1</a>
-      <a id="child2" href="/child2/xyz">Child 2</a>
+      <a id="test1" href="/test1/abc" @click=${onLinkClick}>Test 1</a>
+      <a id="child1" href="/child1/abc" @click=${onLinkClick}>Child 1</a>
+      <a id="child2" href="/child2/xyz" @click=${onLinkClick}>Child 2</a>
       ${this._router.outlet()}
     `;
   }
@@ -76,7 +76,9 @@ export class Child1 extends LitElement {
 
   override render() {
     return html`
-      <a id="abc" href="${this._routes.link('abc')}">ABC</a>
+      <a id="abc" href="${this._routes.link('abc')}" @click=${onLinkClick}
+        >ABC</a
+      >
       ${this._routes.outlet()}
     `;
   }
