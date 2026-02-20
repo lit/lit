@@ -4,8 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-const NODE_MODE = false;
-
 // Allows minifiers to rename references to globalThis
 const global = globalThis;
 
@@ -197,9 +195,8 @@ const cssResultFromStyleSheet = (sheet: CSSStyleSheet) => {
   return unsafeCSS(cssText);
 };
 
-export const getCompatibleStyle =
-  supportsAdoptingStyleSheets ||
-  (NODE_MODE && global.CSSStyleSheet === undefined)
-    ? (s: CSSResultOrNative) => s
-    : (s: CSSResultOrNative) =>
-        s instanceof CSSStyleSheet ? cssResultFromStyleSheet(s) : s;
+export const getCompatibleStyle = (s: CSSResultOrNative) =>
+  // With the Node.js CSS hook implementation, it is possible to have a CSSStyleSheet
+  // instance without it being registered globally. Due to this, we should just uniformly
+  // check for the presence of cssRules to determine if the value is a CSSResult or a CSSStyleSheet.
+  'cssRules' in s ? cssResultFromStyleSheet(s) : s;
