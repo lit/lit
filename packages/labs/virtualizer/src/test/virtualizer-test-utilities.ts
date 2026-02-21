@@ -8,7 +8,11 @@ import {expect, html, fixture} from '@open-wc/testing';
 import {isInViewport, until, last, first} from './helpers.js';
 import {Virtualizer} from '../Virtualizer.js';
 import {ScrollerShim} from '../ScrollerController.js';
-import {LayoutSpecifier, BaseLayoutConfig} from '../layouts/shared/Layout.js';
+import {
+  LayoutSpecifier,
+  BaseLayoutConfig,
+  virtualizerAxis,
+} from '../layouts/shared/Layout.js';
 import {LitVirtualizer} from '../LitVirtualizer.js';
 import '../lit-virtualizer.js';
 import {
@@ -115,13 +119,22 @@ class VirtualizerInspector {
 type emptyString = '';
 type ItemGenFn<T = unknown> = (item: emptyString, idx: number) => T;
 type RenderItem<T = unknown> = (item: T, idx: number) => TemplateResult;
-type VirtualizerFixtureLayoutOptions = LayoutSpecifier | BaseLayoutConfig;
+/**
+ * @deprecated The `direction` property is deprecated. Use CSS `writing-mode`
+ * instead. This type extension can be removed when the deprecated `direction`
+ * config option is removed.
+ */
+type LegacyDirectionConfig = {direction?: 'vertical' | 'horizontal'};
+type VirtualizerFixtureLayoutOptions =
+  | LayoutSpecifier
+  | (BaseLayoutConfig & LegacyDirectionConfig);
 interface RenderVirtualizerOptions<T = unknown> {
   items: T[];
   renderItem: RenderItem<T>;
   scroller?: boolean;
   keyFunction?: KeyFn<T>;
   layout?: VirtualizerFixtureLayoutOptions;
+  axis?: virtualizerAxis;
 }
 type RenderVirtualizer<T = unknown> = (
   options: RenderVirtualizerOptions<T>
@@ -175,6 +188,7 @@ const defaultRenderVirtualizeDirective: RenderVirtualizer<DefaultItem> = ({
   scroller,
   keyFunction,
   layout,
+  axis,
 }) => html`
   <div class="virtualizerHost" ?scroller=${scroller}>
     ${virtualize({
@@ -183,6 +197,7 @@ const defaultRenderVirtualizeDirective: RenderVirtualizer<DefaultItem> = ({
       renderItem,
       keyFunction,
       layout,
+      axis,
     })}
   </div>
 `;
@@ -193,6 +208,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
   scroller,
   keyFunction,
   layout,
+  axis,
 }) => {
   return keyFunction
     ? layout
@@ -203,6 +219,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             .renderItem=${renderItem as RenderItem<unknown>}
             .keyFunction=${keyFunction as KeyFn<unknown>}
             .layout=${layout}
+            .axis=${axis ?? 'block'}
           ></lit-virtualizer>
         `
       : html`
@@ -211,6 +228,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             .items=${items}
             .renderItem=${renderItem as RenderItem<unknown>}
             .keyFunction=${keyFunction as KeyFn<unknown>}
+            .axis=${axis ?? 'block'}
           ></lit-virtualizer>
         `
     : layout
@@ -220,6 +238,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             .items=${items}
             .renderItem=${renderItem}
             .layout=${layout}
+            .axis=${axis ?? 'block'}
           ></lit-virtualizer>
         `
       : html`
@@ -227,6 +246,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             ?scroller=${scroller}
             .items=${items}
             .renderItem=${renderItem}
+            .axis=${axis ?? 'block'}
           ></lit-virtualizer>
         `;
 };
@@ -245,6 +265,7 @@ export interface VirtualizerFixtureOptions<T = unknown> {
   scroller?: boolean;
   scrollerSelector?: string;
   layout?: VirtualizerFixtureLayoutOptions;
+  axis?: virtualizerAxis;
 }
 
 export async function virtualizerFixture<T = unknown>(
@@ -269,12 +290,14 @@ export async function virtualizerFixture<T = unknown>(
       : (defaultRenderLitVirtualizer as RenderVirtualizer<unknown> as RenderVirtualizer<T>);
   const keyFunction = options.keyFunction;
   const layout = options.layout;
+  const axis = options.axis;
   const virtualizerMarkup = renderVirtualizer({
     items,
     renderItem,
     scroller,
     keyFunction,
     layout,
+    axis,
   });
   const container = await fixture(html`
     <section>${fixtureStyles} ${itemStyles} ${virtualizerMarkup}</section>
