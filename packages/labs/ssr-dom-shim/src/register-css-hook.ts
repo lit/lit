@@ -6,9 +6,8 @@
 
 try {
   // Detect whether the environment supports importing CSS files.
-  const cssImportsSupported = await import('./detection.css', {
-    with: {type: 'css'},
-  })
+  const inlineCSS = 'data:text/css;base64,cHt0b3A6MDt9';
+  const cssImportsSupported = await import(inlineCSS, {with: {type: 'css'}})
     .then(() => true)
     .catch(() => false);
 
