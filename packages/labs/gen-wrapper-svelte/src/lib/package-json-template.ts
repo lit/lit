@@ -25,6 +25,9 @@ export const packageJsonTemplate = (pkgJson: PackageJson) => {
         check: 'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json',
         'check:watch':
           'svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch',
+        format: 'prettier "**/*.{cjs,html,js,json,md,ts,css,svelte}" --write',
+        'format:check':
+          'prettier "**/*.{cjs,html,js,json,md,ts,css,svelte}" --check',
       },
       files: ['dist', '!dist/**/*.test.*', '!dist/**/*.spec.*'],
       sideEffects: ['**/*.css'],
@@ -48,11 +51,16 @@ export const packageJsonTemplate = (pkgJson: PackageJson) => {
         '@sveltejs/kit': '^2.48.5',
         '@sveltejs/package': '^2.5.6',
         '@sveltejs/vite-plugin-svelte': '^6.2.1',
+        prettier: '^3.8.1',
+        'prettier-plugin-svelte': '^3.5.0',
         publint: '^0.3.15',
         svelte: '^5.43.8',
         'svelte-check': '^4.3.4',
         typescript: '^5.9.3',
         vite: '^7.2.2',
+      },
+      prettier: {
+        plugins: ['prettier-plugin-svelte'],
       },
       keywords: ['svelte'],
     },
