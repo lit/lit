@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/gen-wrapper-svelte",
   "description": "Code generator for Svelte wrapper for Lit components",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "publishConfig": {
     "access": "public"
   },
@@ -67,7 +67,8 @@
     "@lit-labs/gen-utils": "^0.3.0"
   },
   "devDependencies": {
-    "@lit-internal/tests": "^0.0.1"
+    "@lit-internal/tests": "^0.0.1",
+    "prettier-plugin-svelte": "^3.2.6"
   },
   "engines": {
     "node": ">=14.8.0"

@@ -132,15 +132,54 @@ const getElementTypeImports = (declaration: LitElementDeclaration) => {
 const getElementTypeExportsFromImports = (imports: string) =>
   imports.replace(/(?:^import)/gm, 'export');
 
-const renderSlots = (slots: Map<string, NamedDescribed>) => {
-  return Array.from(slots.values())
-    .map((slot) => {
-      if (slot.name === 'default' || slot.name === '' || slot.name === '-') {
-        return javascript`<slot />`;
-      }
-      return javascript`<slot name="${slot.name}" />`;
-    })
-    .join('\n');
+const slotNameToPropName = (name: string) =>
+  name
+    .trim()
+    .replace(/^-+$/, 'default')
+    .replace(/^(default|children)$/i, 'children')
+    .replace(/-([a-zA-Z])/g, (_m, c) => c.toUpperCase());
+
+const renderSlotsInterface = (slots: Map<string, NamedDescribed>) => {
+  const items = Array.from(slots.values()).map((slot) => {
+    const isDefault =
+      slot.name === 'default' || slot.name === '' || slot.name === '-';
+    const propName = isDefault ? 'children' : slotNameToPropName(slot.name);
+    return `${propName}?: Snippet`;
+  });
+  // Always support a default snippet even if analyzer didn't declare slots
+  if (items.length === 0) {
+    items.push('children?: Snippet');
+  }
+  return `export interface Slots {\n  ${items.join(';\n  ')}\n}`;
+};
+
+const renderSlotsDestructureList = (slots: Map<string, NamedDescribed>) => {
+  const names = Array.from(slots.values()).map((slot) => {
+    const isDefault =
+      slot.name === 'default' || slot.name === '' || slot.name === '-';
+    return isDefault ? 'children' : slotNameToPropName(slot.name);
+  });
+  if (names.length === 0) {
+    names.push('children');
+  }
+  return names.join(', ');
+};
+
+const renderSnippets = (slots: Map<string, NamedDescribed>) => {
+  const parts = Array.from(slots.values()).map((slot) => {
+    const isDefault =
+      slot.name === 'default' || slot.name === '' || slot.name === '-';
+    if (isDefault) {
+      return javascript`{@render children?.()}`;
+    }
+    const propName = slotNameToPropName(slot.name);
+    // Use fragment with slot attribute so content projects into named slot of the web component
+    return javascript`<svelte:fragment slot="${slot.name}">{@render ${propName}?.()}</svelte:fragment>`;
+  });
+  if (parts.length === 0) {
+    parts.push(javascript`{@render children?.()}`);
+  }
+  return parts.join('\n');
 };
 
 const renderEventsProps = (events: Map<string, EventModel>) => {
@@ -163,17 +202,19 @@ const wrapperTemplate = (
       import '${wcPath}';
       import { setProperties } from "$lib/util.js";
       ${typeImports}
-      
+      import type { Snippet } from 'svelte';
+
       ${renderPropsInterface(reactiveProperties)}
       ${renderEventsInterface(events)}
-      const {${renderEventsProps(events)} class: className, style, ...props} = $props<Props & Events>();
+      ${renderSlotsInterface(slots)}
+      const {${renderEventsProps(events)} class: className, style, ${renderSlotsDestructureList(slots)}, ...props} = $props<Props & Events & Slots>();
 
     </script>
-    <${tagname} 
+    <${tagname}
     use:setProperties={props}
     class={className}
     style={style}
     ${renderEventsMapper(events)} >
-      ${renderSlots(slots)}
+      ${renderSnippets(slots)}
     </${tagname}>`;
 };

@@ -4,7 +4,8 @@
       import '@lit-internal/test-element-a/sub/element-sub.js';
       import { setProperties } from "$lib/util.js";
       
-      
+      import type { Snippet } from 'svelte';
+
       export interface Props {
      class?: string;
      style?: string;
@@ -13,14 +14,18 @@
       export interface Events {
     onSubChanged?: (event: CustomEvent<unknown>) => void
   }
-      const {onSubChanged, class: className, style, ...props} = $props<Props & Events>();
+      export interface Slots {
+  children?: Snippet;
+  stuff?: Snippet
+}
+      const {onSubChanged, class: className, style, children, stuff, ...props} = $props<Props & Events & Slots>();
 
     </script>
-    <element-sub 
+    <element-sub
     use:setProperties={props}
     class={className}
     style={style}
     onsub-changed={onSubChanged} >
-      <slot />
-<slot name="stuff" />
+      {@render children?.()}
+<svelte:fragment slot="stuff">{@render stuff?.()}</svelte:fragment>
     </element-sub>

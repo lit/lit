@@ -1,4 +1,4 @@
-const ignoreProps = ['class', 'style', '$$slots', 'children'];
+const ignoreProps = ["class", "style", "$$slots", "children"];
 
 function updateProperty(node: HTMLElement, props: Record<string, unknown>) {
   Object.entries(props)
@@ -15,7 +15,7 @@ function updateProperty(node: HTMLElement, props: Record<string, unknown>) {
 
 export function setProperties(
   node: HTMLElement,
-  props: Record<string, unknown>
+  props: Record<string, unknown>,
 ) {
   updateProperty(node, props);
   return {

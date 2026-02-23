@@ -268,6 +268,7 @@ packages/labs/gen-wrapper-react/index.d.ts.map
 packages/labs/gen-wrapper-react/gen-output/
 
 packages/labs/gen-wrapper-svelte/goldens/test-element-a/vite.config.ts
+packages/labs/gen-wrapper-svelte/goldens/**/*.svelte
 packages/labs/gen-wrapper-svelte/test-gen/
 # We're always going to test fresh installation (which includes the generated
 # package tarballs, so don't ever check in the package-lock

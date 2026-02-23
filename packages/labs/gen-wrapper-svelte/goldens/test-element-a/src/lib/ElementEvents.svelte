@@ -10,7 +10,8 @@ export type {TemplateResult} from 'lit';
 import type {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
 import type {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
 import type {TemplateResult} from 'lit';
-      
+      import type { Snippet } from 'svelte';
+
       export interface Props {
      class?: string;
      style?: string;
@@ -24,10 +25,13 @@ import type {TemplateResult} from 'lit';
     onSpecialEvent?: (event: SpecialEvent) => void;
     onTemplateResultCustomEvent?: (event: CustomEvent<TemplateResult>) => void
   }
-      const {onStringCustomEvent, onNumberCustomEvent, onMyDetailCustomEvent, onEventSubclass, onSpecialEvent, onTemplateResultCustomEvent, class: className, style, ...props} = $props<Props & Events>();
+      export interface Slots {
+  children?: Snippet
+}
+      const {onStringCustomEvent, onNumberCustomEvent, onMyDetailCustomEvent, onEventSubclass, onSpecialEvent, onTemplateResultCustomEvent, class: className, style, children, ...props} = $props<Props & Events & Slots>();
 
     </script>
-    <element-events 
+    <element-events
     use:setProperties={props}
     class={className}
     style={style}
@@ -37,5 +41,5 @@ import type {TemplateResult} from 'lit';
    onevent-subclass={onEventSubclass}
    onspecial-event={onSpecialEvent}
    ontemplate-result-custom-event={onTemplateResultCustomEvent} >
-      
+      {@render children?.()}
     </element-events>

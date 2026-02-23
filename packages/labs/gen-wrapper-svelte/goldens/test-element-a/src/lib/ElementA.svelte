@@ -4,7 +4,8 @@
       import '@lit-internal/test-element-a/element-a.js';
       import { setProperties } from "$lib/util.js";
       
-      
+      import type { Snippet } from 'svelte';
+
       export interface Props {
      class?: string;
      style?: string;
@@ -13,14 +14,18 @@
       export interface Events {
     onAChanged?: (event: CustomEvent<unknown>) => void
   }
-      const {onAChanged, class: className, style, ...props} = $props<Props & Events>();
+      export interface Slots {
+  children?: Snippet;
+  stuff?: Snippet
+}
+      const {onAChanged, class: className, style, children, stuff, ...props} = $props<Props & Events & Slots>();
 
     </script>
-    <element-a 
+    <element-a
     use:setProperties={props}
     class={className}
     style={style}
     ona-changed={onAChanged} >
-      <slot />
-<slot name="stuff" />
+      {@render children?.()}
+<svelte:fragment slot="stuff">{@render stuff?.()}</svelte:fragment>
     </element-a>
