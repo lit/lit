@@ -33,13 +33,13 @@
       {/if}
 
       {#if stuff}
-        <div slot="stuff" style="display: contents;">
+        <div slot="stuff">
           {@render stuff()}
         </div>
       {/if}
 
       {#if tabTitle0}
-        <div slot="tab-title-0" style="display: contents;">
+        <div slot="tab-title-0">
           {@render tabTitle0()}
         </div>
       {/if}

@@ -32,7 +32,7 @@
       {/if}
 
       {#if stuff}
-        <div slot="stuff" style="display: contents;">
+        <div slot="stuff">
           {@render stuff()}
         </div>
       {/if}

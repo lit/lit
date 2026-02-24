@@ -189,7 +189,7 @@ const renderSnippets = (slots: Map<string, NamedDescribed>) => {
     // Use div with slot attribute and display: contents so content projects into named slot of the web component
     return javascript`
       {#if ${propName}}
-        <div slot="${slot.name}" style="display: contents;">
+        <div slot="${slot.name}">
           {@render ${propName}()}
         </div>
       {/if}`;
