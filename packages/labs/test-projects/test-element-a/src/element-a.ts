@@ -16,6 +16,7 @@ import {Foo, Bar as Baz} from './package-stuff.js';
  * @fires a-changed - An awesome event to fire
  * @slot default - The default slot
  * @slot stuff - A slot for stuff
+ * @slot tab-title-0 - A slot with a hyphenated name
  * @cssProperty --foreground-color - The foreground color
  * @cssProp --background-color The background color
  * @cssPart header The header

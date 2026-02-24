@@ -29,5 +29,8 @@
     class={className}
     style={style}
     ona-changed={onAChanged} >
-      {@render children?.()}
+      
+    {#if children}
+      {@render children()}
+    {/if}
     </element-props>

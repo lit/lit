@@ -41,5 +41,8 @@ import type {TemplateResult} from 'lit';
    onevent-subclass={onEventSubclass}
    onspecial-event={onSpecialEvent}
    ontemplate-result-custom-event={onTemplateResultCustomEvent} >
-      {@render children?.()}
+      
+    {#if children}
+      {@render children()}
+    {/if}
     </element-events>

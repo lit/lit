@@ -16,9 +16,10 @@
   }
       export interface Slots {
   children?: Snippet;
-  stuff?: Snippet
+  stuff?: Snippet;
+  tabTitle0?: Snippet
 }
-      const {onAChanged, class: className, style, children, stuff, ...props} = $props<Props & Events & Slots>();
+      const {onAChanged, class: className, style, children, stuff, tabTitle0, ...props} = $props<Props & Events & Slots>();
 
     </script>
     <element-a
@@ -26,6 +27,20 @@
     class={className}
     style={style}
     ona-changed={onAChanged} >
-      {@render children?.()}
-<svelte:fragment slot="stuff">{@render stuff?.()}</svelte:fragment>
+      
+      {#if children}
+        {@render children()}
+      {/if}
+
+      {#if stuff}
+        <div slot="stuff" style="display: contents;">
+          {@render stuff()}
+        </div>
+      {/if}
+
+      {#if tabTitle0}
+        <div slot="tab-title-0" style="display: contents;">
+          {@render tabTitle0()}
+        </div>
+      {/if}
     </element-a>

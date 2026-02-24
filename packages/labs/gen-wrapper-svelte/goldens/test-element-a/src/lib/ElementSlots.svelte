@@ -25,5 +25,8 @@
     class={className}
     style={style}
      >
-      {@render children?.()}
+      
+    {#if children}
+      {@render children()}
+    {/if}
     </element-slots>

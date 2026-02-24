@@ -26,6 +26,14 @@
     class={className}
     style={style}
     onsub-changed={onSubChanged} >
-      {@render children?.()}
-<svelte:fragment slot="stuff">{@render stuff?.()}</svelte:fragment>
+      
+      {#if children}
+        {@render children()}
+      {/if}
+
+      {#if stuff}
+        <div slot="stuff" style="display: contents;">
+          {@render stuff()}
+        </div>
+      {/if}
     </element-sub>

@@ -5,15 +5,15 @@
  */
 
 import {
+  getImportsStringForReferences,
   LitElementDeclaration,
   PackageJson,
-  getImportsStringForReferences,
 } from '@lit-labs/analyzer';
 
 import {
-  ReactiveProperty as ModelProperty,
   Event as EventModel,
   NamedDescribed,
+  ReactiveProperty as ModelProperty,
 } from '@lit-labs/analyzer/lib/model.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
@@ -132,12 +132,22 @@ const getElementTypeImports = (declaration: LitElementDeclaration) => {
 const getElementTypeExportsFromImports = (imports: string) =>
   imports.replace(/(?:^import)/gm, 'export');
 
-const slotNameToPropName = (name: string) =>
-  name
-    .trim()
-    .replace(/^-+$/, 'default')
-    .replace(/^(default|children)$/i, 'children')
-    .replace(/-([a-zA-Z])/g, (_m, c) => c.toUpperCase());
+const slotNameToPropName = (name: string) => {
+  // Normalize and map slot names to safe Svelte identifiers
+  // Rules:
+  // - default/children/"-" map to `children`
+  // - Convert sequences of non-alphanumeric chars into camelCase
+  // - Remove remaining non-alphanumerics
+  const trimmed = name.trim();
+  if (/^-+$/.test(trimmed)) return 'children';
+  if (/^(default|children)$/i.test(trimmed)) return 'children';
+  // Build camelCase tokenizing on any non-alphanumeric sequence
+  return trimmed
+    .split(/[^a-zA-Z0-9]+/)
+    .filter((t) => t.length > 0)
+    .map((t, i) => (i === 0 ? t : t[0].toUpperCase() + t.slice(1)))
+    .join('');
+};
 
 const renderSlotsInterface = (slots: Map<string, NamedDescribed>) => {
   const items = Array.from(slots.values()).map((slot) => {
@@ -170,14 +180,25 @@ const renderSnippets = (slots: Map<string, NamedDescribed>) => {
     const isDefault =
       slot.name === 'default' || slot.name === '' || slot.name === '-';
     if (isDefault) {
-      return javascript`{@render children?.()}`;
+      return javascript`
+      {#if children}
+        {@render children()}
+      {/if}`;
     }
     const propName = slotNameToPropName(slot.name);
-    // Use fragment with slot attribute so content projects into named slot of the web component
-    return javascript`<svelte:fragment slot="${slot.name}">{@render ${propName}?.()}</svelte:fragment>`;
+    // Use div with slot attribute and display: contents so content projects into named slot of the web component
+    return javascript`
+      {#if ${propName}}
+        <div slot="${slot.name}" style="display: contents;">
+          {@render ${propName}()}
+        </div>
+      {/if}`;
   });
   if (parts.length === 0) {
-    parts.push(javascript`{@render children?.()}`);
+    parts.push(javascript`
+    {#if children}
+      {@render children()}
+    {/if}`);
   }
   return parts.join('\n');
 };

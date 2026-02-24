@@ -20,6 +20,7 @@ export class ElementSlots extends LitElement {
       <slot name="header"></slot>
       <slot name="main">${this.mainDefault}</slot>
       <slot name="footer"></slot>
+      <slot name="tab-title-0"></slot>
       <slot></slot>`;
   }
 }
