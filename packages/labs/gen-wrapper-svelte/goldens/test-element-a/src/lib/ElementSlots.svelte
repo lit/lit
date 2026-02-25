@@ -9,15 +9,16 @@
       export interface Props {
      class?: string;
      style?: string;
-     mainDefault?: string
+     mainDefault?: string;
+     tabs?: { id: string; title: string; }[]
    }
       export interface Events {
     
   }
       export interface Slots {
-  children?: Snippet
+  tabIcon?: Snippet<[any]>
 }
-      const { class: className, style, children, ...props} = $props<Props & Events & Slots>();
+      const { class: className, style, tabIcon, ...props} = $props<Props & Events & Slots>();
 
     </script>
     <element-slots
@@ -26,7 +27,11 @@
     style={style}
      >
       
-    {#if children}
-      {@render children()}
-    {/if}
+      {#if tabs && tabIcon}
+        {#each tabs as item}
+          <div slot="tab-{item.id}-icon">
+            {@render tabIcon(item)}
+          </div>
+        {/each}
+      {/if}
     </element-slots>

@@ -141,8 +141,12 @@ const slotNameToPropName = (name: string) => {
   const trimmed = name.trim();
   if (/^-+$/.test(trimmed)) return 'children';
   if (/^(default|children)$/i.test(trimmed)) return 'children';
+  // If the name contains a placeholder like <id>, we clean it up but keep the rest
+  // to form a property name for the parameterized snippet.
+  // e.g. tab-<id>-icon -> tabIcon
+  const cleanName = trimmed.replace(/<[^>]+>/g, '');
   // Build camelCase tokenizing on any non-alphanumeric sequence
-  return trimmed
+  return cleanName
     .split(/[^a-zA-Z0-9]+/)
     .filter((t) => t.length > 0)
     .map((t, i) => (i === 0 ? t : t[0].toUpperCase() + t.slice(1)))
@@ -154,7 +158,8 @@ const renderSlotsInterface = (slots: Map<string, NamedDescribed>) => {
     const isDefault =
       slot.name === 'default' || slot.name === '' || slot.name === '-';
     const propName = isDefault ? 'children' : slotNameToPropName(slot.name);
-    return `${propName}?: Snippet`;
+    const isDynamic = slot.name.includes('<');
+    return `${propName}?: Snippet${isDynamic ? '<[any]>' : ''}`;
   });
   // Always support a default snippet even if analyzer didn't declare slots
   if (items.length === 0) {
@@ -175,7 +180,10 @@ const renderSlotsDestructureList = (slots: Map<string, NamedDescribed>) => {
   return names.join(', ');
 };
 
-const renderSnippets = (slots: Map<string, NamedDescribed>) => {
+const renderSnippets = (
+  slots: Map<string, NamedDescribed>,
+  props: Map<string, ModelProperty>
+) => {
   const parts = Array.from(slots.values()).map((slot) => {
     const isDefault =
       slot.name === 'default' || slot.name === '' || slot.name === '-';
@@ -186,6 +194,31 @@ const renderSnippets = (slots: Map<string, NamedDescribed>) => {
       {/if}`;
     }
     const propName = slotNameToPropName(slot.name);
+    const placeholderMatch = slot.name.match(/<([^>]+)>/);
+    if (placeholderMatch) {
+      const placeholder = placeholderMatch[1];
+      // Try to find a property that is likely the collection for this slot.
+      // Heuristic: property name starts with the prefix of the slot name.
+      const prefix = slot.name.split('<')[0].replace(/-$/, '');
+      const collectionProp = Array.from(props.values()).find(
+        (p) =>
+          p.name === prefix ||
+          p.name === prefix + 's' ||
+          p.name === prefix + 'es'
+      );
+      if (collectionProp) {
+        const collectionName = collectionProp.name;
+        return javascript`
+      {#if ${collectionName} && ${propName}}
+        {#each ${collectionName} as item}
+          <div slot="${slot.name.replace(`<${placeholder}>`, `{item.${placeholder}}`)}">
+            {@render ${propName}(item)}
+          </div>
+        {/each}
+      {/if}`;
+      }
+    }
+
     // Use div with slot attribute and display: contents so content projects into named slot of the web component
     return javascript`
       {#if ${propName}}
@@ -236,6 +269,6 @@ const wrapperTemplate = (
     class={className}
     style={style}
     ${renderEventsMapper(events)} >
-      ${renderSnippets(slots)}
+      ${renderSnippets(slots, reactiveProperties)}
     </${tagname}>`;
 };
