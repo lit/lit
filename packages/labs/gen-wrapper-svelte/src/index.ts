@@ -53,6 +53,7 @@ export const generateSvelteWrapper = async (
     return {
       [sveltePkgName]: {
         '.gitignore': gitIgnoreTemplate(moduleNames),
+        '.prettierignore': prettierIgnoreTemplate(),
         'package.json': packageJsonTemplate(pkg.packageJson),
         'tsconfig.json': tsconfigTemplate(),
         'vite.config.ts': viteConfigTemplate(pkg.packageJson),
@@ -72,6 +73,9 @@ const packageNameToSveltePackageName = (pkgName: string) => `${pkgName}-svelte`;
 
 const gitIgnoreTemplate = (moduleNames: string[]) =>
   moduleNames.map((f) => `/${f}.*`).join('\n');
+
+const prettierIgnoreTemplate = () =>
+  ['.svelte-kit/', 'dist/', 'node_modules/'].join('\n');
 
 const getSvelteFileName = (dir: string, name: string) => {
   const dirname = dir.replace(/^src/g, 'src/lib');
