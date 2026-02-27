@@ -706,9 +706,12 @@ export interface RenderOptions {
    */
   renderBefore?: ChildNode | null;
   /**
-   * Node used for cloning the template (`importNode` will be called on this
-   * node). This controls the `ownerDocument` of the rendered DOM, along with
-   * any inherited context. Defaults to the global `document`.
+   * Node used for context when cloning the template. This node's
+   * `customElementRegistry` is provided to `document.importNode`.
+   * When scoped custom elements is supported, rendered DOM has the provided
+   * node's `customElementRegistry`. Note, it's also possible to provide a
+   * custom `importNode` function, but this is deprecated and will be removed
+   * in the next major version.
    */
   creationScope?: {
     importNode?(node: Node, deep?: boolean): Node;
