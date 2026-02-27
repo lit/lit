@@ -710,7 +710,10 @@ export interface RenderOptions {
    * node). This controls the `ownerDocument` of the rendered DOM, along with
    * any inherited context. Defaults to the global `document`.
    */
-  creationScope?: {importNode(node: Node, deep?: boolean): Node};
+  creationScope?: {
+    importNode?(node: Node, deep?: boolean): Node;
+    customElementRegistry?: CustomElementRegistry;
+  };
   /**
    * The initial connected state for the top-level part being rendered. If no
    * `isConnected` option is set, `AsyncDirective`s will be connected by
@@ -1220,7 +1223,20 @@ class TemplateInstance implements Disconnectable {
       el: {content},
       parts: parts,
     } = this._$template;
-    const fragment = (options?.creationScope ?? d).importNode(content, true);
+    const {customElementRegistry = global.customElements} =
+      options?.creationScope ?? {};
+    const fragment =
+      options?.creationScope?.importNode?.(content, true) ??
+      d.importNode(content, {customElementRegistry});
+    if (DEV_MODE && options?.creationScope?.importNode !== undefined) {
+      issueWarning(
+        'import-node',
+        'RenderOptions `creationScope.importNode` used to create template. ' +
+          'The next major Lit version will remove this option and instead ' +
+          'use document.importNode with creationScope.customElementRegistry.'
+      );
+    }
+
     walker.currentNode = fragment;
 
     let node = walker.nextNode()!;
