@@ -71,10 +71,6 @@ export const getWindow = ({
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
-    // fetch must be bound to globalThis: when called inside a VM context the
-    // receiver would otherwise be the VM's global object (the window shim),
-    // which causes an "Illegal invocation" TypeError in most native fetch
-    // implementations.
     fetch: globalThis.fetch?.bind(globalThis),
 
     location: new URL('http://localhost'),
