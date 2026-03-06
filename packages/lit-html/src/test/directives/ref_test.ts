@@ -390,4 +390,84 @@ suite('ref', () => {
     go();
     assert.isUndefined(value);
   });
+
+  test('handles undefined ref during disconnect without throwing', () => {
+    const go = () => render(html`<div ${ref(undefined)}></div>`, container);
+    const part = go();
+    const div = container.firstElementChild;
+    assert.isOk(div);
+    // This should not throw a TypeError
+    part.setConnected(false);
+    assert.isOk(div);
+  });
+
+  test('handles undefined ref during reconnect without throwing', () => {
+    const go = () => render(html`<div ${ref(undefined)}></div>`, container);
+    const part = go();
+    const div = container.firstElementChild;
+    assert.isOk(div);
+    // Disconnect then reconnect should not throw
+    part.setConnected(false);
+    part.setConnected(true);
+    assert.isOk(div);
+  });
+
+  test('handles undefined ref during multiple disconnect/reconnect cycles', () => {
+    const go = () => render(html`<div ${ref(undefined)}></div>`, container);
+    const part = go();
+    const div = container.firstElementChild;
+    assert.isOk(div);
+    // Multiple cycles should not throw
+    for (let i = 0; i < 3; i++) {
+      part.setConnected(false);
+      part.setConnected(true);
+    }
+    assert.isOk(div);
+  });
+
+  test('handles switching from a valid ref to undefined and back during lifecycle', () => {
+    const elRef = createRef();
+    const go = (r: RefOrCallback | undefined) =>
+      render(html`<div ${ref(r)}></div>`, container);
+    const part = go(elRef);
+    assert.equal(elRef.value, container.firstElementChild);
+    // Switch to undefined ref
+    go(undefined);
+    assert.equal(elRef.value, undefined);
+    // Disconnect and reconnect with undefined ref should not throw
+    part.setConnected(false);
+    part.setConnected(true);
+    // Switch back to a valid ref
+    go(elRef);
+    assert.equal(elRef.value, container.firstElementChild);
+  });
+
+  test('handles undefined ref with re-render while disconnected', () => {
+    const go = () => render(html`<div ${ref(undefined)}></div>`, container);
+    const part = go();
+    part.setConnected(false);
+    // Re-render while disconnected should not throw
+    go();
+    part.setConnected(true);
+    assert.isOk(container.firstElementChild);
+  });
+
+  test('handles switching from callback ref to undefined during disconnect', () => {
+    let callCount = 0;
+    const callback = (_el: Element | undefined) => {
+      callCount++;
+    };
+    const go = (r: RefOrCallback | undefined) =>
+      render(html`<div ${ref(r)}></div>`, container);
+    const part = go(callback);
+    assert.equal(callCount, 1);
+    // Switch to undefined
+    go(undefined);
+    // The callback should have been called with undefined when cleared
+    assert.equal(callCount, 2);
+    // Disconnect with undefined ref should not throw
+    part.setConnected(false);
+    part.setConnected(true);
+    assert.isOk(container.firstElementChild);
+  });
 });

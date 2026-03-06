@@ -95,8 +95,8 @@ class RefDirective extends AsyncDirective {
       if (element !== undefined) {
         this._ref.call(this._context, element);
       }
-    } else {
-      (this._ref as RefInternal)!.value = element;
+    } else if (this._ref !== undefined) {
+      (this._ref as RefInternal).value = element;
     }
   }
 
@@ -109,6 +109,10 @@ class RefDirective extends AsyncDirective {
   }
 
   override disconnected() {
+    // Nothing to do if there is no ref
+    if (this._ref === undefined) {
+      return;
+    }
     // Only clear the box if our element is still the one in it (i.e. another
     // directive instance hasn't rendered its element to it before us); that
     // only happens in the event of the directive being cleared (not via manual
@@ -119,6 +123,10 @@ class RefDirective extends AsyncDirective {
   }
 
   override reconnected() {
+    // Nothing to do if there is no ref
+    if (this._ref === undefined) {
+      return;
+    }
     // If we were manually disconnected, we can safely put our element back in
     // the box, since no rendering could have occurred to change its state
     this._updateRefValue(this._element);
