@@ -48,6 +48,12 @@ export class LitElementRenderer extends ElementRenderer {
 
   constructor(tagName: string) {
     super(tagName);
+    // Always creates a real element instance. Having a non-undefined
+    // this.element is important for the SSR event target chain: render-value.ts
+    // pushes this.element onto eventTargetStack in custom-element-open and pops
+    // it in custom-element-close only when this.element is defined. ElementRenderers
+    // that don't create an element (see FallbackRenderer) are skipped in the
+    // event target chain, so their descendants' events bypass them in the path.
     this.element = new (customElements.get(this.tagName)!)() as LitElement;
 
     // Reflect internals AOM attributes back to the DOM prior to hydration to
