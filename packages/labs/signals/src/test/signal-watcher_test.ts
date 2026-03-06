@@ -229,8 +229,7 @@ suite('SignalWatcher', () => {
     assert.equal(readCount, 5);
   });
 
-  // TODO: no longer abstract, so this test is no longer relevant. Remove?
-  test.skip('type-only test where mixin on an abstract class preserves abstract type', () => {
+  test('type-only test: SignalWatcher accepts abstract classes and preserves abstract constraints', () => {
     if (true as boolean) {
       // This is a type-only test. Do not run it.
       return;
@@ -238,20 +237,28 @@ suite('SignalWatcher', () => {
     abstract class BaseEl extends LitElement {
       abstract foo(): void;
     }
-    // @ts-expect-error foo() needs to be implemented.
-    class TestEl extends SignalWatcher(BaseEl) {}
-    console.log(TestEl); // usage to satisfy eslint.
-    // @ts-expect-error foo() needs to be implemented.
-    const TestElFromAbstractSignalWatcher = SignalWatcher(BaseEl);
-    new TestElFromAbstractSignalWatcher();
 
-    // This is fine, passed in class is not abstract.
+    // SignalWatcher should accept abstract base classes without error
+    const Mixed = SignalWatcher(BaseEl);
+
+    // @ts-expect-error abstract foo() is not implemented
+    class _IncompleteEl extends Mixed {}
+
+    // This is fine: foo() is implemented
+    class _CompleteEl extends Mixed {
+      foo() {
+        /* implementation */
+      }
+    }
+
+    // Concrete class still works as before
     const TestElFromConcreteClass = SignalWatcher(LitElement);
     new TestElFromConcreteClass();
+
+    console.log(Mixed, _IncompleteEl, _CompleteEl); // usage to satisfy eslint
   });
 
-  // TODO: no longer abstract, so this test is no longer relevant. Remove?
-  test.skip('class returned from signal-watcher should be directly instantiatable if non-abstract', async () => {
+  test('class returned from SignalWatcher should be directly instantiatable if non-abstract', async () => {
     const count = new Signal.State(0);
     class TestEl extends LitElement {
       override render() {
@@ -268,6 +275,34 @@ suite('SignalWatcher', () => {
 
     count.set(count.get() + 1);
 
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 1');
+  });
+
+  test('SignalWatcher works with abstract base class at runtime', async () => {
+    const count = new Signal.State(0);
+
+    abstract class AbstractBase extends LitElement {
+      abstract getLabel(): string;
+    }
+
+    class ConcreteEl extends SignalWatcher(AbstractBase) {
+      getLabel() {
+        return 'count';
+      }
+
+      override render() {
+        return html`<p>${this.getLabel()}: ${count.get()}</p>`;
+      }
+    }
+    customElements.define(generateElementName(), ConcreteEl);
+    const el = new ConcreteEl();
+    container.append(el);
+
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 0');
+
+    count.set(1);
     await el.updateComplete;
     assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 1');
   });

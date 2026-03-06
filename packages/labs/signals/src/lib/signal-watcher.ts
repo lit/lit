@@ -6,6 +6,7 @@
 
 import type {ReactiveElement} from 'lit';
 import {Signal} from 'signal-polyfill';
+import type {Constructor, AbstractConstructor} from './mixin-types.js';
 
 export interface SignalWatcher extends ReactiveElement {
   _watcher?: Signal.subtle.Watcher;
@@ -45,9 +46,6 @@ interface SignalWatcherApi {
   updateEffect(fn: () => void, options?: EffectOptions): () => void;
 }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type Constructor<T = {}> = new (...args: any[]) => T;
-
 interface SignalWatcherInterface extends SignalWatcher {}
 interface SignalWatcherInternal extends SignalWatcher {
   __forcingUpdate: boolean;
@@ -77,8 +75,20 @@ const elementForWatcher = new WeakMap<
  * Adds the ability for a LitElement or other ReactiveElement class to
  * watch for access to signals during the update lifecycle and trigger a new
  * update when signals values change.
+ *
+ * Accepts both concrete and abstract base classes. When given an abstract
+ * base class, the returned class preserves the abstract constraint so that
+ * subclasses must still implement any abstract members.
  */
-export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
+export function SignalWatcher<T extends Constructor<ReactiveElement>>(
+  Base: T
+): T & Constructor<SignalWatcherApi>;
+export function SignalWatcher<T extends AbstractConstructor<ReactiveElement>>(
+  Base: T
+): T & AbstractConstructor<SignalWatcherApi>;
+export function SignalWatcher<T extends AbstractConstructor<ReactiveElement>>(
+  Base: T
+) {
   // Only apply the mixin once
   if ((Base as typeof SignalWatcher)[signalWatcherBrand] === true) {
     console.warn(
@@ -87,7 +97,7 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
     return Base as T & Constructor<SignalWatcherApi>;
   }
 
-  class SignalWatcher extends Base implements SignalWatcherInterface {
+  abstract class SignalWatcher extends Base implements SignalWatcherInterface {
     static [signalWatcherBrand]: true;
 
     // @internal used in watch directive
@@ -322,5 +332,5 @@ export function SignalWatcher<T extends Constructor<ReactiveElement>>(Base: T) {
     }
   }
 
-  return SignalWatcher as T & Constructor<SignalWatcherApi>;
+  return SignalWatcher as unknown as T & Constructor<SignalWatcherApi>;
 }
