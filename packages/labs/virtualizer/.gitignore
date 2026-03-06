@@ -33,3 +33,7 @@
 /events.d.ts*
 /events.js
 /events.js.map
+/warnings.js
+/warnings.d.ts
+/warnings.d.ts.map
+/warnings.js.map
