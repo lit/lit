@@ -159,7 +159,7 @@ export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
 
     if (
       adjustedMinifyCSSOptions &&
-      adjustedMinifyCSSOptions.level[OptimizationLevel.One].tidySelectors
+      adjustedMinifyCSSOptions.level[OptimizationLevel.One]?.tidySelectors
     ) {
       // Fix https://github.com/jakubpawlowicz/clean-css/issues/996
       result = fixCleanCssTidySelectors(html, result);
@@ -174,7 +174,7 @@ export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
       throw new Error(output.errors.join('\n\n'));
     }
 
-    if (adjustedOptions.level[OptimizationLevel.One].tidySelectors) {
+    if (adjustedOptions.level[OptimizationLevel.One]?.tidySelectors) {
       output.styles = fixCleanCssTidySelectors(css, output.styles);
     }
 
@@ -196,18 +196,13 @@ export const defaultStrategy: Strategy<HTMLOptions, CleanCSS.Options> = {
 
 export function adjustMinifyCSSOptions(options: CleanCSS.Options = {}) {
   const level = optimizationLevelFrom(options.level);
-  const originalTransform =
-    typeof options.level === 'object' &&
-    options.level[1] &&
-    options.level[1].transform;
-  level[OptimizationLevel.One].transform = (property, value) => {
-    if (value.startsWith('@TEMPLATE_EXPRESSION') && !value.endsWith(';')) {
-      // The CSS minifier has removed the semicolon from the placeholder
-      // and we need to add it back.
-      return (value = `${value};`);
-    }
-    return originalTransform ? originalTransform(property, value) : value;
-  };
+  // Note: CleanCSS v4 supported a `transform` callback on level[1] options that
+  // was used to restore stripped semicolons from @TEMPLATE_EXPRESSION
+  // placeholders. CleanCSS v5 removed this callback from its level-1 optimizer,
+  // so we no longer set it. @TEMPLATE_EXPRESSION placeholders are preserved
+  // correctly by CleanCSS v5 without any custom transform. Additionally,
+  // CleanCSS v5 natively recognises modern at-rules such as @container, @layer,
+  // and @scope, so their nested rule blocks are no longer silently dropped.
 
   return {
     ...options,
