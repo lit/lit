@@ -105,6 +105,7 @@
       ],
       "files": [
         "src/test/router_test.html",
+        "src/test/router_prefix_test.html",
         "rollup.config.js",
         "../../../rollup-common.js"
       ],
@@ -112,7 +113,8 @@
         "index.js{,.map}",
         "router.js{,.map}",
         "routes.js{,.map}",
-        "development/test/router_test.html"
+        "development/test/router_test.html",
+        "development/test/router_prefix_test.html"
       ]
     },
     "build:ts": {
@@ -125,6 +127,7 @@
       "output": [
         "development/**",
         "!development/test/router_test.html",
+        "!development/test/router_prefix_test.html",
         "tsconfig.tsbuildinfo"
       ],
       "dependencies": [
