@@ -8,9 +8,7 @@ import {
   SizeGapPaddingBaseLayout,
   SizeGapPaddingBaseLayoutConfig,
   AutoGapSpec,
-  gap2 as gap2Name,
 } from './SizeGapPaddingBaseLayout.js';
-import {dim1} from './BaseLayout.js';
 
 type FlexSpec =
   | boolean
@@ -31,7 +29,7 @@ export interface GridBaseLayoutConfig
 }
 
 interface GridLayoutMetrics {
-  rolumns: number;
+  columns: number;
   itemSize1: number;
   itemSize2: number;
   gap1: number;
@@ -56,11 +54,11 @@ export abstract class GridBaseLayout<
   flex: FlexSpec | null = null;
   justify: JustifySpec | null = null;
 
-  protected _getDefaultConfig(): C {
-    return Object.assign({}, super._getDefaultConfig(), {
+  protected get _defaultConfig(): C {
+    return Object.assign({}, super._defaultConfig, {
       flex: false,
       justify: 'start',
-    });
+    }) as C;
   }
 
   set gap(spec: AutoGapSpec) {
@@ -84,13 +82,7 @@ export abstract class GridBaseLayout<
         );
       }
       if (gapValue === Infinity && gap === '_gap2') {
-        throw new Error(
-          `grid layout: ${gap2Name(
-            this.direction
-          )}-gap cannot be set to 'auto' when direction is set to ${
-            this.direction
-          }`
-        );
+        throw new Error(`grid layout: inline-axis gap cannot be set to 'auto'`);
       }
     });
 
@@ -98,7 +90,7 @@ export abstract class GridBaseLayout<
       this.flex || ['start', 'center', 'end'].includes(justify);
 
     const metrics: GridLayoutMetrics = {
-      rolumns: -1,
+      columns: -1,
       itemSize1: -1,
       itemSize2: -1,
       // Infinity represents 'auto', so we set an invalid placeholder until we can calculate
@@ -125,34 +117,34 @@ export abstract class GridBaseLayout<
     const availableSpace =
       this._viewDim2 - metrics.padding2.start - metrics.padding2.end;
     if (availableSpace <= 0) {
-      // If we have no space, we won't render any rolumns
-      metrics.rolumns = 0;
+      // If we have no space, we won't render any columns
+      metrics.columns = 0;
     } else {
-      // 2. Calculate how many ideally sized "rolumns" (including gaps) fit in the available space
+      // 2. Calculate how many ideally sized "columns" (including gaps) fit in the available space
       const gapSize = usePaddingAndGap2 ? metrics.gap2 : 0;
-      let rolumns = 0;
+      let columns = 0;
       let spaceTaken = 0;
       if (availableSpace >= this._idealSize2) {
-        rolumns =
+        columns =
           Math.floor(
             (availableSpace - this._idealSize2) / (this._idealSize2 + gapSize)
           ) + 1;
-        spaceTaken = rolumns * this._idealSize2 + (rolumns - 1) * gapSize;
+        spaceTaken = columns * this._idealSize2 + (columns - 1) * gapSize;
       }
       // 3. If we're flexing items to fill the available space exactly, decide whether to add
-      // a rolumn and reduce item size, or keep the number of rolumns and increase item size
+      // a column and reduce item size, or keep the number of columns and increase item size
       if (this.flex) {
-        // If we have at least half the space we need for another rolumn, go ahead and add one
+        // If we have at least half the space we need for another column, go ahead and add one
         if (
           (availableSpace - spaceTaken) / (this._idealSize2 + gapSize) >=
           0.5
         ) {
-          rolumns = rolumns + 1;
+          columns = columns + 1;
         }
-        metrics.rolumns = rolumns;
+        metrics.columns = columns;
         // Calculate the flexed item size
         metrics.itemSize2 = Math.round(
-          (availableSpace - gapSize * (rolumns - 1)) / rolumns
+          (availableSpace - gapSize * (columns - 1)) / columns
         );
         // Calculate item size in the other dimension, preserving area (the default), aspect ratio or ideal size in that dimension as specified
         const preserve = this.flex === true ? 'area' : this.flex.preserve;
@@ -162,7 +154,7 @@ export abstract class GridBaseLayout<
               (this._idealSize1 / this._idealSize2) * metrics.itemSize2
             );
             break;
-          case dim1(this.direction):
+          case this._blockSizeDimension:
             metrics.itemSize1 = Math.round(this._idealSize1);
             break;
           case 'area':
@@ -175,14 +167,14 @@ export abstract class GridBaseLayout<
         // We're not flexing, so use the specified sizes unmodified
         metrics.itemSize1 = this._idealSize1;
         metrics.itemSize2 = this._idealSize2;
-        metrics.rolumns = rolumns;
+        metrics.columns = columns;
       }
-      // 4. Calculate the position for each item in a template rolumn
+      // 4. Calculate the position for each item in a template column
       let pos: number;
       if (usePaddingAndGap2) {
         const spaceTaken =
-          metrics.rolumns * metrics.itemSize2 +
-          (metrics.rolumns - 1) * metrics.gap2;
+          metrics.columns * metrics.itemSize2 +
+          (metrics.columns - 1) * metrics.gap2;
         pos =
           this.flex || justify === 'start'
             ? metrics.padding2.start
@@ -191,16 +183,16 @@ export abstract class GridBaseLayout<
               : Math.round(this._viewDim2 / 2 - spaceTaken / 2);
       } else {
         const spaceToDivide =
-          availableSpace - metrics.rolumns * metrics.itemSize2;
+          availableSpace - metrics.columns * metrics.itemSize2;
         if (justify === 'space-between') {
-          metrics.gap2 = Math.round(spaceToDivide / (metrics.rolumns - 1));
+          metrics.gap2 = Math.round(spaceToDivide / (metrics.columns - 1));
           pos = 0;
         } else if (justify === 'space-around') {
-          metrics.gap2 = Math.round(spaceToDivide / metrics.rolumns);
+          metrics.gap2 = Math.round(spaceToDivide / metrics.columns);
           pos = Math.round(metrics.gap2 / 2);
         } else {
           // justify == 'space-evenly'
-          metrics.gap2 = Math.round(spaceToDivide / (metrics.rolumns + 1));
+          metrics.gap2 = Math.round(spaceToDivide / (metrics.columns + 1));
           pos = metrics.gap2;
         }
         // If primary-axis gap was set to 'auto', provide the value now
@@ -215,7 +207,7 @@ export abstract class GridBaseLayout<
           }
         }
       }
-      for (let i = 0; i < metrics.rolumns; i++) {
+      for (let i = 0; i < metrics.columns; i++) {
         metrics.positions.push(pos);
         pos += metrics.itemSize2 + metrics.gap2;
       }

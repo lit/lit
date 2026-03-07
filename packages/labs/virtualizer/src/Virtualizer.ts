@@ -5,22 +5,46 @@
  */
 
 import {
-  ItemBox,
+  ElementLayoutInfo,
   Margins,
   LayoutConfigValue,
   ChildPositions,
-  ChildMeasurements,
+  ChildLayoutInfo,
   Layout,
   LayoutConstructor,
   LayoutSpecifier,
   StateChangedMessage,
-  Size,
   InternalRange,
-  MeasureChildFunction,
+  EditElementLayoutInfoFunction,
   ScrollToCoordinates,
   BaseLayoutConfig,
   LayoutHostMessage,
+  writingMode,
+  direction,
+  virtualizerAxis,
+  VirtualizerSize,
+  VirtualizerSizeValue,
+  fixedSizeDimensionCapitalized,
+  LogicalCoordinates,
+  fixedInsetLabel,
 } from './layouts/shared/Layout.js';
+
+/**
+ * @deprecated Legacy scroll direction type from the old explicit direction API.
+ * Use CSS `writing-mode` instead. This type and related handling code can be
+ * removed when the deprecated `direction` config option is removed.
+ */
+type LegacyScrollDirection = 'vertical' | 'horizontal';
+
+/**
+ * @deprecated Legacy layout config interface supporting the old `direction` option.
+ * This interface and related handling code can be removed when the deprecated
+ * `direction` config option is removed.
+ */
+interface LegacyLayoutConfig extends BaseLayoutConfig {
+  direction?: LegacyScrollDirection;
+}
+import {issueWarning, InstanceWarnings} from './warnings.js';
 import {
   RangeChangedEvent,
   VisibilityChangedEvent,
@@ -88,6 +112,18 @@ export interface VirtualizerConfig {
   hostElement: VirtualizerHostElement;
 
   scroller?: boolean;
+
+  /**
+   * Controls which CSS logical axis the virtualizer scrolls along.
+   * - `'block'` (default): virtualizes along the block axis (vertical in
+   *   horizontal-tb, horizontal in vertical-lr/vertical-rl).
+   * - `'inline'`: virtualizes along the inline axis by swapping the host
+   *   element's `writing-mode`. Children are automatically restored to the
+   *   context writing-mode so their content renders naturally.
+   *
+   * Mutually exclusive with setting CSS `writing-mode` directly on the host.
+   */
+  axis?: virtualizerAxis;
 }
 
 let DefaultLayoutConstructor: LayoutConstructor;
@@ -101,6 +137,8 @@ let DefaultLayoutConstructor: LayoutConstructor;
  * manipulation methods.
  */
 export class Virtualizer {
+  private _warnings = new InstanceWarnings();
+
   private _benchmarkStart: number | null = null;
 
   private _layout: Layout | null = null;
@@ -111,13 +149,13 @@ export class Virtualizer {
    * Layout provides these values, we set them on _render().
    * TODO @straversi: Can we find an XOR type, usable for the key here?
    */
-  private _scrollSize: Size | null = null;
+  private _virtualizerSize: VirtualizerSize | null = null;
 
   /**
    * Difference between scroll target's current and required scroll offsets.
    * Provided by layout.
    */
-  private _scrollError: {left: number; top: number} | null = null;
+  private _scrollError: LogicalCoordinates | null = null;
 
   /**
    * A list of the positions (top, left) of the children in the current range.
@@ -125,15 +163,13 @@ export class Virtualizer {
   private _childrenPos: ChildPositions | null = null;
 
   // TODO: (graynorton): type
-  private _childMeasurements: ChildMeasurements | null = null;
+  private _childLayoutInfo: ChildLayoutInfo | null = null;
 
-  private _toBeMeasured = new Map<HTMLElement, unknown>();
+  private _rangeChanged = false;
 
-  private _rangeChanged = true;
+  private _itemsChanged = false;
 
-  private _itemsChanged = true;
-
-  private _visibilityChanged = true;
+  private _visibilityChanged = false;
 
   /**
    * The HTMLElement that hosts the virtualizer. Set by hostElement.
@@ -155,6 +191,8 @@ export class Virtualizer {
    * Resize observer attached to children.
    */
   private _childrenRO: ResizeObserver | null = null;
+
+  private _windowResizeCallback: (() => void) | null = null;
 
   private _mutationObserver: MutationObserver | null = null;
 
@@ -204,17 +242,71 @@ export class Virtualizer {
    */
   private _lastVisible = -1;
 
-  protected _scheduled = new WeakSet<Function>();
+  private _writingMode: writingMode = 'unknown';
+  private _scrollerWritingMode: writingMode = 'unknown';
+  private _direction: direction = 'unknown';
+
+  /**
+   * Controls which CSS logical axis the virtualizer scrolls along.
+   * When set to 'inline', the host's writing-mode is swapped so the
+   * virtualizer scrolls along the inline axis instead of the block axis.
+   */
+  private _axis: virtualizerAxis = 'block';
+
+  /**
+   * The writing-mode of the context (i.e. the host element before
+   * any axis-swap override is applied). Used to restore children's
+   * writing-mode when axis='inline'.
+   */
+  private _contextWritingMode: writingMode = 'unknown';
+
+  /**
+   * The CSS direction of the context (i.e. the host element before
+   * any axis-swap override is applied). Used to determine the correct
+   * swapped writing-mode for axis='inline'.
+   */
+  private _contextDirection: direction = 'unknown';
+
+  /**
+   * Tracks whether we've injected a writing-mode style for the axis
+   * swap. Used to avoid re-reading context styles and to clean up
+   * when axis reverts to 'block'.
+   */
+  private _axisWritingModeInjected = false;
+
+  /**
+   * @deprecated Tracks whether we've injected a writing-mode style for legacy
+   * direction config compatibility. This flag and related handling code can be
+   * removed when the deprecated `direction` config option is removed.
+   */
+  private _legacyDirectionWritingModeInjected = false;
+
+  /**
+   * @deprecated Tracks whether writingMode changed during _updateView() due to
+   * legacy direction config. When true, _updateLayout() will force a reflow.
+   * This flag and related handling code can be removed when the deprecated
+   * `direction` config option is removed.
+   */
+  private _writingModeChanged = false;
+
+  /**
+   * @deprecated Stores the expected writingMode based on legacy direction config.
+   * This is used to set the layout's writingMode immediately after creation,
+   * before the first _updateView() runs. This field and related handling code
+   * can be removed when the deprecated `direction` config option is removed.
+   */
+  private _pendingWritingMode: writingMode | null = null;
+
+  protected _scheduled = new WeakSet();
 
   /**
    * Invoked at the end of each render cycle: children in the range are
    * measured, and their dimensions passed to this callback. Use it to layout
    * children as needed.
    */
-  protected _measureCallback: ((sizes: ChildMeasurements) => void) | null =
-    null;
+  protected _measureCallback: ((sizes: ChildLayoutInfo) => void) | null = null;
 
-  protected _measureChildOverride: MeasureChildFunction | null = null;
+  protected _editElementLayoutInfo: EditElementLayoutInfoFunction | null = null;
 
   /**
    * State for `layoutComplete` promise
@@ -259,13 +351,32 @@ export class Virtualizer {
     }
   }
 
+  get axis(): virtualizerAxis {
+    return this._axis;
+  }
+
+  set axis(value: virtualizerAxis) {
+    if (value !== this._axis) {
+      this._axis = value;
+      this._applyAxisSwap();
+      this._schedule(this._updateLayout);
+    }
+  }
+
   _init(config: VirtualizerConfig) {
     this._isScroller = !!config.scroller;
+    if (config.axis) {
+      this._axis = config.axis;
+    }
     this._initHostElement(config);
     // If no layout is specified, we make an empty
     // layout config, which will result in the default
-    // layout with default parameters
-    const layoutConfig = config.layout || ({} as BaseLayoutConfig);
+    // layout with default parameters.
+    // Make a shallow copy to avoid mutating the original config
+    // (e.g., _handleLegacyDirectionConfig deletes the direction property)
+    const layoutConfig = config.layout
+      ? {...config.layout}
+      : ({} as BaseLayoutConfig);
     // Save the promise returned by `_initLayout` as a state
     // variable we can check before updating layout config
     this._layoutInitialized = this._initLayout(layoutConfig);
@@ -276,11 +387,12 @@ export class Virtualizer {
       this._finishDOMUpdate.bind(this)
     );
     this._hostElementRO = new _ResizeObserver!(() =>
-      this._hostElementSizeChanged()
+      this._viewportSizeChanged()
     );
     this._childrenRO = new _ResizeObserver!(
       this._childrenSizeChanged.bind(this)
     );
+    this._windowResizeCallback = this._viewportSizeChanged.bind(this);
   }
 
   _initHostElement(config: VirtualizerConfig) {
@@ -322,6 +434,7 @@ export class Virtualizer {
       this._hostElementRO!.observe(ancestor);
     });
     this._hostElementRO!.observe(this._scrollerController!.element);
+    window.addEventListener('resize', this._windowResizeCallback!);
     this._children.forEach((child) => this._childrenRO!.observe(child));
     this._scrollEventListeners.forEach((target) =>
       target.addEventListener('scroll', this, this._scrollEventListenerOptions)
@@ -344,6 +457,7 @@ export class Virtualizer {
     this._mutationObserver = null;
     this._hostElementRO?.disconnect();
     this._hostElementRO = null;
+    window.removeEventListener('resize', this._windowResizeCallback!);
     this._childrenRO?.disconnect();
     this._childrenRO = null;
     this._rejectLayoutCompletePromise('disconnected');
@@ -363,7 +477,157 @@ export class Virtualizer {
 
     if (this._isScroller) {
       style.overflow = style.overflow || 'auto';
-      style.minHeight = style.minHeight || '150px';
+    } else {
+      // For non-scroller mode (window scrolling), set initial min sizes to
+      // bootstrap the rendering cycle. With contain: size, the element won't
+      // have intrinsic size, so we need at least 1px to prevent isHidden=true.
+      // This is especially important for vertical writing modes where the
+      // element might not inherit width from the containing block.
+      style.minBlockSize = style.minBlockSize || '1px';
+      style.minInlineSize = style.minInlineSize || '1px';
+    }
+  }
+
+  /**
+   * @deprecated Handles the legacy `direction` layout config option by
+   * translating it to the equivalent CSS `writing-mode` on the host element.
+   * This method and all related handling code can be removed when the
+   * deprecated `direction` config option is removed.
+   *
+   * Legacy mapping:
+   * - direction: 'vertical' (default) → writing-mode: horizontal-tb (CSS default)
+   * - direction: 'horizontal' → writing-mode: vertical-lr
+   */
+  private _handleLegacyDirectionConfig(config: LegacyLayoutConfig): void {
+    // DEBUG: Verify this method is being called
+    // If no direction specified, treat as 'vertical' (the old default behavior)
+    // which maps to the CSS default, so we may need to clean up any previously
+    // injected style
+    const legacyDirection: LegacyScrollDirection =
+      config.direction === 'horizontal' ? 'horizontal' : 'vertical';
+
+    const hostElement = this._hostElement!;
+    const style = hostElement.style;
+
+    if (legacyDirection === 'horizontal') {
+      // Check if there's an existing writing-mode we'd be overriding
+      const existingWritingMode = style.writingMode;
+      if (
+        existingWritingMode &&
+        existingWritingMode !== 'vertical-lr' &&
+        !this._legacyDirectionWritingModeInjected
+      ) {
+        issueWarning(
+          'virtualizer-deprecated-direction-override',
+          '[lit-virtualizer] The deprecated `direction: "horizontal"` config ' +
+            `is overriding an existing \`writing-mode: ${existingWritingMode}\` ` +
+            'style on the host element. Please migrate to using CSS ' +
+            '`writing-mode: vertical-lr` directly instead of the `direction` config.'
+        );
+      } else {
+        issueWarning(
+          'virtualizer-deprecated-direction',
+          '[lit-virtualizer] The `direction` layout config option is deprecated. ' +
+            'Use CSS `writing-mode` instead. For horizontal scrolling, apply ' +
+            '`writing-mode: vertical-lr` to the virtualizer element.'
+        );
+      }
+      style.writingMode = 'vertical-lr';
+      this._legacyDirectionWritingModeInjected = true;
+      // @deprecated: Store expected writingMode so it can be set on the layout
+      // immediately after creation, before _updateView runs. Also set
+      // this._writingMode immediately so it's correct even if connected() is
+      // called before layout creation (due to async _initLayout).
+      this._pendingWritingMode = 'vertical-lr';
+      this._writingMode = 'vertical-lr';
+    } else {
+      // direction: 'vertical' (or unspecified) - revert to default if we
+      // previously injected a writing-mode
+      if (this._legacyDirectionWritingModeInjected) {
+        style.writingMode = '';
+        this._legacyDirectionWritingModeInjected = false;
+      }
+      // @deprecated: Store expected writingMode so it can be set on the layout
+      // immediately after creation, before _updateView runs. Also set
+      // this._writingMode immediately so it's correct even if connected() is
+      // called before layout creation (due to async _initLayout).
+      this._pendingWritingMode = 'horizontal-tb';
+      this._writingMode = 'horizontal-tb';
+      // Only warn if direction was explicitly specified
+      if (config.direction !== undefined) {
+        issueWarning(
+          'virtualizer-deprecated-direction',
+          '[lit-virtualizer] The `direction` layout config option is deprecated. ' +
+            '`direction: "vertical"` is the default behavior and can be removed.'
+        );
+      }
+    }
+
+    // Remove direction from config so the layout doesn't receive an unknown property
+    delete config.direction;
+  }
+
+  /**
+   * Applies or removes the writing-mode swap for `axis='inline'`.
+   *
+   * When `axis='inline'`, the host's writing-mode is swapped so the
+   * virtualizer scrolls along the inline axis. The context (original)
+   * writing-mode is captured before the swap and later restored on
+   * children in `_positionChildren`.
+   */
+  private _applyAxisSwap() {
+    const host = this._hostElement;
+    if (!host || !host.isConnected) return;
+
+    if (this._axis === 'inline') {
+      // Guard: axis and legacy direction are mutually exclusive
+      if (this._legacyDirectionWritingModeInjected) {
+        this._warnings.warnOnce(
+          'axis-direction-conflict',
+          '[lit-virtualizer] The `axis` property cannot be used together with ' +
+            'the deprecated `direction` layout config option. The `axis` ' +
+            'setting will be ignored.'
+        );
+        return;
+      }
+
+      if (!this._axisWritingModeInjected) {
+        // Warn if there's an explicit inline writing-mode we're about to override
+        const existingInlineWM = host.style.writingMode;
+        if (existingInlineWM && existingInlineWM !== '') {
+          this._warnings.warnOnce(
+            'axis-writing-mode-conflict',
+            '[lit-virtualizer] Both `axis="inline"` and an explicit CSS ' +
+              '`writing-mode` are set on the virtualizer host. The `axis` ' +
+              'property will take precedence. These options are mutually ' +
+              'exclusive — use one or the other.'
+          );
+        }
+
+        // Capture the context writing-mode before we override it
+        const style = getComputedStyle(host);
+        this._contextWritingMode = style.writingMode as writingMode;
+        this._contextDirection = style.direction as direction;
+      }
+
+      // Swap: horizontal-tb → vertical-lr/rl (depending on CSS direction),
+      //        vertical-lr/rl → horizontal-tb
+      const swapped =
+        this._contextWritingMode === 'horizontal-tb'
+          ? this._contextDirection === 'rtl'
+            ? 'vertical-rl'
+            : 'vertical-lr'
+          : 'horizontal-tb';
+      host.style.writingMode = swapped;
+      this._axisWritingModeInjected = true;
+    } else if (this._axisWritingModeInjected) {
+      // Revert to context writing-mode
+      host.style.writingMode = '';
+      this._axisWritingModeInjected = false;
+      // Clear restored writing-mode from children
+      this._children.forEach((child) => {
+        child.style.writingMode = '';
+      });
     }
   }
 
@@ -412,6 +676,20 @@ export class Virtualizer {
         type?: LayoutConstructor;
       };
       delete config.type;
+      // @deprecated: Handle legacy direction config. This block can be removed
+      // when the deprecated `direction` config option is removed.
+      if ('direction' in config) {
+        this._handleLegacyDirectionConfig(config as LegacyLayoutConfig);
+        // Set the writingMode on the layout immediately so it's correct
+        // before the next reflow.
+        if (this._pendingWritingMode !== null) {
+          this._layout.writingMode = this._pendingWritingMode;
+          this._writingMode = this._pendingWritingMode;
+          this._pendingWritingMode = null;
+        }
+        // Schedule _updateLayout to re-read the CSS writing-mode
+        this._schedule(this._updateLayout);
+      }
       this._layout.config = config as BaseLayoutConfig;
       // The new config requires a different layout altogether, but
       // to limit implementation complexity we don't support dynamically
@@ -442,6 +720,12 @@ export class Virtualizer {
       config = layoutConfig as BaseLayoutConfig;
     }
 
+    // @deprecated: Handle legacy direction config. This block can be removed
+    // when the deprecated `direction` config option is removed.
+    if (config && 'direction' in config) {
+      this._handleLegacyDirectionConfig(config as LegacyLayoutConfig);
+    }
+
     if (Ctor === undefined) {
       // If we don't have a constructor yet, load the default
       DefaultLayoutConstructor = Ctor = (await import('./layouts/flow.js'))
@@ -453,12 +737,20 @@ export class Virtualizer {
       config
     );
 
-    if (
-      this._layout.measureChildren &&
-      typeof this._layout.updateItemSizes === 'function'
-    ) {
-      if (typeof this._layout.measureChildren === 'function') {
-        this._measureChildOverride = this._layout.measureChildren;
+    // @deprecated: If legacy direction config was used, set the writingMode
+    // on the layout immediately so it's correct before the first reflow.
+    // This can be removed when the deprecated `direction` config option is removed.
+    if (this._pendingWritingMode !== null) {
+      this._layout.writingMode = this._pendingWritingMode;
+      this._writingMode = this._pendingWritingMode;
+      this._pendingWritingMode = null;
+    }
+
+    if (typeof this._layout.updateItemSizes === 'function') {
+      if (this._layout.editElementLayoutInfo) {
+        this._editElementLayoutInfo = this._layout.editElementLayoutInfo.bind(
+          this._layout
+        );
       }
       this._measureCallback = this._layout.updateItemSizes.bind(this._layout);
     }
@@ -497,30 +789,40 @@ export class Virtualizer {
     return null;
   }
 
-  private _measureChildren(): void {
-    const mm: ChildMeasurements = {};
+  private _readLayoutInfo(): void {
+    this._childLayoutInfo = new Map();
     const children = this._children;
-    const fn = this._measureChildOverride || this._measureChild;
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       const idx = this._first + i;
-      if (this._itemsChanged || this._toBeMeasured.has(child)) {
-        mm[idx] = fn.call(this, child, this._items[idx]);
-      }
+      this._childLayoutInfo.set(idx, this._readElementLayoutInfo(child, idx));
     }
-    this._childMeasurements = mm;
     this._schedule(this._updateLayout);
-    this._toBeMeasured.clear();
   }
 
   /**
    * Returns the width, height, and margins of the given child.
    */
-  _measureChild(element: Element): ItemBox {
+  _readElementLayoutInfo(element: Element, index: number): ElementLayoutInfo {
     // offsetWidth doesn't take transforms in consideration, so we use
     // getBoundingClientRect which does.
     const {width, height} = element.getBoundingClientRect();
-    return Object.assign({width, height}, getMargins(element));
+    const blockSize = this._writingMode[0] === 'h' ? height : width;
+    const inlineSize = this._writingMode[0] === 'h' ? width : height;
+    const style = getComputedStyle(element);
+    const writingMode = style.writingMode as writingMode;
+    const direction = style.direction as direction;
+    const flipAxis = writingMode[0] !== this._writingMode[0];
+    const reverseDirection = direction !== this._direction;
+    const baselineInfo = Object.assign(
+      {writingMode, direction},
+      {blockSize, inlineSize},
+      getMargins(element, flipAxis, reverseDirection)
+    );
+    const item = this._items[index];
+    return this._editElementLayoutInfo
+      ? this._editElementLayoutInfo({element, item, index, baselineInfo})
+      : baselineInfo;
   }
 
   protected async _schedule(method: Function): Promise<void> {
@@ -533,7 +835,7 @@ export class Virtualizer {
   }
 
   async _updateDOM(state: StateChangedMessage) {
-    this._scrollSize = state.scrollSize;
+    this._virtualizerSize = state.virtualizerSize;
     this._adjustRange(state.range);
     this._childrenPos = state.childPositions;
     this._scrollError = state.scrollError || null;
@@ -545,8 +847,10 @@ export class Virtualizer {
     if (_rangeChanged || _itemsChanged) {
       this._notifyRange();
       this._rangeChanged = false;
+      this._itemsChanged = false;
+    } else {
+      this._finishDOMUpdate();
     }
-    this._finishDOMUpdate();
   }
 
   _finishDOMUpdate() {
@@ -554,8 +858,8 @@ export class Virtualizer {
       // _childrenRO should be non-null if we're connected
       this._children.forEach((child) => this._childrenRO!.observe(child));
       this._checkScrollIntoViewTarget(this._childrenPos);
+      this._sizeHostElement(this._virtualizerSize);
       this._positionChildren(this._childrenPos);
-      this._sizeHostElement(this._scrollSize);
       this._correctScrollError();
       if (this._benchmarkStart && 'mark' in window.performance) {
         window.performance.mark('uv-end');
@@ -565,16 +869,27 @@ export class Virtualizer {
 
   _updateLayout() {
     if (this._layout && this._connected) {
+      // Apply axis swap before reading styles so that _updateView
+      // reads the correct (swapped) writing-mode from CSS.
+      this._applyAxisSwap();
       this._layout.items = this._items;
       this._updateView();
-      if (this._childMeasurements !== null) {
+      if (this._childLayoutInfo !== null) {
         // If the layout has been changed, we may have measurements but no callback
         if (this._measureCallback) {
-          this._measureCallback(this._childMeasurements);
+          this._measureCallback(this._childLayoutInfo);
         }
-        this._childMeasurements = null;
       }
-      this._layout.reflowIfNeeded();
+      // @deprecated: When using legacy `direction` config, writingMode may have
+      // changed during _updateView(). Force a reflow to recalculate with the new
+      // writing mode. This can be removed when the deprecated `direction` config
+      // option is removed.
+      if (this._writingModeChanged) {
+        this._writingModeChanged = false;
+        this._layout.reflowIfNeeded(true);
+      } else {
+        this._layout.reflowIfNeeded();
+      }
       if (this._benchmarkStart && 'mark' in window.performance) {
         window.performance.mark('uv-end');
       }
@@ -641,50 +956,233 @@ export class Virtualizer {
     const scrollingElement = this._scrollerController?.element;
     const layout = this._layout;
 
-    if (hostElement && scrollingElement && layout) {
-      let top, left, bottom, right;
+    if (hostElement && hostElement.isConnected && scrollingElement && layout) {
+      const hostStyle = getComputedStyle(hostElement);
+      const scrollerStyle = getComputedStyle(scrollingElement);
+
+      const direction = (this._direction = hostStyle.direction as direction);
+      // Host writing-mode: used for child positioning and sizing
+      const writingMode = (this._writingMode =
+        hostStyle.writingMode as writingMode);
+      // Scroller writing-mode: used for scroll coordinate handling
+      const scrollerWritingMode = (this._scrollerWritingMode =
+        scrollerStyle.writingMode as writingMode);
+
+      let insetBlockStart: number,
+        insetBlockEnd: number,
+        insetInlineStart: number,
+        insetInlineEnd: number,
+        blockSizeLabel: fixedSizeDimensionCapitalized,
+        inlineSizeLabel: fixedSizeDimensionCapitalized,
+        blockStartLabel: fixedInsetLabel,
+        blockEndLabel: fixedInsetLabel,
+        inlineStartLabel: fixedInsetLabel,
+        inlineEndLabel: fixedInsetLabel,
+        blockScrollPosition: (el: Element) => number,
+        inlineScrollPosition: (el: Element) => number,
+        reverseBlockCoordinates = false,
+        reverseInlineCoordinates = false;
+
+      // Whether scrollLeft is inverted (0 at right, negative toward left) depends
+      // on the SCROLLER's writing-mode, not the host's.
+      const scrollerHasInvertedScrollLeft =
+        scrollerWritingMode === 'vertical-rl';
+
+      if (writingMode === 'horizontal-tb') {
+        blockSizeLabel = 'Height';
+        inlineSizeLabel = 'Width';
+        blockStartLabel = 'top';
+        blockEndLabel = 'bottom';
+        // Block axis is vertical, uses scrollTop (never inverted)
+        blockScrollPosition = (el: Element) => el.scrollTop;
+        if (direction === 'ltr') {
+          inlineStartLabel = 'left';
+          inlineEndLabel = 'right';
+          // Inline axis is horizontal, uses scrollLeft
+          // Negate if scroller has inverted scrollLeft (vertical-rl)
+          inlineScrollPosition = scrollerHasInvertedScrollLeft
+            ? (el: Element) => -el.scrollLeft
+            : (el: Element) => el.scrollLeft;
+        } else {
+          inlineStartLabel = 'right';
+          inlineEndLabel = 'left';
+          // RTL: inline-start is right, so we negate unless scroller already inverts
+          inlineScrollPosition = scrollerHasInvertedScrollLeft
+            ? (el: Element) => el.scrollLeft
+            : (el: Element) => -el.scrollLeft;
+          reverseInlineCoordinates = true;
+        }
+      } else {
+        blockSizeLabel = 'Width';
+        inlineSizeLabel = 'Height';
+        if (writingMode === 'vertical-lr') {
+          blockStartLabel = 'left';
+          blockEndLabel = 'right';
+          // Block axis is horizontal, uses scrollLeft
+          // Negate if scroller has inverted scrollLeft (vertical-rl)
+          blockScrollPosition = scrollerHasInvertedScrollLeft
+            ? (el: Element) => -el.scrollLeft
+            : (el: Element) => el.scrollLeft;
+        } else {
+          // vertical-rl host: block-start is right
+          blockStartLabel = 'right';
+          blockEndLabel = 'left';
+          // Block axis is horizontal, uses scrollLeft
+          // For vertical-rl host, we want 0 at block-start (right)
+          // If scroller is also vertical-rl, scrollLeft=0 at right, negate to get positive values toward block-end
+          // If scroller is not vertical-rl, scrollLeft=0 at left, which is block-end, so don't negate
+          blockScrollPosition = scrollerHasInvertedScrollLeft
+            ? (el: Element) => -el.scrollLeft
+            : (el: Element) => el.scrollLeft;
+          reverseBlockCoordinates = true;
+        }
+        if (direction === 'ltr') {
+          inlineStartLabel = 'top';
+          inlineEndLabel = 'bottom';
+          // Inline axis is vertical, uses scrollTop (never inverted)
+          inlineScrollPosition = (el: Element) => el.scrollTop;
+        } else {
+          inlineStartLabel = 'bottom';
+          inlineEndLabel = 'top';
+          inlineScrollPosition = (el: Element) => -el.scrollTop;
+          reverseInlineCoordinates = true;
+        }
+      }
 
       const hostElementBounds = hostElement.getBoundingClientRect();
 
-      top = 0;
-      left = 0;
-      bottom = window.innerHeight;
-      right = window.innerWidth;
+      insetBlockStart = reverseBlockCoordinates
+        ? window[`inner${blockSizeLabel}`]
+        : 0;
+      insetInlineStart = reverseInlineCoordinates
+        ? window[`inner${inlineSizeLabel}`]
+        : 0;
+      insetBlockEnd = reverseBlockCoordinates
+        ? 0
+        : window[`inner${blockSizeLabel}`];
+      insetInlineEnd = reverseInlineCoordinates
+        ? 0
+        : window[`inner${inlineSizeLabel}`];
 
       const ancestorBounds = this._clippingAncestors.map((ancestor) =>
         ancestor.getBoundingClientRect()
       );
       ancestorBounds.unshift(hostElementBounds);
 
+      const blockMax = reverseBlockCoordinates ? Math.min : Math.max;
+      const blockMin = reverseBlockCoordinates ? Math.max : Math.min;
+      const inlineMax = reverseInlineCoordinates ? Math.min : Math.max;
+      const inlineMin = reverseInlineCoordinates ? Math.max : Math.min;
+
       for (const bounds of ancestorBounds) {
-        top = Math.max(top, bounds.top);
-        left = Math.max(left, bounds.left);
-        bottom = Math.min(bottom, bounds.bottom);
-        right = Math.min(right, bounds.right);
+        insetBlockStart = blockMax(insetBlockStart, bounds[blockStartLabel]);
+        insetInlineStart = inlineMax(
+          insetInlineStart,
+          bounds[inlineStartLabel]
+        );
+        insetBlockEnd = blockMin(insetBlockEnd, bounds[blockEndLabel]);
+        insetInlineEnd = inlineMin(insetInlineEnd, bounds[inlineEndLabel]);
       }
 
       const scrollingElementBounds = scrollingElement.getBoundingClientRect();
 
-      const offsetWithinScroller = {
-        left: hostElementBounds.left - scrollingElementBounds.left,
-        top: hostElementBounds.top - scrollingElementBounds.top,
+      layout.offsetWithinScroller = {
+        inline:
+          hostElementBounds[inlineStartLabel] -
+          scrollingElementBounds[inlineStartLabel],
+        block:
+          hostElementBounds[blockStartLabel] -
+          scrollingElementBounds[blockStartLabel],
       };
 
-      const totalScrollSize = {
-        width: scrollingElement.scrollWidth,
-        height: scrollingElement.scrollHeight,
+      layout.scrollSize = {
+        inlineSize: scrollingElement[`scroll${inlineSizeLabel}`],
+        blockSize: scrollingElement[`scroll${blockSizeLabel}`],
       };
 
-      const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
-      const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
+      layout.viewportScroll = {
+        inline: reverseInlineCoordinates
+          ? hostElementBounds[inlineStartLabel] -
+            insetInlineStart +
+            inlineScrollPosition(hostElement)
+          : insetInlineStart -
+            hostElementBounds[inlineStartLabel] +
+            inlineScrollPosition(hostElement),
+        block: reverseBlockCoordinates
+          ? hostElementBounds[blockStartLabel] -
+            insetBlockStart +
+            blockScrollPosition(hostElement)
+          : insetBlockStart -
+            hostElementBounds[blockStartLabel] +
+            blockScrollPosition(hostElement),
+      };
 
-      const height = Math.max(0, bottom - top);
-      const width = Math.max(0, right - left);
+      // Elements with zero width AND height are inside display:none (or
+      // equivalent) and should render nothing.
+      const isHidden =
+        hostElementBounds.width === 0 && hostElementBounds.height === 0;
 
-      layout.viewportSize = {width, height};
-      layout.viewportScroll = {top: scrollTop, left: scrollLeft};
-      layout.totalScrollSize = totalScrollSize;
-      layout.offsetWithinScroller = offsetWithinScroller;
+      if (this._isScroller) {
+        const hasZeroSize =
+          !isHidden &&
+          (hostElementBounds.width === 0 || hostElementBounds.height === 0);
+        this._warnings.warnOn(
+          'zero-size',
+          hasZeroSize,
+          '[lit-virtualizer] The virtualizer host element has a zero-size ' +
+            'dimension (width: ' +
+            hostElementBounds.width +
+            ', height: ' +
+            hostElementBounds.height +
+            '). ' +
+            'A scroller-mode virtualizer needs explicit sizing via CSS. ' +
+            'For example: `lit-virtualizer { block-size: 400px; }`'
+        );
+      }
+
+      // When the host element has a zero dimension on a given axis but
+      // isn't fully hidden, use a floor of 1px to bootstrap the rendering
+      // cycle (newly-mounted elements may not have layout yet). Once the
+      // host has a real size on an axis, trust the clipping result on
+      // that axis — including zero when legitimately clipped by ancestors.
+      type sizeKey = 'width' | 'height';
+      const hostBlockDim =
+        hostElementBounds[blockSizeLabel.toLowerCase() as sizeKey];
+      const hostInlineDim =
+        hostElementBounds[inlineSizeLabel.toLowerCase() as sizeKey];
+      const blockFloor = !isHidden && hostBlockDim === 0 ? 1 : 0;
+      const inlineFloor = !isHidden && hostInlineDim === 0 ? 1 : 0;
+
+      const viewportBlockSize = Math.max(
+        blockFloor,
+        reverseBlockCoordinates
+          ? insetBlockStart - insetBlockEnd
+          : insetBlockEnd - insetBlockStart
+      );
+      const viewportInlineSize = Math.max(
+        inlineFloor,
+        reverseInlineCoordinates
+          ? insetInlineStart - insetInlineEnd
+          : insetInlineEnd - insetInlineStart
+      );
+      layout.viewportSize = {
+        blockSize: viewportBlockSize,
+        inlineSize: viewportInlineSize,
+      };
+
+      // @deprecated: When using legacy `direction` config, writingMode may
+      // change after layout is created. Detect the change and set a flag
+      // so that _updateLayout() knows to force a reflow.
+      // This can be removed when the deprecated `direction` config option is removed.
+      const previousWritingMode = layout.writingMode;
+      layout.writingMode = writingMode;
+      layout.direction = this._direction;
+      if (
+        previousWritingMode !== 'unknown' &&
+        previousWritingMode !== writingMode
+      ) {
+        this._writingModeChanged = true;
+      }
     }
   }
 
@@ -692,20 +1190,54 @@ export class Virtualizer {
    * Styles the host element so that its size reflects the
    * total size of all items.
    */
-  private _sizeHostElement(size?: Size | null) {
-    // Some browsers seem to crap out if the host element gets larger than
-    // a certain size, so we clamp it here (this value based on ad hoc
-    // testing in Chrome / Safari / Firefox Mac)
-    const max = 8200000;
-    const h = size && size.width !== null ? Math.min(max, size.width) : 0;
-    const v = size && size.height !== null ? Math.min(max, size.height) : 0;
+  private _sizeHostElement(size: VirtualizerSize | null) {
+    // Converts a VirtualizerSizeValue to a CSS value string.
+    //
+    // Plain numbers (block axis) → "Npx".
+    //
+    // Tuples [minOrMax, N] (cross axis) depend on mode:
+    //   Scroller → "0px" (no cross-axis constraint needed).
+    //   Non-scroller → "100%" (host follows its containing block).
+    function cssScrollSizeValue(
+      size: VirtualizerSizeValue,
+      scroller = false
+    ): string {
+      if (typeof size === 'number') {
+        return `${size}px`;
+      }
+      if (scroller) {
+        return size[0] === 'min' ? `${size[1]}px` : '0px';
+      }
+      // For non-scroller cross axis, use 100% so the host follows its
+      // containing block and reflows naturally on resize.
+      return '100%';
+    }
+    let inline: string;
+    let block: string;
+    if (size === null) {
+      // Don't set sizes when layout hasn't calculated them yet.
+      // Setting to 0px would make the element have zero size with contain:size,
+      // which prevents bootstrap of the rendering cycle.
+      return;
+    } else {
+      inline = cssScrollSizeValue(size.inlineSize, this._isScroller);
+      block = cssScrollSizeValue(size.blockSize, this._isScroller);
+    }
 
     if (this._isScroller) {
-      this._getSizer().style.transform = `translate(${h}px, ${v}px)`;
+      let h: string, v: string;
+      if (this._writingMode === 'horizontal-tb') {
+        v = block;
+        h = this._direction === 'ltr' ? inline : `-${inline}`;
+      } else {
+        h = this._writingMode === 'vertical-lr' ? block : `-${block}`;
+        v = this._direction === 'ltr' ? inline : `-${inline}`;
+      }
+      this._getSizer().style.transform = `translate(${h}, ${v})`;
     } else {
       const style = this._hostElement!.style;
-      (style.minWidth as string | null) = h ? `${h}px` : '100%';
-      (style.minHeight as string | null) = v ? `${v}px` : '100%';
+      style.minInlineSize = inline;
+      style.minBlockSize = block;
     }
   }
 
@@ -714,25 +1246,64 @@ export class Virtualizer {
    * pos.
    */
   private _positionChildren(pos: ChildPositions | null) {
-    if (pos) {
-      pos.forEach(({top, left, width, height, xOffset, yOffset}, index) => {
-        const child = this._children[index - this._first];
-        if (child) {
-          child.style.position = 'absolute';
-          child.style.boxSizing = 'border-box';
-          child.style.transform = `translate(${left}px, ${top}px)`;
-          if (width !== undefined) {
-            child.style.width = width + 'px';
+    if (pos && pos.size > 0) {
+      const children = this._children;
+      pos.forEach(
+        ({insetBlockStart, insetInlineStart, blockSize, inlineSize}, index) => {
+          const child = children[index - this._first];
+          if (child) {
+            child.style.position = 'absolute';
+            child.style.boxSizing = 'border-box';
+
+            const childLayoutInfo = this._childLayoutInfo?.get(index);
+            if (childLayoutInfo) {
+              if (childLayoutInfo.writingMode[0] !== this._writingMode[0]) {
+                const oInlineSize = inlineSize;
+                inlineSize = blockSize;
+                blockSize = oInlineSize;
+              }
+            }
+
+            // When axis='inline', restore the child's writing-mode to the
+            // context value so content renders in the natural document flow.
+            // The existing flipAxis logic above handles the size swap that
+            // results from the host/child writing-mode mismatch.
+            if (this._axisWritingModeInjected) {
+              child.style.writingMode = this._contextWritingMode;
+            }
+
+            let left, top;
+            if (this._writingMode === 'horizontal-tb') {
+              top = insetBlockStart;
+              left =
+                this._direction === 'ltr'
+                  ? insetInlineStart
+                  : -insetInlineStart;
+            } else {
+              if (this._writingMode === 'vertical-lr') {
+                left = insetBlockStart;
+              } else {
+                // vertical-rl: scrollLeft is 0 at block-start (right edge),
+                // negative values toward block-end (left). Use negative X.
+                left = -insetBlockStart;
+              }
+              top =
+                this._direction === 'ltr'
+                  ? insetInlineStart
+                  : -insetInlineStart;
+            }
+
+            child.style.transform = `translate(${left}px, ${top}px)`;
+
+            if (inlineSize !== undefined) {
+              child.style.inlineSize = inlineSize + 'px';
+            }
+            if (blockSize !== undefined) {
+              child.style.blockSize = blockSize + 'px';
+            }
           }
-          if (height !== undefined) {
-            child.style.height = height + 'px';
-          }
-          (child.style.left as string | null) =
-            xOffset === undefined ? null : xOffset + 'px';
-          (child.style.top as string | null) =
-            yOffset === undefined ? null : yOffset + 'px';
         }
-      });
+      );
     }
   }
 
@@ -753,11 +1324,19 @@ export class Virtualizer {
   private _correctScrollError() {
     if (this._scrollError) {
       const {scrollTop, scrollLeft} = this._scrollerController!;
-      const {top, left} = this._scrollError;
+      const {block, inline} = this._scrollError;
       this._scrollError = null;
+      // Whether to negate the block correction depends on the SCROLLER's writing-mode
+      // (vertical-rl scrollers have inverted scrollLeft), not the host's.
+      // Which axis (top vs left) the correction applies to depends on the HOST's writing-mode.
+      const blockCorrection =
+        this._scrollerWritingMode === 'vertical-rl' ? -block : block;
       this._scrollerController!.correctScrollError({
-        top: scrollTop - top,
-        left: scrollLeft - left,
+        top:
+          scrollTop - (this._writingMode === 'horizontal-tb' ? block : inline),
+        left:
+          scrollLeft -
+          (this._writingMode === 'horizontal-tb' ? inline : blockCorrection),
       });
     }
   }
@@ -874,7 +1453,7 @@ export class Virtualizer {
    * Render and update the view at the next opportunity with the given
    * hostElement size.
    */
-  private _hostElementSizeChanged() {
+  private _viewportSizeChanged() {
     this._schedule(this._updateLayout);
   }
 
@@ -890,35 +1469,51 @@ export class Virtualizer {
   // update cycle that results in changes to physical items, and we also
   // end up here if one or more children change size independently of
   // the virtualizer update cycle.
-  private _childrenSizeChanged(changes: ResizeObserverEntry[]) {
-    // Only measure if the layout requires it
-    if (this._layout?.measureChildren) {
-      for (const change of changes) {
-        this._toBeMeasured.set(
-          change.target as HTMLElement,
-          change.contentRect
-        );
-      }
-      this._measureChildren();
-    }
-    // If this is the end of an update cycle, we need to reset some
-    // internal state. This should be a harmless no-op if we're handling
-    // an out-of-cycle ResizeObserver callback, so we don't need to
-    // distinguish between the two cases.
+  private _childrenSizeChanged() {
+    this._readLayoutInfo();
     this._scheduleLayoutComplete();
-    this._itemsChanged = false;
-    this._rangeChanged = false;
   }
 }
 
-function getMargins(el: Element): Margins {
+function getMargins(
+  el: Element,
+  flipAxis = false,
+  reverseDirection = false
+): Margins {
   const style = window.getComputedStyle(el);
-  return {
-    marginTop: getMarginValue(style.marginTop),
-    marginRight: getMarginValue(style.marginRight),
-    marginBottom: getMarginValue(style.marginBottom),
-    marginLeft: getMarginValue(style.marginLeft),
-  };
+  if (flipAxis) {
+    if (reverseDirection) {
+      return {
+        marginBlockStart: getMarginValue(style.marginInlineEnd),
+        marginBlockEnd: getMarginValue(style.marginInlineStart),
+        marginInlineStart: getMarginValue(style.marginBlockEnd),
+        marginInlineEnd: getMarginValue(style.marginBlockStart),
+      };
+    } else {
+      return {
+        marginBlockStart: getMarginValue(style.marginInlineStart),
+        marginBlockEnd: getMarginValue(style.marginInlineEnd),
+        marginInlineStart: getMarginValue(style.marginBlockStart),
+        marginInlineEnd: getMarginValue(style.marginBlockEnd),
+      };
+    }
+  } else {
+    if (reverseDirection) {
+      return {
+        marginBlockStart: getMarginValue(style.marginBlockEnd),
+        marginBlockEnd: getMarginValue(style.marginBlockStart),
+        marginInlineStart: getMarginValue(style.marginInlineEnd),
+        marginInlineEnd: getMarginValue(style.marginInlineStart),
+      };
+    } else {
+      return {
+        marginBlockStart: getMarginValue(style.marginBlockStart),
+        marginBlockEnd: getMarginValue(style.marginBlockEnd),
+        marginInlineStart: getMarginValue(style.marginInlineStart),
+        marginInlineEnd: getMarginValue(style.marginInlineEnd),
+      };
+    }
+  }
 }
 
 function getMarginValue(value: string): number {

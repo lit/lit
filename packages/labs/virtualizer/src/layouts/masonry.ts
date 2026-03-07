@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LayoutHostSink, Positions, Size} from './shared/Layout.js';
+import {LayoutHostSink, Positions, LogicalSize} from './shared/Layout.js';
 import {GridBaseLayout, GridBaseLayoutConfig} from './shared/GridBaseLayout.js';
 import {PixelSize} from './shared/SizeGapPaddingBaseLayout.js';
 
@@ -14,7 +14,7 @@ export interface MasonryLayoutConfig
   extends Omit<GridBaseLayoutConfig, 'flex' | 'itemSize'> {
   flex: boolean;
   itemSize: PixelSize;
-  getAspectRatio: GetAspectRatio;
+  getAspectRatio?: GetAspectRatio;
 }
 
 type MasonryLayoutSpecifier = MasonryLayoutConfig & {
@@ -38,7 +38,7 @@ export const masonry: MasonryLayoutSpecifierFactory = (
     config
   );
 
-type RangeMapEntry = [number, number];
+type RangeMapEntry = [number, number, number, number];
 
 const MIN = 'MIN';
 const MAX = 'MAX';
@@ -49,12 +49,6 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
   private _positions = new Map<number, Positions>();
   private _rangeMap = new Map<number, RangeMapEntry>();
   private _getAspectRatio?: GetAspectRatio;
-
-  protected _getDefaultConfig(): MasonryLayoutConfig {
-    return Object.assign({}, super._getDefaultConfig(), {
-      getAspectRatio: () => 1,
-    });
-  }
 
   set getAspectRatio(getAspectRatio: GetAspectRatio) {
     this._getAspectRatio = getAspectRatio;
@@ -67,11 +61,11 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     super._setItems(items);
   }
 
-  protected _getItemSize(_idx: number): Size {
+  protected _getItemSize(_idx: number): LogicalSize {
     return {
-      [this._sizeDim]: this._metrics!.itemSize1,
-      [this._secondarySizeDim]: this._metrics!.itemSize2,
-    } as unknown as Size;
+      blockSize: this._metrics!.itemSize1,
+      inlineSize: this._metrics!.itemSize2,
+    } as unknown as LogicalSize;
   }
 
   protected _updateLayout() {
@@ -91,26 +85,23 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     const G = this._RANGE_MAP_GRANULARITY;
     this._positions.clear();
     this._rangeMap.clear();
-    const {rolumns, padding1, itemSize2, gap1, positions} = this._metrics!;
+    const {columns, padding1, itemSize2, gap1, positions} = this._metrics!;
     let nextPos = padding1.start;
-    const nextPosPerRolumn = new Array(rolumns).fill(null).map((_) => nextPos);
-    let nextRolumn = 0;
-    let scrollSize = 0;
+    const nextPosPerColumn = new Array(columns).fill(null).map((_) => nextPos);
+    let nextColumn = 0;
+    let virtualizerSize = 0;
     let minRangeMapKey = Infinity;
     let maxRangeMapKey = -Infinity;
     this.items.forEach((item, idx) => {
-      const aspectRatio = this._getAspectRatio!(item as {integer: number});
-      const size1 =
-        this.direction === 'horizontal'
-          ? itemSize2 * aspectRatio
-          : itemSize2 / aspectRatio;
-      const pos1 = nextPosPerRolumn[nextRolumn];
-      const pos2 = positions[nextRolumn];
+      const aspectRatio = this._getAspectRatio ? this._getAspectRatio(item) : 1;
+      const size1 = itemSize2 / aspectRatio;
+      const pos1 = nextPosPerColumn[nextColumn];
+      const pos2 = positions[nextColumn];
       this._positions.set(idx, {
-        [this._positionDim]: pos1,
-        [this._secondaryPositionDim]: pos2,
-        [this._sizeDim]: size1,
-        [this._secondarySizeDim]: itemSize2,
+        insetBlockStart: pos1,
+        insetInlineStart: pos2,
+        blockSize: size1,
+        inlineSize: itemSize2,
       } as Positions);
       const max1 = pos1 + size1;
       const firstRangeMapKey = this._getRangeMapKey(pos1, MIN);
@@ -122,59 +113,81 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
         maxRangeMapKey = lastRangeMapKey;
       }
       for (let n = firstRangeMapKey; n <= lastRangeMapKey; n += G) {
-        const [minIdx, maxIdx] = this._rangeMap.get(n) ?? [Infinity, -Infinity];
-        this._rangeMap.set(n, [Math.min(idx, minIdx), Math.max(idx, maxIdx)]);
+        const [minIdx, maxIdx, minExtent, maxExtent] = this._rangeMap.get(
+          n
+        ) ?? [Infinity, -Infinity, Infinity, -Infinity];
+        this._rangeMap.set(n, [
+          Math.min(idx, minIdx),
+          Math.max(idx, maxIdx),
+          Math.min(pos1, minExtent),
+          Math.max(max1, maxExtent),
+        ]);
       }
-      scrollSize = Math.max(scrollSize, max1 + padding1.end);
-      nextPosPerRolumn[nextRolumn] += size1 + gap1;
+      virtualizerSize = Math.max(virtualizerSize, max1 + padding1.end);
+      nextPosPerColumn[nextColumn] += size1 + gap1;
       nextPos = Infinity;
-      nextPosPerRolumn.forEach((pos, rolumn) => {
+      nextPosPerColumn.forEach((pos, column) => {
         if (pos < nextPos) {
           nextPos = pos;
-          nextRolumn = rolumn;
+          nextColumn = column;
         }
       });
     });
     if (minRangeMapKey !== Infinity) {
       for (let n = 0; n < minRangeMapKey; n += G) {
-        this._rangeMap.set(n, [-1, -1]);
+        this._rangeMap.set(n, [-1, -1, 0, 0]);
       }
     }
     if (maxRangeMapKey !== -Infinity) {
       const maxRange = this._rangeMap.get(maxRangeMapKey)!;
-      for (let n = maxRangeMapKey + G; n < scrollSize + G; n += G) {
+      for (let n = maxRangeMapKey + G; n < virtualizerSize + G; n += G) {
         this._rangeMap.set(n, maxRange);
       }
     }
-    this._scrollSize = scrollSize;
+    this._virtualizerSize = virtualizerSize;
   }
 
   _getActiveItems() {
     const metrics = this._metrics!;
-    const {rolumns} = metrics;
-    if (rolumns === 0 || this._rangeMap.size === 0) {
+    const {columns} = metrics;
+    if (columns === 0 || this._rangeMap.size === 0) {
       this._first = -1;
       this._last = -1;
       this._physicalMin = 0;
       this._physicalMax = 0;
     } else {
-      const min = Math.max(0, this._scrollPosition - this._overhang);
+      const min = Math.max(0, this._blockScrollPosition - this._overhang);
       const max = Math.min(
-        this._scrollSize,
-        this._scrollPosition + this._viewDim1 + this._overhang
+        this._virtualizerSize,
+        this._blockScrollPosition + this._viewDim1 + this._overhang
       );
-      const maxIdx = this.items.length - 1;
       const minKey = this._getRangeMapKey(min, MIN);
       const maxKey = this._getRangeMapKey(max, MAX);
+      const maxIdx = this.items.length - 1;
       let first = maxIdx;
       let last = 0;
+      let physicalMin = Infinity;
+      let physicalMax = -Infinity;
       for (let n = minKey; n <= maxKey; n += this._RANGE_MAP_GRANULARITY) {
-        const [rangeFirst, rangeLast] = this._rangeMap.get(n) ?? [maxIdx, 0];
-        first = Math.min(first, rangeFirst);
-        last = Math.max(last, rangeLast);
+        const entry = this._rangeMap.get(n);
+        if (entry) {
+          const [rangeFirst, rangeLast, rangeMin, rangeMax] = entry;
+          first = Math.min(first, rangeFirst);
+          last = Math.max(last, rangeLast);
+          physicalMin = Math.min(physicalMin, rangeMin);
+          physicalMax = Math.max(physicalMax, rangeMax);
+        }
       }
-      this._first = first;
-      this._last = last;
+      if (first <= last) {
+        this._first = first;
+        this._physicalMin = this._first === 0 ? 0 : physicalMin;
+        this._last = last;
+        this._physicalMax = physicalMax;
+      } else {
+        throw new Error(
+          'Masonry layout error: no layout info for current scroll coordinates'
+        );
+      }
     }
   }
 
@@ -182,8 +195,8 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     return this._positions.get(idx)!;
   }
 
-  _updateScrollSize() {
-    // We calculate scrollSize in _layouOutChildren(),
+  _updateVirtualizerSize() {
+    // We calculate _virtualizerSize in _layouOutChildren(),
     // no need to do it here
   }
 }

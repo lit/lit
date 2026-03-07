@@ -45,7 +45,6 @@ describe('Properly sizing virtualizer within host element', () => {
         <lit-virtualizer
           .layout=${grid({
             itemSize: {width: '25px', height: '25px'},
-            direction: 'vertical',
             gap: '0px',
             flex: false,
           })}
