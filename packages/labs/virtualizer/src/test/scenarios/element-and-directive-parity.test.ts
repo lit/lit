@@ -156,12 +156,6 @@ describe('lit-virtualizer and virtualize directive', () => {
       expect(uvd.visibilityChangedEvents.length).to.be.greaterThanOrEqual(1);
     });
 
-    // Clear initial events to make it easier to see what's happening with new events.
-    ulv.rangeChangedEvents.length = 0;
-    uvd.rangeChangedEvents.length = 0;
-    ulv.visibilityChangedEvents.length = 0;
-    uvd.visibilityChangedEvents.length = 0;
-
     await pass(() => {
       expect(ulv.shadowRoot?.textContent).to.include('[2 selected]');
       expect(uvd.shadowRoot?.textContent).to.include('[2 selected]');
@@ -188,24 +182,25 @@ describe('lit-virtualizer and virtualize directive', () => {
       expect(uvd.shadowRoot?.textContent).not.to.include('[5 selected]');
     });
 
+    // Clear event arrays right before the operation under test, giving the
+    // bootstrap sequence maximum time to settle.
+    ulv.rangeChangedEvents.length = 0;
+    uvd.rangeChangedEvents.length = 0;
+    ulv.visibilityChangedEvents.length = 0;
+    uvd.visibilityChangedEvents.length = 0;
+
     // Adding an item to the start of the list to trigger rangechanged events.
     ulv.items = [-1, ...items];
     uvd.items = [-1, ...items];
 
-    // NOTE(usergenic): This test was flaky around the number of range changed
-    // events; the expected number of range changed events at this stage should
-    // be 1, but in tests a subsequent range changed event is showing up to a
-    // larger "last" value after the first event.  For this reason, the test
-    // was adjusted to greaterThanOrEqual(1) instead of equal(1).
-    //
     // We wait for rangeChanged inside pass() so the system is settled before
     // we assert on visibilityChanged below.
     await pass(() => {
       expect(ulv.shadowRoot?.textContent).to.include('[-1]');
       expect(uvd.shadowRoot?.textContent).to.include('[-1]');
 
-      expect(ulv.rangeChangedEvents.length).to.be.greaterThanOrEqual(1);
-      expect(uvd.rangeChangedEvents.length).to.be.greaterThanOrEqual(1);
+      expect(ulv.rangeChangedEvents.length).to.equal(1);
+      expect(uvd.rangeChangedEvents.length).to.equal(1);
     });
 
     // The indexes of visible items have not changed even though new item was
