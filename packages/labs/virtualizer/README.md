@@ -18,13 +18,6 @@
 >
 > Give feedback: https://github.com/lit/lit/discussions/3362
 
-> [!WARNING]
->
-> `@lit-labs/virtualizer` is in late prerelease. Its API is intended to remain
-> quite stable going forward, but you should expect (increasingly minor) changes
-> before 1.0. Some of these changes may be technically breaking, but we
-> anticipate that they will be mechanical and straightforward to make.
-
 ## Getting Started
 
 Get this package:
@@ -83,7 +76,43 @@ render() {
 }
 ```
 
-When you make a virtualizer a scroller, you should explicitly size it to suit the needs of your layout. (By default, it has a `min-height` of 150 pixels to prevent it from collapsing to a zero-height block, but this default will rarely be what you want in practice.)
+When you make a virtualizer a scroller, you should explicitly size it to suit the needs of your layout. If you don't, the virtualizer will have zero size in one or both dimensions, so won't render any children. If you forget to size a scrolling virtualizer, a console warning will appear to help you diagnose the issue.
+
+> [!NOTE]
+> Earlier versions of `@lit-labs/virtualizer` set a `min-height` of `150px` on scrolling virtualizers to avoid this zero-size case, but this approach was heavy-handed and doesn't play nicely with [CSS writing mode and direction](#writing-mode-and-direction), so has been replaced with the console warning.
+
+### Writing mode and direction
+
+The virtualizer is aware of CSS `writing-mode` and `direction` and should generally "just work" if you want virtualization along the block axis (e.g., the vertical axis in the browser's default `horizontal-tb` writing mode):
+
+- All CSS writing modes are supported: `horizontal-tb` (the default), `vertical-lr`, and `vertical-rl`
+- When laying out child elements, the virtualizer will respect the CSS direction (`ltr` or `rtl`)
+
+> [!NOTE]
+> If you want to use the default window scroller with a virtualizer in the `vertical-rl` writing mode, be sure to set `writing-mode: vertical-rl` on the `<html>` element. If you set the writing mode on a descendant element instead, the document's scroll model remains `horizontal-tb` and you won't be able to scroll from right to left to see the virtualized content.
+
+### Virtualizing on the inline axis
+
+If you want to virtualize along the inline axis instead—for example, to render a horizontal "shelf" or a carousel in the default writing mode—use the `axis` property:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      scroller
+      axis="inline"
+      .items=${this.photos}
+      .renderItem=${photo => html`<img src=${photo.url}>`}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+> [!NOTE]
+> Under the hood, `axis="inline"` works by "flipping" the virtualizer's own `writing-mode` to the opposite of its CSS context and restoring the original writing mode on each child element. If you have specialized needs, you can manipulate these writing modes directly via CSS instead of using the `axis` property.
+
+> [!NOTE]
+> The `direction` layout config option (e.g., `.layout=${{direction: 'horizontal'}}`) supported in earlier versions of `@lit-labs/virtualizer` is deprecated and will be removed in a future version, but still works for now. To migrate, remove `direction` from your layout config and use `axis="inline"` or explicit CSS instead.
 
 ### Choosing a layout
 
@@ -112,7 +141,7 @@ render() {
 }
 ```
 
-The layout system in `@lit-labs/virtualizer` is pluggable; custom layouts will eventually be supported via a formal layout authoring API. However, the layout authoring API is currently undocumented and less stable than other parts of the API. It is likely that official support of custom layouts will be a post-1.0 feature.
+The layout system in `@lit-labs/virtualizer` is pluggable; custom layouts will eventually be supported via a formal layout authoring API. However, the layout authoring API is currently undocumented and less stable than other parts of the API. Official support of custom layouts is planned for a future version.
 
 ### Using the `flow` layout
 
@@ -130,25 +159,6 @@ To control the spacing of child elements, use standard CSS techniques to set mar
 
 Note that the `flow` layout offers limited support for [margin-collapsing](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing): margins set explicitly on child elements will be collapsed, but any margins on elements contained _within_ child elements are not considered.
 
-#### Specifying layout direction
-
-The `flow` layout works vertically by default. However, it also supports laying out child elements horizontally, via its `direction` property:
-
-```js
-  render() {
-    return html`
-      <lit-virtualizer
-        .layout=${flow({
-          direction: 'horizontal'
-        })}
-        .items=${this.photos}
-        .renderItem=${photos => html`<img src=${photo.url}>`}
-      ></lit-virtualizer>
-    `;
-  }
-
-```
-
 #### Using shorthand to specify `flow` options
 
 Because `flow` is the default layout, you don't need to import it explicitly, even if you want to set options on it. Just pass an options object directly to your virtualizer's `layout` property, without wrapping it in the `flow()` function:
@@ -158,20 +168,22 @@ Because `flow` is the default layout, you don't need to import it explicitly, ev
 html`
   <lit-virtualizer
     .layout=${{
-      direction: 'horizontal'
+      pin: {index: 42, block: 'start'},
     }}
   ></lit-virtualizer>
-`
+`;
 
 // ...is equivalent to this:
 html`
   <lit-virtualizer
-    .layout=${flow(
-      direction: 'horizontal'
-    )}
+    .layout=${flow({
+      pin: {index: 42, block: 'start'},
+    })}
   ></lit-virtualizer>
-`
+`;
 ```
+
+See [Framing a child element within the viewport](#framing-a-child-element-within-the-viewport) for more on the `pin` option.
 
 ### Using the `grid` layout
 
@@ -458,6 +470,14 @@ Type: `Boolean`
 
 Optional. If this attribute is present (or, in the case of the `virtualize` directive, if this property has a truthy value), then the virtualizer itself will be a scroller. Otherwise, the virtualizer will not scroll but will size itself to take up enough space for all of its children, including those that aren't currently present in the DOM.
 
+### `axis` attribute / property
+
+Type: `'block' | 'inline'`
+
+Default: `'block'`
+
+Optional. Controls which CSS logical axis the virtualizer uses to lay out its child elements. Set to `'inline'` for inline-axis scrolling (e.g., a horizontal carousel in a standard vertical document). See [Writing mode and direction](#writing-mode-and-direction) and [Virtualizing on the inline axis](#virtualizing-on-the-inline-axis) for details and examples.
+
 ### `scrollToIndex` method
 
 Type: `(index: number, position?: string) => void`
@@ -466,7 +486,7 @@ where position is: `'start'|'center'|'end'|'nearest'`
 
 Scroll to the item at the given index. Place the item at the given position within the viewport. For example, if index is `100` and position is `end`, then the bottom of the item at index 100 will be at the bottom of the viewport. Position defaults to `start`.
 
-_Note: Details of the `scrollToIndex` API are likely to change before the 1.0 release, but changes required to your existing code should be minimal and mechanical in nature._
+_Note: Details of the `scrollToIndex` API may change in a future release, but any changes should be minimal and mechanical._
 
 Example usage:
 
