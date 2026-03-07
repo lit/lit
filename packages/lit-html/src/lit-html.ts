@@ -2163,6 +2163,28 @@ class ElementPart implements Disconnectable {
 }
 
 /**
+ * Represents any value that can be rendered by lit-html.
+ *
+ * In practice, lit-html can attempt to render almost anything, since it
+ * stringifies unknown values using their `toString()` method. However, this
+ * doesn’t mean the output will always be meaningful — for example, interpolating
+ * a plain object results in `[object Object]`.
+ *
+ * This type is intended to annotate content that will be passed to lit-html
+ * templates or rendering functions.
+ *
+ * @example
+ * ```ts
+ * function renderButton(buttonBody: Renderable) {
+ *   return html`
+ *     <button>${buttonBody}</button>
+ *   `;
+ * }
+ * ```
+ */
+export type Renderable = null | undefined | {toString: () => string};
+
+/**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
  *
  * Private exports for use by other Lit packages, not intended for use by
