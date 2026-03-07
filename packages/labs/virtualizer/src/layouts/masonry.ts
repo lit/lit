@@ -4,17 +4,33 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LayoutHostSink, Positions, LogicalSize} from './shared/Layout.js';
+import {
+  LayoutHostSink,
+  Positions,
+  LogicalSize,
+  ElementLayoutInfo,
+  EditElementLayoutInfoFunctionOptions,
+} from './shared/Layout.js';
+import {issueWarning} from '../warnings.js';
 import {GridBaseLayout, GridBaseLayoutConfig} from './shared/GridBaseLayout.js';
 import {PixelSize} from './shared/SizeGapPaddingBaseLayout.js';
 
-type GetAspectRatio = (item: unknown) => number;
+type GetAspectRatioFromItem = (item: unknown) => number;
+type GetAspectRatioFromElement = (
+  element: Element,
+  requestReflow: () => void
+) => number;
 
 export interface MasonryLayoutConfig
   extends Omit<GridBaseLayoutConfig, 'flex' | 'itemSize'> {
   flex: boolean;
   itemSize: PixelSize;
-  getAspectRatio?: GetAspectRatio;
+  /**
+   * @deprecated Use `getAspectRatioFromItem` instead.
+   */
+  getAspectRatio?: GetAspectRatioFromItem;
+  getAspectRatioFromItem?: GetAspectRatioFromItem;
+  getAspectRatioFromElement?: GetAspectRatioFromElement;
 }
 
 type MasonryLayoutSpecifier = MasonryLayoutConfig & {
@@ -39,6 +55,13 @@ export const masonry: MasonryLayoutSpecifierFactory = (
   );
 
 type RangeMapEntry = [number, number, number, number];
+type ElementLayoutInfoWithAspectRatio = ElementLayoutInfo & {
+  aspectRatio: number;
+};
+type ChildLayoutInfoWithAspectRatio = Map<
+  number,
+  ElementLayoutInfoWithAspectRatio
+>;
 
 const MIN = 'MIN';
 const MAX = 'MAX';
@@ -46,12 +69,31 @@ type MinOrMax = 'MIN' | 'MAX';
 
 export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
   private _RANGE_MAP_GRANULARITY = 100;
+  private _childLayoutInfo: ChildLayoutInfoWithAspectRatio = new Map();
   private _positions = new Map<number, Positions>();
   private _rangeMap = new Map<number, RangeMapEntry>();
-  private _getAspectRatio?: GetAspectRatio;
+  private _getAspectRatioFromItem?: GetAspectRatioFromItem;
+  private _getAspectRatioFromElement?: GetAspectRatioFromElement;
 
-  set getAspectRatio(getAspectRatio: GetAspectRatio) {
-    this._getAspectRatio = getAspectRatio;
+  /**
+   * @deprecated Use `getAspectRatioFromItem` instead.
+   */
+  set getAspectRatio(getAspectRatio: GetAspectRatioFromItem) {
+    issueWarning(
+      'virtualizer-deprecated-getAspectRatio',
+      '[masonry layout] `getAspectRatio` is deprecated. Use `getAspectRatioFromItem` instead.'
+    );
+    this._getAspectRatioFromItem = getAspectRatio;
+  }
+
+  set getAspectRatioFromItem(getAspectRatioFromItem: GetAspectRatioFromItem) {
+    this._getAspectRatioFromItem = getAspectRatioFromItem;
+  }
+
+  set getAspectRatioFromElement(
+    getAspectRatioFromElement: GetAspectRatioFromElement
+  ) {
+    this._getAspectRatioFromElement = getAspectRatioFromElement;
   }
 
   protected _setItems(items: unknown[]) {
@@ -93,7 +135,11 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     let minRangeMapKey = Infinity;
     let maxRangeMapKey = -Infinity;
     this.items.forEach((item, idx) => {
-      const aspectRatio = this._getAspectRatio ? this._getAspectRatio(item) : 1;
+      const aspectRatio = this._getAspectRatioFromItem
+        ? this._getAspectRatioFromItem(item)
+        : this._childLayoutInfo.get(idx)
+          ? this._childLayoutInfo.get(idx)!.aspectRatio
+          : 1;
       const size1 = itemSize2 / aspectRatio;
       const pos1 = nextPosPerColumn[nextColumn];
       const pos2 = positions[nextColumn];
@@ -198,5 +244,27 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
   _updateVirtualizerSize() {
     // We calculate _virtualizerSize in _layouOutChildren(),
     // no need to do it here
+  }
+
+  editElementLayoutInfo(options: EditElementLayoutInfoFunctionOptions) {
+    const {baselineInfo, element} = options;
+    if (this._getAspectRatioFromElement) {
+      const triggerReflow = () => this._triggerReflow();
+      return {
+        ...baselineInfo,
+        aspectRatio: this._getAspectRatioFromElement(element, triggerReflow),
+      };
+    } else {
+      return baselineInfo;
+    }
+  }
+
+  updateItemSizes(childLayoutInfo: ChildLayoutInfoWithAspectRatio) {
+    childLayoutInfo.forEach((info, idx) => {
+      if (typeof info.aspectRatio === 'number' && info.aspectRatio > 0) {
+        this._childLayoutInfo.set(idx, info);
+      }
+    });
+    this._scheduleLayoutUpdate();
   }
 }

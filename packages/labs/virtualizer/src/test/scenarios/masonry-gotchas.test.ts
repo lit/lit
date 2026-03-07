@@ -45,7 +45,8 @@ export class MasonryGotchas extends LitElement {
           itemSize: this.itemSize,
           flex: false,
           gap: '8px',
-          getAspectRatio: (item) => (item as unknown as Item).aspectRatio,
+          getAspectRatioFromItem: (item) =>
+            (item as unknown as Item).aspectRatio,
         })}
         .items=${this.items}
         .renderItem=${(_: Item) => html` <div></div> `}
