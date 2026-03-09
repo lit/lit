@@ -46,7 +46,7 @@ suite(`ssr client hydration support`, () => {
           aria-label="foo" hydrate-internals-aria-label="foo"
           aria-roledescription="bar" hydrate-internals-aria-roledescription="bar"
           role="application" hydrate-internals-role="application">
-          <template shadowroot="open" shadowrootmode="open">
+          <template shadowrootmode="open">
             <style>:host{display:block}</style>
             <!--lit-part T5fUn6aagr0=--><div>Foo</div><!--/lit-part-->
           </template>
