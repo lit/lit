@@ -28,6 +28,13 @@ export class ScrollerShim {
     );
   }
 
+  public get isDocumentScroller() {
+    return (
+      this.element === document.scrollingElement ||
+      this.element === document.documentElement
+    );
+  }
+
   public get scrollTop() {
     return this.element.scrollTop || window.scrollY;
   }
