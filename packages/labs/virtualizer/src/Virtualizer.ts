@@ -1158,13 +1158,28 @@ export class Virtualizer {
 
       const scrollingElementBounds = scrollingElement.getBoundingClientRect();
 
-      layout.offsetWithinScroller = {
-        inline:
-          hostElementBounds[inlineStartLabel] -
-          scrollingElementBounds[inlineStartLabel],
-        block:
+      let offsetBlock: number;
+      let offsetInline: number;
+
+      if (this._isScroller) {
+        offsetBlock = 0;
+        offsetInline = 0;
+      } else {
+        offsetBlock =
           hostElementBounds[blockStartLabel] -
-          scrollingElementBounds[blockStartLabel],
+          scrollingElementBounds[blockStartLabel];
+        offsetInline =
+          hostElementBounds[inlineStartLabel] -
+          scrollingElementBounds[inlineStartLabel];
+        if (!this._scrollerController!.isDocumentScroller) {
+          offsetBlock += blockScrollPosition(scrollingElement);
+          offsetInline += inlineScrollPosition(scrollingElement);
+        }
+      }
+
+      layout.offsetWithinScroller = {
+        inline: offsetInline,
+        block: offsetBlock,
       };
 
       layout.scrollSize = {

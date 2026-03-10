@@ -59,6 +59,10 @@ class MetricsCache {
       marginsToUpdate.add(key + 1);
     });
     for (const k of marginsToUpdate) {
+      // Skip index 0: there's no preceding item, so the collapsed margin
+      // is just the first item's leading margin, not an inter-item margin.
+      // Including it would skew the average used for position estimation.
+      if (k === 0) continue;
       const a = this._metricsCache.get(k)?.marginBlockStart || 0;
       const b = this._metricsCache.get(k - 1)?.marginBlockEnd || 0;
       this._marginSizeCache.set(k, collapseMargins(a, b));
@@ -90,6 +94,9 @@ class MetricsCache {
   }
 
   getMarginSize(index: number) {
+    if (index === 0) {
+      return this.getLeadingMarginValue(0);
+    }
     return this._marginSizeCache.getSize(index);
   }
 
@@ -199,7 +206,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
           refItem!.pos +
           (c.getChildSize(this._last) || c.averageChildSize) +
           (c.getMarginSize(this._last) || c.averageMarginSize) +
-          delta * (c.averageChildSize + c.averageMarginSize)
+          (delta - 1) * (c.averageChildSize + c.averageMarginSize)
         );
       }
     }
