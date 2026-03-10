@@ -209,6 +209,60 @@ describe('flow layout', () => {
     });
   });
 
+  describe('scroll size after items change', () => {
+    it('corrects scroll size when replacing items with a small set', async () => {
+      // Phase 1: create items whose rendered height depends on the item
+      // value. Items 0–199 render at 200px. Items 200+ render at 50px.
+      // This seeds the metrics cache with 200px entries.
+      // Phase 2: replace with 5 items (values 200–204) at 50px. All 5
+      // should be rendered, exercising _refineScrollSize()'s exact
+      // calculation path. Without the fix, stale 200px cache entries
+      // pollute the average and the scroll size is much too large.
+      const TALL = 200;
+      const SHORT = 50;
+      const renderItem = (item: number) =>
+        html`<div
+          style="height: ${item < 200 ? TALL : SHORT}px; margin: 0; padding: 0;"
+        >
+          ${item}
+        </div>`;
+      const container = await fixture(html`
+        <div>
+          <style>
+            lit-virtualizer {
+              height: 200px;
+              width: 200px;
+              margin: 0;
+              padding: 0;
+            }
+          </style>
+          <lit-virtualizer
+            scroller
+            .items=${array(200)}
+            .renderItem=${renderItem}
+          ></lit-virtualizer>
+        </div>
+      `);
+      const virtualizer = (await until(() =>
+        container.querySelector('lit-virtualizer')
+      )) as LitVirtualizer;
+      await virtualizer.layoutComplete;
+
+      // Scroll partway to populate the metrics cache with 200px entries.
+      virtualizer.scrollToIndex(100, 'start');
+      await virtualizer.layoutComplete;
+
+      // Replace with 5 short items (values 200–204 → 50px each).
+      virtualizer.items = [200, 201, 202, 203, 204];
+      await virtualizer.layoutComplete;
+
+      // 5 items * 50px = 250px. Allow some tolerance for margins.
+      // Without the fix, the stale 200px cache entries inflate this
+      // well past 500px.
+      await pass(() => expect(virtualizer.scrollHeight).to.be.lessThan(400));
+    });
+  });
+
   describe('scrollToIndex', () => {
     it('shows the correct items when scrolling to start position', async () => {
       const virtualizer = await createVirtualizer({items: array(1000)});
