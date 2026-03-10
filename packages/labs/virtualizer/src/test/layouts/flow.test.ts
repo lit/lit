@@ -263,6 +263,63 @@ describe('flow layout', () => {
     });
   });
 
+  describe('scrollIntoView with offset within scroller', () => {
+    it('lands on the correct item in non-scroller mode', async () => {
+      // Custom fixture: parent scroller with spacer above virtualizer.
+      // This reproduces the bug where offsetWithinScroller was computed
+      // from raw getBoundingClientRect() differences, causing overshoot.
+      const container = await fixture(html`
+        <div>
+          <style>
+            .scroller {
+              height: 200px;
+              overflow: auto;
+            }
+            .spacer {
+              height: 50px;
+            }
+            .item {
+              height: 50px;
+              margin: 0;
+              padding: 0;
+            }
+          </style>
+          <div class="scroller">
+            <div class="spacer"></div>
+            <lit-virtualizer
+              .items=${array(1000)}
+              .renderItem=${(item: number) =>
+                html`<div class="item">${item}</div>`}
+            ></lit-virtualizer>
+          </div>
+        </div>
+      `);
+      const virtualizer = (await until(() =>
+        container.querySelector('lit-virtualizer')
+      )) as LitVirtualizer;
+      const scroller = container.querySelector('.scroller') as HTMLElement;
+      await virtualizer.layoutComplete;
+
+      virtualizer.element(500)!.scrollIntoView({block: 'start'});
+      await until(() => {
+        const items = Array.from(
+          virtualizer.renderRoot.querySelectorAll('.item')
+        ) as HTMLElement[];
+        return items.find((e) => e.textContent?.trim() === '500');
+      });
+
+      // Check that item 500 is at the top of the scroller viewport.
+      const scrollerRect = scroller.getBoundingClientRect();
+      const items = Array.from(
+        virtualizer.renderRoot.querySelectorAll('.item')
+      ).filter((e) => isInViewport(e, scroller)) as HTMLElement[];
+      expect(first(items).textContent?.trim()).to.equal('500');
+      // The item's top should be close to the scroller's top.
+      const itemRect = first(items).getBoundingClientRect();
+      expect(Math.abs(itemRect.top - scrollerRect.top)).to.be.lessThan(5);
+    });
+  });
+
   describe('scrollToIndex', () => {
     it('shows the correct items when scrolling to start position', async () => {
       const virtualizer = await createVirtualizer({items: array(1000)});
