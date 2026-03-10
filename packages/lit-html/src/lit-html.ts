@@ -1226,11 +1226,20 @@ class TemplateInstance implements Disconnectable {
       el: {content},
       parts: parts,
     } = this._$template;
-    const {customElementRegistry = global.customElements} =
-      options?.creationScope ?? {};
+    // Moving forward, the `customElementRegistry` should be passed via
+    // `creationScope`, but for now we also support customization
+    // via `importNode`. This is for backwards compatibility with the older
+    // scoped elements spec that included `shadowRoot.importNode`.
+    // In dev mode, we issue a warning if `importNode` is used, since it's
+    // deprecated and will be removed in the next major version.
+    const {customElementRegistry} = options?.creationScope ?? {};
     const fragment =
       options?.creationScope?.importNode?.(content, true) ??
-      d.importNode(content, {customElementRegistry});
+      d.importNode(
+        content,
+        // the explicit undefined check ensures null can be supplied.
+        customElementRegistry === undefined ? true : {customElementRegistry}
+      );
     if (DEV_MODE && options?.creationScope?.importNode !== undefined) {
       issueWarning(
         'import-node',
