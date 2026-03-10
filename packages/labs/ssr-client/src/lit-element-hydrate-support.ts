@@ -26,6 +26,8 @@ interface PatchableLitElement extends HTMLElement {
   render(): unknown;
   renderOptions: RenderOptions;
   _$needsHydration: boolean;
+  _$internals?: ElementInternals;
+  _$internalsAttached?: boolean;
 }
 
 globalThis.litElementHydrateSupport = ({
@@ -73,13 +75,24 @@ globalThis.litElementHydrateSupport = ({
     }
   };
 
+  const attachInternals = LitElement.prototype
+    .attachInternals as () => ElementInternals;
+  LitElement.prototype.attachInternals = function (this: PatchableLitElement) {
+    const internals = this._$internalsAttached
+      ? attachInternals.call(this)
+      : (this._$internals ??= attachInternals.call(this));
+    this._$internalsAttached = true;
+    return internals;
+  };
+
   // If we've been server-side rendered, just return `this.shadowRoot`, don't
   // call the base implementation, which would also adopt styles (for now)
   const createRenderRoot = LitElement.prototype.createRenderRoot;
   LitElement.prototype.createRenderRoot = function (this: PatchableLitElement) {
-    if (this.shadowRoot) {
+    this._$internals ??= attachInternals.call(this);
+    if (this._$internals.shadowRoot) {
       this._$needsHydration = true;
-      return this.shadowRoot;
+      return this._$internals.shadowRoot;
     } else {
       return createRenderRoot.call(this);
     }
