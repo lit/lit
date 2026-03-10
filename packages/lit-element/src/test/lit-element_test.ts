@@ -4,7 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {html, LitElement, ReactiveElement, Part, nothing} from 'lit-element';
+import {
+  html,
+  LitElement,
+  ReactiveElement,
+  Part,
+  nothing,
+  RenderOptions,
+} from 'lit-element';
 import {directive, AsyncDirective} from 'lit-html/async-directive.js';
 import {
   canTestLitElement,
@@ -304,6 +311,56 @@ import {createRef, ref} from 'lit-html/directives/ref.js';
     container.appendChild(a);
     await a.updateComplete;
     assert.ok(a.hasUpdated);
+  });
+
+  test('uses renderRoot as creationScope', async () => {
+    class A extends LitElement {}
+    customElements.define(generateElementName(), A);
+    const a = new A();
+    container.appendChild(a);
+    await a.updateComplete;
+    assert.equal(a.renderOptions.creationScope as ShadowRoot, a.renderRoot);
+    class B extends LitElement {
+      override createRenderRoot() {
+        this.renderOptions.creationScope =
+          this as RenderOptions['creationScope'];
+        return this;
+      }
+    }
+    customElements.define(generateElementName(), B);
+    const b = new B();
+    container.appendChild(b);
+    await b.updateComplete;
+    assert.equal(b.renderOptions.creationScope as ShadowRoot, b.renderRoot);
+  });
+
+  (!('customElementRegistry' in Element.prototype) ||
+    (window.ShadyDOM && window.ShadyDOM.inUse)
+    ? test.skip
+    : test)('rendered DOM has correct customElementRegistry', async () => {
+    console.log('ok');
+    class A extends LitElement {
+      static registry = new CustomElementRegistry();
+      static override shadowRootOptions = {
+        ...LitElement.shadowRootOptions,
+        customElementRegistry: this.registry,
+      } as ShadowRootInit;
+      override render() {
+        return html`<div></div>`;
+      }
+    }
+    customElements.define(generateElementName(), A);
+    const a = new A();
+    container.appendChild(a);
+    await a.updateComplete;
+    assert.equal(
+      (
+        a.shadowRoot!.firstElementChild! as Element & {
+          customElementRegistry: CustomElementRegistry;
+        }
+      ).customElementRegistry,
+      A.registry
+    );
   });
 
   (window.ShadyDOM && window.ShadyDOM.inUse ? test.skip : test)(
