@@ -17,6 +17,7 @@ node_modules/
 /.direnv/
 /.envrc
 /.actrc
+.claude/settings.json
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
