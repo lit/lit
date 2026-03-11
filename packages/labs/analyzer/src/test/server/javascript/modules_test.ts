@@ -19,13 +19,13 @@ import {
 
 for (const lang of languages) {
   suite(`Module tests (${lang})`, () => {
-    const {module} = setupAnalyzerForTestWithModule(
-      lang,
-      'modules',
-      'module-a'
-    );
-
     test('Dependencies correctly analyzed', () => {
+      const {module} = setupAnalyzerForTestWithModule(
+        lang,
+        'modules',
+        'module-a'
+      );
+
       const getMonorepoSubpath = (f: string) =>
         f?.slice(f.lastIndexOf('packages' + path.sep));
       const expectedDeps = new Set([
@@ -40,6 +40,58 @@ for (const lang of languages) {
         path.normalize(`packages/lit/index.d.ts`),
       ]);
       assert.equal(expectedDeps.size, module.dependencies.size);
+      for (const d of module.dependencies) {
+        assert.ok(
+          expectedDeps.has(getMonorepoSubpath(d)),
+          `${getMonorepoSubpath(d)} not in\n ${Array.from(expectedDeps).join(
+            '\n'
+          )}`
+        );
+      }
+    });
+
+    test('Handles relative CSS imports', () => {
+      const {module} = setupAnalyzerForTestWithModule(
+        lang,
+        'css-modules',
+        'element-a'
+      );
+
+      const getMonorepoSubpath = (f: string) =>
+        f?.slice(f.lastIndexOf('packages' + path.sep));
+      const expectedDeps = new Set([
+        path.normalize(
+          `packages/labs/analyzer/test-files/${lang}/css-modules/${lang === 'ts' ? 'src/' : ''}element-a.css`
+        ),
+        path.normalize(`packages/lit/index.d.ts`),
+      ]);
+      assert.equal(module.dependencies.size, expectedDeps.size);
+      for (const d of module.dependencies) {
+        assert.ok(
+          expectedDeps.has(getMonorepoSubpath(d)),
+          `${getMonorepoSubpath(d)} not in\n ${Array.from(expectedDeps).join(
+            '\n'
+          )}`
+        );
+      }
+    });
+
+    test('Handles cross-package CSS imports', () => {
+      const {module} = setupAnalyzerForTestWithModule(
+        lang,
+        'css-modules',
+        'element-b'
+      );
+
+      const getMonorepoSubpath = (f: string) =>
+        f?.slice(f.lastIndexOf('packages' + path.sep));
+      const expectedDeps = new Set([
+        path.normalize(
+          `packages/labs/test-projects/test-css-styles/button.css`
+        ),
+        path.normalize(`packages/lit/index.d.ts`),
+      ]);
+      assert.equal(module.dependencies.size, expectedDeps.size);
       for (const d of module.dependencies) {
         assert.ok(
           expectedDeps.has(getMonorepoSubpath(d)),

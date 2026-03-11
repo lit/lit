@@ -58,7 +58,7 @@
       ]
     },
     "test:server": {
-      "command": "node --enable-source-maps --test-reporter=spec --test test/server/*_test.js test/server/**/*_test.js",
+      "command": "node --enable-source-maps --test-reporter=spec --test test/server/**/*_test.js",
       "dependencies": [
         "build"
       ],
@@ -97,6 +97,7 @@
   },
   "dependencies": {
     "@parse5/tools": "^0.7.0",
+    "enhanced-resolve": "^5.20.0",
     "lit-html": "^3.1.2",
     "package-json-type": "^1.0.3",
     "parse5": "^7.3.0",

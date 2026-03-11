@@ -11,6 +11,7 @@
  */
 
 import type ts from 'typescript';
+import enhancedResolve from 'enhanced-resolve';
 import {
   Module,
   AnalyzerInterface,
@@ -362,18 +363,35 @@ export const getPathForModuleSpecifier = (
     analyzer.commandLine.options,
     analyzer.fs
   ).resolvedModule?.resolvedFileName;
-  if (resolvedPath === undefined) {
-    analyzer.addDiagnostic(
-      createDiagnostic({
-        typescript: analyzer.typescript,
-        node: location,
-        message: `Could not resolve specifier ${specifier} to filesystem path.`,
-        category: analyzer.typescript.DiagnosticCategory.Error,
-      })
-    );
-    return undefined;
+  if (resolvedPath !== undefined) {
+    return analyzer.path.normalize(resolvedPath) as AbsolutePath;
   }
-  return analyzer.path.normalize(resolvedPath) as AbsolutePath;
+  // TypeScript's resolveModuleName doesn't resolve non-JS/TS files (e.g.
+  // CSS modules imported with `import ... with {type: 'css'}`). Fall back
+  // to enhanced-resolve which handles package exports, symlinks, etc.
+  const sourceDir = analyzer.path.dirname(location.getSourceFile().fileName);
+  try {
+    const resolved = enhancedResolve.create.sync({
+      extensions: [],
+      mainFields: ['module', 'main'],
+      conditionNames: ['import', 'default'],
+      fullySpecified: true,
+    })(sourceDir, specifier);
+    if (typeof resolved === 'string') {
+      return analyzer.path.normalize(resolved) as AbsolutePath;
+    }
+  } catch {
+    // Fall through to diagnostic
+  }
+  analyzer.addDiagnostic(
+    createDiagnostic({
+      typescript: analyzer.typescript,
+      node: location,
+      message: `Could not resolve specifier ${specifier} to filesystem path.`,
+      category: analyzer.typescript.DiagnosticCategory.Error,
+    })
+  );
+  return undefined;
 };
 
 /**
