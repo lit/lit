@@ -6,19 +6,18 @@
 
 import type {LitElement} from 'lit';
 
-// Proposed interface changes
 declare global {
   interface CustomElementRegistry {
     initialize(root: Element | DocumentFragment): void;
   }
   interface ShadowRootInit {
     customElementRegistry?: CustomElementRegistry;
-    // old property, retained for backwards compatibility
+    /** @deprecated No longer supported. Use `customElementRegistry` instead. */
     customElements?: CustomElementRegistry;
   }
   interface ShadowRoot {
     customElementRegistry?: CustomElementRegistry;
-    // old property, retained for backwards compatibility
+    /** @deprecated No longer supported. */
     importNode(node: Node, deep?: boolean): Node;
   }
   interface Element {
@@ -38,13 +37,19 @@ export function ScopedRegistryHost<SuperClass extends LitElementConstructor>(
 ): SuperClass {
   return class ScopedRegistryMixin extends superclass {
     /**
-     * Obtains the scoped elements definitions map
+     * An object describing the scoped custom element registrations to make
+     * for this class. They keys are the tag names to use for the definitions.
      */
     static elementDefinitions?: ElementDefinitionsMap;
+    // Internal object describing registrations, including all superclass
+    // defined elements. This is separate from `elementDefinitions` to avoid
+    // modifying the user provided object.
     protected static _elementDefinitions?: ElementDefinitionsMap;
     static registry?: CustomElementRegistry;
 
     protected static finalize() {
+      // Note, the `any` cast here is required because TypeScript doesn't
+      // easily allow super calls to static methods.
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       (superclass as any).finalize.call(this);
       if (
@@ -52,8 +57,7 @@ export function ScopedRegistryHost<SuperClass extends LitElementConstructor>(
         !this.hasOwnProperty('_elementDefinitions')
       ) {
         this._elementDefinitions = {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          ...(this._elementDefinitions ?? {}),
+          ...this._elementDefinitions,
           ...this.elementDefinitions,
         };
         this.registry = undefined;
