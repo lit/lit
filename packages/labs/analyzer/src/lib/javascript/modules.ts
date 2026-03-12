@@ -11,7 +11,6 @@
  */
 
 import type ts from 'typescript';
-import enhancedResolve from 'enhanced-resolve';
 import {
   Module,
   AnalyzerInterface,
@@ -350,6 +349,26 @@ export const getPathForModuleSpecifierExpression = (
 };
 
 /**
+ * Extensions that TypeScript can resolve and the analyzer can process.
+ * Specifiers ending in any other extension that don't resolve to a file
+ * generate a warning.
+ */
+const analyzableExtensions = [
+  '.js',
+  '.mjs',
+  '.cjs',
+  '.ts',
+  '.mts',
+  '.cts',
+  '.tsx',
+  '.jsx',
+];
+
+const hasNonAnalyzableExtension = (specifier: string) =>
+  specifier.includes('.') &&
+  !analyzableExtensions.some((e) => specifier.endsWith(e));
+
+/**
  * Resolve a module specifier to an absolute path on disk.
  */
 export const getPathForModuleSpecifier = (
@@ -367,21 +386,18 @@ export const getPathForModuleSpecifier = (
     return analyzer.path.normalize(resolvedPath) as AbsolutePath;
   }
   // TypeScript's resolveModuleName doesn't resolve non-JS/TS files (e.g.
-  // CSS modules imported with `import ... with {type: 'css'}`). Fall back
-  // to enhanced-resolve which handles package exports, symlinks, etc.
-  const sourceDir = analyzer.path.dirname(location.getSourceFile().fileName);
-  try {
-    const resolved = enhancedResolve.create.sync({
-      extensions: [],
-      mainFields: ['module', 'main'],
-      conditionNames: ['import', 'default'],
-      fullySpecified: true,
-    })(sourceDir, specifier);
-    if (typeof resolved === 'string') {
-      return analyzer.path.normalize(resolved) as AbsolutePath;
-    }
-  } catch {
-    // Fall through to diagnostic
+  // CSS modules imported with `import ... with {type: 'css'}`). Emit a
+  // warning and return undefined since the analyzer can't analyze those files.
+  if (hasNonAnalyzableExtension(specifier)) {
+    analyzer.addDiagnostic(
+      createDiagnostic({
+        typescript: analyzer.typescript,
+        node: location,
+        message: `Could not resolve specifier ${specifier} to an analyzable file.`,
+        category: analyzer.typescript.DiagnosticCategory.Warning,
+      })
+    );
+    return undefined;
   }
   analyzer.addDiagnostic(
     createDiagnostic({

@@ -50,21 +50,27 @@ for (const lang of languages) {
       }
     });
 
-    test('Handles relative CSS imports', () => {
-      const {module} = setupAnalyzerForTestWithModule(
-        lang,
-        'css-modules',
-        'element-a'
-      );
+    test('Handles relative CSS imports without errors', () => {
+      const {
+        module,
+        analyzer,
+        typescript: ts,
+      } = setupAnalyzerForTestWithModule(lang, 'css-modules', 'element-a', {
+        throwOnWarnings: false,
+      });
 
+      // CSS imports should produce warnings, not errors
+      const diagnostics = [...analyzer.getDiagnostics()];
+      assert.ok(diagnostics.length > 0, 'Expected warnings for CSS imports');
+      for (const d of diagnostics) {
+        assert.equal(d.category, ts.DiagnosticCategory.Warning);
+      }
+
+      // CSS files are not tracked as dependencies (the analyzer can't
+      // analyze them), but the import should not cause an error
       const getMonorepoSubpath = (f: string) =>
         f?.slice(f.lastIndexOf('packages' + path.sep));
-      const expectedDeps = new Set([
-        path.normalize(
-          `packages/labs/analyzer/test-files/${lang}/css-modules/${lang === 'ts' ? 'src/' : ''}element-a.css`
-        ),
-        path.normalize(`packages/lit/index.d.ts`),
-      ]);
+      const expectedDeps = new Set([path.normalize(`packages/lit/index.d.ts`)]);
       assert.equal(module.dependencies.size, expectedDeps.size);
       for (const d of module.dependencies) {
         assert.ok(
@@ -76,21 +82,25 @@ for (const lang of languages) {
       }
     });
 
-    test('Handles cross-package CSS imports', () => {
-      const {module} = setupAnalyzerForTestWithModule(
-        lang,
-        'css-modules',
-        'element-b'
-      );
+    test('Handles cross-package CSS imports without errors', () => {
+      const {
+        module,
+        analyzer,
+        typescript: ts,
+      } = setupAnalyzerForTestWithModule(lang, 'css-modules', 'element-b', {
+        throwOnWarnings: false,
+      });
+
+      // CSS imports should produce warnings, not errors
+      const diagnostics = [...analyzer.getDiagnostics()];
+      assert.ok(diagnostics.length > 0, 'Expected warnings for CSS imports');
+      for (const d of diagnostics) {
+        assert.equal(d.category, ts.DiagnosticCategory.Warning);
+      }
 
       const getMonorepoSubpath = (f: string) =>
         f?.slice(f.lastIndexOf('packages' + path.sep));
-      const expectedDeps = new Set([
-        path.normalize(
-          `packages/labs/test-projects/test-css-styles/button.css`
-        ),
-        path.normalize(`packages/lit/index.d.ts`),
-      ]);
+      const expectedDeps = new Set([path.normalize(`packages/lit/index.d.ts`)]);
       assert.equal(module.dependencies.size, expectedDeps.size);
       for (const d of module.dependencies) {
         assert.ok(

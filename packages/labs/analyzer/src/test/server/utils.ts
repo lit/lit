@@ -204,14 +204,29 @@ export class InMemoryAnalyzer extends Analyzer {
   }
 }
 
-export const setupAnalyzerForTest = (lang: Language, pkg: string) => {
+interface SetupOptions {
+  /**
+   * Whether to throw if there are any warnings in the diagnostics. Defaults to
+   * true.
+   */
+  throwOnWarnings?: boolean;
+}
+
+export const setupAnalyzerForTest = (
+  lang: Language,
+  pkg: string,
+  {throwOnWarnings = true}: SetupOptions = {}
+) => {
   const packagePath = fileURLToPath(
     new URL(`../../test-files/${lang}/${pkg}`, import.meta.url).href
   ) as AbsolutePath;
   const analyzer = createPackageAnalyzer(packagePath);
   const diagnostics = [...analyzer.getDiagnostics()];
-  if (diagnostics.length > 0) {
-    throw makeDiagnosticError(diagnostics);
+  const errors = throwOnWarnings
+    ? diagnostics
+    : diagnostics.filter((d) => d.category === ts.DiagnosticCategory.Error);
+  if (errors.length > 0) {
+    throw makeDiagnosticError(errors);
   }
   const getModule = (name: string) =>
     analyzer.getModule(
@@ -231,9 +246,10 @@ export const setupAnalyzerForTest = (lang: Language, pkg: string) => {
 export const setupAnalyzerForTestWithModule = (
   lang: Language,
   pkg: string,
-  module: string
+  module: string,
+  options?: SetupOptions
 ) => {
-  const result = setupAnalyzerForTest(lang, pkg);
+  const result = setupAnalyzerForTest(lang, pkg, options);
   return {
     ...result,
     module: result.getModule(module),
