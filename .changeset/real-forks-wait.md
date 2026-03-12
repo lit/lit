@@ -7,4 +7,4 @@
 '@lit-labs/testing': patch
 ---
 
-remove deprecated shadowroot attribute
+Remove support for the deprecated `<template shadowroot>` attribute.
