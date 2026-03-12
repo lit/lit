@@ -320,6 +320,92 @@ describe('flow layout', () => {
     });
   });
 
+  describe('item reorder layout correctness', () => {
+    it('updates positions after reordering items with different heights', async () => {
+      // Regression test for https://github.com/lit/lit/issues/4670
+      // When items are reordered using a keyFunction, Lit's repeat directive
+      // moves DOM elements rather than re-rendering them. Since no individual
+      // element changes size, the ResizeObserver doesn't fire, and without
+      // a MutationObserver-based re-measure the layout uses stale cached
+      // sizes at the old index positions, causing overlaps or gaps.
+      interface SizedItem {
+        id: string;
+        height: number;
+      }
+      const items: SizedItem[] = [
+        {id: 'a', height: 20},
+        {id: 'b', height: 40},
+        {id: 'c', height: 80},
+      ];
+      const renderItem = (item: SizedItem) =>
+        html`<div
+          class="sized-item"
+          style="height: ${item.height}px; margin: 0; padding: 0;"
+        >
+          ${item.id}
+        </div>`;
+
+      const container = await fixture(html`
+        <div>
+          <style>
+            lit-virtualizer {
+              height: 200px;
+              width: 200px;
+              margin: 0;
+              padding: 0;
+            }
+          </style>
+          <lit-virtualizer
+            scroller
+            .items=${items}
+            .renderItem=${renderItem}
+            .keyFunction=${(item: SizedItem) => item.id}
+          ></lit-virtualizer>
+        </div>
+      `);
+      const virtualizer = (await until(() =>
+        container.querySelector('lit-virtualizer')
+      )) as LitVirtualizer;
+      await virtualizer.layoutComplete;
+
+      // Verify initial layout: items should be contiguous with no gaps.
+      await pass(() => {
+        const children = Array.from(
+          virtualizer.renderRoot.querySelectorAll('.sized-item')
+        );
+        expect(children.length).to.equal(3);
+      });
+
+      // Swap items b and c.
+      const swapped: SizedItem[] = [items[0], items[2], items[1]];
+      virtualizer.items = swapped;
+
+      // Wait for the MutationObserver to trigger re-measure and layout
+      // to settle. The MutationObserver fires asynchronously after the
+      // DOM mutation, so we need to wait for multiple layout cycles.
+      await pass(() => {
+        const children = Array.from(
+          virtualizer.renderRoot.querySelectorAll('.sized-item')
+        ) as HTMLElement[];
+        expect(children.length).to.equal(3);
+        // Verify order: a, c, b.
+        expect(children[0].textContent?.trim()).to.equal('a');
+        expect(children[1].textContent?.trim()).to.equal('c');
+        expect(children[2].textContent?.trim()).to.equal('b');
+        // Verify no overlaps: each child's top should be >= the previous
+        // child's bottom.
+        for (let i = 1; i < children.length; i++) {
+          const prevBottom = children[i - 1].getBoundingClientRect().bottom;
+          const curTop = children[i].getBoundingClientRect().top;
+          expect(curTop).to.be.at.least(
+            prevBottom - 1,
+            `Item ${i} overlaps with item ${i - 1}`
+          );
+        }
+      });
+    });
+  });
+
   describe('scrollToIndex', () => {
     it('shows the correct items when scrolling to start position', async () => {
       const virtualizer = await createVirtualizer({items: array(1000)});
