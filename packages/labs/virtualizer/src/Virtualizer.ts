@@ -431,9 +431,26 @@ export class Virtualizer {
   }
 
   private _initObservers() {
-    this._mutationObserver = new MutationObserver(
-      this._finishDOMUpdate.bind(this)
-    );
+    this._mutationObserver = new MutationObserver((records) => {
+      this._finishDOMUpdate();
+      // When children are reordered (e.g. by lit-html's repeat directive),
+      // the ResizeObserver won't fire because no individual element changed
+      // size. Detect reorders — where a node appears in both addedNodes and
+      // removedNodes — and trigger a re-measure so the layout picks up the
+      // new index-to-size mapping.
+      const added = new Set<Node>();
+      const removed = new Set<Node>();
+      for (const record of records) {
+        record.addedNodes.forEach((n) => added.add(n));
+        record.removedNodes.forEach((n) => removed.add(n));
+      }
+      for (const node of added) {
+        if (removed.has(node)) {
+          this._readLayoutInfo();
+          break;
+        }
+      }
+    });
     this._hostElementRO = new _ResizeObserver!(() =>
       this._viewportSizeChanged()
     );
