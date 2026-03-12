@@ -1232,10 +1232,10 @@ class TemplateInstance implements Disconnectable {
     // scoped elements spec that included `shadowRoot.importNode`.
     // In dev mode, we issue a warning if `importNode` is used, since it's
     // deprecated and will be removed in the next major version.
-    const {creationScope = {}} = options ?? {};
+    const {creationScope} = options ?? {};
     const fragment =
       creationScope?.importNode?.(content, true) ??
-      d.importNode(content, creationScope ?? {});
+      d.importNode(content, creationScope ?? true);
     if (DEV_MODE && creationScope?.importNode !== undefined) {
       issueWarning(
         'import-node',
