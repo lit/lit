@@ -327,7 +327,28 @@ export async function minifyHTMLLiterals(
       template.parts.forEach((part, index) => {
         if (part.start < part.end) {
           // Only overwrite if the literal part has text content
-          ms.overwrite(part.start, part.end, minParts[index]);
+          let content = minParts[index];
+          // When minifying CSS, a template part that begins with ';' provides
+          // the declaration separator between the preceding interpolated value
+          // and the next property. CleanCSS collapses the resulting ';;' (one
+          // from the placeholder suffix, one from the part) into a single ';',
+          // which is then consumed by the split, stripping the separator.
+          // Restore it here so the emitted source remains valid CSS.
+          //
+          // Exception: if the minified part starts with '}', the original ';'
+          // was a trailing declaration terminator before a closing brace that
+          // CleanCSS correctly removed. Don't restore it in that case.
+          if (
+            minifyCSS &&
+            index > 0 &&
+            part.text.startsWith(';') &&
+            content.length > 0 &&
+            !content.startsWith(';') &&
+            !content.startsWith('}')
+          ) {
+            content = ';' + content;
+          }
+          ms.overwrite(part.start, part.end, content);
         }
       });
     }
