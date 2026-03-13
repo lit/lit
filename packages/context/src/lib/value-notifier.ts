@@ -67,14 +67,19 @@ export class ValueNotifier<T> {
       callback(this.value);
       return;
     }
-    if (!this.subscriptions.has(callback)) {
-      this.subscriptions.set(callback, {
-        disposer: () => {
-          this.subscriptions.delete(callback);
-        },
-        consumerHost,
-      });
+    if (this.subscriptions.has(callback)) {
+      // This consumer is already subscribed. Value changes are delivered
+      // via updateObservers(), so re-invoking the callback here would be
+      // redundant and can contribute to infinite render loops when a
+      // provider is dynamically created inside a consumer's render.
+      return;
     }
+    this.subscriptions.set(callback, {
+      disposer: () => {
+        this.subscriptions.delete(callback);
+      },
+      consumerHost,
+    });
     const {disposer} = this.subscriptions.get(callback)!;
     callback(this.value, disposer);
   }
