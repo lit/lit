@@ -44,24 +44,59 @@ export type Thunk = () =>
  */
 export type ThunkedRenderResult = Array<string | Thunk>;
 
+type RenderValue =
+  | string
+  | Thunk
+  | Promise<string | RenderResult | ThunkedRenderResult>
+  | RenderResult
+  | ReturnType<Thunk>;
+
+const unwrapShadowRealmFunctions = (value: RenderValue): RenderValue => {
+  if (typeof value !== 'function') {
+    return value;
+  } else if (value.name === '_$litRenderArray') {
+    const values: ThunkedRenderResult = [];
+    // eslint-disable-next-line no-constant-condition
+    while (true) {
+      const v = value();
+      if (v === null) {
+        break;
+      }
+      values.push(v as string | Thunk);
+    }
+    return values;
+  } else if (value.name === '_$litRenderPromise') {
+    return new Promise((resolve, reject) => {
+      (
+        value as (
+          resolve: (value: string | ThunkedRenderResult) => void,
+          reject: (reason: string) => void
+        ) => void
+      )(resolve, reject);
+    });
+  }
+  return value;
+};
+
 /**
  * Joins a RenderResult or ThunkedRenderResult into a string.
  */
 export const collectResult = async (
-  result: RenderResult | ThunkedRenderResult
+  result: RenderResult | ThunkedRenderResult | Thunk
 ): Promise<string> => {
+  const chunks =
+    Array.isArray(result) ||
+    typeof (result as RenderResult)[Symbol.iterator] === 'function'
+      ? (result as RenderResult | ThunkedRenderResult)
+      : [result];
   let str = '';
-  for (const chunk of result) {
-    let value:
-      | string
-      | Thunk
-      | Promise<string | RenderResult | ThunkedRenderResult>
-      | RenderResult
-      | ReturnType<Thunk> = chunk;
+  for (const chunk of chunks) {
+    let value: RenderValue = chunk;
 
     // This inner loop lets us repeatedly resolve thunks and Promises
     // until we get to a string, array, or iterator.
     while (value !== undefined) {
+      value = unwrapShadowRealmFunctions(value);
       while (typeof value === 'function') {
         value = value();
       }
@@ -98,17 +133,18 @@ export const collectResult = async (
  * This function throws if a RenderResult contains a Promise.
  */
 export const collectResultSync = (
-  result: RenderResult | ThunkedRenderResult
+  result: RenderResult | ThunkedRenderResult | Thunk
 ): string => {
+  const chunks =
+    Array.isArray(result) ||
+    typeof (result as RenderResult)[Symbol.iterator] === 'function'
+      ? (result as RenderResult | ThunkedRenderResult)
+      : [result];
   let str = '';
-  for (const chunk of result) {
-    let value:
-      | string
-      | Thunk
-      | Promise<string | RenderResult | ThunkedRenderResult>
-      | RenderResult
-      | ReturnType<Thunk> = chunk;
+  for (const chunk of chunks) {
+    let value: RenderValue = chunk;
 
+    value = unwrapShadowRealmFunctions(value);
     while (typeof value === 'function') {
       value = value();
     }
