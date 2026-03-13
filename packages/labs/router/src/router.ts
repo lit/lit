@@ -6,9 +6,6 @@
 
 import {Routes} from './routes.js';
 
-// We cache the origin since it can't change
-const origin = location.origin || location.protocol + '//' + location.host;
-
 /**
  * A root-level router that installs global event listeners to intercept
  * navigation.
@@ -22,7 +19,6 @@ const origin = location.origin || location.protocol + '//' + location.host;
 export class Router extends Routes {
   override hostConnected() {
     super.hostConnected();
-    window.addEventListener('click', this._onClick);
     window.addEventListener('popstate', this._onPopState);
     // Kick off routed rendering by going to the current URL
     this.goto(window.location.pathname);
@@ -30,49 +26,37 @@ export class Router extends Routes {
 
   override hostDisconnected() {
     super.hostDisconnected();
-    window.removeEventListener('click', this._onClick);
     window.removeEventListener('popstate', this._onPopState);
   }
-
-  private _onClick = (e: MouseEvent) => {
-    const isNonNavigationClick =
-      e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey;
-    if (e.defaultPrevented || isNonNavigationClick) {
-      return;
-    }
-
-    const anchor = e
-      .composedPath()
-      .find((n) => (n as HTMLElement).tagName === 'A') as
-      | HTMLAnchorElement
-      | undefined;
-    if (
-      anchor === undefined ||
-      anchor.target !== '' ||
-      anchor.hasAttribute('download') ||
-      anchor.getAttribute('rel') === 'external'
-    ) {
-      return;
-    }
-
-    const href = anchor.href;
-    if (href === '' || href.startsWith('mailto:')) {
-      return;
-    }
-
-    const location = window.location;
-    if (anchor.origin !== origin) {
-      return;
-    }
-
-    e.preventDefault();
-    if (href !== location.href) {
-      window.history.pushState({}, '', href);
-      this.goto(anchor.pathname);
-    }
-  };
 
   private _onPopState = (_e: PopStateEvent) => {
     this.goto(window.location.pathname);
   };
+}
+
+/**
+ * Navigates all routes controller to `href`, and update the document location
+ */
+export function goTo(href: string): void {
+  // add two entries with the same resolved url, the extra entry will get
+  // overridden anyway on every new navigation
+  const url = new URL(href, location.href);
+  history.pushState({}, '', url);
+  history.pushState({}, '', url);
+  // navigate back to fire the popState with the new path
+  history.back();
+}
+
+/**
+ * click handle to allow the Router to take control of the anchor element
+ * <a @click=${onLinkClick}>link</a>
+ */
+export function onLinkClick(e: Event): void {
+  if (
+    e.currentTarget instanceof HTMLElement &&
+    e.currentTarget.hasAttribute('href')
+  ) {
+    e.preventDefault();
+    goTo(e.currentTarget.getAttribute('href')!);
+  }
 }
