@@ -768,15 +768,21 @@ export function renderValue(
   const result: ThunkedRenderResult = [];
 
   if (value != null && isTemplateResult(value)) {
-    if (hydratable) {
+    if (hydratable && (!('direct' in value) || !value.direct)) {
       result.push(
         `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`
       );
     }
-    result.push(() =>
-      renderTemplateResult(value as TemplateResult, renderInfo)
-    );
-    if (hydratable) {
+    if ('direct' in value && value.direct) {
+      result.push(() => {
+        return (value as TemplateResult).strings.join('');
+      });
+    } else {
+      result.push(() =>
+        renderTemplateResult(value as TemplateResult, renderInfo)
+      );
+    }
+    if (hydratable && (!('direct' in value) || !value.direct)) {
       result.push(`<!--/lit-part-->`);
     }
   } else {
