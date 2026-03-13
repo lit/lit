@@ -7,7 +7,7 @@
 import {html, LitElement} from 'lit';
 import {property} from 'lit/decorators/property.js';
 import {KeyFn} from 'lit/directives/repeat.js';
-import {LayoutConfigValue} from './layouts/shared/Layout.js';
+import {LayoutConfigValue, virtualizerAxis} from './layouts/shared/Layout.js';
 import {
   virtualize,
   virtualizerRef,
@@ -33,18 +33,28 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   @property({reflect: true, type: Boolean})
   scroller = false;
 
+  /**
+   * Controls which CSS logical axis the virtualizer scrolls along.
+   * - `'block'` (default): virtualizes along the block axis.
+   * - `'inline'`: virtualizes along the inline axis (e.g., for a
+   *   horizontal carousel in a vertical document).
+   */
+  @property({reflect: true})
+  axis: virtualizerAxis = 'block';
+
   createRenderRoot() {
     return this;
   }
 
   render() {
-    const {items, renderItem, keyFunction, layout, scroller} = this;
+    const {items, renderItem, keyFunction, layout, scroller, axis} = this;
     return html`${virtualize({
       items,
       renderItem,
       keyFunction,
       layout,
       scroller,
+      axis,
     })}`;
   }
 
