@@ -107,6 +107,10 @@ export class ContextProvider<
       return;
     }
     ev.stopPropagation();
+    // avoid reprocessing callback if it's already a subscriber
+    if (this.subscriptions.has(ev.callback)) {
+      return;
+    }
     this.addCallback(ev.callback, consumerHost, ev.subscribe);
   };
 
@@ -150,9 +154,27 @@ export class ContextProvider<
         continue;
       }
       seen.add(callback);
-      consumerHost.dispatchEvent(
-        new ContextRequestEvent(this.context, consumerHost, callback, true)
-      );
+      // Determine if consumer is "contained" within the new provider;
+      // this is required for it to provide.
+      // Note, the walk here is significantly faster than sending the event and
+      // short-circuiting based on the path.
+      let needsContext = false;
+      let current = consumerHost;
+      while (current) {
+        needsContext = current === childProviderHost;
+        if (needsContext || current === this.host) {
+          break;
+        }
+        current =
+          current.assignedSlot ??
+          current.parentElement ??
+          (current.parentNode as ShadowRoot)?.host;
+      }
+      if (needsContext) {
+        consumerHost.dispatchEvent(
+          new ContextRequestEvent(this.context, consumerHost, callback, true)
+        );
+      }
     }
     ev.stopPropagation();
   };
