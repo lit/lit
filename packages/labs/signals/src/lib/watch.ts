@@ -7,7 +7,7 @@
 import {DirectiveResult, Part, directive} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {Signal} from 'signal-polyfill';
-import {SignalWatcher} from './signal-watcher.js';
+import type {SignalWatcher} from './signal-watcher.js';
 
 // Watcher for directives that are not associated with a host element.
 let effectsPending = false;
