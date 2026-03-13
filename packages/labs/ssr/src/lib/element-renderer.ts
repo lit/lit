@@ -7,6 +7,7 @@
  */
 
 import {escapeHtml} from './util/escape-html.js';
+import {HTMLElement as HTMLElementShim} from '@lit-labs/ssr-dom-shim';
 import type {RenderInfo} from './render-value.js';
 import type {ThunkedRenderResult} from './render-result.js';
 
@@ -218,24 +219,20 @@ export abstract class ElementRenderer {
 /**
  * An ElementRenderer used as a fallback in the case where a custom element is
  * either unregistered or has no other matching renderer.
+ *
+ * Creates a minimal HTMLElement instance so the element participates correctly
+ * in the SSR event target chain, allowing events dispatched by its descendants
+ * to bubble through it to ancestor elements (e.g. context providers).
  */
 export class FallbackRenderer extends ElementRenderer {
-  private readonly _attributes: {[name: string]: string} = {};
-
-  override setAttribute(name: string, value: string) {
-    // Browser turns all HTML attributes to lowercase.
-    this._attributes[name.toLowerCase()] = value;
-  }
-
-  override renderAttributes(): ThunkedRenderResult {
-    const result: ThunkedRenderResult = [];
-    for (const [name, value] of Object.entries(this._attributes)) {
-      if (value === '' || value === undefined || value === null) {
-        result.push(` ${name}`);
-      } else {
-        result.push(` ${name}="${escapeHtml(value)}"`);
-      }
-    }
-    return result;
+  constructor(tagName: string) {
+    super(tagName);
+    // Create a minimal element instance with the correct localName so this
+    // renderer participates in the SSR event target chain. Without an element,
+    // custom-element-open cannot push to the eventTargetStack, which would
+    // break event propagation for elements rendered after this one.
+    const element = new HTMLElementShim() as globalThis.HTMLElement;
+    Object.defineProperty(element, 'localName', {get: () => tagName});
+    this.element = element;
   }
 }

@@ -1038,18 +1038,26 @@ And the inner template was:
             );
             shadowResult.push(() => shadowContents);
             shadowResult.push('</template>');
-            shadowResult.push(() => {
-              renderInfo.customElementHostStack.pop();
-            });
           }
+          // Always pop customElementHostStack regardless of whether shadow
+          // content was produced. If renderShadow() returns undefined (e.g.
+          // FallbackRenderer), the push above still happened and must be
+          // balanced with a pop here.
+          shadowResult.push(() => {
+            renderInfo.customElementHostStack.pop();
+          });
           return shadowResult;
         });
         break;
       }
       case 'custom-element-close':
         renderResult.push(() => {
-          renderInfo.customElementInstanceStack.pop();
-          renderInfo.eventTargetStack.pop();
+          const instance = renderInfo.customElementInstanceStack.pop();
+          // Only pop the event target stack if custom-element-open pushed an
+          // entry, which it does only when the renderer has an element instance.
+          if (instance?.element !== undefined) {
+            renderInfo.eventTargetStack.pop();
+          }
         });
         break;
       case 'slot-element-open': {
@@ -1091,7 +1099,11 @@ And the inner template was:
       }
       case 'slot-element-close':
         renderResult.push(() => {
-          renderInfo.eventTargetStack.pop();
+          // Only pop if slot-element-open pushed an entry, which it does only
+          // when the shadow host renderer has an element instance.
+          if (renderInfo.customElementHostStack.at(-1)?.element !== undefined) {
+            renderInfo.eventTargetStack.pop();
+          }
         });
         break;
       case 'slotted-element-open':
