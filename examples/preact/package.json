@@ -11,7 +11,7 @@
     "test:ts": "wireit"
   },
   "dependencies": {
-    "preact": "^10.15.1",
+    "preact": "^10.27.3",
     "@lit-internal/test-elements-react": "^1.0.1"
   },
   "devDependencies": {
