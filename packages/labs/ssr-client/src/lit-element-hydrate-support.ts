@@ -77,7 +77,13 @@ globalThis.litElementHydrateSupport = ({
   // call the base implementation, which would also adopt styles (for now)
   const createRenderRoot = LitElement.prototype.createRenderRoot;
   LitElement.prototype.createRenderRoot = function (this: PatchableLitElement) {
-    if (this.shadowRoot) {
+    // If we partial server-side render the shadow root, we use the `skip-hydration`
+    // attribute to skip the hydration to client-side render the shadow root.
+    // This is useful when combined with a custom ElementRenderer to inject data to the DSR.
+    const skipHydration = this.hasAttribute('skip-hydration');
+    this.removeAttribute('skip-hydration');
+
+    if (this.shadowRoot && !skipHydration) {
       this._$needsHydration = true;
       return this.shadowRoot;
     } else {
