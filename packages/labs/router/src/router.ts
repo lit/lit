@@ -4,10 +4,24 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {Routes} from './routes.js';
+import {Routes, type RouteConfig, type BaseRouteConfig} from './routes.js';
+import type {ReactiveControllerHost} from 'lit';
 
 // We cache the origin since it can't change
 const origin = location.origin || location.protocol + '//' + location.host;
+
+export interface RouterOptions {
+  fallback?: BaseRouteConfig;
+  /**
+   * A prefix path that this router operates under. When set, the router will
+   * only intercept navigation for URLs whose pathname starts with this prefix,
+   * allowing links outside the prefix to perform full-page navigation.
+   *
+   * For example, if your SPA is served at `/myApp`, set `prefix: '/myApp'` so
+   * that links to `/anotherApp` are not intercepted.
+   */
+  prefix?: string;
+}
 
 /**
  * A root-level router that installs global event listeners to intercept
@@ -20,18 +34,62 @@ const origin = location.origin || location.protocol + '//' + location.host;
  * routes should be configured with the `Routes` class.
  */
 export class Router extends Routes {
+  private _prefix: string;
+
+  constructor(
+    host: ReactiveControllerHost & HTMLElement,
+    routes: Array<RouteConfig>,
+    options?: RouterOptions
+  ) {
+    super(host, routes, options);
+    // Normalize the prefix: ensure it starts with `/` and has no trailing `/`
+    const raw = options?.prefix ?? '';
+    this._prefix = raw.endsWith('/') ? raw.slice(0, -1) : raw;
+  }
+
+  /**
+   * Returns a URL string of the current route, including parent routes.
+   * Prepends the prefix so that generated links are full paths.
+   */
+  override link(pathname?: string): string {
+    // Let the base class build the path from this route and any children,
+    // then prepend our prefix so the link is a valid full pathname.
+    const base = super.link(pathname);
+    // super.link() returns an absolute path starting with '/' when the
+    // pathname starts with '/'. In that case, don't prepend the prefix
+    // (the caller explicitly asked for an absolute link).
+    if (pathname?.startsWith('/')) {
+      return base;
+    }
+    return this._prefix + base;
+  }
+
   override hostConnected() {
     super.hostConnected();
     window.addEventListener('click', this._onClick);
     window.addEventListener('popstate', this._onPopState);
     // Kick off routed rendering by going to the current URL
-    this.goto(window.location.pathname);
+    this.goto(this._stripPrefix(window.location.pathname) ?? '/');
   }
 
   override hostDisconnected() {
     super.hostDisconnected();
     window.removeEventListener('click', this._onClick);
     window.removeEventListener('popstate', this._onPopState);
+  }
+
+  /**
+   * Strip the prefix from a pathname, returning the local path for routing.
+   * If the pathname does not start with the prefix, returns `undefined`.
+   */
+  private _stripPrefix(pathname: string): string | undefined {
+    if (this._prefix === '') {
+      return pathname;
+    }
+    if (pathname === this._prefix || pathname.startsWith(this._prefix + '/')) {
+      return pathname.slice(this._prefix.length) || '/';
+    }
+    return undefined;
   }
 
   private _onClick = (e: MouseEvent) => {
@@ -65,14 +123,23 @@ export class Router extends Routes {
       return;
     }
 
+    // If a prefix is set, only intercept links under that prefix.
+    const localPath = this._stripPrefix(anchor.pathname);
+    if (localPath === undefined) {
+      return;
+    }
+
     e.preventDefault();
     if (href !== location.href) {
       window.history.pushState({}, '', href);
-      this.goto(anchor.pathname);
+      this.goto(localPath);
     }
   };
 
   private _onPopState = (_e: PopStateEvent) => {
-    this.goto(window.location.pathname);
+    const localPath = this._stripPrefix(window.location.pathname);
+    if (localPath !== undefined) {
+      this.goto(localPath);
+    }
   };
 }
