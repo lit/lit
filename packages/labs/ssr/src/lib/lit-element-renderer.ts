@@ -46,6 +46,25 @@ export class LitElementRenderer extends ElementRenderer {
     return (ctor as unknown as typeof LitElement)['_$litElement$'];
   }
 
+  /**
+   * By default, the renderer will not call connectedCallback during SSR.
+   * However, to enable support for features that depend on connectedCallback, such as
+   * @lit/context, enabling this flag will cause connectedCallback to be called.
+   * To enable, set this to true or add a callback function that returns true for
+   * elements that should have connectedCallback called.
+   *
+   * @example
+   *
+   * ```ts
+   * import {LitElementRenderer} from '@lit-labs/ssr';
+   *
+   * LitElementRenderer.callConnectedCallback = true;
+   * // or with a callback function
+   * LitElementRenderer.callConnectedCallback = (element) => element.localName === 'my-element';
+   * ```
+   */
+  static callConnectedCallback?: boolean | ((element: LitElement) => boolean);
+
   constructor(tagName: string) {
     super(tagName);
     this.element = new (customElements.get(this.tagName)!)() as LitElement;
@@ -82,9 +101,24 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   override connectedCallback() {
-    // Optionally call connectedCallback via setting: `litSsrCallConnectedCallback`
-    // Enable this flag to process events dispatched handled via connectedCallback.
     if (globalThis.litSsrCallConnectedCallback) {
+      console.warn(
+        'litSsrCallConnectedCallback is deprecated. ' +
+          'Please set LitElementRenderer.callConnectedCallback instead.'
+      );
+    }
+
+    const callConnectedCallbackValue = (
+      this.constructor as typeof LitElementRenderer
+    ).callConnectedCallback;
+    const callConnectedCallback =
+      globalThis.litSsrCallConnectedCallback ||
+      callConnectedCallbackValue === true ||
+      (typeof callConnectedCallbackValue === 'function' &&
+        callConnectedCallbackValue(this.element)) ||
+      false;
+
+    if (callConnectedCallback) {
       // Prevent enabling asynchronous updating by overriding enableUpdating
       // with a no-op.
       this.element['enableUpdating'] = function () {};
@@ -95,8 +129,8 @@ export class LitElementRenderer extends ElementRenderer {
         const className = this.element.constructor.name;
         console.warn(
           `Calling ${className}.connectedCallback() resulted in a thrown ` +
-            'error. Consider removing `litSsrCallConnectedCallback` to ' +
-            'prevent calling connectedCallback or add isServer checks to ' +
+            'error. Consider using a function for `LitElementRenderer.callConnectedCallback` to ' +
+            'prevent calling connectedCallback for unsupported elements or add isServer checks to ' +
             'your code to prevent calling browser API during SSR.'
         );
         throw e;
