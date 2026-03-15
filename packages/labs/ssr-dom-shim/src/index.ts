@@ -43,12 +43,18 @@ export interface EventTargetShimMeta {
    * in capture phase and the next event target for a bubbling event.
    * Note that this is not the element parent
    */
-  __eventTargetParent: globalThis.EventTarget | undefined;
+  __eventTargetParent?: globalThis.EventTarget;
   /**
    * The host event target/element of this event target, if this event target
    * is inside a Shadow DOM.
    */
-  __host: globalThis.EventTarget | undefined;
+  __host?: globalThis.EventTarget;
+  /**
+   * A map of slot name to the corresponding slot element.
+   * For named slots, the key is the name of the slot and for
+   * the unnamed slot, the key is `undefined`.
+   */
+  __slots?: Map<string | undefined, globalThis.HTMLSlotElement>;
 }
 
 const isCaptureEventListener = (
@@ -132,8 +138,9 @@ class EventTarget implements globalThis.EventTarget, EventTargetShimMeta {
     Map<EventListenerOrEventListenerObject, AddEventListenerOptions>
   >();
   private __eventPathCache?: EventTarget[];
-  __eventTargetParent: EventTarget | undefined;
-  __host: EventTarget | undefined;
+  __eventTargetParent?: EventTarget;
+  __host?: EventTarget;
+  __slots?: Map<string | undefined, globalThis.HTMLSlotElement>;
 
   addEventListener(
     type: string,
