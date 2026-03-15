@@ -12,6 +12,7 @@ import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
 import type {HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
 import {html as serverhtml} from '../../lib/server-template.js';
+import {LitElementRenderer} from '../../lib/lit-element-renderer.js';
 export {digestForTemplateResult} from '@lit-labs/ssr-client';
 
 export {renderThunked as render} from '../../lib/render.js';
@@ -233,13 +234,21 @@ let nextId = 0;
 // Pattern: element-name{id,host?}/capture/eventPhase/target{id}
 let eventPath: string[] = [];
 
-export const setupEvents = () => {
+export const setupEvents = (options?: {connectedCallbackElement?: string}) => {
   nextId = 0;
   eventPath = [];
-  globalThis.litSsrCallConnectedCallback = true;
+  if (options?.connectedCallbackElement) {
+    LitElementRenderer.renderOptions.push((element) =>
+      element.localName === options.connectedCallbackElement
+        ? {connectedCallback: true}
+        : undefined
+    );
+  } else {
+    LitElementRenderer.renderOptions.push(() => ({connectedCallback: true}));
+  }
   return {
     eventPath,
-    reset: () => delete globalThis.litSsrCallConnectedCallback,
+    reset: () => (LitElementRenderer.renderOptions.length = 0),
   };
 };
 
@@ -371,6 +380,14 @@ export class TestEventsChild extends EventTargetTestBase {
   }
 }
 
+@customElement('test-events-child-inert')
+export class TestEventsChildInert extends TestEventsChild {
+  override render() {
+    // prettier-ignore
+    return html`<div>events child inert</div>`;
+  }
+}
+
 @customElement('test-events-shadow-nested')
 export class TestEventsShadowNested extends EventTargetTestBase {
   override render() {
@@ -405,6 +422,9 @@ export class TestEventsNestedSlots extends EventTargetTestBase {
 
 // prettier-ignore
 export const eventParentAndSingleChildWithoutValue = html`<test-events-parent><test-events-child></test-events-child></test-events-parent>`;
+
+// prettier-ignore
+export const eventParentAndChildrenForCallbackConnectedFilter = html`<test-events-parent><test-events-child></test-events-child><test-events-child-inert></test-events-child-inert></test-events-parent>`;
 
 // prettier-ignore
 export const eventParentAndSingleChildWithValue = html`<test-events-parent value="my-test"><test-events-child></test-events-child></test-events-parent>`;
@@ -656,3 +676,26 @@ export const renderServerScriptNotJavaScript = serverhtml`
 // This doesn't have to make sense, the test is that it'll throw at the
 // template preparation phase.
 export const renderServerOnlyElementPart = serverhtml`<div ${'foo'}></div>`;
+
+/* Render Options */
+
+export const setupExclusion = () => {
+  LitElementRenderer.renderOptions.push((element) =>
+    element.localName === 'no-ssr' ? {disableSsr: true} : undefined
+  );
+  return {
+    [Symbol.dispose]() {
+      LitElementRenderer.renderOptions.length = 0;
+    },
+  };
+};
+
+@customElement('no-ssr')
+export class NoSsr extends LitElement {
+  override render() {
+    // prettier-ignore
+    return html`<main></main>`;
+  }
+}
+
+export const noSsrTemplate = html`<test-simple></test-simple><no-ssr></no-ssr>`;

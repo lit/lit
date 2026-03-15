@@ -36,15 +36,59 @@ LitElement.prototype['createRenderRoot'] = function () {
 };
 
 /**
+ * The render options for a specific element in LitElementRenderer.
+ */
+export interface LitElementRendererRenderOptions {
+  /**
+   * Whether to call connectedCallback during SSR.
+   * @default false
+   */
+  connectedCallback?: boolean;
+  /**
+   * Whether to disable SSR for the element.
+   * @default false
+   */
+  disableSsr?: boolean;
+}
+
+/**
  * ElementRenderer implementation for LitElements
  */
 export class LitElementRenderer extends ElementRenderer {
   override element: LitElement;
 
+  private _disabled = false;
+
   static override matchesClass(ctor: typeof HTMLElement) {
     // This property needs to remain unminified.
     return (ctor as unknown as typeof LitElement)['_$litElement$'];
   }
+
+  /**
+   * Configure options for specific elements.
+   * Callbacks are called in order for each element being rendered and can be
+   * used to configure options such as whether to call connectedCallback for
+   * a given element or to disable SSR.
+   *
+   * @example
+   *
+   * ```ts
+   * import {LitElementRenderer} from '@lit-labs/ssr';
+   *
+   * // Disable SSR for `my-element`.
+   * LitElementRenderer.renderOptions.push(
+   *   (element) => element.localName === 'my-element' ? {disableSsr: true} : undefined
+   * );
+   *
+   * // Call connectedCallback for `my-element` by returning an options object with `connectedCallback` set to true.
+   * LitElementRenderer.renderOptions.push(
+   *   (element) => element.localName === 'my-element' ? {connectedCallback: true} : undefined
+   * );
+   * ```
+   */
+  static readonly renderOptions: ((
+    element: LitElement
+  ) => LitElementRendererRenderOptions | undefined)[] = [];
 
   constructor(tagName: string) {
     super(tagName);
@@ -82,9 +126,31 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   override connectedCallback() {
-    // Optionally call connectedCallback via setting: `litSsrCallConnectedCallback`
-    // Enable this flag to process events dispatched handled via connectedCallback.
     if (globalThis.litSsrCallConnectedCallback) {
+      console.warn(
+        'litSsrCallConnectedCallback is deprecated. ' +
+          'Please use LitElementRenderer.renderOptions instead.'
+      );
+    }
+
+    let renderOptions: LitElementRendererRenderOptions | undefined;
+    for (const optionsCallback of LitElementRenderer.renderOptions) {
+      const options = optionsCallback(this.element);
+      if (options) {
+        renderOptions = options;
+        break;
+      }
+    }
+
+    if (renderOptions?.disableSsr) {
+      this._disabled = true;
+      return;
+    }
+
+    if (
+      globalThis.litSsrCallConnectedCallback ||
+      renderOptions?.connectedCallback
+    ) {
       // Prevent enabling asynchronous updating by overriding enableUpdating
       // with a no-op.
       this.element['enableUpdating'] = function () {};
@@ -95,9 +161,10 @@ export class LitElementRenderer extends ElementRenderer {
         const className = this.element.constructor.name;
         console.warn(
           `Calling ${className}.connectedCallback() resulted in a thrown ` +
-            'error. Consider removing `litSsrCallConnectedCallback` to ' +
-            'prevent calling connectedCallback or add isServer checks to ' +
-            'your code to prevent calling browser API during SSR.'
+            'error. Consider configuring `LitElementRenderer.renderOptions` ' +
+            'to prevent calling connectedCallback for unsupported elements ' +
+            'or add isServer checks to your code to prevent calling browser ' +
+            'API during SSR.'
         );
         throw e;
       }
@@ -121,7 +188,13 @@ export class LitElementRenderer extends ElementRenderer {
     attributeToProperty(this.element as LitElement, name, value);
   }
 
-  override renderShadow(renderInfo: RenderInfo): ThunkedRenderResult {
+  override renderShadow(
+    renderInfo: RenderInfo
+  ): ThunkedRenderResult | undefined {
+    if (this._disabled) {
+      return undefined;
+    }
+
     const result: ThunkedRenderResult = [];
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
