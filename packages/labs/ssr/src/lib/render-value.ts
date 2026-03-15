@@ -1232,12 +1232,12 @@ function addElementToEventPath(
   element: HTMLElement & EventTargetShimMeta,
   renderInfo: RenderInfo
 ): void {
-  const eventTarget = renderInfo.eventTargetStack.at(-1)!;
+  const eventTarget = renderInfo.eventTargetStack.at(-1);
   const slotName = renderInfo.slotStack.at(-1);
   element.__host = renderInfo.customElementHostStack.at(-1)?.element;
-  const assignedSlot = (eventTarget as EventTargetShimMeta).__slots?.get(
-    slotName
-  );
+  const assignedSlot = (
+    eventTarget as EventTargetShimMeta | undefined
+  )?.__slots?.get(slotName);
   if (assignedSlot) {
     element.__eventTargetParent = assignedSlot;
   } else if (element.__host === eventTarget) {
