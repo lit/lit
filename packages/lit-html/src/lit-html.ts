@@ -706,11 +706,17 @@ export interface RenderOptions {
    */
   renderBefore?: ChildNode | null;
   /**
-   * Node used for cloning the template (`importNode` will be called on this
-   * node). This controls the `ownerDocument` of the rendered DOM, along with
-   * any inherited context. Defaults to the global `document`.
+   * Node used for context when cloning the template. This node's
+   * `customElementRegistry` is provided to `document.importNode`.
+   * When scoped custom elements is supported, rendered DOM has the provided
+   * node's `customElementRegistry`. Note, it's also possible to provide a
+   * custom `importNode` function, but this is deprecated and will be removed
+   * in the next major version.
    */
-  creationScope?: {importNode(node: Node, deep?: boolean): Node};
+  creationScope?: {
+    importNode?(node: Node, deep?: boolean): Node;
+    customElementRegistry?: CustomElementRegistry;
+  };
   /**
    * The initial connected state for the top-level part being rendered. If no
    * `isConnected` option is set, `AsyncDirective`s will be connected by
@@ -1220,7 +1226,25 @@ class TemplateInstance implements Disconnectable {
       el: {content},
       parts: parts,
     } = this._$template;
-    const fragment = (options?.creationScope ?? d).importNode(content, true);
+    // Moving forward, the `customElementRegistry` should be passed via
+    // `creationScope`, but for now we also support customization
+    // via `importNode`. This is for backwards compatibility with the older
+    // scoped elements spec that included `shadowRoot.importNode`.
+    // In dev mode, we issue a warning if `importNode` is used, since it's
+    // deprecated and will be removed in the next major version.
+    const {creationScope} = options ?? {};
+    const fragment =
+      creationScope?.importNode?.(content, true) ??
+      d.importNode(content, creationScope ?? true);
+    if (DEV_MODE && creationScope?.importNode !== undefined) {
+      issueWarning(
+        'import-node',
+        'RenderOptions `creationScope.importNode` used to create template. ' +
+          'The next major Lit version will remove this option and instead ' +
+          'use document.importNode with creationScope.customElementRegistry.'
+      );
+    }
+
     walker.currentNode = fragment;
 
     let node = walker.nextNode()!;
