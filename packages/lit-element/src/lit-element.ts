@@ -149,6 +149,10 @@ export class LitElement extends ReactiveElement {
     // important so that adoptedStyleSheets have precedence over styles in
     // the shadowRoot.
     this.renderOptions.renderBefore ??= renderRoot!.firstChild as ChildNode;
+    // Setting `creationScope` ensures elements lit creates are
+    // in the same custom element registry as the renderRoot.
+    this.renderOptions.creationScope ??=
+      renderRoot as RenderOptions['creationScope'];
     return renderRoot;
   }
 

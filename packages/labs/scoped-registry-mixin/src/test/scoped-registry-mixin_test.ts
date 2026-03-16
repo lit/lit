@@ -6,7 +6,10 @@
 
 import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
 import {LitElement, html, css} from 'lit';
-import {ScopedRegistryHost} from '@lit-labs/scoped-registry-mixin';
+import {
+  ScopedRegistryHost,
+  ElementDefinitionsMap,
+} from '@lit-labs/scoped-registry-mixin';
 import {assert} from 'chai';
 
 // Prevent ie11 or other incompatible browsers from running
@@ -14,9 +17,7 @@ import {assert} from 'chai';
 export const canTest =
   window.ShadowRoot &&
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  !(window as any).ShadyDOM?.inUse &&
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  (window as any).ShadowRootInit;
+  !(window as any).ShadyDOM?.inUse;
 
 class SimpleGreeting extends LitElement {
   private name: String;
@@ -39,7 +40,7 @@ class SimpleGreeting extends LitElement {
 class ScopedComponent extends ScopedRegistryHost(LitElement) {
   static elementDefinitions = {
     'simple-greeting': SimpleGreeting,
-  };
+  } as ElementDefinitionsMap;
 
   static override get styles() {
     return css`
@@ -72,6 +73,25 @@ customElements.define('scoped-component', ScopedComponent);
     const registry = scopedComponent?.shadowRoot?.customElements;
 
     assert.exists(registry);
+  });
+
+  test(`elements should have same registry`, async () => {
+    const container = document.createElement('div');
+    container.innerHTML = `<scoped-component></scoped-component><scoped-component></scoped-component>`;
+
+    document.body.appendChild(container);
+
+    const [scopedComponent1, scopedComponent2] = Array.from(
+      container.children
+    ) as LitElement[];
+    await scopedComponent1.updateComplete;
+    await scopedComponent2.updateComplete;
+    // @ts-expect-error: customElements not yet in ShadowRoot type
+    const registry1 = scopedComponent1?.shadowRoot?.customElements;
+    // @ts-expect-error: customElements not yet in ShadowRoot type
+    const registry2 = scopedComponent2?.shadowRoot?.customElements;
+
+    assert.equal(registry1, registry2);
   });
 
   test(`hosted element should not have a registry`, async () => {
@@ -131,5 +151,55 @@ customElements.define('scoped-component', ScopedComponent);
     const {color} = getComputedStyle(simpleGreeting!);
 
     assert.equal(color, 'rgb(255, 0, 0)');
+  });
+
+  test(`subclass can define additional elements in own registry`, async () => {
+    class SubScopedComponent extends ScopedRegistryHost(ScopedComponent) {
+      static override elementDefinitions = {
+        'another-greeting': class extends SimpleGreeting {},
+      };
+
+      override render() {
+        return html`
+          ${super.render()}
+          <another-greeting id="another" name="again"></another-greeting>
+        `;
+      }
+    }
+    customElements.define('sub-scoped-component', SubScopedComponent);
+
+    const container = document.createElement('div');
+    container.innerHTML = `
+      <scoped-component></scoped-component>
+      <sub-scoped-component></sub-scoped-component>`;
+
+    document.body.appendChild(container);
+
+    const [scopedComponent, subScopedComponent] = Array.from(
+      container.children
+    ) as LitElement[];
+    await scopedComponent.updateComplete;
+    await subScopedComponent.updateComplete;
+    // @ts-expect-error: customElements not yet in ShadowRoot type
+    const registry1 = scopedComponent?.shadowRoot?.customElements;
+    // @ts-expect-error: customElements not yet in ShadowRoot type
+    const registry2 = subScopedComponent?.shadowRoot?.customElements;
+
+    assert.notEqual(registry1, registry2);
+
+    assert.isUndefined(registry1?.get('another-greeting'));
+    assert.isDefined(registry2?.get('another-greeting'));
+
+    const simpleGreeting = subScopedComponent?.shadowRoot?.getElementById(
+      'greeting'
+    ) as LitElement;
+
+    assert.isTrue(simpleGreeting instanceof SimpleGreeting);
+    const anotherGreeting = subScopedComponent?.shadowRoot?.getElementById(
+      'another'
+    ) as LitElement;
+
+    assert.isTrue(simpleGreeting instanceof SimpleGreeting);
+    assert.isTrue(anotherGreeting instanceof SimpleGreeting);
   });
 });
