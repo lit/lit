@@ -11,7 +11,7 @@ export interface SignalWatcher extends ReactiveElement {
   _watcher?: Signal.subtle.Watcher;
 }
 
-interface EffectOptions {
+export interface EffectOptions {
   /**
    * By default effects run after the element has updated. If `beforeUpdate`
    * is set to `true`, the effect will run before the element updates.
@@ -41,7 +41,13 @@ const effectWatcher = new Signal.subtle.Watcher(() => {
   });
 });
 
-interface SignalWatcherApi {
+/**
+ * The public API added to elements by the `SignalWatcher` mixin.
+ *
+ * Exported so that it can appear in the `extends` clause of user-exported
+ * classes without causing TS4020 errors.
+ */
+export interface SignalWatcherApi {
   updateEffect(fn: () => void, options?: EffectOptions): () => void;
 }
 
