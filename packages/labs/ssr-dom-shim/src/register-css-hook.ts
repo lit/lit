@@ -4,11 +4,12 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+import {CSSStyleSheet} from './index.js';
+
 try {
   // Detect whether the environment supports importing CSS files.
-  const cssImportsSupported = await import('./detection.css', {
-    with: {type: 'css'},
-  })
+  const inlineCSS = 'data:text/css;base64,cHt0b3A6MDt9';
+  const cssImportsSupported = await import(inlineCSS, {with: {type: 'css'}})
     .then(() => true)
     .catch(() => false);
 
@@ -16,6 +17,12 @@ try {
   // existance of register on the node:module import.
   const nodeModule = cssImportsSupported ? null : await import('node:module');
   if (nodeModule && 'register' in nodeModule.default) {
+    // Register the CSSStyleSheet polyfill in the global scope
+    // in order for the hook to pick it up correspondingly when generating
+    // code for CSS imports.
+    // This also avoid breaking the serialization in packages/reactive-element/src/css-tag.ts
+    // as the symbol will be available in the global scrope on evaluation.
+    globalThis.CSSStyleSheet ??= CSSStyleSheet;
     /**
      * This module registers a Node.js Hook for loading CSS
      * files as CSSStyleSheet instances.
