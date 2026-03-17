@@ -13,6 +13,7 @@ import 'lit-html/directives/async-replace.js';
 import 'lit-html/directives/cache.js';
 import 'lit-html/directives/choose.js';
 import 'lit-html/directives/class-map.js';
+import 'lit-html/directives/direct-html.js';
 import 'lit-html/directives/guard.js';
 import 'lit-html/directives/if-defined.js';
 import 'lit-html/directives/join.js';
