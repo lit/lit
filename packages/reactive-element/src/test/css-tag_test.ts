@@ -5,6 +5,7 @@
  */
 
 import {
+  adoptStyles,
   css,
   CSSResult,
   unsafeCSS,
@@ -98,6 +99,51 @@ suite('Styling', () => {
       // document.body level.
       const bodyStyles = `${cssModule}`;
       assert.equal(bodyStyles.replace(/\s/g, ''), '.my-module{color:yellow;}');
+    });
+  });
+
+  suite('adoptStyles', () => {
+    test('does not throw when document is undefined (SSR)', () => {
+      // When supportsAdoptingStyleSheets is true (modern browsers), the
+      // else-branch guard is not reachable. This test only validates the
+      // fallback path that runs in environments without adoptedStyleSheets.
+      if (supportsAdoptingStyleSheets) {
+        // In modern browsers we cannot test the fallback path directly;
+        // assert that adoptStyles works via the adoptedStyleSheets path
+        // instead as a basic sanity check.
+        const container = document.createElement('div');
+        const root = container.attachShadow({mode: 'open'});
+        const styles = [
+          css`
+            div {
+              color: red;
+            }
+          `,
+        ];
+        assert.doesNotThrow(() => adoptStyles(root, styles));
+        assert.equal(root.adoptedStyleSheets.length, 1);
+      } else {
+        // Fallback path: patch `document` to be undefined to simulate SSR.
+        const desc = Object.getOwnPropertyDescriptor(globalThis, 'document')!;
+        Object.defineProperty(globalThis, 'document', {
+          value: undefined,
+          configurable: true,
+        });
+        try {
+          const fakeRoot = {} as unknown as ShadowRoot;
+          const styles = [
+            css`
+              div {
+                color: red;
+              }
+            `,
+          ];
+          // Should silently return without throwing.
+          assert.doesNotThrow(() => adoptStyles(fakeRoot, styles));
+        } finally {
+          Object.defineProperty(globalThis, 'document', desc);
+        }
+      }
     });
   });
 });
