@@ -10,6 +10,7 @@ import {classMap} from 'lit/directives/class-map.js';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
+import {HTMLElement as SSRHTMLElement} from '@lit-labs/ssr-dom-shim';
 import type {HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
 import {html as serverhtml} from '../../lib/server-template.js';
 export {digestForTemplateResult} from '@lit-labs/ssr-client';
@@ -441,6 +442,21 @@ export const eventNestedSlotWithUnnamedAndNamedSlotChild = html`<test-events-nes
 
 // prettier-ignore
 export const eventNestedSlotWithNamedAndUnnamedSlotChild = html`<test-events-nested-slots><test-events-child slot="a"></test-events-child><test-events-child></test-events-child></test-events-nested-slots>`;
+
+// A plain HTMLElement custom element with no shadow DOM. During SSR this is
+// handled by FallbackRenderer, since LitElementRenderer only matches LitElement
+// subclasses. This exercises the event target stack path through an element
+// that has no ElementRenderer-provided shadow root.
+// We extend SSRHTMLElement (from the shim) rather than the global HTMLElement
+// so this class works in both shimmed and empty VM contexts.
+class TestFallbackWrapper extends SSRHTMLElement {}
+customElements.define(
+  'test-fallback-wrapper',
+  TestFallbackWrapper as unknown as typeof HTMLElement
+);
+
+// prettier-ignore
+export const eventParentWithFallbackWrapper = html`<test-events-parent value="fallback-test"><test-fallback-wrapper><test-events-child></test-events-child></test-fallback-wrapper></test-events-parent>`;
 
 /* Directives */
 
