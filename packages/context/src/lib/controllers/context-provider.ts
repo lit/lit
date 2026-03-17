@@ -129,6 +129,9 @@ export class ContextProvider<
     if (childProviderHost === this.host) {
       return;
     }
+    // The composed path of the context-provider event lets us determine
+    // the relationship between the new provider and each consumer.
+    const eventPath = ev.composedPath();
     // Re-parent all of our subscriptions in case this new child provider
     // should take them over.
     const seen = new Set<unknown>();
@@ -150,9 +153,38 @@ export class ContextProvider<
         continue;
       }
       seen.add(callback);
-      consumerHost.dispatchEvent(
-        new ContextRequestEvent(this.context, consumerHost, callback, true)
-      );
+      // If the consumer is in the event path, the new provider is a
+      // descendant of the consumer — the consumer rendered or owns this
+      // provider. In this case, the consumer should NOT re-register with
+      // its own child provider, as that would cause an infinite loop.
+      if (eventPath.includes(consumerHost)) {
+        continue;
+      }
+      // Walk the composed tree from the consumer upward to determine if
+      // the consumer is actually contained within the new child provider's
+      // subtree. Only re-dispatch the context request if so, because only
+      // then should the new provider take over from us.
+      let needsNewProvider = false;
+      let current: Node | null = consumerHost;
+      while (current !== null) {
+        if (current === childProviderHost) {
+          needsNewProvider = true;
+          break;
+        }
+        if (current === this.host) {
+          break;
+        }
+        current =
+          (current as Element).assignedSlot ??
+          current.parentElement ??
+          (current.parentNode as ShadowRoot)?.host ??
+          null;
+      }
+      if (needsNewProvider) {
+        consumerHost.dispatchEvent(
+          new ContextRequestEvent(this.context, consumerHost, callback, true)
+        );
+      }
     }
     ev.stopPropagation();
   };
