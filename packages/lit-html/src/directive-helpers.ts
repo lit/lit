@@ -123,14 +123,14 @@ export const insertPart = (
   refPart?: ChildPart,
   part?: ChildPart
 ): ChildPart => {
-  const container = wrap(containerPart._$startNode).parentNode!;
+  const container = wrap(wrap(containerPart._$startNode).parentNode!);
 
   const refNode =
     refPart === undefined ? containerPart._$endNode : refPart._$startNode;
 
   if (part === undefined) {
-    const startNode = wrap(container).insertBefore(createMarker(), refNode);
-    const endNode = wrap(container).insertBefore(createMarker(), refNode);
+    const startNode = container.insertBefore(createMarker(), refNode);
+    const endNode = container.insertBefore(createMarker(), refNode);
     part = new ChildPart(
       startNode,
       endNode,
@@ -138,7 +138,8 @@ export const insertPart = (
       containerPart.options
     );
   } else {
-    const endNode = wrap(part._$endNode!).nextSibling;
+    const _endNode = wrap(part._$endNode!);
+    const endNode = _endNode.nextSibling;
     const oldParent = part._$parent;
     const parentChanged = oldParent !== containerPart;
     if (parentChanged) {
@@ -162,16 +163,29 @@ export const insertPart = (
     }
     if (endNode !== refNode || parentChanged) {
       let start: Node | null = part._$startNode;
+      // moveBefore() cannot be called if the old parent and new parent do not
+      // have the same shadow-including-root, so we fall back to
+      // insertBefore() in that case. See https://dom.spec.whatwg.org/#move
+      const moveMethod =
+        _endNode.getRootNode({composed: true}) ===
+        container.getRootNode({composed: true}) /* && start?.nodeType !== 8 */
+          ? ((container as NodeWithMoveBefore).moveBefore ??
+            container.insertBefore)
+          : container.insertBefore;
       while (start !== endNode) {
         const n: Node | null = wrap(start!).nextSibling;
-        wrap(container).insertBefore(start!, refNode);
-        start = n;
+        moveMethod.call(container, wrap(start!), refNode && wrap(refNode));
+        start = n == null ? n : wrap(n);
       }
     }
   }
 
   return part;
 };
+
+interface NodeWithMoveBefore extends Node {
+  moveBefore<T extends Node>(node: T, child: Node | null): T;
+}
 
 /**
  * Sets the value of a Part.
