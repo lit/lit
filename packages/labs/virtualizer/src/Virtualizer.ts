@@ -1667,6 +1667,13 @@ function getClippingAncestors(el: HTMLElement, includeSelf = false) {
     }
     const style = getComputedStyle(a);
     foundFixed = style.position === 'fixed';
+    // Elements with `display: contents` generate no box, so their
+    // `overflow` value is meaningless and they cannot clip anything.
+    // Exclude them to avoid collapsing the viewport to zero (their
+    // getBoundingClientRect() returns a zero rect).
+    if (style.display === 'contents') {
+      return false;
+    }
     return style.overflow !== 'visible';
   });
 }
