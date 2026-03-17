@@ -507,4 +507,81 @@ describe('flow layout', () => {
       expect(last(visible).textContent).to.equal('303');
     });
   });
+
+  describe('display: contents ancestor with overflow: hidden', () => {
+    it('renders children when slotted into a host whose slot has overflow: hidden', async () => {
+      // Regression test for https://github.com/lit/lit/issues/4922
+      // When a virtualizer is slotted into a shadow DOM host (e.g.
+      // sl-split-panel), getParentElement follows assignedSlot, making
+      // the <slot> element part of the ancestor chain. If that <slot>
+      // has overflow: hidden (as sl-split-panel applies), Virtualizer
+      // incorrectly treats it as a clipping ancestor. But <slot> elements
+      // have display: contents by default, which generates no box, so
+      // overflow is meaningless and should be ignored.
+
+      // Create a custom element whose shadow DOM styles its slot with
+      // overflow: hidden, mimicking sl-split-panel's behavior.
+      const hostTag = 'slot-overflow-host-4922';
+      if (!customElements.get(hostTag)) {
+        customElements.define(
+          hostTag,
+          class extends HTMLElement {
+            constructor() {
+              super();
+              const shadow = this.attachShadow({mode: 'open'});
+              shadow.innerHTML =
+                '<style>slot { overflow: hidden; }</style><slot></slot>';
+            }
+          }
+        );
+      }
+
+      // Mimics the repro: lit-virtualizer (non-scroller mode) inside a
+      // scrolling container, slotted into the host above. The ancestor
+      // chain from the virtualizer traverses the <slot> with overflow:
+      // hidden.
+      const container = await fixture(html`
+        <div>
+          <style>
+            .scroller {
+              height: 200px;
+              width: 200px;
+              overflow: auto;
+              margin: 0;
+              padding: 0;
+            }
+            .item {
+              height: 50px;
+              width: 200px;
+              margin: 0;
+              padding: 0;
+            }
+          </style>
+          <slot-overflow-host-4922>
+            <div class="scroller">
+              <lit-virtualizer
+                .items=${array(100)}
+                .renderItem=${(item: number) =>
+                  html`<div class="item">${item}</div>`}
+              ></lit-virtualizer>
+            </div>
+          </slot-overflow-host-4922>
+        </div>
+      `);
+      const virtualizer = (await until(() =>
+        container.querySelector('lit-virtualizer')
+      )) as LitVirtualizer;
+      await virtualizer.layoutComplete;
+
+      // Without the fix, the viewport collapses because the <slot>'s
+      // zero-size getBoundingClientRect() clips the viewport bounds,
+      // causing no items to render.
+      await pass(() => {
+        const items = Array.from(
+          virtualizer.renderRoot.querySelectorAll('.item')
+        ) as HTMLElement[];
+        expect(items.length).to.be.greaterThan(0);
+      });
+    });
+  });
 });
