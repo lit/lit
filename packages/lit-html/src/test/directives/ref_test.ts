@@ -390,4 +390,13 @@ suite('ref', () => {
     go();
     assert.isUndefined(value);
   });
+
+  test('disconnect gracefuly with an undefined ref', () => {
+    const go = () => render(html`<div ${ref(undefined)}></div>`, container);
+    const part = go();
+    part.setConnected(false);
+    assert.doesNotThrow(() => {
+      go();
+    });
+  });
 });

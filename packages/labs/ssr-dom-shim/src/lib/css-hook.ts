@@ -6,13 +6,15 @@ import type {LoadHook} from 'node:module';
  * generated to read the corresponding file, add it to a CSSStyleSheet
  * instance and return that instance as the default export.
  *
+ * This expects the CSSStyleSheet class to be available in the global scope.
+ * See register-css-hook.ts for how this is registered in Node.js.
+ *
  * https://nodejs.org/api/module.html#loadurl-context-nextload
  */
 export const load: LoadHook = async (url, context, nextLoad) => {
   if (context.importAttributes.type === 'css') {
     const content = await readFile(new URL(url), 'utf-8');
     const code = `
-      import {CSSStyleSheet} from '@lit-labs/ssr-dom-shim';
       const sheet = new CSSStyleSheet();
       sheet.replaceSync(${JSON.stringify(content)});
       export default sheet;
