@@ -224,6 +224,26 @@ suite('minify-html-literals', () => {
     }
   `;
 
+  // Regression test for https://github.com/lit/lit/issues/5207
+  // CleanCSS v4 silently dropped @container blocks; v5 preserves them.
+  const CONTAINER_QUERY_SOURCE = `
+    function container() {
+      return css\`
+        .card { color: red; }
+        @container sidebar (min-width: 700px) {
+          .card { font-size: 2em; }
+          .card h2 { color: blue; }
+        }
+      \`;
+    }
+  `;
+
+  const CONTAINER_QUERY_SOURCE_MIN = `
+    function container() {
+      return css\`.card{color:red}@container sidebar (min-width:700px){.card{font-size:2em}.card h2{color:#00f}}\`;
+    }
+  `;
+
   const MEMBER_EXPRESSION_LITERAL_SOURCE = `
     function nested() {
       return LitHtml.html\`<div id="container">
@@ -281,6 +301,25 @@ suite('minify-html-literals', () => {
     });
     assert.equal(typeof result, 'object');
     assert.equal(result!.code, SHADOW_PARTS_SOURCE_MIN);
+  });
+
+  // Regression test for https://github.com/lit/lit/issues/5207
+  test('should preserve @container at-rules and their nested rules during CSS minification', async () => {
+    const result = await minifyHTMLLiterals(CONTAINER_QUERY_SOURCE, {
+      fileName: 'test.js',
+    });
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, CONTAINER_QUERY_SOURCE_MIN);
+    // Verify the @container rule is present in the output (not silently dropped)
+    assert.ok(
+      result!.code.includes('@container'),
+      'Expected @container at-rule to be preserved in minified output'
+    );
+    // Verify nested rules inside @container are preserved
+    assert.ok(
+      result!.code.includes('.card{font-size:2em}'),
+      'Expected nested .card rule inside @container to be preserved'
+    );
   });
 
   test('should return null if source is already minified', async () => {
