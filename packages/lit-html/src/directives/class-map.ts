@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {AttributePart, noChange} from '../lit-html.js';
+import {AttributePart, noChange, nothing} from '../lit-html.js';
 import {
   directive,
   Directive,
@@ -16,9 +16,44 @@ import {
 /**
  * A key-value set of class names to truthy values.
  */
-export interface ClassInfo {
-  [name: string]: string | boolean | number;
+interface KeyValueClassInfo {
+  [name: string]: string | boolean | number | null | undefined;
 }
+
+/**
+ * String, an Array, any falsy value, or a key-value set of class names to truthy values.
+ */
+export type ClassInfo =
+  | Array<ClassInfo>
+  | KeyValueClassInfo
+  | string
+  | false
+  | null
+  | undefined
+  | typeof nothing;
+
+// Split by spaces, tabs, newlines, etc.
+const RX_CLASS_SPLIT = /\s+/;
+
+// Recursively walk through the classInfo and return an array of resulting classes
+const mapClassesRecursive = (classInfo: ClassInfo): string[] => {
+  if (!classInfo || classInfo === nothing) {
+    return [];
+  }
+  if (Array.isArray(classInfo)) {
+    return classInfo.flatMap((c) => mapClassesRecursive(c));
+  }
+  if (typeof classInfo === 'object') {
+    return Object.entries(classInfo)
+      .filter(([, value]) => !!value)
+      .flatMap(([key]) => mapClassesRecursive(key));
+  }
+  // Take the toString() value as a fallback
+  return String(classInfo).split(RX_CLASS_SPLIT);
+};
+
+// Join the classes back to a single string
+const joinClasses = (set: Set<string>) => ` ${Array.from(set).join(' ')} `;
 
 class ClassMapDirective extends Directive {
   /**
@@ -42,18 +77,13 @@ class ClassMapDirective extends Directive {
     }
   }
 
-  render(classInfo: ClassInfo) {
-    // Add spaces to ensure separation from static classes
-    return (
-      ' ' +
-      Object.keys(classInfo)
-        .filter((key) => classInfo[key])
-        .join(' ') +
-      ' '
-    );
+  render(...classInfo: ClassInfo[]) {
+    return joinClasses(new Set(mapClassesRecursive(classInfo)));
   }
 
-  override update(part: AttributePart, [classInfo]: DirectiveParameters<this>) {
+  override update(part: AttributePart, classInfo: DirectiveParameters<this>) {
+    const merged = new Set(mapClassesRecursive(classInfo));
+
     // Remember dynamic classes on the first render
     if (this._previousClasses === undefined) {
       this._previousClasses = new Set();
@@ -61,44 +91,38 @@ class ClassMapDirective extends Directive {
         this._staticClasses = new Set(
           part.strings
             .join(' ')
-            .split(/\s/)
+            .split(RX_CLASS_SPLIT)
             .filter((s) => s !== '')
         );
       }
-      for (const name in classInfo) {
-        if (classInfo[name] && !this._staticClasses?.has(name)) {
-          this._previousClasses.add(name);
+
+      for (const name of merged) {
+        if (!this._staticClasses?.has(name)) {
+          this._previousClasses!.add(name);
         }
       }
-      return this.render(classInfo);
+
+      return joinClasses(merged);
     }
 
     const classList = part.element.classList;
 
     // Remove old classes that no longer apply
     for (const name of this._previousClasses) {
-      if (!(name in classInfo)) {
+      if (!merged.has(name)) {
         classList.remove(name);
         this._previousClasses!.delete(name);
       }
     }
 
     // Add or remove classes based on their classMap value
-    for (const name in classInfo) {
-      // We explicitly want a loose truthy check of `value` because it seems
-      // more convenient that '' and 0 are skipped.
-      const value = !!classInfo[name];
+    for (const name of merged) {
       if (
-        value !== this._previousClasses.has(name) &&
-        !this._staticClasses?.has(name)
+        !this._staticClasses?.has(name) &&
+        !this._previousClasses!.has(name)
       ) {
-        if (value) {
-          classList.add(name);
-          this._previousClasses.add(name);
-        } else {
-          classList.remove(name);
-          this._previousClasses.delete(name);
-        }
+        classList.add(name);
+        this._previousClasses!.add(name);
       }
     }
     return noChange;
@@ -109,12 +133,14 @@ class ClassMapDirective extends Directive {
  * A directive that applies dynamic CSS classes.
  *
  * This must be used in the `class` attribute and must be the only part used in
- * the attribute. It takes each property in the `classInfo` argument and adds
- * the property name to the element's `classList` if the property value is
- * truthy; if the property value is falsy, the property name is removed from
- * the element's `class`.
+ * the attribute. Each property in the `classInfo` arguments can either be
+ * a key-value object, a String, or an Array.
+ * Arrays are processed recursively, while strings are added
+ * as such. For objects, the keys are added to the element's `classList`
+ * if the property value is truthy; if the property value is falsy,
+ * the property name is removed from the element's `class`.
  *
- * For example `{foo: bar}` applies the class `foo` if the value of `bar` is
+ * For example, `{foo: bar}` applies the class `foo` if the value of `bar` is
  * truthy.
  *
  * @param classInfo
