@@ -199,7 +199,10 @@ suite('directive-helpers', () => {
   });
 
   test('getDirectiveClass', () => {
-    assert.instanceOf(getDirectiveClass(classMap({}))?.prototype, Directive);
+    assert.instanceOf(
+      getDirectiveClass(classMap({}))?.prototype,
+      Directive as unknown as {new (...args: any[]): Directive}
+    );
     assert.equal(getDirectiveClass(null), undefined);
     assert.equal(getDirectiveClass(undefined), undefined);
     assert.equal(getDirectiveClass({}), undefined);
