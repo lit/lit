@@ -43,7 +43,6 @@ test('basic wrapper generation', async () => {
 
   await assertGoldensMatch(outputPackage, path.join('goldens', project), {
     formatGlob: '**/*.{svelte,ts,js,json}',
-    noFormat: true,
   });
 
   await installPackage(outputPackage, {

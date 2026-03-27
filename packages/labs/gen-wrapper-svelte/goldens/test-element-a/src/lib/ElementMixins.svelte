@@ -1,32 +1,27 @@
+<script lang="ts">
+  import "@lit-internal/test-element-a/element-mixins.js";
+  import { setProperties } from "$lib/util.js";
 
-  <script lang="ts">
-    
-      import '@lit-internal/test-element-a/element-mixins.js';
-      import { setProperties } from "$lib/util.js";
-      
-      import type { Snippet } from 'svelte';
+  import type { Snippet } from "svelte";
 
-      export interface Props {
-     class?: string;
-     style?: string;
-     
-   }
-      export interface Events {
-    
+  export interface Props {
+    class?: string;
+    style?: string;
   }
-      export interface Slots {
-  children?: Snippet
-}
-      const { class: className, style, children, ...props} = $props<Props & Events & Slots>();
+  export interface Events {}
+  export interface Slots {
+    children?: Snippet;
+  }
+  const {
+    class: className,
+    style,
+    children,
+    ...props
+  } = $props<Props & Events & Slots>();
+</script>
 
-    </script>
-    <element-mixins
-    use:setProperties={props}
-    class={className}
-    style={style}
-     >
-      
-    {#if children}
-      {@render children()}
-    {/if}
-    </element-mixins>
+<element-mixins use:setProperties={props} class={className} {style}>
+  {#if children}
+    {@render children()}
+  {/if}
+</element-mixins>
