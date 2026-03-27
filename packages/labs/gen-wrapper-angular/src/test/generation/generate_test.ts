@@ -65,4 +65,38 @@ test('basic wrapper generation', async () => {
   assert.ok(wrapperJsFile.length > 0);
 });
 
+test('README.md generation', async () => {
+  const folderName = 'test-element-a';
+  const inputPackage = path.resolve(testProjects, folderName);
+  const outputPackage = path.resolve(outputFolder, folderName + '-ng');
+
+  const readmePath = path.join(inputPackage, 'README.md');
+  fs.writeFileSync(readmePath, '# Test Element A\n\nThis is a test.');
+
+  try {
+    if (fs.existsSync(outputPackage)) {
+      fs.rmSync(outputPackage, {recursive: true});
+    }
+
+    const analyzer = createPackageAnalyzer(inputPackage as AbsolutePath);
+    const pkg = analyzer.getPackage();
+    await writeFileTree(outputFolder, await generateAngularWrapper(pkg));
+
+    const readmeFile = fs.readFileSync(
+      path.join(outputPackage, 'README.md'),
+      'utf8'
+    );
+    assert.equal(readmeFile, '# Test Element A\n\nThis is a test.');
+
+    const packageJson = JSON.parse(
+      fs.readFileSync(path.join(outputPackage, 'package.json'), 'utf8')
+    );
+    assert.equal(packageJson.files, undefined);
+  } finally {
+    if (fs.existsSync(readmePath)) {
+      fs.unlinkSync(readmePath);
+    }
+  }
+});
+
 test.run();

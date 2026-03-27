@@ -17,6 +17,7 @@ import {tsconfigLibTemplate} from './lib/tsconfig-lib-json-template.js';
 import {publicApiTemplate} from './lib/public-api-template.js';
 import {wrapperModuleTemplate} from './lib/wrapper-module-template.js';
 import * as path from 'path';
+import * as fs from 'fs';
 
 /**
  * Our command for the Lit CLI.
@@ -51,6 +52,11 @@ export const generateAngularWrapper = async (
     const angularPackageName = `${packageName}-ng`;
     // TODO(justinfagnani): put inside an Angular workspace
     const angularPackageFolder = `${path.basename(pkg.rootDir)}-ng`;
+    const readmePath = path.join(pkg.rootDir, 'README.md');
+    let readme = undefined;
+    if (fs.existsSync(readmePath)) {
+      readme = fs.readFileSync(readmePath, 'utf8');
+    }
     return {
       [angularPackageFolder]: {
         '.gitignore': gitIgnoreTemplate(litModules),
@@ -62,6 +68,7 @@ export const generateAngularWrapper = async (
         'tsconfig.lib.json': tsconfigLibTemplate(),
         'ng-package.json': ngPackageJsonTemplate(),
         'src/public-api.ts': publicApiTemplate(litModules),
+        ...(readme ? {'README.md': readme} : {}),
         ...wrapperFiles(pkg.packageJson, litModules),
       },
     };
