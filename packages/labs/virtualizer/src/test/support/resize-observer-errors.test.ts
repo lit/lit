@@ -6,6 +6,7 @@
 
 import {
   ignoreWindowResizeObserverLoopErrors,
+  isResizeObserverLoopErrorMessage,
   preventResizeObserverLoopErrorEventDefaults,
   setupIgnoreWindowResizeObserverLoopErrors,
 } from '../../support/resize-observer-errors.js';
@@ -74,6 +75,36 @@ describe('setupIgnoreWindowResizeObserverLoopErrors', () => {
       'ResizeObserver loop completed with undelivered notifications'
     );
     expect(errors).to.equal(2);
+  });
+});
+
+describe('isResizeObserverLoopErrorMessage', () => {
+  it('returns true for loop limit exceeded message', () => {
+    expect(
+      isResizeObserverLoopErrorMessage('ResizeObserver loop limit exceeded')
+    ).to.be.true;
+  });
+
+  it('returns true for undelivered notifications message', () => {
+    expect(
+      isResizeObserverLoopErrorMessage(
+        'ResizeObserver loop completed with undelivered notifications'
+      )
+    ).to.be.true;
+  });
+
+  it('returns false for unrelated messages', () => {
+    expect(isResizeObserverLoopErrorMessage('some other error')).to.be.false;
+  });
+
+  it('does not throw when message is null (#4982)', () => {
+    expect(isResizeObserverLoopErrorMessage(null as unknown as string)).to.be
+      .false;
+  });
+
+  it('does not throw when message is undefined (#4982)', () => {
+    expect(isResizeObserverLoopErrorMessage(undefined as unknown as string)).to
+      .be.false;
   });
 });
 
