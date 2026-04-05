@@ -336,6 +336,12 @@ export class Virtualizer {
   private _layoutCompleteResolver: Function | null = null;
   private _layoutCompleteRejecter: Function | null = null;
   private _pendingLayoutComplete: number | null = null;
+  /**
+   * Set when _scheduleLayoutComplete is called but no promise exists yet.
+   * Allows the layoutComplete getter to schedule resolution immediately
+   * if layout already stabilized before the promise was first accessed.
+   */
+  private _layoutCompleteScheduleNeeded = false;
 
   /**
    * Layout initialization is async because we dynamically load
@@ -1520,6 +1526,13 @@ export class Virtualizer {
         this._layoutCompleteResolver = resolve;
         this._layoutCompleteRejecter = reject;
       });
+      // If a layout cycle already completed before this promise was
+      // created (i.e. _scheduleLayoutComplete was called but couldn't
+      // schedule because no promise existed), schedule resolution now.
+      if (this._layoutCompleteScheduleNeeded) {
+        this._layoutCompleteScheduleNeeded = false;
+        this._scheduleLayoutComplete();
+      }
     }
     return this._layoutCompletePromise;
   }
@@ -1528,17 +1541,21 @@ export class Virtualizer {
     if (this._layoutCompleteRejecter !== null) {
       this._layoutCompleteRejecter(reason);
     }
+    this._layoutCompleteScheduleNeeded = false;
     this._resetLayoutCompleteState();
   }
 
   private _scheduleLayoutComplete() {
-    // Don't do anything unless we have a pending promise
-    // And only request a frame if we haven't already done so
     if (this._layoutCompletePromise && this._pendingLayoutComplete === null) {
       // Wait one additional frame to be sure the layout is stable
       this._pendingLayoutComplete = requestAnimationFrame(() =>
         requestAnimationFrame(() => this._resolveLayoutCompletePromise())
       );
+      this._layoutCompleteScheduleNeeded = false;
+    } else if (!this._layoutCompletePromise) {
+      // Layout cycle completed but no one is waiting yet. Record this
+      // so we can schedule resolution when layoutComplete is accessed.
+      this._layoutCompleteScheduleNeeded = true;
     }
   }
 
@@ -1546,6 +1563,9 @@ export class Virtualizer {
     if (this._layoutCompleteResolver !== null) {
       this._layoutCompleteResolver();
     }
+    // Mark that layout is stable so any future late access to
+    // layoutComplete can be scheduled for immediate resolution.
+    this._layoutCompleteScheduleNeeded = true;
     this._resetLayoutCompleteState();
   }
 
