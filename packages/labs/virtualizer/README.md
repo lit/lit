@@ -118,7 +118,7 @@ render() {
 
 `@lit-labs/virtualizer` currently supports two basic layouts, [`flow`](#flow-layout) (the default) and [`grid`](#grid-layout), which together cover a wide range of common use cases.
 
-If you just want a vertical flow layout, then there's no need to do anything; that's what a virtualizer does out of the box. But if you want to select the `grid` layout instead, or if you want to set an option on the `flow` layout, then you'll use the virtualizer's `layout` property to do so. Here's an example:
+If you just want a vertical flow layout, there's no need to do anything; that's what a virtualizer does out of the box. But if you want to use the `grid` layout, you'll set the virtualizer's `layout` property. Here's an example:
 
 ```js
 // First, import the layout you want to use. The reference returned
@@ -159,35 +159,138 @@ To control the spacing of child elements, use standard CSS techniques to set mar
 
 Note that the `flow` layout offers limited support for [margin-collapsing](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing): margins set explicitly on child elements will be collapsed, but any margins on elements contained _within_ child elements are not considered.
 
-#### Using shorthand to specify `flow` options
-
-Because `flow` is the default layout, you don't need to import it explicitly, even if you want to set options on it. Just pass an options object directly to your virtualizer's `layout` property, without wrapping it in the `flow()` function:
-
-```js
-// This shorthand form...
-html`
-  <lit-virtualizer
-    .layout=${{
-      pin: {index: 42, block: 'start'},
-    }}
-  ></lit-virtualizer>
-`;
-
-// ...is equivalent to this:
-html`
-  <lit-virtualizer
-    .layout=${flow({
-      pin: {index: 42, block: 'start'},
-    })}
-  ></lit-virtualizer>
-`;
-```
-
-See [Framing a child element within the viewport](#framing-a-child-element-within-the-viewport) for more on the `pin` option.
-
 ### Using the `grid` layout
 
-TODO
+The `grid` layout arranges child elements in a grid with uniform cell sizes. Unlike the `flow` layout, which determines child element sizes naturally from their content, `grid` uses a specified item size and calculates how many columns fit in the available space.
+
+```js
+import {grid} from '@lit-labs/virtualizer/layouts/grid.js';
+```
+
+Like the virtualizer itself, the grid layout respects CSS `writing-mode` and `direction`. In the default `horizontal-tb` writing mode, the grid fills columns across the inline axis (horizontally) and rows along the block axis (vertically, which is the scrolling direction). In vertical writing modes, these axes swap: columns run vertically and rows run horizontally. The CSS `direction` property (`ltr` or `rtl`) determines the order in which columns are filled.
+
+#### Grid layout options
+
+##### `itemSize`
+
+The ideal size of each grid item. Accepts a single value (applied to both dimensions) or an object with explicit dimensions.
+
+Default: `{width: '300px', height: '300px'}`
+
+```js
+// Single value (both dimensions)
+grid({itemSize: '100px'});
+
+// Explicit physical dimensions
+grid({itemSize: {width: '200px', height: '150px'}});
+
+// Logical dimensions (relative to the writing mode)
+grid({itemSize: {inlineSize: '200px', blockSize: '150px'}});
+```
+
+When you use `width` and `height`, these dimensions will be applied to the width and height of child elements regardless of the current CSS `writing-mode`. In contrast, when you provide dimensions in terms of `inlineSize` / `blockSize`, the current writing mode determines how these values map to the elements' width and height.
+
+##### `gap`
+
+Spacing between grid items. Accepts a single value (applied to both axes) or two values (block axis, then inline axis).
+
+Default: `'8px'`
+
+```js
+// Uniform gap
+grid({gap: '12px'});
+
+// Different block and inline gaps
+grid({gap: '8px 16px'});
+```
+
+The block-axis gap value can be set to `'auto'`, but only when `justify` is set to `'space-between'`, `'space-around'`, or `'space-evenly'`. In this case, the block-axis gap is automatically calculated to match the inline-axis spacing.
+
+##### `padding`
+
+Spacing around the edges of the grid. Uses CSS-like shorthand (1 to 4 values).
+
+Default: `'match-gap'`
+
+The special value `'match-gap'` sets padding equal to the gap value, giving uniform spacing around and between items. You can also use `'match-gap'` as an individual value in multi-value shorthand (e.g., `'match-gap 16px'`).
+
+##### `flex`
+
+Controls whether items resize to fill the available width. When enabled, the grid calculates how many columns fit and then stretches items to eliminate leftover space.
+
+Default: `false`
+
+- `false` — items maintain exact `itemSize` dimensions
+- `true` — items resize to fill the row, preserving area (equivalent to `{preserve: 'area'}`)
+- `{preserve: 'aspect-ratio'}` — items resize while maintaining their original aspect ratio
+- `{preserve: 'area'}` — items resize while maintaining their original area
+- `{preserve: 'width'}` or `{preserve: 'height'}` — items resize while keeping the specified dimension fixed
+
+##### `justify`
+
+Controls horizontal alignment of columns within the grid.
+
+Default: `'start'`
+
+Values: `'start'`, `'center'`, `'end'`, `'space-evenly'`, `'space-around'`, `'space-between'`
+
+The space-distribution values (`'space-evenly'`, `'space-around'`, `'space-between'`) automatically calculate spacing between columns, overriding inline-axis gap and padding.
+
+##### How `flex` and `justify` interact
+
+The `flex` and `justify` options are independent but interact. `flex` controls whether items resize to fill the available inline space, while `justify` controls how columns are positioned within that space.
+
+When `flex` is enabled, items stretch to fill each row completely, so there is no leftover space for `justify` to distribute. In this case, the space-distribution values (`'space-between'`, `'space-around'`, `'space-evenly'`) have no effect; spacing is controlled entirely by the explicit `gap` and `padding` values. The alignment values (`'start'`, `'center'`, `'end'`) still apply when flex is on.
+
+When `flex` is disabled and a space-distribution `justify` value is used, the layout automatically calculates spacing between columns, overriding the configured inline-axis `gap` and `padding`.
+
+#### Grid layout examples
+
+A basic grid with custom item sizes:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      .layout=${grid({itemSize: {width: '200px', height: '150px'}})}
+      .items=${this.photos}
+      .renderItem=${photo => html`<img src=${photo.url}>`}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+A responsive grid where items resize to fill each row, preserving their area:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      .layout=${grid({itemSize: '250px', flex: true})}
+      .items=${this.photos}
+      .renderItem=${photo => html`<img src=${photo.url}>`}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+A grid with evenly distributed spacing:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      .layout=${grid({
+        itemSize: '200px',
+        justify: 'space-evenly',
+        gap: 'auto 12px'
+      })}
+      .items=${this.photos}
+      .renderItem=${photo => html`<img src=${photo.url}>`}
+    ></lit-virtualizer>
+  `;
+}
+```
 
 ### Scrolling
 
@@ -221,33 +324,53 @@ Note:
 
 #### Framing a child element within the viewport
 
-Whereas `scrollIntoView()` lets you imperatively scroll a given child element into view, the `pin` property on a virtualizer layout provides a declarative way to frame an element within the viewport. This is especially useful if you want a specific element to be in view when you initially render a virtualizer. Here's an example:
+Whereas `scrollIntoView()` lets you imperatively scroll a given child element into view, the `pin` property on a virtualizer provides a declarative way to frame an element within the viewport. This is especially useful if you want a specific element to be in view when you initially render a virtualizer. Here's an example:
 
 ```js
 render() {
-  // In this toy example, we pin the layout to a hard-coded position. In
-  // reality, you'll almost always want to maintain some state of your
-  // own to keep track of whether the layout should be pinned, and to
+  // In this toy example, we pin to a hard-coded position. In reality,
+  // you'll almost always want to maintain some state of your own to
+  // keep track of whether the virtualizer should be pinned, and to
   // which child element. See the note below about the `unpinned` event.
   return html`
     <h2>My Contacts</h2>
     <lit-virtualizer
       .items=${this.contacts}
       .renderItem=${contact => html`<div>${contact.name}: ${contact.phone}</div>`}
-      .layout=${{
-        pin: {
-          index: 42,
-          block: 'start'
-        }
+      .pin=${{
+        index: 42,
+        block: 'start'
       }}
     ></lit-virtualizer>
   `;
 }
 ```
 
+When using the `virtualize` directive, set `pin` in the directive config:
+
+```js
+render() {
+  return html`
+    <div>
+      ${virtualize({
+        items: this.contacts,
+        renderItem: contact => html`<div>${contact.name}: ${contact.phone}</div>`,
+        pin: {
+          index: 42,
+          block: 'start'
+        }
+      })}
+    </div>
+  `;
+}
+```
+
 The `pin` property takes an option called `index` to specify (by number) which child element you want to frame in the viewport. If you want, you can also use the `block` option to indicate how the element should be framed relative to the viewport; `block` behaves identically to the same option in the `scrollIntoView()` method.
 
-When you pin a layout, it remains pinned until the user intentionally scrolls the view, at which point it is automatically "unpinned". When this occurs, the virtualizer fires an `unpinned` event. Unless you're sure you'll only render your virtualizer once, you should listen for the `unpinned` event so you can omit the `pin` property when you re-render the virtualizer and avoid snapping the view back to the previously pinned position. [TODO: link to an example]
+When you pin a virtualizer, it remains pinned until the user intentionally scrolls the view, at which point it is automatically "unpinned". When this occurs, the virtualizer fires an `unpinned` event. Unless you're sure you'll only render your virtualizer once, you should listen for the `unpinned` event so you can omit the `pin` property when you re-render the virtualizer and avoid snapping the view back to the previously pinned position. [TODO: link to an example]
+
+> **Note:** Setting `pin` via layout config (e.g., `.layout=${{pin: ...}}`) is deprecated.
+> Use the `pin` property directly on the virtualizer as shown above.
 
 #### A note on smooth scrolling
 

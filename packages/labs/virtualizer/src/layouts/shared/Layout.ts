@@ -152,6 +152,11 @@ export interface LayoutSpecifier {
 export type LayoutSpecifierFactory = (config?: object) => LayoutSpecifier;
 
 export interface BaseLayoutConfig {
+  /**
+   * @deprecated Set `pin` on the virtualizer (`<lit-virtualizer>`,
+   * the `virtualize` directive, or the `Virtualizer` class) instead
+   * of in the layout config.
+   */
   pin?: PinOptions;
 }
 

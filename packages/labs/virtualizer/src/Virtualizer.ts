@@ -18,6 +18,7 @@ import {
   EditElementLayoutInfoFunction,
   ScrollToCoordinates,
   BaseLayoutConfig,
+  PinOptions,
   LayoutHostMessage,
   writingMode,
   direction,
@@ -124,6 +125,13 @@ export interface VirtualizerConfig {
    * Mutually exclusive with setting CSS `writing-mode` directly on the host.
    */
   axis?: virtualizerAxis;
+
+  /**
+   * Declaratively pin the viewport to a specific item. The viewport will
+   * remain pinned until the user scrolls, at which point the virtualizer
+   * fires an `unpinned` event.
+   */
+  pin?: PinOptions;
 }
 
 let DefaultLayoutConstructor: LayoutConstructor;
@@ -324,6 +332,11 @@ export class Virtualizer {
   private _layoutInitialized: Promise<void> | null = null;
 
   /**
+   * Pending pin value, stored before layout is initialized.
+   */
+  private _pendingPin: PinOptions | undefined = undefined;
+
+  /**
    * Track connection state to guard against errors / unnecessary work
    */
   private _connected = false;
@@ -363,10 +376,32 @@ export class Virtualizer {
     }
   }
 
+  /**
+   * Declaratively pin the viewport to a specific item. The viewport will
+   * remain pinned until the user scrolls, at which point the virtualizer
+   * fires an `unpinned` event.
+   */
+  get pin(): PinOptions | undefined {
+    return this._pendingPin;
+  }
+
+  set pin(value: PinOptions | undefined) {
+    if (value === this._pendingPin) {
+      return;
+    }
+    this._pendingPin = value;
+    if (this._layout) {
+      this._layout.pin = value ?? null;
+    }
+  }
+
   _init(config: VirtualizerConfig) {
     this._isScroller = !!config.scroller;
     if (config.axis) {
       this._axis = config.axis;
+    }
+    if (config.pin) {
+      this._pendingPin = config.pin;
     }
     this._initHostElement(config);
     // If no layout is specified, we make an empty
@@ -690,6 +725,15 @@ export class Virtualizer {
         // Schedule _updateLayout to re-read the CSS writing-mode
         this._schedule(this._updateLayout);
       }
+      // @deprecated: Detect pin in layout config and warn.
+      // This block can be removed when the deprecated layout config `pin` is removed.
+      if ('pin' in config && (config as BaseLayoutConfig).pin) {
+        this._warnings.warnOnce(
+          'pin-in-layout-config',
+          'Setting `pin` via layout config is deprecated. Use the `pin` property on ' +
+            '<lit-virtualizer>, the virtualize directive, or the Virtualizer directly instead.'
+        );
+      }
       this._layout.config = config as BaseLayoutConfig;
       // The new config requires a different layout altogether, but
       // to limit implementation complexity we don't support dynamically
@@ -726,6 +770,16 @@ export class Virtualizer {
       this._handleLegacyDirectionConfig(config as LegacyLayoutConfig);
     }
 
+    // @deprecated: Detect pin in layout config and warn.
+    // This block can be removed when the deprecated layout config `pin` is removed.
+    if (config && 'pin' in config && (config as BaseLayoutConfig).pin) {
+      this._warnings.warnOnce(
+        'pin-in-layout-config',
+        'Setting `pin` via layout config is deprecated. Use the `pin` property on ' +
+          '<lit-virtualizer>, the virtualize directive, or the Virtualizer directly instead.'
+      );
+    }
+
     if (Ctor === undefined) {
       // If we don't have a constructor yet, load the default
       DefaultLayoutConstructor = Ctor = (await import('./layouts/flow.js'))
@@ -744,6 +798,11 @@ export class Virtualizer {
       this._layout.writingMode = this._pendingWritingMode;
       this._writingMode = this._pendingWritingMode;
       this._pendingWritingMode = null;
+    }
+
+    // Apply any pending pin from the Virtualizer-level config
+    if (this._pendingPin !== undefined) {
+      this._layout.pin = this._pendingPin;
     }
 
     if (typeof this._layout.updateItemSizes === 'function') {
