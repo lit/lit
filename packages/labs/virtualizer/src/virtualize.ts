@@ -8,7 +8,7 @@ import {TemplateResult, ChildPart, html, noChange} from 'lit';
 import {directive, DirectiveResult, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {repeat, KeyFn} from 'lit/directives/repeat.js';
-import {Virtualizer} from './Virtualizer.js';
+import {type ChildPositioningMethod, Virtualizer} from './Virtualizer.js';
 import {RangeChangedEvent} from './events.js';
 import {
   LayoutConfigValue,
@@ -16,7 +16,12 @@ import {
   virtualizerAxis,
 } from './layouts/shared/Layout.js';
 
-export {virtualizerRef, VirtualizerHostElement} from './Virtualizer.js';
+export {
+  virtualizerRef,
+  VirtualizerHostElement,
+  ChildPositioningMethod,
+  defaultChildPositioningMethod,
+} from './Virtualizer.js';
 
 /**
  * Configuration options for the virtualize directive.
@@ -53,6 +58,13 @@ export interface VirtualizeDirectiveConfig<T> {
    * fires an `unpinned` event.
    */
   pin?: PinOptions;
+
+  /**
+   * Controls how the virtualizer positions its child elements.
+   * - `'translate'` (default): uses CSS `transform: translate()`.
+   * - `'absolute'`: uses CSS `left` and `top` properties.
+   */
+  positioning?: ChildPositioningMethod;
 }
 
 export type RenderItemFunction<T = unknown> = (
@@ -154,13 +166,14 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     if (this._virtualizer) {
       this._virtualizer.disconnected();
     }
-    const {layout, scroller, items, axis, pin} = config;
+    const {layout, scroller, items, axis, pin, positioning} = config;
     const virtualizer = (this._virtualizer = new Virtualizer({
       hostElement,
       layout,
       scroller,
       axis,
       pin,
+      positioning,
     }));
     virtualizer.items = items;
     // On initial render, lit-html runs directives while the new DOM is
