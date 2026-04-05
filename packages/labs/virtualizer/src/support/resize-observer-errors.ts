@@ -47,10 +47,11 @@ export function setupIgnoreWindowResizeObserverLoopErrors(
  */
 export function isResizeObserverLoopErrorMessage(message: string): boolean {
   return (
-    message.includes('ResizeObserver loop limit exceeded') ||
-    message.includes(
-      'ResizeObserver loop completed with undelivered notifications'
-    )
+    typeof message === 'string' &&
+    (message.includes('ResizeObserver loop limit exceeded') ||
+      message.includes(
+        'ResizeObserver loop completed with undelivered notifications'
+      ))
   );
 }
 
