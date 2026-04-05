@@ -7,7 +7,11 @@
 import {html, LitElement} from 'lit';
 import {property} from 'lit/decorators/property.js';
 import {KeyFn} from 'lit/directives/repeat.js';
-import {LayoutConfigValue, virtualizerAxis} from './layouts/shared/Layout.js';
+import {
+  LayoutConfigValue,
+  PinOptions,
+  virtualizerAxis,
+} from './layouts/shared/Layout.js';
 import {
   virtualize,
   virtualizerRef,
@@ -42,12 +46,20 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   @property({reflect: true})
   axis: virtualizerAxis = 'block';
 
+  /**
+   * Declaratively pin the viewport to a specific item. The viewport will
+   * remain pinned until the user scrolls, at which point the virtualizer
+   * fires an `unpinned` event.
+   */
+  @property({attribute: false})
+  pin: PinOptions | undefined;
+
   createRenderRoot() {
     return this;
   }
 
   render() {
-    const {items, renderItem, keyFunction, layout, scroller, axis} = this;
+    const {items, renderItem, keyFunction, layout, scroller, axis, pin} = this;
     return html`${virtualize({
       items,
       renderItem,
@@ -55,6 +67,7 @@ export class LitVirtualizer<T = unknown> extends LitElement {
       layout,
       scroller,
       axis,
+      pin,
     })}`;
   }
 

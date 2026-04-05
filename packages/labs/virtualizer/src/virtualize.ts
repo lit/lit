@@ -10,7 +10,11 @@ import {AsyncDirective} from 'lit/async-directive.js';
 import {repeat, KeyFn} from 'lit/directives/repeat.js';
 import {Virtualizer} from './Virtualizer.js';
 import {RangeChangedEvent} from './events.js';
-import {LayoutConfigValue, virtualizerAxis} from './layouts/shared/Layout.js';
+import {
+  LayoutConfigValue,
+  PinOptions,
+  virtualizerAxis,
+} from './layouts/shared/Layout.js';
 
 export {virtualizerRef, VirtualizerHostElement} from './Virtualizer.js';
 
@@ -42,6 +46,13 @@ export interface VirtualizeDirectiveConfig<T> {
    * - `'inline'`: virtualizes along the inline axis.
    */
   axis?: virtualizerAxis;
+
+  /**
+   * Declaratively pin the viewport to a specific item. The viewport will
+   * remain pinned until the user scrolls, at which point the virtualizer
+   * fires an `unpinned` event.
+   */
+  pin?: PinOptions;
 }
 
 export type RenderItemFunction<T = unknown> = (
@@ -112,6 +123,7 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
       this._makeVirtualizer(hostElement, config);
     }
     this._virtualizer!.axis = config.axis ?? 'block';
+    this._virtualizer!.pin = config.pin;
     this._virtualizer!.items = this._items;
     // @deprecated: If we just set a legacy direction config, wait for layout
     // to complete processing the new writing-mode before returning.
@@ -142,8 +154,14 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     if (this._virtualizer) {
       this._virtualizer.disconnected();
     }
-    const {layout, scroller, items, axis} = config;
-    this._virtualizer = new Virtualizer({hostElement, layout, scroller, axis});
+    const {layout, scroller, items, axis, pin} = config;
+    this._virtualizer = new Virtualizer({
+      hostElement,
+      layout,
+      scroller,
+      axis,
+      pin,
+    });
     this._virtualizer.items = items;
     this._virtualizer.connected();
   }
