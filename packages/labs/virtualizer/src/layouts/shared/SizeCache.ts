@@ -37,6 +37,15 @@ export class SizeCache {
     return this._map.get(index);
   }
 
+  clearOutsideRange(first: number, last: number) {
+    for (const [key, value] of this._map) {
+      if (typeof key === 'number' && (key < first || key > last)) {
+        this._map.delete(key);
+        this.totalSize -= value;
+      }
+    }
+  }
+
   clear() {
     this._map.clear();
     this.totalSize = 0;

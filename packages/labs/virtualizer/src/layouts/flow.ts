@@ -100,6 +100,16 @@ class MetricsCache {
     return this._marginSizeCache.getSize(index);
   }
 
+  clearOutsideRange(first: number, last: number) {
+    this._childSizeCache.clearOutsideRange(first, last);
+    this._marginSizeCache.clearOutsideRange(first, last);
+    for (const key of this._metricsCache.keys()) {
+      if (key < first || key > last) {
+        this._metricsCache.delete(key);
+      }
+    }
+  }
+
   clear() {
     this._childSizeCache.clear();
     this._marginSizeCache.clear();
@@ -148,6 +158,57 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   _stable = true;
 
   _estimate = true;
+
+  /**
+   * Tracks the last-seen inline dimension so we can detect when the
+   * cross-axis size changes (e.g. container resized horizontally while
+   * scrolling vertically). When this happens, cached block sizes for
+   * off-screen items are stale and must be cleared so they don't
+   * poison the average used for position estimation.
+   */
+  _lastViewDim2: number | null = null;
+
+  /**
+   * When set, the next significant change to _virtualizerSize (in
+   * _updateVirtualizerSize) should trigger a proportional scroll
+   * correction. Set after a cross-axis resize clears off-screen
+   * cache entries, since the resulting size change would otherwise
+   * shift the scroll thumb away from its correct position.
+   */
+  _pendingScrollCorrection: number | null = null;
+
+  override unfreeze() {
+    super.unfreeze();
+    // Clear stale state so the next reflow starts fresh from the
+    // current scroll position. Set _pendingScrollCorrection so that
+    // when post-unfreeze measurements change the average (and thus
+    // _virtualizerSize), scrollTop scales proportionally to maintain
+    // the correct thumb position.
+    this._pendingScrollCorrection = this._virtualizerSize;
+    this._metricsCache.clearOutsideRange(this._first, this._last);
+    // Set to null so _updateLayout skips dim2 change detection on
+    // the first post-unfreeze reflow (preventing _pendingScrollCorrection
+    // from being re-set due to scrollbar width changes). _updateLayout
+    // will set it to the current value at the end of that reflow.
+    this._lastViewDim2 = null;
+    this._anchorIdx = null;
+    this._anchorPos = null;
+    // Clear physical items so _estimatePosition uses uniform spacing
+    // from position 0, consistent with _calculateAnchor's assumptions.
+    // Stale physical items at non-uniform positions cause the estimate
+    // to diverge from the anchor calculation.
+    this._physicalItems.clear();
+    this._first = -1;
+    this._last = -1;
+  }
+
+  protected _updateLayout(): void {
+    if (this._lastViewDim2 !== null && this._viewDim2 !== this._lastViewDim2) {
+      this._metricsCache.clearOutsideRange(this._first, this._last);
+      this._pendingScrollCorrection = this._virtualizerSize;
+    }
+    this._lastViewDim2 = this._viewDim2;
+  }
 
   /**
    * Determine the average size of all children represented in the sizes
@@ -260,7 +321,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       lastItem = this._getPhysicalItem(this._last),
       firstMin = firstItem!.pos,
       lastMin = lastItem!.pos,
-      lastMax = lastMin + this._metricsCache.getChildSize(this._last)!;
+      lastMax = lastMin + lastItem!.size;
 
     if (lastMax < lower) {
       // Window is entirely past physical items, calculate new anchor
@@ -340,8 +401,15 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
     // If we are scrolling to a specific index or if we are doing another
     // pass to stabilize a previously started reflow, we will already
-    // have an anchor. If not, establish an anchor now.
-    if (this._anchorIdx === null || this._anchorPos === null) {
+    // have an anchor. If not, establish an anchor now. Also recalculate
+    // if the existing anchor is completely outside the viewport bounds
+    // (e.g. after a large scroll jump where the update cycle was frozen).
+    if (
+      this._anchorIdx === null ||
+      this._anchorPos === null ||
+      this._anchorPos > upper ||
+      this._anchorPos < lower
+    ) {
       this._anchorIdx = this._getAnchor(lower, upper);
       this._anchorPos = this._getPosition(this._anchorIdx);
     }
@@ -479,8 +547,11 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   }
 
   _resetReflowState() {
-    this._anchorIdx = null;
-    this._anchorPos = null;
+    // Don't clear _anchorIdx / _anchorPos here. The anchor persists
+    // across reflows so that measurements can settle around it without
+    // triggering cascading scroll corrections. The bounds check in
+    // _getItems will lazily recalculate the anchor when the viewport
+    // moves far enough that the anchor is no longer in view.
     this._stable = true;
   }
 
@@ -489,6 +560,25 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     this._virtualizerSize =
       this.items.length * (averageMarginSize + this._getAverageSize()) +
       averageMarginSize;
+    if (this._pendingScrollCorrection !== null) {
+      const oldSize = this._pendingScrollCorrection;
+      const newSize = this._virtualizerSize;
+      if (oldSize > 0 && Math.abs(newSize - oldSize) > 1) {
+        const ratio = newSize / oldSize;
+        const scrollAdjustment = this._blockScrollPosition * (ratio - 1);
+        this._blockScrollPosition *= ratio;
+        this._scrollError -= scrollAdjustment;
+        for (const item of this._physicalItems.values()) {
+          item.pos *= ratio;
+        }
+        if (this._anchorPos !== null) {
+          this._anchorPos *= ratio;
+        }
+        this._physicalMin *= ratio;
+        this._physicalMax *= ratio;
+        this._pendingScrollCorrection = null;
+      }
+    }
   }
 
   _refineScrollSize() {
