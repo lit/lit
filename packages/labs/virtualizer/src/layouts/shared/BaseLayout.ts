@@ -102,6 +102,11 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   protected _scrollError = 0;
 
   /**
+   * When true, the layout is frozen and should not process reflows.
+   */
+  protected _frozen = false;
+
+  /**
    * Total number of items that could possibly be displayed. Used to help
    * calculate the scroll size.
    */
@@ -200,6 +205,9 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    * Perform a reflow if one has been scheduled.
    */
   reflowIfNeeded(force = false) {
+    if (this._frozen) {
+      return;
+    }
     if (force || this._pendingReflow) {
       this._pendingReflow = false;
       this._reflow();
@@ -274,6 +282,14 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   protected get _viewDim2(): number {
     return this._viewportSize.inlineSize;
+  }
+
+  freeze() {
+    this._frozen = true;
+  }
+
+  unfreeze() {
+    this._frozen = false;
   }
 
   protected _scheduleReflow() {

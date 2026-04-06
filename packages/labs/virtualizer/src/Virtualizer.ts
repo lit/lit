@@ -214,6 +214,40 @@ export class Virtualizer {
     passive: true,
   };
 
+  /**
+   * When true, the layout update cycle is frozen because a large
+   * scroll jump is in progress (e.g., thumb drag). Updates resume
+   * when scrolling settles.
+   */
+  private _scrollFrozen = false;
+
+  /**
+   * Debounce timer for unfreezing after a large scroll jump.
+   */
+  private _scrollFreezeTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /**
+   * How long (ms) to wait after the last scroll event before
+   * unfreezing and re-rendering at the current position.
+   * // TODO: May need further tuning and/or exposure as a config param.
+   */
+  private _scrollFreezeDelay = 50;
+
+  /**
+   * Minimum scroll delta, as a multiple of viewport height, to
+   * trigger a freeze. Smaller values freeze more aggressively
+   * (smoother thumb tracking but more blank flashes); larger values
+   * allow more incremental updates before freezing.
+   * // TODO: May need further tuning and/or exposure as a config param.
+   */
+  private _scrollFreezeThreshold = 20;
+
+  /**
+   * The last observed scroll position in the block direction,
+   * used to detect large jumps.
+   */
+  private _lastBlockScrollPosition: number | null = null;
+
   // TODO (graynorton): Rethink, per longer comment below
 
   private _loadListener = this._childLoaded.bind(this);
@@ -491,7 +525,11 @@ export class Virtualizer {
   }
 
   _observeAndListen() {
-    this._mutationObserver!.observe(this._hostElement!, {childList: true});
+    this._mutationObserver!.observe(this._hostElement!, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
     this._hostElementRO!.observe(this._hostElement!);
     this._scrollEventListeners.push(window);
     window.addEventListener('scroll', this, this._scrollEventListenerOptions);
@@ -963,6 +1001,9 @@ export class Virtualizer {
   }
 
   _updateLayout() {
+    if (this._scrollFrozen) {
+      return;
+    }
     if (this._layout && this._connected) {
       // Apply axis swap before reading styles so that _updateView
       // reads the correct (swapped) writing-mode from CSS.
@@ -1003,7 +1044,43 @@ export class Virtualizer {
     if (this._scrollerController!.correctingScrollError === false) {
       // This is a user-initiated scroll, so we unpin the layout
       this._layout?.unpin();
+
+      // Detect large scroll jumps and freeze the update cycle
+      const scrollTop = this._scrollerController!.scrollTop;
+      const clientHeight =
+        this._scrollerController!.element.getBoundingClientRect().height;
+
+      if (this._lastBlockScrollPosition !== null) {
+        const delta = Math.abs(scrollTop - this._lastBlockScrollPosition);
+        if (
+          delta > clientHeight * this._scrollFreezeThreshold ||
+          this._scrollFrozen
+        ) {
+          if (!this._scrollFrozen) {
+            this._layout?.freeze();
+          }
+          this._scrollFrozen = true;
+          this._lastBlockScrollPosition = scrollTop;
+          // Reset the debounce timer
+          if (this._scrollFreezeTimer !== null) {
+            clearTimeout(this._scrollFreezeTimer);
+          }
+          this._scrollFreezeTimer = setTimeout(() => {
+            this._scrollFreezeTimer = null;
+            this._unfreezeScroll();
+          }, this._scrollFreezeDelay);
+          return;
+        }
+      }
+      this._lastBlockScrollPosition = scrollTop;
     }
+    this._schedule(this._updateLayout);
+  }
+
+  private _unfreezeScroll() {
+    this._scrollFrozen = false;
+    this._lastBlockScrollPosition = this._scrollerController!.scrollTop;
+    this._layout?.unfreeze();
     this._schedule(this._updateLayout);
   }
 
@@ -1451,6 +1528,11 @@ export class Virtualizer {
           scrollLeft -
           (this._writingMode === 'horizontal-tb' ? inline : blockCorrection),
       });
+      // Update _lastBlockScrollPosition so the freeze detection sees
+      // the corrected position, not the pre-correction one. Without
+      // this, large scroll corrections (e.g. from _pendingScrollCorrection)
+      // appear as large user-initiated jumps and trigger an unwanted freeze.
+      this._lastBlockScrollPosition = this._scrollerController!.scrollTop;
     }
   }
 
