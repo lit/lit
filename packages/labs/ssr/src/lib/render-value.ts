@@ -60,8 +60,13 @@ import {
 
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
+import {
+  getTemplateValue,
+  isTemplateValue,
+} from 'lit-html/directives/template.js';
 
 import type {ThunkedRenderResult} from './render-result.js';
+import {collectResult, collectResultSync} from './render-result.js';
 import {isHydratable} from './server-template.js';
 import type {Part} from 'lit-html';
 
@@ -726,7 +731,9 @@ declare global {
 export function renderValue(
   value: unknown,
   renderInfo: RenderInfo,
-  hydratable = true
+  hydratable = true,
+  emitMarkers = hydratable,
+  suppressNestedMarkers = false
 ): ThunkedRenderResult {
   if (renderInfo.customElementHostStack.length === 0) {
     // If the SSR root event target is not at the start of the event target
@@ -767,20 +774,51 @@ export function renderValue(
 
   const result: ThunkedRenderResult = [];
 
-  if (value != null && isTemplateResult(value)) {
-    if (hydratable) {
+  if (isTemplateValue(value)) {
+    result.push('<template>');
+    result.push(() => {
+      // template() needs hydratable rendering semantics, but not Lit markers in
+      // the final inert HTMLTemplateElement contents.
+      const innerResult = renderValue(
+        getTemplateValue(value),
+        renderInfo,
+        true,
+        false,
+        true
+      );
+      try {
+        return collectResultSync(innerResult);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message ===
+            'Promises not supported in collectResultSync. Please use collectResult.'
+        ) {
+          return collectResult(innerResult);
+        }
+        throw error;
+      }
+    });
+    result.push('</template>');
+  } else if (value != null && isTemplateResult(value)) {
+    if (emitMarkers) {
       result.push(
         `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`
       );
     }
     result.push(() =>
-      renderTemplateResult(value as TemplateResult, renderInfo)
+      renderTemplateResult(
+        value as TemplateResult,
+        renderInfo,
+        emitMarkers,
+        suppressNestedMarkers
+      )
     );
-    if (hydratable) {
+    if (emitMarkers) {
       result.push(`<!--/lit-part-->`);
     }
   } else {
-    if (hydratable) {
+    if (emitMarkers) {
       result.push(`<!--lit-part-->`);
     }
     if (
@@ -792,15 +830,23 @@ export function renderValue(
       // add nothing
     } else if (!isPrimitive(value) && isIterable(value)) {
       // Check that value is not a primitive, since strings are iterable
-      for (const item of value) {
-        result.push(() => renderValue(item, renderInfo, hydratable));
+      for (const item of value as Iterable<unknown>) {
+        result.push(() =>
+          renderValue(
+            item,
+            renderInfo,
+            hydratable,
+            emitMarkers,
+            suppressNestedMarkers
+          )
+        );
       }
     } else {
       result.push(
         escapeHtml(typeof value === 'string' ? value : String(value))
       );
     }
-    if (hydratable) {
+    if (emitMarkers) {
       result.push(`<!--/lit-part-->`);
     }
   }
@@ -810,7 +856,9 @@ export function renderValue(
 
 function renderTemplateResult(
   result: TemplateResult,
-  renderInfo: RenderInfo
+  renderInfo: RenderInfo,
+  emitMarkers = isHydratable(result),
+  suppressNestedMarkers = false
 ): ThunkedRenderResult {
   // In order to render a TemplateResult we have to handle and stream out
   // different parts of the result separately:
@@ -856,7 +904,16 @@ And the inner template was:
               );
             }
           }
-          return renderValue(value, renderInfo, isValueHydratable);
+          return renderValue(
+            value,
+            renderInfo,
+            isValueHydratable,
+            // Only the template() path suppresses nested markers. Generic SSR
+            // must keep them so server-only templates can still nest hydratable
+            // templates without changing existing output.
+            suppressNestedMarkers ? false : isValueHydratable,
+            suppressNestedMarkers
+          );
         });
         break;
       }
@@ -1004,7 +1061,7 @@ And the inner template was:
           if (
             (op.boundAttributesCount > 0 ||
               renderInfo.customElementHostStack.length > 0) &&
-            hydratable
+            emitMarkers
           ) {
             return `<!--lit-node ${op.nodeIndex}-->`;
           }

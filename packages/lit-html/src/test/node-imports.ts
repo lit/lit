@@ -23,6 +23,7 @@ import 'lit-html/directives/range.js';
 import 'lit-html/directives/ref.js';
 import 'lit-html/directives/repeat.js';
 import 'lit-html/directives/style-map.js';
+import 'lit-html/directives/template.js';
 import 'lit-html/directives/template-content.js';
 import 'lit-html/directives/unsafe-html.js';
 import 'lit-html/directives/unsafe-svg.js';

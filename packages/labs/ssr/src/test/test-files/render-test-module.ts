@@ -8,6 +8,7 @@ import {html, mathml, svg, nothing} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {ref, createRef} from 'lit/directives/ref.js';
+import {template} from 'lit/directives/template.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
 import type {HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
@@ -82,6 +83,23 @@ export const elementTemplateWithIDProperty = (x: string) =>
 /* Nested Templates */
 // prettier-ignore
 export const nestedTemplate = html`<div>${html`<p>Hi</p>`}</div>`;
+
+/* Template Directive */
+// prettier-ignore
+export const templateDirectiveWithText = (x: string) =>
+  html`<div>${template(html`<p>${x}</p>`)}</div>`;
+// prettier-ignore
+export const templateDirectiveWithReflectedPropertyAndBoolean = (x: string) =>
+  html`<div>${template(html`<input ?disabled=${true}><span .className=${x}></span>`)}</div>`;
+// prettier-ignore
+export const templateDirectiveWithMarkerLikeComments = (x: string) =>
+  html`<div>${template(html`<!--lit-part--><p>${x}</p><!--lit-node 3-->`)}</div>`;
+// prettier-ignore
+export const templateDirectiveWithEventListener = () =>
+  html`<div>${template(html`<button @click=${() => {}}>ok</button>`)}</div>`;
+// prettier-ignore
+export const templateDirectiveWithInvalidValue = () =>
+  html`<div>${template('not-a-template' as unknown as never)}</div>`;
 
 /* Custom Elements */
 

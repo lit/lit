@@ -260,6 +260,19 @@
       "development": "./development/directives/style-map.js",
       "default": "./directives/style-map.js"
     },
+    "./directives/template.js": {
+      "types": "./development/directives/template.d.ts",
+      "browser": {
+        "development": "./development/directives/template.js",
+        "default": "./directives/template.js"
+      },
+      "node": {
+        "development": "./node/development/directives/template.js",
+        "default": "./node/directives/template.js"
+      },
+      "development": "./development/directives/template.js",
+      "default": "./directives/template.js"
+    },
     "./directives/template-content.js": {
       "types": "./development/directives/template-content.d.ts",
       "browser": {

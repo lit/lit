@@ -19,6 +19,7 @@ import '../directives/style-map_test.js';
 import '../directives/live_test.js';
 import '../directives/ref_test.js';
 import '../directives/repeat_test.js';
+import '../directives/template_test.js';
 import '../directives/template-content_test.js';
 import '../directives/unsafe-html_test.js';
 

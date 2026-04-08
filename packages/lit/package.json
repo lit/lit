@@ -133,6 +133,10 @@
       "types": "./development/directives/style-map.d.ts",
       "default": "./directives/style-map.js"
     },
+    "./directives/template.js": {
+      "types": "./development/directives/template.d.ts",
+      "default": "./directives/template.js"
+    },
     "./directives/template-content.js": {
       "types": "./development/directives/template-content.d.ts",
       "default": "./directives/template-content.js"

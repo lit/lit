@@ -24,6 +24,7 @@ export * from './directives/range.js';
 export * from './directives/ref.js';
 export * from './directives/repeat.js';
 export * from './directives/style-map.js';
+export * from './directives/template.js';
 export * from './directives/template-content.js';
 export * from './directives/unsafe-html.js';
 export * from './directives/unsafe-svg.js';

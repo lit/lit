@@ -35,6 +35,7 @@ import 'lit/directives/range.js';
 import 'lit/directives/ref.js';
 import 'lit/directives/repeat.js';
 import 'lit/directives/style-map.js';
+import 'lit/directives/template.js';
 import 'lit/directives/template-content.js';
 import 'lit/directives/unsafe-html.js';
 import 'lit/directives/unsafe-svg.js';

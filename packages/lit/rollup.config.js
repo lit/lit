@@ -60,6 +60,7 @@ export default litProdConfig({
     'directives/ref',
     'directives/repeat',
     'directives/style-map',
+    'directives/template',
     'directives/template-content',
     'directives/unsafe-html',
     'directives/unsafe-mathml',

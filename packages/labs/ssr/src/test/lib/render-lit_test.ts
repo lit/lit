@@ -111,6 +111,53 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('template() directive renders inert template contents', async () => {
+    const {render, templateDirectiveWithText} = await setup();
+    const result = await render(templateDirectiveWithText('foo'));
+    assert.is(
+      result,
+      `<!--lit-part AEmR7W+R0Ak=--><div><template><p>foo</p></template></div><!--/lit-part-->`
+    );
+  });
+
+  test('template() directive preserves reflected property and boolean attr semantics', async () => {
+    const {render, templateDirectiveWithReflectedPropertyAndBoolean} =
+      await setup();
+    const result = await render(
+      templateDirectiveWithReflectedPropertyAndBoolean('x')
+    );
+    assert.is(
+      result,
+      `<!--lit-part AEmR7W+R0Ak=--><div><template><input disabled><span class="x"></span></template></div><!--/lit-part-->`
+    );
+  });
+
+  test('template() directive preserves authored marker-like comments', async () => {
+    const {render, templateDirectiveWithMarkerLikeComments} = await setup();
+    const result = await render(templateDirectiveWithMarkerLikeComments('foo'));
+    assert.is(
+      result,
+      `<!--lit-part AEmR7W+R0Ak=--><div><template><!--lit-part--><p>foo</p><!--lit-node 3--></template></div><!--/lit-part-->`
+    );
+  });
+
+  test('template() directive does not serialize event listeners', async () => {
+    const {render, templateDirectiveWithEventListener} = await setup();
+    const result = await render(templateDirectiveWithEventListener());
+    assert.is(
+      result,
+      `<!--lit-part AEmR7W+R0Ak=--><div><template><button >ok</button></template></div><!--/lit-part-->`
+    );
+  });
+
+  test('template() directive rejects non-template values', async () => {
+    const {render, templateDirectiveWithInvalidValue} = await setup();
+    assert.throws(
+      () => render(templateDirectiveWithInvalidValue()),
+      /template\(\) called with a non-TemplateResult value/
+    );
+  });
+
   /* Iterable Expression */
   test('iterable expression with array value', async () => {
     const {render, templateWithIterableExpression} = await setup();
