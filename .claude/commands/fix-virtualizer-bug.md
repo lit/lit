@@ -151,3 +151,67 @@ Repro cases live in `playground/p/scratch/issues/<issue-number>/`.
 1. Run the full virtualizer test suite: `npm run test` from the virtualizer package dir.
 2. Verify the playground repro works correctly with the fix.
 3. Summarize what was done: root cause, fix approach, files changed.
+
+---
+
+## Phase 8: Update TRIAGE.md
+
+**Goal**: Reflect the newly fixed issue in the triage document.
+
+`packages/labs/virtualizer/TRIAGE.md` tracks the state of all known virtualizer issues. When a fix lands (even just on a branch), update it:
+
+1. Move the issue from its current section to **Fixed Pending Merge**, with the test and fix commit hashes. Group it under the appropriate PR/branch.
+2. Update the PR's row in the **Open PRs** table to include the new issue number.
+3. If this is a newly filed issue (not previously tracked), add it to the **Known Issue Numbers** list at the bottom.
+4. Update the **Summary** counts at the top.
+5. Bump the **Last updated** date at the top of the file.
+6. Preserve any existing manual notes unless they're now incorrect.
+
+This keeps the triage doc in sync with the state of the branch. Include TRIAGE.md updates in the fix commit (or as a separate follow-up commit if the fix has already been pushed).
+
+---
+
+## Filing new issues
+
+When you discover a bug that doesn't have an existing issue, file one before writing the fix.
+
+**Issue title conventions:**
+
+- Prefix with `[labs/virtualizer]` — same convention as PR titles and commit messages.
+- Be specific about the layout/component affected (e.g., `[labs/virtualizer] Flow layout: ...`).
+- Lead with the observable symptom, not the internal cause.
+
+**Issue body should include:**
+
+1. **Description** — what the user sees, what's expected, why it matters.
+2. **Reproduction** — link to a Lit Playground gist (not just a description). Export the repro from `playground/p/scratch/issues/<number>/`:
+   - The playground's `export.js` script requires the `gist` CLI (`brew install gist`), which often isn't installed.
+   - Alternative: use `gh gist create --public <files>` directly. Exclude `package.json`, `package-lock.json`, and `node_modules/` — just upload `index.html`, the TS source file, and any other hand-written files.
+   - The Lit playground URL format is `https://lit.dev/playground/#gist=<gist-id>`.
+3. **Root cause** — once diagnosed, include file paths and the specific incorrect logic. Saves reviewer time.
+4. **Related observations** — if the repro exposes multiple issues, file them as separate issues but reference the shared repro in each.
+
+**Filing with `gh`:**
+
+```bash
+gh issue create --repo lit/lit \
+  --title "[labs/virtualizer] <concise symptom>" \
+  --body "$(cat <<'EOF'
+## Description
+...
+
+## Reproduction
+[Lit Playground repro](https://lit.dev/playground/#gist=<id>)
+
+## Root cause
+...
+EOF
+)"
+```
+
+**After filing:**
+
+- Update the changeset to reference the issue number: `(#<issue>)`.
+- Update the test commit message and fix commit message to include `(#<issue>)`.
+- If commits were already made without the issue number, amend them (soft reset + recommit is the simplest approach).
+- Use commit format: `[labs/virtualizer] <description> (#<issue>)`.
