@@ -257,7 +257,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
         const refItem = this._getPhysicalItem(this._first);
         return (
           refItem!.pos -
-          (c.getMarginSize(this._first - 1) || c.averageMarginSize) -
+          (c.getMarginSize(this._first) || c.averageMarginSize) -
           (delta * c.averageChildSize + (delta - 1) * c.averageMarginSize)
         );
       } else {
@@ -266,7 +266,7 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
         return (
           refItem!.pos +
           (c.getChildSize(this._last) || c.averageChildSize) +
-          (c.getMarginSize(this._last) || c.averageMarginSize) +
+          (c.getMarginSize(this._last + 1) || c.averageMarginSize) +
           (delta - 1) * (c.averageChildSize + c.averageMarginSize)
         );
       }
@@ -487,14 +487,17 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
         this._stable = false;
         size = this._getAverageSize();
       }
-      let margin = this._metricsCache.getMarginSize(this._last);
-      if (margin === undefined) {
+      if (this._metricsCache.getMarginSize(this._last) === undefined) {
         this._stable = false;
-        margin = this._metricsCache.averageMarginSize;
+      }
+      let trailingMargin = this._metricsCache.getMarginSize(this._last + 1);
+      if (trailingMargin === undefined) {
+        this._stable = false;
+        trailingMargin = this._metricsCache.averageMarginSize;
       }
       const pos = this._physicalMax;
       items.set(this._last, {pos, size});
-      this._physicalMax += size + margin;
+      this._physicalMax += size + trailingMargin;
       if (!this._stable && !this._estimate) {
         break;
       }
