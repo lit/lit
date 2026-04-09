@@ -508,6 +508,168 @@ describe('flow layout', () => {
     });
   });
 
+  describe('non-uniform margins', () => {
+    // Regression test for off-by-one errors in margin handling.
+    //
+    // Items alternate between two margin types:
+    //   Type A (even): margin-block-start: 5px, margin-block-end: 30px
+    //   Type B (odd):  margin-block-start: 30px, margin-block-end: 5px
+    //
+    // This produces alternating collapsed margins:
+    //   Between A→B (even→odd): collapse(30, 30) = 30px
+    //   Between B→A (odd→even): collapse(5, 5) = 5px
+    //
+    // The test checks gaps between consecutive items rather than absolute
+    // positions, avoiding sensitivity to initial layout timing.
+
+    async function createNonUniformMarginVirtualizer() {
+      const container = await fixture(
+        html` <div>
+          <style>
+            lit-virtualizer {
+              height: 200px;
+              width: 200px;
+              margin: 0;
+              padding: 0;
+            }
+            .margin-item {
+              width: 200px;
+              height: 50px;
+              padding: 0;
+              margin: 0;
+            }
+            .margin-item.type-a {
+              margin-block-start: 5px;
+              margin-block-end: 30px;
+            }
+            .margin-item.type-b {
+              margin-block-start: 30px;
+              margin-block-end: 5px;
+            }
+          </style>
+          <lit-virtualizer
+            scroller
+            .layout=${flow()}
+            .items=${array(200)}
+            .renderItem=${(item: number) =>
+              html`<div
+                class="margin-item ${item % 2 === 0 ? 'type-a' : 'type-b'}"
+              >
+                ${item}
+              </div>`}
+          ></lit-virtualizer>
+        </div>`
+      );
+      const virtualizer = (await until(() =>
+        container.querySelector('lit-virtualizer')
+      )) as LitVirtualizer;
+      expect(virtualizer).to.be.instanceOf(LitVirtualizer);
+      return virtualizer;
+    }
+
+    function getItemVisualTop(el: HTMLElement): number {
+      // The virtualizer positions items using transform: translate(x, y).
+      // For absolutely positioned elements, the visual top also includes
+      // the element's margin-block-start (which shifts absolute elements
+      // from their containing block). The layout subtracts marginBlockStart
+      // from the position before setting the transform, so we add it back.
+      const match = el.style.transform.match(
+        /translate\(\s*[\d.-]+px\s*,\s*([\d.-]+)px\s*\)/
+      );
+      const transformTop = match ? parseFloat(match[1]) : NaN;
+      const mbs = parseFloat(getComputedStyle(el).marginBlockStart) || 0;
+      return transformTop + mbs;
+    }
+
+    /**
+     * Returns rendered items sorted by their index, as an array of
+     * {index, top} objects.
+     */
+    function getSortedItemPositions(virtualizer: LitVirtualizer) {
+      const items = Array.from(
+        virtualizer.renderRoot.querySelectorAll('.margin-item')
+      ) as HTMLElement[];
+      return items
+        .map((el) => ({
+          index: parseInt(el.textContent!.trim()),
+          top: getItemVisualTop(el),
+        }))
+        .sort((a, b) => a.index - b.index);
+    }
+
+    /**
+     * Expected collapsed margin between items at index-1 and index:
+     *   even→odd (A→B): collapse(30, 30) = 30
+     *   odd→even (B→A): collapse(5, 5) = 5
+     */
+    function expectedGap(index: number): number {
+      // Gap before item `index` = collapsed margin between (index-1) and index.
+      // If index is odd: previous is even (A), gap = collapse(A.end=30, B.start=30) = 30
+      // If index is even: previous is odd (B), gap = collapse(B.end=5, A.start=5) = 5
+      return index % 2 === 1 ? 30 : 5;
+    }
+
+    it('gaps between items match expected collapsed margins', async () => {
+      const virtualizer = await createNonUniformMarginVirtualizer();
+
+      // Wait for layout to stabilize with measured margins
+      await pass(() => {
+        const positions = getSortedItemPositions(virtualizer);
+        expect(positions.length).to.be.greaterThan(1);
+      });
+      await new Promise((r) => setTimeout(r, 500));
+
+      const positions = getSortedItemPositions(virtualizer);
+      expect(positions.length).to.be.greaterThan(2);
+
+      // Check gaps between each pair of consecutive rendered items
+      for (let i = 1; i < positions.length; i++) {
+        const prev = positions[i - 1];
+        const curr = positions[i];
+        // Only check truly consecutive items
+        if (curr.index !== prev.index + 1) continue;
+        const actualGap = curr.top - prev.top - 50; // 50 = item height
+        const expected = expectedGap(curr.index);
+        expect(actualGap).to.be.closeTo(
+          expected,
+          1,
+          `Gap before item ${curr.index}: expected ${expected}px, got ${actualGap}px`
+        );
+      }
+    });
+
+    it('gaps remain correct after scrolling forward', async () => {
+      const virtualizer = await createNonUniformMarginVirtualizer();
+
+      await pass(() => {
+        expect(getSortedItemPositions(virtualizer).length).to.be.greaterThan(1);
+      });
+
+      // Scroll forward to trigger the forward layout loop with many items
+      virtualizer.scrollToIndex(50, 'start');
+      await until(() => {
+        const positions = getSortedItemPositions(virtualizer);
+        return positions.find((p) => p.index === 50);
+      });
+      await new Promise((r) => setTimeout(r, 500));
+
+      const positions = getSortedItemPositions(virtualizer);
+
+      for (let i = 1; i < positions.length; i++) {
+        const prev = positions[i - 1];
+        const curr = positions[i];
+        if (curr.index !== prev.index + 1) continue;
+        const actualGap = curr.top - prev.top - 50;
+        const expected = expectedGap(curr.index);
+        expect(actualGap).to.be.closeTo(
+          expected,
+          1,
+          `Gap before item ${curr.index} after scroll: expected ${expected}px, got ${actualGap}px`
+        );
+      }
+    });
+  });
+
   describe('display: contents ancestor with overflow: hidden', () => {
     it('renders children when slotted into a host whose slot has overflow: hidden', async () => {
       // Regression test for https://github.com/lit/lit/issues/4922
