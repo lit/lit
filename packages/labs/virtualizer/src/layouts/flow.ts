@@ -12,6 +12,7 @@ import {
   ChildLayoutInfo,
   BaseLayoutConfig,
   LayoutHostSink,
+  PinOptions,
 } from './shared/Layout.js';
 
 type ItemBounds = {
@@ -615,6 +616,42 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
       insetBlockStart: this._getPosition(idx) - marginOffset,
       insetInlineStart: 0,
     } as Positions;
+  }
+
+  /**
+   * Override to use visual (border-edge) positions for scroll targeting.
+   * The base implementation uses _getItemPosition, which in Flow returns
+   * the transform position (offset by marginBlockStart for absolute
+   * positioning). For scroll-to, we need the visual position where the
+   * item's border box actually appears.
+   */
+  protected _calculateScrollIntoViewPosition(options: PinOptions) {
+    const {block} = options;
+    const index = Math.min(this.items.length, Math.max(0, options.index));
+    const itemStartPosition = this._getPosition(index);
+    let scrollPosition = itemStartPosition;
+    if (block !== 'start') {
+      const itemSize = this._getItemSize(index).blockSize;
+      if (block === 'center') {
+        scrollPosition =
+          itemStartPosition - 0.5 * this._viewDim1 + 0.5 * itemSize;
+      } else {
+        const itemEndPosition = itemStartPosition - this._viewDim1 + itemSize;
+        if (block === 'end') {
+          scrollPosition = itemEndPosition;
+        } else {
+          // block === 'nearest'
+          const currentScrollPosition = this._blockScrollPosition;
+          scrollPosition =
+            Math.abs(currentScrollPosition - itemStartPosition) <
+            Math.abs(currentScrollPosition - itemEndPosition)
+              ? itemStartPosition
+              : itemEndPosition;
+        }
+      }
+    }
+    scrollPosition += this.offsetWithinScroller.block;
+    return this._clampScrollPosition(scrollPosition);
   }
 
   /**
