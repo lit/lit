@@ -668,6 +668,36 @@ describe('flow layout', () => {
         );
       }
     });
+
+    it('scrollToIndex scrolls to the border edge, not the margin edge', async () => {
+      const virtualizer = await createNonUniformMarginVirtualizer();
+
+      await pass(() => {
+        expect(getSortedItemPositions(virtualizer).length).to.be.greaterThan(1);
+      });
+
+      // Scroll to an item far enough away to require estimation
+      virtualizer.scrollToIndex(50, 'start');
+      await until(() => {
+        const positions = getSortedItemPositions(virtualizer);
+        return positions.find((p) => p.index === 50);
+      });
+      await new Promise((r) => setTimeout(r, 500));
+
+      // The scroll position should align with the item's visual (border)
+      // edge, not its margin edge. For item 50 (even/type-a), the margin-
+      // block-start is 5px. The scrollTop should equal the item's visual
+      // top, which is its transform top + marginBlockStart.
+      const positions = getSortedItemPositions(virtualizer);
+      const item50 = positions.find((p) => p.index === 50);
+      expect(item50).to.not.be.undefined;
+      // The item's visual top should be at (or very near) the scrollTop
+      expect(item50!.top).to.be.closeTo(
+        virtualizer.scrollTop,
+        2,
+        `Item 50 visual top (${item50!.top}) should match scrollTop (${virtualizer.scrollTop})`
+      );
+    });
   });
 
   describe('display: contents ancestor with overflow: hidden', () => {
