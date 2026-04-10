@@ -62,7 +62,7 @@ Note: The examples throughout this documentation focus on the `<lit-virtualizer>
 
 ### Making a virtualizer a scroller
 
-If you want to make a virtualizer that is itself a scroller, just add the `scroller` attribute to the `<lit-virtualizer>` element, or add `scroller: true` to the options object for the [`virtualize` directive](#virtualize-directive):
+If you want to make a virtualizer that is itself a scroller, just add the `scroller` attribute to the `<lit-virtualizer>` element (equivalent to `scroller="self"`), or add `scroller: true` (or `scroller: 'self'`) to the options object for the [`virtualize` directive](#virtualize-directive):
 
 ```js
 render() {
@@ -80,6 +80,32 @@ When you make a virtualizer a scroller, you should explicitly size it to suit th
 
 > [!NOTE]
 > Earlier versions of `@lit-labs/virtualizer` set a `min-height` of `150px` on scrolling virtualizers to avoid this zero-size case, but this approach was heavy-handed and doesn't play nicely with [CSS writing mode and direction](#writing-mode-and-direction), so has been replaced with the console warning.
+
+### Managed viewport mode
+
+For most use cases the virtualizer's default mode (window/ancestor scrolling) or self-scroller mode is the right choice — both rely on native browser scrolling. If you have a use case where neither fits — for example, a custom scroller implementation, or two virtualizers whose viewports must be kept in sync — you can use **managed viewport mode** by setting `scroller="managed"` and providing a `viewport` property:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      .scroller=${'managed'}
+      .viewport=${this.viewport}
+      .items=${this.items}
+      .renderItem=${item => html`<div>${item.name}</div>`}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+The `viewport` property is an object of the form `{scrollTop, scrollLeft, width, height}`. When set, the virtualizer performs no DOM observation for scroll position or viewport size — the external controller is responsible for updating `viewport` whenever scrolling or resizing occurs in its own system.
+
+The values in `viewport` are always non-negative offsets along the host element's physical axes, measured from the inline-start / block-start corner of the scrollable content. (For the default `horizontal-tb` writing mode this is identical to native browser semantics: `scrollTop` is the vertical offset from the top, `scrollLeft` is the horizontal offset from the left.)
+
+When the virtualizer's layout reports a scroll-error correction (e.g. because item-size estimates have been refined), the virtualizer dispatches a `scrollerror` `CustomEvent` on the host element with a `detail` of `{top, left}` representing the correction delta in physical pixels. The external controller should listen for this event, adjust its own scroll state, and update `viewport` accordingly.
+
+> [!NOTE]
+> Smooth scrolling via `scrollIntoView({behavior: 'smooth'})` is not currently supported in managed mode. Pin-based instant scroll-into-view (`scrollIntoView()` with no `behavior` option) works as usual.
 
 ### Writing mode and direction
 
@@ -657,9 +683,23 @@ A function that returns a Lit `TemplateResult`. It will be used to generate a ch
 
 ### `scroller` attribute / property
 
-Type: `Boolean`
+Type: `boolean | 'self' | 'ancestor' | 'managed'`
 
-Optional. If this attribute is present (or, in the case of the `virtualize` directive, if this property has a truthy value), then the virtualizer itself will be a scroller. Otherwise, the virtualizer will not scroll but will size itself to take up enough space for all of its children, including those that aren't currently present in the DOM.
+Default: `'ancestor'` (also `false`)
+
+Optional. Controls how the virtualizer acquires scroll position and viewport size:
+
+- `'ancestor'` (default, also `false`): the window or a clipping ancestor is the scroll container. The virtualizer sizes itself to take up enough space for all of its children, including those not currently present in the DOM, and observes scroll events on the relevant scroll ancestors.
+- `'self'` (also `true`): the virtualizer's host element itself is the scroll container. The host must be explicitly sized via CSS — see [Making a virtualizer a scroller](#making-a-virtualizer-a-scroller).
+- `'managed'`: no DOM observation. The virtualizer is driven by an externally-supplied [`viewport`](#viewport-property) property — see [Managed viewport mode](#managed-viewport-mode).
+
+The boolean values are accepted for backwards compatibility. New code should prefer the string form. When set as an attribute on `<lit-virtualizer>`, both forms are supported: `<lit-virtualizer scroller>` (bare boolean attribute, equivalent to `'self'`) and `<lit-virtualizer scroller="managed">` (string value).
+
+### `viewport` property
+
+Type: `{scrollTop: number, scrollLeft: number, width: number, height: number} | undefined`
+
+Required when `scroller` is `'managed'`, otherwise ignored. Provides the externally-managed viewport (scroll position and dimensions) that the virtualizer should use in place of DOM-observed values. Setting this property schedules a layout update on the next frame. See [Managed viewport mode](#managed-viewport-mode) for the full description.
 
 ### `axis` attribute / property
 

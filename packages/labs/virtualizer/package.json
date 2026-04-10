@@ -61,6 +61,10 @@
     "./virtualize.js": {
       "types": "./virtualize.d.ts",
       "default": "./virtualize.js"
+    },
+    "./Virtualizer.js": {
+      "types": "./Virtualizer.d.ts",
+      "default": "./Virtualizer.js"
     }
   },
   "scripts": {
@@ -103,6 +107,7 @@
         ".tsbuildinfo",
         "layouts/**/*.{js,d.ts,d.ts.map}",
         "polyfillLoaders/**/*.{js,d.ts,d.ts.map}",
+        "scroll-sources/**/*.{js,d.ts,d.ts.map}",
         "support/**/*.{js,d.ts,d.ts.map}",
         "test/**/*.{js,d.ts,d.ts.map}",
         "!test/screenshot/**",
@@ -152,6 +157,7 @@
     "/layouts/shared/*.{d.ts,d.ts.map,js,js.map}",
     "/polyfillLoaders/*.{d.ts,d.ts.map,js,js.map}",
     "/polyfills/resize-observer-polyfill/ResizeObserver.{d.ts,js}",
+    "/scroll-sources/*.{d.ts,d.ts.map,js,js.map}",
     "/support/*.{d.ts,d.ts.map,js,js.map}",
     "/events.{js,d.ts,d.ts.map,js.map}",
     "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",
