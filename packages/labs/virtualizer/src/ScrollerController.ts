@@ -36,11 +36,11 @@ export class ScrollerShim {
   }
 
   public get scrollTop() {
-    return this.element.scrollTop || window.scrollY;
+    return this.element.scrollTop ?? window.scrollY;
   }
 
   public get scrollLeft() {
-    return this.element.scrollLeft || window.scrollX;
+    return this.element.scrollLeft ?? window.scrollX;
   }
 
   public get scrollHeight() {

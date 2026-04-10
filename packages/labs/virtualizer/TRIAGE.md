@@ -6,7 +6,7 @@ Last updated: 2026-04-10
 
 | Status              | Count |
 | ------------------- | ----- |
-| Fixed pending merge | 11    |
+| Fixed pending merge | 12    |
 | In progress         | 3     |
 | Confirmed           | 0     |
 | Needs investigation | 5     |
@@ -40,14 +40,15 @@ Last updated: 2026-04-10
 
 ### P3 -- Minor or nice-to-have
 
-| #     | Title                                                       | Subsystem         | Status              | Branch / PR | Notes                                                                                                                                             |
-| ----- | ----------------------------------------------------------- | ----------------- | ------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| #4982 | message can be null in isResizeObserverLoopErrorMessage     | infra             | fixed-pending-merge | PR #5279    | Added `typeof message === 'string'` guard                                                                                                         |
-| #5285 | Flow layout off-by-one errors in margin collapsing          | layout            | fixed-pending-merge | PR #5279    | Three `getMarginSize()` index lookups used wrong index. Only manifests with non-uniform margins.                                                  |
-| #5286 | scrollToIndex scrolls to margin edge instead of border edge | layout, scroll    | fixed-pending-merge | PR #5279    | Override `_calculateScrollIntoViewPosition` in Flow to use visual position. Related trailing-margin scroll-size issue noted in comments on #5286. |
-| #5008 | Use bigint for min-height/transform with huge lists         | layout            | needs-investigation | --          | Precision loss at 500K+ items. Edge case. Has repro.                                                                                              |
-| #5042 | Remove ResizeObserver polyfill                              | infra             | needs-investigation | --          | Dead polyfill, browser support universal since 2020. Volunteer available.                                                                         |
-| #4540 | Support sticky items                                        | layout, rendering | needs-investigation | --          | Fundamentally incompatible with current absolute positioning. Architectural.                                                                      |
+| #     | Title                                                       | Subsystem         | Status              | Branch / PR | Notes                                                                                                                                                                                                              |
+| ----- | ----------------------------------------------------------- | ----------------- | ------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| #4982 | message can be null in isResizeObserverLoopErrorMessage     | infra             | fixed-pending-merge | PR #5279    | Added `typeof message === 'string'` guard                                                                                                                                                                          |
+| #5285 | Flow layout off-by-one errors in margin collapsing          | layout            | fixed-pending-merge | PR #5279    | Three `getMarginSize()` index lookups used wrong index. Only manifests with non-uniform margins.                                                                                                                   |
+| #5286 | scrollToIndex scrolls to margin edge instead of border edge | layout, scroll    | fixed-pending-merge | PR #5279    | Override `_calculateScrollIntoViewPosition` in Flow to use visual position. Related trailing-margin scroll-size issue noted in comments on #5286.                                                                  |
+| #5293 | ScrollerShim getters substitute legitimate 0                | scroll            | fixed-pending-merge | PR #5279    | `scrollTop`/`scrollLeft` used `\|\|` to fall back to `window.scrollY`/`scrollX`, treating a real zero as falsy. Switched to `??`. Surfaced via a downstream environment that doesn't implement `window.scrollX/Y`. |
+| #5008 | Use bigint for min-height/transform with huge lists         | layout            | needs-investigation | --          | Precision loss at 500K+ items. Edge case. Has repro.                                                                                                                                                               |
+| #5042 | Remove ResizeObserver polyfill                              | infra             | needs-investigation | --          | Dead polyfill, browser support universal since 2020. Volunteer available.                                                                                                                                          |
+| #4540 | Support sticky items                                        | layout, rendering | needs-investigation | --          | Fundamentally incompatible with current absolute positioning. Architectural.                                                                                                                                       |
 
 ---
 
@@ -95,6 +96,7 @@ All on PR #5279 (`virtualizer/css-direction--bug-fixes`):
 | #5285 | Flow layout margin off-by-one                    | `be609bf8`  | `d9fdf693` |
 | #5286 | scrollToIndex margin offset                      | `66cfdd9c`  | `e54dc14a` |
 | #5290 | virtualize directive deferred connect            | --          | --         |
+| #5293 | ScrollerShim getters substitute legitimate 0     | --          | --         |
 
 Separate branch:
 
@@ -119,15 +121,15 @@ Separate branch:
 
 ## Open PRs
 
-| PR    | Title                                      | Branch                                                 | Issues                                                               | Status                |
-| ----- | ------------------------------------------ | ------------------------------------------------------ | -------------------------------------------------------------------- | --------------------- |
-| #5280 | Child positioning method API               | `virtualizer/css-direction--bug-fixes--implement-4839` | #4839                                                                | Draft                 |
-| #5279 | Bug fixes                                  | `virtualizer/css-direction--bug-fixes`                 | #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290 | Open                  |
-| #5249 | CSS-based direction detection and axis API | `virtualizer/css-direction`                            | --                                                                   | Open                  |
-| #5232 | Guard custom element registration          | `fixes/5212`                                           | #5212                                                                | Open                  |
-| #4846 | Virtualizer fixes (external)               | `virtualizer-fixes`                                    | --                                                                   | Draft                 |
-| #4692 | keyFunction docs                           | --                                                     | lit.dev#1322                                                         | Open, awaiting review |
-| #4691 | Type and docs improvement                  | --                                                     | #4377                                                                | Open, awaiting review |
+| PR    | Title                                      | Branch                                                 | Issues                                                                      | Status                |
+| ----- | ------------------------------------------ | ------------------------------------------------------ | --------------------------------------------------------------------------- | --------------------- |
+| #5280 | Child positioning method API               | `virtualizer/css-direction--bug-fixes--implement-4839` | #4839                                                                       | Draft                 |
+| #5279 | Bug fixes                                  | `virtualizer/css-direction--bug-fixes`                 | #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290, #5293 | Open                  |
+| #5249 | CSS-based direction detection and axis API | `virtualizer/css-direction`                            | --                                                                          | Open                  |
+| #5232 | Guard custom element registration          | `fixes/5212`                                           | #5212                                                                       | Open                  |
+| #4846 | Virtualizer fixes (external)               | `virtualizer-fixes`                                    | --                                                                          | Draft                 |
+| #4692 | keyFunction docs                           | --                                                     | lit.dev#1322                                                                | Open, awaiting review |
+| #4691 | Type and docs improvement                  | --                                                     | #4377                                                                       | Open, awaiting review |
 
 ---
 
@@ -138,7 +140,7 @@ Separate branch:
 The active development branches form a stack:
 
 1. `virtualizer/css-direction` (PR #5249) -- CSS direction detection
-2. `virtualizer/css-direction--bug-fixes` (PR #5279) -- bug fixes for #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290
+2. `virtualizer/css-direction--bug-fixes` (PR #5279) -- bug fixes for #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290, #5293
 3. `virtualizer/css-direction--bug-fixes--implement-4839` (PR #5280) -- #4839 positioning API
 
 ---
@@ -146,4 +148,4 @@ The active development branches form a stack:
 ## Known Issue Numbers
 
 For monitoring (no GitHub label exists):
-4505, 4540, 4670, 4693, 4767, 4789, 4827, 4833, 4839, 4922, 4945, 4982, 5006, 5008, 5042, 5212, 5285, 5286, 5290, 5291
+4505, 4540, 4670, 4693, 4767, 4789, 4827, 4833, 4839, 4922, 4945, 4982, 5006, 5008, 5042, 5212, 5285, 5286, 5290, 5291, 5293
