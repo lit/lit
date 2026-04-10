@@ -192,4 +192,9 @@ export class ManagedScrollSource implements ScrollSource {
     // pin-based instant scrolling, which the layout handles internally.
     layout.pin = options;
   }
+
+  checkScrollIntoViewTarget(): void {
+    // No-op: managed mode does not support smooth scrolling, so there's
+    // no in-progress smooth scroll to retarget.
+  }
 }

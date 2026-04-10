@@ -16,7 +16,6 @@ import {
   StateChangedMessage,
   InternalRange,
   EditElementLayoutInfoFunction,
-  ScrollToCoordinates,
   BaseLayoutConfig,
   PinOptions,
   LayoutHostMessage,
@@ -56,17 +55,15 @@ import {
   VisibilityChangedEvent,
   UnpinnedEvent,
 } from './events.js';
-import {ScrollerController} from './ScrollerController.js';
 import type {
   ScrollSource,
   ScrollSourceHost,
   Viewport,
 } from './scroll-sources/ScrollSource.js';
 import {ManagedScrollSource} from './scroll-sources/ManagedScrollSource.js';
-import {
-  AncestorScrollSource,
-  provideResizeObserver as provideResizeObserverToAncestorSource,
-} from './scroll-sources/AncestorScrollSource.js';
+import {AncestorScrollSource} from './scroll-sources/AncestorScrollSource.js';
+import {SelfScrollSource} from './scroll-sources/SelfScrollSource.js';
+import {provideResizeObserver as provideResizeObserverToScrollSources} from './scroll-sources/_dom-utils.js';
 
 export type {Viewport} from './scroll-sources/ScrollSource.js';
 
@@ -85,9 +82,9 @@ let _ResizeObserver: typeof ResizeObserver | undefined =
  */
 export function provideResizeObserver(Ctor: typeof ResizeObserver) {
   _ResizeObserver = Ctor;
-  // Also propagate to scroll sources that hold their own module-state
+  // Also propagate to scroll sources, which hold their own module-state
   // reference to ResizeObserver.
-  provideResizeObserverToAncestorSource(Ctor);
+  provideResizeObserverToScrollSources(Ctor);
 }
 
 export const virtualizerRef = Symbol('virtualizerRef');
@@ -192,8 +189,6 @@ export class Virtualizer {
 
   private _layout: Layout | null = null;
 
-  private _clippingAncestors: HTMLElement[] = [];
-
   /**
    * Layout provides these values, we set them on _render().
    * TODO @straversi: Can we find an XOR type, usable for the key here?
@@ -225,8 +220,13 @@ export class Virtualizer {
    */
   protected _hostElement?: VirtualizerHostElement;
 
-  private _scrollerController: ScrollerController | null = null;
-
+  /**
+   * `true` when `scroller: true` was passed in config. Drives CSS-only
+   * decisions in `_applyVirtualizerStyles()` and `_sizeHostElement()`
+   * (e.g. whether to apply `overflow: auto` to the host). The runtime
+   * scroll-related behavior lives in `_scrollSource` (a `SelfScrollSource`
+   * instance for this case).
+   */
   private _isScroller = false;
 
   /**
@@ -244,34 +244,23 @@ export class Virtualizer {
   private _viewport: Viewport | null = null;
 
   /**
-   * The `ScrollSource` strategy in use. In Step 2 of the refactor this
-   * is only populated when `scroller: 'managed'`; the existing modes
-   * still use the inline DOM-observation paths in `connected()` /
-   * `_updateView()` / etc. Steps 3 and 4 will populate this for the
-   * other modes as well.
+   * The `ScrollSource` strategy in use. Populated in `connected()` based
+   * on the `scroller` config value:
+   * - `'managed'` → `ManagedScrollSource`
+   * - `true` → `SelfScrollSource`
+   * - `false` (default) → `AncestorScrollSource`
    */
   private _scrollSource: ScrollSource | null = null;
 
   private _sizer: HTMLElement | null = null;
 
   /**
-   * Resize observer attached to hostElement.
-   */
-  private _hostElementRO: ResizeObserver | null = null;
-
-  /**
-   * Resize observer attached to children.
+   * Resize observer attached to children. Mode-agnostic — always set
+   * up regardless of which `ScrollSource` is in use.
    */
   private _childrenRO: ResizeObserver | null = null;
 
-  private _windowResizeCallback: (() => void) | null = null;
-
   private _mutationObserver: MutationObserver | null = null;
-
-  private _scrollEventListeners: (Element | Window)[] = [];
-  private _scrollEventListenerOptions: AddEventListenerOptions = {
-    passive: true,
-  };
 
   /**
    * When true, the layout update cycle is frozen because a large
@@ -312,17 +301,6 @@ export class Virtualizer {
   private _loadListener = this._childLoaded.bind(this);
 
   /**
-   * Index of element to scroll into view, plus scroll
-   * behavior options, as imperatively specified via
-   * `element(index).scrollIntoView()`
-   */
-  private _scrollIntoViewTarget: ScrollElementIntoViewOptions | null = null;
-
-  private _updateScrollIntoViewCoordinates:
-    | ((coordinates: ScrollToCoordinates) => void)
-    | null = null;
-
-  /**
    * Items to render. Set by items.
    */
   private _items: Array<unknown> = [];
@@ -349,7 +327,6 @@ export class Virtualizer {
   private _lastVisible = -1;
 
   private _writingMode: writingMode = 'unknown';
-  private _scrollerWritingMode: writingMode = 'unknown';
   private _direction: direction = 'unknown';
 
   /**
@@ -572,13 +549,9 @@ export class Virtualizer {
         }
       }
     });
-    this._hostElementRO = new _ResizeObserver!(() =>
-      this._viewportSizeChanged()
-    );
     this._childrenRO = new _ResizeObserver!(
       this._childrenSizeChanged.bind(this)
     );
-    this._windowResizeCallback = this._viewportSizeChanged.bind(this);
   }
 
   _initHostElement(config: VirtualizerConfig) {
@@ -589,44 +562,24 @@ export class Virtualizer {
 
   connected() {
     this._initObservers();
-    if (this._managed || !this._isScroller) {
-      // Managed or ancestor mode: use a ScrollSource. Both modes skip
-      // the inline DOM-observation paths in Virtualizer; the source
-      // handles its own scroll/resize listeners (or none, in managed
-      // mode). Mode-agnostic mutation + child resize observers stay in
-      // Virtualizer via _observeChildrenOnly().
-      const sourceHost = this._createScrollSourceHost();
-      if (this._managed) {
-        this._scrollSource = new ManagedScrollSource(sourceHost);
-        this._scrollSource.connect();
-      } else {
-        const ancestorSource = new AncestorScrollSource(sourceHost);
-        this._scrollSource = ancestorSource;
-        this._scrollSource.connect();
-        // Alias the source's ScrollerController so Virtualizer code
-        // paths that have not yet been migrated into the source (e.g.
-        // smooth-scroll orchestration in `_scrollElementIntoView`) can
-        // continue to read from `this._scrollerController`. This is
-        // transitional and will be removed in Step 4.
-        this._scrollerController = ancestorSource.scrollerController;
-      }
-      this._observeChildrenOnly();
+    // All three modes now flow through a ScrollSource. The source
+    // handles its own scroll/resize listeners (or none, in managed
+    // mode). Mode-agnostic mutation + child resize observers stay in
+    // Virtualizer via _observeChildrenOnly().
+    const sourceHost = this._createScrollSourceHost();
+    if (this._managed) {
+      this._scrollSource = new ManagedScrollSource(sourceHost);
+    } else if (this._isScroller) {
+      this._scrollSource = new SelfScrollSource(
+        sourceHost,
+        (key, condition, message) =>
+          this._warnings.warnOn(key, condition, message)
+      );
     } else {
-      // Self-scroller mode (still inline in Step 3; will become
-      // SelfScrollSource in Step 4).
-      const includeSelf = this._isScroller;
-      this._clippingAncestors = getClippingAncestors(
-        this._hostElement!,
-        includeSelf
-      );
-
-      this._scrollerController = new ScrollerController(
-        this,
-        this._clippingAncestors[0]
-      );
-
-      this._observeAndListen();
+      this._scrollSource = new AncestorScrollSource(sourceHost);
     }
+    this._scrollSource.connect();
+    this._observeChildrenOnly();
     this._schedule(this._updateLayout);
     this._connected = true;
   }
@@ -666,37 +619,10 @@ export class Virtualizer {
     };
   }
 
-  _observeAndListen() {
-    this._mutationObserver!.observe(this._hostElement!, {
-      childList: true,
-      characterData: true,
-      subtree: true,
-    });
-    this._hostElementRO!.observe(this._hostElement!);
-    this._scrollEventListeners.push(window);
-    window.addEventListener('scroll', this, this._scrollEventListenerOptions);
-    this._clippingAncestors.forEach((ancestor) => {
-      ancestor.addEventListener(
-        'scroll',
-        this,
-        this._scrollEventListenerOptions
-      );
-      this._scrollEventListeners.push(ancestor);
-      this._hostElementRO!.observe(ancestor);
-    });
-    this._hostElementRO!.observe(this._scrollerController!.element);
-    window.addEventListener('resize', this._windowResizeCallback!);
-    this._children.forEach((child) => this._childrenRO!.observe(child));
-    this._scrollEventListeners.forEach((target) =>
-      target.addEventListener('scroll', this, this._scrollEventListenerOptions)
-    );
-  }
-
   /**
-   * The mode-agnostic subset of `_observeAndListen()`: only the mutation
-   * observer and child resize observer, no scroll/resize listeners on
-   * host or ancestors. Used in managed mode where the external controller
-   * provides scroll position and viewport size.
+   * Sets up the mode-agnostic observers (mutation + child resize). All
+   * scroll/viewport DOM observation is handled by the active
+   * `ScrollSource`.
    */
   private _observeChildrenOnly() {
     this._mutationObserver!.observe(this._hostElement!, {
@@ -708,31 +634,10 @@ export class Virtualizer {
   }
 
   disconnected() {
-    // If a ScrollSource is in use, it owns its ScrollerController and
-    // will detach it as part of its own disconnect(). Capture whether
-    // we should detach the controller ourselves before clearing the
-    // source reference.
-    const sourceOwnsScrollerController = this._scrollSource !== null;
     this._scrollSource?.disconnect();
     this._scrollSource = null;
-    this._scrollEventListeners.forEach((target) =>
-      target.removeEventListener(
-        'scroll',
-        this,
-        this._scrollEventListenerOptions
-      )
-    );
-    this._scrollEventListeners = [];
-    this._clippingAncestors = [];
-    if (!sourceOwnsScrollerController) {
-      this._scrollerController?.detach(this);
-    }
-    this._scrollerController = null;
     this._mutationObserver?.disconnect();
     this._mutationObserver = null;
-    this._hostElementRO?.disconnect();
-    this._hostElementRO = null;
-    window.removeEventListener('resize', this._windowResizeCallback!);
     this._childrenRO?.disconnect();
     this._childrenRO = null;
     this._rejectLayoutCompletePromise('disconnected');
@@ -1206,22 +1111,11 @@ export class Virtualizer {
     }
   }
 
-    // Self-scroller mode entry point (still inline in Step 3): reads
-    // scroll metrics from the inline ScrollerController and dispatches
-    // to the shared freeze logic.
-    const sc = this._scrollerController!;
-    this._handleScrollFromSource(
-      sc.scrollTop,
-      sc.element.getBoundingClientRect().height,
-      sc.correctingScrollError
-    );
-  }
-
   /**
-   * Shared freeze/unpin/scheduling logic for scroll events. Called from
-   * the inline self-scroller `_handleScrollEvent()` and from the source
-   * adapter's `handleScrollEvent` callback for managed/ancestor modes
-   * (managed mode never invokes this since it has no scroll events).
+   * Freeze/unpin/scheduling logic for scroll events. Called from the
+   * `ScrollSource` adapter via `host.handleScrollEvent()` whenever a
+   * DOM-based source detects a user-initiated scroll. Managed mode
+   * never invokes this since it has no scroll events.
    */
   private _handleScrollFromSource(
     scrollPosition: number,
@@ -1235,8 +1129,8 @@ export class Virtualizer {
     // shared scroller on every scroll event. Bail silently rather than
     // tear down so that a later re-attach (which `AsyncDirective` has
     // no hook to auto-detect) can resume normal operation. Placed on
-    // the shared path so it covers every scroll source (self-scroller
-    // via `_handleScrollEvent`, ancestor via the source adapter).
+    // the shared entry point so every DOM-driven `ScrollSource` is
+    // covered.
     if (!this._hostElement?.isConnected) {
       return;
     }
@@ -1249,7 +1143,7 @@ export class Virtualizer {
       window.performance.mark('uv-start');
     }
     if (correctingError === false) {
-      // This is a user-initiated scroll, so we unpin the layout
+      // This is a user-initiated scroll, so we unpin the layout.
       this._layout?.unpin();
 
       if (this._lastBlockScrollPosition !== null) {
@@ -1274,8 +1168,13 @@ export class Virtualizer {
           return;
         }
       }
-      this._lastBlockScrollPosition = scrollPosition;
     }
+    // Always update the baseline, even during correction-triggered
+    // scroll events. Without this, a layout-reported scroll-error
+    // correction would scroll the position away from the previous
+    // baseline without updating it; the next legitimate user scroll
+    // would then appear as a huge delta and trigger a spurious freeze.
+    this._lastBlockScrollPosition = scrollPosition;
     this._schedule(this._updateLayout);
   }
 
@@ -1283,27 +1182,9 @@ export class Virtualizer {
     this._scrollFrozen = false;
     // _lastBlockScrollPosition is already kept current by every scroll
     // event (including those processed during a freeze), so no refresh
-    // is needed here. The previous implementation read scrollTop from
-    // the ScrollerController as a defensive freshness step; with the
-    // ScrollSource refactor that controller may live in the source
-    // rather than on Virtualizer, and the value is already current.
+    // is needed here.
     this._layout?.unfreeze();
     this._schedule(this._updateLayout);
-  }
-
-  handleEvent(event: CustomEvent) {
-    switch (event.type) {
-      case 'scroll':
-        if (
-          event.currentTarget === window ||
-          this._clippingAncestors.includes(event.currentTarget as HTMLElement)
-        ) {
-          this._handleScrollEvent();
-        }
-        break;
-      default:
-        console.warn('event not handled', event);
-    }
   }
 
   _handleLayoutMessage(message: LayoutHostMessage) {
@@ -1351,264 +1232,16 @@ export class Virtualizer {
       const hostStyle = getComputedStyle(hostElement);
       const wm = (this._writingMode = hostStyle.writingMode as writingMode);
       const dir = (this._direction = hostStyle.direction as direction);
-      // For managed mode the host's writing mode IS the scroller's
-      // writing mode. For ancestor mode the source tracks its own
-      // scroller writing mode internally; this Virtualizer field is no
-      // longer authoritative for that mode but we keep it as the host's
-      // writing mode for any consumers that still read it.
-      this._scrollerWritingMode = wm;
       const previousLayoutWritingMode = layout.writingMode;
       this._scrollSource.updateView(layout, wm, dir);
+      // @deprecated: When using legacy `direction` config, writingMode
+      // may change after layout is created. Detect the change here
+      // (after the source has set `layout.writingMode`) and set the
+      // flag so `_updateLayout()` knows to force a reflow. This can be
+      // removed when the deprecated `direction` config option is removed.
       if (
         previousLayoutWritingMode !== 'unknown' &&
         previousLayoutWritingMode !== wm
-      ) {
-        this._writingModeChanged = true;
-      }
-      return;
-    }
-
-    const scrollingElement = this._scrollerController?.element;
-
-    if (hostElement && hostElement.isConnected && scrollingElement && layout) {
-      const hostStyle = getComputedStyle(hostElement);
-      const scrollerStyle = getComputedStyle(scrollingElement);
-
-      const direction = (this._direction = hostStyle.direction as direction);
-      // Host writing-mode: used for child positioning and sizing
-      const writingMode = (this._writingMode =
-        hostStyle.writingMode as writingMode);
-      // Scroller writing-mode: used for scroll coordinate handling
-      const scrollerWritingMode = (this._scrollerWritingMode =
-        scrollerStyle.writingMode as writingMode);
-
-      let insetBlockStart: number,
-        insetBlockEnd: number,
-        insetInlineStart: number,
-        insetInlineEnd: number,
-        blockSizeLabel: fixedSizeDimensionCapitalized,
-        inlineSizeLabel: fixedSizeDimensionCapitalized,
-        blockStartLabel: fixedInsetLabel,
-        blockEndLabel: fixedInsetLabel,
-        inlineStartLabel: fixedInsetLabel,
-        inlineEndLabel: fixedInsetLabel,
-        blockScrollPosition: (el: Element) => number,
-        inlineScrollPosition: (el: Element) => number,
-        reverseBlockCoordinates = false,
-        reverseInlineCoordinates = false;
-
-      // Whether scrollLeft is inverted (0 at right, negative toward left) depends
-      // on the SCROLLER's writing-mode, not the host's.
-      const scrollerHasInvertedScrollLeft =
-        scrollerWritingMode === 'vertical-rl';
-
-      if (writingMode === 'horizontal-tb') {
-        blockSizeLabel = 'Height';
-        inlineSizeLabel = 'Width';
-        blockStartLabel = 'top';
-        blockEndLabel = 'bottom';
-        // Block axis is vertical, uses scrollTop (never inverted)
-        blockScrollPosition = (el: Element) => el.scrollTop;
-        if (direction === 'ltr') {
-          inlineStartLabel = 'left';
-          inlineEndLabel = 'right';
-          // Inline axis is horizontal, uses scrollLeft
-          // Negate if scroller has inverted scrollLeft (vertical-rl)
-          inlineScrollPosition = scrollerHasInvertedScrollLeft
-            ? (el: Element) => -el.scrollLeft
-            : (el: Element) => el.scrollLeft;
-        } else {
-          inlineStartLabel = 'right';
-          inlineEndLabel = 'left';
-          // RTL: inline-start is right, so we negate unless scroller already inverts
-          inlineScrollPosition = scrollerHasInvertedScrollLeft
-            ? (el: Element) => el.scrollLeft
-            : (el: Element) => -el.scrollLeft;
-          reverseInlineCoordinates = true;
-        }
-      } else {
-        blockSizeLabel = 'Width';
-        inlineSizeLabel = 'Height';
-        if (writingMode === 'vertical-lr') {
-          blockStartLabel = 'left';
-          blockEndLabel = 'right';
-          // Block axis is horizontal, uses scrollLeft
-          // Negate if scroller has inverted scrollLeft (vertical-rl)
-          blockScrollPosition = scrollerHasInvertedScrollLeft
-            ? (el: Element) => -el.scrollLeft
-            : (el: Element) => el.scrollLeft;
-        } else {
-          // vertical-rl host: block-start is right
-          blockStartLabel = 'right';
-          blockEndLabel = 'left';
-          // Block axis is horizontal, uses scrollLeft
-          // For vertical-rl host, we want 0 at block-start (right)
-          // If scroller is also vertical-rl, scrollLeft=0 at right, negate to get positive values toward block-end
-          // If scroller is not vertical-rl, scrollLeft=0 at left, which is block-end, so don't negate
-          blockScrollPosition = scrollerHasInvertedScrollLeft
-            ? (el: Element) => -el.scrollLeft
-            : (el: Element) => el.scrollLeft;
-          reverseBlockCoordinates = true;
-        }
-        if (direction === 'ltr') {
-          inlineStartLabel = 'top';
-          inlineEndLabel = 'bottom';
-          // Inline axis is vertical, uses scrollTop (never inverted)
-          inlineScrollPosition = (el: Element) => el.scrollTop;
-        } else {
-          inlineStartLabel = 'bottom';
-          inlineEndLabel = 'top';
-          inlineScrollPosition = (el: Element) => -el.scrollTop;
-          reverseInlineCoordinates = true;
-        }
-      }
-
-      const hostElementBounds = hostElement.getBoundingClientRect();
-
-      insetBlockStart = reverseBlockCoordinates
-        ? window[`inner${blockSizeLabel}`]
-        : 0;
-      insetInlineStart = reverseInlineCoordinates
-        ? window[`inner${inlineSizeLabel}`]
-        : 0;
-      insetBlockEnd = reverseBlockCoordinates
-        ? 0
-        : window[`inner${blockSizeLabel}`];
-      insetInlineEnd = reverseInlineCoordinates
-        ? 0
-        : window[`inner${inlineSizeLabel}`];
-
-      const ancestorBounds = this._clippingAncestors.map((ancestor) =>
-        ancestor.getBoundingClientRect()
-      );
-      ancestorBounds.unshift(hostElementBounds);
-
-      const blockMax = reverseBlockCoordinates ? Math.min : Math.max;
-      const blockMin = reverseBlockCoordinates ? Math.max : Math.min;
-      const inlineMax = reverseInlineCoordinates ? Math.min : Math.max;
-      const inlineMin = reverseInlineCoordinates ? Math.max : Math.min;
-
-      for (const bounds of ancestorBounds) {
-        insetBlockStart = blockMax(insetBlockStart, bounds[blockStartLabel]);
-        insetInlineStart = inlineMax(
-          insetInlineStart,
-          bounds[inlineStartLabel]
-        );
-        insetBlockEnd = blockMin(insetBlockEnd, bounds[blockEndLabel]);
-        insetInlineEnd = inlineMin(insetInlineEnd, bounds[inlineEndLabel]);
-      }
-
-      const scrollingElementBounds = scrollingElement.getBoundingClientRect();
-
-      let offsetBlock: number;
-      let offsetInline: number;
-
-      if (this._isScroller) {
-        offsetBlock = 0;
-        offsetInline = 0;
-      } else {
-        offsetBlock =
-          hostElementBounds[blockStartLabel] -
-          scrollingElementBounds[blockStartLabel];
-        offsetInline =
-          hostElementBounds[inlineStartLabel] -
-          scrollingElementBounds[inlineStartLabel];
-        if (!this._scrollerController!.isDocumentScroller) {
-          offsetBlock += blockScrollPosition(scrollingElement);
-          offsetInline += inlineScrollPosition(scrollingElement);
-        }
-      }
-
-      layout.offsetWithinScroller = {
-        inline: offsetInline,
-        block: offsetBlock,
-      };
-
-      layout.scrollSize = {
-        inlineSize: scrollingElement[`scroll${inlineSizeLabel}`],
-        blockSize: scrollingElement[`scroll${blockSizeLabel}`],
-      };
-
-      layout.viewportScroll = {
-        inline: reverseInlineCoordinates
-          ? hostElementBounds[inlineStartLabel] -
-            insetInlineStart +
-            inlineScrollPosition(hostElement)
-          : insetInlineStart -
-            hostElementBounds[inlineStartLabel] +
-            inlineScrollPosition(hostElement),
-        block: reverseBlockCoordinates
-          ? hostElementBounds[blockStartLabel] -
-            insetBlockStart +
-            blockScrollPosition(hostElement)
-          : insetBlockStart -
-            hostElementBounds[blockStartLabel] +
-            blockScrollPosition(hostElement),
-      };
-
-      // Elements with zero width AND height are inside display:none (or
-      // equivalent) and should render nothing.
-      const isHidden =
-        hostElementBounds.width === 0 && hostElementBounds.height === 0;
-
-      if (this._isScroller) {
-        const hasZeroSize =
-          !isHidden &&
-          (hostElementBounds.width === 0 || hostElementBounds.height === 0);
-        this._warnings.warnOn(
-          'zero-size',
-          hasZeroSize,
-          '[lit-virtualizer] The virtualizer host element has a zero-size ' +
-            'dimension (width: ' +
-            hostElementBounds.width +
-            ', height: ' +
-            hostElementBounds.height +
-            '). ' +
-            'A scroller-mode virtualizer needs explicit sizing via CSS. ' +
-            'For example: `lit-virtualizer { block-size: 400px; }`'
-        );
-      }
-
-      // When the host element has a zero dimension on a given axis but
-      // isn't fully hidden, use a floor of 1px to bootstrap the rendering
-      // cycle (newly-mounted elements may not have layout yet). Once the
-      // host has a real size on an axis, trust the clipping result on
-      // that axis — including zero when legitimately clipped by ancestors.
-      type sizeKey = 'width' | 'height';
-      const hostBlockDim =
-        hostElementBounds[blockSizeLabel.toLowerCase() as sizeKey];
-      const hostInlineDim =
-        hostElementBounds[inlineSizeLabel.toLowerCase() as sizeKey];
-      const blockFloor = !isHidden && hostBlockDim === 0 ? 1 : 0;
-      const inlineFloor = !isHidden && hostInlineDim === 0 ? 1 : 0;
-
-      const viewportBlockSize = Math.max(
-        blockFloor,
-        reverseBlockCoordinates
-          ? insetBlockStart - insetBlockEnd
-          : insetBlockEnd - insetBlockStart
-      );
-      const viewportInlineSize = Math.max(
-        inlineFloor,
-        reverseInlineCoordinates
-          ? insetInlineStart - insetInlineEnd
-          : insetInlineEnd - insetInlineStart
-      );
-      layout.viewportSize = {
-        blockSize: viewportBlockSize,
-        inlineSize: viewportInlineSize,
-      };
-
-      // @deprecated: When using legacy `direction` config, writingMode may
-      // change after layout is created. Detect the change and set a flag
-      // so that _updateLayout() knows to force a reflow.
-      // This can be removed when the deprecated `direction` config option is removed.
-      const previousWritingMode = layout.writingMode;
-      layout.writingMode = writingMode;
-      layout.direction = this._direction;
-      if (
-        previousWritingMode !== 'unknown' &&
-        previousWritingMode !== writingMode
       ) {
         this._writingModeChanged = true;
       }
@@ -1754,37 +1387,10 @@ export class Virtualizer {
   }
 
   private _correctScrollError() {
-    if (this._scrollError) {
-      // Source-driven path (managed or ancestor mode): delegate to the
-      // source. The source handles the physical-coordinate conversion
-      // and calls its internal ScrollerController (or, for managed mode,
-      // dispatches a `scrollerror` event for the external controller).
-      if (this._scrollSource) {
-        const error = this._scrollError;
-        this._scrollError = null;
-        this._scrollSource.correctScrollError(error);
-        return;
-      }
-      const {scrollTop, scrollLeft} = this._scrollerController!;
-      const {block, inline} = this._scrollError;
+    if (this._scrollError && this._scrollSource) {
+      const error = this._scrollError;
       this._scrollError = null;
-      // Whether to negate the block correction depends on the SCROLLER's writing-mode
-      // (vertical-rl scrollers have inverted scrollLeft), not the host's.
-      // Which axis (top vs left) the correction applies to depends on the HOST's writing-mode.
-      const blockCorrection =
-        this._scrollerWritingMode === 'vertical-rl' ? -block : block;
-      this._scrollerController!.correctScrollError({
-        top:
-          scrollTop - (this._writingMode === 'horizontal-tb' ? block : inline),
-        left:
-          scrollLeft -
-          (this._writingMode === 'horizontal-tb' ? inline : blockCorrection),
-      });
-      // Update _lastBlockScrollPosition so the freeze detection sees
-      // the corrected position, not the pre-correction one. Without
-      // this, large scroll corrections (e.g. from _pendingScrollCorrection)
-      // appear as large user-initiated jumps and trigger an unwanted freeze.
-      this._lastBlockScrollPosition = this._scrollerController!.scrollTop;
+      this._scrollSource.correctScrollError(error);
     }
   }
 
@@ -1805,39 +1411,18 @@ export class Virtualizer {
       this._children[options.index - this._first].scrollIntoView(options);
     } else {
       options.index = Math.min(options.index, this._items.length - 1);
-      if (this._managed) {
-        // Managed mode: delegate to the source. Smooth scrolling is not
-        // supported; the source uses the pin-based instant path.
-        this._scrollSource!.scrollElementIntoView(options, this._layout!);
-        return;
-      }
-      if (options.behavior === 'smooth') {
-        const coordinates = this._layout!.getScrollIntoViewCoordinates(options);
-        const {behavior} = options;
-        this._updateScrollIntoViewCoordinates =
-          this._scrollerController!.managedScrollTo(
-            Object.assign(coordinates, {behavior}),
-            () => this._layout!.getScrollIntoViewCoordinates(options),
-            () => (this._scrollIntoViewTarget = null)
-          );
-        this._scrollIntoViewTarget = options;
-      } else {
-        this._layout!.pin = options;
-      }
+      this._scrollSource!.scrollElementIntoView(options, this._layout!);
     }
   }
 
   /**
-   * If we are smoothly scrolling to an element and the target element
-   * is in the DOM, we update our target coordinates as needed
+   * If a smooth scroll-into-view is in progress and the target element
+   * has come into the rendered range, delegate to the source so it can
+   * retarget the in-flight scroll using the layout's freshly-computed
+   * position for the item.
    */
   private _checkScrollIntoViewTarget(pos: ChildPositions | null) {
-    const {index} = this._scrollIntoViewTarget || {};
-    if (index && pos?.has(index)) {
-      this._updateScrollIntoViewCoordinates!(
-        this._layout!.getScrollIntoViewCoordinates(this._scrollIntoViewTarget!)
-      );
-    }
+    this._scrollSource?.checkScrollIntoViewTarget(pos, this._layout!);
   }
 
   /**
@@ -1916,14 +1501,6 @@ export class Virtualizer {
     this._pendingLayoutComplete = null;
   }
 
-  /**
-   * Render and update the view at the next opportunity with the given
-   * hostElement size.
-   */
-  private _viewportSizeChanged() {
-    this._schedule(this._updateLayout);
-  }
-
   // TODO (graynorton): Rethink how this works. Probably child loading is too specific
   // to have dedicated support for; might want some more generic lifecycle hooks for
   // layouts to use. Possibly handle measurement this way, too, or maybe that remains
@@ -1990,50 +1567,4 @@ function getMargins(
 function getMarginValue(value: string): number {
   const float = value ? parseFloat(value) : NaN;
   return Number.isNaN(float) ? 0 : float;
-}
-
-// TODO (graynorton): Deal with iframes?
-function getParentElement(el: Element) {
-  if (el.assignedSlot !== null) {
-    return el.assignedSlot;
-  }
-  if (el.parentElement !== null) {
-    return el.parentElement;
-  }
-  const parentNode = el.parentNode;
-  if (parentNode && parentNode.nodeType === Node.DOCUMENT_FRAGMENT_NODE) {
-    return (parentNode as ShadowRoot).host || null;
-  }
-  return null;
-}
-
-///
-
-function getElementAncestors(el: HTMLElement, includeSelf = false) {
-  const ancestors: Array<HTMLElement> = [];
-  let parent = includeSelf ? el : (getParentElement(el) as HTMLElement);
-  while (parent !== null) {
-    ancestors.push(parent);
-    parent = getParentElement(parent) as HTMLElement;
-  }
-  return ancestors;
-}
-
-function getClippingAncestors(el: HTMLElement, includeSelf = false) {
-  let foundFixed = false;
-  return getElementAncestors(el, includeSelf).filter((a) => {
-    if (foundFixed) {
-      return false;
-    }
-    const style = getComputedStyle(a);
-    foundFixed = style.position === 'fixed';
-    // Elements with `display: contents` generate no box, so their
-    // `overflow` value is meaningless and they cannot clip anything.
-    // Exclude them to avoid collapsing the viewport to zero (their
-    // getBoundingClientRect() returns a zero rect).
-    if (style.display === 'contents') {
-      return false;
-    }
-    return style.overflow !== 'visible';
-  });
 }
