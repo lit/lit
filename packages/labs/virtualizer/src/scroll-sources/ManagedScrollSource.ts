@@ -80,10 +80,7 @@ export class ManagedScrollSource implements ScrollSource {
   updateView(
     layout: Layout,
     writingMode: writingMode,
-    direction: direction,
-    // scrollerWritingMode is irrelevant in managed mode (no separate
-    // scroller element); it always equals the host's writing mode.
-    _scrollerWritingMode: writingMode
+    direction: direction
   ): void {
     const viewport = this._host.viewport;
     if (!viewport) {

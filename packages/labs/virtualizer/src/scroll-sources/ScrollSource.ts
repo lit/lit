@@ -61,18 +61,29 @@ export interface ScrollSourceHost {
 
   /**
    * Called by the source to schedule a layout update. DOM-based sources
-   * call this from scroll/resize listeners; the managed source path
-   * uses Virtualizer's existing scheduling directly via the `viewport`
-   * setter, so `ManagedScrollSource` does not call this.
+   * call this from resize listeners and from non-scroll triggers; the
+   * managed source path uses Virtualizer's existing scheduling directly
+   * via the `viewport` setter, so `ManagedScrollSource` does not call
+   * this.
    */
   scheduleUpdate(): void;
 
   /**
    * Called by DOM-based sources when a user-initiated scroll event is
-   * detected, so Virtualizer can run its freeze/unpin logic. The managed
-   * source never calls this.
+   * detected, so Virtualizer can run its freeze/unpin logic and schedule
+   * a layout update. The managed source never calls this.
+   *
+   * The source provides the current physical scroll position and
+   * viewport size along the scroll axis, plus a flag indicating whether
+   * a programmatic correction is in progress. Virtualizer uses these
+   * values to detect large scroll jumps without needing to know about
+   * the source's internal scroller.
    */
-  handleScrollEvent(): void;
+  handleScrollEvent(
+    scrollPosition: number,
+    viewportSize: number,
+    correctingError: boolean
+  ): void;
 }
 
 /**
@@ -131,17 +142,14 @@ export interface ScrollSource {
    * direction into account.
    *
    * Virtualizer reads writing-mode and direction from the host element's
-   * computed style before calling this method and passes them in.
-   *
-   * @param scrollerWritingMode The scroller's writing-mode, which may
-   *   differ from the host's when the scroller is an ancestor. For self-
-   *   and managed-scroller modes, this equals the host's writing-mode.
+   * computed style before calling this method and passes them in. Each
+   * source is responsible for handling its own scroller writing mode
+   * (which may differ from the host's in ancestor mode).
    */
   updateView(
     layout: Layout,
     writingMode: writingMode,
-    direction: direction,
-    scrollerWritingMode: writingMode
+    direction: direction
   ): void;
 
   /**
