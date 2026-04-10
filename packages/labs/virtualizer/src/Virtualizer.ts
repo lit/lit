@@ -63,6 +63,10 @@ import type {
   Viewport,
 } from './scroll-sources/ScrollSource.js';
 import {ManagedScrollSource} from './scroll-sources/ManagedScrollSource.js';
+import {
+  AncestorScrollSource,
+  provideResizeObserver as provideResizeObserverToAncestorSource,
+} from './scroll-sources/AncestorScrollSource.js';
 
 export type {Viewport} from './scroll-sources/ScrollSource.js';
 
@@ -81,6 +85,9 @@ let _ResizeObserver: typeof ResizeObserver | undefined =
  */
 export function provideResizeObserver(Ctor: typeof ResizeObserver) {
   _ResizeObserver = Ctor;
+  // Also propagate to scroll sources that hold their own module-state
+  // reference to ResizeObserver.
+  provideResizeObserverToAncestorSource(Ctor);
 }
 
 export const virtualizerRef = Symbol('virtualizerRef');
@@ -582,36 +589,31 @@ export class Virtualizer {
 
   connected() {
     this._initObservers();
-    if (this._managed) {
-      // Managed mode: no scroll/viewport DOM observation. Create the
-      // ManagedScrollSource and observe only what's mode-agnostic
-      // (mutation + child resize).
-      //
-      // Build a ScrollSourceHost via lexically-bound arrow functions so
-      // each accessor closes over `this` without aliasing it.
-      const getHostElement = () => this._hostElement!;
-      const getViewport = () => this._viewport;
-      const getVirtualizerSize = () => this._virtualizerSize;
-      const scheduleUpdate = () => this._schedule(this._updateLayout);
-      const sourceHost: ScrollSourceHost = {
-        get hostElement() {
-          return getHostElement();
-        },
-        get viewport() {
-          return getViewport();
-        },
-        get virtualizerSize() {
-          return getVirtualizerSize();
-        },
-        scheduleUpdate,
-        handleScrollEvent() {
-          // Not used in managed mode.
-        },
-      };
-      this._scrollSource = new ManagedScrollSource(sourceHost);
-      this._scrollSource.connect();
+    if (this._managed || !this._isScroller) {
+      // Managed or ancestor mode: use a ScrollSource. Both modes skip
+      // the inline DOM-observation paths in Virtualizer; the source
+      // handles its own scroll/resize listeners (or none, in managed
+      // mode). Mode-agnostic mutation + child resize observers stay in
+      // Virtualizer via _observeChildrenOnly().
+      const sourceHost = this._createScrollSourceHost();
+      if (this._managed) {
+        this._scrollSource = new ManagedScrollSource(sourceHost);
+        this._scrollSource.connect();
+      } else {
+        const ancestorSource = new AncestorScrollSource(sourceHost);
+        this._scrollSource = ancestorSource;
+        this._scrollSource.connect();
+        // Alias the source's ScrollerController so Virtualizer code
+        // paths that have not yet been migrated into the source (e.g.
+        // smooth-scroll orchestration in `_scrollElementIntoView`) can
+        // continue to read from `this._scrollerController`. This is
+        // transitional and will be removed in Step 4.
+        this._scrollerController = ancestorSource.scrollerController;
+      }
       this._observeChildrenOnly();
     } else {
+      // Self-scroller mode (still inline in Step 3; will become
+      // SelfScrollSource in Step 4).
       const includeSelf = this._isScroller;
       this._clippingAncestors = getClippingAncestors(
         this._hostElement!,
@@ -627,6 +629,41 @@ export class Virtualizer {
     }
     this._schedule(this._updateLayout);
     this._connected = true;
+  }
+
+  /**
+   * Build a ScrollSourceHost adapter for the source to use. The fields
+   * use lexically-bound arrow functions so each accessor closes over
+   * `this` without aliasing it.
+   */
+  private _createScrollSourceHost(): ScrollSourceHost {
+    const getHostElement = () => this._hostElement!;
+    const getViewport = () => this._viewport;
+    const getVirtualizerSize = () => this._virtualizerSize;
+    const scheduleUpdate = () => this._schedule(this._updateLayout);
+    const handleScrollEvent = (
+      scrollPosition: number,
+      viewportSize: number,
+      correctingError: boolean
+    ) =>
+      this._handleScrollFromSource(
+        scrollPosition,
+        viewportSize,
+        correctingError
+      );
+    return {
+      get hostElement() {
+        return getHostElement();
+      },
+      get viewport() {
+        return getViewport();
+      },
+      get virtualizerSize() {
+        return getVirtualizerSize();
+      },
+      scheduleUpdate,
+      handleScrollEvent,
+    };
   }
 
   _observeAndListen() {
@@ -671,6 +708,11 @@ export class Virtualizer {
   }
 
   disconnected() {
+    // If a ScrollSource is in use, it owns its ScrollerController and
+    // will detach it as part of its own disconnect(). Capture whether
+    // we should detach the controller ourselves before clearing the
+    // source reference.
+    const sourceOwnsScrollerController = this._scrollSource !== null;
     this._scrollSource?.disconnect();
     this._scrollSource = null;
     this._scrollEventListeners.forEach((target) =>
@@ -682,7 +724,9 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    this._scrollerController?.detach(this);
+    if (!sourceOwnsScrollerController) {
+      this._scrollerController?.detach(this);
+    }
     this._scrollerController = null;
     this._mutationObserver?.disconnect();
     this._mutationObserver = null;
@@ -1162,14 +1206,37 @@ export class Virtualizer {
     }
   }
 
-  private _handleScrollEvent() {
+    // Self-scroller mode entry point (still inline in Step 3): reads
+    // scroll metrics from the inline ScrollerController and dispatches
+    // to the shared freeze logic.
+    const sc = this._scrollerController!;
+    this._handleScrollFromSource(
+      sc.scrollTop,
+      sc.element.getBoundingClientRect().height,
+      sc.correctingScrollError
+    );
+  }
+
+  /**
+   * Shared freeze/unpin/scheduling logic for scroll events. Called from
+   * the inline self-scroller `_handleScrollEvent()` and from the source
+   * adapter's `handleScrollEvent` callback for managed/ancestor modes
+   * (managed mode never invokes this since it has no scroll events).
+   */
+  private _handleScrollFromSource(
+    scrollPosition: number,
+    viewportSize: number,
+    correctingError: boolean
+  ) {
     // Ignore scrolls on a shared ancestor scroller when our host is no
     // longer in the DOM. Bare `virtualize()` directives on a removed
     // subtree never receive `disconnected()`; without this guard they
     // would keep reflowing and issuing scroll corrections against the
     // shared scroller on every scroll event. Bail silently rather than
     // tear down so that a later re-attach (which `AsyncDirective` has
-    // no hook to auto-detect) can resume normal operation.
+    // no hook to auto-detect) can resume normal operation. Placed on
+    // the shared path so it covers every scroll source (self-scroller
+    // via `_handleScrollEvent`, ancestor via the source adapter).
     if (!this._hostElement?.isConnected) {
       return;
     }
@@ -1181,26 +1248,21 @@ export class Virtualizer {
       }
       window.performance.mark('uv-start');
     }
-    if (this._scrollerController!.correctingScrollError === false) {
+    if (correctingError === false) {
       // This is a user-initiated scroll, so we unpin the layout
       this._layout?.unpin();
 
-      // Detect large scroll jumps and freeze the update cycle
-      const scrollTop = this._scrollerController!.scrollTop;
-      const clientHeight =
-        this._scrollerController!.element.getBoundingClientRect().height;
-
       if (this._lastBlockScrollPosition !== null) {
-        const delta = Math.abs(scrollTop - this._lastBlockScrollPosition);
+        const delta = Math.abs(scrollPosition - this._lastBlockScrollPosition);
         if (
-          delta > clientHeight * this._scrollFreezeThreshold ||
+          delta > viewportSize * this._scrollFreezeThreshold ||
           this._scrollFrozen
         ) {
           if (!this._scrollFrozen) {
             this._layout?.freeze();
           }
           this._scrollFrozen = true;
-          this._lastBlockScrollPosition = scrollTop;
+          this._lastBlockScrollPosition = scrollPosition;
           // Reset the debounce timer
           if (this._scrollFreezeTimer !== null) {
             clearTimeout(this._scrollFreezeTimer);
@@ -1212,14 +1274,19 @@ export class Virtualizer {
           return;
         }
       }
-      this._lastBlockScrollPosition = scrollTop;
+      this._lastBlockScrollPosition = scrollPosition;
     }
     this._schedule(this._updateLayout);
   }
 
   private _unfreezeScroll() {
     this._scrollFrozen = false;
-    this._lastBlockScrollPosition = this._scrollerController!.scrollTop;
+    // _lastBlockScrollPosition is already kept current by every scroll
+    // event (including those processed during a freeze), so no refresh
+    // is needed here. The previous implementation read scrollTop from
+    // the ScrollerController as a defensive freshness step; with the
+    // ScrollSource refactor that controller may live in the source
+    // rather than on Virtualizer, and the value is already current.
     this._layout?.unfreeze();
     this._schedule(this._updateLayout);
   }
@@ -1267,16 +1334,37 @@ export class Virtualizer {
     const hostElement = this._hostElement;
     const layout = this._layout;
 
-    // Managed mode: delegate scroll/viewport population to the
-    // ManagedScrollSource. Writing-mode and direction are still read
-    // from the host element's computed style here so the source can
-    // perform the physical-to-logical conversion.
-    if (this._managed && hostElement && hostElement.isConnected && layout) {
+    // Source-driven path (managed or ancestor mode): delegate
+    // scroll/viewport population to the ScrollSource. Writing-mode and
+    // direction are read from the host element's computed style here
+    // so the source can perform physical-to-logical conversion. The
+    // legacy `_writingModeChanged` flag (used by deprecated direction
+    // config handling in `_updateLayout`) is set after the source
+    // returns, since `layout.writingMode` is updated as part of the
+    // source's `updateView()` call.
+    if (
+      this._scrollSource &&
+      hostElement &&
+      hostElement.isConnected &&
+      layout
+    ) {
       const hostStyle = getComputedStyle(hostElement);
       const wm = (this._writingMode = hostStyle.writingMode as writingMode);
       const dir = (this._direction = hostStyle.direction as direction);
+      // For managed mode the host's writing mode IS the scroller's
+      // writing mode. For ancestor mode the source tracks its own
+      // scroller writing mode internally; this Virtualizer field is no
+      // longer authoritative for that mode but we keep it as the host's
+      // writing mode for any consumers that still read it.
       this._scrollerWritingMode = wm;
-      this._scrollSource!.updateView(layout, wm, dir, wm);
+      const previousLayoutWritingMode = layout.writingMode;
+      this._scrollSource.updateView(layout, wm, dir);
+      if (
+        previousLayoutWritingMode !== 'unknown' &&
+        previousLayoutWritingMode !== wm
+      ) {
+        this._writingModeChanged = true;
+      }
       return;
     }
 
@@ -1667,12 +1755,14 @@ export class Virtualizer {
 
   private _correctScrollError() {
     if (this._scrollError) {
-      // Managed mode: delegate the correction to the source, which
-      // dispatches a `scrollerror` event for the external controller.
-      if (this._managed) {
+      // Source-driven path (managed or ancestor mode): delegate to the
+      // source. The source handles the physical-coordinate conversion
+      // and calls its internal ScrollerController (or, for managed mode,
+      // dispatches a `scrollerror` event for the external controller).
+      if (this._scrollSource) {
         const error = this._scrollError;
         this._scrollError = null;
-        this._scrollSource!.correctScrollError(error);
+        this._scrollSource.correctScrollError(error);
         return;
       }
       const {scrollTop, scrollLeft} = this._scrollerController!;
