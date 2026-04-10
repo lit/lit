@@ -9,6 +9,7 @@ import {directive, DirectiveResult, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {repeat, KeyFn} from 'lit/directives/repeat.js';
 import {Virtualizer} from './Virtualizer.js';
+import type {Viewport} from './Virtualizer.js';
 import {RangeChangedEvent} from './events.js';
 import {
   LayoutConfigValue,
@@ -17,6 +18,7 @@ import {
 } from './layouts/shared/Layout.js';
 
 export {virtualizerRef, VirtualizerHostElement} from './Virtualizer.js';
+export type {Viewport} from './Virtualizer.js';
 
 /**
  * Configuration options for the virtualize directive.
@@ -59,6 +61,14 @@ export interface VirtualizeDirectiveConfig<T> {
    * fires an `unpinned` event.
    */
   pin?: PinOptions;
+
+  /**
+   * Required when `scroller` is `'managed'`. Provides the externally-
+   * managed viewport (scroll position and dimensions). Setting this
+   * value updates the underlying virtualizer and schedules a layout
+   * update on the next frame.
+   */
+  viewport?: Viewport;
 }
 
 export type RenderItemFunction<T = unknown> = (
@@ -130,6 +140,7 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     }
     this._virtualizer!.axis = config.axis ?? 'block';
     this._virtualizer!.pin = config.pin;
+    this._virtualizer!.viewport = config.viewport;
     this._virtualizer!.items = this._items;
     // @deprecated: If we just set a legacy direction config, wait for layout
     // to complete processing the new writing-mode before returning.
@@ -160,13 +171,14 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     if (this._virtualizer) {
       this._virtualizer.disconnected();
     }
-    const {layout, scroller, items, axis, pin} = config;
+    const {layout, scroller, items, axis, pin, viewport} = config;
     const virtualizer = (this._virtualizer = new Virtualizer({
       hostElement,
       layout,
       scroller,
       axis,
       pin,
+      viewport,
     }));
     virtualizer.items = items;
     // On initial render, lit-html runs directives while the new DOM is

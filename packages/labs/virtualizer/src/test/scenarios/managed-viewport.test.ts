@@ -6,6 +6,8 @@
 
 import {array, ignoreBenignErrors, pass} from '../helpers.js';
 import {Virtualizer} from '../../Virtualizer.js';
+import {LitVirtualizer} from '../../lit-virtualizer.js';
+import '../../lit-virtualizer.js';
 import {RangeChangedEvent} from '../../events.js';
 import {expect, fixture, html} from '@open-wc/testing';
 
@@ -157,5 +159,49 @@ describe('managed viewport mode', () => {
     const newViewport = {scrollTop: 0, scrollLeft: 0, width: 200, height: 200};
     virtualizer.viewport = newViewport;
     expect(virtualizer.viewport).to.deep.equal(newViewport);
+  });
+
+  describe('via <lit-virtualizer>', () => {
+    it('renders in managed mode and updates when viewport changes', async () => {
+      const items = array(1000);
+      const initialViewport = {
+        scrollTop: 0,
+        scrollLeft: 0,
+        width: 200,
+        height: 200,
+      };
+
+      const lvs = (await fixture(
+        html`<lit-virtualizer
+          .scroller=${'managed'}
+          .viewport=${initialViewport}
+          .items=${items}
+          .renderItem=${(i: number) =>
+            html`<div style="block-size: 50px;">${i}</div>`}
+        ></lit-virtualizer>`
+      )) as LitVirtualizer;
+
+      // Initial render: items starting from 0 should be visible.
+      await pass(() =>
+        expect(lvs.querySelector('div')?.textContent).to.equal('0')
+      );
+
+      // Scroll the managed viewport down. Setting the property should
+      // schedule a layout update; new items should appear.
+      lvs.viewport = {
+        scrollTop: 5000,
+        scrollLeft: 0,
+        width: 200,
+        height: 200,
+      };
+
+      await pass(() => {
+        const firstRendered = lvs.querySelector('div');
+        const idx = firstRendered ? parseInt(firstRendered.textContent!) : -1;
+        // ~100px estimated item size means scrollTop=5000 should put
+        // us in the neighborhood of item 50. Allow plenty of slack.
+        expect(idx).to.be.greaterThan(20);
+      });
+    });
   });
 });

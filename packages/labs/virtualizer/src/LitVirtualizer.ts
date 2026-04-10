@@ -20,6 +20,7 @@ import {
   defaultKeyFunction,
   RenderItemFunction,
 } from './virtualize.js';
+import type {Viewport} from './Virtualizer.js';
 
 export class LitVirtualizer<T = unknown> extends LitElement {
   @property({attribute: false})
@@ -90,12 +91,31 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   @property({attribute: false})
   pin: PinOptions | undefined;
 
+  /**
+   * Required when `scroller` is `'managed'`. Provides the externally-
+   * managed viewport (scroll position and dimensions) that the
+   * virtualizer should use in place of DOM-observed values. Setting
+   * this property updates the underlying virtualizer and schedules a
+   * layout update.
+   */
+  @property({attribute: false})
+  viewport: Viewport | undefined;
+
   createRenderRoot() {
     return this;
   }
 
   render() {
-    const {items, renderItem, keyFunction, layout, scroller, axis, pin} = this;
+    const {
+      items,
+      renderItem,
+      keyFunction,
+      layout,
+      scroller,
+      axis,
+      pin,
+      viewport,
+    } = this;
     return html`${virtualize({
       items,
       renderItem,
@@ -104,6 +124,7 @@ export class LitVirtualizer<T = unknown> extends LitElement {
       scroller,
       axis,
       pin,
+      viewport,
     })}`;
   }
 
