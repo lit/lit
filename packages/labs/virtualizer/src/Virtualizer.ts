@@ -57,6 +57,14 @@ import {
   UnpinnedEvent,
 } from './events.js';
 import {ScrollerController} from './ScrollerController.js';
+import type {
+  ScrollSource,
+  ScrollSourceHost,
+  Viewport,
+} from './scroll-sources/ScrollSource.js';
+import {ManagedScrollSource} from './scroll-sources/ManagedScrollSource.js';
+
+export type {Viewport} from './scroll-sources/ScrollSource.js';
 
 // Virtualizer depends on `ResizeObserver`, which is supported in
 // all modern browsers. For developers whose browser support
@@ -117,7 +125,28 @@ export interface VirtualizerConfig {
    */
   hostElement: VirtualizerHostElement;
 
-  scroller?: boolean;
+  /**
+   * Controls how the virtualizer acquires scroll position and viewport
+   * size:
+   * - `false` (default): the window or a clipping ancestor is the scroll
+   *   container ("ancestor" mode).
+   * - `true`: the host element itself is the scroll container ("self"
+   *   mode); the host must be explicitly sized via CSS.
+   * - `'managed'`: the virtualizer performs no DOM observation for scroll
+   *   or viewport. An external controller must set the `viewport`
+   *   property to drive the virtualizer.
+   */
+  scroller?: boolean | 'managed';
+
+  /**
+   * Required when `scroller` is `'managed'`. Provides the externally-
+   * managed viewport (scroll position and dimensions) that the
+   * virtualizer should use in place of DOM-observed values.
+   *
+   * Setting `viewport` after construction (via the property setter)
+   * schedules a layout update.
+   */
+  viewport?: Viewport;
 
   /**
    * Controls which CSS logical axis the virtualizer scrolls along.
@@ -192,6 +221,29 @@ export class Virtualizer {
   private _scrollerController: ScrollerController | null = null;
 
   private _isScroller = false;
+
+  /**
+   * `true` when `scroller: 'managed'` was passed in config. In managed
+   * mode the virtualizer does not observe the DOM for scroll position
+   * or viewport size; an external controller provides these via the
+   * `viewport` property.
+   */
+  private _managed = false;
+
+  /**
+   * The current externally-managed viewport (only used in managed mode).
+   * Set via the `viewport` getter/setter.
+   */
+  private _viewport: Viewport | null = null;
+
+  /**
+   * The `ScrollSource` strategy in use. In Step 2 of the refactor this
+   * is only populated when `scroller: 'managed'`; the existing modes
+   * still use the inline DOM-observation paths in `connected()` /
+   * `_updateView()` / etc. Steps 3 and 4 will populate this for the
+   * other modes as well.
+   */
+  private _scrollSource: ScrollSource | null = null;
 
   private _sizer: HTMLElement | null = null;
 
@@ -448,8 +500,30 @@ export class Virtualizer {
     }
   }
 
+  /**
+   * The externally-managed viewport, used when `scroller` is `'managed'`.
+   * Setting this property schedules a layout update so the new viewport
+   * takes effect on the next frame.
+   *
+   * Has no effect when not in managed mode.
+   */
+  get viewport(): Viewport | null {
+    return this._viewport;
+  }
+
+  set viewport(value: Viewport | null | undefined) {
+    this._viewport = value ?? null;
+    if (this._managed) {
+      this._schedule(this._updateLayout);
+    }
+  }
+
   _init(config: VirtualizerConfig) {
-    this._isScroller = !!config.scroller;
+    this._managed = config.scroller === 'managed';
+    this._isScroller = config.scroller === true;
+    if (config.viewport) {
+      this._viewport = config.viewport;
+    }
     if (config.axis) {
       this._axis = config.axis;
     }
@@ -508,19 +582,50 @@ export class Virtualizer {
 
   connected() {
     this._initObservers();
-    const includeSelf = this._isScroller;
-    this._clippingAncestors = getClippingAncestors(
-      this._hostElement!,
-      includeSelf
-    );
+    if (this._managed) {
+      // Managed mode: no scroll/viewport DOM observation. Create the
+      // ManagedScrollSource and observe only what's mode-agnostic
+      // (mutation + child resize).
+      //
+      // Build a ScrollSourceHost via lexically-bound arrow functions so
+      // each accessor closes over `this` without aliasing it.
+      const getHostElement = () => this._hostElement!;
+      const getViewport = () => this._viewport;
+      const getVirtualizerSize = () => this._virtualizerSize;
+      const scheduleUpdate = () => this._schedule(this._updateLayout);
+      const sourceHost: ScrollSourceHost = {
+        get hostElement() {
+          return getHostElement();
+        },
+        get viewport() {
+          return getViewport();
+        },
+        get virtualizerSize() {
+          return getVirtualizerSize();
+        },
+        scheduleUpdate,
+        handleScrollEvent() {
+          // Not used in managed mode.
+        },
+      };
+      this._scrollSource = new ManagedScrollSource(sourceHost);
+      this._scrollSource.connect();
+      this._observeChildrenOnly();
+    } else {
+      const includeSelf = this._isScroller;
+      this._clippingAncestors = getClippingAncestors(
+        this._hostElement!,
+        includeSelf
+      );
 
-    this._scrollerController = new ScrollerController(
-      this,
-      this._clippingAncestors[0]
-    );
+      this._scrollerController = new ScrollerController(
+        this,
+        this._clippingAncestors[0]
+      );
 
+      this._observeAndListen();
+    }
     this._schedule(this._updateLayout);
-    this._observeAndListen();
     this._connected = true;
   }
 
@@ -550,7 +655,24 @@ export class Virtualizer {
     );
   }
 
+  /**
+   * The mode-agnostic subset of `_observeAndListen()`: only the mutation
+   * observer and child resize observer, no scroll/resize listeners on
+   * host or ancestors. Used in managed mode where the external controller
+   * provides scroll position and viewport size.
+   */
+  private _observeChildrenOnly() {
+    this._mutationObserver!.observe(this._hostElement!, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
+    this._children.forEach((child) => this._childrenRO!.observe(child));
+  }
+
   disconnected() {
+    this._scrollSource?.disconnect();
+    this._scrollSource = null;
     this._scrollEventListeners.forEach((target) =>
       target.removeEventListener(
         'scroll',
@@ -1143,8 +1265,22 @@ export class Virtualizer {
 
   private _updateView() {
     const hostElement = this._hostElement;
-    const scrollingElement = this._scrollerController?.element;
     const layout = this._layout;
+
+    // Managed mode: delegate scroll/viewport population to the
+    // ManagedScrollSource. Writing-mode and direction are still read
+    // from the host element's computed style here so the source can
+    // perform the physical-to-logical conversion.
+    if (this._managed && hostElement && hostElement.isConnected && layout) {
+      const hostStyle = getComputedStyle(hostElement);
+      const wm = (this._writingMode = hostStyle.writingMode as writingMode);
+      const dir = (this._direction = hostStyle.direction as direction);
+      this._scrollerWritingMode = wm;
+      this._scrollSource!.updateView(layout, wm, dir, wm);
+      return;
+    }
+
+    const scrollingElement = this._scrollerController?.element;
 
     if (hostElement && hostElement.isConnected && scrollingElement && layout) {
       const hostStyle = getComputedStyle(hostElement);
@@ -1531,6 +1667,14 @@ export class Virtualizer {
 
   private _correctScrollError() {
     if (this._scrollError) {
+      // Managed mode: delegate the correction to the source, which
+      // dispatches a `scrollerror` event for the external controller.
+      if (this._managed) {
+        const error = this._scrollError;
+        this._scrollError = null;
+        this._scrollSource!.correctScrollError(error);
+        return;
+      }
       const {scrollTop, scrollLeft} = this._scrollerController!;
       const {block, inline} = this._scrollError;
       this._scrollError = null;
@@ -1571,6 +1715,12 @@ export class Virtualizer {
       this._children[options.index - this._first].scrollIntoView(options);
     } else {
       options.index = Math.min(options.index, this._items.length - 1);
+      if (this._managed) {
+        // Managed mode: delegate to the source. Smooth scrolling is not
+        // supported; the source uses the pin-based instant path.
+        this._scrollSource!.scrollElementIntoView(options, this._layout!);
+        return;
+      }
       if (options.behavior === 'smooth') {
         const coordinates = this._layout!.getScrollIntoViewCoordinates(options);
         const {behavior} = options;
