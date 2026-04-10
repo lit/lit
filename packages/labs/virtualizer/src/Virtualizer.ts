@@ -131,16 +131,21 @@ export interface VirtualizerConfig {
 
   /**
    * Controls how the virtualizer acquires scroll position and viewport
-   * size:
-   * - `false` (default): the window or a clipping ancestor is the scroll
-   *   container ("ancestor" mode).
-   * - `true`: the host element itself is the scroll container ("self"
-   *   mode); the host must be explicitly sized via CSS.
-   * - `'managed'`: the virtualizer performs no DOM observation for scroll
-   *   or viewport. An external controller must set the `viewport`
-   *   property to drive the virtualizer.
+   * size. Three modes are supported:
+   *
+   * - `'ancestor'` (default, also `false`): the window or a clipping
+   *   ancestor is the scroll container.
+   * - `'self'` (also `true`): the host element itself is the scroll
+   *   container; the host must be explicitly sized via CSS.
+   * - `'managed'`: the virtualizer performs no DOM observation for
+   *   scroll or viewport. An external controller must set the
+   *   `viewport` property to drive the virtualizer.
+   *
+   * The boolean values are supported for backwards compatibility and
+   * are equivalent to their string aliases (`true` ↔ `'self'`,
+   * `false` ↔ `'ancestor'`). New code should prefer the string form.
    */
-  scroller?: boolean | 'managed';
+  scroller?: boolean | 'self' | 'ancestor' | 'managed';
 
   /**
    * Required when `scroller` is `'managed'`. Provides the externally-
@@ -503,8 +508,11 @@ export class Virtualizer {
   }
 
   _init(config: VirtualizerConfig) {
+    // Normalize the `scroller` config to two booleans. Boolean values
+    // are aliases for the corresponding string forms:
+    //   true ↔ 'self'   |   false ↔ 'ancestor'
     this._managed = config.scroller === 'managed';
-    this._isScroller = config.scroller === true;
+    this._isScroller = config.scroller === true || config.scroller === 'self';
     if (config.viewport) {
       this._viewport = config.viewport;
     }
