@@ -1,15 +1,15 @@
 # @lit-labs/virtualizer Issue Triage
 
-Last updated: 2026-04-08
+Last updated: 2026-04-10
 
 ## Summary
 
 | Status              | Count |
 | ------------------- | ----- |
-| Fixed pending merge | 10    |
+| Fixed pending merge | 11    |
 | In progress         | 3     |
 | Confirmed           | 0     |
-| Needs investigation | 4     |
+| Needs investigation | 5     |
 | Needs repro         | 1     |
 
 ---
@@ -30,12 +30,13 @@ Last updated: 2026-04-08
 
 ### P2 -- Significant issue, workaround exists
 
-| #     | Title                                     | Subsystem         | Status              | Branch / PR      | Notes                                                                                                                                                                                       |
-| ----- | ----------------------------------------- | ----------------- | ------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| #4827 | averageMarginSize in metrics cache is off | measurement       | fixed-pending-merge | PR #5279         | First-item margin defaulting to 0 skews average                                                                                                                                             |
-| #5212 | No guard on customElements.define         | infra             | in-progress         | PR #5232         | Simple fix: add existence check. Microfrontend use case.                                                                                                                                    |
-| #4839 | Child placement via absolute positioning  | layout, rendering | in-progress         | PR #5280 (draft) | Feature: alternative to CSS transform. Addresses Mobile Safari memory leak.                                                                                                                 |
-| #5006 | Scroll performance with high velocity     | scroll, rendering | fixed-pending-merge | PR #5279         | Freeze layout updates during large scroll jumps; unfreeze with clean state reset. freeze/unfreeze Layout API, MutationObserver characterData+subtree, anchor validation, lazy anchor reset. |
+| #     | Title                                                         | Subsystem         | Status              | Branch / PR      | Notes                                                                                                                                                                                                                                                                                                                                                                          |
+| ----- | ------------------------------------------------------------- | ----------------- | ------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| #4827 | averageMarginSize in metrics cache is off                     | measurement       | fixed-pending-merge | PR #5279         | First-item margin defaulting to 0 skews average                                                                                                                                                                                                                                                                                                                                |
+| #5212 | No guard on customElements.define                             | infra             | in-progress         | PR #5232         | Simple fix: add existence check. Microfrontend use case.                                                                                                                                                                                                                                                                                                                       |
+| #4839 | Child placement via absolute positioning                      | layout, rendering | in-progress         | PR #5280 (draft) | Feature: alternative to CSS transform. Addresses Mobile Safari memory leak.                                                                                                                                                                                                                                                                                                    |
+| #5006 | Scroll performance with high velocity                         | scroll, rendering | fixed-pending-merge | PR #5279         | Freeze layout updates during large scroll jumps; unfreeze with clean state reset. freeze/unfreeze Layout API, MutationObserver characterData+subtree, anchor validation, lazy anchor reset.                                                                                                                                                                                    |
+| #5290 | virtualize directive: items don't render with positioned host | rendering         | fixed-pending-merge | PR #5279         | Directive was calling `Virtualizer.connected()` synchronously during the first lit-html update, while the host was still in an unattached `DocumentFragment`. `getComputedStyle()` returned empty values and the ancestor walk truncated, producing a wrong cached `_clippingAncestors` list. Fix: defer `connected()` to a microtask when the host isn't yet in the document. |
 
 ### P3 -- Minor or nice-to-have
 
@@ -57,6 +58,14 @@ Last updated: 2026-04-08
 | #4839 | Child placement via absolute positioning | P2       | in-progress (PR #5280) | Addresses Mobile Safari memory leak (WebKit bug #277392) |
 | #4945 | Focused item stays in DOM                | P1       | needs-investigation    | Accessibility requirement; React Aria does this          |
 | #4540 | Sticky items                             | P3       | needs-investigation    | Requires architectural change to positioning model       |
+
+---
+
+## Architectural
+
+| #     | Title                         | Status              | Notes                                                                                                                                                                                                                                                                                                                                                                             |
+| ----- | ----------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #5291 | Reconsider viewport semantics | needs-investigation | Placeholder for splitting `_updateView`'s single `viewportSize` into (a) available layout space — host's configured/measured size, both axes, never affected by ancestor clipping — and (b) currently visible range — clipping along the virtualization axis only. Subsumes the cross-axis grid sizing bug and the unverified `scroller: true` off-screen behavior. Drives #5290. |
 
 ---
 
@@ -85,6 +94,7 @@ All on PR #5279 (`virtualizer/css-direction--bug-fixes`):
 | #5006 | Scroll performance with high velocity            | --          | `b4883d2f` |
 | #5285 | Flow layout margin off-by-one                    | `be609bf8`  | `d9fdf693` |
 | #5286 | scrollToIndex margin offset                      | `66cfdd9c`  | `e54dc14a` |
+| #5290 | virtualize directive deferred connect            | --          | --         |
 
 Separate branch:
 
@@ -103,20 +113,21 @@ Separate branch:
 - **Documentation**: #4505, PR #4692, PR #4691 -- all docs improvements by different authors.
 - **Container resize / fast scroll**: #4693, #5006 -- both addressed by cross-axis cache clearing, scroll freeze during large jumps, and Layout freeze/unfreeze API.
 - **Flow layout margin handling**: #5285, #5286 -- both surfaced by the same non-uniform-margin playground repro. #5285 is off-by-one in the collapsed-margin index lookups; #5286 is the scroll-to using margin-box instead of border-box.
+- **Clipping ancestor detection**: #4922, #5290 -- both surface as wrong `_clippingAncestors` lists, but via different mechanisms. #4922: `display: contents` ancestors get classified as clipping (their zero-rect collapses the viewport). #5290: the directive runs `connected()` while the host is in an unattached fragment, so the ancestor walk and computed-style reads return wrong values. Both fixed in PR #5279.
 
 ---
 
 ## Open PRs
 
-| PR    | Title                                      | Branch                                                 | Issues                                                        | Status                |
-| ----- | ------------------------------------------ | ------------------------------------------------------ | ------------------------------------------------------------- | --------------------- |
-| #5280 | Child positioning method API               | `virtualizer/css-direction--bug-fixes--implement-4839` | #4839                                                         | Draft                 |
-| #5279 | Bug fixes                                  | `virtualizer/css-direction--bug-fixes`                 | #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286 | Open                  |
-| #5249 | CSS-based direction detection and axis API | `virtualizer/css-direction`                            | --                                                            | Open                  |
-| #5232 | Guard custom element registration          | `fixes/5212`                                           | #5212                                                         | Open                  |
-| #4846 | Virtualizer fixes (external)               | `virtualizer-fixes`                                    | --                                                            | Draft                 |
-| #4692 | keyFunction docs                           | --                                                     | lit.dev#1322                                                  | Open, awaiting review |
-| #4691 | Type and docs improvement                  | --                                                     | #4377                                                         | Open, awaiting review |
+| PR    | Title                                      | Branch                                                 | Issues                                                               | Status                |
+| ----- | ------------------------------------------ | ------------------------------------------------------ | -------------------------------------------------------------------- | --------------------- |
+| #5280 | Child positioning method API               | `virtualizer/css-direction--bug-fixes--implement-4839` | #4839                                                                | Draft                 |
+| #5279 | Bug fixes                                  | `virtualizer/css-direction--bug-fixes`                 | #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290 | Open                  |
+| #5249 | CSS-based direction detection and axis API | `virtualizer/css-direction`                            | --                                                                   | Open                  |
+| #5232 | Guard custom element registration          | `fixes/5212`                                           | #5212                                                                | Open                  |
+| #4846 | Virtualizer fixes (external)               | `virtualizer-fixes`                                    | --                                                                   | Draft                 |
+| #4692 | keyFunction docs                           | --                                                     | lit.dev#1322                                                         | Open, awaiting review |
+| #4691 | Type and docs improvement                  | --                                                     | #4377                                                                | Open, awaiting review |
 
 ---
 
@@ -127,7 +138,7 @@ Separate branch:
 The active development branches form a stack:
 
 1. `virtualizer/css-direction` (PR #5249) -- CSS direction detection
-2. `virtualizer/css-direction--bug-fixes` (PR #5279) -- bug fixes for #4789, #4827, #4670, #4922, #4982
+2. `virtualizer/css-direction--bug-fixes` (PR #5279) -- bug fixes for #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290
 3. `virtualizer/css-direction--bug-fixes--implement-4839` (PR #5280) -- #4839 positioning API
 
 ---
@@ -135,4 +146,4 @@ The active development branches form a stack:
 ## Known Issue Numbers
 
 For monitoring (no GitHub label exists):
-4505, 4540, 4670, 4693, 4767, 4789, 4827, 4833, 4839, 4922, 4945, 4982, 5006, 5008, 5042, 5212, 5285, 5286
+4505, 4540, 4670, 4693, 4767, 4789, 4827, 4833, 4839, 4922, 4945, 4982, 5006, 5008, 5042, 5212, 5285, 5286, 5290, 5291

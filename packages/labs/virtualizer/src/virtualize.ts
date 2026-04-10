@@ -155,15 +155,30 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
       this._virtualizer.disconnected();
     }
     const {layout, scroller, items, axis, pin} = config;
-    this._virtualizer = new Virtualizer({
+    const virtualizer = (this._virtualizer = new Virtualizer({
       hostElement,
       layout,
       scroller,
       axis,
       pin,
-    });
-    this._virtualizer.items = items;
-    this._virtualizer.connected();
+    }));
+    virtualizer.items = items;
+    // On initial render, lit-html runs directives while the new DOM is
+    // still in an unattached DocumentFragment, so the host element is not
+    // yet connected to the document. `Virtualizer.connected()` reads
+    // ancestor computed styles to detect clipping ancestors, which returns
+    // empty values for disconnected elements and produces a wrong list.
+    // Defer until the host is actually attached.
+    if (hostElement.isConnected) {
+      virtualizer.connected();
+    } else {
+      queueMicrotask(() => {
+        // Skip if we've been replaced or torn down in the interim.
+        if (this._virtualizer === virtualizer && hostElement.isConnected) {
+          virtualizer.connected();
+        }
+      });
+    }
   }
 
   private _initialize(part: ChildPart, config: VirtualizeDirectiveConfig<T>) {
