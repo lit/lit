@@ -10,6 +10,7 @@ import {
   VirtualizerSize,
   writingMode,
   direction,
+  ChildPositions,
 } from '../layouts/shared/Layout.js';
 
 /**
@@ -171,6 +172,21 @@ export interface ScrollSource {
    */
   scrollElementIntoView(
     options: ScrollElementIntoViewOptions,
+    layout: Layout
+  ): void;
+
+  /**
+   * Called by Virtualizer at the end of each layout cycle. If the source
+   * has an in-progress smooth scroll whose target item has now come into
+   * the rendered range, the source can use this opportunity to retarget
+   * the in-flight scroll using the layout's freshly-computed position
+   * for the item.
+   *
+   * Implementations that don't support smooth scrolling (e.g.
+   * `ManagedScrollSource`) should implement this as a no-op.
+   */
+  checkScrollIntoViewTarget(
+    positions: ChildPositions | null,
     layout: Layout
   ): void;
 }
