@@ -30,7 +30,13 @@ export interface VirtualizeDirectiveConfig<T> {
 
   keyFunction?: KeyFn<T>;
 
-  scroller?: boolean;
+  /**
+   * Controls how the virtualizer acquires scroll position and viewport
+   * size. See `VirtualizerConfig.scroller` for the full description.
+   * Boolean values are accepted for backwards compatibility:
+   * `true` ↔ `'self'`, `false` ↔ `'ancestor'`.
+   */
+  scroller?: boolean | 'self' | 'ancestor' | 'managed';
 
   // TODO (graynorton): Document...
   layout?: LayoutConfigValue;

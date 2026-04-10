@@ -34,8 +34,44 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   @property({attribute: false})
   layout: LayoutConfigValue = {};
 
-  @property({reflect: true, type: Boolean})
-  scroller = false;
+  /**
+   * Controls how the virtualizer acquires scroll position and viewport
+   * size. Three modes are supported:
+   *
+   * - `'ancestor'` (default, also `false`): the window or a clipping
+   *   ancestor is the scroll container.
+   * - `'self'` (also `true`): the host element itself is the scroll
+   *   container; the host must be explicitly sized via CSS.
+   * - `'managed'`: the virtualizer performs no DOM observation for
+   *   scroll or viewport. An external controller must set the
+   *   `viewport` property to drive the virtualizer.
+   *
+   * The boolean values are accepted for backwards compatibility:
+   * `true` ↔ `'self'`, `false` ↔ `'ancestor'`. New code should prefer
+   * the string form.
+   *
+   * Setting via attribute supports both forms — e.g.
+   * `<lit-virtualizer scroller>` (boolean form, equivalent to
+   * `'self'`) or `<lit-virtualizer scroller="managed">`.
+   */
+  @property({
+    reflect: true,
+    converter: {
+      fromAttribute(value: string | null): boolean | string {
+        if (value === null) return false;
+        // A bare attribute (`<lit-virtualizer scroller>`) yields '' —
+        // treat that as the boolean `true` form (equivalent to 'self').
+        if (value === '' || value === 'true') return true;
+        if (value === 'false') return false;
+        return value;
+      },
+      toAttribute(value: boolean | string): string | null {
+        if (typeof value === 'string') return value;
+        return value ? '' : null;
+      },
+    },
+  })
+  scroller: boolean | 'self' | 'ancestor' | 'managed' = false;
 
   /**
    * Controls which CSS logical axis the virtualizer scrolls along.
