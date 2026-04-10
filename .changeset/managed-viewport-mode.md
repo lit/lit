@@ -1,0 +1,8 @@
+---
+'@lit-labs/virtualizer': minor
+---
+
+- Added a new managed viewport mode for `Virtualizer`. Set `scroller: 'managed'` and provide a `viewport` (`{scrollTop, scrollLeft, width, height}`) property; the virtualizer skips all DOM observation for scroll position and viewport size and is driven entirely by the externally-supplied viewport. Layout-reported scroll-error corrections are dispatched as a `scrollerror` `CustomEvent` on the host element so the external controller can adjust its own scroll state. Useful for custom scroller implementations and synchronized scrollers. Exposed through `Virtualizer`, `<lit-virtualizer>`, and the `virtualize` directive.
+- Added string aliases for the `scroller` config: `'self'` (equivalent to `true`), `'ancestor'` (equivalent to `false`), and `'managed'` (the new mode). Boolean values are still supported for backwards compatibility. The string form is now the preferred surface in new code. `<lit-virtualizer scroller="managed">` and `<lit-virtualizer scroller>` (legacy bare-attribute boolean form) both work.
+- Internal refactor: extracted scroll-position and viewport-size acquisition out of `Virtualizer` into a `ScrollSource` strategy interface with three implementations (`ManagedScrollSource`, `SelfScrollSource`, `AncestorScrollSource`). The two DOM-based modes share a `BaseDomScrollSource` class. `Virtualizer` is now a slimmer orchestrator that delegates all scroll/viewport concerns to the active source. No behavior change for existing modes.
+- Added a public subpath export for `Virtualizer.js`, allowing the underlying `Virtualizer` class to be imported and instantiated directly.
