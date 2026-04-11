@@ -245,6 +245,11 @@ export const getCommittedValue = (part: ChildPart) => part._$committedValue;
 export const removePart = (part: ChildPart) => {
   part._$clear();
   part._$startNode.remove();
+  // Without this, every removePart call leaves behind a `<!---->` comment
+  // marker (the part's end marker), causing unbounded DOM accumulation
+  // under sustained churn (e.g., virtualizer scrolling that removes items
+  // at one edge and adds at the other).
+  (part._$endNode as (ChildNode & {remove: () => void}) | null)?.remove();
 };
 
 export const clearPart = (part: ChildPart) => {
