@@ -125,18 +125,20 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   private _hostSink: LayoutHostSink;
 
-  protected get _defaultConfig(): C {
+  protected _getDefaultConfig(): C {
     return {} as C;
   }
 
   constructor(hostSink: LayoutHostSink, config?: C) {
     this._hostSink = hostSink;
     // Delay setting config so that subclasses do setup work first
-    Promise.resolve().then(() => (this.config = config || this._defaultConfig));
+    Promise.resolve().then(
+      () => (this.config = config || this._getDefaultConfig())
+    );
   }
 
   set config(config: C) {
-    Object.assign(this, Object.assign({}, this._defaultConfig, config));
+    Object.assign(this, Object.assign({}, this._getDefaultConfig(), config));
   }
 
   get config(): C {

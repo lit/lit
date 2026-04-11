@@ -92,8 +92,8 @@ export abstract class SizeGapPaddingBaseLayout<
   protected _lastGapSpec: GapSpec | '' = '';
   protected _lastPaddingSpec: PaddingSpec | '' = '';
 
-  protected get _defaultConfig(): C {
-    return Object.assign({}, super._defaultConfig, {
+  protected _getDefaultConfig(): C {
+    return Object.assign({}, super._getDefaultConfig(), {
       itemSize: {width: '300px', height: '300px'},
       gap: '8px',
       padding: 'match-gap',

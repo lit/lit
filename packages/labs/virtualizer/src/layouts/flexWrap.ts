@@ -92,7 +92,7 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
   listenForChildLoadEvents = true;
 
   set gap(spec: GapSpec) {
-    super.gap = spec;
+    this._setGap(spec);
   }
 
   /**
