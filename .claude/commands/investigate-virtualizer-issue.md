@@ -142,9 +142,10 @@ For each, note:
 **Actions**:
 
 1. Update the issue's entry in `packages/labs/virtualizer/TRIAGE.md`:
-   - Update status (e.g., `confirmed`, `needs-repro` → `confirmed`)
-   - Add investigation notes to the Notes column
-   - Record fix complexity estimate
+   - The issue should be in an `Unaddressed Issues` subsection (Bugs / Feature Requests / Documentation / Other) at the appropriate priority level. If it isn't, move it there.
+   - Update the `Status` column to reflect the investigation outcome. Valid unaddressed sub-statuses: `needs investigation`, `needs repro`, `needs reinvestigation`, `confirmed`. A completed investigation normally ends at `confirmed` (root cause understood, ready for fix work).
+   - Add investigation notes to the Notes column: root-cause summary, fix approach, complexity estimate, related issues.
+   - If the investigation turns up a new branch or reveals that a fix already exists on one, note that in the row. The issue does not become "addressed" until an open PR exists — see the fix workflow skill for the handoff.
 
 2. Summarize findings for the user:
    - Root cause (1-2 sentences)

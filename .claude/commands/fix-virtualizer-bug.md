@@ -158,16 +158,51 @@ Repro cases live in `playground/p/scratch/issues/<issue-number>/`.
 
 **Goal**: Reflect the newly fixed issue in the triage document.
 
-`packages/labs/virtualizer/TRIAGE.md` tracks the state of all known virtualizer issues. When a fix lands (even just on a branch), update it:
+`packages/labs/virtualizer/TRIAGE.md` tracks the state of all known virtualizer issues. The document is organized around the addressed/unaddressed split: an issue is "addressed" once there is an open PR (draft or not) that will close it on merge.
 
-1. Move the issue from its current section to **Fixed Pending Merge**, with the test and fix commit hashes. Group it under the appropriate PR/branch.
-2. Update the PR's row in the **Open PRs** table to include the new issue number.
-3. If this is a newly filed issue (not previously tracked), add it to the **Known Issue Numbers** list at the bottom.
-4. Update the **Summary** counts at the top.
-5. Bump the **Last updated** date at the top of the file.
-6. Preserve any existing manual notes unless they're now incorrect.
+When a fix lands (even just on a branch):
 
-This keeps the triage doc in sync with the state of the branch. Include TRIAGE.md updates in the fix commit (or as a separate follow-up commit if the fix has already been pushed).
+1. **Ensure there is an open PR for the fix.** If you haven't pushed yet, push the branch and open a draft PR. The issue is only considered "addressed" once the PR exists. The PR body should use `Closes #NNNN` (or `Fixes #NNNN` / `Resolves #NNNN`) so GitHub auto-closes the issue on merge. Bare URL references like `Closes https://github.com/lit/lit/issues/NNNN` also work. What does NOT trigger auto-close is a markdown link — `[#NNNN](https://github.com/lit/lit/issues/NNNN)` renders as a clickable link but the auto-close machinery ignores it.
+2. **Move the issue row** from the relevant `Unaddressed Issues` subsection (Bugs / Feature Requests / Documentation / Other, by priority) to the matching `Addressed Issues` subsection at the same priority level.
+3. **Fill in the Addressed → Bugs columns** for the moved row: `PR` gets `#NNNN` or `#NNNN (draft)`, `Test` gets the short SHA (7 chars) of the regression test commit, `Fix` gets the short SHA of the fix commit. Use `--` in Test or Fix if a commit doesn't exist (e.g., a single-commit fix without a regression test). Keep the `Notes` cell concise.
+4. **Update the Open PRs table** to list the issue number in the `Closes` column for the PR's row. If this is a new PR, add a new row with PR, Title, Branch, Closes, and Status (`Draft` or `Open`).
+5. **Update the Summary counts** at the top (Addressed PR open / Addressed PR draft / Unaddressed).
+6. **Update the Branch Stack section** if this fix introduced a new branch or changed the stack shape. If the Branch Stack section is out of sync with reality (or you just need to re-derive the tree from scratch), see the branch/PR discovery procedure in Phase 1b of `triage-virtualizer-issues.md` — it documents the naming convention and the `gh pr list ... --json headRefName,baseRefName` approach for rebuilding the tree from GitHub state.
+7. **Add new issue numbers** to the Known Issue Numbers list if this was a newly filed issue.
+8. **Bump the Last updated date.**
+9. **Preserve existing manual notes** unless they're now incorrect.
+
+Include TRIAGE.md updates in the fix commit (or as a separate follow-up commit if the fix has already been pushed).
+
+---
+
+## Phase 9: Propagate to Dependent Branches
+
+**Goal**: If the fix landed on a branch that has dependents in the stacked tree, update those dependents to pick up the new commits.
+
+**Actions**:
+
+1. Check whether the current branch has any direct children in the stacked tree. Quick check:
+
+   ```
+   gh pr list --repo lit/lit --state open --search "virtualizer in:title" --json number,headRefName,baseRefName --limit 50
+   ```
+
+   If any PR's `baseRefName` equals the current branch, there are dependents that need propagation.
+
+2. If there are no dependents, the fix is done — skip this phase.
+
+3. If there are dependents, hand off to the standalone propagation skill:
+
+   ```
+   /propagate-stacked-branches
+   ```
+
+   That skill will: build the full descendant subtree (including grandchildren and beyond), present a plan, ask the user to confirm the strategy (rebase by default, merge as an override), apply the updates root-to-leaves, stop on any conflict or test failure, and ask for explicit confirmation before any force-push.
+
+4. Do not attempt to propagate manually here. The propagation workflow has enough edge cases (conflict handling, force-push safety, build/test per branch, tree-shape changes) that it warrants its own skill with its own phase discipline. The fix skill's job ends at "the fix is landed on its own branch and TRIAGE.md reflects the new state"; the propagation skill's job is "every descendant of that branch is caught up."
+
+See `propagate-stacked-branches.md` for the full workflow.
 
 ---
 
