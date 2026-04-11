@@ -1,14 +1,14 @@
 # @lit-labs/virtualizer Issue Triage
 
-Last updated: 2026-04-10
+Last updated: 2026-04-10 (post-reinvestigation of #4767)
 
 ## Summary
 
 | Status               | Count |
 | -------------------- | ----- |
 | Addressed (PR open)  | 2     |
-| Addressed (PR draft) | 15    |
-| Unaddressed          | 8     |
+| Addressed (PR draft) | 16    |
+| Unaddressed          | 7     |
 
 An issue is "addressed" if there is at least one open PR that, when merged, will close it. Draft PRs count as addressed but are flagged separately. All PRs in the main chain (#5249, #5279, #5280, #5292) are currently drafts. Of the out-of-chain PRs, #5232 is also a draft; only #4691 and #4692 are ready for review.
 
@@ -20,21 +20,22 @@ An issue is "addressed" if there is at least one open PR that, when merged, will
 
 #### P1
 
-| #     | Title                                                  | Subsystem           | PR            | Test       | Fix        | Notes                                                                                                                    |
-| ----- | ------------------------------------------------------ | ------------------- | ------------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ |
-| #4922 | No content renders (display:contents ancestors)        | rendering           | #5279 (draft) | `fbe221d4` | `6313f1b7` | Exclude `display: contents` elements from clipping ancestor chain.                                                       |
-| #4789 | Metrics cache not reset on items change                | measurement         | #5279 (draft) | `46cc73f7` | `ad5cf0c4` | `_refineScrollSize()` recomputes exact scroll size when all items rendered; cache cleared on items change.               |
-| #4670 | Flow layout incorrect after replacing items            | layout              | #5279 (draft) | `10325ac3` | `8c23049b` | `MutationObserver` now detects child reorders by `keyFunction` and triggers re-measurement.                              |
-| #4693 | Anomalous scrolling when item heights change on resize | layout, measurement | #5279 (draft) | --         | `c3770a9a` | Clear stale off-screen cache entries on cross-axis resize; proportional scroll correction. (Combined commit with #5006.) |
+| #     | Title                                                  | Subsystem           | PR            | Test       | Fix        | Notes                                                                                                                                                                                                                                                                                                                                                                                                                                                   |
+| ----- | ------------------------------------------------------ | ------------------- | ------------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #4767 | scrollIntoView to far element renders blank            | scroll              | #5279 (draft) | pending    | `deb88c2e` | Same root cause as #4827: `offsetWithinScroller` was scroll-position-dependent, producing cumulative position errors that at large scroll distances clamped to end-of-scroll and rendered zero items. Reinvestigation 2026-04-10 confirmed the `deb88c2e` fix also addresses this issue (bisected main → HEAD, broken at `e2d51db4`, fixed at `deb88c2e`). New regression test added to `flow.test.ts` (uncommitted) mirroring the jpzwarte gist repro. |
+| #4922 | No content renders (display:contents ancestors)        | rendering           | #5279 (draft) | `fbe221d4` | `6313f1b7` | Exclude `display: contents` elements from clipping ancestor chain.                                                                                                                                                                                                                                                                                                                                                                                      |
+| #4789 | Metrics cache not reset on items change                | measurement         | #5279 (draft) | `46cc73f7` | `ad5cf0c4` | `_refineScrollSize()` recomputes exact scroll size when all items rendered; cache cleared on items change.                                                                                                                                                                                                                                                                                                                                              |
+| #4670 | Flow layout incorrect after replacing items            | layout              | #5279 (draft) | `10325ac3` | `8c23049b` | `MutationObserver` now detects child reorders by `keyFunction` and triggers re-measurement.                                                                                                                                                                                                                                                                                                                                                             |
+| #4693 | Anomalous scrolling when item heights change on resize | layout, measurement | #5279 (draft) | --         | `c3770a9a` | Clear stale off-screen cache entries on cross-axis resize; proportional scroll correction. (Combined commit with #5006.)                                                                                                                                                                                                                                                                                                                                |
 
 #### P2
 
-| #     | Title                                                         | Subsystem         | PR            | Test       | Fix        | Notes                                                                                                                                                        |
-| ----- | ------------------------------------------------------------- | ----------------- | ------------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| #4827 | averageMarginSize in metrics cache is off                     | measurement       | #5279 (draft) | `e2d51db4` | `deb88c2e` | scrollIntoView overshoot in non-scroller mode; off-by-one in `_estimatePosition`; index 0 excluded from inter-item margin cache. See cluster note re: #4767. |
-| #5212 | No guard on customElements.define                             | infra             | #5232 (draft) | --         | --         | Simple fix: add existence check. Microfrontend use case.                                                                                                     |
-| #5006 | Scroll performance with high velocity                         | scroll, rendering | #5279 (draft) | --         | `c3770a9a` | freeze/unfreeze Layout API; `MutationObserver` characterData+subtree; anchor validation; lazy anchor reset. (Combined commit with #4693.)                    |
-| #5290 | virtualize directive: items don't render with positioned host | rendering         | #5279 (draft) | `d407b277` | `fb1b2631` | Defer `connected()` to a microtask when host isn't yet in the document, so `getComputedStyle()` and the ancestor walk return correct values.                 |
+| #     | Title                                                         | Subsystem         | PR            | Test       | Fix        | Notes                                                                                                                                                                      |
+| ----- | ------------------------------------------------------------- | ----------------- | ------------- | ---------- | ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #4827 | averageMarginSize in metrics cache is off                     | measurement       | #5279 (draft) | `e2d51db4` | `deb88c2e` | scrollIntoView overshoot in non-scroller mode; off-by-one in `_estimatePosition`; index 0 excluded from inter-item margin cache. Confirmed to share root cause with #4767. |
+| #5212 | No guard on customElements.define                             | infra             | #5232 (draft) | --         | --         | Simple fix: add existence check. Microfrontend use case.                                                                                                                   |
+| #5006 | Scroll performance with high velocity                         | scroll, rendering | #5279 (draft) | --         | `c3770a9a` | freeze/unfreeze Layout API; `MutationObserver` characterData+subtree; anchor validation; lazy anchor reset. (Combined commit with #4693.)                                  |
+| #5290 | virtualize directive: items don't render with positioned host | rendering         | #5279 (draft) | `d407b277` | `fb1b2631` | Defer `connected()` to a microtask when host isn't yet in the document, so `getComputedStyle()` and the ancestor walk return correct values.                               |
 
 #### P3
 
@@ -74,10 +75,9 @@ An issue is "addressed" if there is at least one open PR that, when merged, will
 
 #### P1
 
-| #     | Title                                       | Subsystem | Status                | Notes                                                                                                                             |
-| ----- | ------------------------------------------- | --------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| #4767 | scrollIntoView to far element renders blank | scroll    | needs reinvestigation | Earlier fix attempt exists on `gnorton/fix-4767` (commit `32d8dd4a`) but its correctness is in doubt; reinvestigate from scratch. |
-| #4833 | renderItem called with undefined            | rendering | needs repro           | Occurs when items change to subset without scrolling. Author promised repro steps but hasn't provided them. Related to PR #4846.  |
+| #     | Title                            | Subsystem | Status      | Notes                                                                                                                            |
+| ----- | -------------------------------- | --------- | ----------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| #4833 | renderItem called with undefined | rendering | needs repro | Occurs when items change to subset without scrolling. Author promised repro steps but hasn't provided them. Related to PR #4846. |
 
 #### P3
 
@@ -116,7 +116,7 @@ An issue is "addressed" if there is at least one open PR that, when merged, will
 ## Related Issue Clusters
 
 - **Metrics cache**: #4789, #4827, #4670 -- all involve stale or incorrect metrics cache behavior. All fixed in PR #5279.
-- **Scroll positioning**: #4767, #4827 -- graynorton previously noted that the prior #4767 fix attempt would also address #4827's root cause. Since the #4767 fix is being reinvestigated, it's worth checking whether the fix landed for #4827 in PR #5279 is the correct one or just papers over a deeper issue.
+- **Scroll positioning**: #4767, #4827 -- confirmed shared root cause. Both caused by `offsetWithinScroller` being computed from raw `getBoundingClientRect()` differences that drift with scroll position. At small scroll distances the drift manifests as ~30-item overshoot (#4827); at large scroll distances the cumulative error clamps to end-of-scroll and leaves the list blank (#4767). Both resolved by `deb88c2e` (the #4827 fix). Obsolete earlier attempt on `gnorton/fix-4767` branch (commit `32d8dd4a`) can be discarded.
 - **Item identity/replacement**: #4670, #4833 -- both involve items array changes producing incorrect behavior.
 - **Documentation**: PR #4691 (#4377), PR #4692 (#5294) -- both docs improvements by Garbee awaiting review. #4505 grid docs already addressed in PR #5249.
 - **Container resize / fast scroll**: #4693, #5006 -- both addressed by cross-axis cache clearing, scroll freeze during large jumps, and Layout freeze/unfreeze API. Combined into a single fix commit.
@@ -128,16 +128,16 @@ An issue is "addressed" if there is at least one open PR that, when merged, will
 
 ## Open PRs
 
-| PR    | Title                                         | Branch                                                   | Closes                                                                      | Status                |
-| ----- | --------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------- |
-| #5292 | Managed viewport mode + ScrollSource refactor | `virtualizer/css-direction--bug-fixes--managed-viewport` | #5295                                                                       | Draft                 |
-| #5280 | Child positioning method API                  | `virtualizer/css-direction--bug-fixes--implement-4839`   | #4839                                                                       | Draft                 |
-| #5279 | Bug fixes                                     | `virtualizer/css-direction--bug-fixes`                   | #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290, #5293 | Draft                 |
-| #5249 | CSS-based direction detection and axis API    | `virtualizer/css-direction`                              | #4505                                                                       | Draft                 |
-| #5232 | Guard custom element registration             | `fixes/5212`                                             | #5212                                                                       | Draft                 |
-| #4846 | Virtualizer fixes (external)                  | `virtualizer-fixes`                                      | --                                                                          | Draft                 |
-| #4692 | keyFunction docs                              | `virtualizer/docs`                                       | #5294                                                                       | Open, awaiting review |
-| #4691 | Type and docs improvement                     | `virtualizer/types`                                      | #4377                                                                       | Open, awaiting review |
+| PR    | Title                                         | Branch                                                   | Closes                                                                             | Status                |
+| ----- | --------------------------------------------- | -------------------------------------------------------- | ---------------------------------------------------------------------------------- | --------------------- |
+| #5292 | Managed viewport mode + ScrollSource refactor | `virtualizer/css-direction--bug-fixes--managed-viewport` | #5295                                                                              | Draft                 |
+| #5280 | Child positioning method API                  | `virtualizer/css-direction--bug-fixes--implement-4839`   | #4839                                                                              | Draft                 |
+| #5279 | Bug fixes                                     | `virtualizer/css-direction--bug-fixes`                   | #4767, #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290, #5293 | Draft                 |
+| #5249 | CSS-based direction detection and axis API    | `virtualizer/css-direction`                              | #4505                                                                              | Draft                 |
+| #5232 | Guard custom element registration             | `fixes/5212`                                             | #5212                                                                              | Draft                 |
+| #4846 | Virtualizer fixes (external)                  | `virtualizer-fixes`                                      | --                                                                                 | Draft                 |
+| #4692 | keyFunction docs                              | `virtualizer/docs`                                       | #5294                                                                              | Open, awaiting review |
+| #4691 | Type and docs improvement                     | `virtualizer/types`                                      | #4377                                                                              | Open, awaiting review |
 
 ---
 
