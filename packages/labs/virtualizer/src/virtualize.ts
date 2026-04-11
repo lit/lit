@@ -60,7 +60,7 @@ export type RenderItemFunction<T = unknown> = (
   index: number
 ) => TemplateResult;
 
-export const defaultKeyFunction: KeyFn<unknown> = (item: unknown) => item;
+export const defaultKeyFunction: KeyFn<unknown> = (_item, index) => index;
 export const defaultRenderItem: RenderItemFunction<unknown> = (
   item: unknown,
   idx: number
