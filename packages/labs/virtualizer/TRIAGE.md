@@ -4,132 +4,140 @@ Last updated: 2026-04-10
 
 ## Summary
 
-| Status              | Count |
-| ------------------- | ----- |
-| Fixed pending merge | 12    |
-| In progress         | 3     |
-| Confirmed           | 0     |
-| Needs investigation | 5     |
-| Needs repro         | 1     |
+| Status               | Count |
+| -------------------- | ----- |
+| Addressed (PR open)  | 2     |
+| Addressed (PR draft) | 15    |
+| Unaddressed          | 8     |
+
+An issue is "addressed" if there is at least one open PR that, when merged, will close it. Draft PRs count as addressed but are flagged separately. All PRs in the main chain (#5249, #5279, #5280, #5292) are currently drafts. Of the out-of-chain PRs, #5232 is also a draft; only #4691 and #4692 are ready for review.
 
 ---
 
-## Bugs by Priority
+## Addressed Issues
 
-### P1 -- Major functionality broken
+### Bugs
 
-| #     | Title                                                       | Subsystem           | Status                | Branch / PR        | Notes                                                                                                                            |
-| ----- | ----------------------------------------------------------- | ------------------- | --------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------- |
-| #4922 | Regression: no content renders (display:contents ancestors) | rendering           | fixed-pending-merge   | PR #5279           | Exclude display:contents elements from clipping ancestors                                                                        |
-| #4789 | Metrics cache not reset on items change                     | measurement         | fixed-pending-merge   | PR #5279           | Cache cleared when items array changes                                                                                           |
-| #4670 | Flow layout incorrect after replacing items                 | layout              | fixed-pending-merge   | PR #5279           | Metrics cache keyed properly with keyFunction                                                                                    |
-| #4767 | scrollIntoView to far element renders blank                 | scroll              | fixed-separate-branch | `gnorton/fix-4767` | Fix exists but not on current PR branch; needs merge                                                                             |
-| #4693 | Anomalous scrolling when item heights change on resize      | layout, measurement | fixed-pending-merge   | PR #5279           | Clear stale off-screen cache entries on cross-axis resize; proportional scroll correction.                                       |
-| #4945 | Focused item removed from DOM on scroll                     | rendering           | needs-investigation   | --                 | Accessibility: focus jumps to body when item is recycled. Breaks keyboard navigation.                                            |
-| #4833 | renderItem called with undefined                            | rendering           | needs-repro           | --                 | Occurs when items change to subset without scrolling. Author promised repro steps but hasn't provided them. Related to PR #4846. |
+#### P1
 
-### P2 -- Significant issue, workaround exists
+| #     | Title                                                  | Subsystem           | PR            | Test       | Fix        | Notes                                                                                                                    |
+| ----- | ------------------------------------------------------ | ------------------- | ------------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------ |
+| #4922 | No content renders (display:contents ancestors)        | rendering           | #5279 (draft) | `fbe221d4` | `6313f1b7` | Exclude `display: contents` elements from clipping ancestor chain.                                                       |
+| #4789 | Metrics cache not reset on items change                | measurement         | #5279 (draft) | `46cc73f7` | `ad5cf0c4` | `_refineScrollSize()` recomputes exact scroll size when all items rendered; cache cleared on items change.               |
+| #4670 | Flow layout incorrect after replacing items            | layout              | #5279 (draft) | `10325ac3` | `8c23049b` | `MutationObserver` now detects child reorders by `keyFunction` and triggers re-measurement.                              |
+| #4693 | Anomalous scrolling when item heights change on resize | layout, measurement | #5279 (draft) | --         | `c3770a9a` | Clear stale off-screen cache entries on cross-axis resize; proportional scroll correction. (Combined commit with #5006.) |
 
-| #     | Title                                                         | Subsystem         | Status              | Branch / PR      | Notes                                                                                                                                                                                                                                                                                                                                                                          |
-| ----- | ------------------------------------------------------------- | ----------------- | ------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| #4827 | averageMarginSize in metrics cache is off                     | measurement       | fixed-pending-merge | PR #5279         | First-item margin defaulting to 0 skews average                                                                                                                                                                                                                                                                                                                                |
-| #5212 | No guard on customElements.define                             | infra             | in-progress         | PR #5232         | Simple fix: add existence check. Microfrontend use case.                                                                                                                                                                                                                                                                                                                       |
-| #4839 | Child placement via absolute positioning                      | layout, rendering | in-progress         | PR #5280 (draft) | Feature: alternative to CSS transform. Addresses Mobile Safari memory leak.                                                                                                                                                                                                                                                                                                    |
-| #5006 | Scroll performance with high velocity                         | scroll, rendering | fixed-pending-merge | PR #5279         | Freeze layout updates during large scroll jumps; unfreeze with clean state reset. freeze/unfreeze Layout API, MutationObserver characterData+subtree, anchor validation, lazy anchor reset.                                                                                                                                                                                    |
-| #5290 | virtualize directive: items don't render with positioned host | rendering         | fixed-pending-merge | PR #5279         | Directive was calling `Virtualizer.connected()` synchronously during the first lit-html update, while the host was still in an unattached `DocumentFragment`. `getComputedStyle()` returned empty values and the ancestor walk truncated, producing a wrong cached `_clippingAncestors` list. Fix: defer `connected()` to a microtask when the host isn't yet in the document. |
+#### P2
 
-### P3 -- Minor or nice-to-have
+| #     | Title                                                         | Subsystem         | PR            | Test       | Fix        | Notes                                                                                                                                                        |
+| ----- | ------------------------------------------------------------- | ----------------- | ------------- | ---------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| #4827 | averageMarginSize in metrics cache is off                     | measurement       | #5279 (draft) | `e2d51db4` | `deb88c2e` | scrollIntoView overshoot in non-scroller mode; off-by-one in `_estimatePosition`; index 0 excluded from inter-item margin cache. See cluster note re: #4767. |
+| #5212 | No guard on customElements.define                             | infra             | #5232 (draft) | --         | --         | Simple fix: add existence check. Microfrontend use case.                                                                                                     |
+| #5006 | Scroll performance with high velocity                         | scroll, rendering | #5279 (draft) | --         | `c3770a9a` | freeze/unfreeze Layout API; `MutationObserver` characterData+subtree; anchor validation; lazy anchor reset. (Combined commit with #4693.)                    |
+| #5290 | virtualize directive: items don't render with positioned host | rendering         | #5279 (draft) | `d407b277` | `fb1b2631` | Defer `connected()` to a microtask when host isn't yet in the document, so `getComputedStyle()` and the ancestor walk return correct values.                 |
 
-| #     | Title                                                       | Subsystem         | Status              | Branch / PR | Notes                                                                                                                                                                                                              |
-| ----- | ----------------------------------------------------------- | ----------------- | ------------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| #4982 | message can be null in isResizeObserverLoopErrorMessage     | infra             | fixed-pending-merge | PR #5279    | Added `typeof message === 'string'` guard                                                                                                                                                                          |
-| #5285 | Flow layout off-by-one errors in margin collapsing          | layout            | fixed-pending-merge | PR #5279    | Three `getMarginSize()` index lookups used wrong index. Only manifests with non-uniform margins.                                                                                                                   |
-| #5286 | scrollToIndex scrolls to margin edge instead of border edge | layout, scroll    | fixed-pending-merge | PR #5279    | Override `_calculateScrollIntoViewPosition` in Flow to use visual position. Related trailing-margin scroll-size issue noted in comments on #5286.                                                                  |
-| #5293 | ScrollerShim getters substitute legitimate 0                | scroll            | fixed-pending-merge | PR #5279    | `scrollTop`/`scrollLeft` used `\|\|` to fall back to `window.scrollY`/`scrollX`, treating a real zero as falsy. Switched to `??`. Surfaced via a downstream environment that doesn't implement `window.scrollX/Y`. |
-| #5008 | Use bigint for min-height/transform with huge lists         | layout            | needs-investigation | --          | Precision loss at 500K+ items. Edge case. Has repro.                                                                                                                                                               |
-| #5042 | Remove ResizeObserver polyfill                              | infra             | needs-investigation | --          | Dead polyfill, browser support universal since 2020. Volunteer available.                                                                                                                                          |
-| #4540 | Support sticky items                                        | layout, rendering | needs-investigation | --          | Fundamentally incompatible with current absolute positioning. Architectural.                                                                                                                                       |
+#### P3
+
+| #     | Title                                                       | Subsystem      | PR            | Test       | Fix        | Notes                                                                                                                                                 |
+| ----- | ----------------------------------------------------------- | -------------- | ------------- | ---------- | ---------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #4982 | message can be null in isResizeObserverLoopErrorMessage     | infra          | #5279 (draft) | `3b2236eb` | `adfc44e6` | Added `typeof message === 'string'` guard.                                                                                                            |
+| #5285 | Flow layout off-by-one errors in margin collapsing          | layout         | #5279 (draft) | `e120afbf` | `63c5e549` | Three `getMarginSize()` index lookups used wrong index. Only manifests with non-uniform margins.                                                      |
+| #5286 | scrollToIndex scrolls to margin edge instead of border edge | layout, scroll | #5279 (draft) | `426be50b` | `184ce375` | Override `_calculateScrollIntoViewPosition` in Flow to use visual (border-edge) position.                                                             |
+| #5293 | ScrollerShim getters substitute legitimate 0                | scroll         | #5279 (draft) | --         | `e7b08356` | `scrollTop`/`scrollLeft` switched from `\|\|` to `??` so a real zero isn't replaced by `window.scrollY/X`. Single-commit fix without regression test. |
+
+### Feature Requests
+
+#### P2
+
+| #     | Title                                                   | Subsystem         | PR            | Notes                                                                                                                                                                        |
+| ----- | ------------------------------------------------------- | ----------------- | ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #4839 | Child placement via absolute positioning                | layout, rendering | #5280 (draft) | Alternative to CSS transform; addresses Mobile Safari memory leak (WebKit bug #277392).                                                                                      |
+| #5295 | Managed viewport mode for custom/synchronized scrollers | scroll, api       | #5292 (draft) | New `'managed'` scroller mode driven by an externally-set `viewport` property. Bundled with a `ScrollSource` strategy refactor and a public `Virtualizer.js` subpath export. |
+
+### Documentation
+
+| #     | Title                                              | PR            | Notes                                                                |
+| ----- | -------------------------------------------------- | ------------- | -------------------------------------------------------------------- |
+| #4505 | Document grid layout                               | #5249 (draft) | Grid layout docs added to README as a bonus on the css-direction PR. |
+| #4377 | renderItem should accept non-TemplateResult values | #4691         | Type relaxation plus README/JSDoc updates by Garbee.                 |
+| #5294 | Document keyFunction property in README            | #4692         | Tracking issue created retroactively (originally lit/lit.dev#1322).  |
+
+### Other
+
+(none)
 
 ---
 
-## Feature Requests
+## Unaddressed Issues
 
-| #     | Title                                    | Priority | Status                 | Notes                                                    |
-| ----- | ---------------------------------------- | -------- | ---------------------- | -------------------------------------------------------- |
-| #4839 | Child placement via absolute positioning | P2       | in-progress (PR #5280) | Addresses Mobile Safari memory leak (WebKit bug #277392) |
-| #4945 | Focused item stays in DOM                | P1       | needs-investigation    | Accessibility requirement; React Aria does this          |
-| #4540 | Sticky items                             | P3       | needs-investigation    | Requires architectural change to positioning model       |
+### Bugs
 
----
+#### P1
 
-## Architectural
+| #     | Title                                       | Subsystem | Status                | Notes                                                                                                                             |
+| ----- | ------------------------------------------- | --------- | --------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| #4767 | scrollIntoView to far element renders blank | scroll    | needs reinvestigation | Earlier fix attempt exists on `gnorton/fix-4767` (commit `32d8dd4a`) but its correctness is in doubt; reinvestigate from scratch. |
+| #4833 | renderItem called with undefined            | rendering | needs repro           | Occurs when items change to subset without scrolling. Author promised repro steps but hasn't provided them. Related to PR #4846.  |
+
+#### P3
+
+| #     | Title                                               | Subsystem | Status              | Notes                                                |
+| ----- | --------------------------------------------------- | --------- | ------------------- | ---------------------------------------------------- |
+| #5008 | Use bigint for min-height/transform with huge lists | layout    | needs investigation | Precision loss at 500K+ items. Edge case. Has repro. |
+
+### Feature Requests
+
+#### P1
+
+| #     | Title                              | Subsystem | Status              | Notes                                                                                                                                                                       |
+| ----- | ---------------------------------- | --------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #4945 | Keep focused item in DOM on scroll | rendering | needs investigation | Accessibility: focus jumps to body when the focused item is recycled, breaking keyboard navigation. Framed as a limitation rather than a bug — requires architectural work. |
+
+#### P3
+
+| #     | Title                                   | Subsystem         | Status              | Notes                                                                                                                                                                                                      |
+| ----- | --------------------------------------- | ----------------- | ------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| #4540 | Support sticky items                    | layout, rendering | needs investigation | Fundamentally incompatible with current absolute positioning. Architectural.                                                                                                                               |
+| #5281 | Build support for dev-only code blocks  | infra             | needs investigation | Proposes build-step stripping of `__DEV__`-guarded code so diagnostic logging can live permanently in source without production cost. Foundation for #5282.                                                |
+| #5282 | Permanent, toggleable lifecycle logging | infra, rendering  | needs investigation | Makes the lifecycle logging in the `add-virtualizer-logging` skill permanent and runtime-toggleable instead of hand-added and hand-removed per debug session. Depends on #5281 (no-cost production build). |
+
+### Documentation
+
+(none)
+
+### Other
 
 | #     | Title                         | Status              | Notes                                                                                                                                                                                                                                                                                                                                                                             |
 | ----- | ----------------------------- | ------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| #5291 | Reconsider viewport semantics | needs-investigation | Placeholder for splitting `_updateView`'s single `viewportSize` into (a) available layout space — host's configured/measured size, both axes, never affected by ancestor clipping — and (b) currently visible range — clipping along the virtualization axis only. Subsumes the cross-axis grid sizing bug and the unverified `scroller: true` off-screen behavior. Drives #5290. |
-
----
-
-## Documentation
-
-| #        | Title                                  | Status              | Notes                                       |
-| -------- | -------------------------------------- | ------------------- | ------------------------------------------- |
-| #4505    | Document grid layout                   | needs-investigation | Good First Issue. Playground demo exists.   |
-| PR #4692 | Add keyFunction docs and JSDoc updates | in-progress         | Awaiting review from kevinpschaaf           |
-| PR #4691 | Improve RenderItemFunction type + docs | in-progress         | Relaxes type to accept any stringable value |
-
----
-
-## Fixed Pending Merge
-
-All on PR #5279 (`virtualizer/css-direction--bug-fixes`):
-
-| #     | Title                                            | Test Commit | Fix Commit |
-| ----- | ------------------------------------------------ | ----------- | ---------- |
-| #4789 | Metrics cache not reset on items change          | `d52ca3f4`  | `624d6070` |
-| #4827 | averageMarginSize off                            | `11fbf13b`  | `57480fd1` |
-| #4670 | Layout incorrect after replacing items           | `56e2b918`  | `8edbda2d` |
-| #4922 | No content renders (display:contents)            | `d4d9441f`  | `39996580` |
-| #4982 | null message in isResizeObserverLoopErrorMessage | `33c6c605`  | `fd3a610e` |
-| #4693 | Anomalous scrolling on cross-axis resize         | --          | `b4883d2f` |
-| #5006 | Scroll performance with high velocity            | --          | `b4883d2f` |
-| #5285 | Flow layout margin off-by-one                    | `be609bf8`  | `d9fdf693` |
-| #5286 | scrollToIndex margin offset                      | `66cfdd9c`  | `e54dc14a` |
-| #5290 | virtualize directive deferred connect            | --          | --         |
-| #5293 | ScrollerShim getters substitute legitimate 0     | --          | --         |
-
-Separate branch:
-
-| #     | Title                        | Branch             | Fix Commit |
-| ----- | ---------------------------- | ------------------ | ---------- |
-| #4767 | scrollIntoView renders blank | `gnorton/fix-4767` | `32d8dd4a` |
+| #5291 | Reconsider viewport semantics | needs investigation | Placeholder for splitting `_updateView`'s single `viewportSize` into (a) available layout space — host's configured/measured size, both axes, never affected by ancestor clipping — and (b) currently visible range — clipping along the virtualization axis only. Subsumes the cross-axis grid sizing bug and the unverified `scroller: true` off-screen behavior. Drives #5290. |
 
 ---
 
 ## Related Issue Clusters
 
 - **Metrics cache**: #4789, #4827, #4670 -- all involve stale or incorrect metrics cache behavior. All fixed in PR #5279.
-- **Scroll positioning**: #4767, #4827 -- graynorton noted fix for #4767 would also address #4827's root cause.
+- **Scroll positioning**: #4767, #4827 -- graynorton previously noted that the prior #4767 fix attempt would also address #4827's root cause. Since the #4767 fix is being reinvestigated, it's worth checking whether the fix landed for #4827 in PR #5279 is the correct one or just papers over a deeper issue.
 - **Item identity/replacement**: #4670, #4833 -- both involve items array changes producing incorrect behavior.
-- **ResizeObserver**: #4982, #5042 -- both relate to ResizeObserver infrastructure.
-- **Documentation**: #4505, PR #4692, PR #4691 -- all docs improvements by different authors.
-- **Container resize / fast scroll**: #4693, #5006 -- both addressed by cross-axis cache clearing, scroll freeze during large jumps, and Layout freeze/unfreeze API.
+- **Documentation**: PR #4691 (#4377), PR #4692 (#5294) -- both docs improvements by Garbee awaiting review. #4505 grid docs already addressed in PR #5249.
+- **Container resize / fast scroll**: #4693, #5006 -- both addressed by cross-axis cache clearing, scroll freeze during large jumps, and Layout freeze/unfreeze API. Combined into a single fix commit.
 - **Flow layout margin handling**: #5285, #5286 -- both surfaced by the same non-uniform-margin playground repro. #5285 is off-by-one in the collapsed-margin index lookups; #5286 is the scroll-to using margin-box instead of border-box.
 - **Clipping ancestor detection**: #4922, #5290 -- both surface as wrong `_clippingAncestors` lists, but via different mechanisms. #4922: `display: contents` ancestors get classified as clipping (their zero-rect collapses the viewport). #5290: the directive runs `connected()` while the host is in an unattached fragment, so the ancestor walk and computed-style reads return wrong values. Both fixed in PR #5279.
+- **Permanent diagnostic logging**: #5281, #5282 -- #5281 is the foundation (build support for stripping `__DEV__`-guarded code blocks in production); #5282 builds on it to provide permanent, runtime-toggleable lifecycle logging. Both connect to the existing `add-virtualizer-logging` skill, which currently documents ephemeral hand-added debug logging — the issues propose moving that pattern into the source tree permanently with a build-time gate.
 
 ---
 
 ## Open PRs
 
-| PR    | Title                                      | Branch                                                 | Issues                                                                      | Status                |
-| ----- | ------------------------------------------ | ------------------------------------------------------ | --------------------------------------------------------------------------- | --------------------- |
-| #5280 | Child positioning method API               | `virtualizer/css-direction--bug-fixes--implement-4839` | #4839                                                                       | Draft                 |
-| #5279 | Bug fixes                                  | `virtualizer/css-direction--bug-fixes`                 | #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290, #5293 | Open                  |
-| #5249 | CSS-based direction detection and axis API | `virtualizer/css-direction`                            | --                                                                          | Open                  |
-| #5232 | Guard custom element registration          | `fixes/5212`                                           | #5212                                                                       | Open                  |
-| #4846 | Virtualizer fixes (external)               | `virtualizer-fixes`                                    | --                                                                          | Draft                 |
-| #4692 | keyFunction docs                           | --                                                     | lit.dev#1322                                                                | Open, awaiting review |
-| #4691 | Type and docs improvement                  | --                                                     | #4377                                                                       | Open, awaiting review |
+| PR    | Title                                         | Branch                                                   | Closes                                                                      | Status                |
+| ----- | --------------------------------------------- | -------------------------------------------------------- | --------------------------------------------------------------------------- | --------------------- |
+| #5292 | Managed viewport mode + ScrollSource refactor | `virtualizer/css-direction--bug-fixes--managed-viewport` | #5295                                                                       | Draft                 |
+| #5280 | Child positioning method API                  | `virtualizer/css-direction--bug-fixes--implement-4839`   | #4839                                                                       | Draft                 |
+| #5279 | Bug fixes                                     | `virtualizer/css-direction--bug-fixes`                   | #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290, #5293 | Draft                 |
+| #5249 | CSS-based direction detection and axis API    | `virtualizer/css-direction`                              | #4505                                                                       | Draft                 |
+| #5232 | Guard custom element registration             | `fixes/5212`                                             | #5212                                                                       | Draft                 |
+| #4846 | Virtualizer fixes (external)                  | `virtualizer-fixes`                                      | --                                                                          | Draft                 |
+| #4692 | keyFunction docs                              | `virtualizer/docs`                                       | #5294                                                                       | Open, awaiting review |
+| #4691 | Type and docs improvement                     | `virtualizer/types`                                      | #4377                                                                       | Open, awaiting review |
 
 ---
 
@@ -137,15 +145,19 @@ Separate branch:
 
 **Bug fix target branch**: `virtualizer/css-direction--bug-fixes` (PR #5279)
 
-The active development branches form a stack:
+The active development branches form a tree rather than a linear stack. The chain descends linearly from `main` through #5249 to #5279; at #5279, two sibling branches (#5280 and #5292) branch off in parallel:
 
-1. `virtualizer/css-direction` (PR #5249) -- CSS direction detection
-2. `virtualizer/css-direction--bug-fixes` (PR #5279) -- bug fixes for #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290, #5293
-3. `virtualizer/css-direction--bug-fixes--implement-4839` (PR #5280) -- #4839 positioning API
+1. `virtualizer/css-direction` (PR #5249) -- CSS direction detection; base: `main`
+2. `virtualizer/css-direction--bug-fixes` (PR #5279) -- bug fixes for #4789, #4827, #4670, #4922, #4982, #4693, #5006, #5285, #5286, #5290, #5293; base: `virtualizer/css-direction`
+3. Sibling branches stacked on top of #5279 (both have base `virtualizer/css-direction--bug-fixes`, neither depends on the other):
+   - `virtualizer/css-direction--bug-fixes--implement-4839` (PR #5280) -- #4839 positioning API
+   - `virtualizer/css-direction--bug-fixes--managed-viewport` (PR #5292) -- managed viewport mode + ScrollSource refactor
+
+All four PRs in the chain (#5249, #5279, #5280, #5292) are currently drafts, as is #5232. PRs #4691 and #4692 are not part of the tree, target `main` directly, and are ready for review.
 
 ---
 
 ## Known Issue Numbers
 
 For monitoring (no GitHub label exists):
-4505, 4540, 4670, 4693, 4767, 4789, 4827, 4833, 4839, 4922, 4945, 4982, 5006, 5008, 5042, 5212, 5285, 5286, 5290, 5291, 5293
+4377, 4505, 4540, 4670, 4693, 4767, 4789, 4827, 4833, 4839, 4922, 4945, 4982, 5006, 5008, 5212, 5281, 5282, 5285, 5286, 5290, 5291, 5293, 5294, 5295
