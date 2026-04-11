@@ -318,6 +318,60 @@ describe('flow layout', () => {
       const itemRect = first(items).getBoundingClientRect();
       expect(Math.abs(itemRect.top - scrollerRect.top)).to.be.lessThan(5);
     });
+
+    it('renders items after scrollIntoView to a far index', async () => {
+      // Regression test for https://github.com/lit/lit/issues/4767
+      // With a large item count, the offsetWithinScroller bug caused
+      // cumulative position-estimation errors to snowball across reflow
+      // iterations, eventually clamping scrollTop to the bottom of the
+      // scroll range and leaving the virtualizer with zero items rendered.
+      const container = await fixture(html`
+        <div>
+          <style>
+            .scroller {
+              height: 200px;
+              overflow: auto;
+            }
+            .spacer {
+              height: 50px;
+            }
+            .item {
+              height: 50px;
+              margin: 0;
+              padding: 0;
+            }
+          </style>
+          <div class="scroller">
+            <div class="spacer"></div>
+            <lit-virtualizer
+              .items=${array(10000)}
+              .renderItem=${(item: number) =>
+                html`<div class="item">${item}</div>`}
+            ></lit-virtualizer>
+          </div>
+        </div>
+      `);
+      const virtualizer = (await until(() =>
+        container.querySelector('lit-virtualizer')
+      )) as LitVirtualizer;
+      const scroller = container.querySelector('.scroller') as HTMLElement;
+      await virtualizer.layoutComplete;
+
+      virtualizer.element(8000)!.scrollIntoView({block: 'start'});
+      await until(() => {
+        const items = Array.from(
+          virtualizer.renderRoot.querySelectorAll('.item')
+        ) as HTMLElement[];
+        return items.find((e) => e.textContent?.trim() === '8000');
+      });
+
+      // The list must not be blank and item 8000 must be in the viewport.
+      const items = Array.from(
+        virtualizer.renderRoot.querySelectorAll('.item')
+      ).filter((e) => isInViewport(e, scroller)) as HTMLElement[];
+      expect(items.length).to.be.greaterThan(0);
+      expect(first(items).textContent?.trim()).to.equal('8000');
+    });
   });
 
   describe('item reorder layout correctness', () => {
