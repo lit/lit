@@ -64,7 +64,9 @@ class Importer {
   }
 
   async #cloneGist() {
-    await exec(`git clone git@gist.github.com:${this.#gistId} ${this.#path}`);
+    await exec(
+      `git clone https://gist.github.com/${this.#gistId}.git ${this.#path}`
+    );
   }
 
   async #removeGitMetadata() {
