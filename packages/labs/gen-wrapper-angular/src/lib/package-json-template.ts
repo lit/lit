@@ -26,10 +26,10 @@ export const packageJsonTemplate = (
       // TODO(kschaaf): Version in lock-step with source?
       version: packageJson.version,
       dependencies: {
+        [packageJson.name as string]: '^' + packageJson.version,
         tslib: '^2.8.1',
       },
       peerDependencies: {
-        [packageJson.name as string]: '^' + packageJson.version,
         '@angular/common': '^20.0.1',
         '@angular/core': '^20.0.1',
       },
