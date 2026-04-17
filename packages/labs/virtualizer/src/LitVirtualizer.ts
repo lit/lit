@@ -38,6 +38,27 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   scroller = false;
 
   /**
+   * Opt in to recycled rendering mode. See
+   * `VirtualizeDirectiveConfig.recycle` for the full contract. Short
+   * version: enables iron-list-style element pooling, where row
+   * components are reused across items instead of instantiated fresh
+   * on every scroll. Dramatically reduces per-scroll work for lists
+   * with expensive per-row components, at the cost of several
+   * documented caller-side tradeoffs (focus, lifecycle, animations).
+   */
+  @property({reflect: true, type: Boolean})
+  recycle = false;
+
+  /**
+   * Controls how much content beyond the viewport to keep rendered.
+   * Normalized 0–100; default 50 (half a viewport on each side, 2× total
+   * coverage). See `VirtualizeDirectiveConfig.overscan` for the full
+   * contract including the formula and migration guidance.
+   */
+  @property({type: Number})
+  overscan?: number;
+
+  /**
    * Controls which CSS logical axis the virtualizer scrolls along.
    * - `'block'` (default): virtualizes along the block axis.
    * - `'inline'`: virtualizes along the inline axis (e.g., for a
@@ -59,13 +80,25 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   }
 
   render() {
-    const {items, renderItem, keyFunction, layout, scroller, axis, pin} = this;
+    const {
+      items,
+      renderItem,
+      keyFunction,
+      layout,
+      scroller,
+      recycle,
+      overscan,
+      axis,
+      pin,
+    } = this;
     return html`${virtualize({
       items,
       renderItem,
       keyFunction,
       layout,
       scroller,
+      recycle,
+      overscan,
       axis,
       pin,
     })}`;

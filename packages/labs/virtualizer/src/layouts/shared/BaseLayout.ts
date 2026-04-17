@@ -118,12 +118,41 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   protected _virtualizerSize = 1;
 
   /**
-   * Number of pixels beyond the viewport to still include
-   * in the active range of items.
+   * Normalized overscan value (0–100). Controls how much content beyond the
+   * viewport to keep rendered, as a fraction of the current viewport size:
+   * 0 = render only visible items; 100 = render one extra viewport on each side.
+   * Default: 50 (half a viewport on each side, 2× total coverage).
+   *
+   * The internal mapping (`_overscanPx`) may be refined in future versions without
+   * changing the 0–100 scale — callers should use normalized values, not pixels.
    */
-  // TODO (graynorton): Probably want to make this something we calculate based
-  // on viewport size, item size, other factors, possibly still with a dial of some kind
-  protected _overhang = 1000;
+  protected _overscan = 50;
+
+  /**
+   * Pixel buffer size, updated whenever `_overscan` or `_viewDim1` changes.
+   * Initialized to the floor value for the default overscan (50) and
+   * minimum viewport reference (200px): Math.round(50/100 * 200) = 100.
+   * Subclass implementations consume this via `_getActiveItems`.
+   */
+  protected _overscanPx = 100;
+
+  protected _updateOverscanPx() {
+    this._overscanPx = Math.round(
+      (this._overscan / 100) * Math.max(this._viewDim1, 200)
+    );
+  }
+
+  get overscan(): number {
+    return this._overscan;
+  }
+
+  set overscan(value: number) {
+    if (value !== this._overscan) {
+      this._overscan = value;
+      this._updateOverscanPx();
+      this._scheduleReflow();
+    }
+  }
 
   /**
    * Call this to deliver messages (e.g. stateChanged, unpinned) to host
@@ -178,6 +207,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   set viewportSize(dims) {
     const {_viewDim1, _viewDim2} = this;
     Object.assign(this._viewportSize, dims);
+    this._updateOverscanPx();
     if (_viewDim2 !== this._viewDim2) {
       this._scheduleLayoutUpdate();
     } else if (_viewDim1 !== this._viewDim1) {
@@ -460,10 +490,10 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
     if ((this._viewDim1 === 0 && this._num > 0) || this._pin !== null) {
       this._scheduleReflow();
     } else {
-      const min = Math.max(0, this._blockScrollPosition - this._overhang);
+      const min = Math.max(0, this._blockScrollPosition - this._overscanPx);
       const max = Math.min(
         this._virtualizerSize,
-        this._blockScrollPosition + this._viewDim1 + this._overhang
+        this._blockScrollPosition + this._viewDim1 + this._overscanPx
       );
       if (this._physicalMin > min || this._physicalMax < max) {
         this._scheduleReflow();

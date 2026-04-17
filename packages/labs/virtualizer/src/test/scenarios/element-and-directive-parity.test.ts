@@ -105,7 +105,12 @@ describe('lit-virtualizer and virtualize directive', () => {
    */
   it('both render changes based on non-item data changes', async () => {
     const items = array(100);
-    const selected = new Set([2, 5]);
+    // Use indices 0 and 2: both fall within the initial render range regardless
+    // of how much of the virtualizer is visible in the browser window (the
+    // Karma runner may show only a portion of the 500px fixture). With overscan
+    // 50 and a small visible intersection the initial range covers items 0-3, so
+    // indices 0 and 2 are always pre-rendered.
+    const selected = new Set([0, 2]);
 
     const example = await fixture(html`
       <div>
@@ -157,11 +162,11 @@ describe('lit-virtualizer and virtualize directive', () => {
     });
 
     await pass(() => {
+      expect(ulv.shadowRoot?.textContent).to.include('[0 selected]');
+      expect(uvd.shadowRoot?.textContent).to.include('[0 selected]');
+
       expect(ulv.shadowRoot?.textContent).to.include('[2 selected]');
       expect(uvd.shadowRoot?.textContent).to.include('[2 selected]');
-
-      expect(ulv.shadowRoot?.textContent).to.include('[5 selected]');
-      expect(uvd.shadowRoot?.textContent).to.include('[5 selected]');
     });
 
     // Changing selection doesn't trigger visibility changed or range changed events.
@@ -175,11 +180,11 @@ describe('lit-virtualizer and virtualize directive', () => {
       expect(ulv.shadowRoot?.textContent).to.include('[3 selected]');
       expect(uvd.shadowRoot?.textContent).to.include('[3 selected]');
 
+      expect(ulv.shadowRoot?.textContent).not.to.include('[0 selected]');
+      expect(uvd.shadowRoot?.textContent).not.to.include('[0 selected]');
+
       expect(ulv.shadowRoot?.textContent).not.to.include('[2 selected]');
       expect(uvd.shadowRoot?.textContent).not.to.include('[2 selected]');
-
-      expect(ulv.shadowRoot?.textContent).not.to.include('[5 selected]');
-      expect(uvd.shadowRoot?.textContent).not.to.include('[5 selected]');
     });
 
     // Clear event arrays right before the operation under test, giving the
