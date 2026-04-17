@@ -16,7 +16,7 @@ class ImmediateSizing extends LitElement {
   static styles = css`
     .list {
       width: 100px;
-      height: 100;
+      height: 100px;
     }
     .item {
       height: 50px;
