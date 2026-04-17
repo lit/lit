@@ -507,6 +507,56 @@ export class MyItems extends LitElement {
 }
 ```
 
+### Recycled mode (opt-in)
+
+By default, virtualizer renders each visible item by creating a fresh copy of its DOM on every range change. For simple rows this is cheap, but for lists whose rows contain expensive custom elements — data tables with input fields, icon buttons, dropdowns — the per-scroll cost of instantiating fresh row components can add up to noticeable jank during fast scrolling.
+
+**Recycled mode** is an opt-in rendering strategy that keeps a fixed pool of row elements and reuses them across items as the visible range shifts. On a typical scroll step, only one pool slot cycles onto a new item — every other row keeps its current assignment, and its DOM is only moved (via CSS `transform`), not rebuilt. The result is O(1) rendering work per scroll step instead of O(visible range).
+
+#### Enabling recycled mode
+
+On the `<lit-virtualizer>` element, set the `recycle` attribute or property:
+
+```html
+<lit-virtualizer
+  recycle
+  .items="${items}"
+  .renderItem="${renderItem}"
+></lit-virtualizer>
+```
+
+With the `virtualize` directive, set `recycle: true` in the config object:
+
+```js
+virtualize({
+  recycle: true,
+  items,
+  renderItem: (item) => html`<my-row .data=${item}></my-row>`,
+});
+```
+
+#### How it changes the contract
+
+Recycled mode trades per-scroll allocation for a stricter rendering contract. Callers opting in need to accept the following:
+
+- **`renderItem` must express per-row state through bindings.** Because row elements are reused across items, any per-row state that's initialized in the row component's constructor, `connectedCallback`, or `firstUpdated` will persist across reuses and will NOT reset for new items. Row state should live in reactive properties bound from `renderItem`: `html\`<my-row .data=${item}></my-row>\``, not `html\`<my-row></my-row>\`` with per-instance construction logic.
+
+- **Focus may appear to jump between items.** When a slot is recycled, any `activeElement` inside it moves along with the DOM subtree. A user who had focus in item 5's input field will find that same cursor now in item 12's field once item 5 scrolls out of the pool. Apps with focusable row content are responsible for clearing or moving focus on recycle if that behavior is undesirable.
+
+- **CSS transitions and running animations survive recycling.** Timed visual effects attached to a row element are not reset when the row is reassigned to a different item. For lists with animated rows, consider disabling recycled mode or managing animation state explicitly.
+
+- **Per-row lifecycle hooks fire once per pool slot, not once per item.** `connectedCallback`, `disconnectedCallback`, and `firstUpdated` on a row component only fire when a pool slot is created or destroyed. They do NOT fire as items pass through a given slot. Row logic that needs to respond to item changes should subscribe via reactive property updates, not lifecycle hooks.
+
+- **A custom `keyFunction` is ignored when `recycle: true` is set.** The pool uses slot identity, not item keys, for DOM reuse decisions. A one-time console warning is emitted the first time both `recycle` and `keyFunction` are set.
+
+- **Homogeneous rows benefit most.** Lists where every item renders the same template structure (differing only in bound values) get the full reuse benefit. Lists whose items render _different_ templates lose the reuse benefit at boundaries between types — lit-html will tear down a pool slot's content and rebuild it when the template type changes — though everything still renders correctly.
+
+If these constraints don't match your rendering model, leave `recycle` unset; the default (non-recycled) path is unchanged.
+
+#### Pool size
+
+In recycled mode, the pool is sized to cover the visible range plus the `overscan` buffer. The default `overscan: 50` allocates a pool equivalent to roughly 2× the viewport height. To tune the tradeoff between smooth scrolling at buffer edges and total pool memory, adjust the `overscan` property. See the [`overscan` API reference entry](#overscan-property) for details.
+
 ## ResizeObserver dependency
 
 Virtualizer depends on the standard [`ResizeObserver`]() API, which is supported in all modern browsers. In case your browser support matrix includes older browsers that don't implement `ResizeObserver`, the Virtualizer package includes a `ResizeObserver` polyfill that is known to be compatible with Virtualizer. This is a forked version of Denis Rul's `resize-observer-polyfill` package, which we modified to extend its observations into shadow roots.
@@ -676,6 +726,32 @@ Type: `{index: number, block?: 'start' | 'center' | 'end' | 'nearest'}`
 Optional. Declaratively pin the viewport to a specific item. The viewport remains pinned until the user scrolls, at which point the virtualizer fires an `unpinned` event and the pin is released. Set to `undefined` (or omit) to leave the viewport in its current scroll position. See [Framing a child element within the viewport](#framing-a-child-element-within-the-viewport) for details and examples.
 
 When using the `virtualize` directive, set `pin` in the directive config instead of as an attribute/property.
+
+### `recycle` attribute / property
+
+Type: `boolean`
+
+Default: `false`
+
+Optional. Enables [recycled mode](#recycled-mode-opt-in), in which a fixed pool of row elements is reused across items as the visible range shifts, rather than fresh DOM being rendered for each item on every range change. Significantly reduces per-scroll cost for lists with expensive per-row components. Comes with a stricter rendering contract around focus, per-row state, and lifecycle hooks — see the recycled-mode section above before enabling.
+
+### `overscan` property
+
+Type: `number`
+
+Default: `50`
+
+Optional. Controls how much content beyond the currently visible range to keep rendered as a buffer against scroll. The value is a normalized scale from 0 to 100:
+
+- **0**: Render only the items that are currently intersecting the viewport. No extra buffer. Lowest memory and DOM cost, but visible items may appear with a brief delay on fast scrolls.
+- **50** (default): Render approximately half a viewport of extra content on each side of the visible range (2× total coverage). This matches the default behavior of iron-list's `_maxPages: 2` setting and is a reasonable balance between scroll smoothness and memory overhead.
+- **100**: Render approximately one full extra viewport on each side (3× total coverage). Maximizes scroll smoothness at the cost of more DOM nodes and layout work.
+
+The exact internal mapping from this normalized value to a pixel buffer may be refined in future versions — the 0–100 scale is the stable API surface.
+
+**Migration note:** Prior versions of lit-virtualizer used a fixed 1000px overhang buffer (the old internal `_overhang` constant). The new default of `50` gives approximately 400–800px of buffer depending on viewport size, which is less than the old fixed value at smaller viewports. If you relied on the old larger buffer, set `overscan: 100` to get a similar (or larger) effect for most viewport sizes.
+
+**In recycled mode**, `overscan` also controls the pool size: the pool is sized to hold enough elements to cover the visible range plus the overscan buffer. Larger `overscan` values allocate more pool slots, reducing reassignments at the edges of the buffer during fast scrolls.
 
 ### `scrollToIndex` method
 

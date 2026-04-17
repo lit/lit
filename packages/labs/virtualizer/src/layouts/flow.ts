@@ -242,7 +242,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   }
 
   _getAverageSize(): number {
-    return this._metricsCache.averageChildSize || this._itemSize.blockSize;
+    const avg = this._metricsCache.averageChildSize;
+    return avg || this._itemSize.blockSize;
   }
 
   _estimatePosition(idx: number): number {
@@ -392,8 +393,8 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
     // Determine the lower and upper bounds of the region to be
     // rendered, relative to the viewport
-    lower = this._blockScrollPosition - this._overhang;
-    upper = this._blockScrollPosition + this._viewDim1 + this._overhang;
+    lower = this._blockScrollPosition - this._overscanPx;
+    upper = this._blockScrollPosition + this._viewDim1 + this._overscanPx;
 
     if (upper < 0 || lower > this._virtualizerSize) {
       this._clearItems();

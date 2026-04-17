@@ -140,7 +140,13 @@ class VirtualizerInspector {
     ) as HTMLElement[];
   }
   get childElements() {
-    return Array.from(this.host.querySelectorAll(':not([virtualizer-sizer])'));
+    // Direct children only, filtering out the sizer. In the default
+    // (non-recycled) render path children are row elements directly;
+    // in recycled mode they are per-slot wrapper containers. Either
+    // way there is exactly one direct child per visible item.
+    return Array.from(this.host.children).filter(
+      (el) => !el.hasAttribute('virtualizer-sizer')
+    );
   }
 }
 
@@ -163,6 +169,7 @@ interface RenderVirtualizerOptions<T = unknown> {
   keyFunction?: KeyFn<T>;
   layout?: VirtualizerFixtureLayoutOptions;
   axis?: virtualizerAxis;
+  recycle?: boolean;
 }
 type RenderVirtualizer<T = unknown> = (
   options: RenderVirtualizerOptions<T>
@@ -217,6 +224,7 @@ const defaultRenderVirtualizeDirective: RenderVirtualizer<DefaultItem> = ({
   keyFunction,
   layout,
   axis,
+  recycle,
 }) => html`
   <div class="virtualizerHost" ?scroller=${scroller}>
     ${virtualize({
@@ -226,6 +234,7 @@ const defaultRenderVirtualizeDirective: RenderVirtualizer<DefaultItem> = ({
       keyFunction,
       layout,
       axis,
+      recycle,
     })}
   </div>
 `;
@@ -237,7 +246,9 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
   keyFunction,
   layout,
   axis,
+  recycle,
 }) => {
+  const recycleVal = recycle === true;
   return keyFunction
     ? layout
       ? html`
@@ -248,6 +259,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             .keyFunction=${keyFunction as KeyFn<unknown>}
             .layout=${layout}
             .axis=${axis ?? 'block'}
+            .recycle=${recycleVal}
           ></lit-virtualizer>
         `
       : html`
@@ -257,6 +269,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             .renderItem=${renderItem as RenderItem<unknown>}
             .keyFunction=${keyFunction as KeyFn<unknown>}
             .axis=${axis ?? 'block'}
+            .recycle=${recycleVal}
           ></lit-virtualizer>
         `
     : layout
@@ -267,6 +280,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             .renderItem=${renderItem}
             .layout=${layout}
             .axis=${axis ?? 'block'}
+            .recycle=${recycleVal}
           ></lit-virtualizer>
         `
       : html`
@@ -275,6 +289,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             .items=${items}
             .renderItem=${renderItem}
             .axis=${axis ?? 'block'}
+            .recycle=${recycleVal}
           ></lit-virtualizer>
         `;
 };
@@ -294,6 +309,7 @@ export interface VirtualizerFixtureOptions<T = unknown> {
   scrollerSelector?: string;
   layout?: VirtualizerFixtureLayoutOptions;
   axis?: virtualizerAxis;
+  recycle?: boolean;
 }
 
 export async function virtualizerFixture<T = unknown>(
@@ -319,6 +335,7 @@ export async function virtualizerFixture<T = unknown>(
   const keyFunction = options.keyFunction;
   const layout = options.layout;
   const axis = options.axis;
+  const recycle = options.recycle;
   const virtualizerMarkup = renderVirtualizer({
     items,
     renderItem,
@@ -326,6 +343,7 @@ export async function virtualizerFixture<T = unknown>(
     keyFunction,
     layout,
     axis,
+    recycle,
   });
   const container = await fixture(html`
     <section>${fixtureStyles} ${itemStyles} ${virtualizerMarkup}</section>

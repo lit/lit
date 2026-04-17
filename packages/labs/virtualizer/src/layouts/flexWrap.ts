@@ -201,10 +201,10 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
         this._virtualizerSize - this._viewDim1
       )
     );
-    const min = Math.max(0, scrollPos - this._overhang);
+    const min = Math.max(0, scrollPos - this._overscanPx);
     const max = Math.min(
       this._virtualizerSize,
-      scrollPos + this._viewDim1 + this._overhang
+      scrollPos + this._viewDim1 + this._overscanPx
     );
     const mid = (min + max) / 2;
     const estMidColumn = Math.round(

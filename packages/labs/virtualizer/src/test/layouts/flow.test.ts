@@ -112,14 +112,15 @@ describe('flow layout', () => {
 
       virtualizer.element(5)!.scrollIntoView({block: 'start'});
 
-      await until(() =>
-        getVisibleItems(virtualizer).find((e) => e.textContent === '5')
-      );
-
-      const visible = getVisibleItems(virtualizer);
-      expect(visible.length).to.equal(4);
-      expect(first(visible).textContent).to.equal('5');
-      expect(last(visible).textContent).to.equal('8');
+      // Item 5 may already be rendered (within the initial overscan range),
+      // so it becomes visible before items 6-8 are rendered. Use pass() to
+      // retry until the post-scroll reflow completes and all 4 items appear.
+      await pass(() => {
+        const visible = getVisibleItems(virtualizer);
+        expect(visible.length).to.equal(4);
+        expect(first(visible).textContent).to.equal('5');
+        expect(last(visible).textContent).to.equal('8');
+      });
     });
 
     it('shows leading items when scrolling to last item in start position', async () => {
@@ -466,14 +467,15 @@ describe('flow layout', () => {
 
       virtualizer.scrollToIndex(5, 'start');
 
-      await until(() =>
-        getVisibleItems(virtualizer).find((e) => e.textContent === '5')
-      );
-
-      const visible = getVisibleItems(virtualizer);
-      expect(visible.length).to.equal(4);
-      expect(first(visible).textContent).to.equal('5');
-      expect(last(visible).textContent).to.equal('8');
+      // Item 5 may already be rendered (within the initial overscan range),
+      // so it becomes visible before items 6-8 are rendered. Use pass() to
+      // retry until the post-scroll reflow completes and all 4 items appear.
+      await pass(() => {
+        const visible = getVisibleItems(virtualizer);
+        expect(visible.length).to.equal(4);
+        expect(first(visible).textContent).to.equal('5');
+        expect(last(visible).textContent).to.equal('8');
+      });
     });
 
     it('shows leading items when scrolling to last item in start position', async () => {

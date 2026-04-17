@@ -178,10 +178,10 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
       this._physicalMin = 0;
       this._physicalMax = 0;
     } else {
-      const min = Math.max(0, this._blockScrollPosition - this._overhang);
+      const min = Math.max(0, this._blockScrollPosition - this._overscanPx);
       const max = Math.min(
         this._virtualizerSize,
-        this._blockScrollPosition + this._viewDim1 + this._overhang
+        this._blockScrollPosition + this._viewDim1 + this._overscanPx
       );
       const minKey = this._getRangeMapKey(min, MIN);
       const maxKey = this._getRangeMapKey(max, MAX);

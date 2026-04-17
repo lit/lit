@@ -54,10 +54,10 @@ export class GridLayout extends GridBaseLayout<GridBaseLayoutConfig> {
       this._physicalMax = 0;
     } else {
       const {padding1} = metrics;
-      const min = Math.max(0, this._blockScrollPosition - this._overhang);
+      const min = Math.max(0, this._blockScrollPosition - this._overscanPx);
       const max = Math.min(
         this._virtualizerSize,
-        this._blockScrollPosition + this._viewDim1 + this._overhang
+        this._blockScrollPosition + this._viewDim1 + this._overscanPx
       );
       const firstRow = Math.max(
         0,

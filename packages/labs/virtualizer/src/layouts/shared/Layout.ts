@@ -193,6 +193,8 @@ export interface Layout {
 
   unpin: Function;
 
+  overscan: number;
+
   getScrollIntoViewCoordinates: (options: PinOptions) => ScrollToCoordinates;
 
   /**

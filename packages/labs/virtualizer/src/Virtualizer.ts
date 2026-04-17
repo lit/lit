@@ -78,6 +78,41 @@ export function provideResizeObserver(Ctor: typeof ResizeObserver) {
 export const virtualizerRef = Symbol('virtualizerRef');
 const SIZER_ATTRIBUTE = 'virtualizer-sizer';
 
+/**
+ * Adapter an opt-in recycled rendering directive (see
+ * `RecycledList.ts`) registers per virtualizer host element so that
+ * `_positionChildren`, `_readLayoutInfo`, and `_scrollElementIntoView`
+ * can look children up by item index instead of relying on
+ * `children[index - _first]` — which is only correct when DOM order
+ * matches visible-range order.
+ *
+ * In recycled mode, DOM order is insertion-order within a fixed pool
+ * of slots whose item assignments are mostly stable across scrolls.
+ * That means the k-th DOM child does not necessarily represent the
+ * (_first + k)-th item.
+ */
+export interface RecycledListAdapter {
+  /**
+   * Return the DOM element currently assigned to the given item index,
+   * or `null` if no slot represents that item.
+   */
+  getChildForIndex(itemIdx: number): HTMLElement | null;
+  /**
+   * Return the item index currently represented by the given DOM
+   * element, or `null` if the element is not managed by this adapter.
+   */
+  getIndexForChild(child: HTMLElement): number | null;
+}
+
+/**
+ * Registry of per-host recycled-mode adapters. When an entry is
+ * present for a host element, the virtualizer's positioning and
+ * measurement paths consult the adapter; otherwise they use the
+ * default `children[index - _first]` mapping (bit-for-bit the
+ * existing behavior).
+ */
+export const _recycledLists = new WeakMap<HTMLElement, RecycledListAdapter>();
+
 declare global {
   interface HTMLElementEventMap {
     rangeChanged: RangeChangedEvent;
@@ -137,6 +172,12 @@ export interface VirtualizerConfig {
    * fires an `unpinned` event.
    */
   pin?: PinOptions;
+
+  /**
+   * Controls how much content beyond the viewport to keep rendered.
+   * Normalized 0–100; default 50. See `VirtualizeDirectiveConfig.overscan` for details.
+   */
+  overscan?: number;
 }
 
 let DefaultLayoutConstructor: LayoutConstructor;
@@ -301,6 +342,12 @@ export class Virtualizer {
   private _axis: virtualizerAxis = 'block';
 
   /**
+   * Normalized overscan value (0–100) set by the caller. `undefined` means
+   * "use the layout's default". Applied to the layout after init.
+   */
+  private _overscan: number | undefined = undefined;
+
+  /**
    * The writing-mode of the context (i.e. the host element before
    * any axis-swap override is applied). Used to restore children's
    * writing-mode when axis='inline'.
@@ -448,6 +495,17 @@ export class Virtualizer {
     }
   }
 
+  get overscan(): number | undefined {
+    return this._overscan;
+  }
+
+  set overscan(value: number | undefined) {
+    this._overscan = value;
+    if (this._layout !== null && value !== undefined) {
+      this._layout.overscan = value;
+    }
+  }
+
   _init(config: VirtualizerConfig) {
     this._isScroller = !!config.scroller;
     if (config.axis) {
@@ -455,6 +513,9 @@ export class Virtualizer {
     }
     if (config.pin) {
       this._pendingPin = config.pin;
+    }
+    if (config.overscan !== undefined) {
+      this._overscan = config.overscan;
     }
     this._initHostElement(config);
     // If no layout is specified, we make an empty
@@ -472,12 +533,11 @@ export class Virtualizer {
 
   private _initObservers() {
     this._mutationObserver = new MutationObserver((records) => {
-      this._finishDOMUpdate();
-      // When children are reordered (e.g. by lit-html's repeat directive),
-      // the ResizeObserver won't fire because no individual element changed
-      // size. Detect reorders — where a node appears in both addedNodes and
-      // removedNodes — and trigger a re-measure so the layout picks up the
-      // new index-to-size mapping.
+      // Positioning and other DOM-finalization work is driven from
+      // `_updateDOM` now, not from this observer. The only job left here
+      // is detecting reorders (e.g. by lit-html's `repeat` directive
+      // rearranging children), which the ResizeObserver can't see because
+      // no individual element changed size.
       const added = new Set<Node>();
       const removed = new Set<Node>();
       for (const record of records) {
@@ -878,6 +938,11 @@ export class Virtualizer {
       this._layout.pin = this._pendingPin;
     }
 
+    // Apply overscan if set by the caller
+    if (this._overscan !== undefined) {
+      this._layout.overscan = this._overscan;
+    }
+
     if (typeof this._layout.updateItemSizes === 'function') {
       if (this._layout.editElementLayoutInfo) {
         this._editElementLayoutInfo = this._layout.editElementLayoutInfo.bind(
@@ -924,10 +989,20 @@ export class Virtualizer {
   private _readLayoutInfo(): void {
     this._childLayoutInfo = new Map();
     const children = this._children;
+    // In recycled mode, DOM order does not match visible-range order.
+    // Ask the adapter which item each child currently represents; if
+    // it returns null (the child isn't under its management), skip.
+    const recycled = this._hostElement
+      ? _recycledLists.get(this._hostElement)
+      : undefined;
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
-      const idx = this._first + i;
-      this._childLayoutInfo.set(idx, this._readElementLayoutInfo(child, idx));
+      const idx = recycled
+        ? recycled.getIndexForChild(child as HTMLElement)
+        : this._first + i;
+      if (idx !== null && idx !== undefined) {
+        this._childLayoutInfo.set(idx, this._readElementLayoutInfo(child, idx));
+      }
     }
     this._schedule(this._updateLayout);
   }
@@ -978,12 +1053,18 @@ export class Virtualizer {
       this._visibilityChanged = false;
     }
     if (_rangeChanged || _itemsChanged) {
+      // `_notifyRange` dispatches a `rangeChanged` event synchronously.
+      // The virtualize directive's listener reacts by committing a new
+      // render into the host part, which completes before the event
+      // dispatch returns. By the time we reach `_finishDOMUpdate` below,
+      // the new DOM structure (or, in the case of a pure in-place reuse
+      // like recycled mode, the same structure with updated bindings) is
+      // in its final shape for this layout state.
       this._notifyRange();
       this._rangeChanged = false;
       this._itemsChanged = false;
-    } else {
-      this._finishDOMUpdate();
     }
+    this._finishDOMUpdate();
   }
 
   _finishDOMUpdate() {
@@ -1453,9 +1534,17 @@ export class Virtualizer {
   private _positionChildren(pos: ChildPositions | null) {
     if (pos && pos.size > 0) {
       const children = this._children;
+      // In recycled mode, DOM order is pool-insertion order, not
+      // visible-range order, so `children[index - _first]` can't be
+      // trusted. Ask the adapter to resolve item index → DOM child.
+      const recycled = this._hostElement
+        ? _recycledLists.get(this._hostElement)
+        : undefined;
       pos.forEach(
         ({insetBlockStart, insetInlineStart, blockSize, inlineSize}, index) => {
-          const child = children[index - this._first];
+          const child = recycled
+            ? recycled.getChildForIndex(index)
+            : (children[index - this._first] as HTMLElement | undefined);
           if (child) {
             child.style.position = 'absolute';
             child.style.boxSizing = 'border-box';
@@ -1539,9 +1628,10 @@ export class Virtualizer {
       // Which axis (top vs left) the correction applies to depends on the HOST's writing-mode.
       const blockCorrection =
         this._scrollerWritingMode === 'vertical-rl' ? -block : block;
+      const newTop =
+        scrollTop - (this._writingMode === 'horizontal-tb' ? block : inline);
       this._scrollerController!.correctScrollError({
-        top:
-          scrollTop - (this._writingMode === 'horizontal-tb' ? block : inline),
+        top: newTop,
         left:
           scrollLeft -
           (this._writingMode === 'horizontal-tb' ? inline : blockCorrection),
@@ -1568,7 +1658,15 @@ export class Virtualizer {
 
   private _scrollElementIntoView(options: ScrollElementIntoViewOptions) {
     if (options.index >= this._first && options.index <= this._last) {
-      this._children[options.index - this._first].scrollIntoView(options);
+      // In recycled mode, the DOM child for a given item index is
+      // not `children[index - _first]`; resolve through the adapter.
+      const recycled = this._hostElement
+        ? _recycledLists.get(this._hostElement)
+        : undefined;
+      const child = recycled
+        ? recycled.getChildForIndex(options.index)
+        : this._children[options.index - this._first];
+      child?.scrollIntoView(options);
     } else {
       options.index = Math.min(options.index, this._items.length - 1);
       if (options.behavior === 'smooth') {
