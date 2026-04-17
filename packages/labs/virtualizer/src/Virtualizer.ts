@@ -281,7 +281,11 @@ export class Virtualizer {
    * allow more incremental updates before freezing.
    * // TODO: May need further tuning and/or exposure as a config param.
    */
-  private _scrollFreezeThreshold = 20;
+  // Scroll freezing disabled: recycled mode handles the perf-sensitive
+  // cases where freezing was previously needed. The freeze implementation
+  // is retained for now; we will either re-enable or remove it once we
+  // make a final decision.
+  private _scrollFreezeThreshold = Infinity;
 
   /**
    * The last observed scroll position in the block direction,
