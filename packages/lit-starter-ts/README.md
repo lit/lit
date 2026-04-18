@@ -95,6 +95,24 @@ If you use VS Code, we highly recommend the [lit-plugin extension](https://marke
 
 The project is setup to recommend lit-plugin to VS Code users if they don't already have it installed.
 
+## Renaming the component
+
+When you want to rename `my-element` to something else (e.g., `my-awesome-element`), you can use the built-in rename script:
+
+```bash
+npm run rename -- my-awesome-element
+```
+
+This script will:
+1. Perform a project-wide search and replace of `my-element` with your new name
+2. Rename `src/my-element.ts` to `src/my-awesome-element.ts`
+3. Rename `src/test/my-element_test.ts` to `src/test/my-awesome-element_test.ts`
+4. Update any references in `index.html` and `package.json`
+
+After running the script, review the changes with `git diff` and run `npm test` to make sure everything works.
+
+**Note:** The name must start with a lowercase letter and contain only lowercase letters, numbers, and hyphens.
+
 ## Linting
 
 Linting of TypeScript files is provided by [ESLint](eslint.org) and [TypeScript ESLint](https://github.com/typescript-eslint/typescript-eslint). In addition, [lit-analyzer](https://www.npmjs.com/package/lit-analyzer) is used to type-check and lint lit-html templates with the same engine and rules as lit-plugin.
