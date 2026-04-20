@@ -10,6 +10,7 @@ import {customElement, property} from 'lit/decorators.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {expect, html, fixture} from '@open-wc/testing';
 import {grid} from '../../layouts/grid.js';
+import {virtualizerFixture} from '../virtualizer-test-utilities.js';
 
 describe('Properly sizing virtualizer within host element', () => {
   ignoreBenignErrors(beforeEach, afterEach);
@@ -167,5 +168,87 @@ describe('Properly sizing virtualizer within host element', () => {
       expect(litVirtualizer.textContent).not.to.contain('[4]');
       expect(window.getComputedStyle(litVirtualizer).height).to.equal('25px');
     });
+  });
+});
+
+/**
+ * A scroller-mode virtualizer with no explicit size would previously collapse
+ * silently (the old behavior set `min-block-size: 150px`, which this PR
+ * removes). The replacement behavior is a console warning emitted via
+ * `InstanceWarnings.warnOn('zero-size', ...)` so developers see the issue
+ * during integration without the virtualizer lying about its size.
+ */
+describe('zero-size scroller warning', () => {
+  ignoreBenignErrors(beforeEach, afterEach);
+
+  it('fires when a scroller-mode virtualizer has zero size', async () => {
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(String(args[0]));
+    };
+
+    try {
+      // Override the default fixture styles so the scroller has zero block-size.
+      const fixtureStyles = html`
+        <style>
+          section {
+            height: 400px;
+            width: 400px;
+          }
+          lit-virtualizer[scroller] {
+            block-size: 0;
+            inline-size: 400px;
+          }
+        </style>
+      `;
+
+      await virtualizerFixture({
+        scroller: true,
+        fixtureStyles,
+      });
+
+      await pass(() => {
+        expect(warnings.some((w) => w.includes('zero-size'))).to.be.true;
+      });
+    } finally {
+      console.warn = originalWarn;
+    }
+  });
+
+  it('does not fire in non-scroller (window-scrolling) mode', async () => {
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(String(args[0]));
+    };
+
+    try {
+      // Non-scroller virtualizers get a 1px min-size bootstrap from
+      // `_applyVirtualizerStyles`, so they never legitimately hit zero —
+      // and the warning is deliberately scoped to scroller mode only.
+      await virtualizerFixture({scroller: false});
+
+      expect(warnings.some((w) => w.includes('zero-size'))).to.be.false;
+    } finally {
+      console.warn = originalWarn;
+    }
+  });
+
+  it('does not fire when a scroller-mode virtualizer has non-zero size', async () => {
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(String(args[0]));
+    };
+
+    try {
+      // Default fixture styles size the scroller to 400x400.
+      await virtualizerFixture({scroller: true});
+
+      expect(warnings.some((w) => w.includes('zero-size'))).to.be.false;
+    } finally {
+      console.warn = originalWarn;
+    }
   });
 });

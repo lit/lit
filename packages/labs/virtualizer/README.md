@@ -601,6 +601,14 @@ Default: `'block'`
 
 Optional. Controls which CSS logical axis the virtualizer uses to lay out its child elements. Set to `'inline'` for inline-axis scrolling (e.g., a horizontal carousel in a standard vertical document). See [Writing mode and direction](#writing-mode-and-direction) and [Virtualizing on the inline axis](#virtualizing-on-the-inline-axis) for details and examples.
 
+### `pin` property
+
+Type: `{index: number, block?: 'start' | 'center' | 'end' | 'nearest'}`
+
+Optional. Declaratively pin the viewport to a specific item. The viewport remains pinned until the user scrolls, at which point the virtualizer fires an `unpinned` event and the pin is released. Set to `undefined` (or omit) to leave the viewport in its current scroll position. See [Framing a child element within the viewport](#framing-a-child-element-within-the-viewport) for details and examples.
+
+When using the `virtualize` directive, set `pin` in the directive config instead of as an attribute/property.
+
 ### `scrollToIndex` method
 
 Type: `(index: number, position?: string) => void`

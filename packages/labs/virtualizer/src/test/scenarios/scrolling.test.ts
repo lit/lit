@@ -4,14 +4,17 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {expect, html} from '@open-wc/testing';
-import {ignoreBenignErrors} from '../helpers.js';
+import {expect, fixture, html} from '@open-wc/testing';
+import {ignoreBenignErrors, pass, until} from '../helpers.js';
 import {
   virtualizerFixture,
   VirtualizerFixtureOptions,
   observeScroll,
 } from '../virtualizer-test-utilities.js';
 import {BaseLayoutConfig} from '../../layouts/shared/Layout.js';
+import {virtualizerRef} from '../../virtualize.js';
+import {LitVirtualizer} from '../../LitVirtualizer.js';
+import '../../lit-virtualizer.js';
 
 type Coordinate = 'top' | 'left';
 
@@ -629,4 +632,159 @@ function testScrollBy(fixtureOptions: VirtualizerFixtureOptions) {
 
 describe('scrollBy()', () => {
   testScrollBy({});
+});
+
+/**
+ * Sanity check for CSS writing-mode detection with an explicit
+ * `writing-mode: horizontal-tb` declaration. horizontal-tb is the
+ * browser default so most of the suite hits this code path incidentally,
+ * but a dedicated test guards against regressions where the explicit
+ * declaration takes a different path than the unset default.
+ */
+describe('CSS-based direction: writing-mode: horizontal-tb (explicit)', () => {
+  ignoreBenignErrors(beforeEach, afterEach);
+
+  it('behaves identically to the default (scroller mode, scrollTop)', async () => {
+    const fixtureStyles = html`
+      <style>
+        section {
+          height: 400px;
+          width: 400px;
+          writing-mode: horizontal-tb;
+        }
+        lit-virtualizer[scroller],
+        .virtualizerHost[scroller] {
+          height: 400px;
+          width: 400px;
+        }
+      </style>
+    `;
+
+    const {host, scroller} = await virtualizerFixture({
+      useDirective: false,
+      scroller: true,
+      fixtureStyles,
+    });
+
+    expect(getComputedStyle(host).writingMode).to.equal('horizontal-tb');
+
+    const {startPos, endPos} = await observeScroll(scroller, () =>
+      scroller.scrollTo({top: 2000, behavior: 'smooth'})
+    );
+
+    expect(startPos.top).to.equal(0);
+    expect(endPos.top).to.equal(2000);
+  });
+});
+
+/**
+ * Deprecation warnings for the legacy `direction` layout config option.
+ * The warning is emitted via `issueWarning` which dedups globally (via
+ * `globalThis.litIssuedWarnings`), so these tests clear the dedup set
+ * before each case to make them order-independent.
+ */
+describe('deprecation warnings for legacy `direction` layout config', () => {
+  ignoreBenignErrors(beforeEach, afterEach);
+
+  beforeEach(() => {
+    (
+      globalThis as unknown as {litIssuedWarnings?: Set<string>}
+    ).litIssuedWarnings?.clear();
+  });
+
+  it('emits a deprecation warning when `direction: "horizontal"` is used', async () => {
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(String(args[0]));
+    };
+
+    try {
+      await virtualizerFixture({
+        scroller: true,
+        layout: {direction: 'horizontal'},
+      });
+
+      expect(
+        warnings.some(
+          (w) => w.includes('direction') && w.includes('deprecated')
+        )
+      ).to.be.true;
+    } finally {
+      console.warn = originalWarn;
+    }
+  });
+
+  it('emits the override-variant warning when `direction: "horizontal"` overrides an explicit writing-mode', async () => {
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(String(args[0]));
+    };
+
+    try {
+      // The override check in Virtualizer._handleLegacyDirectionConfig
+      // reads `hostElement.style.writingMode` — i.e. the *inline* style
+      // attribute, not computed style. Setting writing-mode via a
+      // stylesheet rule wouldn't trigger the branch, so we render the
+      // virtualizer with an explicit inline `style` attribute. Using
+      // @open-wc/testing's `fixture` directly here because the shared
+      // `virtualizerFixture` utility doesn't support custom element
+      // attributes on the virtualizer host.
+      const items = new Array(10)
+        .fill('')
+        .map((_, index) => ({index, text: `Item ${index}`}));
+      const container = await fixture(html`
+        <section style="height: 400px; width: 400px;">
+          <lit-virtualizer
+            scroller
+            style="writing-mode: vertical-rl; height: 400px; width: 400px;"
+            .items=${items}
+            .renderItem=${(item: {text: string}) =>
+              html`<div>${item.text}</div>`}
+            .layout=${{direction: 'horizontal'}}
+          ></lit-virtualizer>
+        </section>
+      `);
+      const virtualizer = container.querySelector(
+        'lit-virtualizer'
+      ) as LitVirtualizer;
+      // Wait for the async Virtualizer init to run, which is what
+      // invokes _handleLegacyDirectionConfig.
+      await until(
+        () => (virtualizer as unknown as {[k: symbol]: unknown})[virtualizerRef]
+      );
+      await virtualizer.layoutComplete;
+
+      await pass(() => {
+        expect(
+          warnings.some(
+            (w) => w.includes('direction') && w.includes('overriding')
+          )
+        ).to.be.true;
+      });
+    } finally {
+      console.warn = originalWarn;
+    }
+  });
+
+  it('does not emit a direction-deprecation warning when `direction` is omitted', async () => {
+    const warnings: string[] = [];
+    const originalWarn = console.warn;
+    console.warn = (...args: unknown[]) => {
+      warnings.push(String(args[0]));
+    };
+
+    try {
+      await virtualizerFixture({scroller: true});
+
+      expect(
+        warnings.some(
+          (w) => w.includes('direction') && w.includes('deprecated')
+        )
+      ).to.be.false;
+    } finally {
+      console.warn = originalWarn;
+    }
+  });
 });
