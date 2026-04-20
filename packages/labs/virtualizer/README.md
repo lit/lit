@@ -292,6 +292,72 @@ render() {
 }
 ```
 
+### Using the `masonry` layout
+
+The `masonry` layout arranges child elements in uniformly sized columns along the inline axis, with each item's size along the block axis (the scrolling direction) determined by its aspect ratio. Unlike the `grid` layout, where every item has the same size, masonry items can vary in one dimension — which makes it a natural fit for collections of photos, videos, and other content with different intrinsic proportions that you want to tile without leaving gaps.
+
+```js
+import {masonry} from '@lit-labs/virtualizer/layouts/masonry.js';
+```
+
+Like the virtualizer itself and the `grid` layout, the masonry layout respects CSS `writing-mode` and `direction`; see the [grid layout](#using-the-grid-layout) section above for details on how the logical-axis semantics map to visual axes.
+
+#### Masonry layout options
+
+The `gap`, `padding`, `flex`, and `justify` options are inherited from the `grid` layout and behave the same way — see [Grid layout options](#grid-layout-options). The two options unique to masonry are `itemSize` and `getAspectRatio`.
+
+##### `itemSize`
+
+The size of each column along the inline axis. Unlike `grid`'s `itemSize`, masonry takes a single pixel value (not a pair) because items size themselves along the block axis from their aspect ratio rather than from an explicit dimension.
+
+Default: `'300px'`
+
+```js
+masonry({itemSize: '200px'});
+```
+
+##### `getAspectRatio`
+
+A function that returns a per-item aspect ratio, interpreted as **visual `width / height`**. The layout preserves this visual ratio across all writing-mode and `axis` configurations: e.g., a caller returning `2` for a 2:1 landscape photo sees that photo rendered visually twice as wide as it is tall, whether the virtualizer scrolls along the block or inline axis and whether the writing-mode is `horizontal-tb`, `vertical-lr`, or `vertical-rl`.
+
+```js
+masonry({
+  itemSize: '200px',
+  getAspectRatio: (photo) => photo.width / photo.height,
+});
+```
+
+If omitted, items are treated as square (aspect ratio `1`).
+
+> [!NOTE]
+> This semantic is the right fit for images, videos, and other content whose dimensions are intrinsic and writing-mode-independent. It is not appropriate for flow-like content (e.g. text cards) whose shape depends on the writing-mode. A logical (`inlineSize / blockSize`) aspect-ratio variant is planned — see [#5308](https://github.com/lit/lit/issues/5308).
+
+#### Masonry layout example
+
+A photo shelf where each item knows its intrinsic dimensions:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      .layout=${masonry({
+        itemSize: '250px',
+        gap: '8px',
+        getAspectRatio: (photo) => photo.width / photo.height,
+      })}
+      .items=${this.photos}
+      .renderItem=${(photo) => html`
+        <img src=${photo.url} alt=${photo.alt}>
+      `}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+#### Performance note
+
+When the `items` array changes, masonry recalculates every item's position in a single pass. This is different from the `flow` and `grid` layouts, which do incremental or on-demand work. In practice the masonry pass is fast enough for moderately large collections, but as collections grow, incremental updates become worth doing — tracked at [#5310](https://github.com/lit/lit/issues/5310). If you hit a layout-performance wall with masonry today, please add a note to that issue with the collection size and the operation that triggered it.
+
 ### Scrolling
 
 As much as possible, `@lit-labs/virtualizer` strives to "just work" with all of the native scrolling APIs (the `scrollTo()` method, the `scrollTop` and `scrollLeft` properties, and so on). When you need to scroll, just use native APIs directly on the `window`, on any scrolling element that happens to be an ancestor of your virtualizer in the DOM tree, or on your virtualizer itself (if it [is a scroller](#making-a-virtualizer-a-scroller)).
@@ -580,6 +646,8 @@ Type: `Array<T>`
 An array of items (JavaScript values, typically objects) representing the child elements of the virtualizer.
 
 The types of values you use to represent your items are entirely up to you, as long as your `renderItem` function can transform each value into a child element.
+
+The virtualizer detects items changes by **array reference equality**, not by content. Reassign `items` to a new array — for example with spread (`[...items, newItem]`) or a returned copy from an immutable operation — whenever you want the virtualizer to pick up the change. Mutating the existing array in place will not trigger a reflow.
 
 ### `renderItem` property
 
