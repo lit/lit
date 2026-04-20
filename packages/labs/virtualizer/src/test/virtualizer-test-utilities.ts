@@ -46,6 +46,34 @@ class Scroller extends ScrollerShim {
   }
 }
 
+/**
+ * Trigger a smooth scroll and wait for it to settle, retrying up to
+ * `maxAttempts` times if the final position didn't reach the requested
+ * coordinate. This can happen when the scroll dimensions change partway
+ * through a smooth scroll — for example, when a layout shift adjusts the
+ * virtualizer's sizer element mid-scroll. Rather than making callers
+ * reason about that race per-test, this helper centralizes the retry.
+ *
+ * Returns the last observed scroll results (position, events, distance).
+ */
+export async function observeScrollUntilReached(
+  target: Element | Window,
+  trigger: () => void,
+  targetValue: number,
+  targetKey: 'top' | 'left',
+  maxAttempts = 3,
+  wait = 100
+): Promise<ScrollObserverResults> {
+  let result: ScrollObserverResults = null!;
+  for (let i = 0; i < maxAttempts; i++) {
+    result = await observeScroll(target, trigger, wait);
+    if (result.endPos[targetKey] === targetValue) {
+      break;
+    }
+  }
+  return result;
+}
+
 export function observeScroll(
   target: Element | Window,
   trigger: () => void,

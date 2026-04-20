@@ -9,7 +9,9 @@ import {ignoreBenignErrors, pass} from '../helpers.js';
 import {
   virtualizerFixture,
   observeScroll,
+  observeScrollUntilReached,
 } from '../virtualizer-test-utilities.js';
+import {masonry} from '../../layouts/masonry.js';
 
 /**
  * Tests for the `axis` property which controls whether the virtualizer
@@ -49,19 +51,12 @@ describe('axis property', () => {
       expect(hostStyle.writingMode).to.equal('vertical-lr');
 
       // Items should scroll horizontally (via scrollLeft)
-      const scrollResults = await observeScroll(scroller, () =>
-        scroller.scrollTo({left: 2000, behavior: 'smooth'})
+      const {startPos, endPos, events} = await observeScrollUntilReached(
+        scroller,
+        () => scroller.scrollTo({left: 2000, behavior: 'smooth'}),
+        2000,
+        'left'
       );
-      const {startPos, events} = scrollResults;
-      let {endPos} = scrollResults;
-
-      // May need a second scroll due to timing with scroll dimension calculation
-      if (endPos.left !== 2000) {
-        const secondScrollResults = await observeScroll(scroller, () =>
-          scroller.scrollTo({left: 2000, behavior: 'smooth'})
-        );
-        endPos = secondScrollResults.endPos;
-      }
 
       expect(startPos.left).to.equal(0);
       expect(endPos.left).to.equal(2000);
@@ -132,18 +127,12 @@ describe('axis property', () => {
       expect(hostStyle.writingMode).to.equal('vertical-lr');
 
       // Items should scroll horizontally
-      const scrollResults = await observeScroll(scroller, () =>
-        scroller.scrollTo({left: 2000, behavior: 'smooth'})
+      const {startPos, endPos} = await observeScrollUntilReached(
+        scroller,
+        () => scroller.scrollTo({left: 2000, behavior: 'smooth'}),
+        2000,
+        'left'
       );
-      const {startPos} = scrollResults;
-      let {endPos} = scrollResults;
-
-      if (endPos.left !== 2000) {
-        const secondScrollResults = await observeScroll(scroller, () =>
-          scroller.scrollTo({left: 2000, behavior: 'smooth'})
-        );
-        endPos = secondScrollResults.endPos;
-      }
 
       expect(startPos.left).to.equal(0);
       expect(endPos.left).to.equal(2000);
@@ -212,14 +201,15 @@ describe('axis property', () => {
       const hostStyle = getComputedStyle(host);
       expect(hostStyle.writingMode).to.equal('vertical-lr');
 
-      // Wait for initial render
-      await new Promise((r) => setTimeout(r, 200));
-
       // In vertical-lr, the block axis is horizontal (scrollLeft).
-      // The document should have scrollable width.
-      expect(document.documentElement.scrollWidth).to.be.greaterThan(
-        document.documentElement.clientWidth
-      );
+      // The document should have scrollable width. Poll rather than
+      // wait a fixed interval, since the writing-mode swap triggers a
+      // browser reflow that can resolve at an indeterminate moment.
+      await pass(() => {
+        expect(document.documentElement.scrollWidth).to.be.greaterThan(
+          document.documentElement.clientWidth
+        );
+      });
     });
   });
 
@@ -255,6 +245,49 @@ describe('axis property', () => {
 
       expect(startPos.top).to.equal(0);
       expect(endPos.top).to.equal(2000);
+    });
+  });
+
+  describe('axis="inline" + masonry (aspect-ratio regression)', () => {
+    // Regression test for the unconditional `size1 = itemSize2 / aspectRatio`
+    // formula in masonry: under axis="inline" the virtualizer's effective
+    // writing-mode is vertical-lr/rl, so the block axis is visually
+    // horizontal. A caller that returns visual `width / height` (typical
+    // for photos) should see items rendered with that visual ratio.
+    it('renders items with the caller-provided visual aspect ratio', async () => {
+      type AspectItem = {aspectRatio: number};
+      const items: AspectItem[] = new Array(20)
+        .fill(null)
+        .map(() => ({aspectRatio: 2}));
+
+      const {host} = await virtualizerFixture<AspectItem>({
+        useDirective: false,
+        scroller: true,
+        axis: 'inline',
+        items,
+        renderItem: (item) => html`<div>${item.aspectRatio.toFixed(1)}</div>`,
+        layout: masonry({
+          itemSize: '100px',
+          flex: false,
+          gap: '0px',
+          getAspectRatio: (item) => (item as AspectItem).aspectRatio,
+        }),
+      });
+
+      // Poll to allow an initial measurement cycle; the inlineSize/blockSize
+      // swap in `_positionChildren` depends on child layout info becoming
+      // available, which may take one or more frames after mount.
+      await pass(() => {
+        const firstChild = host.querySelector(
+          ':not([virtualizer-sizer])'
+        ) as HTMLElement | null;
+        expect(firstChild).to.not.equal(null);
+        const rect = firstChild!.getBoundingClientRect();
+        expect(rect.width).to.be.greaterThan(0);
+        expect(rect.height).to.be.greaterThan(0);
+        const visualRatio = rect.width / rect.height;
+        expect(visualRatio).to.be.closeTo(2, 0.2);
+      });
     });
   });
 

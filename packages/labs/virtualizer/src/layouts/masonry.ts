@@ -14,6 +14,18 @@ export interface MasonryLayoutConfig
   extends Omit<GridBaseLayoutConfig, 'flex' | 'itemSize'> {
   flex: boolean;
   itemSize: PixelSize;
+  /**
+   * Returns the aspect ratio of a given item, interpreted as **visual
+   * `width / height`** — appropriate for images, photos, and other
+   * content whose dimensions are intrinsic and independent of CSS
+   * writing-mode. The layout preserves this visual ratio across all
+   * writing-modes and axis configurations.
+   *
+   * Flow-like content (e.g. text cards whose shape depends on the
+   * writing-mode) is not served well by this semantic; a follow-up
+   * API for logical (inlineSize / blockSize) aspect ratios is planned.
+   * See https://github.com/lit/lit/issues/5308.
+   */
   getAspectRatio?: GetAspectRatio;
 }
 
@@ -65,7 +77,7 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     return {
       blockSize: this._metrics!.itemSize1,
       inlineSize: this._metrics!.itemSize2,
-    } as unknown as LogicalSize;
+    };
   }
 
   protected _updateLayout() {
@@ -92,9 +104,19 @@ export class MasonryLayout extends GridBaseLayout<MasonryLayoutConfig> {
     let virtualizerSize = 0;
     let minRangeMapKey = Infinity;
     let maxRangeMapKey = -Infinity;
+    // `aspectRatio` is defined as visual `width / height` — independent
+    // of writing-mode. Branching here converts that visual ratio into a
+    // block-axis size given the cross-axis size (`itemSize2`). When the
+    // layout's block axis is visually horizontal (vertical writing-modes,
+    // or axis='inline' after the virtualizer's own writing-mode swap),
+    // `blockSize = itemSize2 * aspectRatio`; otherwise
+    // `blockSize = itemSize2 / aspectRatio`.
+    const blockIsVisuallyHorizontal = this.writingMode !== 'horizontal-tb';
     this.items.forEach((item, idx) => {
       const aspectRatio = this._getAspectRatio ? this._getAspectRatio(item) : 1;
-      const size1 = itemSize2 / aspectRatio;
+      const size1 = blockIsVisuallyHorizontal
+        ? itemSize2 * aspectRatio
+        : itemSize2 / aspectRatio;
       const pos1 = nextPosPerColumn[nextColumn];
       const pos2 = positions[nextColumn];
       this._positions.set(idx, {
