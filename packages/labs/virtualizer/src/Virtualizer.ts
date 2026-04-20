@@ -25,10 +25,15 @@ import {
   virtualizerAxis,
   VirtualizerSize,
   VirtualizerSizeValue,
-  fixedSizeDimensionCapitalized,
   LogicalCoordinates,
-  fixedInsetLabel,
 } from './layouts/shared/Layout.js';
+
+// Internal physical-coordinate label types used by `_updateView` when
+// translating between logical (block/inline) coordinates and the
+// platform's physical scroll APIs. These are strictly internal to
+// Virtualizer and should not be exposed on the layout-author surface.
+type fixedSizeDimensionCapitalized = 'Height' | 'Width';
+type fixedInsetLabel = 'top' | 'bottom' | 'left' | 'right';
 
 /**
  * @deprecated Legacy scroll direction type from the old explicit direction API.
@@ -265,13 +270,21 @@ export class Virtualizer {
    * The writing-mode of the context (i.e. the host element before
    * any axis-swap override is applied). Used to restore children's
    * writing-mode when axis='inline'.
+   *
+   * Captured only at the moment the swap is first applied (see
+   * `_applyAxisSwap`), not live-tracked. If an ancestor's
+   * writing-mode changes while `axis='inline'` is active, children
+   * will continue to be restored to the originally-captured value.
+   * In practice writing-mode is almost always a stable declaration,
+   * so this is an acceptable edge-case simplification.
    */
   private _contextWritingMode: writingMode = 'unknown';
 
   /**
    * The CSS direction of the context (i.e. the host element before
    * any axis-swap override is applied). Used to determine the correct
-   * swapped writing-mode for axis='inline'.
+   * swapped writing-mode for axis='inline'. Capture semantics match
+   * `_contextWritingMode`.
    */
   private _contextDirection: direction = 'unknown';
 
@@ -534,7 +547,6 @@ export class Virtualizer {
    * - direction: 'horizontal' → writing-mode: vertical-lr
    */
   private _handleLegacyDirectionConfig(config: LegacyLayoutConfig): void {
-    // DEBUG: Verify this method is being called
     // If no direction specified, treat as 'vertical' (the old default behavior)
     // which maps to the CSS default, so we may need to clean up any previously
     // injected style
@@ -866,12 +878,13 @@ export class Virtualizer {
     // offsetWidth doesn't take transforms in consideration, so we use
     // getBoundingClientRect which does.
     const {width, height} = element.getBoundingClientRect();
-    const blockSize = this._writingMode[0] === 'h' ? height : width;
-    const inlineSize = this._writingMode[0] === 'h' ? width : height;
+    const hostIsHorizontal = isHorizontalWritingMode(this._writingMode);
+    const blockSize = hostIsHorizontal ? height : width;
+    const inlineSize = hostIsHorizontal ? width : height;
     const style = getComputedStyle(element);
     const writingMode = style.writingMode as writingMode;
     const direction = style.direction as direction;
-    const flipAxis = writingMode[0] !== this._writingMode[0];
+    const flipAxis = isHorizontalWritingMode(writingMode) !== hostIsHorizontal;
     const reverseDirection = direction !== this._direction;
     const baselineInfo = Object.assign(
       {writingMode, direction},
@@ -1316,7 +1329,10 @@ export class Virtualizer {
 
             const childLayoutInfo = this._childLayoutInfo?.get(index);
             if (childLayoutInfo) {
-              if (childLayoutInfo.writingMode[0] !== this._writingMode[0]) {
+              if (
+                isHorizontalWritingMode(childLayoutInfo.writingMode) !==
+                isHorizontalWritingMode(this._writingMode)
+              ) {
                 const oInlineSize = inlineSize;
                 inlineSize = blockSize;
                 blockSize = oInlineSize;
@@ -1532,6 +1548,10 @@ export class Virtualizer {
     this._readLayoutInfo();
     this._scheduleLayoutComplete();
   }
+}
+
+function isHorizontalWritingMode(wm: writingMode): boolean {
+  return wm === 'horizontal-tb';
 }
 
 function getMargins(

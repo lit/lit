@@ -11,7 +11,6 @@ export type LogicalSize = {
 };
 
 export type fixedSizeDimension = 'height' | 'width';
-export type fixedSizeDimensionCapitalized = 'Height' | 'Width';
 export type FixedSize = {
   height: number;
   width: number;
@@ -61,9 +60,6 @@ export interface LayoutParams {
   writingMode: writingMode;
 }
 
-export type fixedInsetLabel = 'top' | 'bottom' | 'left' | 'right';
-
-export type fixedCoordinateLabel = 'top' | 'left'; // TODO: Don't think we need this
 export type FixedCoordinates = {
   top: number;
   left: number;
@@ -200,48 +196,22 @@ export interface Layout {
   getScrollIntoViewCoordinates: (options: PinOptions) => ScrollToCoordinates;
 
   /**
-   * Called by a Virtualizer when an update that
-   * potentially affects layout has occurred. For example, a viewport size
-   * change.
+   * Called by the Virtualizer when an update that potentially affects
+   * layout has occurred (for example, a viewport size change).
    *
-   * The layout is in turn responsible for dispatching events, as necessary,
-   * to the Virtualizer. Each of the following events
-   * represents an update that should be determined during a reflow. Dispatch
-   * each event at maximum once during a single reflow.
+   * The layout recomputes what it needs to, then pushes any changes
+   * back to the Virtualizer via the `LayoutHostSink` it was constructed
+   * with. Supported messages are defined in `LayoutHostMessage`:
    *
-   * Events that should be dispatched:
-   * - scrollsizechange
-   *     Dispatch when the total length of all items in the scrolling direction,
-   *     including spacing, changes.
-   *     detail: {
-   *       'height' | 'width': number
-   *     }
-   * - rangechange
-   *     Dispatch when the range of children that should be displayed changes.
-   *     detail: {
-   *       first: number,
-   *       last: number,
-   *       num: number,
-   *       stable: boolean,
-   *       remeasure: boolean,
-   *       firstVisible: number,
-   *       lastVisible: number,
-   *     }
-   * - itempositionchange
-   *     Dispatch when the child positions change, for example due to a range
-   *     change.
-   *     detail {
-   *       [number]: {
-   *         left: number,
-   *         top: number
-   *       }
-   *     }
-   * - scrollerrorchange
-   *     Dispatch when the set viewportScroll offset is not what it should be.
-   *     detail {
-   *       height: number,
-   *       width: number,
-   *     }
+   * - `StateChangedMessage` — emitted when the virtualizer size,
+   *   visible range, child positions, or scroll error change. Carries
+   *   logical coordinates (`blockSize`/`inlineSize` and `block`/`inline`).
+   * - `VisibilityChangedMessage` — emitted when the first/last visible
+   *   item indices change.
+   * - `UnpinnedMessage` — emitted when a pin is released.
+   *
+   * If `force` is true, the layout must recompute unconditionally;
+   * otherwise it may skip work when nothing has changed.
    */
   reflowIfNeeded: (force?: boolean) => void;
 }
