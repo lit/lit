@@ -12,11 +12,12 @@
  *
  * Consumers pass {@link mochaSkipInCITestRunnerHtml} as the
  * `testRunnerHtml` option of their web-test-runner config. The helper
- * returns the standard WTR runner page with a small setup script that
- * augments the Mocha UI globals before test files register.
- *
- * Works across all browsers supported by `@web/test-runner-playwright`
- * (Chromium, Firefox, Webkit) and `@web/test-runner-chrome`.
+ * returns the standard WTR runner page with a classic inline script
+ * that installs intercepting `Object.defineProperty` getters on `window`
+ * for Mocha's UI names. The interceptors augment the stored function
+ * with `.skipInCI` lazily the first time it's read, so the augmentation
+ * is in place no matter how the test framework orders Mocha setup vs.
+ * test-file loading across Chromium, Firefox, and Webkit.
  */
 
 /**
@@ -32,29 +33,39 @@ export function mochaSkipInCITestRunnerHtml(
 <html>
   <head>
     <script>
-      window.__LIT_TESTS_IS_CI__ = ${JSON.stringify(isCI)};
-    </script>
-    <script type="module">
-      // Augment Mocha's UI globals with \`.skipInCI\`. The test framework
-      // module (see below) sets up Mocha synchronously as it loads and
-      // then dynamically imports user test files after the \`load\`
-      // event, so waiting for \`load\` here ensures both that Mocha
-      // globals exist and that \`.skipInCI\` is defined before test
-      // files register.
-      addEventListener('load', () => {
-        const isCI = window.__LIT_TESTS_IS_CI__ === true;
-        for (const name of ['suite', 'test', 'describe', 'it']) {
-          const fn = globalThis[name];
+      // Install \`.skipInCI\` on Mocha's UI globals (\`suite\`, \`test\`,
+      // \`describe\`, \`it\`) as soon as the test framework assigns them.
+      // Uses interceptor properties on \`window\` so the augmentation is
+      // ready before any test file registers, independent of browser
+      // timing for module/load events. Runs as a classic script before
+      // any module script, so it executes synchronously during parse.
+      (function () {
+        var isCI = ${JSON.stringify(isCI)};
+        function augment(fn) {
           if (
             typeof fn === 'function' &&
             typeof fn.skip === 'function' &&
             !fn.skipInCI
           ) {
-            fn.skipInCI = (title, body) =>
-              isCI ? fn.skip(title, body) : fn(title, body);
+            fn.skipInCI = function (title, body) {
+              return isCI ? fn.skip(title, body) : fn(title, body);
+            };
           }
+          return fn;
         }
-      });
+        ['suite', 'test', 'describe', 'it'].forEach(function (name) {
+          var stored = window[name];
+          Object.defineProperty(window, name, {
+            configurable: true,
+            get: function () {
+              return augment(stored);
+            },
+            set: function (v) {
+              stored = v;
+            },
+          });
+        });
+      })();
     </script>
   </head>
   <body>
