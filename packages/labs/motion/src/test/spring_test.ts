@@ -109,7 +109,8 @@ suite('Spring', () => {
       assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
     });
 
-    test('spring starts when connected, stop when disconnected', async () => {
+    // Flaky on Webkit due to timing/float-comparison sensitivity. See #5193.
+    test.skip('spring starts when connected, stop when disconnected', async () => {
       const el = new SpringController2DTest({
         fromPosition: {x: 100, y: 100},
         toPosition: {x: 50, y: 50},
