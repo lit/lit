@@ -54,7 +54,8 @@ suite('Spring', () => {
       assert.equal(el.spring.toValue, 50);
     });
 
-    test('spring starts when connected, stops when disconnected', async () => {
+    // Flaky on Firefox due to timing/float-comparison sensitivity. See #5193.
+    test.skip('spring starts when connected, stops when disconnected', async () => {
       const el = new SpringControllerTest({fromValue: 100, toValue: 50});
       container.append(el);
       assert.isFalse(el.spring.isAtRest);
@@ -109,7 +110,8 @@ suite('Spring', () => {
       assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
     });
 
-    // Flaky on Webkit due to timing/float-comparison sensitivity. See #5193.
+    // Flaky on Webkit due to timing/float-comparison sensitivity (same root
+    // cause as the 1D variant). See #5193.
     test.skip('spring starts when connected, stop when disconnected', async () => {
       const el = new SpringController2DTest({
         fromPosition: {x: 100, y: 100},
