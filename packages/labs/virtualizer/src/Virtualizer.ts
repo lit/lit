@@ -27,13 +27,6 @@ import {
   LogicalCoordinates,
 } from './layouts/shared/Layout.js';
 
-// Internal physical-coordinate label types used by `_updateView` when
-// translating between logical (block/inline) coordinates and the
-// platform's physical scroll APIs. These are strictly internal to
-// Virtualizer and should not be exposed on the layout-author surface.
-type fixedSizeDimensionCapitalized = 'Height' | 'Width';
-type fixedInsetLabel = 'top' | 'bottom' | 'left' | 'right';
-
 /**
  * @deprecated Legacy scroll direction type from the old explicit direction API.
  * Use CSS `writing-mode` instead. This type and related handling code can be
