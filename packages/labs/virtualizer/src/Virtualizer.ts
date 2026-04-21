@@ -987,7 +987,15 @@ export class Virtualizer {
   }
 
   _finishDOMUpdate() {
-    if (this._connected) {
+    // Skip when the host has been detached without `disconnected()` being
+    // called — common for the bare `virtualize()` directive when a parent
+    // node is removed without clearing its lit-html template. A zombie
+    // virtualizer would otherwise continue producing scroll corrections
+    // against its (now stale, zero-measuring) children and hijack a shared
+    // scroller (e.g. `window`). We bail silently rather than tearing
+    // down, because `AsyncDirective` has no auto-reconnect hook — a later
+    // re-attach of a bare-directive host would have no way to revive us.
+    if (this._connected && this._hostElement?.isConnected) {
       // _childrenRO should be non-null if we're connected
       this._children.forEach((child) => this._childrenRO!.observe(child));
       this._checkScrollIntoViewTarget(this._childrenPos);
@@ -1033,6 +1041,16 @@ export class Virtualizer {
   }
 
   private _handleScrollEvent() {
+    // Ignore scrolls on a shared ancestor scroller when our host is no
+    // longer in the DOM. Bare `virtualize()` directives on a removed
+    // subtree never receive `disconnected()`; without this guard they
+    // would keep reflowing and issuing scroll corrections against the
+    // shared scroller on every scroll event. Bail silently rather than
+    // tear down so that a later re-attach (which `AsyncDirective` has
+    // no hook to auto-detect) can resume normal operation.
+    if (!this._hostElement?.isConnected) {
+      return;
+    }
     if (this._benchmarkStart && 'mark' in window.performance) {
       try {
         window.performance.measure('uv-virtualizing', 'uv-start', 'uv-end');
