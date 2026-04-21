@@ -222,7 +222,9 @@ export const getImportReference = (
       const sourceFilePath = location.getSourceFile().fileName as AbsolutePath;
       const module = getModuleInfo(sourceFilePath, analyzer);
       refPackage = module.packageJson.name;
-      refModule = path.join(path.dirname(module.jsPath), specifier);
+      refModule = path
+        .join(path.dirname(module.jsPath), specifier)
+        .replace(/\\/g, '/');
     } else if (analyzer.path.isAbsolute(specifier)) {
       // Absolute import; no package, just use the entire path as the
       // module
