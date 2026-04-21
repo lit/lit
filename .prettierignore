@@ -159,6 +159,10 @@ packages/tests/**/web-test-runner.config.js
 packages/tests/**/web-test-runner.config.js.map
 packages/tests/**/web-test-runner.config.d.ts
 packages/tests/**/web-test-runner.config.d.ts.map
+packages/tests/**/mocha-skip-in-ci.js
+packages/tests/**/mocha-skip-in-ci.js.map
+packages/tests/**/mocha-skip-in-ci.d.ts
+packages/tests/**/mocha-skip-in-ci.d.ts.map
 
 packages/ts-transformers/*.js
 packages/ts-transformers/*.js.map
