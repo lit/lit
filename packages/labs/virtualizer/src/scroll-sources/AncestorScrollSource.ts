@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {fixedInsetLabel} from '../layouts/shared/Layout.js';
+import {fixedInsetLabel} from './_types.js';
 import {BaseDomScrollSource} from './BaseDomScrollSource.js';
 
 /**

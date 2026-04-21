@@ -9,11 +9,10 @@ import {
   LogicalCoordinates,
   ChildPositions,
   ScrollToCoordinates,
-  fixedSizeDimensionCapitalized,
-  fixedInsetLabel,
   writingMode,
   direction,
 } from '../layouts/shared/Layout.js';
+import {fixedSizeDimensionCapitalized, fixedInsetLabel} from './_types.js';
 import {ScrollerController} from '../ScrollerController.js';
 import {
   ScrollSource,
