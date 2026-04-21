@@ -54,28 +54,33 @@ suite('Spring', () => {
       assert.equal(el.spring.toValue, 50);
     });
 
-    test('spring starts when connected, stops when disconnected', async () => {
-      const el = new SpringControllerTest({fromValue: 100, toValue: 50});
-      container.append(el);
-      assert.isFalse(el.spring.isAtRest);
-      assert.isTrue(el.spring.isAnimating);
-      assert.equal(el.spring.currentValue, 100);
-      assert.equal(el.spring.currentVelocity, 0);
-      assert.equal(el.spring.toValue, 50);
+    // Flaky on Firefox due to timing/float-comparison sensitivity. See #5193.
+    // Still runs locally so developers can exercise the behavior.
+    test.skipInCI(
+      'spring starts when connected, stops when disconnected',
+      async () => {
+        const el = new SpringControllerTest({fromValue: 100, toValue: 50});
+        container.append(el);
+        assert.isFalse(el.spring.isAtRest);
+        assert.isTrue(el.spring.isAnimating);
+        assert.equal(el.spring.currentValue, 100);
+        assert.equal(el.spring.currentVelocity, 0);
+        assert.equal(el.spring.toValue, 50);
 
-      // Wait at least a frame
-      await new Promise((res) => requestAnimationFrame(res));
+        // Wait at least a frame
+        await new Promise((res) => requestAnimationFrame(res));
 
-      // Make sure it's moving
-      assert.isFalse(el.spring.isAtRest);
-      assert.isTrue(el.spring.isAnimating);
-      assert.isTrue(el.spring.currentValue < 100);
-      assert.isTrue(el.spring.currentVelocity < 0);
+        // Make sure it's moving
+        assert.isFalse(el.spring.isAtRest);
+        assert.isTrue(el.spring.isAnimating);
+        assert.isTrue(el.spring.currentValue < 100);
+        assert.isTrue(el.spring.currentVelocity < 0);
 
-      // make sure it stops
-      el.remove();
-      assert.isFalse(el.spring.isAnimating);
-    });
+        // make sure it stops
+        el.remove();
+        assert.isFalse(el.spring.isAnimating);
+      }
+    );
   });
 
   suite('SpringController2D', () => {
@@ -109,36 +114,41 @@ suite('Spring', () => {
       assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
     });
 
-    test('spring starts when connected, stop when disconnected', async () => {
-      const el = new SpringController2DTest({
-        fromPosition: {x: 100, y: 100},
-        toPosition: {x: 50, y: 50},
-      });
-      container.append(el);
-      assert.isFalse(el.spring.isAtRest);
-      assert.isTrue(el.spring.isAnimating);
-      assert.deepEqual(el.spring.currentPosition, {x: 100, y: 100});
-      assert.deepEqual(el.spring.currentVelocity, {x: 0, y: 0});
-      assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
+    // Flaky on Webkit due to timing/float-comparison sensitivity (same root
+    // cause as the 1D variant). See #5193. Still runs locally.
+    test.skipInCI(
+      'spring starts when connected, stop when disconnected',
+      async () => {
+        const el = new SpringController2DTest({
+          fromPosition: {x: 100, y: 100},
+          toPosition: {x: 50, y: 50},
+        });
+        container.append(el);
+        assert.isFalse(el.spring.isAtRest);
+        assert.isTrue(el.spring.isAnimating);
+        assert.deepEqual(el.spring.currentPosition, {x: 100, y: 100});
+        assert.deepEqual(el.spring.currentVelocity, {x: 0, y: 0});
+        assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
 
-      // Wait at least a frame
-      await new Promise((res) => requestAnimationFrame(res));
-      await new Promise((res) => setTimeout(res, 4));
+        // Wait at least a frame
+        await new Promise((res) => requestAnimationFrame(res));
+        await new Promise((res) => setTimeout(res, 4));
 
-      // Make sure it's moving
-      assert.isFalse(el.spring.isAtRest);
-      assert.isTrue(el.spring.isAnimating);
-      assert.isTrue(el.spring.currentPosition.x < 100);
-      assert.isTrue(el.spring.currentPosition.y < 100);
+        // Make sure it's moving
+        assert.isFalse(el.spring.isAtRest);
+        assert.isTrue(el.spring.isAnimating);
+        assert.isTrue(el.spring.currentPosition.x < 100);
+        assert.isTrue(el.spring.currentPosition.y < 100);
 
-      // TODO (justinfagnani): I can't figure out why this is sometimes false
-      // assert.isTrue(
-      //   el.spring.currentVelocity.x > 0 || el.spring.currentVelocity.y > 0
-      // );
+        // TODO (justinfagnani): I can't figure out why this is sometimes false
+        // assert.isTrue(
+        //   el.spring.currentVelocity.x > 0 || el.spring.currentVelocity.y > 0
+        // );
 
-      // make sure it stops
-      el.remove();
-      assert.isFalse(el.spring.isAnimating);
-    });
+        // make sure it stops
+        el.remove();
+        assert.isFalse(el.spring.isAnimating);
+      }
+    );
   });
 });

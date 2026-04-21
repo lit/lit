@@ -27,6 +27,7 @@
       ],
       "output": [
         "utils",
+        "mocha-skip-in-ci.{d.ts,d.ts.map,js,js.map}",
         "run-web-tests.{js,js.map}",
         "web-test-runner.config.{js,js.map}",
         "tsconfig.tsbuildinfo"
