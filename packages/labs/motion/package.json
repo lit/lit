@@ -160,6 +160,7 @@
   "author": "Google LLC",
   "devDependencies": {
     "@lit-internal/scripts": "^1.0.1",
+    "sinon": "^21.1.2",
     "@types/trusted-types": "^2.0.2"
   },
   "dependencies": {
