@@ -1278,6 +1278,60 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       render(renderServerOnlyElementPart);
     }, /Server-only templates don't support element parts/);
   });
+
+  /* Render Options */
+
+  test('enable connectedCallback for specific element', async () => {
+    const {
+      render,
+      eventParentAndChildrenForCallbackConnectedFilter,
+      setupEvents,
+    } = await setup();
+    const {eventPath, reset} = setupEvents({
+      connectedCallbackElement: 'test-events-child',
+    });
+    try {
+      const result = await render(
+        eventParentAndChildrenForCallbackConnectedFilter
+      );
+      assert.is(
+        result,
+        '<!--lit-part gZU30y7yqRY=--><test-events-parent><template shadowroot="open" shadowrootmode="open"><style>\n' +
+          '    :host {\n' +
+          '      display: block;\n' +
+          '    }\n' +
+          '  </style><!--lit-part LLTdYazTGBk=--><main><slot></slot></main><!--/lit-part--></template>' +
+          '<test-events-child data-test><template shadowroot="open" shadowrootmode="open"><!--lit-part Ux1Wl2m85Zk=-->' +
+          '<div>events child</div><!--/lit-part--></template></test-events-child>' +
+          '<test-events-child-inert><template shadowroot="open" shadowrootmode="open"><!--lit-part qwEoALVvGsQ=--><div>events child inert</div><!--/lit-part--></template>' +
+          '</test-events-child-inert></test-events-parent><!--/lit-part-->'
+      );
+      // structuredClone is necessary, as the identity across module loader is not equal.
+      assert.equal(structuredClone(eventPath), [
+        'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        'test-events-child{id:1}/capture/AT_TARGET/test-events-child{id:1}',
+        'test-events-child{id:1}/non-capture/AT_TARGET/test-events-child{id:1}',
+        'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+      ]);
+    } finally {
+      reset();
+    }
+  });
+
+  test('disable SSR for specific element', async () => {
+    const {render, noSsrTemplate, setupExclusion} = await setup();
+    using _ = setupExclusion();
+    const result = await render(noSsrTemplate);
+    assert.is(
+      result,
+      '<!--lit-part 2fjWohnOnvA=--><test-simple><template shadowroot="open" shadowrootmode="open"><!--lit-part UNbWrd8S5FY=--><main></main><!--/lit-part--></template></test-simple>' +
+        '<no-ssr></no-ssr><!--/lit-part-->'
+    );
+  });
 }
 
 test.run();
