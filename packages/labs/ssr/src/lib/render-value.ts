@@ -37,7 +37,7 @@ const {
 } = _$LH;
 
 import {digestForTemplateResult} from '@lit-labs/ssr-client';
-import {HTMLElement, HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
+import {EventTargetShimMeta, HTMLSlotElement} from '@lit-labs/ssr-dom-shim';
 
 import {
   ElementRenderer,
@@ -108,22 +108,6 @@ const patchAnyDirectives = (
 };
 
 const templateCache = new WeakMap<TemplateStringsArray, Array<Op>>();
-
-// This is a map for which slots exist for a given custom element.
-// With a named slot, it is represented as a string with the name
-// and the unnamed slot is represented as undefined.
-const elementSlotMap = new WeakMap<
-  HTMLElement,
-  Map<string | undefined, HTMLSlotElement>
->();
-
-// We want the slot element to be able to be identified.
-class HTMLSlotElement extends HTMLElement {
-  name!: string;
-  override get localName(): string {
-    return 'slot';
-  }
-}
 
 /**
  * Operation to output static text
@@ -696,7 +680,7 @@ export type RenderInfo = {
   /**
    * Stack of open event target instances.
    */
-  eventTargetStack: Array<HTMLElement | undefined>;
+  eventTargetStack: Array<EventTarget | undefined>;
 
   /**
    * Stack of current slot context.
@@ -740,7 +724,7 @@ export function renderValue(
         // If an entry in the event target stack was provided and it was not
         // the event root target, we need to connect the given event target
         // to the root event target.
-        (rootEventTarget as HTMLElementWithEventMeta).__eventTargetParent =
+        (rootEventTarget as EventTargetShimMeta).__eventTargetParent =
           rootEventTarget;
       }
     }
@@ -941,21 +925,7 @@ And the inner template was:
             op.staticAttributes
           );
           if (instance.element) {
-            // In the case the renderer has created an instance, we want to set
-            // the event target parent and the host of the element. Our
-            // EventTarget polyfill uses these values to calculate the
-            // composedPath of a dispatched event.
-            // Note that the event target parent is either the unnamed/named slot
-            // in the parent event target if it exists or the parent event target
-            // if no matching slot exists.
-            const eventTarget = renderInfo.eventTargetStack.at(
-              -1
-            ) as HTMLElementWithEventMeta;
-            const slotName = renderInfo.slotStack.at(-1);
-            (instance.element as HTMLElementWithEventMeta).__eventTargetParent =
-              elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
-            (instance.element as HTMLElementWithEventMeta).__host =
-              renderInfo.customElementHostStack.at(-1)?.element;
+            addElementToEventPath(instance.element, renderInfo);
             renderInfo.eventTargetStack.push(instance.element);
           }
           // Set static attributes to the element renderer
@@ -1063,28 +1033,17 @@ And the inner template was:
             // We need to track which element has which slots. This is necessary
             // to calculate the correct event path by connecting children of the
             // host element to the corresponding slot.
-            let slots = elementSlotMap.get(host.element);
-            if (slots === undefined) {
-              slots = new Map();
-              elementSlotMap.set(host.element, slots);
-            }
+            const slots = ((host.element as EventTargetShimMeta).__slots ??=
+              new Map());
             // op.name is either the slot name or undefined, which represents
             // the unnamed slot case.
+            const element = new HTMLSlotElement();
+            element.name = op.name ?? '';
+            addElementToEventPath(element, renderInfo);
             if (!slots.has(op.name)) {
-              const element = new HTMLSlotElement() as HTMLSlotElement &
-                HTMLElementWithEventMeta;
-              element.name = op.name ?? '';
-              const eventTarget = renderInfo.eventTargetStack.at(
-                -1
-              ) as HTMLElementWithEventMeta;
-              const slotName = renderInfo.slotStack.at(-1);
-              element.__eventTargetParent =
-                elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
-              element.__host =
-                renderInfo.customElementHostStack.at(-1)?.element;
               slots.set(op.name, element);
-              renderInfo.eventTargetStack.push(element);
             }
+            renderInfo.eventTargetStack.push(element);
           }
         });
         break;
@@ -1255,4 +1214,35 @@ function isJavaScriptScriptTag(node: Element | Template): boolean {
   // we can return false.
   const willExecute = !safeTypeSeen;
   return willExecute;
+}
+
+/**
+ * To add the element to the event path, we need to set the host of the element
+ * (if the element is inside a shadow root) and the event target parent.
+ * Our EventTarget polyfill uses these values to calculate the composedPath of a dispatched event.
+ *
+ * The event target parent is either the unnamed/named slot to which the current element
+ * is assigned to, the host of the current element or the event target from the stack
+ * (which can be a parent element, a custom root event target or our litServerRoot instance).
+ *
+ * See packages/labs/ssr-dom-shim/src/index.ts for more details about the EventTarget
+ * polyfill and how the event path is calculated.
+ */
+function addElementToEventPath(
+  element: HTMLElement & EventTargetShimMeta,
+  renderInfo: RenderInfo
+): void {
+  const eventTarget = renderInfo.eventTargetStack.at(-1);
+  const slotName = renderInfo.slotStack.at(-1);
+  element.__host = renderInfo.customElementHostStack.at(-1)?.element;
+  const assignedSlot = (
+    eventTarget as EventTargetShimMeta | undefined
+  )?.__slots?.get(slotName);
+  if (assignedSlot) {
+    element.__eventTargetParent = assignedSlot;
+  } else if (element.__host === eventTarget) {
+    element.__eventTargetParent = element.getRootNode() ?? eventTarget;
+  } else {
+    element.__eventTargetParent = eventTarget;
+  }
 }
