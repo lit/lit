@@ -12,7 +12,6 @@
  * CustomElementRegistry however.
  */
 
-import fetch from 'node-fetch';
 import {
   HTMLElement,
   Element,
@@ -72,10 +71,7 @@ export const getWindow = ({
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
-    fetch: (url: URL, init: {}) =>
-      // TODO(aomarks) The typings from node-fetch are wrong because they don't
-      // allow URL.
-      fetch(url as unknown as Parameters<typeof fetch>[0], init),
+    fetch: globalThis.fetch?.bind(globalThis),
 
     location: new URL('http://localhost'),
     MutationObserver: class {
@@ -97,7 +93,6 @@ export const getWindow = ({
       // No-op any async tasks
       setTimeout() {},
       clearTimeout() {},
-      // Required for node-fetch
       Buffer,
       URL,
       URLSearchParams,
