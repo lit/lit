@@ -53,6 +53,29 @@ export interface EventTargetShimMeta {
    * A map of slot name to the corresponding slot element.
    * For named slots, the key is the name of the slot and for
    * the unnamed slot, the key is `undefined`.
+   *
+   * These need to be tracked explicitly since the slot elements are not
+   * necessarily in the same tree as the event target, so they can't be found
+   * by traversing the event path. This is needed to properly retarget events
+   * dispatched on slotted nodes.
+   *
+   * <my-el1>
+   *   #shadow-dom (open)
+   *     <slot></slot>
+   *     <my-el2>
+   *       #shadow-dom (closed)
+   *         <slot></slot>
+   *       <slot name="nested"></slot>
+   *     </my-el2>
+   *   <my-el3 slot="nested"></my-el3>
+   * </my-el1>
+   *
+   * With the above example the shadow DOM of `<my-el1>` is rendered before the
+   * child elements of `<my-el1>`, so when the slot elements are rendered, they
+   * are added and subsequently removed from the eventTargetStack and when
+   * `<my-el3>` is rendered it cannot solely rely on the eventTargetStack
+   * and need to check for each custom element in the stack if it has a slot
+   * with the name of the slot it is trying to fill.
    */
   __slots?: Map<string | undefined, globalThis.HTMLSlotElement>;
 }
