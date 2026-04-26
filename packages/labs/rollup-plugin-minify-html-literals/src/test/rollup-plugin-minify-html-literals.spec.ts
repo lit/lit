@@ -1,10 +1,10 @@
-import {test, describe as suite, beforeEach} from 'node:test';
 import * as assert from 'node:assert/strict';
+import {beforeEach, describe as suite, test} from 'node:test';
 import * as path from 'path';
 import {TransformPluginContext} from 'rollup';
 import sinon from 'sinon';
-import * as minify from '../lib/minify-html-literals.js';
 import minifyHTML, {Options} from '../index.js';
+import * as minify from '../lib/minify-html-literals.js';
 
 suite('rollup-plugin-minify-html-literals', () => {
   const fileName = path.resolve('test.js');
@@ -141,5 +141,111 @@ suite('rollup-plugin-minify-html-literals', () => {
       fileName,
     ]);
     assert.ok(options.filter.calledWith());
+  });
+
+  test('should minify CSS by default', async () => {
+    const source = `
+      const styles = css\`
+        .container {
+          display: flex;
+          color: blue;
+        }
+      \`;
+    `;
+
+    const plugin = minifyHTML();
+
+    const result = await plugin.transform.apply(
+      context as unknown as TransformPluginContext,
+      [source, fileName]
+    );
+
+    // Should minify CSS by default
+    assert.ok(result);
+    assert.ok(typeof result === 'object');
+    // Should remove whitespace and minify (LightningCSS orders properties)
+    assert.ok(result!.code!.includes('.container{color:#00f;display:flex}'));
+  });
+
+  test('should not minify CSS when minifyCSS is false', async () => {
+    const source = `
+      const styles = css\`
+        .container {
+          display: flex;
+          color: blue;
+        }
+      \`;
+    `;
+
+    const plugin = minifyHTML({
+      options: {
+        minifyOptions: {
+          minifyCSS: false,
+        },
+      },
+    });
+
+    const result = await plugin.transform.apply(
+      context as unknown as TransformPluginContext,
+      [source, fileName]
+    );
+
+    // When minifyCSS is false, CSS-only templates won't be processed
+    // so result will be null (no changes needed)
+    assert.equal(result, null);
+  });
+
+  test('Passing LightningCSS options should affect the minified output', async () => {
+    const source = `
+      const styles = css\`
+        @custom-media --small (max-width: 768px);
+        
+        .container {
+          color: blue;
+        }
+        
+        @media (--small) {
+          .container {
+            color: red;
+          }
+        }
+      \`;
+    `;
+
+    // Enable draft features - @custom-media requires this flag
+    const plugin = minifyHTML({
+      options: {
+        minifyOptions: {
+          minifyCSS: {
+            minify: true,
+            drafts: {
+              customMedia: true,
+            },
+          },
+        },
+      },
+    });
+
+    const result = await plugin.transform.apply(
+      context as unknown as TransformPluginContext,
+      [source, fileName]
+    );
+
+    // Should minify and transform with custom options
+    assert.ok(result);
+    assert.ok(typeof result === 'object');
+
+    // Should minify (whitespace removed)
+    assert.ok(result!.code!.includes('.container{'));
+
+    // @custom-media should be preserved (drafts.customMedia enabled)
+    assert.ok(result!.code!.includes('@custom-media'));
+    assert.ok(result!.code!.includes('--small'));
+
+    // Media query should use the custom media query name
+    assert.ok(result!.code!.includes('@media (--small)'));
+
+    // Colors should be minified
+    assert.ok(result!.code!.includes('#00f'));
   });
 });
