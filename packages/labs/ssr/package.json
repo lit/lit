@@ -237,7 +237,7 @@
     "parse5": "^7.1.1"
   },
   "peerDependencies": {
-    "@types/node": ">=20.0.0 <25.0.0"
+    "@types/node": ">=20.0.0 <26.0.0"
   },
   "peerDependenciesMeta": {
     "@types/node": {
