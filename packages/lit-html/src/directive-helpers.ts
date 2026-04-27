@@ -236,15 +236,20 @@ export const getCommittedValue = (part: ChildPart) => part._$committedValue;
  * Removes a ChildPart from the DOM, including any of its content and markers.
  *
  * Note: The only difference between this and clearPart() is that this also
- * removes the part's start node. This means that the ChildPart must own its
- * start node, ie it must be a marker node specifically for this part and not an
- * anchor from surrounding content.
+ * removes the part's start node (and its end marker, if present). This means
+ * that the ChildPart must own its start node, ie it must be a marker node
+ * specifically for this part and not an anchor from surrounding content.
  *
  * @param part The Part to remove
  */
 export const removePart = (part: ChildPart) => {
   part._$clear();
   part._$startNode.remove();
+  // Without this, every removePart call leaves behind a `<!---->` comment
+  // marker (the part's end marker), causing unbounded DOM accumulation
+  // under sustained churn (e.g., virtualizer scrolling that removes items
+  // at one edge and adds at the other).
+  part._$endNode?.remove();
 };
 
 export const clearPart = (part: ChildPart) => {

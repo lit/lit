@@ -267,6 +267,40 @@ suite('directive-helpers', () => {
     assert.strictEqual(container.firstElementChild?.childNodes.length, 0);
   });
 
+  test('removePart removes both the start and end markers of an inserted part', () => {
+    // Regression test: parts created via `insertPart()` own both a start and
+    // an end marker comment. `removePart` must remove both — otherwise every
+    // call leaks a `<!---->` marker, which accumulates under sustained churn
+    // (e.g. virtualizer scrolling that removes items at one edge and adds at
+    // the other).
+    let hostPart: ChildPart | undefined;
+    const captureDirective = directive(
+      class CaptureDirective extends Directive {
+        render() {
+          return undefined;
+        }
+        override update(part: ChildPart) {
+          hostPart = part;
+          return undefined;
+        }
+      }
+    );
+
+    render(html`<div>${captureDirective()}</div>`, container);
+    assert.isDefined(hostPart);
+
+    const div = container.firstElementChild as HTMLDivElement;
+    const childCountBefore = div.childNodes.length;
+
+    // Insert a child part into the host part (this adds two marker comments)
+    // and then immediately remove it. Both markers must be gone.
+    const inserted = insertPart(hostPart!);
+    assert.strictEqual(div.childNodes.length, childCountBefore + 2);
+
+    removePart(inserted);
+    assert.strictEqual(div.childNodes.length, childCountBefore);
+  });
+
   test('insertPart keeps connection state in sync', () => {
     // Directive that tracks/renders connected state
     let connected = false;
