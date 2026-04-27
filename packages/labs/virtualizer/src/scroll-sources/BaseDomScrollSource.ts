@@ -20,6 +20,7 @@ import {
   ScrollElementIntoViewOptions,
 } from './ScrollSource.js';
 import {_ResizeObserver, getClippingAncestors} from './_dom-utils.js';
+import {DomSmoothIntent} from './ScrollIntoViewIntent.js';
 
 /**
  * Abstract base class for the DOM-based scroll sources
@@ -63,11 +64,18 @@ export abstract class BaseDomScrollSource implements ScrollSource {
   // dispatched here. Defined as an arrow-bound member below.
   protected _eventHandler: EventListenerObject;
 
-  // Smooth-scroll orchestration state.
-  private _smoothScrollTarget: ScrollElementIntoViewOptions | null = null;
-  private _smoothScrollUpdater:
-    | ((coordinates: ScrollToCoordinates) => void)
-    | null = null;
+  /**
+   * The currently active smooth-scroll intent, or null. Instant scroll
+   * is fully synchronous (just sets the layout pin; the existing pin →
+   * `_scrollError` → native `scrollTo` chain handles the teleport) and
+   * doesn't register an intent.
+   *
+   * Lifecycle (signal binding, end-reason tracking, dispatch of
+   * `scrollintoviewended`) is owned by the intent base class; this
+   * source holds the reference and uses it for retargeting and
+   * replacement.
+   */
+  private _intent: DomSmoothIntent | null = null;
 
   constructor(host: ScrollSourceHost) {
     this._host = host;
@@ -172,8 +180,10 @@ export abstract class BaseDomScrollSource implements ScrollSource {
       window.removeEventListener('resize', this._windowResizeCallback);
       this._windowResizeCallback = null;
     }
-    this._smoothScrollTarget = null;
-    this._smoothScrollUpdater = null;
+    if (this._intent !== null) {
+      this._intent.cancel();
+      this._intent = null;
+    }
   }
 
   private _onScrollOrResize(event: Event) {
@@ -413,32 +423,55 @@ export abstract class BaseDomScrollSource implements ScrollSource {
   scrollElementIntoView(
     options: ScrollElementIntoViewOptions,
     layout: Layout
-  ): void {
+  ): ScrollToCoordinates {
+    const coordinates = layout.getScrollIntoViewCoordinates(options);
+    // An already-aborted signal means "no-op": still return the
+    // computed destination, but don't start any side effects (no pin,
+    // no smooth scroll, no event dispatches).
+    if (options.signal?.aborted) {
+      return coordinates;
+    }
+
     if (options.behavior === 'smooth') {
-      const coordinates = layout.getScrollIntoViewCoordinates(options);
-      const {behavior} = options;
-      this._smoothScrollUpdater = this._scrollerController!.managedScrollTo(
-        Object.assign(coordinates, {behavior}),
-        () => layout.getScrollIntoViewCoordinates(options),
-        () => {
-          this._smoothScrollTarget = null;
-        }
+      // Replace any prior smooth intent so its `scrollintoviewended`
+      // fires with reason `'replaced'` before we start the new one.
+      if (this._intent !== null) {
+        const prior = this._intent;
+        this._intent = null;
+        prior.replace();
+      }
+      this._intent = new DomSmoothIntent(
+        this._host.hostElement,
+        options,
+        this._scrollerController!,
+        layout,
+        coordinates
       );
-      this._smoothScrollTarget = options;
     } else {
+      // Instant: pin teleports the layout's scroll position; the
+      // existing `_setPositionFromPin` → `_scrollError` →
+      // `correctScrollError` → native `scrollTo` chain applies the
+      // scroll. No intent is tracked — the operation is effectively
+      // synchronous from the consumer's perspective. The pin stays
+      // set until the user scrolls (which fires `unpinned`), matching
+      // the behavior of `pin` set directly via `layout.pin`.
+      //
+      // If a smooth intent was in flight, replace it first so its
+      // `scrollintoviewended` fires with `'replaced'`.
+      if (this._intent !== null) {
+        const prior = this._intent;
+        this._intent = null;
+        prior.replace();
+      }
       layout.pin = options;
     }
+    return coordinates;
   }
 
   checkScrollIntoViewTarget(
     positions: ChildPositions | null,
-    layout: Layout
+    _layout: Layout
   ): void {
-    const {index} = this._smoothScrollTarget || {};
-    if (index && positions?.has(index)) {
-      this._smoothScrollUpdater!(
-        layout.getScrollIntoViewCoordinates(this._smoothScrollTarget!)
-      );
-    }
+    this._intent?.retargetIfRendered(positions);
   }
 }
