@@ -7,6 +7,7 @@
 import {
   Layout,
   LogicalCoordinates,
+  ScrollToCoordinates,
   VirtualizerSize,
   writingMode,
   direction,
@@ -29,10 +30,18 @@ export interface Viewport {
 /**
  * Options accepted by `ScrollSource.scrollElementIntoView()`. The shape
  * mirrors the `ScrollIntoViewOptions` Web platform interface plus the
- * target item index.
+ * target item index and an optional `AbortSignal` used to cancel an
+ * in-flight intent.
  */
 export interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
   index: number;
+  /**
+   * Optional `AbortSignal` for terminating the scroll-into-view intent.
+   * Aborting the signal releases the pin associated with the intent and
+   * fires a `scrollintoviewended` event with `reason: 'cancelled'`.
+   * Available in all scroll modes.
+   */
+  signal?: AbortSignal;
 }
 
 /**
@@ -165,15 +174,21 @@ export interface ScrollSource {
    * support smooth scrolling (DOM-based sources) or fall back to pin-based
    * instant scrolling (managed mode).
    *
-   * Virtualizer handles the case where the target element is already in
-   * the rendered range by calling its native `scrollIntoView` directly,
-   * so this method is only called when the target is not currently
-   * rendered.
+   * In DOM modes the Virtualizer may bypass this call when the target
+   * element is already in the rendered range and use native
+   * `scrollIntoView` on the rendered child directly; this method is
+   * still expected to compute and return the destination coordinates so
+   * the caller can use them. In managed mode the Virtualizer always
+   * routes through this method.
+   *
+   * Returns the computed destination in the consumer-facing coordinate
+   * system (physical `top`/`left`, with only the axes the layout
+   * touches present — typically the block axis only).
    */
   scrollElementIntoView(
     options: ScrollElementIntoViewOptions,
     layout: Layout
-  ): void;
+  ): ScrollToCoordinates;
 
   /**
    * Called by Virtualizer at the end of each layout cycle. If the source

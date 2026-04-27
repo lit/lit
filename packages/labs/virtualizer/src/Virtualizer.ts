@@ -25,6 +25,7 @@ import {
   VirtualizerSize,
   VirtualizerSizeValue,
   LogicalCoordinates,
+  ScrollToCoordinates,
 } from './layouts/shared/Layout.js';
 
 /**
@@ -47,11 +48,15 @@ import {
   RangeChangedEvent,
   VisibilityChangedEvent,
   UnpinnedEvent,
+  ScrollErrorEvent,
+  DestinationChangedEvent,
+  ScrollIntoViewEndedEvent,
 } from './events.js';
 import type {
   ScrollSource,
   ScrollSourceHost,
   Viewport,
+  ScrollElementIntoViewOptions,
 } from './scroll-sources/ScrollSource.js';
 import {ManagedScrollSource} from './scroll-sources/ManagedScrollSource.js';
 import {AncestorScrollSource} from './scroll-sources/AncestorScrollSource.js';
@@ -88,6 +93,9 @@ declare global {
     rangeChanged: RangeChangedEvent;
     visibilityChanged: VisibilityChangedEvent;
     unpinned: UnpinnedEvent;
+    scrollerror: ScrollErrorEvent;
+    destinationchanged: DestinationChangedEvent;
+    scrollintoviewended: ScrollIntoViewEndedEvent;
   }
 }
 
@@ -96,22 +104,33 @@ export interface VirtualizerHostElement extends HTMLElement {
 }
 
 /**
+ * Options accepted by `VirtualizerChildElementProxy.scrollIntoView()`.
+ * Mirrors the Web platform `ScrollIntoViewOptions` and adds an optional
+ * `signal: AbortSignal` for explicit cancellation of the in-flight
+ * intent. Aborting the signal releases the underlying pin and fires a
+ * `scrollintoviewended` event with `reason: 'cancelled'`.
+ */
+export interface ScrollIntoViewOptionsWithSignal extends ScrollIntoViewOptions {
+  signal?: AbortSignal;
+}
+
+/**
  * A very limited proxy object for a virtualizer child,
  * returned by Virtualizer.element(idx: number). Introduced
  * to enable scrolling a virtual element into view using
  * a call that looks and behaves essentially the same as for
  * a real Element. May be useful for other things later.
+ *
+ * `scrollIntoView` returns the destination coordinates (in physical
+ * `top`/`left` form) computed from the layout's current state. Only
+ * the axes the layout touches are present (typically the block axis
+ * only). For consumers in managed mode, this is the coordinate they
+ * should drive their viewport toward.
  */
 export interface VirtualizerChildElementProxy {
-  scrollIntoView: (options?: ScrollIntoViewOptions) => void;
-}
-
-/**
- * Used internally for scrolling a (possibly virtual) element
- * into view, given its index
- */
-interface ScrollElementIntoViewOptions extends ScrollIntoViewOptions {
-  index: number;
+  scrollIntoView: (
+    options?: ScrollIntoViewOptionsWithSignal
+  ) => ScrollToCoordinates;
 }
 
 export interface VirtualizerConfig {
@@ -1402,18 +1421,29 @@ export class Virtualizer {
     return this._items?.[index] === undefined
       ? undefined
       : {
-          scrollIntoView: (options: ScrollIntoViewOptions = {}) =>
+          scrollIntoView: (options: ScrollIntoViewOptionsWithSignal = {}) =>
             this._scrollElementIntoView({...options, index}),
         };
   }
 
-  private _scrollElementIntoView(options: ScrollElementIntoViewOptions) {
+  private _scrollElementIntoView(
+    options: ScrollElementIntoViewOptions
+  ): ScrollToCoordinates {
+    options.index = Math.min(options.index, this._items.length - 1);
+    // In managed mode the virtualizer never touches DOM scroll state;
+    // every scroll-into-view request — including for in-range targets —
+    // goes through the source so the consumer is the sole driver of
+    // viewport changes.
+    if (this._managed) {
+      return this._scrollSource!.scrollElementIntoView(options, this._layout!);
+    }
     if (options.index >= this._first && options.index <= this._last) {
       this._children[options.index - this._first].scrollIntoView(options);
-    } else {
-      options.index = Math.min(options.index, this._items.length - 1);
-      this._scrollSource!.scrollElementIntoView(options, this._layout!);
+      // Compute coordinates so callers always receive them, even in the
+      // in-range fast-path where the source isn't consulted.
+      return this._layout!.getScrollIntoViewCoordinates(options);
     }
+    return this._scrollSource!.scrollElementIntoView(options, this._layout!);
   }
 
   /**

@@ -207,6 +207,21 @@ export class ScrollerController extends ScrollerShim {
     return this._updateManagedScrollTo;
   }
 
+  /**
+   * Terminate any in-flight managed scroll without changing the current
+   * scroll position. Fires the `end` callback (so the caller can
+   * dispatch a `scrollintoviewended` event or otherwise clean up) and
+   * clears the destination/retarget/end state.
+   *
+   * Idempotent: safe to call when no scroll is in flight.
+   */
+  public cancelManagedScrollTo() {
+    if (this._end !== null) {
+      this._end();
+    }
+    this._resetScrollState();
+  }
+
   public correctScrollError(coordinates: ScrollToCoordinates) {
     this.correctingScrollError = true;
     requestAnimationFrame(() =>
