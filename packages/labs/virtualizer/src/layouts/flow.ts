@@ -247,28 +247,34 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
   _estimatePosition(idx: number): number {
     const c = this._metricsCache;
+    // Use `_getAverageSize()` rather than `c.averageChildSize` directly:
+    // the cache is empty until measurements arrive, in which case
+    // `averageChildSize` is 0 and the extrapolation below would
+    // collapse — every unrendered index would resolve to the same
+    // position. `_getAverageSize()` falls back to the layout's
+    // configured initial estimate (`_itemSize.blockSize`) so positions
+    // remain monotonic even before the first measurements land.
+    const avgSize = this._getAverageSize();
+    const avgMargin = c.averageMarginSize;
     if (this._first === -1 || this._last === -1) {
-      return (
-        c.averageMarginSize +
-        idx * (c.averageMarginSize + this._getAverageSize())
-      );
+      return avgMargin + idx * (avgMargin + avgSize);
     } else {
       if (idx < this._first) {
         const delta = this._first - idx;
         const refItem = this._getPhysicalItem(this._first);
         return (
           refItem!.pos -
-          (c.getMarginSize(this._first) || c.averageMarginSize) -
-          (delta * c.averageChildSize + (delta - 1) * c.averageMarginSize)
+          (c.getMarginSize(this._first) || avgMargin) -
+          (delta * avgSize + (delta - 1) * avgMargin)
         );
       } else {
         const delta = idx - this._last;
         const refItem = this._getPhysicalItem(this._last);
         return (
           refItem!.pos +
-          (c.getChildSize(this._last) || c.averageChildSize) +
-          (c.getMarginSize(this._last + 1) || c.averageMarginSize) +
-          (delta - 1) * (c.averageChildSize + c.averageMarginSize)
+          (c.getChildSize(this._last) || avgSize) +
+          (c.getMarginSize(this._last + 1) || avgMargin) +
+          (delta - 1) * (avgSize + avgMargin)
         );
       }
     }
