@@ -18,13 +18,6 @@
 >
 > Give feedback: https://github.com/lit/lit/discussions/3362
 
-> [!WARNING]
->
-> `@lit-labs/virtualizer` is in late prerelease. Its API is intended to remain
-> quite stable going forward, but you should expect (increasingly minor) changes
-> before 1.0. Some of these changes may be technically breaking, but we
-> anticipate that they will be mechanical and straightforward to make.
-
 ## Getting Started
 
 Get this package:
@@ -83,13 +76,49 @@ render() {
 }
 ```
 
-When you make a virtualizer a scroller, you should explicitly size it to suit the needs of your layout. (By default, it has a `min-height` of 150 pixels to prevent it from collapsing to a zero-height block, but this default will rarely be what you want in practice.)
+When you make a virtualizer a scroller, you should explicitly size it to suit the needs of your layout. If you don't, the virtualizer will have zero size in one or both dimensions, so won't render any children. If you forget to size a scrolling virtualizer, a console warning will appear to help you diagnose the issue.
+
+> [!NOTE]
+> Earlier versions of `@lit-labs/virtualizer` set a `min-height` of `150px` on scrolling virtualizers to avoid this zero-size case, but this approach was heavy-handed and doesn't play nicely with [CSS writing mode and direction](#writing-mode-and-direction), so has been replaced with the console warning.
+
+### Writing mode and direction
+
+The virtualizer is aware of CSS `writing-mode` and `direction` and should generally "just work" if you want virtualization along the block axis (e.g., the vertical axis in the browser's default `horizontal-tb` writing mode):
+
+- All CSS writing modes are supported: `horizontal-tb` (the default), `vertical-lr`, and `vertical-rl`
+- When laying out child elements, the virtualizer will respect the CSS direction (`ltr` or `rtl`)
+
+> [!NOTE]
+> If you want to use the default window scroller with a virtualizer in the `vertical-rl` writing mode, be sure to set `writing-mode: vertical-rl` on the `<html>` element. If you set the writing mode on a descendant element instead, the document's scroll model remains `horizontal-tb` and you won't be able to scroll from right to left to see the virtualized content.
+
+### Virtualizing on the inline axis
+
+If you want to virtualize along the inline axis instead—for example, to render a horizontal "shelf" or a carousel in the default writing mode—use the `axis` property:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      scroller
+      axis="inline"
+      .items=${this.photos}
+      .renderItem=${photo => html`<img src=${photo.url}>`}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+> [!NOTE]
+> Under the hood, `axis="inline"` works by "flipping" the virtualizer's own `writing-mode` to the opposite of its CSS context and restoring the original writing mode on each child element. If you have specialized needs, you can manipulate these writing modes directly via CSS instead of using the `axis` property.
+
+> [!NOTE]
+> The `direction` layout config option (e.g., `.layout=${{direction: 'horizontal'}}`) supported in earlier versions of `@lit-labs/virtualizer` is deprecated and will be removed in a future version, but still works for now. To migrate, remove `direction` from your layout config and use `axis="inline"` or explicit CSS instead.
 
 ### Choosing a layout
 
 `@lit-labs/virtualizer` currently supports two basic layouts, [`flow`](#flow-layout) (the default) and [`grid`](#grid-layout), which together cover a wide range of common use cases.
 
-If you just want a vertical flow layout, then there's no need to do anything; that's what a virtualizer does out of the box. But if you want to select the `grid` layout instead, or if you want to set an option on the `flow` layout, then you'll use the virtualizer's `layout` property to do so. Here's an example:
+If you just want a vertical flow layout, there's no need to do anything; that's what a virtualizer does out of the box. But if you want to use the `grid` layout, you'll set the virtualizer's `layout` property. Here's an example:
 
 ```js
 // First, import the layout you want to use. The reference returned
@@ -112,7 +141,7 @@ render() {
 }
 ```
 
-The layout system in `@lit-labs/virtualizer` is pluggable; custom layouts will eventually be supported via a formal layout authoring API. However, the layout authoring API is currently undocumented and less stable than other parts of the API. It is likely that official support of custom layouts will be a post-1.0 feature.
+The layout system in `@lit-labs/virtualizer` is pluggable; custom layouts will eventually be supported via a formal layout authoring API. However, the layout authoring API is currently undocumented and less stable than other parts of the API. Official support of custom layouts is planned for a future version.
 
 ### Using the `flow` layout
 
@@ -130,52 +159,204 @@ To control the spacing of child elements, use standard CSS techniques to set mar
 
 Note that the `flow` layout offers limited support for [margin-collapsing](https://developer.mozilla.org/en-US/docs/Web/CSS/CSS_Box_Model/Mastering_margin_collapsing): margins set explicitly on child elements will be collapsed, but any margins on elements contained _within_ child elements are not considered.
 
-#### Specifying layout direction
-
-The `flow` layout works vertically by default. However, it also supports laying out child elements horizontally, via its `direction` property:
-
-```js
-  render() {
-    return html`
-      <lit-virtualizer
-        .layout=${flow({
-          direction: 'horizontal'
-        })}
-        .items=${this.photos}
-        .renderItem=${photos => html`<img src=${photo.url}>`}
-      ></lit-virtualizer>
-    `;
-  }
-
-```
-
-#### Using shorthand to specify `flow` options
-
-Because `flow` is the default layout, you don't need to import it explicitly, even if you want to set options on it. Just pass an options object directly to your virtualizer's `layout` property, without wrapping it in the `flow()` function:
-
-```js
-// This shorthand form...
-html`
-  <lit-virtualizer
-    .layout=${{
-      direction: 'horizontal'
-    }}
-  ></lit-virtualizer>
-`
-
-// ...is equivalent to this:
-html`
-  <lit-virtualizer
-    .layout=${flow(
-      direction: 'horizontal'
-    )}
-  ></lit-virtualizer>
-`
-```
-
 ### Using the `grid` layout
 
-TODO
+The `grid` layout arranges child elements in a grid with uniform cell sizes. Unlike the `flow` layout, which determines child element sizes naturally from their content, `grid` uses a specified item size and calculates how many columns fit in the available space.
+
+```js
+import {grid} from '@lit-labs/virtualizer/layouts/grid.js';
+```
+
+Like the virtualizer itself, the grid layout respects CSS `writing-mode` and `direction`. In the default `horizontal-tb` writing mode, the grid fills columns across the inline axis (horizontally) and rows along the block axis (vertically, which is the scrolling direction). In vertical writing modes, these axes swap: columns run vertically and rows run horizontally. The CSS `direction` property (`ltr` or `rtl`) determines the order in which columns are filled.
+
+#### Grid layout options
+
+##### `itemSize`
+
+The ideal size of each grid item. Accepts a single value (applied to both dimensions) or an object with explicit dimensions.
+
+Default: `{width: '300px', height: '300px'}`
+
+```js
+// Single value (both dimensions)
+grid({itemSize: '100px'});
+
+// Explicit physical dimensions
+grid({itemSize: {width: '200px', height: '150px'}});
+
+// Logical dimensions (relative to the writing mode)
+grid({itemSize: {inlineSize: '200px', blockSize: '150px'}});
+```
+
+When you use `width` and `height`, these dimensions will be applied to the width and height of child elements regardless of the current CSS `writing-mode`. In contrast, when you provide dimensions in terms of `inlineSize` / `blockSize`, the current writing mode determines how these values map to the elements' width and height.
+
+##### `gap`
+
+Spacing between grid items. Accepts a single value (applied to both axes) or two values (block axis, then inline axis).
+
+Default: `'8px'`
+
+```js
+// Uniform gap
+grid({gap: '12px'});
+
+// Different block and inline gaps
+grid({gap: '8px 16px'});
+```
+
+The block-axis gap value can be set to `'auto'`, but only when `justify` is set to `'space-between'`, `'space-around'`, or `'space-evenly'`. In this case, the block-axis gap is automatically calculated to match the inline-axis spacing.
+
+##### `padding`
+
+Spacing around the edges of the grid. Uses CSS-like shorthand (1 to 4 values).
+
+Default: `'match-gap'`
+
+The special value `'match-gap'` sets padding equal to the gap value, giving uniform spacing around and between items. You can also use `'match-gap'` as an individual value in multi-value shorthand (e.g., `'match-gap 16px'`).
+
+##### `flex`
+
+Controls whether items resize to fill the available width. When enabled, the grid calculates how many columns fit and then stretches items to eliminate leftover space.
+
+Default: `false`
+
+- `false` — items maintain exact `itemSize` dimensions
+- `true` — items resize to fill the row, preserving area (equivalent to `{preserve: 'area'}`)
+- `{preserve: 'aspect-ratio'}` — items resize while maintaining their original aspect ratio
+- `{preserve: 'area'}` — items resize while maintaining their original area
+- `{preserve: 'width'}` or `{preserve: 'height'}` — items resize while keeping the specified dimension fixed
+
+##### `justify`
+
+Controls horizontal alignment of columns within the grid.
+
+Default: `'start'`
+
+Values: `'start'`, `'center'`, `'end'`, `'space-evenly'`, `'space-around'`, `'space-between'`
+
+The space-distribution values (`'space-evenly'`, `'space-around'`, `'space-between'`) automatically calculate spacing between columns, overriding inline-axis gap and padding.
+
+##### How `flex` and `justify` interact
+
+The `flex` and `justify` options are independent but interact. `flex` controls whether items resize to fill the available inline space, while `justify` controls how columns are positioned within that space.
+
+When `flex` is enabled, items stretch to fill each row completely, so there is no leftover space for `justify` to distribute. In this case, the space-distribution values (`'space-between'`, `'space-around'`, `'space-evenly'`) have no effect; spacing is controlled entirely by the explicit `gap` and `padding` values. The alignment values (`'start'`, `'center'`, `'end'`) still apply when flex is on.
+
+When `flex` is disabled and a space-distribution `justify` value is used, the layout automatically calculates spacing between columns, overriding the configured inline-axis `gap` and `padding`.
+
+#### Grid layout examples
+
+A basic grid with custom item sizes:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      .layout=${grid({itemSize: {width: '200px', height: '150px'}})}
+      .items=${this.photos}
+      .renderItem=${photo => html`<img src=${photo.url}>`}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+A responsive grid where items resize to fill each row, preserving their area:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      .layout=${grid({itemSize: '250px', flex: true})}
+      .items=${this.photos}
+      .renderItem=${photo => html`<img src=${photo.url}>`}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+A grid with evenly distributed spacing:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      .layout=${grid({
+        itemSize: '200px',
+        justify: 'space-evenly',
+        gap: 'auto 12px'
+      })}
+      .items=${this.photos}
+      .renderItem=${photo => html`<img src=${photo.url}>`}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+### Using the `masonry` layout
+
+The `masonry` layout arranges child elements in uniformly sized columns along the inline axis, with each item's size along the block axis (the scrolling direction) determined by its aspect ratio. Unlike the `grid` layout, where every item has the same size, masonry items can vary in one dimension — which makes it a natural fit for collections of photos, videos, and other content with different intrinsic proportions that you want to tile without leaving gaps.
+
+```js
+import {masonry} from '@lit-labs/virtualizer/layouts/masonry.js';
+```
+
+Like the virtualizer itself and the `grid` layout, the masonry layout respects CSS `writing-mode` and `direction`; see the [grid layout](#using-the-grid-layout) section above for details on how the logical-axis semantics map to visual axes.
+
+#### Masonry layout options
+
+The `gap`, `padding`, `flex`, and `justify` options are inherited from the `grid` layout and behave the same way — see [Grid layout options](#grid-layout-options). The two options unique to masonry are `itemSize` and `getAspectRatio`.
+
+##### `itemSize`
+
+The size of each column along the inline axis. Unlike `grid`'s `itemSize`, masonry takes a single pixel value (not a pair) because items size themselves along the block axis from their aspect ratio rather than from an explicit dimension.
+
+Default: `'300px'`
+
+```js
+masonry({itemSize: '200px'});
+```
+
+##### `getAspectRatio`
+
+A function that returns a per-item aspect ratio, interpreted as **visual `width / height`**. The layout preserves this visual ratio across all writing-mode and `axis` configurations: e.g., a caller returning `2` for a 2:1 landscape photo sees that photo rendered visually twice as wide as it is tall, whether the virtualizer scrolls along the block or inline axis and whether the writing-mode is `horizontal-tb`, `vertical-lr`, or `vertical-rl`.
+
+```js
+masonry({
+  itemSize: '200px',
+  getAspectRatio: (photo) => photo.width / photo.height,
+});
+```
+
+If omitted, items are treated as square (aspect ratio `1`).
+
+> [!NOTE]
+> This semantic is the right fit for images, videos, and other content whose dimensions are intrinsic and writing-mode-independent. It is not appropriate for flow-like content (e.g. text cards) whose shape depends on the writing-mode. A logical (`inlineSize / blockSize`) aspect-ratio variant is planned — see [#5308](https://github.com/lit/lit/issues/5308).
+
+#### Masonry layout example
+
+A photo shelf where each item knows its intrinsic dimensions:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      .layout=${masonry({
+        itemSize: '250px',
+        gap: '8px',
+        getAspectRatio: (photo) => photo.width / photo.height,
+      })}
+      .items=${this.photos}
+      .renderItem=${(photo) => html`
+        <img src=${photo.url} alt=${photo.alt}>
+      `}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+#### Performance note
+
+When the `items` array changes, masonry recalculates every item's position in a single pass. This is different from the `flow` and `grid` layouts, which do incremental or on-demand work. In practice the masonry pass is fast enough for moderately large collections, but as collections grow, incremental updates become worth doing — tracked at [#5310](https://github.com/lit/lit/issues/5310). If you hit a layout-performance wall with masonry today, please add a note to that issue with the collection size and the operation that triggered it.
 
 ### Scrolling
 
@@ -209,33 +390,53 @@ Note:
 
 #### Framing a child element within the viewport
 
-Whereas `scrollIntoView()` lets you imperatively scroll a given child element into view, the `pin` property on a virtualizer layout provides a declarative way to frame an element within the viewport. This is especially useful if you want a specific element to be in view when you initially render a virtualizer. Here's an example:
+Whereas `scrollIntoView()` lets you imperatively scroll a given child element into view, the `pin` property on a virtualizer provides a declarative way to frame an element within the viewport. This is especially useful if you want a specific element to be in view when you initially render a virtualizer. Here's an example:
 
 ```js
 render() {
-  // In this toy example, we pin the layout to a hard-coded position. In
-  // reality, you'll almost always want to maintain some state of your
-  // own to keep track of whether the layout should be pinned, and to
+  // In this toy example, we pin to a hard-coded position. In reality,
+  // you'll almost always want to maintain some state of your own to
+  // keep track of whether the virtualizer should be pinned, and to
   // which child element. See the note below about the `unpinned` event.
   return html`
     <h2>My Contacts</h2>
     <lit-virtualizer
       .items=${this.contacts}
       .renderItem=${contact => html`<div>${contact.name}: ${contact.phone}</div>`}
-      .layout=${{
-        pin: {
-          index: 42,
-          block: 'start'
-        }
+      .pin=${{
+        index: 42,
+        block: 'start'
       }}
     ></lit-virtualizer>
   `;
 }
 ```
 
+When using the `virtualize` directive, set `pin` in the directive config:
+
+```js
+render() {
+  return html`
+    <div>
+      ${virtualize({
+        items: this.contacts,
+        renderItem: contact => html`<div>${contact.name}: ${contact.phone}</div>`,
+        pin: {
+          index: 42,
+          block: 'start'
+        }
+      })}
+    </div>
+  `;
+}
+```
+
 The `pin` property takes an option called `index` to specify (by number) which child element you want to frame in the viewport. If you want, you can also use the `block` option to indicate how the element should be framed relative to the viewport; `block` behaves identically to the same option in the `scrollIntoView()` method.
 
-When you pin a layout, it remains pinned until the user intentionally scrolls the view, at which point it is automatically "unpinned". When this occurs, the virtualizer fires an `unpinned` event. Unless you're sure you'll only render your virtualizer once, you should listen for the `unpinned` event so you can omit the `pin` property when you re-render the virtualizer and avoid snapping the view back to the previously pinned position. [TODO: link to an example]
+When you pin a virtualizer, it remains pinned until the user intentionally scrolls the view, at which point it is automatically "unpinned". When this occurs, the virtualizer fires an `unpinned` event. Unless you're sure you'll only render your virtualizer once, you should listen for the `unpinned` event so you can omit the `pin` property when you re-render the virtualizer and avoid snapping the view back to the previously pinned position. [TODO: link to an example]
+
+> **Note:** Setting `pin` via layout config (e.g., `.layout=${{pin: ...}}`) is deprecated.
+> Use the `pin` property directly on the virtualizer as shown above.
 
 #### A note on smooth scrolling
 
@@ -446,6 +647,8 @@ An array of items (JavaScript values, typically objects) representing the child 
 
 The types of values you use to represent your items are entirely up to you, as long as your `renderItem` function can transform each value into a child element.
 
+The virtualizer detects items changes by **array reference equality**, not by content. Reassign `items` to a new array — for example with spread (`[...items, newItem]`) or a returned copy from an immutable operation — whenever you want the virtualizer to pick up the change. Mutating the existing array in place will not trigger a reflow.
+
 ### `renderItem` property
 
 Type: `(item: T, index?: number) => TemplateResult`
@@ -458,6 +661,22 @@ Type: `Boolean`
 
 Optional. If this attribute is present (or, in the case of the `virtualize` directive, if this property has a truthy value), then the virtualizer itself will be a scroller. Otherwise, the virtualizer will not scroll but will size itself to take up enough space for all of its children, including those that aren't currently present in the DOM.
 
+### `axis` attribute / property
+
+Type: `'block' | 'inline'`
+
+Default: `'block'`
+
+Optional. Controls which CSS logical axis the virtualizer uses to lay out its child elements. Set to `'inline'` for inline-axis scrolling (e.g., a horizontal carousel in a standard vertical document). See [Writing mode and direction](#writing-mode-and-direction) and [Virtualizing on the inline axis](#virtualizing-on-the-inline-axis) for details and examples.
+
+### `pin` property
+
+Type: `{index: number, block?: 'start' | 'center' | 'end' | 'nearest'}`
+
+Optional. Declaratively pin the viewport to a specific item. The viewport remains pinned until the user scrolls, at which point the virtualizer fires an `unpinned` event and the pin is released. Set to `undefined` (or omit) to leave the viewport in its current scroll position. See [Framing a child element within the viewport](#framing-a-child-element-within-the-viewport) for details and examples.
+
+When using the `virtualize` directive, set `pin` in the directive config instead of as an attribute/property.
+
 ### `scrollToIndex` method
 
 Type: `(index: number, position?: string) => void`
@@ -466,7 +685,7 @@ where position is: `'start'|'center'|'end'|'nearest'`
 
 Scroll to the item at the given index. Place the item at the given position within the viewport. For example, if index is `100` and position is `end`, then the bottom of the item at index 100 will be at the bottom of the viewport. Position defaults to `start`.
 
-_Note: Details of the `scrollToIndex` API are likely to change before the 1.0 release, but changes required to your existing code should be minimal and mechanical in nature._
+_Note: Details of the `scrollToIndex` API may change in a future release, but any changes should be minimal and mechanical._
 
 Example usage:
 

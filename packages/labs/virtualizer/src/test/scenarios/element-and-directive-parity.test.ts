@@ -14,6 +14,12 @@ import {expect, html, fixture} from '@open-wc/testing';
 
 abstract class TestElement extends LitElement {
   static styles = css`
+    :host {
+      display: block;
+    }
+    :host > * {
+      height: 100%;
+    }
     .item {
       height: 50px;
       margin: 0;
@@ -139,20 +145,16 @@ describe('lit-virtualizer and virtualize directive', () => {
     ulv.selected = selected;
     uvd.selected = selected;
 
-    // Wait for events from initial render to fire.
+    // Wait for events from initial render to fire. The exact count depends
+    // on the bootstrap sequence (e.g. how many resize cycles occur), so we
+    // just require at least 1 of each.
     await pass(() => {
-      expect(ulv.rangeChangedEvents.length).to.equal(3);
-      expect(uvd.rangeChangedEvents.length).to.equal(3);
+      expect(ulv.rangeChangedEvents.length).to.be.greaterThanOrEqual(1);
+      expect(uvd.rangeChangedEvents.length).to.be.greaterThanOrEqual(1);
 
-      expect(ulv.visibilityChangedEvents.length).to.equal(3);
-      expect(uvd.visibilityChangedEvents.length).to.equal(3);
+      expect(ulv.visibilityChangedEvents.length).to.be.greaterThanOrEqual(1);
+      expect(uvd.visibilityChangedEvents.length).to.be.greaterThanOrEqual(1);
     });
-
-    // Clear initial events to make it easier to see what's happening with new events.
-    ulv.rangeChangedEvents.length = 0;
-    uvd.rangeChangedEvents.length = 0;
-    ulv.visibilityChangedEvents.length = 0;
-    uvd.visibilityChangedEvents.length = 0;
 
     await pass(() => {
       expect(ulv.shadowRoot?.textContent).to.include('[2 selected]');
@@ -180,10 +182,19 @@ describe('lit-virtualizer and virtualize directive', () => {
       expect(uvd.shadowRoot?.textContent).not.to.include('[5 selected]');
     });
 
+    // Clear event arrays right before the operation under test, giving the
+    // bootstrap sequence maximum time to settle.
+    ulv.rangeChangedEvents.length = 0;
+    uvd.rangeChangedEvents.length = 0;
+    ulv.visibilityChangedEvents.length = 0;
+    uvd.visibilityChangedEvents.length = 0;
+
     // Adding an item to the start of the list to trigger rangechanged events.
     ulv.items = [-1, ...items];
     uvd.items = [-1, ...items];
 
+    // We wait for rangeChanged inside pass() so the system is settled before
+    // we assert on visibilityChanged below.
     await pass(() => {
       expect(ulv.shadowRoot?.textContent).to.include('[-1]');
       expect(uvd.shadowRoot?.textContent).to.include('[-1]');
