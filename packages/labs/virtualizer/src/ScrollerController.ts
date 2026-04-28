@@ -28,12 +28,19 @@ export class ScrollerShim {
     );
   }
 
+  public get isDocumentScroller() {
+    return (
+      this.element === document.scrollingElement ||
+      this.element === document.documentElement
+    );
+  }
+
   public get scrollTop() {
-    return this.element.scrollTop || window.scrollY;
+    return this.element.scrollTop ?? window.scrollY;
   }
 
   public get scrollLeft() {
-    return this.element.scrollLeft || window.scrollX;
+    return this.element.scrollLeft ?? window.scrollX;
   }
 
   public get scrollHeight() {

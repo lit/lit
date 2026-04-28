@@ -214,6 +214,40 @@ export class Virtualizer {
     passive: true,
   };
 
+  /**
+   * When true, the layout update cycle is frozen because a large
+   * scroll jump is in progress (e.g., thumb drag). Updates resume
+   * when scrolling settles.
+   */
+  private _scrollFrozen = false;
+
+  /**
+   * Debounce timer for unfreezing after a large scroll jump.
+   */
+  private _scrollFreezeTimer: ReturnType<typeof setTimeout> | null = null;
+
+  /**
+   * How long (ms) to wait after the last scroll event before
+   * unfreezing and re-rendering at the current position.
+   * // TODO: May need further tuning and/or exposure as a config param.
+   */
+  private _scrollFreezeDelay = 50;
+
+  /**
+   * Minimum scroll delta, as a multiple of viewport height, to
+   * trigger a freeze. Smaller values freeze more aggressively
+   * (smoother thumb tracking but more blank flashes); larger values
+   * allow more incremental updates before freezing.
+   * // TODO: May need further tuning and/or exposure as a config param.
+   */
+  private _scrollFreezeThreshold = 20;
+
+  /**
+   * The last observed scroll position in the block direction,
+   * used to detect large jumps.
+   */
+  private _lastBlockScrollPosition: number | null = null;
+
   // TODO (graynorton): Rethink, per longer comment below
 
   private _loadListener = this._childLoaded.bind(this);
@@ -336,6 +370,12 @@ export class Virtualizer {
   private _layoutCompleteResolver: Function | null = null;
   private _layoutCompleteRejecter: Function | null = null;
   private _pendingLayoutComplete: number | null = null;
+  /**
+   * Set when _scheduleLayoutComplete is called but no promise exists yet.
+   * Allows the layoutComplete getter to schedule resolution immediately
+   * if layout already stabilized before the promise was first accessed.
+   */
+  private _layoutCompleteScheduleNeeded = false;
 
   /**
    * Layout initialization is async because we dynamically load
@@ -431,9 +471,26 @@ export class Virtualizer {
   }
 
   private _initObservers() {
-    this._mutationObserver = new MutationObserver(
-      this._finishDOMUpdate.bind(this)
-    );
+    this._mutationObserver = new MutationObserver((records) => {
+      this._finishDOMUpdate();
+      // When children are reordered (e.g. by lit-html's repeat directive),
+      // the ResizeObserver won't fire because no individual element changed
+      // size. Detect reorders — where a node appears in both addedNodes and
+      // removedNodes — and trigger a re-measure so the layout picks up the
+      // new index-to-size mapping.
+      const added = new Set<Node>();
+      const removed = new Set<Node>();
+      for (const record of records) {
+        record.addedNodes.forEach((n) => added.add(n));
+        record.removedNodes.forEach((n) => removed.add(n));
+      }
+      for (const node of added) {
+        if (removed.has(node)) {
+          this._readLayoutInfo();
+          break;
+        }
+      }
+    });
     this._hostElementRO = new _ResizeObserver!(() =>
       this._viewportSizeChanged()
     );
@@ -468,7 +525,11 @@ export class Virtualizer {
   }
 
   _observeAndListen() {
-    this._mutationObserver!.observe(this._hostElement!, {childList: true});
+    this._mutationObserver!.observe(this._hostElement!, {
+      childList: true,
+      characterData: true,
+      subtree: true,
+    });
     this._hostElementRO!.observe(this._hostElement!);
     this._scrollEventListeners.push(window);
     window.addEventListener('scroll', this, this._scrollEventListenerOptions);
@@ -926,7 +987,15 @@ export class Virtualizer {
   }
 
   _finishDOMUpdate() {
-    if (this._connected) {
+    // Skip when the host has been detached without `disconnected()` being
+    // called — common for the bare `virtualize()` directive when a parent
+    // node is removed without clearing its lit-html template. A zombie
+    // virtualizer would otherwise continue producing scroll corrections
+    // against its (now stale, zero-measuring) children and hijack a shared
+    // scroller (e.g. `window`). We bail silently rather than tearing
+    // down, because `AsyncDirective` has no auto-reconnect hook — a later
+    // re-attach of a bare-directive host would have no way to revive us.
+    if (this._connected && this._hostElement?.isConnected) {
       // _childrenRO should be non-null if we're connected
       this._children.forEach((child) => this._childrenRO!.observe(child));
       this._checkScrollIntoViewTarget(this._childrenPos);
@@ -940,6 +1009,9 @@ export class Virtualizer {
   }
 
   _updateLayout() {
+    if (this._scrollFrozen) {
+      return;
+    }
     if (this._layout && this._connected) {
       // Apply axis swap before reading styles so that _updateView
       // reads the correct (swapped) writing-mode from CSS.
@@ -969,6 +1041,16 @@ export class Virtualizer {
   }
 
   private _handleScrollEvent() {
+    // Ignore scrolls on a shared ancestor scroller when our host is no
+    // longer in the DOM. Bare `virtualize()` directives on a removed
+    // subtree never receive `disconnected()`; without this guard they
+    // would keep reflowing and issuing scroll corrections against the
+    // shared scroller on every scroll event. Bail silently rather than
+    // tear down so that a later re-attach (which `AsyncDirective` has
+    // no hook to auto-detect) can resume normal operation.
+    if (!this._hostElement?.isConnected) {
+      return;
+    }
     if (this._benchmarkStart && 'mark' in window.performance) {
       try {
         window.performance.measure('uv-virtualizing', 'uv-start', 'uv-end');
@@ -980,7 +1062,43 @@ export class Virtualizer {
     if (this._scrollerController!.correctingScrollError === false) {
       // This is a user-initiated scroll, so we unpin the layout
       this._layout?.unpin();
+
+      // Detect large scroll jumps and freeze the update cycle
+      const scrollTop = this._scrollerController!.scrollTop;
+      const clientHeight =
+        this._scrollerController!.element.getBoundingClientRect().height;
+
+      if (this._lastBlockScrollPosition !== null) {
+        const delta = Math.abs(scrollTop - this._lastBlockScrollPosition);
+        if (
+          delta > clientHeight * this._scrollFreezeThreshold ||
+          this._scrollFrozen
+        ) {
+          if (!this._scrollFrozen) {
+            this._layout?.freeze();
+          }
+          this._scrollFrozen = true;
+          this._lastBlockScrollPosition = scrollTop;
+          // Reset the debounce timer
+          if (this._scrollFreezeTimer !== null) {
+            clearTimeout(this._scrollFreezeTimer);
+          }
+          this._scrollFreezeTimer = setTimeout(() => {
+            this._scrollFreezeTimer = null;
+            this._unfreezeScroll();
+          }, this._scrollFreezeDelay);
+          return;
+        }
+      }
+      this._lastBlockScrollPosition = scrollTop;
     }
+    this._schedule(this._updateLayout);
+  }
+
+  private _unfreezeScroll() {
+    this._scrollFrozen = false;
+    this._lastBlockScrollPosition = this._scrollerController!.scrollTop;
+    this._layout?.unfreeze();
     this._schedule(this._updateLayout);
   }
 
@@ -1158,13 +1276,28 @@ export class Virtualizer {
 
       const scrollingElementBounds = scrollingElement.getBoundingClientRect();
 
-      layout.offsetWithinScroller = {
-        inline:
-          hostElementBounds[inlineStartLabel] -
-          scrollingElementBounds[inlineStartLabel],
-        block:
+      let offsetBlock: number;
+      let offsetInline: number;
+
+      if (this._isScroller) {
+        offsetBlock = 0;
+        offsetInline = 0;
+      } else {
+        offsetBlock =
           hostElementBounds[blockStartLabel] -
-          scrollingElementBounds[blockStartLabel],
+          scrollingElementBounds[blockStartLabel];
+        offsetInline =
+          hostElementBounds[inlineStartLabel] -
+          scrollingElementBounds[inlineStartLabel];
+        if (!this._scrollerController!.isDocumentScroller) {
+          offsetBlock += blockScrollPosition(scrollingElement);
+          offsetInline += inlineScrollPosition(scrollingElement);
+        }
+      }
+
+      layout.offsetWithinScroller = {
+        inline: offsetInline,
+        block: offsetBlock,
       };
 
       layout.scrollSize = {
@@ -1413,6 +1546,11 @@ export class Virtualizer {
           scrollLeft -
           (this._writingMode === 'horizontal-tb' ? inline : blockCorrection),
       });
+      // Update _lastBlockScrollPosition so the freeze detection sees
+      // the corrected position, not the pre-correction one. Without
+      // this, large scroll corrections (e.g. from _pendingScrollCorrection)
+      // appear as large user-initiated jumps and trigger an unwanted freeze.
+      this._lastBlockScrollPosition = this._scrollerController!.scrollTop;
     }
   }
 
@@ -1488,6 +1626,13 @@ export class Virtualizer {
         this._layoutCompleteResolver = resolve;
         this._layoutCompleteRejecter = reject;
       });
+      // If a layout cycle already completed before this promise was
+      // created (i.e. _scheduleLayoutComplete was called but couldn't
+      // schedule because no promise existed), schedule resolution now.
+      if (this._layoutCompleteScheduleNeeded) {
+        this._layoutCompleteScheduleNeeded = false;
+        this._scheduleLayoutComplete();
+      }
     }
     return this._layoutCompletePromise;
   }
@@ -1496,17 +1641,21 @@ export class Virtualizer {
     if (this._layoutCompleteRejecter !== null) {
       this._layoutCompleteRejecter(reason);
     }
+    this._layoutCompleteScheduleNeeded = false;
     this._resetLayoutCompleteState();
   }
 
   private _scheduleLayoutComplete() {
-    // Don't do anything unless we have a pending promise
-    // And only request a frame if we haven't already done so
     if (this._layoutCompletePromise && this._pendingLayoutComplete === null) {
       // Wait one additional frame to be sure the layout is stable
       this._pendingLayoutComplete = requestAnimationFrame(() =>
         requestAnimationFrame(() => this._resolveLayoutCompletePromise())
       );
+      this._layoutCompleteScheduleNeeded = false;
+    } else if (!this._layoutCompletePromise) {
+      // Layout cycle completed but no one is waiting yet. Record this
+      // so we can schedule resolution when layoutComplete is accessed.
+      this._layoutCompleteScheduleNeeded = true;
     }
   }
 
@@ -1514,6 +1663,9 @@ export class Virtualizer {
     if (this._layoutCompleteResolver !== null) {
       this._layoutCompleteResolver();
     }
+    // Mark that layout is stable so any future late access to
+    // layoutComplete can be scheduled for immediate resolution.
+    this._layoutCompleteScheduleNeeded = true;
     this._resetLayoutCompleteState();
   }
 
@@ -1635,6 +1787,13 @@ function getClippingAncestors(el: HTMLElement, includeSelf = false) {
     }
     const style = getComputedStyle(a);
     foundFixed = style.position === 'fixed';
+    // Elements with `display: contents` generate no box, so their
+    // `overflow` value is meaningless and they cannot clip anything.
+    // Exclude them to avoid collapsing the viewport to zero (their
+    // getBoundingClientRect() returns a zero rect).
+    if (style.display === 'contents') {
+      return false;
+    }
     return style.overflow !== 'visible';
   });
 }
