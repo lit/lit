@@ -12,6 +12,10 @@ import {
 } from './javascript/packages.js';
 import {AnalyzerInterface, Module, Package, PackageJson} from './model.js';
 import {AbsolutePath} from './paths.js';
+import {
+  DependencyAnalyzer,
+  DependencyCustomElement,
+} from './dependency-analyzer.js';
 export {PackageJson};
 
 export type TypeScript = typeof ts;
@@ -37,6 +41,7 @@ export class Analyzer implements AnalyzerInterface {
   readonly path: AnalyzerInterface['path'];
   private _commandLine: ts.ParsedCommandLine | undefined = undefined;
   private readonly diagnostics: ts.Diagnostic[] = [];
+  private _dependencyAnalyzer: DependencyAnalyzer | undefined = undefined;
 
   constructor(init: AnalyzerInit) {
     ({
@@ -45,6 +50,40 @@ export class Analyzer implements AnalyzerInterface {
       typescript: this.typescript,
       getProgram: this._getProgram,
     } = init);
+  }
+
+  /**
+   * Returns the `DependencyAnalyzer` instance for this analyzer, lazily
+   * created on first access.
+   */
+  get dependencyAnalyzer(): DependencyAnalyzer {
+    return (this._dependencyAnalyzer ??= new DependencyAnalyzer(
+      this.fs,
+      this.path
+    ));
+  }
+
+  /**
+   * Returns custom element metadata from an analyzed dependency package,
+   * or `undefined` if no element with that tag name has been discovered.
+   *
+   * Packages must be analyzed first using `analyzeDependency()`.
+   */
+  getDependencyCustomElement(
+    tagName: string
+  ): DependencyCustomElement | undefined {
+    return this.dependencyAnalyzer.getCustomElement(tagName);
+  }
+
+  /**
+   * Analyzes a dependency package at the given root path for custom
+   * element definitions. Results are cached per package name + version.
+   *
+   * @param packageRoot Absolute path to the dependency package root
+   * @returns Array of custom elements found in the package
+   */
+  analyzeDependency(packageRoot: string): DependencyCustomElement[] {
+    return this.dependencyAnalyzer.analyzePackage(packageRoot);
   }
 
   get program() {
