@@ -393,6 +393,7 @@ packages/labs/tsserver-plugin/index.*
 packages/labs/virtualizer/layouts/
 packages/labs/virtualizer/polyfillLoaders/
 packages/labs/virtualizer/polyfills/
+packages/labs/virtualizer/scroll-sources/
 packages/labs/virtualizer/lit-virtualizer.js
 packages/labs/virtualizer/lit-virtualizer.d.ts
 packages/labs/virtualizer/lit-virtualizer.d.ts.map

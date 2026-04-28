@@ -62,7 +62,7 @@ Note: The examples throughout this documentation focus on the `<lit-virtualizer>
 
 ### Making a virtualizer a scroller
 
-If you want to make a virtualizer that is itself a scroller, just add the `scroller` attribute to the `<lit-virtualizer>` element, or add `scroller: true` to the options object for the [`virtualize` directive](#virtualize-directive):
+If you want to make a virtualizer that is itself a scroller, just add the `scroller` attribute to the `<lit-virtualizer>` element (equivalent to `scroller="self"`), or add `scroller: true` (or `scroller: 'self'`) to the options object for the [`virtualize` directive](#virtualize-directive):
 
 ```js
 render() {
@@ -80,6 +80,52 @@ When you make a virtualizer a scroller, you should explicitly size it to suit th
 
 > [!NOTE]
 > Earlier versions of `@lit-labs/virtualizer` set a `min-height` of `150px` on scrolling virtualizers to avoid this zero-size case, but this approach was heavy-handed and doesn't play nicely with [CSS writing mode and direction](#writing-mode-and-direction), so has been replaced with the console warning.
+
+### Managed viewport mode
+
+For most use cases the virtualizer's default mode (window/ancestor scrolling) or self-scroller mode is the right choice — both rely on native browser scrolling. **Managed viewport mode** is for cases where neither fits: a custom scroller (e.g. a host inside `overflow: hidden` translated by CSS transitions), a non-DOM scroll surface (canvas overlay, WebGL composited layer), or two virtualizers whose viewports must be kept in sync.
+
+In managed mode, the virtualizer performs no DOM observation for scroll position or viewport size. Instead, an external controller _owns_ the scroll state and pushes it to the virtualizer:
+
+```js
+render() {
+  return html`
+    <lit-virtualizer
+      .scroller=${'managed'}
+      .viewport=${this.viewport}
+      .items=${this.items}
+      .renderItem=${item => html`<div>${item.name}</div>`}
+    ></lit-virtualizer>
+  `;
+}
+```
+
+The `viewport` property is an object of the form `{scrollTop, scrollLeft, width, height}`. The values are always non-negative offsets along the host element's physical axes, measured from the inline-start / block-start corner of the scrollable content. (For the default `horizontal-tb` writing mode this is identical to native browser semantics.) The external controller is responsible for updating `viewport` whenever scrolling or resizing occurs in its own system.
+
+#### Events
+
+The virtualizer dispatches three events on the host element to coordinate with the external controller. None of them bubble.
+
+- **`scrollerror`** — fired when the layout has refined its understanding of item positions and the visible content needs to shift to maintain visual continuity. The event detail is `{delta: {top, left}}` in physical pixels. The controller should apply the delta to its visible state synchronously inside the listener (e.g., update its CSS translate). The virtualizer self-corrects its own internal viewport tracking at dispatch time, so the controller is **not** required to push a corrected `viewport` back.
+
+- **`destinationchanged`** — fired during an active `scrollIntoView({behavior: 'smooth'})` intent when the layout's estimate of the target's destination shifts (typically because items between the consumer's current position and the destination have been measured and their actual sizes folded into the position calculation). The event detail is `{destination: {top, left}}`. The controller should retarget any in-flight animation toward the new destination.
+
+- **`scrollintoviewended`** — fired when an active smooth scroll-into-view intent ends. The event detail is `{reason: 'arrived' | 'cancelled' | 'replaced'}`. (`arrived` is inferred from at-rest detection on the consumer's pushed viewports; `cancelled` from `AbortSignal.abort()`; `replaced` when a new `scrollIntoView` supersedes the prior one.)
+
+#### Scroll-into-view in managed mode
+
+`virtualizer.element(N).scrollIntoView({behavior?, signal?, block?, inline?})` works in managed mode and synchronously returns the destination coordinates as `{top?: number, left?: number}` — the values your controller's viewport should drive toward to bring item N into view.
+
+Behavior splits by `behavior`:
+
+- **Instant** (default) — the call is fully synchronous. The virtualizer sets its layout's pin to the target, forces a synchronous reflow, computes the destination, and returns. A `scrollerror` event fires synchronously inside the call (the consumer applies the delta to teleport visible state). No intent is registered; subsequent estimation refinements aren't tracked.
+
+- **Smooth** — the virtualizer registers an intent. The consumer drives the animation; the virtualizer reports destination refinements via `destinationchanged` and detects arrival via at-rest inference on consumer-pushed viewports. The optional `signal: AbortSignal` lets the consumer cancel the in-flight intent (fires `scrollintoviewended` with `reason: 'cancelled'`).
+
+Smooth scroll in managed mode requires a deliberate consumer-side animation strategy. See the [appendix on managed-mode consumer patterns](#appendix-consumer-patterns-for-managed-viewport-mode) for a fuller discussion of the trade-offs.
+
+> [!NOTE]
+> The same scroll-into-view return value and `AbortSignal` option are also available in DOM scroll modes; the destination coordinates are useful for coordinating other effects with the scroll, and `AbortSignal` lets the consumer cancel an in-flight smooth scroll. `scrollintoviewended` fires for smooth-scroll intents in all modes; `scrollerror` and `destinationchanged` are managed-mode-only.
 
 ### Writing mode and direction
 
@@ -370,7 +416,7 @@ Finally, there one quirk to be aware of when smoothly scrolling a view containin
 
 If you want to scroll one of a virtualizer's children into view _and that element is currently present in the DOM_ because it is within the viewport or just outside, you can use the native web API: get a reference to the element, and then call `myElement.scrollIntoView()` with whatever options you desire.
 
-However, this method won't work if the child element you want to scroll into view is currently "virtualized" (i.e., is not currently present in the DOM because it is too far outside the viewport). For this reason, a virtualizer exposes the `element()` method, which takes a numeric index (specifying an item in the `items` array) and returns a simple proxy object representing the corresponding child element (whether the element is present in the DOM or not). This proxy currently exposes just one method: `scrollIntoView()`, which matches the behavior of the native method. Here's an example:
+However, this method won't work if the child element you want to scroll into view is currently "virtualized" (i.e., is not currently present in the DOM because it is too far outside the viewport). For this reason, a virtualizer exposes the `element()` method, which takes a numeric index (specifying an item in the `items` array) and returns a simple proxy object representing the corresponding child element (whether the element is present in the DOM or not). This proxy exposes a `scrollIntoView()` method that matches the shape of the native API. Here's an example:
 
 ```js
 // Get a reference to the virtualizer, using any method
@@ -383,9 +429,27 @@ virtualizer.element(42).scrollIntoView({
 });
 ```
 
+The proxy's `scrollIntoView()` accepts the standard options plus an optional `signal: AbortSignal` for cancelling an in-flight smooth scroll. It returns the destination coordinates synchronously as `{top?: number, left?: number}`:
+
+```js
+const ac = new AbortController();
+const dest = virtualizer.element(42).scrollIntoView({
+  block: 'center',
+  behavior: 'smooth',
+  signal: ac.signal,
+});
+// `dest` is the destination scroll position. Useful for coordinating
+// other effects with the scroll, or driving managed-mode animations.
+
+// To cancel the in-flight smooth scroll later:
+ac.abort();
+```
+
+When a smooth scroll-into-view ends from any cause (natural arrival, `AbortSignal.abort()`, or being superseded by a new `scrollIntoView` call), the virtualizer dispatches a `scrollintoviewended` event on the host element with `detail: {reason: 'arrived' | 'cancelled' | 'replaced'}`. Instant scroll-into-view doesn't fire this event (the operation is synchronous and there's nothing to "end").
+
 Note:
 
-- The proxy's `scrollIntoView()` method supports same options as the native API, but the `inline` option has no effect at present, because all currently available layouts virtualize along a single axis and keep child elements within view along the secondary axis at all times.
+- The proxy's `scrollIntoView()` supports the same options as the native API, but the `inline` option has no effect at present, because all currently available layouts virtualize along a single axis and keep child elements within view along the secondary axis at all times.
 - If you're using the `virtualize` directive, getting a reference to the virtualizer so you can call `element()` requires one extra step—see [Getting a reference to the virtualizer](#getting-a-reference-to-the-virtualizer).
 
 #### Framing a child element within the viewport
@@ -657,9 +721,23 @@ A function that returns a Lit `TemplateResult`. It will be used to generate a ch
 
 ### `scroller` attribute / property
 
-Type: `Boolean`
+Type: `boolean | 'self' | 'ancestor' | 'managed'`
 
-Optional. If this attribute is present (or, in the case of the `virtualize` directive, if this property has a truthy value), then the virtualizer itself will be a scroller. Otherwise, the virtualizer will not scroll but will size itself to take up enough space for all of its children, including those that aren't currently present in the DOM.
+Default: `'ancestor'` (also `false`)
+
+Optional. Controls how the virtualizer acquires scroll position and viewport size:
+
+- `'ancestor'` (default, also `false`): the window or a clipping ancestor is the scroll container. The virtualizer sizes itself to take up enough space for all of its children, including those not currently present in the DOM, and observes scroll events on the relevant scroll ancestors.
+- `'self'` (also `true`): the virtualizer's host element itself is the scroll container. The host must be explicitly sized via CSS — see [Making a virtualizer a scroller](#making-a-virtualizer-a-scroller).
+- `'managed'`: no DOM observation. The virtualizer is driven by an externally-supplied [`viewport`](#viewport-property) property — see [Managed viewport mode](#managed-viewport-mode).
+
+The boolean values are accepted for backwards compatibility. New code should prefer the string form. When set as an attribute on `<lit-virtualizer>`, both forms are supported: `<lit-virtualizer scroller>` (bare boolean attribute, equivalent to `'self'`) and `<lit-virtualizer scroller="managed">` (string value).
+
+### `viewport` property
+
+Type: `{scrollTop: number, scrollLeft: number, width: number, height: number} | undefined`
+
+Required when `scroller` is `'managed'`, otherwise ignored. Provides the externally-managed viewport (scroll position and dimensions) that the virtualizer should use in place of DOM-observed values. Setting this property schedules a layout update on the next frame. See [Managed viewport mode](#managed-viewport-mode) for the full description.
 
 ### `axis` attribute / property
 
@@ -704,3 +782,149 @@ Fired whenever a change to the viewport (due to scrolling or resizing) affects t
 Fired whenever a virtualizer adds child elements to the DOM, or removes child elements from the DOM. The `first` property represents the index of the first element currently present in the DOM; the `last` property represents the index of the last element currently present in the DOM.
 
 Note that a virtualizer maintains a "buffer" of elements that are in the DOM but just outside the viewport, so the set of elements in the DOM will be somewhat larger than the set of visible elements.
+
+### `scrollerror` event
+
+Fired in `scroller: 'managed'` mode when the layout reports a scroll-error correction (typically because item-size estimates have been refined). The `delta` property is `{top, left}` in physical pixels — the amount the consumer should shift its visible state to maintain visual continuity.
+
+The virtualizer self-corrects its own internal viewport tracking at dispatch time, so the consumer is **not** required to push a corrected `viewport` back. The consumer's only obligation in the listener is to apply the delta to its visible state synchronously (e.g., update its CSS translate).
+
+### `destinationchanged` event
+
+Fired in `scroller: 'managed'` mode during an active `scrollIntoView({behavior: 'smooth'})` intent when the layout's destination estimate shifts. The `destination` property is `{top, left}` in physical pixels — the new target the consumer should drive any in-flight animation toward.
+
+### `scrollintoviewended` event
+
+Fired in any scroll mode when an active `scrollIntoView({behavior: 'smooth'})` intent ends. The `reason` property is `'arrived'`, `'cancelled'`, or `'replaced'`. (Instant scroll-into-view doesn't fire this event.)
+
+## Appendix: Consumer patterns for managed viewport mode
+
+Managed viewport mode hands ownership of scroll state to the consumer. That ownership is liberating — it lets the virtualizer power use cases native scrolling can't reach — but it also means the consumer needs a strategy for several questions that native modes answer implicitly. This appendix surveys those questions and the patterns we've found work well, with their trade-offs. None of this is required to use managed mode; the virtualizer's contract is the same regardless. These are practitioner notes for choosing your stance.
+
+### Mental model
+
+The contract has three pieces:
+
+1. The consumer pushes `viewport` updates to the virtualizer to tell it where the user is currently looking.
+2. The virtualizer renders items around that viewport position and dispatches `scrollerror` when its layout shifts and the visible content needs a corresponding adjustment.
+3. For scroll-into-view operations, the virtualizer returns the destination synchronously and (for smooth scrolls) dispatches `destinationchanged` as it refines its estimate, plus `scrollintoviewended` when the operation ends.
+
+Everything else — how the consumer animates, how it derives viewport values from its own scroll model, how it handles input — is a consumer-implementation decision.
+
+### Smooth scroll-into-view: two consumer patterns
+
+For `scrollIntoView({behavior: 'smooth'})` in managed mode, the consumer needs to decide how its animation drives `viewport` updates. There are two natural patterns, with different trade-offs:
+
+#### Pattern A — push `viewport=destination` once at intent start
+
+The consumer pushes the destination as the new `viewport` value when the intent starts; the visual transport (CSS transition, custom animation, etc.) interpolates from current visual position to destination independently:
+
+```js
+const dest = virtualizer.element(N).scrollIntoView({behavior: 'smooth', signal});
+virtualizer.viewport = {scrollTop: dest.top, scrollLeft: 0, ...};
+this.style.transform = `translateY(${-dest.top}px)`;
+// CSS transition handles the visual animation
+```
+
+- **Pros**: cheap (one push per intent); efficient for short, fast scrolls where intermediate frames aren't user-perceptible. Destination items are rendered + measured immediately, so subsequent estimation refinements can fire `destinationchanged` and the consumer can retarget mid-flight.
+- **Cons**: the layout's rendered range jumps to destination at intent start, so items along the animation path aren't rendered (unless they fall within the layout's overhang). For long-distance, long-duration animations this manifests as visible blank space along the path until arrival.
+
+#### Pattern B — push `viewport=current` per animation frame
+
+The consumer reads its current animated visual position each frame and pushes that as `viewport`. The layout's rendered range follows the animation:
+
+```js
+const dest = virtualizer.element(N).scrollIntoView({behavior: 'smooth', signal});
+this.style.transform = `translateY(${-dest.top}px)`;
+
+const tick = () => {
+  if (signal.aborted) return;
+  const matrix = new DOMMatrix(getComputedStyle(this).transform);
+  virtualizer.viewport = {scrollTop: -matrix.m42, scrollLeft: 0, ...};
+  requestAnimationFrame(tick);
+};
+requestAnimationFrame(tick);
+```
+
+- **Pros**: items render along the path as the consumer scrolls through them; matches native scroll feel for long-distance / long-duration animations. No blank space.
+- **Cons**: per-frame overhead (DOM read + viewport push). Destination items don't render until the consumer arrives, so `destinationchanged` typically doesn't fire mid-flight; the consumer animates toward whatever initial estimate they got back from `scrollIntoView`.
+
+#### Picking between A and B
+
+The trade-off is genuine and depends on use case:
+
+|       | Short / fast               | Long / slow              |
+| ----- | -------------------------- | ------------------------ |
+| **A** | Efficient, no visible cost | Blank space along path   |
+| **B** | Wasted per-frame work      | Smooth visual experience |
+
+Pattern A is the right default for keyboard focus traversal between adjacent items (the canonical "host inside `overflow: hidden` translated by CSS transitions" use case): jumps are typically short, the destination usually falls inside the layout's overhang, and the visual artifact never appears.
+
+Pattern B is the right choice for long-distance smooth scrolls where users expect to see content scrolling past, and for any case where the transport is RAF-driven anyway (custom physics, spring animations).
+
+### Coordinating animation timing with `destinationchanged`
+
+When `destinationchanged` fires during a smooth scroll, the consumer typically retargets its animation toward the new destination. With CSS transitions, this means assigning a new `transform` value, which restarts the transition with the configured duration. **Each retarget effectively resets the clock**, so multiple `destinationchanged` events during one intent can extend total scroll time well beyond what the consumer expected.
+
+A useful policy is to allocate a total time budget per intent and shorten each retargeted transition to fit the remaining budget:
+
+```js
+const startedAt = performance.now();
+const totalBudgetMs = 500;
+
+function retarget(newDestPx) {
+  const elapsed = performance.now() - startedAt;
+  const remaining = Math.max(50, totalBudgetMs - elapsed);
+  this.style.transition = `transform ${remaining}ms ease-out`;
+  this.style.transform = `translateY(${-newDestPx}px)`;
+}
+```
+
+The `Math.max(50, …)` floor avoids visibly clipped easing curves on near-end retargets.
+
+A velocity-based variant is sometimes more natural — each transition's duration is proportional to the distance it covers (e.g., `ms = (distance / 1000) * msPer1000Px`, with reasonable floor and cap). Short jumps animate quickly; long jumps run proportionally longer. This generalizes better than a single budget when intent durations vary widely with distance.
+
+### Keyboard navigation and focus
+
+Two patterns matter when arrow keys drive scroll-into-view in managed mode.
+
+#### Don't tie keyboard focus to recyclable rows
+
+If your consumer moves keyboard focus to a specific rendered row (e.g., `row.focus()`), and that row is later removed from the DOM as the rendered range shifts, focus falls back to `<body>` and arrow keys start triggering native window scrolling instead of reaching your handler. This is especially likely with Pattern B (the rendered range moves continuously) and any input pattern that advances focus faster than the rendered range can keep up (e.g., acceleration on held arrow keys).
+
+The reliable pattern is to keep keyboard focus on a stable container element (the host of the virtualizer, or its scroll-clipping parent) and represent "current item" via a CSS class keyed off your own focused-index state — independent of where keyboard focus actually lives. A sketch:
+
+```js
+.item.is-current { background: #def; ... }
+
+renderItem(item, idx) {
+  return html`<div
+    class="item ${idx === this.focusedIndex ? 'is-current' : ''}"
+    data-index=${idx}
+  >${item}</div>`;
+}
+```
+
+Arrow-key handler updates `this.focusedIndex` and calls `scrollIntoView`; the container retains keyboard focus throughout.
+
+For full accessibility, pair this with `aria-activedescendant` on the container, pointing at the currently-focused row's ID. That gives screen readers the right semantic information without needing the row to actually be the keyboard focus target.
+
+#### Consumer-side input policies
+
+Per-keypress intents stack quickly under OS auto-repeat (~30 events/second), and acceleration (held key produces growing step size) amplifies that pressure. The virtualizer can handle the call volume, but the user experience varies. Patterns we've evaluated:
+
+- **No throttling, single-step per press** — works fine for most cases. With Pattern A and short transitions, intent storms aren't a problem because each new intent supersedes the previous before it produces visible work.
+
+- **Acceleration** — held key produces growing step size (e.g., `1, 1, 2, 2, 3, 3, ...` capped). Feels natural and intuitive, lets users traverse long lists quickly. Can interact poorly with Pattern B + heavy rendering load (the rendered range can fall behind), but for Pattern A short-distance work it's the most comfortable.
+
+- **Coalesce / debounce / throttle** — limit how often `scrollIntoView` fires regardless of input rate. We've found these tend to feel sluggish in practice, even when they produce technically fewer redundant intents. The visible intent rate tracks input naturally with no policy at all in most cases; coalescing wins on call count but loses on perceived responsiveness.
+
+- **Ignore-during-in-flight** — drop new keydowns while a scroll is animating. Conservative; user must wait for each animation to complete. Predictable but constraining.
+
+### Why `scrollIntoView` is synchronous in managed mode
+
+In managed mode, instant `scrollIntoView` is fully synchronous: when the call returns, the layout has already teleported its rendered range to the destination, the consumer has been notified via `scrollerror` to apply the corresponding visual shift, and the destination coordinates are returned for any other use the consumer has for them.
+
+Smooth `scrollIntoView` is also synchronous in the sense that the destination is returned immediately. The intent registration, destination tracking, and arrival inference run in the background, but the consumer can begin animating from the returned destination right away.
+
+This synchrony is deliberate: in DOM modes the browser's scroll APIs are synchronous, and managed mode shouldn't be artificially asynchronous. Where the contract _is_ asynchronous (animation completion, destination refinement), it's because those events genuinely happen later — driven by the consumer's animation completing, by ResizeObserver-driven measurement updates, etc.

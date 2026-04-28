@@ -1,6 +1,7 @@
 /layouts/
 /polyfillLoaders/
 /polyfills/
+/scroll-sources/
 /lit-virtualizer.js
 /lit-virtualizer.d.ts
 /lit-virtualizer.d.ts.map
