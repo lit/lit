@@ -247,6 +247,12 @@ export const createComponent = <
   const ReactComponent = React.forwardRef<I, Props>((props, ref) => {
     const prevElemPropsRef = React.useRef(new Map());
     const elementRef = React.useRef<I | null>(null);
+    const hasDom = typeof window !== 'undefined';
+    const isLitSsrRendering =
+      React.createElement.name === 'litPatchedCreateElement' ||
+      globalThis.litSsrReactEnabled;
+    const shouldApplyDomElementProps =
+      !NODE_MODE || (hasDom && !isLitSsrRendering);
 
     // Props to be passed to React.createElement
     const reactProps: Record<string, unknown> = {};
@@ -270,7 +276,7 @@ export const createComponent = <
     }
 
     // useLayoutEffect produces warnings during server rendering.
-    if (!NODE_MODE) {
+    if (shouldApplyDomElementProps) {
       // This one has no dependency array so it'll run on every re-render.
       React.useLayoutEffect(() => {
         if (elementRef.current === null) {
@@ -304,19 +310,15 @@ export const createComponent = <
       }, []);
     }
 
-    if (NODE_MODE) {
+    if (NODE_MODE && !shouldApplyDomElementProps) {
       // If component is to be server rendered with `@lit/ssr-react`, pass
       // element properties in a special bag to be set by the server-side
       // element renderer.
-      if (
-        (React.createElement.name === 'litPatchedCreateElement' ||
-          globalThis.litSsrReactEnabled) &&
-        Object.keys(elementProps).length
-      ) {
+      if (isLitSsrRendering && Object.keys(elementProps).length) {
         // This property needs to remain unminified.
         reactProps['_$litProps$'] = elementProps;
       }
-    } else {
+    } else if (shouldApplyDomElementProps) {
       // Suppress hydration warning for server-rendered attributes.
       // This property needs to remain unminified.
       reactProps['suppressHydrationWarning'] = true;
