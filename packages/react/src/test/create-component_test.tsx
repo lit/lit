@@ -119,6 +119,16 @@ const render = (children: React.ReactNode) => {
   });
 };
 
+const importNodeCreateComponent = async () => {
+  // Load the node build explicitly so we can verify behavior when tooling
+  // resolves @lit/react's node export in a DOM-like test environment.
+  return (
+    await import(
+      new URL('../../node/create-component.js', import.meta.url).href
+    )
+  ).createComponent;
+};
+
 if (DEV_MODE) {
   suite('Developer mode warnings', () => {
     let warnings: string[] = [];
@@ -271,6 +281,25 @@ suite('createComponent', () => {
     assert.isOk(el);
     await el.updateComplete;
     assert.isOk(el.hasUpdated);
+  });
+
+  test('node build applies element props when running with DOM APIs', async () => {
+    const createComponentFromNodeBuild = await importNodeCreateComponent();
+    const NodeBuildComponent = createComponentFromNodeBuild({
+      react: React,
+      elementClass: BasicElement,
+      events: basicElementEvents,
+      tagName,
+    });
+
+    const obj = {foo: 123};
+    render(<NodeBuildComponent id="from-node-build" obj={obj} />);
+
+    const el = container.querySelector(tagName)!;
+    await el.updateComplete;
+
+    assert.equal(el.id, 'from-node-build');
+    assert.deepEqual(el.obj, obj);
   });
 
   test('can get ref to element', async () => {
