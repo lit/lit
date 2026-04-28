@@ -176,6 +176,9 @@ export const adoptStyles = (
       s instanceof CSSStyleSheet ? s : s.styleSheet!
     );
   } else {
+    // When neither adoptedStyleSheets nor document is available (e.g. SSR),
+    // styles are serialized into declarative shadow DOM by the renderer.
+    if (typeof document === 'undefined') return;
     for (const s of styles) {
       const style = document.createElement('style');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
