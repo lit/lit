@@ -19,6 +19,8 @@ import {
   defaultRenderItem,
   defaultKeyFunction,
   RenderItemFunction,
+  ChildPositioningMethod,
+  defaultChildPositioningMethod,
 } from './virtualize.js';
 
 export class LitVirtualizer<T = unknown> extends LitElement {
@@ -54,12 +56,29 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   @property({attribute: false})
   pin: PinOptions | undefined;
 
+  /**
+   * Controls how the virtualizer positions its child elements.
+   * - `'translate'` (default): uses CSS `transform: translate()`.
+   * - `'absolute'`: uses CSS `left` and `top` properties.
+   */
+  @property()
+  positioning: ChildPositioningMethod = defaultChildPositioningMethod;
+
   createRenderRoot() {
     return this;
   }
 
   render() {
-    const {items, renderItem, keyFunction, layout, scroller, axis, pin} = this;
+    const {
+      items,
+      renderItem,
+      keyFunction,
+      layout,
+      scroller,
+      axis,
+      pin,
+      positioning,
+    } = this;
     return html`${virtualize({
       items,
       renderItem,
@@ -68,6 +87,7 @@ export class LitVirtualizer<T = unknown> extends LitElement {
       scroller,
       axis,
       pin,
+      positioning,
     })}`;
   }
 
