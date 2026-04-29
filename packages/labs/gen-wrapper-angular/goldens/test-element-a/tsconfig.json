@@ -22,6 +22,15 @@
     "noImplicitOverride": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*.ts"],
+  "include": [
+    "src/**/*.ts",
+    "element-a/element-a.ts",
+    "element-events/element-events.ts",
+    "element-mixins/element-mixins.ts",
+    "element-props/element-props.ts",
+    "element-slots/element-slots.ts",
+    "element-sub/element-sub.ts",
+    "element-without-props/element-without-props.ts"
+  ],
   "exclude": []
 }

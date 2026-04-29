@@ -6,15 +6,12 @@ import {
   EventEmitter,
   Output,
 } from '@angular/core';
-import {
+
+import type {
+  ElementProps as ElementPropsElement,
   MyType,
   AttributeVariant,
 } from '@lit-internal/test-element-a/element-props.js';
-export type {
-  MyType,
-  AttributeVariant,
-} from '@lit-internal/test-element-a/element-props.js';
-import type {ElementProps as ElementPropsElement} from '@lit-internal/test-element-a/element-props.js';
 import '@lit-internal/test-element-a/element-props.js';
 
 @Component({
