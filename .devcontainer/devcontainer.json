@@ -19,8 +19,8 @@
     },
     // Install browser depenedencies for testing
     "ghcr.io/devcontainers-contrib/features/bash-command:1": {
-      "command": "npx playwright install --with-deps"
+      "command": "npx playwright install-deps"
     }
   },
-  "postCreateCommand": "npm ci"
+  "postCreateCommand": "npm ci && npx playwright install"
 }
