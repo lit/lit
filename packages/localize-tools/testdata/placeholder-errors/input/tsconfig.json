@@ -8,7 +8,8 @@
     "preserveConstEnums": true,
     "forceConsistentCasingInFileNames": true,
     "rootDir": "./",
-    "outDir": "tsout"
+    "outDir": "tsout",
+    "types": []
   },
   "include": ["**/*.ts"]
 }

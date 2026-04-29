@@ -1,9 +1,15 @@
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+
 export interface SizeCacheConfig {
   roundAverageSize?: boolean;
 }
 
 export class SizeCache {
-  private _map: Map<number | string, number> = new Map();
+  private _map = new Map<number | string, number>();
   private _roundAverageSize = false;
   totalSize = 0;
 

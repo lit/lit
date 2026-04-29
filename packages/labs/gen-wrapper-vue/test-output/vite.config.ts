@@ -1,8 +1,10 @@
 import vue from '@vitejs/plugin-vue';
+import {defineConfig} from 'vite';
 
 // https://vitejs.dev/config/
-export default {
+export default defineConfig({
   build: {
+    target: 'esnext',
     lib: {
       entry: './src/tests/tests.ts',
       fileName: () => `tests.js`,
@@ -10,5 +12,8 @@ export default {
     },
     outDir: './tests',
   },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('development'),
+  },
   plugins: [vue()],
-};
+});

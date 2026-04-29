@@ -17,7 +17,7 @@ import {
  * A key-value set of class names to truthy values.
  */
 export interface ClassInfo {
-  readonly [name: string]: string | boolean | number;
+  [name: string]: string | boolean | number;
 }
 
 class ClassMapDirective extends Directive {
@@ -76,14 +76,12 @@ class ClassMapDirective extends Directive {
     const classList = part.element.classList;
 
     // Remove old classes that no longer apply
-    // We use forEach() instead of for-of so that we don't require down-level
-    // iteration.
-    this._previousClasses.forEach((name) => {
+    for (const name of this._previousClasses) {
       if (!(name in classInfo)) {
         classList.remove(name);
         this._previousClasses!.delete(name);
       }
-    });
+    }
 
     // Add or remove classes based on their classMap value
     for (const name in classInfo) {
@@ -113,7 +111,7 @@ class ClassMapDirective extends Directive {
  * This must be used in the `class` attribute and must be the only part used in
  * the attribute. It takes each property in the `classInfo` argument and adds
  * the property name to the element's `classList` if the property value is
- * truthy; if the property value is falsey, the property name is removed from
+ * truthy; if the property value is falsy, the property name is removed from
  * the element's `class`.
  *
  * For example `{foo: bar}` applies the class `foo` if the value of `bar` is

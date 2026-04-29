@@ -8,11 +8,11 @@
  * The main LitElement module, which defines the {@linkcode LitElement} base
  * class and related APIs.
  *
- *  LitElement components can define a template and a set of observed
+ * LitElement components can define a template and a set of observed
  * properties. Changing an observed property triggers a re-render of the
  * element.
  *
- *  Import {@linkcode LitElement} and {@linkcode html} from this module to
+ * Import {@linkcode LitElement} and {@linkcode html} from this module to
  * create a component:
  *
  *  ```js
@@ -78,27 +78,42 @@ export namespace Unstable {
       | ReactiveUnstable.DebugLog.Entry;
   }
 }
-
-// For backwards compatibility export ReactiveElement as UpdatingElement. Note,
-// IE transpilation requires exporting like this.
-export const UpdatingElement = ReactiveElement;
+/*
+ * When using Closure Compiler, JSCompiler_renameProperty(property, object) is
+ * replaced at compile time by the munged name for object[property]. We cannot
+ * alias this function, so we have to use a small shim that has the same
+ * behavior when not compiling.
+ */
+/*@__INLINE__*/
+const JSCompiler_renameProperty = <P extends PropertyKey>(
+  prop: P,
+  _obj: unknown
+): P => prop;
 
 const DEV_MODE = true;
+// Allows minifiers to rename references to globalThis
+const global = globalThis;
 
 let issueWarning: (code: string, warning: string) => void;
 
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
-  const issuedWarnings: Set<string | undefined> =
-    (globalThis.litIssuedWarnings ??= new Set());
+  global.litIssuedWarnings ??= new Set();
 
-  // Issue a warning, if we haven't already.
+  /**
+   * Issue a warning if we haven't already, based either on `code` or `warning`.
+   * Warnings are disabled automatically only by `warning`; disabling via `code`
+   * can be done by users.
+   */
   issueWarning = (code: string, warning: string) => {
     warning += ` See https://lit.dev/msg/${code} for more information.`;
-    if (!issuedWarnings.has(warning)) {
+    if (
+      !global.litIssuedWarnings!.has(warning) &&
+      !global.litIssuedWarnings!.has(code)
+    ) {
       console.warn(warning);
-      issuedWarnings.add(warning);
+      global.litIssuedWarnings!.add(warning);
     }
   };
 }
@@ -113,15 +128,6 @@ if (DEV_MODE) {
  * {@linkcode property} decorator.
  */
 export class LitElement extends ReactiveElement {
-  /**
-   * Ensure this class is marked as `finalized` as an optimization ensuring
-   * it will not needlessly try to `finalize`.
-   *
-   * Note this property name is a string to prevent breaking Closure JS Compiler
-   * optimizations. See @lit/reactive-element for more information.
-   */
-  protected static override ['finalized'] = true;
-
   // This property needs to remain unminified.
   static ['_$litElement$'] = true;
 
@@ -226,44 +232,25 @@ export class LitElement extends ReactiveElement {
   }
 }
 
+/**
+ * Ensure this class is marked as `finalized` as an optimization ensuring
+ * it will not needlessly try to `finalize`.
+ *
+ * Note this property name is a string to prevent breaking Closure JS Compiler
+ * optimizations. See @lit/reactive-element for more information.
+ */
+(LitElement as unknown as Record<string, unknown>)[
+  JSCompiler_renameProperty('finalized', LitElement)
+] = true;
+
 // Install hydration if available
-globalThis.litElementHydrateSupport?.({LitElement});
+global.litElementHydrateSupport?.({LitElement});
 
 // Apply polyfills if available
 const polyfillSupport = DEV_MODE
-  ? globalThis.litElementPolyfillSupportDevMode
-  : globalThis.litElementPolyfillSupport;
+  ? global.litElementPolyfillSupportDevMode
+  : global.litElementPolyfillSupport;
 polyfillSupport?.({LitElement});
-
-// DEV mode warnings
-if (DEV_MODE) {
-  /* eslint-disable @typescript-eslint/no-explicit-any */
-  // Note, for compatibility with closure compilation, this access
-  // needs to be as a string property index.
-  (LitElement as any)['finalize'] = function (this: typeof LitElement) {
-    const finalized = (ReactiveElement as any).finalize.call(this);
-    if (!finalized) {
-      return false;
-    }
-    const warnRemovedOrRenamed = (obj: any, name: string, renamed = false) => {
-      if (obj.hasOwnProperty(name)) {
-        const ctorName = (typeof obj === 'function' ? obj : obj.constructor)
-          .name;
-        issueWarning(
-          renamed ? 'renamed-api' : 'removed-api',
-          `\`${name}\` is implemented on class ${ctorName}. It ` +
-            `has been ${renamed ? 'renamed' : 'removed'} ` +
-            `in this version of LitElement.`
-        );
-      }
-    };
-    warnRemovedOrRenamed(this, 'render');
-    warnRemovedOrRenamed(this, 'getStyles', true);
-    warnRemovedOrRenamed((this as typeof LitElement).prototype, 'adoptStyles');
-    return true;
-  };
-  /* eslint-enable @typescript-eslint/no-explicit-any */
-}
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
@@ -298,11 +285,13 @@ export const _$LE = {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for LitElement usage.
-(globalThis.litElementVersions ??= []).push('3.2.2');
-if (DEV_MODE && globalThis.litElementVersions.length > 1) {
-  issueWarning!(
-    'multiple-versions',
-    `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended.`
-  );
+(global.litElementVersions ??= []).push('4.2.2');
+if (DEV_MODE && global.litElementVersions.length > 1) {
+  queueMicrotask(() => {
+    issueWarning!(
+      'multiple-versions',
+      `Multiple versions of Lit loaded. Loading multiple versions ` +
+        `is not recommended.`
+    );
+  });
 }

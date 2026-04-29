@@ -1,7 +1,7 @@
 {
   "name": "@lit-labs/ssr",
   "type": "module",
-  "version": "3.0.1",
+  "version": "4.0.0",
   "publishConfig": {
     "access": "public"
   },
@@ -18,7 +18,8 @@
     "test:integration:unshimmed:dev": "wireit",
     "test:integration:shimmed:prod": "wireit",
     "test:integration:unshimmed:prod": "wireit",
-    "test:unit": "wireit"
+    "test:unit": "wireit",
+    "test:types": "wireit"
   },
   "wireit": {
     "build": {
@@ -70,11 +71,12 @@
     "test": {
       "dependencies": [
         "test:unit",
-        "test:integration"
+        "test:integration",
+        "test:types"
       ]
     },
     "test:unit": {
-      "command": "NODE_OPTIONS=--experimental-vm-modules uvu test \"lib/.*_test\\.js$\"",
+      "command": "NODE_OPTIONS=\"--experimental-vm-modules --enable-source-maps\" uvu test \"lib/.*_test\\.js$\"",
       "#comment": [
         "These unit tests use the default export condition, so they require a",
         "full build of all dependencies."
@@ -172,6 +174,22 @@
         "../../tests/web-test-runner.config.js"
       ],
       "output": []
+    },
+    "test:types": {
+      "command": "tsc --pretty --noEmit",
+      "dependencies": [
+        "../ssr-client:build:ts:types",
+        "../ssr-dom-shim:build:ts",
+        "../../lit:build:ts:types",
+        "../../lit-html:build:ts:types",
+        "../../lit-element:build:ts:types"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "custom_typings/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": []
     }
   },
   "files": [
@@ -182,12 +200,12 @@
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/ssr"
   },
   "devDependencies": {
     "@koa/router": "^12.0.0",
-    "@open-wc/testing": "^3.0.0-next.1",
+    "@open-wc/testing": "^3.2.0",
     "@open-wc/testing-karma": "^4.0.9",
     "@types/command-line-args": "^5.0.0",
     "@types/koa": "^2.0.49",
@@ -195,7 +213,7 @@
     "@types/koa-cors": "*",
     "@types/koa-mount": "^4.0.2",
     "@types/koa-static": "^4.0.1",
-    "@types/parse5": "^6.0.1",
+    "@types/node": "^20.0.0",
     "@types/resolve": "^1.20.2",
     "@webcomponents/template-shadowroot": "^0.1.0",
     "command-line-args": "^5.1.1",
@@ -207,17 +225,24 @@
     "koa-static": "^5.0.0"
   },
   "dependencies": {
-    "@lit-labs/ssr-client": "^1.0.0",
-    "@lit-labs/ssr-dom-shim": "^1.0.0",
-    "@lit/reactive-element": "^1.6.0",
-    "@parse5/tools": "^0.1.0",
-    "@types/node": "^16.0.0",
+    "@lit-labs/ssr-client": "^1.1.7",
+    "@lit-labs/ssr-dom-shim": "^1.5.0",
+    "@lit/reactive-element": "^2.0.4",
+    "@parse5/tools": "^0.3.0",
     "enhanced-resolve": "^5.10.0",
-    "lit": "^2.6.0",
-    "lit-element": "^3.1.0",
-    "lit-html": "^2.6.0",
+    "lit": "^3.1.2",
+    "lit-element": "^4.0.4",
+    "lit-html": "^3.1.2",
     "node-fetch": "^3.2.8",
     "parse5": "^7.1.1"
+  },
+  "peerDependencies": {
+    "@types/node": ">=20.0.0 <25.0.0"
+  },
+  "peerDependenciesMeta": {
+    "@types/node": {
+      "optional": true
+    }
   },
   "engines": {
     "node": ">=13.9.0"

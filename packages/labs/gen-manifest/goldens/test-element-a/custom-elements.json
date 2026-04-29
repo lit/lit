@@ -17,7 +17,8 @@
               "kind": "field",
               "name": "foo",
               "privacy": "public",
-              "type": {"text": "string | undefined"}
+              "type": {"text": "string | undefined"},
+              "attribute": "foo"
             },
             {
               "kind": "field",
@@ -59,6 +60,9 @@
           ],
           "tagName": "element-a",
           "customElement": true,
+          "attributes": [
+            {"name": "foo", "type": {"text": "string"}, "fieldName": "foo"}
+          ],
           "events": [
             {
               "name": "a-changed",
@@ -235,7 +239,8 @@
               "kind": "field",
               "name": "foo",
               "privacy": "public",
-              "type": {"text": "string | undefined"}
+              "type": {"text": "string | undefined"},
+              "attribute": "foo"
             },
             {
               "kind": "method",
@@ -390,6 +395,9 @@
           ],
           "tagName": "element-events",
           "customElement": true,
+          "attributes": [
+            {"name": "foo", "type": {"text": "string"}, "fieldName": "foo"}
+          ],
           "events": [
             {
               "name": "string-custom-event",
@@ -537,6 +545,96 @@
     },
     {
       "kind": "javascript-module",
+      "path": "element-mixins.js",
+      "declarations": [
+        {
+          "kind": "mixin",
+          "name": "mixin",
+          "description": "Some generic mixin",
+          "parameters": [
+            {
+              "name": "superClass",
+              "type": {
+                "text": "T",
+                "references": [
+                  {
+                    "name": "T",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-mixins.js",
+                    "start": 0,
+                    "end": 1
+                  }
+                ]
+              }
+            }
+          ],
+          "return": {
+            "type": {
+              "text": "T",
+              "references": [
+                {
+                  "name": "T",
+                  "package": "@lit-internal/test-element-a",
+                  "module": "element-mixins.js",
+                  "start": 0,
+                  "end": 1
+                }
+              ]
+            }
+          }
+        },
+        {
+          "kind": "class",
+          "name": "ElementMixins",
+          "description": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "mixins": [
+            {
+              "name": "mixin",
+              "package": "@lit-internal/test-element-a",
+              "module": "element-mixins.js"
+            }
+          ],
+          "members": [
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "tagName": "element-mixins",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {"kind": "js", "name": "mixin", "declaration": {"name": "mixin"}},
+        {
+          "kind": "js",
+          "name": "ElementMixins",
+          "declaration": {"name": "ElementMixins"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-mixins",
+          "declaration": {"name": "ElementMixins"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "element-props.js",
       "declarations": [
         {
@@ -550,28 +648,33 @@
               "name": "aStr",
               "privacy": "public",
               "type": {"text": "string"},
-              "default": "'aStr'"
+              "default": "'aStr'",
+              "attribute": "astr"
             },
             {
               "kind": "field",
               "name": "aNum",
               "privacy": "public",
               "type": {"text": "number"},
-              "default": "-1"
+              "default": "-1",
+              "attribute": "anum"
             },
             {
               "kind": "field",
               "name": "aBool",
               "privacy": "public",
               "type": {"text": "boolean"},
-              "default": "false"
+              "default": "false",
+              "attribute": "abool",
+              "reflects": true
             },
             {
               "kind": "field",
               "name": "aStrArray",
               "privacy": "public",
               "type": {"text": "string[]"},
-              "default": "['a', 'b']"
+              "default": "['a', 'b']",
+              "attribute": "astrarray"
             },
             {
               "kind": "field",
@@ -589,7 +692,8 @@
                   }
                 ]
               },
-              "default": "{\n    a: 'a',\n    b: -1,\n    c: false,\n    d: ['a', 'b'],\n    e: 'isUnknown',\n    strOrNum: 'strOrNum',\n  }"
+              "default": "{\n    a: 'a',\n    b: -1,\n    c: false,\n    d: ['a', 'b'],\n    e: 'isUnknown',\n    strOrNum: 'strOrNum',\n  }",
+              "attribute": "amytype"
             },
             {
               "kind": "field",
@@ -619,6 +723,25 @@
           ],
           "tagName": "element-props",
           "customElement": true,
+          "attributes": [
+            {"name": "astr", "type": {"text": "string"}, "fieldName": "aStr"},
+            {"name": "anum", "type": {"text": "number"}, "fieldName": "aNum"},
+            {
+              "name": "abool",
+              "type": {"text": "boolean"},
+              "fieldName": "aBool"
+            },
+            {
+              "name": "astrarray",
+              "type": {"text": "array"},
+              "fieldName": "aStrArray"
+            },
+            {
+              "name": "amytype",
+              "type": {"text": "object"},
+              "fieldName": "aMyType"
+            }
+          ],
           "events": [
             {
               "name": "a-changed",
@@ -656,7 +779,8 @@
               "name": "mainDefault",
               "privacy": "public",
               "type": {"text": "string"},
-              "default": "'mainDefault'"
+              "default": "'mainDefault'",
+              "attribute": "maindefault"
             },
             {
               "kind": "method",
@@ -678,7 +802,14 @@
             }
           ],
           "tagName": "element-slots",
-          "customElement": true
+          "customElement": true,
+          "attributes": [
+            {
+              "name": "maindefault",
+              "type": {"text": "string"},
+              "fieldName": "mainDefault"
+            }
+          ]
         }
       ],
       "exports": [
@@ -691,6 +822,52 @@
           "kind": "custom-element-definition",
           "name": "element-slots",
           "declaration": {"name": "ElementSlots"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "element-without-props.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementWithoutProps",
+          "description": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "members": [
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "tagName": "element-without-props",
+          "customElement": true
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ElementWithoutProps",
+          "declaration": {"name": "ElementWithoutProps"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-without-props",
+          "declaration": {"name": "ElementWithoutProps"}
         }
       ]
     },
@@ -820,6 +997,214 @@
           "kind": "js",
           "name": "SpecialEvent",
           "declaration": {"name": "SpecialEvent"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "sub/element-sub.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementSub",
+          "description": "This is a description of my element. It's pretty great. The description has\ntext that spans multiple lines.",
+          "summary": "My awesome element",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "members": [
+            {
+              "kind": "field",
+              "name": "foo",
+              "privacy": "public",
+              "type": {"text": "string | undefined"},
+              "attribute": "foo"
+            },
+            {
+              "kind": "field",
+              "name": "styles",
+              "static": true,
+              "privacy": "public",
+              "type": {
+                "text": "CSSResult",
+                "references": [
+                  {
+                    "name": "CSSResult",
+                    "package": "@lit/reactive-element",
+                    "module": "css-tag.js",
+                    "start": 0,
+                    "end": 9
+                  }
+                ]
+              },
+              "default": "css`\n    :host {\n      display: block;\n      background-color: var(--background-color);\n      color: var(-foreground-color);\n    }\n  `"
+            },
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "tagName": "element-sub",
+          "customElement": true,
+          "attributes": [
+            {"name": "foo", "type": {"text": "string"}, "fieldName": "foo"}
+          ],
+          "events": [
+            {
+              "name": "sub-changed",
+              "type": {"text": "Event"},
+              "description": "An awesome event to fire"
+            }
+          ],
+          "slots": [
+            {"name": "default", "description": "The default slot"},
+            {"name": "stuff", "description": "A slot for stuff"}
+          ],
+          "cssParts": [
+            {"name": "header", "description": "The header"},
+            {"name": "footer", "description": "The footer"}
+          ],
+          "cssProperties": [
+            {
+              "name": "--foreground-color",
+              "description": "The foreground color"
+            },
+            {
+              "name": "--background-color",
+              "description": "The background color"
+            }
+          ]
+        },
+        {
+          "kind": "variable",
+          "name": "localTypeVar",
+          "type": {
+            "text": "ElementSub",
+            "references": [
+              {
+                "name": "ElementSub",
+                "package": "@lit-internal/test-element-a",
+                "module": "sub/element-sub.js",
+                "start": 0,
+                "end": 10
+              }
+            ]
+          }
+        },
+        {
+          "kind": "variable",
+          "name": "packageTypeVar",
+          "type": {
+            "text": "Foo<Bar>",
+            "references": [
+              {
+                "name": "Foo",
+                "package": "@lit-internal/test-element-a",
+                "module": "package-stuff.js",
+                "start": 0,
+                "end": 3
+              },
+              {
+                "name": "Bar",
+                "package": "@lit-internal/test-element-a",
+                "module": "package-stuff.js",
+                "start": 4,
+                "end": 7
+              }
+            ]
+          }
+        },
+        {
+          "kind": "variable",
+          "name": "externalTypeVar",
+          "type": {
+            "text": "LitElement",
+            "references": [
+              {"name": "LitElement", "package": "lit", "start": 0, "end": 10}
+            ]
+          }
+        },
+        {
+          "kind": "variable",
+          "name": "globalTypeVar",
+          "type": {
+            "text": "HTMLElement",
+            "references": [
+              {
+                "name": "HTMLElement",
+                "package": "global:",
+                "start": 0,
+                "end": 11
+              }
+            ]
+          }
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ElementSub",
+          "declaration": {"name": "ElementSub"}
+        },
+        {
+          "kind": "js",
+          "name": "localTypeVar",
+          "declaration": {"name": "localTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "packageTypeVar",
+          "declaration": {"name": "packageTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "externalTypeVar",
+          "declaration": {"name": "externalTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "globalTypeVar",
+          "declaration": {"name": "globalTypeVar"}
+        },
+        {
+          "kind": "js",
+          "name": "Foo",
+          "declaration": {
+            "name": "Foo",
+            "package": "@lit-internal/test-element-a",
+            "module": "package-stuff.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "Baz",
+          "declaration": {
+            "name": "Bar",
+            "package": "@lit-internal/test-element-a",
+            "module": "package-stuff.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "local",
+          "declaration": {"name": "localTypeVar"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-sub",
+          "declaration": {"name": "ElementSub"}
         }
       ]
     }

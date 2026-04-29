@@ -14,8 +14,9 @@ import {
   ContextRoot,
   ContextProvider,
   ContextConsumer,
+  createContext,
 } from '@lit-labs/context';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 const simpleContext = 'simple-context' as Context<'simple-context', number>;
 
@@ -94,6 +95,57 @@ suiteSkipIE('late context provider', () => {
 
     // Define provider element
     customElements.define('late-context-provider', LateContextProviderElement);
+
+    await provider.updateComplete;
+    await consumer.updateComplete;
+
+    // `value` should now be provided
+    assert.strictEqual(consumer.value, 1000);
+
+    // but only to the subscribed value
+    assert.strictEqual(consumer.onceValue, 0);
+
+    // Confirm subscription is established
+    provider.value = 500;
+    await consumer.updateComplete;
+    assert.strictEqual(consumer.value, 500);
+
+    // and once was not updated
+    assert.strictEqual(consumer.onceValue, 0);
+  });
+
+  test(`handles late upgrade properly in nested shadowRoot`, async () => {
+    const host = document.createElement('div');
+
+    host.attachShadow({mode: 'open'});
+    const root = host.shadowRoot!;
+    root.innerHTML = `
+        <late-context-provider-nested value="1000">
+            <context-consumer></context-consumer>
+        </late-context-provider-nested>
+    `;
+
+    container.append(host);
+
+    const provider = root.querySelector(
+      'late-context-provider-nested'
+    ) as LateContextProviderElement;
+
+    const consumer = root.querySelector(
+      'context-consumer'
+    ) as ContextConsumerElement;
+
+    await consumer.updateComplete;
+
+    // Initially consumer has initial value
+    assert.strictEqual(consumer.value, 0);
+    assert.strictEqual(consumer.onceValue, 0);
+
+    // Define provider element
+    customElements.define(
+      'late-context-provider-nested',
+      class extends LateContextProviderElement {}
+    );
 
     await provider.updateComplete;
     await consumer.updateComplete;
@@ -248,5 +300,90 @@ suiteSkipIE('late context provider', () => {
     assert.equal(consumer.value, 999);
     // Check that the consumer was called only once
     assert.equal(consumer.callCount, 1);
+  });
+
+  test('a provider that upgrades after an ancestor provider', async () => {
+    const context = createContext<string>(Symbol());
+    @customElement('context-consumer-4')
+    class ContextConsumer4Element extends LitElement {
+      consume = new ContextConsumer(this, {
+        context,
+        subscribe: true,
+        callback: (value) => {
+          this.value = value;
+          this.callCount++;
+        },
+      });
+
+      value = 'consumer initializer';
+
+      callCount = 0;
+    }
+    @customElement('context-provider-grandparent')
+    class ContextProviderGrandparentElement extends LitElement {
+      provide = new ContextProvider(this, {
+        context,
+        initialValue: 'grandparent initial value',
+      });
+    }
+
+    container.innerHTML = `
+      <context-provider-grandparent>
+        <context-consumer-4></context-consumer-4>
+        <late-context-provider-4>
+          <context-consumer-4></context-consumer-4>
+        </late-context-provider-4>
+      </context-provider-grandparent>
+    `;
+    const directChildConsumer = container.querySelector(
+      'context-provider-grandparent > context-consumer-4'
+    ) as ContextConsumer4Element;
+    const indirectChildConsumer = container.querySelector(
+      'late-context-provider-4 > context-consumer-4'
+    ) as ContextConsumer4Element;
+    const grandparentProvider = container.querySelector(
+      'context-provider-grandparent'
+    ) as ContextProviderGrandparentElement;
+
+    await directChildConsumer.updateComplete;
+    assert.equal(directChildConsumer.value, 'grandparent initial value');
+    assert.equal(directChildConsumer.callCount, 1);
+    assert.equal(indirectChildConsumer.value, 'grandparent initial value');
+    assert.equal(indirectChildConsumer.callCount, 1);
+    grandparentProvider.provide.setValue('grandparent updated');
+    await directChildConsumer.updateComplete;
+    assert.equal(directChildConsumer.value, 'grandparent updated');
+    assert.equal(directChildConsumer.callCount, 2);
+    assert.equal(indirectChildConsumer.value, 'grandparent updated');
+    assert.equal(indirectChildConsumer.callCount, 2);
+
+    @customElement('late-context-provider-4')
+    class LateContextProvider4Element extends LitElement {
+      provide = new ContextProvider(this, {
+        context,
+        initialValue: 'late provider initial value',
+      });
+    }
+
+    // The indirect child now gets the late provider's initial value
+    await directChildConsumer.updateComplete;
+    assert.equal(directChildConsumer.value, 'grandparent updated');
+    assert.equal(indirectChildConsumer.value, 'late provider initial value');
+
+    // Updating the middle provider updates its child, but not its sibling,
+    // the direct child.
+    const middleProvider = container.querySelector(
+      'late-context-provider-4'
+    ) as LateContextProvider4Element;
+    middleProvider.provide.setValue('late provider updated');
+    await directChildConsumer.updateComplete;
+    assert.equal(directChildConsumer.value, 'grandparent updated');
+    assert.equal(indirectChildConsumer.value, 'late provider updated');
+
+    // Updating the grandparent only propagates to the direct child
+    grandparentProvider.provide.setValue('grandparent updated again');
+    await directChildConsumer.updateComplete;
+    assert.equal(directChildConsumer.value, 'grandparent updated again');
+    assert.equal(indirectChildConsumer.value, 'late provider updated');
   });
 });

@@ -6,3 +6,4 @@
 
 export * from './lib/render.js';
 export {ElementRenderer} from './lib/element-renderer.js';
+export * from './lib/server-template.js';

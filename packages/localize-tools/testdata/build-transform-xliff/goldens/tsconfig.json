@@ -9,7 +9,8 @@
     "forceConsistentCasingInFileNames": true,
     "experimentalDecorators": true,
     "rootDir": "./",
-    "outDir": "tsout"
+    "outDir": "tsout",
+    "types": []
   },
   "include": ["**/*.ts"]
 }

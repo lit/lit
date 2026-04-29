@@ -1,5 +1,5 @@
 import * as React from 'react';
-import {createComponent, EventName} from '@lit-labs/react';
+import {createComponent, EventName} from '@lit/react';
 
 import {ElementEvents as ElementEventsElement} from '@lit-internal/test-element-a/element-events.js';
 import {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
@@ -11,11 +11,11 @@ export type {EventSubclass} from '@lit-internal/test-element-a/element-events.js
 export type {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
 export type {TemplateResult} from 'lit';
 
-export const ElementEvents = createComponent(
-  React,
-  'element-events',
-  ElementEventsElement,
-  {
+export const ElementEvents = createComponent({
+  react: React,
+  tagName: 'element-events',
+  elementClass: ElementEventsElement,
+  events: {
     onStringCustomEvent: 'string-custom-event' as EventName<
       CustomEvent<string>
     >,
@@ -30,5 +30,5 @@ export const ElementEvents = createComponent(
     onTemplateResultCustomEvent: 'template-result-custom-event' as EventName<
       CustomEvent<TemplateResult>
     >,
-  }
-);
+  },
+});

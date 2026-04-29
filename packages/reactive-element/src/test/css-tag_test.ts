@@ -10,7 +10,7 @@ import {
   unsafeCSS,
   supportsAdoptingStyleSheets,
 } from '@lit/reactive-element/css-tag.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('Styling', () => {
   suite('css tag', () => {

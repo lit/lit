@@ -18,6 +18,7 @@ suite(`bad-elements`, () => {
     let err: Error | null = null;
     try {
       await ssrFixture(html`<bad-element-a></bad-element-a>`, {
+        base: import.meta.url,
         modules: ['./bad-element-a.js'],
       });
     } catch (error) {

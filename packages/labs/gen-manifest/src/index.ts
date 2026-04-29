@@ -14,6 +14,7 @@ import {
   Reference,
   Type,
   VariableDeclaration,
+  MixinDeclaration,
   LitElementExport,
   ClassField,
   ClassMethod,
@@ -129,10 +130,11 @@ const convertDeclaration = (declaration: Declaration): cem.Declaration => {
     return convertClassDeclaration(declaration);
   } else if (declaration.isVariableDeclaration()) {
     return convertVariableDeclaration(declaration);
+  } else if (declaration.isMixinDeclaration()) {
+    return convertMixinDeclaration(declaration);
   } else if (declaration.isFunctionDeclaration()) {
     return convertFunctionDeclaration(declaration);
   } else {
-    // TODO: MixinDeclaration
     // TODO: CustomElementMixinDeclaration;
     throw new Error(
       `Unknown declaration: ${(declaration as Object).constructor.name}`
@@ -163,14 +165,52 @@ const convertCustomElementExport = (
   };
 };
 
+/**
+ * Converts reactive properties that have attributes to CEM Attribute entries.
+ */
+const convertReactivePropertiesToAttributes = (
+  declaration: LitElementDeclaration
+): cem.Attribute[] | undefined => {
+  const attributes: cem.Attribute[] = [];
+
+  for (const [propertyName, property] of declaration.reactiveProperties) {
+    if (property.attribute === false) {
+      continue;
+    }
+
+    const attributeName =
+      typeof property.attribute === 'string'
+        ? property.attribute
+        : propertyName.toLowerCase();
+
+    // This should work for our default support types of String, Number,
+    // Boolean, Array, and Object. For other types, the type text will just be
+    // the name of the type, which is hopefully good enough for CEM consumers.
+    const typeText = property.typeOption?.toLowerCase() ?? 'string';
+
+    attributes.push({
+      name: attributeName,
+      description: ifNotEmpty(property.description),
+      summary: ifNotEmpty(property.summary),
+      type: {text: typeText},
+      default: ifNotEmpty(property.default),
+      fieldName: propertyName,
+    });
+  }
+
+  return ifNotEmpty(attributes);
+};
+
 const convertLitElementDeclaration = (
   declaration: LitElementDeclaration
 ): cem.CustomElementDeclaration => {
   return {
     ...convertClassDeclaration(declaration),
+    // Override members to add attribute/reflects info to fields
+    members: convertLitElementMembers(declaration),
     tagName: declaration.tagname,
     customElement: true,
-    // attributes: [], // TODO
+    attributes: convertReactivePropertiesToAttributes(declaration),
     events: transformIfNotEmpty(declaration.events, (v) =>
       Array.from(v.values()).map(convertEvent)
     ),
@@ -187,6 +227,44 @@ const convertLitElementDeclaration = (
   };
 };
 
+/**
+ * Convert members for a LitElementDeclaration, adding `attribute` and
+ * `reflects` properties to fields that are reactive properties.
+ */
+const convertLitElementMembers = (
+  declaration: LitElementDeclaration
+): cem.ClassMember[] | undefined => {
+  const convertField = (field: ClassField): cem.CustomElementField => {
+    const baseField = convertClassField(field);
+    const reactiveProperty = declaration.reactiveProperties.get(field.name);
+
+    if (reactiveProperty === undefined) {
+      return baseField;
+    }
+
+    // Determine attribute name (if any)
+    const attribute =
+      reactiveProperty.attribute === false
+        ? undefined
+        : typeof reactiveProperty.attribute === 'string'
+          ? reactiveProperty.attribute
+          : field.name.toLowerCase();
+
+    return {
+      ...baseField,
+      attribute: ifNotEmpty(attribute),
+      reflects: ifNotEmpty(reactiveProperty.reflect),
+    };
+  };
+
+  return ifNotEmpty([
+    ...Array.from(declaration.fields).map(convertField),
+    ...Array.from(declaration.staticFields).map(convertClassField),
+    ...Array.from(declaration.methods).map(convertClassMethod),
+    ...Array.from(declaration.staticMethods).map(convertClassMethod),
+  ]);
+};
+
 const convertClassDeclaration = (
   declaration: ClassDeclaration
 ): cem.ClassDeclaration => {
@@ -197,7 +275,9 @@ const convertClassDeclaration = (
       declaration.heritage.superClass,
       convertReference
     ),
-    // mixins: [], // TODO
+    mixins: ifNotEmpty([
+      ...Array.from(declaration.heritage.mixins).map(convertReference),
+    ]),
     members: ifNotEmpty([
       ...Array.from(declaration.fields).map(convertClassField),
       ...Array.from(declaration.staticFields).map(convertClassField),
@@ -214,6 +294,16 @@ const convertCommonMemberInfo = (member: ClassField | ClassMethod) => {
     privacy: ifNotEmpty(member.privacy),
     inheritedFrom: transformIfNotEmpty(member.inheritedFrom, convertReference),
     source: ifNotEmpty(member.source),
+  };
+};
+
+const convertMixinDeclaration = (
+  declaration: MixinDeclaration
+): cem.MixinDeclaration => {
+  return {
+    kind: 'mixin',
+    ...convertCommonDeclarationInfo(declaration),
+    ...convertCommonFunctionLikeInfo(declaration),
   };
 };
 

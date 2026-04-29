@@ -4,13 +4,17 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {createPackageAnalyzer} from '@lit-labs/analyzer';
-import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
+import {
+  AbsolutePath,
+  createPackageAnalyzer,
+} from '@lit-labs/analyzer/package-analyzer.js';
 import {FileTree, writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {LitCli} from '../lit-cli.js';
 import * as path from 'path';
 import {Command, ResolvedCommand} from '../command.js';
 import {Package} from '@lit-labs/analyzer/lib/model.js';
+import {EOL} from 'os';
+import * as ts from 'typescript';
 
 const reactCommand: Command = {
   name: 'react',
@@ -104,9 +108,8 @@ export const run = async (
       // This must be one by one in case we need to ask for permission.
       const generators: GenerateCommand[] = [];
       for (const reference of generatorReferences) {
-        const resolved = await cli.resolveCommandAndMaybeInstallNeededDeps(
-          reference
-        );
+        const resolved =
+          await cli.resolveCommandAndMaybeInstallNeededDeps(reference);
         if (resolved == null) {
           throw new Error(`Could not load generator for ${reference.name}`);
         }
@@ -118,10 +121,13 @@ export const run = async (
       const results = await Promise.allSettled(
         generators.map(async (generator) => {
           // TODO(kschaaf): Add try/catches around each of these operations and
-          // throw more contextural errors
+          // throw more contextual errors
           await writeFileTree(out, await generator.generate(options, console));
         })
       );
+      // Log any diagnostics collected while running the generators.
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      logDiagnostics([...analyzer.getDiagnostics()] as any);
       // `allSettled` will swallow errors, so we need to filter them out of
       // the results and throw a new error up the stack describing all the errors
       // that happened
@@ -129,7 +135,7 @@ export const run = async (
         .map((r, i) =>
           r.status === 'rejected'
             ? `Error generating '${generators[i].name}' wrapper for package '${packageRoot}': ` +
-                (r.reason as Error).stack ?? r.reason
+              ((r.reason as Partial<Error>).stack ?? r.reason)
             : ''
         )
         .filter((e) => e)
@@ -141,5 +147,25 @@ export const run = async (
   } catch (e) {
     console.error((e as Error).message ?? e);
     return 1;
+  }
+};
+
+const diagnosticsHost: ts.FormatDiagnosticsHost = {
+  getCanonicalFileName(name: string) {
+    return path.resolve(name);
+  },
+  getCurrentDirectory() {
+    return process.cwd();
+  },
+  getNewLine() {
+    return EOL;
+  },
+};
+
+const logDiagnostics = (diagnostics: Array<ts.Diagnostic>) => {
+  if (diagnostics.length > 0) {
+    console.log(
+      ts.formatDiagnosticsWithColorAndContext(diagnostics, diagnosticsHost)
+    );
   }
 };

@@ -7,6 +7,7 @@ import {
   ChildPart,
   CompiledTemplateResult,
   html,
+  mathml,
   noChange,
   nothing,
   render,
@@ -17,6 +18,7 @@ import {
   SanitizerFactory,
   Part,
   CompiledTemplate,
+  MathMLTemplateResult,
 } from 'lit-html';
 
 import {
@@ -26,7 +28,8 @@ import {
   PartInfo,
   DirectiveParameters,
 } from 'lit-html/directive.js';
-import {assert} from '@esm-bundle/chai';
+import {isCompiledTemplateResult} from 'lit-html/directive-helpers.js';
+import {assert} from 'chai';
 import {
   stripExpressionComments,
   stripExpressionMarkers,
@@ -35,6 +38,7 @@ import {repeat} from 'lit-html/directives/repeat.js';
 import {AsyncDirective} from 'lit-html/async-directive.js';
 
 import {createRef, ref} from 'lit-html/directives/ref.js';
+import {literal, unsafeStatic} from 'lit-html/static.js';
 
 // For compiled template tests
 import {_$LH} from 'lit-html/private-ssr-support.js';
@@ -48,6 +52,10 @@ const isIe = ua.indexOf('Trident/') > 0;
 // We don't have direct access to DEV_MODE, but this is a good enough
 // proxy.
 const DEV_MODE = render.setSanitizer != null;
+// Tests are compiled if the passed in runtime template has been
+// compiled.
+const testAreCompiled = isCompiledTemplateResult(html``);
+const skipTestIfCompiled = testAreCompiled ? test.skip : test;
 
 class FireEventDirective extends Directive {
   render() {
@@ -72,13 +80,23 @@ suite('lit-html', () => {
     container.id = 'container';
   });
 
+  /**
+   * @param r
+   * @param expected either a string or an array of strings. If an array is
+   * provided, the output must match one of the expected strings.
+   * @param options
+   */
   const assertRender = (
     r: TemplateResult | CompiledTemplateResult,
-    expected: string,
+    expected: string | Array<string>,
     options?: RenderOptions
   ) => {
     const part = render(r, container, options);
-    assert.equal(stripExpressionComments(container.innerHTML), expected);
+    if (Array.isArray(expected)) {
+      assert.include(expected, stripExpressionComments(container.innerHTML));
+    } else {
+      assert.equal(stripExpressionComments(container.innerHTML), expected);
+    }
     return part;
   };
 
@@ -339,7 +357,10 @@ suite('lit-html', () => {
       assertRender(html`<div a="${'A'}"></div>`, '<div a="A"></div>');
       assertRender(html`<div abc="${'A'}"></div>`, '<div abc="A"></div>');
       assertRender(html`<div abc = "${'A'}"></div>`, '<div abc="A"></div>');
-      assertRender(html`<div abc="${'A'}/>"></div>`, '<div abc="A/>"></div>');
+      assertRender(html`<div abc="${'A'}/>"></div>`, [
+        '<div abc="A/>"></div>',
+        '<div abc="A/&gt;"></div>',
+      ]);
       assertRender(html`<input value="${'A'}"/>`, '<input value="A">');
     });
 
@@ -369,10 +390,10 @@ suite('lit-html', () => {
     });
 
     test('quoted attribute with markup', () => {
-      assertRender(
-        html`<div a="<table>${'A'}"></div>`,
-        '<div a="<table>A"></div>'
-      );
+      assertRender(html`<div a="<table>${'A'}"></div>`, [
+        '<div a="<table>A"></div>',
+        '<div a="&lt;table&gt;A"></div>',
+      ]);
     });
 
     test('text after quoted bound attribute', () => {
@@ -462,7 +483,13 @@ suite('lit-html', () => {
 
     test('comment', () => {
       render(html`<!--${'A'}-->`, container);
-      assert.equal(stripExpressionMarkers(container.innerHTML), '<!---->');
+      // Strip only the marker text (and not the entire comment as
+      // stripExpressionMarkers does) so that the test works on both runtime and
+      // compiled templates.
+      assert.equal(
+        container.innerHTML.replace(/lit\$[0-9]+\$/g, ''),
+        '<!----><!---->'
+      );
     });
 
     test('comment with attribute-like content', () => {
@@ -779,6 +806,27 @@ suite('lit-html', () => {
 
     test('`svg` returns an `SVGTemplateResult`', () => {
       staticAssertExtends<SVGTemplateResult, ReturnType<typeof svg>>();
+    });
+  });
+
+  suite('MathML', () => {
+    test('renders MathML', () => {
+      const container = document.createElement('math');
+      const t = mathml`<mi>x</mi>`;
+      render(t, container);
+      const mi = container.firstElementChild!;
+      assert.equal(mi.tagName, 'mi');
+      assert.equal(mi.namespaceURI, 'http://www.w3.org/1998/Math/MathML');
+    });
+
+    const staticAssertExtends = <T, U extends T>(_?: [T, U]) => {};
+
+    test('`MathMLTemplateResult` is a subtype of `TemplateResult`', () => {
+      staticAssertExtends<TemplateResult, MathMLTemplateResult>();
+    });
+
+    test('`mathml` returns a `MathMLTemplateResult`', () => {
+      staticAssertExtends<MathMLTemplateResult, ReturnType<typeof mathml>>();
     });
   });
 
@@ -1154,6 +1202,20 @@ suite('lit-html', () => {
       assertContent('<div foo=""></div>');
       assert.isEmpty(observer.takeRecords());
     });
+
+    test('binding undefined removes the attribute', () => {
+      const go = (v: unknown) => render(html`<div ?foo=${v}></div>`, container);
+      go(undefined);
+      assertContent('<div></div>');
+      // it doesn't toggle the attribute
+      go(undefined);
+      assertContent('<div></div>');
+      // it does remove it
+      go(true);
+      assertContent('<div foo=""></div>');
+      go(undefined);
+      assertContent('<div></div>');
+    });
   });
 
   suite('properties', () => {
@@ -1173,6 +1235,17 @@ suite('lit-html', () => {
 
       go(nothing);
       assert.strictEqual((div as any).foo, undefined);
+    });
+
+    test('noChange does not set property', () => {
+      const go = (v: any) =>
+        render(html`<div id="a" .tabIndex=${v}></div>`, container);
+
+      go(noChange);
+      const div = container.querySelector('div')!;
+
+      // If noChange has been interpreted as undefined, tabIndex would be 0
+      assert.strictEqual(div.tabIndex, -1);
     });
 
     test('null sets null', () => {
@@ -1590,16 +1663,12 @@ suite('lit-html', () => {
   });
 
   suite('compiled', () => {
-    const trustedTypes = (globalThis as unknown as Partial<Window>)
-      .trustedTypes;
-    const policy = trustedTypes?.createPolicy('lit-html', {
-      createHTML: (s) => s,
-    }) ?? {createHTML: (s) => s as unknown as TrustedHTML};
+    const branding_tag = (s: TemplateStringsArray) => s;
 
     test('only text', () => {
       // A compiled template for html`${'A'}`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML('<!---->'),
+        h: branding_tag`<!---->`,
         parts: [{type: 2, index: 0}],
       };
       assertRender(
@@ -1615,7 +1684,7 @@ suite('lit-html', () => {
     test('text expression', () => {
       // A compiled template for html`<div>${'A'}</div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML(`<div><!----></div>`),
+        h: branding_tag`<div><!----></div>`,
         parts: [{type: 2, index: 1}],
       };
       const result = {
@@ -1629,7 +1698,7 @@ suite('lit-html', () => {
     test('attribute expression', () => {
       // A compiled template for html`<div foo=${'A'}></div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML('<div></div>'),
+        h: branding_tag`<div></div>`,
         parts: [
           {
             type: 1,
@@ -1652,7 +1721,7 @@ suite('lit-html', () => {
       const r = createRef();
       // A compiled template for html`<div ${ref(r)}></div>`
       const _$lit_template_1: CompiledTemplate = {
-        h: policy.createHTML('<div></div>'),
+        h: branding_tag`<div></div>`,
         parts: [{type: 6, index: 0}],
       };
       const result = {
@@ -1664,6 +1733,19 @@ suite('lit-html', () => {
       const div = container.firstElementChild;
       assert.isDefined(div);
       assert.strictEqual(r.value, div);
+    });
+
+    test(`throw if unbranded`, () => {
+      const _$lit_template_1: CompiledTemplate = {
+        h: ['<div><!----></div>'] as unknown as TemplateStringsArray,
+        parts: [{type: 2, index: 1}],
+      };
+      const result = {
+        // This property needs to remain unminified.
+        ['_$litType$']: _$lit_template_1,
+        values: ['A'],
+      };
+      assert.throws(() => render(result, container));
     });
   });
 
@@ -2145,6 +2227,24 @@ suite('lit-html', () => {
             </template>`,
           container
         );
+      });
+
+      skipTestIfCompiled('Duplicate attributes throw', () => {
+        assert.throws(() => {
+          render(
+            html`<input ?disabled=${true} ?disabled=${false} fooAttribute=${'potato'}>`,
+            container
+          );
+        }, `Detected duplicate attribute bindings. This occurs if your template has duplicate attributes on an element tag. For example "<input ?disabled=\${true} ?disabled=\${false}>" contains a duplicate "disabled" attribute. The error was detected in the following template: \n\`<input ?disabled=\${...} ?disabled=\${...} fooAttribute=\${...}>\``);
+      });
+
+      test('Matching attribute bindings across elements should not throw', () => {
+        assert.doesNotThrow(() => {
+          render(
+            html`<input ?disabled=${true}><input ?disabled=${false}>`,
+            container
+          );
+        });
       });
 
       test('Expressions inside nested templates throw in dev mode', () => {
@@ -3217,5 +3317,19 @@ suite('lit-html', () => {
       );
       assertNoWarning();
     });
+
+    skipTestIfCompiled(
+      'Static values warn if detected without static html tag',
+      () => {
+        html`${literal`<p>Hello</p>`}`;
+        assertWarning('static');
+
+        html`<div>${unsafeStatic('<p>Hello</p>')}</div>`;
+        assertWarning('static');
+
+        html`<h1 attribute="${unsafeStatic('test')}"></h1>`;
+        assertWarning('static');
+      }
+    );
   });
 });

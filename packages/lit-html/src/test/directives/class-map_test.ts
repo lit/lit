@@ -6,7 +6,7 @@
 
 import {html, svg, render} from 'lit-html';
 import {ClassInfo, classMap} from 'lit-html/directives/class-map.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('classMap directive', () => {
   let container: HTMLDivElement;

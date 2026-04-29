@@ -33,7 +33,8 @@ export type DirectiveParameters<C extends Directive> = Parameters<C['render']>;
 export interface DirectiveResult<C extends DirectiveClass = DirectiveClass> {
   /**
    * This property needs to remain unminified.
-   * @internal */
+   * @internal
+   */
   ['_$litDirective$']: C;
   /** @internal */
   values: DirectiveParameters<InstanceType<C>>;

@@ -17,7 +17,7 @@ const reservedReactProperties = new Set([
 ]);
 
 const attributesToProps = (attrs: NamedNodeMap) => {
-  const props: {[index: string]: string} = {};
+  const props: {[attributeName: string]: string} = {};
   for (let i = 0; i < attrs.length; i++) {
     const attr = attrs[i];
     props[attr.name] = attr.value;
@@ -34,8 +34,14 @@ export const renderCustomElement = (tagName: string, props: {} | null) => {
     elementRenderers: [LitElementRenderer],
     customElementInstanceStack: [],
     customElementHostStack: [],
+    eventTargetStack: [],
+    slotStack: [],
     deferHydration: false,
   };
+
+  // elementAttributes will be provided to React as props for the host element
+  // for properly rendering reflected attributes
+  const elementAttributes: {[attributeName: string]: string} = {};
 
   const renderer = getElementRenderer(renderInfo, tagName);
 
@@ -46,8 +52,16 @@ export const renderCustomElement = (tagName: string, props: {} | null) => {
         continue;
       }
 
-      if (k in renderer.element) {
-        renderer.setProperty(k, v);
+      // This prop is created by `@lit/react` createComponent containing
+      // items to be set as properties
+      if (k === '_$litProps$') {
+        for (const [pk, pv] of Object.entries(v as object)) {
+          renderer.setProperty(pk, pv);
+        }
+        // Defer hydration so `@lit/react` createComponent can set
+        // properties on element before hydration
+        elementAttributes['defer-hydration'] = '';
+        delete (props as {_$litProps$?: object})['_$litProps$'];
       } else {
         renderer.setAttribute(k, String(v));
       }
@@ -57,15 +71,16 @@ export const renderCustomElement = (tagName: string, props: {} | null) => {
   renderer.connectedCallback();
 
   renderInfo.customElementInstanceStack.push(renderer);
+  renderInfo.customElementHostStack.push(renderer);
 
   const shadowContents = renderer.renderShadow(renderInfo);
 
-  // elementAttributes will be provided to React as props for the host element
-  // for properly rendering reflected attributes
-  const elementAttributes =
-    renderer.element !== undefined
-      ? attributesToProps(renderer.element.attributes)
-      : {};
+  if (renderer.element !== undefined) {
+    Object.assign(
+      elementAttributes,
+      attributesToProps(renderer.element.attributes)
+    );
+  }
 
   const {mode = 'open', delegatesFocus} = renderer.shadowRootOptions;
   const templateAttributes = {

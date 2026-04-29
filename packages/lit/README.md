@@ -24,10 +24,6 @@ At Lit's core is a boilerplate-killing component base class that provides reacti
 
 See the full documentation for Lit at [lit.dev](https://lit.dev)
 
-## About this release
-
-This is a stable release of Lit 2.0. If upgrading from previous versions of `lit-element` or `lit-html`, please see the [Upgrade Guide](https://lit.dev/docs/releases/upgrade/) for a step-by-step guide on upgrading.
-
 ## Overview
 
 Lit provides developers with just the right tools to build fast web components:

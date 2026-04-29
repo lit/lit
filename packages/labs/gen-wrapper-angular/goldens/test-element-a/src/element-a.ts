@@ -18,7 +18,7 @@ export class ElementA {
   private _el: ElementAElement;
   private _ngZone: NgZone;
 
-  constructor(e: ElementRef, ngZone: NgZone) {
+  constructor(e: ElementRef<ElementAElement>, ngZone: NgZone) {
     this._el = e.nativeElement;
     this._ngZone = ngZone;
 

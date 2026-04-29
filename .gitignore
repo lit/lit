@@ -2,6 +2,13 @@ node_modules/
 *.tgz
 *.tsbuildinfo
 .DS_Store
-.vscode/
 .wireit
 /temp
+.idea
+/scripts/check-size-out.md
+/playground/p/**/package-lock.json
+/playground/p/scratch/*/
+!/playground/p/scratch/*.*
+/.direnv/
+/.envrc
+/.actrc

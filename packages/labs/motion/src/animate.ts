@@ -1,4 +1,9 @@
-import {LitElement, ReactiveControllerHost} from 'lit';
+/**
+ * @license
+ * Copyright 2021 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+import {ReactiveControllerHost} from 'lit';
 import {nothing, AttributePart} from 'lit/html.js';
 import {directive, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
@@ -14,8 +19,8 @@ export type CSSPropertiesList = string[];
 // zIndex for "in" animations
 let z = 0;
 
-const disconnectedProps: Map<unknown, CSSValues> = new Map();
-const renderedHosts: WeakSet<ReactiveControllerHost> = new WeakSet();
+const disconnectedProps = new Map<unknown, CSSValues>();
+const renderedHosts = new WeakSet<ReactiveControllerHost>();
 
 export type Options = {
   // Options used for the animation
@@ -74,22 +79,53 @@ const quotientOp = (a: number, b: number) => {
 };
 
 // Computes a transform given a before and after input for given properties.
-export const transformProps = {
+export const transformProps: {
+  [p: string]: (
+    a: number,
+    b: number
+  ) => {
+    value?: number;
+    transform?: string;
+    overrideFrom?: {[k: string]: string};
+  };
+} = {
   left: (a: number, b: number) => {
     const value = diffOp(a, b);
-    return {value, transform: value && `translateX(${value}px)`};
+    const transform =
+      value == null || isNaN(value) ? undefined : `translateX(${value}px)`;
+    return {value, transform};
   },
   top: (a: number, b: number) => {
     const value = diffOp(a, b);
-    return {value, transform: value && `translateY(${value}px)`};
+    const transform =
+      value == null || isNaN(value) ? undefined : `translateY(${value}px)`;
+    return {value, transform};
   },
   width: (a: number, b: number) => {
+    let override: {} | undefined = undefined;
+    // 'To' values of 0 would cause `value` to be Infinity. Instead we override
+    // `b` to be 1 and add 1px as an override of width.
+    if (b === 0) {
+      b = 1;
+      override = {width: '1px'};
+    }
     const value = quotientOp(a, b);
-    return {value, transform: value && `scaleX(${value})`};
+    const transform =
+      value == null || isNaN(value) ? undefined : `scaleX(${value})`;
+    return {value, overrideFrom: override, transform};
   },
   height: (a: number, b: number) => {
+    let override: {} | undefined = undefined;
+    // 'To' values of 0 would cause `value` to be Infinity. Instead we override
+    // `b` to be 1 and add 1px as an override of height.
+    if (b === 0) {
+      b = 1;
+      override = {height: '1px'};
+    }
     const value = quotientOp(a, b);
-    return {value, transform: value && `scaleY(${value})`};
+    const transform =
+      value == null || isNaN(value) ? undefined : `scaleY(${value})`;
+    return {value, overrideFrom: override, transform};
   },
 };
 
@@ -129,13 +165,14 @@ const isDirty = (value: unknown, previous: unknown) => {
 // Mapping of node on which the `animate` directive is used to the `animate` directive.
 // Used to get the ancestor `animate` animations (which are used to modify
 // `animate` transforms), done by ascending the DOM.
-const nodeToAnimateMap: WeakMap<Node, Animate> = new WeakMap();
+const nodeToAnimateMap = new WeakMap<Node, Animate>();
 
 /**
  * `animate` directive class. Animates a node's position between renders.
  */
 export class Animate extends AsyncDirective {
-  private _host?: LitElement;
+  private _hostHasUpdated = false;
+  private _host?: ReactiveControllerHost;
   private _fromValues?: CSSValues;
   private _parentNode: Element | null = null;
   private _nextSibling: Node | null = null;
@@ -191,8 +228,9 @@ export class Animate extends AsyncDirective {
   override update(part: AttributePart, [options]: Parameters<this['render']>) {
     const firstUpdate = this._host === undefined;
     if (firstUpdate) {
-      this._host = part.options?.host as LitElement;
+      this._host = part.options?.host as ReactiveControllerHost;
       this._host.addController(this);
+      this._host.updateComplete.then((_) => (this._hostHasUpdated = true));
       this.element = part.element;
       nodeToAnimateMap.set(this.element, this);
     }
@@ -251,7 +289,7 @@ export class Animate extends AsyncDirective {
       dirty = isDirty(value, this._previousValue);
     }
     this._shouldAnimate =
-      this._host!.hasUpdated &&
+      this._hostHasUpdated &&
       !this.isDisabled() &&
       !this.isAnimating() &&
       dirty &&
@@ -330,12 +368,12 @@ export class Animate extends AsyncDirective {
           : frames;
         // adjust z so always on top...
         z++;
-        frames!.forEach((f) => (f.zIndex = z));
+        frames!.forEach((f) => (f['zIndex'] = z));
       } else if (this.options.in) {
         frames = [...this.options.in, {}];
       }
     }
-    this.animate(frames, animationOptions);
+    noAwait(this.animate(frames, animationOptions));
   }
 
   resetStyles() {
@@ -383,8 +421,9 @@ export class Animate extends AsyncDirective {
         // or animation but setting left/top should be rare, especially via
         // animation.
         const left =
-          (this._fromValues!.left as number) - (shifted.left as number);
-        const top = (this._fromValues!.top as number) - (shifted.top as number);
+          (this._fromValues!['left'] as number) - (shifted['left'] as number);
+        const top =
+          (this._fromValues!['top'] as number) - (shifted['top'] as number);
         const isStatic = getComputedStyle(this.element).position === 'static';
         if (isStatic && (left !== 0 || top !== 0)) {
           this.element.style.position = 'relative';
@@ -475,24 +514,24 @@ export class Animate extends AsyncDirective {
       .filter((a) => a !== undefined) as CSSValues[];
     let dScaleX = 1;
     let dScaleY = 1;
-    if (ancestorProps !== undefined) {
+    if (ancestorProps.length > 0) {
       // gather scaling data for ancestors
       ancestorProps.forEach((a) => {
-        if (a.width) {
-          dScaleX = dScaleX / (a.width as number);
+        if (a['width']) {
+          dScaleX = dScaleX / (a['width'] as number);
         }
-        if (a.height) {
-          dScaleY = dScaleY / (a.height as number);
+        if (a['height']) {
+          dScaleY = dScaleY / (a['height'] as number);
         }
       });
       // Move position by ancestor scaling amount.
-      if (from.left !== undefined && to.left !== undefined) {
-        from.left = dScaleX * (from.left as number);
-        to.left = dScaleX * (to.left as number);
+      if (from['left'] !== undefined && to['left'] !== undefined) {
+        from['left'] = dScaleX * (from['left'] as number);
+        to['left'] = dScaleX * (to['left'] as number);
       }
-      if (from.top !== undefined && to.top !== undefined) {
-        from.top = dScaleY * (from.top as number);
-        to.top = dScaleY * (to.top as number);
+      if (from['top'] !== undefined && to['top'] !== undefined) {
+        from['top'] = dScaleY * (from['top'] as number);
+        to['top'] = dScaleY * (to['top'] as number);
       }
     }
     return {from, to};
@@ -515,7 +554,12 @@ export class Animate extends AsyncDirective {
         if (op.transform !== undefined) {
           props[p] = op.value!;
           hasFrames = true;
-          fromFrame.transform = `${fromFrame.transform ?? ''} ${op.transform}`;
+          fromFrame['transform'] = `${fromFrame['transform'] ?? ''} ${
+            op['transform']
+          }`;
+          if (op.overrideFrom !== undefined) {
+            Object.assign(fromFrame, op.overrideFrom);
+          }
         }
       } else if (f !== t && f !== undefined && t !== undefined) {
         hasFrames = true;
@@ -523,7 +567,7 @@ export class Animate extends AsyncDirective {
         toFrame[p] = t;
       }
     }
-    fromFrame.transformOrigin = toFrame.transformOrigin = center
+    fromFrame['transformOrigin'] = toFrame['transformOrigin'] = center
       ? 'center center'
       : 'top left';
     this.animatingProperties = props;
@@ -547,7 +591,7 @@ export class Animate extends AsyncDirective {
         didAnimate = true;
         this.webAnimation = this.element.animate(frames, options);
         const controller = this.getController();
-        controller?.add(this);
+        noAwait(controller?.add(this));
         try {
           await this.webAnimation.finished;
         } catch (e) {
@@ -574,13 +618,19 @@ export class Animate extends AsyncDirective {
 }
 
 /**
+ * Used in an async function to mark a promise that we're deliberately not
+ * awaiting.
+ */
+function noAwait(_p: null | undefined | Promise<unknown>) {}
+
+/**
  * The `animate` directive animates a node's layout between renders.
  * It will perform a "tweening" animation between the two states based on
  * the options given. In addition, elements can animate when they initially
  * render to DOM and when they are removed.
  *
  * Options include:
- * * animationOptions:  configure animation via standard KeyframeAnimationOptions
+ * * keyframeOptions:  configure animation via standard KeyframeAnimationOptions
  * * properties: list of properties to animate, defaults to
  * ['left', 'top','width', 'height', 'opacity', 'color', 'background']
  * * disabled: disables animation

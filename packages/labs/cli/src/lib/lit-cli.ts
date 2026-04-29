@@ -22,6 +22,7 @@ import {makeLabsCommand} from './commands/labs.js';
 import {makeInitCommand} from './commands/init.js';
 import {createRequire} from 'module';
 import * as childProcess from 'child_process';
+export type {Command, ResolvedCommand, ReferenceToCommand} from './command.js';
 
 export interface Options {
   // Mandatory, so that all tests must specify it.
@@ -31,12 +32,13 @@ export interface Options {
 }
 
 export class LitCli {
-  readonly commands: Map<string, Command> = new Map();
+  readonly commands = new Map<string, Command>();
   readonly args: readonly string[];
   readonly console: LitConsole;
   /** The current working directory. */
   readonly cwd: string;
   private readonly stdin: NodeJS.ReadableStream;
+  private skipPermissions = false;
 
   constructor(args: string[], options: Options) {
     this.cwd = options.cwd;
@@ -55,6 +57,12 @@ export class LitCli {
     // to verbose mode. Also set the level on the logger we've already created.
     if (args.indexOf('--verbose') > -1 || args.indexOf('-v') > -1) {
       this.console.logLevel = 'debug';
+    }
+
+    // If the "--autoinstall" flag is ever present, it will automatically
+    // install commands that are not installed without asking for permission.
+    if (args.indexOf('--autoinstall') > -1) {
+      this.skipPermissions = true;
     }
 
     this.args = args;
@@ -153,9 +161,8 @@ export class LitCli {
       if (!commandName || command == null || command == '') {
         return {invalidCommand: commandName ?? 'unknown command'};
       }
-      const maybeCommand = await this.resolveCommandAndMaybeInstallNeededDeps(
-        command
-      );
+      const maybeCommand =
+        await this.resolveCommandAndMaybeInstallNeededDeps(command);
       if (maybeCommand === undefined) {
         return {commandNotInstalled: true};
       }
@@ -282,19 +289,22 @@ export class LitCli {
   private async installDepWithPermission(
     reference: ReferenceToCommand
   ): Promise<boolean> {
-    const havePermission = await this.getPermissionToInstall(reference);
+    const havePermission = this.skipPermissions
+      ? true
+      : await this.getPermissionToInstall(reference);
+
     if (!havePermission) {
       return false;
     }
     const installFrom = reference.installFrom ?? reference.importSpecifier;
     this.console.log(`Installing ${installFrom}...`);
     const child = childProcess.spawn(
-      // https://stackoverflow.com/questions/43230346/error-spawn-npm-enoent
-      /^win/.test(process.platform) ? 'npm.cmd' : 'npm',
+      'npm',
       ['install', '--save-dev', installFrom],
       {
         cwd: this.cwd,
         stdio: [process.stdin, 'pipe', 'pipe'],
+        shell: true,
       }
     );
     (async () => {

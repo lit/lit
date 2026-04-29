@@ -7,13 +7,33 @@
 import {ElementRenderer} from './element-renderer.js';
 import {LitElement, CSSResult, ReactiveElement} from 'lit';
 import {_$LE} from 'lit-element/private-ssr-support.js';
+import {
+  ariaMixinAttributes,
+  HYDRATE_INTERNALS_ATTR_PREFIX,
+} from '@lit-labs/ssr-dom-shim';
 import {renderValue} from './render-value.js';
 import type {RenderInfo} from './render-value.js';
-import type {RenderResult} from './render-result.js';
+import type {ThunkedRenderResult} from './render-result.js';
 
 export type Constructor<T> = {new (): T};
 
 const {attributeToProperty, changedProperties} = _$LE;
+
+// We want consumers to be able to implement their own createRenderRoot
+// and to detect whether it breaks during SSR. Due to this, we
+// patch the createRenderRoot method on LitElement.
+// If this method is not patched, the SSR call will fail, as adoptStyles
+// is called, which will in turn call browser native APIs.
+// TODO: Check if we could enable supportsAdoptingStyleSheets during SSR
+// and polyfill CSSStyleSheet.
+LitElement.prototype['createRenderRoot'] = function () {
+  return (
+    this.shadowRoot ??
+    this.attachShadow(
+      (this.constructor as typeof ReactiveElement).shadowRootOptions
+    )
+  );
+};
 
 /**
  * ElementRenderer implementation for LitElements
@@ -29,6 +49,29 @@ export class LitElementRenderer extends ElementRenderer {
   constructor(tagName: string) {
     super(tagName);
     this.element = new (customElements.get(this.tagName)!)() as LitElement;
+
+    // Reflect internals AOM attributes back to the DOM prior to hydration to
+    // ensure search bots can accurately parse element semantics prior to
+    // hydration. This is called whenever an instance of ElementInternals is
+    // created on an element to wire up the getters/setters for the ARIAMixin
+    // properties.
+    const internals = (
+      this.element as object as {__internals: ElementInternals}
+    ).__internals;
+    if (internals) {
+      for (const [ariaProp, ariaAttribute] of Object.entries(
+        ariaMixinAttributes
+      )) {
+        const value = internals[ariaProp as keyof typeof ariaMixinAttributes];
+        if (value && !this.element.hasAttribute(ariaAttribute)) {
+          this.element.setAttribute(ariaAttribute, value);
+          this.element.setAttribute(
+            `${HYDRATE_INTERNALS_ATTR_PREFIX}${ariaAttribute}`,
+            value
+          );
+        }
+      }
+    }
   }
 
   override get shadowRootOptions() {
@@ -39,14 +82,35 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   override connectedCallback() {
+    // Optionally call connectedCallback via setting: `litSsrCallConnectedCallback`
+    // Enable this flag to process events dispatched handled via connectedCallback.
+    if (globalThis.litSsrCallConnectedCallback) {
+      // Prevent enabling asynchronous updating by overriding enableUpdating
+      // with a no-op.
+      this.element['enableUpdating'] = function () {};
+      // We also depend on patching createRenderRoot, which is done above.
+      try {
+        this.element.connectedCallback();
+      } catch (e) {
+        const className = this.element.constructor.name;
+        console.warn(
+          `Calling ${className}.connectedCallback() resulted in a thrown ` +
+            'error. Consider removing `litSsrCallConnectedCallback` to ' +
+            'prevent calling connectedCallback or add isServer checks to ' +
+            'your code to prevent calling browser API during SSR.'
+        );
+        throw e;
+      }
+    }
+
+    const propertyValues = changedProperties(this.element);
     // Call LitElement's `willUpdate` method.
     // Note, this method is required not to use DOM APIs.
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (this.element as any)?.willUpdate(changedProperties(this.element as any));
+    this.element?.['willUpdate'](propertyValues);
+    // We are currently skipping the controller hook `hostUpdate`.
     // Reflect properties to attributes by calling into ReactiveElement's
     // update, which _only_ reflects attributes
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    (ReactiveElement.prototype as any).update.call(this.element);
+    ReactiveElement.prototype['update'].call(this.element, propertyValues);
   }
 
   override attributeChangedCallback(
@@ -57,29 +121,31 @@ export class LitElementRenderer extends ElementRenderer {
     attributeToProperty(this.element as LitElement, name, value);
   }
 
-  override *renderShadow(renderInfo: RenderInfo): RenderResult {
+  override renderShadow(renderInfo: RenderInfo): ThunkedRenderResult {
+    const result: ThunkedRenderResult = [];
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
       .elementStyles;
     if (styles !== undefined && styles.length > 0) {
-      yield '<style>';
+      result.push('<style>');
       for (const style of styles) {
-        yield (style as CSSResult).cssText;
+        result.push((style as CSSResult).cssText);
       }
-      yield '</style>';
+      result.push('</style>');
     }
     // Render template
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    yield* renderValue((this.element as any).render(), renderInfo);
+    result.push(() => renderValue((this.element as any).render(), renderInfo));
+    return result;
   }
 
-  override *renderLight(renderInfo: RenderInfo): RenderResult {
+  override renderLight(renderInfo: RenderInfo): ThunkedRenderResult {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const value = (this.element as any)?.renderLight();
     if (value) {
-      yield* renderValue(value, renderInfo);
+      return [() => renderValue(value, renderInfo)];
     } else {
-      yield '';
+      return [''];
     }
   }
 }

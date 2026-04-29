@@ -35,16 +35,17 @@ export default {
       external: (id: string) => !id.match(/^((\\w:)|(\\.?[\\\\/]))/),
       input: [
         ${Object.keys(sfcFiles)
-          .map((path) => `'./${path}'`)
+          .map((path) => `'./${path.replace(/\\/g, '/')}'`)
           .join(', ')}
       ],
-      preserveModules: false,
-      preserveEntrySignatures: true,
+      preserveEntrySignatures: "strict",
       output: {
         format: 'es',
         entryFileNames: ({ name }) => \`\${name}.js\`,
         dir: './',
-        sourcemap: true
+        sourcemap: true,
+        preserveModules: true,
+			  preserveModulesRoot: 'src',
       }
     },
     outDir: './'

@@ -47,6 +47,12 @@
   <note>Description of 0</note>
   <source>described 0</source>
 </trans-unit>
+<trans-unit id="s372f95c2b25986c8">
+  <source>Different <x id="0" equiv-text="${user}"/></source>
+</trans-unit>
+<trans-unit id="h5e2d21ff71e6c8b5">
+  <source>Different <x id="0" equiv-text="&lt;b&gt;${user}&lt;/b&gt;"/></source>
+</trans-unit>
 </body>
 </file>
 </xliff>

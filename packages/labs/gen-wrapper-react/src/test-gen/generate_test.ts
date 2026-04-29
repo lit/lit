@@ -9,7 +9,7 @@ import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 import * as fs from 'fs';
 import * as path from 'path';
-import {createPackageAnalyzer} from '@lit-labs/analyzer';
+import {createPackageAnalyzer} from '@lit-labs/analyzer/package-analyzer.js';
 import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
 import {
   installPackage,
@@ -47,7 +47,7 @@ test('basic wrapper generation', async () => {
 
   await installPackage(outputPackage, {
     [`@lit-internal/${project}`]: inputPackage,
-    '@lit-labs/react': '../react',
+    '@lit/react': '../../react',
   });
 
   // The version of @types/react might conflict with the one installed to the

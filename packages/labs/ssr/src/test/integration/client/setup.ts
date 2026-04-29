@@ -7,14 +7,22 @@
 import {assert} from '@open-wc/testing';
 
 import {render} from 'lit';
-import {hydrate} from 'lit/experimental-hydrate.js';
+import {hydrate} from '@lit-labs/ssr-client';
 import {hydrateShadowRoots} from '@webcomponents/template-shadowroot/template-shadowroot.js';
-import {SSRExpectedHTML, SSRTestSuite} from '../tests/ssr-test.js';
+import {
+  SSRExpectedHTML,
+  SSRExpectedHTMLGroup,
+  SSRTestSuite,
+  isAnyHtml,
+  isPartialHydrationExpectation,
+} from '../tests/ssr-test.js';
 
 const assertTemplate = document.createElement('template');
 
-// For now, don't run SSR tests on IE
-const skipSSRTests = window.navigator.userAgent.indexOf('Trident/') >= 0;
+// Safari is behaving weird wrt to custom element upgrades!
+// Hopefully a very specific version check will make us see the error again if
+// it persists across versions.
+const skipSSRTests = window.navigator.userAgent.indexOf('Safari/605.1.15') >= 0;
 
 /**
  * Removes comments, normalizes text content, and normalizes style attribute
@@ -120,10 +128,24 @@ const assertLightDom = (
  */
 const assertHTML = (
   container: Element | ShadowRoot,
-  html: SSRExpectedHTML
+  html: SSRExpectedHTMLGroup | SSRExpectedHTML
 ): void => {
   if (typeof html !== 'object') {
     assertLightDom(container, html);
+  } else if (isAnyHtml(html)) {
+    let pass = false;
+    let lastError: unknown;
+    for (const expectation of html.expectations) {
+      try {
+        assertHTML(container, expectation);
+        pass = true;
+      } catch (e) {
+        lastError = e;
+      }
+    }
+    if (!pass) {
+      throw lastError;
+    }
   } else {
     for (const query in html) {
       const subHtml = html[query];
@@ -230,16 +252,18 @@ export const setupTest = async (
         expectMutationsOnFirstRender,
         expectMutationsDuringHydration,
         expectMutationsDuringUpgrade,
+        skipPreHydrationAssertHtml,
+        serverOnly,
       } = testSetup;
 
       const testFn =
         testSetup.skip || skipSSRTests
           ? test.skip
           : // eslint-disable-next-line no-only-tests/no-only-tests
-          testSetup.only
-          ? // eslint-disable-next-line no-only-tests/no-only-tests
-            test.only
-          : test;
+            testSetup.only
+            ? // eslint-disable-next-line no-only-tests/no-only-tests
+              test.only
+            : test;
 
       testFn(testName, async () => {
         // Get the SSR result from the server.
@@ -257,7 +281,9 @@ export const setupTest = async (
         // The first expectation args are used in the server render. Check the DOM
         // pre-hydration to make sure they're correct. The DOM is changed again
         // against the first expectation after hydration in the loop below.
-        assertHTML(container, expectations[0].html);
+        if (!skipPreHydrationAssertHtml) {
+          assertHTML(container, expectations[0].html);
+        }
         const stableNodes = stableSelectors.map((selector) =>
           container.querySelector(selector)
         );
@@ -275,15 +301,39 @@ export const setupTest = async (
           }
         }
 
-        let i = 0;
-        for (const {args, html, setup, check} of expectations) {
-          if (i === 0) {
-            hydrate(testRender(...args), container);
+        let i = -1;
+        for (const expectation of expectations) {
+          i++;
+          const {args, html, setup, check} = expectation;
+          let expectationRender = testRender;
+          let shouldHydrate = i === 0;
+          let expectationContainer = container;
+          if (isPartialHydrationExpectation(expectation)) {
+            if (testSetup.renderFns?.[expectation.renderFn] === undefined) {
+              throw new Error(
+                `No render function registered for key '${expectation.renderFn}'`
+              );
+            }
+            expectationRender = testSetup.renderFns[expectation.renderFn];
+            shouldHydrate = expectation.hydrate ?? false;
+            expectationContainer = container.querySelector(
+              expectation.rootSelector
+            )!;
+          } else if (serverOnly) {
+            // Server only templates only support partial hydration, so just
+            // assert that the HTML is as expected after elements are upgraded,
+            // don't try to render again.
+            assertHTML(container, html);
+            continue;
+          }
+          if (shouldHydrate) {
+            hydrate(expectationRender(...args), expectationContainer);
             // Hydration should cause no DOM mutations, because it does not
             // actually update the DOM - it just recreates data structures
             if (!expectMutationsDuringHydration) {
-              assert.isEmpty(
-                getMutations(),
+              assert.deepEqual(
+                prettyPrintMutations(getMutations()),
+                [],
                 'Hydration should cause no DOM mutations'
               );
             }
@@ -300,9 +350,9 @@ export const setupTest = async (
           }
 
           // After hydration, render() will be operable.
-          render(testRender(...args), container);
+          render(expectationRender(...args), expectationContainer);
 
-          if (i === 0) {
+          if (shouldHydrate) {
             // The first render should also cause no mutations, since it's using
             // the same data as the server.
             if (!expectMutationsOnFirstRender) {
@@ -331,9 +381,35 @@ export const setupTest = async (
           // Check the markup
           assertHTML(container, html);
 
-          i++;
+          // if we rendered without hydration, we should clear mutations
+          if (!shouldHydrate) {
+            clearMutations();
+          }
         }
       });
     }
   });
 };
+
+function prettyPrintMutations(mutations: MutationRecord[]): string[] {
+  const result = [];
+  for (const mutation of mutations) {
+    const {type, target} = mutation;
+    const targetString =
+      'innerHTML' in target ? `${target.innerHTML}` : `${target}`;
+    result.push(
+      JSON.stringify({
+        target: targetString,
+        type,
+        attribute: mutation.attributeName || undefined,
+        addedNodes: mutation.addedNodes
+          ? mutation.addedNodes.length
+          : undefined,
+        removedNodes: mutation.removedNodes
+          ? mutation.removedNodes.length
+          : undefined,
+      })
+    );
+  }
+  return result;
+}

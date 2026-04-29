@@ -1,4 +1,4 @@
-# lit-html 2.0
+# lit-html
 
 Efficient, Expressive, Extensible HTML templates in JavaScript
 
@@ -7,15 +7,13 @@ Efficient, Expressive, Extensible HTML templates in JavaScript
 [![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
 
-lit-html is the template system that powers the [Lit](https://lit.dev) library for building fast web components. When using `lit-html` to develop web components, most users should import lit-html via the [`lit`](https://www.npmjs.com/package/lit) package rather than installing and importing from `lit-html` directly.
+lit-html is the template system that powers the [Lit](https://lit.dev) library for building fast web components.
 
-## About this release
-
-This is a stable release of `lit-html` 2.0 (part of the Lit 2.0 release). If upgrading from previous versions of `lit-html`, please note the minor breaking changes from lit-html 1.0 in the [Upgrade Guide](https://lit.dev/docs/releases/upgrade/).
+When using `lit-html` to develop web components, most users should import lit-html via the [`lit`](https://www.npmjs.com/package/lit) package rather than installing and importing from `lit-html` directly.
 
 ## Documentation
 
-Full documentation is available at [lit.dev](https://lit.dev).
+Full documentation is available at [lit.dev/docs/templates/overview/](https://lit.dev/docs/templates/overview/).
 
 ## Overview
 

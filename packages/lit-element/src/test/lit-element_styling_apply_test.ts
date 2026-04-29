@@ -15,7 +15,7 @@ import {
   getComputedStyleValue,
   nextFrame,
 } from './test-helpers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 (canTestLitElement ? suite : suite.skip)('Styling @apply', () => {
   let container: HTMLElement;

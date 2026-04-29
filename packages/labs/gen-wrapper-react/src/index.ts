@@ -91,13 +91,13 @@ const packageJsonTemplate = (
       dependencies: {
         // TODO(kschaaf): make component version range configurable?
         [pkgJson.name!]: '^' + pkgJson.version!,
-        // TODO(kschaaf): make @lit-labs/react version configurable?
-        '@lit-labs/react': '^1.0.4',
+        // TODO(kschaaf): make @lit/react version configurable?
+        '@lit/react': '^1.0.0',
       },
       peerDependencies: {
         // TODO(kschaaf): make react version(s) configurable?
-        react: '^17 || ^18',
-        '@types/react': '^17 || ^18',
+        react: '^17 || ^18 || ^19',
+        '@types/react': '^17 || ^18 || ^19',
       },
       devDependencies: {
         // Use typescript from source package, assuming it exists
@@ -105,7 +105,9 @@ const packageJsonTemplate = (
       },
       files: [
         ...litModules.map(({module}) =>
-          module.jsPath.replace(/js$/, '{js,js.map,d.ts,d.ts.map}')
+          module.jsPath
+            .replace(/\\/g, '/')
+            .replace(/js$/, '{js,js.map,d.ts,d.ts.map}')
         ),
       ],
     },
@@ -115,16 +117,18 @@ const packageJsonTemplate = (
 };
 
 const gitIgnoreTemplate = (litModules: ModuleWithLitElementDeclarations[]) => {
-  return litModules.map(({module}) => module.jsPath).join('\n');
+  return litModules
+    .map(({module}) => module.jsPath.replace(/\\/g, '/'))
+    .join('\n');
 };
 
 const tsconfigTemplate = () => {
   return JSON.stringify(
     {
       compilerOptions: {
-        target: 'es2019',
+        target: 'es2021',
         module: 'es2015',
-        lib: ['es2020', 'DOM', 'DOM.Iterable'],
+        lib: ['es2021', 'DOM', 'DOM.Iterable'],
         declaration: true,
         declarationMap: true,
         sourceMap: true,
@@ -171,11 +175,10 @@ const wrapperModuleTemplate = (
   const hasEvents = elements.filter(({events}) => events.size).length > 0;
   const typeImports = getTypeImports(elements);
   const typeExports = getElementTypeExportsFromImports(typeImports);
+  moduleJsPath = moduleJsPath.replace(/\\/g, '/');
   return javascript`
  import * as React from 'react';
- import {createComponent${
-   hasEvents ? `, EventName` : ``
- }} from '@lit-labs/react';
+ import {createComponent${hasEvents ? `, EventName` : ``}} from '@lit/react';
  ${elements.map(
    (element) => javascript`
  import {${element.name} as ${element.name}Element} from '${packageJson.name}/${moduleJsPath}';
@@ -193,19 +196,19 @@ const packageNameToReactPackageName = (pkgName: string) => `${pkgName}-react`;
 
 const wrapperTemplate = ({name, tagname, events}: LitElementDeclaration) => {
   return javascript`
- export const ${name} = createComponent(
-   React,
-   '${tagname}',
-   ${name}Element,
-   {
+ export const ${name} = createComponent({
+   react: React,
+   tagName: '${tagname}',
+   elementClass: ${name}Element,
+   events: {
      ${Array.from(events.values()).map((event: EventModel) => {
        const {name, type} = event;
        return javascript`
      ${kabobToOnEvent(name)}: '${name}' as EventName<${
-         type?.text || `CustomEvent<unknown>`
-       }>,`;
+       type?.text || `CustomEvent<unknown>`
+     }>,`;
      })}
    }
- );
+  });
  `;
 };

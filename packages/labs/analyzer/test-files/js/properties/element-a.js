@@ -13,6 +13,8 @@ export class LocalClass {
   }
 }
 
+const unsupportedPropertyName = Symbol();
+
 export class ElementA extends LitElement {
   static properties = {
     noOptionsString: {},
@@ -32,11 +34,32 @@ export class ElementA extends LitElement {
     importedClass: {},
     globalClass: {},
     union: {},
+    stringLiteralUnion: {},
+    reflectedStringLiteralUnion: {type: String, reflect: true},
     staticProp: {attribute: 'static-prop', type: Number},
   };
 
+  [unsupportedPropertyName] = '';
+
+  /** @type {number} */
+  get getterOnly() {
+    return 0;
+  }
+
+  /** @type {number} */
+  get accessorPair() {
+    return 0;
+  }
+  set accessorPair(_) {
+    void 0;
+  }
+
+  /** @readonly */
+  readonlyField = 0;
+
   constructor() {
     super();
+    this.constructorAssignOnly = 0;
     this.notDecorated = '';
     this.noOptionsString = '';
     this.noOptionsNumber = 42;
@@ -54,7 +77,22 @@ export class ElementA extends LitElement {
     this.localClass = new LocalClass();
     this.importedClass = new ImportedClass();
     this.globalClass = document.createElement('foo');
+    this.stringLiteralUnion = /** @type {'hi' | 'hello'} */ ('hi');
+    this.reflectedStringLiteralUnion = /** @type {'hi' | 'hello'} */ ('hi');
     this.staticProp = 42;
+  }
+
+  /**
+   * This signature works with strings or numbers.
+   * @param {string | number} x Accepts either a string or a number.
+   * @returns {string | number} Returns either a string or a number.
+   */
+  overloaded(x) {
+    if (typeof x === 'string') {
+      return x + 'abc';
+    } else {
+      return x + 123;
+    }
   }
 }
 customElements.define('element-a', ElementA);

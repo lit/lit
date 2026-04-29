@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import ElementSlots from '@lit-internal/test-element-a-vue/ElementSlots.js';
+import ElementSlots from '@lit-internal/test-element-a-vue/ElementSlots.vue.js';
 </script>
 
 <template>

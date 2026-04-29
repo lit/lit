@@ -16,7 +16,7 @@ const concat = (strings: TemplateStringsArray, ...values: unknown[]) =>
   );
 
 /**
- * Use https://marketplace.visualstudio.com/items?itemName=Tobermory.es6-string-html
+ * Use https://marketplace.visualstudio.com/items?itemName=zjcompt.es6-string-javascript
  * for JS syntax highlighting
  */
 export const javascript = concat;

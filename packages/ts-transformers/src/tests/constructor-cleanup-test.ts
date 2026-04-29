@@ -19,7 +19,7 @@ const cache = new CompilerHostCache();
  * constructorCleanupTransformer. Check that there are no errors and that the
  * output matches (prettier-formatted).
  */
-function checkTransform(inputTs: string, expectedJs: string) {
+async function checkTransform(inputTs: string, expectedJs: string) {
   const options = ts.getDefaultCompilerOptions();
   options.target = ts.ScriptTarget.ESNext;
   // Disable standard class field emit so that we see synthetic constructors
@@ -46,7 +46,9 @@ function checkTransform(inputTs: string, expectedJs: string) {
     []
   );
 
-  let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
+  let formattedExpected = await prettier.format(expectedJs, {
+    parser: 'typescript',
+  });
   // TypeScript >= 4 will add an empty export statement if there are no imports
   // or exports to ensure this is a module. We don't care about checking this.
   const unformattedActual = (result.code || '').replace('export {};', '');
@@ -64,23 +66,23 @@ function checkTransform(inputTs: string, expectedJs: string) {
   assert.is(formattedActual, formattedExpected);
 }
 
-test('empty file', () => {
+test('empty file', async () => {
   const input = ``;
   const expected = ``;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('no class', () => {
+test('no class', async () => {
   const input = `
     const a = 0;
   `;
   const expected = `
     const a = 0;
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('no constructor', () => {
+test('no constructor', async () => {
   const input = `
     class MyClass {
       foo() { return 0; }
@@ -91,10 +93,10 @@ test('no constructor', () => {
       foo() { return 0; }
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('unmodified constructor is unchanged', () => {
+test('unmodified constructor is unchanged', async () => {
   const input = `
     class MyClass {
       foo() { return 0; }
@@ -113,10 +115,10 @@ test('unmodified constructor is unchanged', () => {
       static bar() { return 0; }
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('modified existing constructor is restored to original position', () => {
+test('modified existing constructor is restored to original position', async () => {
   const input = `
     /* Class description */
     class MyClass {
@@ -139,10 +141,10 @@ test('modified existing constructor is restored to original position', () => {
       static bar() { return 0; }
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('modified existing constructor was originally at the top', () => {
+test('modified existing constructor was originally at the top', async () => {
   const input = `
     /* Class description */
     class MyClass {
@@ -165,10 +167,10 @@ test('modified existing constructor was originally at the top', () => {
       static bar() { return 0; }
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('fully synthetic constructor moves below last static', () => {
+test('fully synthetic constructor moves below last static', async () => {
   const input = `
     /* Class description */
     class MyClass {
@@ -198,10 +200,10 @@ test('fully synthetic constructor moves below last static', () => {
       i4() { return 0; }
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('fully synthetic constructor stays at top if there are no statics', () => {
+test('fully synthetic constructor stays at top if there are no statics', async () => {
   const input = `
     /* Class description */
     class MyClass {
@@ -224,10 +226,10 @@ test('fully synthetic constructor stays at top if there are no statics', () => {
       i4() { return 0; }
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('remove unnecessary synthetic super(...arguments) argument', () => {
+test('remove unnecessary synthetic super(...arguments) argument', async () => {
   const input = `
     class C1 {}
     class C2 extends C1 {}
@@ -245,10 +247,10 @@ test('remove unnecessary synthetic super(...arguments) argument', () => {
       }
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('preserve necessary synthetic super(...arguments) argument', () => {
+test('preserve necessary synthetic super(...arguments) argument', async () => {
   const input = `
     class C1 {
       constructor(x) {
@@ -276,7 +278,7 @@ test('preserve necessary synthetic super(...arguments) argument', () => {
       }
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
 test.run();

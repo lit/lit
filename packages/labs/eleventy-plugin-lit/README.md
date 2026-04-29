@@ -8,33 +8,39 @@ A plugin for [Eleventy](https://www.11ty.dev) that pre-renders
 [![Build Status](https://github.com/lit/lit/actions/workflows/tests.yml/badge.svg)](https://github.com/lit/lit/actions/workflows/tests.yml)
 [![Published on npm](https://img.shields.io/npm/v/@lit-labs/eleventy-plugin-lit.svg?logo=npm)](https://www.npmjs.com/package/@lit-labs/eleventy-plugin-lit)
 
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Give feedback: https://github.com/lit/lit/discussions/3356
+
 ## Contents
 
-- [Status](#status)
-- [Setup](#setup)
-  - [Install](#install)
-  - [Register plugin](#register-plugin)
-  - [Configure component modules](#configure-component-modules)
-  - [Enable experimental VM modules](#enable-experimental-vm-modules)
-  - [Watch mode](#watch-mode)
-- [Usage](#usage)
-  - [Component compatibility](#component-compatibility)
-  - [Passing data to components](#passing-data-to-components)
-- [Declarative Shadow DOM](#declarative-shadow-dom)
-  - [Polyfill](#polyfill)
-- [Hydration](#hydration)
-- [Bootup](#bootup)
-  - [Example bootup strategy](#example-bootup-strategy)
-- [Roadmap](#roadmap)
-- [Issues and comments](#issues-and-comments)
-- [Contributing](#contributing)
-
-## Status
-
-🚧 `@lit-labs/eleventy-plugin-lit` is part of the [Lit
-Labs](https://lit.dev/docs/libraries/labs/) set of packages - it is published in
-order to get feedback on the design and not ready for production. Breaking
-changes are likely to happen frequently. 🚧
+- [@lit-labs/eleventy-plugin-lit](#lit-labseleventy-plugin-lit)
+  - [Contents](#contents)
+  - [Setup](#setup)
+    - [Install](#install)
+    - [Register plugin](#register-plugin)
+    - [Configure mode](#configure-mode)
+    - [Configure component modules](#configure-component-modules)
+    - [Watch mode](#watch-mode)
+  - [Usage](#usage)
+    - [Component compatibility](#component-compatibility)
+    - [Passing data to components](#passing-data-to-components)
+  - [Declarative Shadow DOM](#declarative-shadow-dom)
+    - [Polyfill](#polyfill)
+  - [Hydration](#hydration)
+  - [Bootup](#bootup)
+    - [Example bootup strategy](#example-bootup-strategy)
+  - [Roadmap](#roadmap)
+  - [Issues and comments](#issues-and-comments)
+  - [Contributing](#contributing)
+    - [Testing environment variables:](#testing-environment-variables)
 
 ## Setup
 
@@ -92,7 +98,7 @@ Use the `componentModules` setting to tell the plugin where to find the
 definitions of your components.
 
 Pass an array of paths to `.js` files containing Lit component definitions.
-Paths are interpreted relative to to the directory from which the `eleventy`
+Paths are interpreted relative to the directory from which the `eleventy`
 command is executed.
 
 Each `.js` file should be a JavaScript module (ESM) that imports `lit` with a
@@ -252,7 +258,7 @@ to their JavaScript implementations, becoming responsive and interactive.
 Lit components can automatically hydrate themselves when they detect that a
 Shadow Root has already been attached, as long as Lit's _experimental hydrate
 support_ module has been installed by importing
-[`lit/experimental-hydrate-support.js`](https://github.com/lit/lit/blob/main/packages/lit-element/src/experimental-hydrate-support.ts).
+[`@lit-labs/ssr-client/lit-element-hydrate-support.js`](https://github.com/lit/lit/blob/main/packages/labs/ssr-client/src/lit-element-hydrate-support.ts).
 
 > ⏱️ The Lit hydration support module **must be loaded before Lit or any
 > components that depend on Lit are imported**, because it modifies the initial
@@ -317,7 +323,7 @@ layout: default.html
 The file `_includes/default.html` would then contain the following:
 
 ```html
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <!-- As an optimization, immediately begin fetching the JavaScript modules
@@ -325,7 +331,7 @@ The file `_includes/default.html` would then contain the following:
         execute them yet, though. -->
     <link
       rel="modulepreload"
-      href="/node_modules/lit/experimental-hydrate-support.js"
+      href="/node_modules/@lit-labs/ssr-client/lit-element-hydrate-support.js"
     />
     <link rel="modulepreload" href="/_js/component1.js" />
     <link rel="modulepreload" href="/_js/component2.js" />
@@ -368,7 +374,7 @@ The file `_includes/default.html` would then contain the following:
         // Start fetching the Lit hydration support module (note the absence
         // of "await" -- we don't want to block yet).
         const litHydrateSupportInstalled = import(
-          '/node_modules/lit/experimental-hydrate-support.js'
+          '/node_modules/@lit-labs/ssr-client/lit-element-hydrate-support.js'
         );
 
         // Check if we require the declarative shadow DOM polyfill. As of

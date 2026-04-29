@@ -5,7 +5,7 @@
  */
 import {html, render} from 'lit-html';
 import {ref, createRef, RefOrCallback} from 'lit-html/directives/ref.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('ref', () => {
   let container: HTMLDivElement;
@@ -27,6 +27,13 @@ suite('ref', () => {
     render(html`<div ${ref(divCallback)}></div>`, container);
     const div = container.firstElementChild;
     assert.equal(divRef, div);
+  });
+
+  test('handles an undefined ref', () => {
+    render(html`<div ${ref(undefined)}></div>`, container);
+    const div = container.firstElementChild;
+    // Not much to assert. We mainly care that we didn't throw
+    assert.isOk(div);
   });
 
   test('sets a ref when Ref object changes', () => {
@@ -360,5 +367,36 @@ suite('ref', () => {
     assert.deepEqual(calls, ['DIV', undefined, 'DIV']);
     go();
     assert.deepEqual(calls, ['DIV', undefined, 'DIV', undefined, 'DIV']);
+  });
+
+  test('set to undefined when disconnected and reset when reconnected', () => {
+    let value: Element | undefined;
+    const go = () =>
+      render(html`<div ${ref((el) => (value = el))}></div>`, container);
+    const part = go();
+    assert.equal(value, container.firstElementChild);
+    part.setConnected(false);
+    assert.isUndefined(value);
+    part.setConnected(true);
+    assert.equal(value, container.firstElementChild);
+  });
+
+  test('always undefined when disconnected', () => {
+    let value: Element | undefined;
+    const go = () =>
+      render(html`<div ${ref((el) => (value = el))}></div>`, container);
+    const part = go();
+    part.setConnected(false);
+    go();
+    assert.isUndefined(value);
+  });
+
+  test('disconnect gracefuly with an undefined ref', () => {
+    const go = () => render(html`<div ${ref(undefined)}></div>`, container);
+    const part = go();
+    part.setConnected(false);
+    assert.doesNotThrow(() => {
+      go();
+    });
   });
 });

@@ -19,7 +19,7 @@ const cache = new CompilerHostCache();
  * preserveBlankLinesTransformer. Check that there are no errors and that the
  * output matches (prettier-formatted).
  */
-function checkTransform(inputTs: string, expectedJs: string) {
+async function checkTransform(inputTs: string, expectedJs: string) {
   const options = ts.getDefaultCompilerOptions();
   options.target = ts.ScriptTarget.ESNext;
   options.module = ts.ModuleKind.ESNext;
@@ -37,13 +37,15 @@ function checkTransform(inputTs: string, expectedJs: string) {
     []
   );
 
-  let formattedExpected = prettier.format(expectedJs, {parser: 'typescript'});
+  let formattedExpected = await prettier.format(expectedJs, {
+    parser: 'typescript',
+  });
   // TypeScript >= 4 will add an empty export statement if there are no imports
   // or exports to ensure this is a module. We don't care about checking this.
   const unformattedActual = (result.code || '').replace('export {};', '');
   let formattedActual;
   try {
-    formattedActual = prettier.format(unformattedActual, {
+    formattedActual = await prettier.format(unformattedActual, {
       parser: 'typescript',
     });
   } catch {
@@ -55,13 +57,13 @@ function checkTransform(inputTs: string, expectedJs: string) {
   assert.is(formattedActual, formattedExpected);
 }
 
-test('empty file', () => {
+test('empty file', async () => {
   const input = ``;
   const expected = ``;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('no blank lines', () => {
+test('no blank lines', async () => {
   const input = `
     import 'foo';
     class Foo {
@@ -76,10 +78,10 @@ test('no blank lines', () => {
       bar() {}
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('blank line before code', () => {
+test('blank line before code', async () => {
   const input = `
 
     const foo = 0;
@@ -88,10 +90,10 @@ test('blank line before code', () => {
     //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
     const foo = 0;
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('comment and blank line before code', () => {
+test('comment and blank line before code', async () => {
   const input = `
     /**
      * @license Foo
@@ -106,10 +108,10 @@ test('comment and blank line before code', () => {
     //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
     const foo = 0;
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('blank line after imports', () => {
+test('blank line after imports', async () => {
   const input = `
   import 'foo';
   import 'bar';
@@ -128,10 +130,10 @@ test('blank line after imports', () => {
       bar() {}
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('blank line between methods', () => {
+test('blank line between methods', async () => {
   const input = `
     class Foo {
       foo() {}
@@ -146,10 +148,10 @@ test('blank line between methods', () => {
       bar() {}
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('multiple blank lines between methods', () => {
+test('multiple blank lines between methods', async () => {
   const input = `
     class Foo {
       foo() {}
@@ -166,10 +168,10 @@ test('multiple blank lines between methods', () => {
       bar() {}
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('multiple comments and blank lines preceding a class', () => {
+test('multiple comments and blank lines preceding a class', async () => {
   const input = `
     import 'foo';
 
@@ -206,10 +208,10 @@ test('multiple comments and blank lines preceding a class', () => {
     class Foo {
     }
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('blank lines and comments between variables', () => {
+test('blank lines and comments between variables', async () => {
   const input = `
     /* Comment 1 */
     const foo = "foo";
@@ -240,10 +242,10 @@ test('blank lines and comments between variables', () => {
       //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
       "qux";
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('blank lines inside template string placeholder', () => {
+test('blank lines inside template string placeholder', async () => {
   const input = `
     const foo = \`\${
 
@@ -258,10 +260,10 @@ test('blank lines inside template string placeholder', () => {
       //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
     }\`;
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test('blank line and comment before return statement', () => {
+test('blank line and comment before return statement', async () => {
   const input = `
     function foo() {
 
@@ -275,7 +277,7 @@ test('blank line and comment before return statement', () => {
       // Comment
       return "Hello";
     }`;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
 // TODO(aomarks) The following tests are failing because it does not seem
@@ -283,7 +285,7 @@ test('blank line and comment before return statement', () => {
 // associated with the EndOfFileToken node, but modifying that node has no
 // effect.
 
-test.skip('only blank lines', () => {
+test.skip('only blank lines', async () => {
   const input = `
 
   `;
@@ -291,10 +293,10 @@ test.skip('only blank lines', () => {
     //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
     //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test.skip('only comments and blank lines', () => {
+test.skip('only comments and blank lines', async () => {
   const input = `
 
   // Comment 1
@@ -309,10 +311,10 @@ test.skip('only comments and blank lines', () => {
   /* Comment 2 */
   //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test.skip('interlaced comments and blank lines before code', () => {
+test.skip('interlaced comments and blank lines before code', async () => {
   const input = `
 
     /**
@@ -333,10 +335,10 @@ test.skip('interlaced comments and blank lines before code', () => {
     //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
     const foo = 0;
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
-test.skip('blank lines and comments after code', () => {
+test.skip('blank lines and comments after code', async () => {
   const input = `
   const foo = 0;
 
@@ -353,7 +355,7 @@ test.skip('blank lines and comments after code', () => {
   /* Comment 2 */
   //__BLANK_LINE_PLACEHOLDER_G1JVXUEBNCL6YN5NFE13MD1PT3H9OIHB__
   `;
-  checkTransform(input, expected);
+  await checkTransform(input, expected);
 });
 
 test.run();

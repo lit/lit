@@ -18,7 +18,7 @@ import type {MemberDecoratorVisitor} from '../visitor.js';
  * Into:
  *
  *   get inputs() {
- *     return this.renderRoot?.queryAll('.myInput') ?? [];
+ *     return this.renderRoot?.querySelectorAll('.myInput') ?? [];
  *   }
  */
 export class QueryAllVisitor implements MemberDecoratorVisitor {
@@ -60,7 +60,6 @@ export class QueryAllVisitor implements MemberDecoratorVisitor {
   private _createQueryAllGetter(name: string, selector: string) {
     const factory = this._factory;
     return factory.createGetAccessorDeclaration(
-      undefined,
       undefined,
       factory.createIdentifier(name),
       [],

@@ -2,7 +2,23 @@
 
 `ScopedRegistryHost` mixin for `LitElement` that integrates with the speculative [Scoped CustomElementRegistry polyfill](https://github.com/webcomponents/polyfills/tree/master/packages/scoped-custom-element-registry).
 
-🚨 **Warning: Scoped Custom Element Registries is a proposed browser API. It has not been finalized nor shipped in any browser.** This mixin is provided to evaluate the proposal and facilitate feedback. **Use this feature, and the polyfill in production code at your own risk.**
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Give feedback: https://github.com/lit/lit/discussions/3364
+
+> [!WARNING]
+>
+> Scoped Custom Element Registries is a proposed browser API. It has not been
+> finalized nor shipped in any browser. This mixin is provided to evaluate the
+> proposal and facilitate feedback. Use this feature, and the polyfill in
+> production code at your own risk.
 
 ## Overview
 

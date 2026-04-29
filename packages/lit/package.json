@@ -1,6 +1,6 @@
 {
   "name": "lit",
-  "version": "2.6.1",
+  "version": "3.3.2",
   "publishConfig": {
     "access": "public"
   },
@@ -8,7 +8,7 @@
   "license": "BSD-3-Clause",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/lit"
   },
   "author": "Google LLC",
@@ -141,6 +141,10 @@
       "types": "./development/directives/unsafe-html.d.ts",
       "default": "./directives/unsafe-html.js"
     },
+    "./directives/unsafe-mathml.js": {
+      "types": "./development/directives/unsafe-mathml.d.ts",
+      "default": "./directives/unsafe-mathml.js"
+    },
     "./directives/unsafe-svg.js": {
       "types": "./development/directives/unsafe-svg.d.ts",
       "default": "./directives/unsafe-svg.js"
@@ -152,14 +156,6 @@
     "./directives/when.js": {
       "types": "./development/directives/when.d.ts",
       "default": "./directives/when.js"
-    },
-    "./experimental-hydrate-support.js": {
-      "types": "./development/experimental-hydrate-support.d.ts",
-      "default": "./experimental-hydrate-support.js"
-    },
-    "./experimental-hydrate.js": {
-      "types": "./development/experimental-hydrate.d.ts",
-      "default": "./experimental-hydrate.js"
     },
     "./html.js": {
       "types": "./development/html.d.ts",
@@ -247,8 +243,6 @@
         "directive-helpers.js{,.map}",
         "directive.js{,.map}",
         "html.js{,.map}",
-        "experimental-hydrate-support.js{,.map}",
-        "experimental-hydrate.js{,.map}",
         "index.js{,.map}",
         "polyfill-support.js{,.map}",
         "static-html.js{,.map}",
@@ -257,7 +251,9 @@
         "test/*_test.html",
         "development/test/*_test.html",
         "test/polyfill-support/*_test.html",
-        "development/test/polyfill-support/*_test.html"
+        "development/test/polyfill-support/*_test.html",
+        "lit-core.min.js{,.map}",
+        "lit-all.min.js{,.map}"
       ]
     },
     "checksize": {
@@ -337,26 +333,26 @@
     "/directive-helpers.{d.ts.map,d.ts,js.map,js}",
     "/directive.{d.ts.map,d.ts,js.map,js}",
     "/html.{d.ts.map,d.ts,js.map,js}",
-    "/experimental-hydrate-support.{d.ts.map,d.ts,js.map,js}",
-    "/experimental-hydrate.{d.ts.map,d.ts,js.map,js}",
     "/index.{d.ts.map,d.ts,js.map,js}",
+    "/legacy-decorators.{d.ts.map,d.ts,js.map,js}",
     "/polyfill-support.{d.ts.map,d.ts,js.map,js}",
     "/static-html.{d.ts.map,d.ts,js.map,js}",
     "/decorators/",
     "/directives/",
     "/development/",
+    "!/development/test/",
     "/logo.svg"
   ],
   "dependencies": {
-    "@lit/reactive-element": "^1.6.0",
-    "lit-element": "^3.2.0",
-    "lit-html": "^2.6.0"
+    "@lit/reactive-element": "^2.1.0",
+    "lit-element": "^4.2.0",
+    "lit-html": "^3.3.0"
   },
   "devDependencies": {
+    "@lit-internal/scripts": "^1.0.1",
     "@webcomponents/shadycss": "^1.8.0",
     "@webcomponents/template": "^1.4.4",
-    "@webcomponents/webcomponentsjs": "^2.6.0",
-    "@lit-internal/scripts": "^1.0.0",
+    "@webcomponents/webcomponentsjs": "^2.8.0",
     "tslib": "^2.0.3"
   },
   "typings": "index.d.ts"

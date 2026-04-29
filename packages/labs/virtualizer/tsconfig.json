@@ -1,15 +1,13 @@
 {
   "compilerOptions": {
     "incremental": true,
-    "target": "es2019",
-    // "module": "es2015",
+    "target": "es2021",
     "module": "es2020",
-    "lib": ["es2020", "DOM", "DOM.Iterable"],
+    "lib": ["es2021", "DOM", "DOM.Iterable"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
     "inlineSources": true,
-    // "outDir": "./development/",
     "outDir": "./",
     "rootDir": "./src",
     "strict": true,
@@ -23,8 +21,10 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "importHelpers": true,
-    "tsBuildInfoFile": ".tsbuildinfo"
+    "tsBuildInfoFile": ".tsbuildinfo",
+    "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": ["*.d.ts", "**/*.d.ts"]
+  "exclude": ["*.d.ts", "**/*.d.ts"],
+  "files": ["mocha-extensions.d.ts"]
 }

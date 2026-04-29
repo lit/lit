@@ -1,5 +1,172 @@
 # @lit-labs/virtualizer
 
+## 2.1.1
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+## 2.1.0
+
+### Minor Changes
+
+- [#4921](https://github.com/lit/lit/pull/4921) [`ead2e23c`](https://github.com/lit/lit/commit/ead2e23c2e42a7acd953e956d6079cb4af7801d1) Thanks [@graynorton](https://github.com/graynorton)! - Add option to suppress logging of errors ignored during tests
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+## 2.0.15
+
+### Patch Changes
+
+- [#4807](https://github.com/lit/lit/pull/4807) [`1eb179f6`](https://github.com/lit/lit/commit/1eb179f69d663440fd2ebd3589b6f2808d87494f) Thanks [@graynorton](https://github.com/graynorton)! - Fix case where items in a hidden Virtualizer were being rendered
+
+## 2.0.14
+
+### Patch Changes
+
+- [#4687](https://github.com/lit/lit/pull/4687) [`8ecf3c03`](https://github.com/lit/lit/commit/8ecf3c03d73486e2529c553e92ef4f044c49aab9) Thanks [@alanbuzek](https://github.com/alanbuzek)! - Fix a null pointer exception when virtulizer component is destroyed and then recreated again quickly.
+
+- Updated dependencies [[`feccc1ba`](https://github.com/lit/lit/commit/feccc1ba8e82b36d07a0e2576381bf2819926b98)]:
+  - lit@3.2.0
+
+## 2.0.13
+
+### Patch Changes
+
+- [#4564](https://github.com/lit/lit/pull/4564) [`6b4b45ff`](https://github.com/lit/lit/commit/6b4b45ffee88e546110a31f946f27eafe364fa42) Thanks [@IMinchev64](https://github.com/IMinchev64)! - Guard top-level `window` with `typeof` check so that importing the code will not throw when imported in non-browser environments without a global `window` defined. Note, this on its own will not server render items inside the virtualizer, but it will no longer error when attempting to do so.
+
+## 2.0.12
+
+### Patch Changes
+
+- [#4427](https://github.com/lit/lit/pull/4427) [`a19a60b8`](https://github.com/lit/lit/commit/a19a60b84c092ed974e5d294a2ece46f4b43dcd4) Thanks [@pdesoyres-cc](https://github.com/pdesoyres-cc)! - Now correctly include `/support/method-interception.js` and `/support/resize-observer-errors.js` artifacts to the published package. Previously these were listed in the package exports but not actually included with the npm published package.
+
+## 2.0.11
+
+### Patch Changes
+
+- [#4375](https://github.com/lit/lit/pull/4375) [`449bc281`](https://github.com/lit/lit/commit/449bc2815593e8150b0737ed0190ba2c9843ba66) Thanks [@graynorton](https://github.com/graynorton)! - Fix issue where virtualizer didn't render children when slotted into a position:fixed ancestor (#4346)
+
+- Updated dependencies [[`bf551b5b`](https://github.com/lit/lit/commit/bf551b5bdc816c1b0117ab436c50390ae3f5686d), [`949a5467`](https://github.com/lit/lit/commit/949a54677748a1f83ec4d166bd40e244de3afda7), [`c7922a0c`](https://github.com/lit/lit/commit/c7922a0cb90075a9e4c72f93078e411a303c54d1), [`839ca0f8`](https://github.com/lit/lit/commit/839ca0f81a451fbaae97d958aafcaf4c52df9b65)]:
+  - lit@3.1.0
+
+## 2.0.10
+
+### Patch Changes
+
+- [#4355](https://github.com/lit/lit/pull/4355) [`21c9faf5`](https://github.com/lit/lit/commit/21c9faf5af69a9871b53328466ea64cfa63768b5) Thanks [@graynorton](https://github.com/graynorton)! - Fix masonry layout bug (new failure case for #3815)
+
+## 2.0.9
+
+### Patch Changes
+
+- [#4291](https://github.com/lit/lit/pull/4291) [`81806d4c`](https://github.com/lit/lit/commit/81806d4cf7052f90473ce4af58e8c7cbc487a900) Thanks [@graynorton](https://github.com/graynorton)! - Update version range for lit dependency to include Lit 2 and 3
+
+- [#4233](https://github.com/lit/lit/pull/4233) [`f84963d8`](https://github.com/lit/lit/commit/f84963d80f890f6ddaa46720622dcc366663cb6a) Thanks [@steverep](https://github.com/steverep)! - Guard against layout updates or re-observing when disconnected (fixes #4182, #3831)
+
+## 2.0.8
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- Updated dependencies:
+  - lit@3.0.0
+
+## 2.0.8-pre.0
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- Updated dependencies [[`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5), [`0f6878dc`](https://github.com/lit/lit/commit/0f6878dc45fd95bbeb8750f277349c1392e2b3ad), [`2a01471a`](https://github.com/lit/lit/commit/2a01471a5f65fe34bad11e1099281811b8d0f79b), [`2eba6997`](https://github.com/lit/lit/commit/2eba69974c9e130e7483f44f9daca308345497d5), [`d27a77ec`](https://github.com/lit/lit/commit/d27a77ec3d3999e872df9218a2b07f90f22eb417), [`6470807f`](https://github.com/lit/lit/commit/6470807f3a0981f9d418cb26f05969912455d148), [`09949234`](https://github.com/lit/lit/commit/09949234445388d51bfb4ee24ff28a4c9f82fe17)]:
+  - lit@3.0.0-pre.1
+
+## 2.0.7
+
+### Patch Changes
+
+- [#4130](https://github.com/lit/lit/pull/4130) [`d7bd030b`](https://github.com/lit/lit/commit/d7bd030b5b2a285ae9443a4daadecf0029b50b18) Thanks [@graynorton](https://github.com/graynorton)! - Fix bug affecting position: fixed scrollers (#4125)
+
+## 2.0.6
+
+### Patch Changes
+
+- [#4108](https://github.com/lit/lit/pull/4108) [`eda56e4f`](https://github.com/lit/lit/commit/eda56e4f74463f1b1ef06045807417de6cb6356d) - Fix bug that prevented host from resizing when total item size changes.
+
+## 2.0.5
+
+### Patch Changes
+
+- [#4039](https://github.com/lit/lit/pull/4039) [`456c83be`](https://github.com/lit/lit/commit/456c83be0438c2178a06144edd5deb8871613c36) Thanks [@alanbuzek](https://github.com/alanbuzek)! - Removed unnecessary evaluation triggering strict linter error.
+
+- Updated dependencies [[`e2c50569`](https://github.com/lit/lit/commit/e2c50569c48849a9863e31dfd74a71bb4eb4524d), [`8057c78d`](https://github.com/lit/lit/commit/8057c78def09e345e68c3fc009b8ab9d6cf1c0f2)]:
+  - lit@2.8.0
+
+## 2.0.4
+
+### Patch Changes
+
+- [#3976](https://github.com/lit/lit/pull/3976) [`3cf98cd8`](https://github.com/lit/lit/commit/3cf98cd896e4d6a1aca9714916416d035a722140) Thanks [@Westbrook](https://github.com/Westbrook)! - Fixes #3904 "Clipping parents include ancestors of `position: fixed` element"
+
+## 2.0.3
+
+### Patch Changes
+
+- [#3909](https://github.com/lit/lit/pull/3909) [`feded34b`](https://github.com/lit/lit/commit/feded34bf640291885b7d9de8713075cd7da1a54) Thanks [@chrispaterson](https://github.com/chrispaterson)! - Refactored and refurbished ScrollerController attach/detach code in effort to reduce potential memory leaks due to held instance references.
+
+- [#3892](https://github.com/lit/lit/pull/3892) [`f5b2013d`](https://github.com/lit/lit/commit/f5b2013ddc38eb9b540e0b633a879ea860bc92d8) - Changed accessor and iterator code to support ES5 compilation.
+
+- [#3929](https://github.com/lit/lit/pull/3929) [`c3672fca`](https://github.com/lit/lit/commit/c3672fca5ca6ed65156a2715fd1baf1d4430b0b1) - Added new support utilities for dealing with ResizeObserver loop limit exceeded errors.
+
+## 2.0.2-pre.0
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+- Updated dependencies [[`dfd747cf`](https://github.com/lit/lit/commit/dfd747cf4f7239e0c3bb7134f8acb967d0157654), [`23c404fd`](https://github.com/lit/lit/commit/23c404fdec0cd7be834221b6ddf9b659c24ca8a2), [`1db01376`](https://github.com/lit/lit/commit/1db0137699b35d7e7bfac9b2ab274af4100fd7cf), [`c3e473b4`](https://github.com/lit/lit/commit/c3e473b499ff029b5e1aff01ca8799daf1ca1bbe), [`92cedaa2`](https://github.com/lit/lit/commit/92cedaa2c8cd8a306be3fe25d52e0e47bb044020), [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa), [`f06f7972`](https://github.com/lit/lit/commit/f06f7972a027d2937fe2c68ab5af0274dec57cf4)]:
+  - lit@3.0.0-pre.0
+
+## 2.0.2
+
+### Patch Changes
+
+- [#3877](https://github.com/lit/lit/pull/3877) [`4418bed5`](https://github.com/lit/lit/commit/4418bed55635c8340c335c3be32895899fa703f4) - Converted a benign innerHTML assignment to textContent.
+
+- [#3884](https://github.com/lit/lit/pull/3884) [`2684dd65`](https://github.com/lit/lit/commit/2684dd6554a0ecb6ab2561b91488075fc9db9397) - Added license headers to files.
+
+- [#3874](https://github.com/lit/lit/pull/3874) [`d32eec70`](https://github.com/lit/lit/commit/d32eec70c7eac08746dd4fb4378050b20bb724ba) - Fix [#3873: visibilityChange event not fired if other state (e.g. range) hasn't also changed](https://github.com/lit/lit/issues/3873)
+
+## 2.0.1
+
+### Patch Changes
+
+- [#3819](https://github.com/lit/lit/pull/3819) [`f0c8336a`](https://github.com/lit/lit/commit/f0c8336a03ca2c02c48a13710eca8aca3ba70758) - Fix [#3815: Masonry: size and range bugs when the last item placed isn't the one extending the furthest](https://github.com/lit/lit/issues/3815)
+
+- [#3708](https://github.com/lit/lit/pull/3708) [`a1f8c345`](https://github.com/lit/lit/commit/a1f8c345cc978be06c6416edd1228fc5471c53d8) - [@lit-labs/virtualizer]: handle uninitialized layout in \_childrenSizeChanged
+
+## 2.0.0
+
+### Major Changes
+
+- [#3624](https://github.com/lit/lit/pull/3624) [`e51ff229`](https://github.com/lit/lit/commit/e51ff229843aaac22805bc0a39bf5e6db6862a5c) - ResizeObserver polyfill is no longer automatically loaded. If you target older browsers without native ResizeObserver support, see the docs for guidance on manual polyfill loading.
+
+### Minor Changes
+
+- [#3609](https://github.com/lit/lit/pull/3609) [`54046b0b`](https://github.com/lit/lit/commit/54046b0bbea4ff161567a92328700391efa35ff6) - RangeChangedEvent and VisibilityChangedEvent both no longer bubble up. Listeners for these events must be placed on the lit-virtualizer or virtualize directive's host element.
+
+### Patch Changes
+
+- [#3606](https://github.com/lit/lit/pull/3606) [`441baca2`](https://github.com/lit/lit/commit/441baca292f7e7df2c2a2a2453b027b3ade0a8bc) - Trigger reflow after padding is set
+
+- [#3624](https://github.com/lit/lit/pull/3624) [`e51ff229`](https://github.com/lit/lit/commit/e51ff229843aaac22805bc0a39bf5e6db6862a5c) - Additional fix for [#3481: Error when immediately re-rendering](https://github.com/lit/lit/issues/3481); initialization code significantly simplified
+
+- Updated dependencies [[`b95c86e5`](https://github.com/lit/lit/commit/b95c86e5ec0e2f6de63a23409b9ec489edb61b86), [`e00f6f52`](https://github.com/lit/lit/commit/e00f6f52199d5dbc08d4c15f62380422e77cde7f), [`88a40177`](https://github.com/lit/lit/commit/88a40177de9be5d117a21e3da5414bd777872544)]:
+  - lit@2.7.0
+
 ## 1.0.1
 
 ### Patch Changes
@@ -33,7 +200,6 @@ _NOTE: As of this release, virtualizer is moving away from 0.x-based versioning 
 ### Minor Changes
 
 - [#3263](https://github.com/lit/lit/pull/3263) [`4271dffa`](https://github.com/lit/lit/commit/4271dffaac2126d9b1147f87208dd3aa9c59e129)
-
   - Add experimental masonry layout (API and behavior subject to change)
   - Fix [#3342: Gap miscalculation in grid base layout](https://github.com/lit/lit/issues/3342)
 
@@ -75,7 +241,6 @@ _NOTE: As of this release, virtualizer is moving away from 0.x-based versioning 
 - The `scroll` directive has been renamed to `virtualize`. Note that the `<lit-virtualizer>` element remains the recommended way to use virtualizer in most cases; the directive exists primarily for developers who are using Lit's `lit-html` templating system standalone and don't need the `LitElement` base class elsewhere in their project.
 
 - By default, a virtualizer instance is no longer itself a scroller; rather, it is a block-level container that:
-
   - Determines its own size by calculating or estimating the total size of all of its children (both those that are currently in the DOM and those that are not)
   - Adds and removes children from the DOM as the visible portion of the virtualizer changes (i.e., when any of its containing ancestors, including the window, is scrolled, resized, etc.).
 
@@ -138,7 +303,6 @@ The following are also believed to be fixed, but didn't have specific repro case
 - The `scroll` directive has been renamed to `virtualize`. Note that the `<lit-virtualizer>` element remains the recommended way to use virtualizer in most cases; the directive exists primarily for developers who are using Lit's `lit-html` templating system standalone and don't need the `LitElement` base class elsewhere in their project.
 
 - By default, a virtualizer instance is no longer itself a scroller; rather, it is a block-level container that:
-
   - Determines its own size by calculating or estimating the total size of all of its children (both those that are currently in the DOM and those that are not)
   - Adds and removes children from the DOM as the visible portion of the virtualizer changes (i.e., when any of its containing ancestors, including the window, is scrolled, resized, etc.).
 

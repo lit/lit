@@ -27,7 +27,7 @@ const renderExample = ({name, content, collections, page}) => {
                     <a href="${relative(
                       page.url,
                       post.url
-                    )}">${post.data.description.replace('<', '&lt;')}</a>
+                    )}">${post.data.description.replace(/</g, '&lt;')}</a>
                   </li>
                 `
                   )

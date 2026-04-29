@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import * as pathlib from 'path';
 import {AnalyzerInterface} from './model.js';
 
 /**
@@ -26,15 +25,16 @@ export type PackagePath = string & {
  */
 export const absoluteToPackage = (
   path: AbsolutePath,
-  packageRoot: AbsolutePath
+  packageRoot: AbsolutePath,
+  seperator: string
 ): PackagePath => {
   if (!path.startsWith(packageRoot)) {
     throw new Error(`path ${path} is not contained in ${packageRoot}`);
   }
   let packagePath = path.substring(packageRoot.length);
-  if (!packageRoot.endsWith(pathlib.sep)) {
+  if (!packageRoot.endsWith(seperator)) {
     // Make sure we don't have path='/abc/def' and root='/ab'
-    if (!packagePath.startsWith(pathlib.sep)) {
+    if (!packagePath.startsWith(seperator)) {
       throw new Error(`path ${path} is not contained in ${packageRoot}`);
     }
     packagePath = packagePath.substring(1, packagePath.length);

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 import type {Test1, Child1, Child2} from './router_test_code.js';
 import type {RouteConfig, PathRouteConfig} from '@lit-labs/router/routes.js';
 import {stripExpressionComments} from '@lit-labs/testing';

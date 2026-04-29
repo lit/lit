@@ -4,13 +4,11 @@
 /node_modules/
 /test/
 
+/async-directive.*
 /decorators.*
 /directive-helpers.*
 /directive.*
-/async-directive.*
 /html.*
-/experimental-hydrate-support.*
-/experimental-hydrate.*
 /index.*
 /static-html.*
 

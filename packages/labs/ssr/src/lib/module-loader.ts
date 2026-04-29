@@ -17,6 +17,12 @@ const specifierMatches = (specifier: string, match: string) =>
   specifier === match || specifier.startsWith(match + '/');
 
 /**
+ * We store Module identifiers as `${modulePath}:${this._vmContextId}`.
+ * This regex matches the vm context id.
+ */
+const CONTEXT_ID = /:\d+$/;
+
+/**
  * Creates a new object that provides a basic set of globals suitable for use as
  * the default context object for a VM module.
  *
@@ -84,6 +90,10 @@ export function makeDefaultContextObject() {
     queueMicrotask,
   };
   // Everything above Node 14 should be set conditionally.
+  // Node 15+
+  if (globalThis.Event !== undefined) {
+    ctx.Event = Event;
+  }
   // Node 16+
   if (globalThis.atob !== undefined) {
     ctx.atob = atob;
@@ -99,6 +109,9 @@ export function makeDefaultContextObject() {
   if (globalThis.fetch !== undefined) {
     ctx.fetch = fetch;
   }
+  if (globalThis.CustomEvent !== undefined) {
+    ctx.CustomEvent = CustomEvent;
+  }
   return ctx;
 }
 
@@ -109,6 +122,7 @@ export function makeDefaultContextObject() {
 
 /**
  * A subset of the Node vm.Module API.
+ * @deprecated Use vm.Module instead.
  */
 export interface VmModule {
   /**
@@ -120,14 +134,14 @@ export interface VmModule {
 
 export interface ModuleRecord {
   path: string;
-  module?: VmModule;
+  module?: vm.Module;
   imports: Array<string>;
-  evaluated: Promise<VmModule>;
+  evaluated: Promise<vm.Module>;
 }
 
 interface ImportResult {
   path: string;
-  module: VmModule;
+  module: vm.Module;
 }
 
 export interface Options {
@@ -199,8 +213,9 @@ export class ModuleLoader {
   }
 
   /**
-   * Performs the actual loading of module source from disk, creates the
-   * Module instance, and maintains the module cache.
+   * Performs the actual loading of module source from disk, creates the Module
+   * instance, and maintains the module cache. Also loads all dependencies of
+   * the module.
    *
    * Used directly by `importModule` and by the linker and dynamic import()
    * support function.
@@ -247,6 +262,15 @@ export class ModuleLoader {
     };
     this.cache.set(modulePath, moduleRecord);
     const module = await modulePromise;
+    // Modules must be fully loaded before linking. Therefore `_loadModule` must
+    // also load its dependencies.
+    // Reference: https://tc39.es/ecma262/#table-abstract-methods-of-module-records
+    const moduleReferrerPath = this.getModulePath(module);
+    await Promise.all(
+      module.dependencySpecifiers.map((s) =>
+        this._loadModule(s, moduleReferrerPath)
+      )
+    );
     return {
       path: modulePath,
       module,
@@ -306,11 +330,7 @@ export class ModuleLoader {
     specifier: string,
     referencingModule: vm.Module
   ): Promise<vm.Module> => {
-    const {identifier} = referencingModule;
-    if (!/:\d+$/.test(identifier)) {
-      throw new Error('Unexpected file:// URL identifier without context ID');
-    }
-    const referrerPath = identifier.split(/:\d+$/)[0];
+    const referrerPath = this.getModulePath(referencingModule);
     const result = await this._loadModule(specifier, referrerPath);
     const referrerModule = this.cache.get(referrerPath);
     if (referrerModule !== undefined) {
@@ -325,6 +345,20 @@ export class ModuleLoader {
 
   private _getBuiltInIdentifier(specifier: string) {
     return `${specifier}:${this._vmContextId}`;
+  }
+
+  /**
+   * `getModulePath` returns the file path for a provided module.
+   */
+  private getModulePath(module: vm.Module): string {
+    const {identifier} = module;
+    if (!CONTEXT_ID.test(identifier)) {
+      throw new Error(
+        'Internal error: Unexpected file:// URL identifier without context ID. ' +
+          'Expected identifier in form: "/packages/lit-element.js:8".'
+      );
+    }
+    return identifier.split(CONTEXT_ID)[0];
   }
 }
 
@@ -366,9 +400,9 @@ export const resolveSpecifier = async (
       modules: ['node_modules'],
       extensions: ['.js'],
       mainFields: ['module', 'jsnext:main', 'main'],
-      conditionNames: ['node', 'import'],
+      conditionNames: ['node', 'module', 'import'],
     });
-    return pathToFileURL(modulePath);
+    return pathToFileURL(modulePath) as URL;
   }
 };
 
@@ -376,7 +410,9 @@ export const resolveSpecifier = async (
  * Web-like import.meta initializer that sets up import.meta.url
  */
 const initializeImportMeta = (meta: {url: string}, module: vm.Module) => {
-  meta.url = module.identifier;
+  // Module identifiers end in a `:n` where `n` is the vm context ID,
+  // which we don't want in the URL.
+  meta.url = module.identifier.replace(/:\d+$/, '');
 };
 
 const resolve = async (
@@ -386,12 +422,20 @@ const resolve = async (
 ): Promise<string> => {
   const resolver = enhancedResolve.create(opts);
   return new Promise((res, rej) => {
-    resolver({}, path, id, {}, (err: unknown, resolved?: string) => {
-      if (err != null) {
-        rej(err);
-      } else {
-        res(resolved!);
+    resolver(
+      {},
+      path,
+      id,
+      {},
+      (err: unknown, resolved?: string | false | undefined) => {
+        if (err != null) {
+          rej(err);
+        } else if (resolved === false || resolve === undefined) {
+          rej(`could not resolve ${id}`);
+        } else {
+          res(resolved!);
+        }
       }
-    });
+    );
   });
 };

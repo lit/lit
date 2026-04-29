@@ -157,26 +157,30 @@ ${reset}`
     )) as typeof import('@lit-labs/ssr/lib/module-loader.js');
     const window = getWindow({includeJSBuiltIns: true});
     const loader = new ModuleLoader({global: window});
-    // TODO(aomarks) Replace with concurrent Promise.all version once
-    // https://github.com/lit/lit/issues/2549 has been addressed.
-    for (const module of resolvedComponentModules) {
-      await loader.importModule(module, renderModulePath);
-    }
-    contextifiedRender = (
-      await loader.importModule(
-        '@lit-labs/ssr/lib/render-lit-html.js',
-        renderModulePath
+    await Promise.all(
+      resolvedComponentModules.map((module) =>
+        loader.importModule(module, renderModulePath)
       )
-    ).module.namespace.render as typeof contextifiedRender;
+    );
+    contextifiedRender = (
+      (
+        await loader.importModule(
+          '@lit-labs/ssr/lib/render-lit-html.js',
+          renderModulePath
+        )
+      ).module.namespace as Record<string, unknown>
+    ).render as typeof contextifiedRender;
     // TOOD(aomarks) We could also directly synthesize an html TemplateResult
     // instead of doing so via the unsafeHTML directive. The directive is
     // performing some extra validation that doesn't really apply to us.
     contextifiedUnsafeHTML = (
-      await loader.importModule(
-        'lit/directives/unsafe-html.js',
-        renderModulePath
-      )
-    ).module.namespace.unsafeHTML as typeof contextifiedUnsafeHTML;
+      (
+        await loader.importModule(
+          'lit/directives/unsafe-html.js',
+          renderModulePath
+        )
+      ).module.namespace as Record<string, unknown>
+    ).unsafeHTML as typeof contextifiedUnsafeHTML;
   });
 
   eleventyConfig.addTransform(
@@ -239,9 +243,35 @@ module.exports = {
 // outer markers (though note there are 2 layers of markers due to the
 // use of the unsafeHTML directive).
 function trimOuterMarkers(renderedContent: string): string {
-  return renderedContent
-    .replace(/^((<!--[^<>]*-->)|(<\?>)|\s)+/, '')
-    .replace(/((<!--[^<>]*-->)|(<\?>)|\s)+$/, '');
+  const q = '<?>';
+  const startMarker = '<!--lit-part '; // e.g. <!--lit-part HeR8tRCwgQQ=-->
+  const endMarker = '<!--/lit-part-->';
+
+  renderedContent = renderedContent.trim();
+
+  let start;
+  let end;
+
+  if (renderedContent.startsWith(q)) {
+    start = q.length;
+  } else if (renderedContent.startsWith(startMarker)) {
+    start = renderedContent.indexOf('-->') + 3;
+  }
+
+  if (renderedContent.endsWith(q)) {
+    end = renderedContent.length - q.length;
+  } else if (renderedContent.endsWith(endMarker)) {
+    end = renderedContent.length - endMarker.length;
+  }
+
+  if (start || end) {
+    // trim one or more
+    return trimOuterMarkers(
+      renderedContent.slice(start ?? 0, end ?? renderedContent.length)
+    );
+  }
+
+  return renderedContent;
 }
 
 // Assuming this is faster than Array.from(iter).join();

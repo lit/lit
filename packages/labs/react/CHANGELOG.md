@@ -1,5 +1,114 @@
 # Change Log
 
+## 2.1.3
+
+### Patch Changes
+
+- [#4485](https://github.com/lit/lit/pull/4485) [`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf) - Add "browser" export condition entrypoints to any package.json files with "node"
+  export conditions. This fixes Node test runners emulating browser environments that were incorrectly loading the
+  "node" entrypoints instead of the browser code.
+- Updated dependencies [[`57b00630`](https://github.com/lit/lit/commit/57b006306c269bd835979935dae3062599c4fccf)]:
+  - @lit/react@1.0.3
+
+## 2.1.2
+
+### Patch Changes
+
+- [#4340](https://github.com/lit/lit/pull/4340) [`18305b43`](https://github.com/lit/lit/commit/18305b43f02f2265eaa6570947517d454bb9db4c) - Update dependency version range on graduated package to `^1.0.0` so this package can receive updates.
+
+## 2.1.1
+
+### Patch Changes
+
+- [#4224](https://github.com/lit/lit/pull/4224) [`71526898`](https://github.com/lit/lit/commit/71526898cc33ff8a466b9dcabb89d601ec862b9a) - Graduate @lit-labs/react to @lit/react, its permanent location. @lit-labs/react is now just a proxy for @lit/react, so code need not be duplicated in projects that depend on both.
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+## 2.1.1-pre.0
+
+### Patch Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+- [#4224](https://github.com/lit/lit/pull/4224) [`71526898`](https://github.com/lit/lit/commit/71526898cc33ff8a466b9dcabb89d601ec862b9a) - Graduate @lit-labs/react to @lit/react, its permanent location. @lit-labs/react is now just a proxy for @lit/react, so code need not be duplicated in projects that depend on both.
+
+- Updated dependencies [[`71526898`](https://github.com/lit/lit/commit/71526898cc33ff8a466b9dcabb89d601ec862b9a)]:
+  - @lit/react@1.0.0-pre.0
+
+## 2.1.0
+
+### Minor Changes
+
+- [#4221](https://github.com/lit/lit/pull/4221) [`5a60fbc6`](https://github.com/lit/lit/commit/5a60fbc64c45c4b99f0eb7454fec06de4fcd8e27) Thanks [@rivajunior](https://github.com/rivajunior)! - export Options interface
+
+## 2.0.3
+
+### Patch Changes
+
+- [#4172](https://github.com/lit/lit/pull/4172) [`dc1d323f`](https://github.com/lit/lit/commit/dc1d323f3306214c1dca75ff904a560deaf441fe) - Revert custom children type added in #4142 and instead use our copy of `PropsWithoutRef` type so that `preact/compat` typing will work.
+  Preact users facing type errors using wrapped components should configure `"paths"` in their `tsconfig.json` so that `react` types will instead resolve to `preact/compat` as described in [Preact's TypeScript documentation](https://preactjs.com/guide/v10/typescript/#typescript-preactcompat-configuration).
+  Going with `preact/compat` also solves compatibility issues arising from [TypeScript >= 5.1 changing JSX tag type check](https://www.typescriptlang.org/docs/handbook/release-notes/typescript-5-1.html#decoupled-type-checking-between-jsx-elements-and-jsx-tag-types).
+
+## 2.0.2
+
+### Patch Changes
+
+- [#4142](https://github.com/lit/lit/pull/4142) [`170e9164`](https://github.com/lit/lit/commit/170e91648472d21ecee3fca9ac7a0a52787b6e98) - Fix type compatibility with Preact when adding children to wrapped components.
+
+## 2.0.1
+
+### Patch Changes
+
+- [#4097](https://github.com/lit/lit/pull/4097) [`364650d0`](https://github.com/lit/lit/commit/364650d0a3a8f873249e39dacf17ac9e3343b89b) - Fix type regression to prefer provided event handler prop type over React's built-in handler type.
+
+## 2.0.0
+
+### Major Changes
+
+- [#4027](https://github.com/lit/lit/pull/4027) [`c28cb6ed`](https://github.com/lit/lit/commit/c28cb6ed45445fb8cb5e20af5076f3d5ec9f3bea) - - [BREAKING] Removed deprecated call signature for `createComponent()` taking multiple arguments. A single option object must be passed in instead.
+
+  Example:
+
+  ```diff
+  - createComponent(React, 'my-element', MyElement, {onfoo: 'foo'})
+  + createComponent({
+  +   react: React,
+  +   tagName: 'my-element',
+  +   elementClass: MyElement,
+  +   events: {onfoo: 'foo'},
+  + })
+  ```
+
+  - Refactored to move implementation directly into render function of `forwardRef` rather than creating a class component. This removes an extra React component of the same name showing up in the component tree.
+
+### Patch Changes
+
+- [#4000](https://github.com/lit/lit/pull/4000) [`2118aeb6`](https://github.com/lit/lit/commit/2118aeb6f83d2e0b0afbba5ce486876711658e82) - Add `@types/react@17||18` as peer dependency as the package makes direct use of those types.
+
+- [#4061](https://github.com/lit/lit/pull/4061) [`25d10ee1`](https://github.com/lit/lit/commit/25d10ee1e1299d4ea22e10bf4fae9b370eae05b3) - Update `WebComponentProps` type to allow providing `ref` prop in JSX.
+
+## 1.2.1
+
+### Patch Changes
+
+- [#3978](https://github.com/lit/lit/pull/3978) [`3711e665`](https://github.com/lit/lit/commit/3711e6650a59966e5be8d92dd0abf053d9a50d32) - Only add `suppressHydrationWarning` prop when rendered in the client. This will prevent `suppresshydrationwarning` attribute being added to the host element when using `@lit-labs/ssr-react`.
+
+## 1.2.0
+
+### Minor Changes
+
+- [#3885](https://github.com/lit/lit/pull/3885) [`7932f7dd`](https://github.com/lit/lit/commit/7932f7ddc21308dc0bf7b1bbd0dde781a6c8dece) - `@lit-labs/ssr-react` and `@lit-labs/react` now coordinate prop handling during server rendering and hydration.
+  - [Breaking] `@lit-labs/ssr-react` will call `setAttribute()` with all props provided during server rendering unless they are provided in <code>\_$litProps$</code> object made by `@lit-labs/react`. Previously, it would call `setProperty()` for props that were found in the element's prototype, and `setAttribute()` for those that weren't. If you wish to server render custom elements that take properties that can not be set as attributes (i.e. not serializeable or have different name as attribute/property), you must use `@lit-labs/react` to create a React wrapper component.
+  - `@lit-labs/react` now has a Node build and export condition to do special prop handling during server rendering. It detects the presence of `React.createElement` monkey patch by `@lit-labs/ssr-react` and provides props to be set as properties to the `createElement()` call.
+  - `@lit-labs/ssr-react` will add the `defer-hydration` attribute to custom elements that had properties set so that `@lit-labs/react` wrapped elements have a chance to set properties on the element before Lit element hydration is triggered.
+  - `@lit-labs/react` wrapped components will suppress hydration warnings raised by React due to server rendered attributes.
+
+## 1.1.2-pre.0
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
 ## 1.1.1
 
 ### Patch Changes

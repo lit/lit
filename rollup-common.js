@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import summary from 'rollup-plugin-summary';
+import {summary} from 'rollup-plugin-summary';
 import {terser} from 'rollup-plugin-terser';
 import copy from 'rollup-plugin-copy';
 import nodeResolve from '@rollup/plugin-node-resolve';
@@ -13,8 +13,8 @@ import replace from '@rollup/plugin-replace';
 import virtual from '@rollup/plugin-virtual';
 import inject from '@rollup/plugin-inject';
 
-// Greek prefixes used with minified class and stable properties on objects to
-// avoid collisions with user code and/or subclasses between packages. They are
+// Prefixes used with minified class and stable properties on objects to avoid
+// collisions with user code and/or subclasses between packages. They are
 // defined here rather than via an argument to litProdConfig() so we can
 // validate the list used by each package is unique (since copy/pasting the
 // individual package-based configs is common and error-prone)
@@ -33,6 +33,12 @@ const PACKAGE_CLASS_PREFIXES = {
   '@lit-labs/observers': '_$L',
   '@lit-labs/context': '_$M',
   '@lit-labs/vue-utils': '_$N',
+  '@lit-labs/preact-signals': '_$O',
+  '@lit/task': '_$P',
+  '@lit/context': '_$Q',
+  '@lit/react': '_$R',
+  '@lit-labs/signals': '_$S',
+  '@lit-labs/forms': '_$T',
 };
 
 // Validate prefix uniqueness
@@ -79,6 +85,7 @@ const reservedProperties = [
   '_$litElement$',
   '_$litStatic$',
   '_$cssResult$',
+  '_$litProps$',
 ];
 
 // Private properties which should be stable between versions but are used on
@@ -138,6 +145,10 @@ const stableProperties = {
   _$initialize: 'T',
   // lit-html: Disconnectable interface (used by lit-html and AsyncDirective)
   _$isConnected: 'U',
+  // lit-html: TemplateInstance (used by private-ssr-support)
+  _$parts: 'V',
+  // @lit-labs/ssr: used to identify server-only templates
+  _$litServerRenderMode: 'W',
 };
 
 const alpha = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
@@ -212,12 +223,12 @@ const prefixProperties = (
 };
 
 const generateTerserOptions = (
-  nameCache = null,
+  nameCache,
   classPropertyPrefix = '',
   testPropertyPrefix = ''
 ) => ({
   warnings: true,
-  ecma: 2017,
+  ecma: 2021,
   compress: {
     unsafe: true,
     // An extra pass can squeeze out an extra byte or two.
@@ -272,7 +283,10 @@ const injectNodeDomShimIntoReactiveElement = [
   }),
   inject({
     Buffer: ['buffer', 'Buffer'],
-    include: ['**/packages/lit-html/development/experimental-hydrate.js'],
+    include: [
+      '**/packages/lit-html/development/experimental-hydrate.js',
+      '**/packages/labs/ssr-client/development/lib/hydrate-lit-html.js',
+    ],
   }),
   replace({
     preventAssignment: true,
@@ -585,7 +599,7 @@ const litMonoBundleConfig = ({
       exportConditions: ['development'],
     }),
     replace({
-      preventAssignment: true,
+      preventAssignment: false,
       values: {
         'const DEV_MODE = true': 'const DEV_MODE = false',
         'const ENABLE_EXTRA_SECURITY_HOOKS = true':

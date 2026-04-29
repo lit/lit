@@ -1,7 +1,8 @@
 {
   "private": true,
+  "type": "module",
   "name": "@lit-internal/test-element-a",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "scripts": {
     "build": "wireit",
     "pack": "wireit"
@@ -11,15 +12,16 @@
     "/element-events.{js,js.map,d.ts,d.ts.map}",
     "/element-props.{js,js.map,d.ts,d.ts.map}",
     "/element-slots.{js,js.map,d.ts,d.ts.map}",
+    "/sub/element-sub.{js,js.map,d.ts,d.ts.map}",
     "/detail-type.{js,js.map,d.ts,d.ts.map}",
     "/package-stuff.{js,js.map,d.ts,d.ts.map}",
     "/special-event.{js,js.map,d.ts,d.ts.map}"
   ],
   "dependencies": {
-    "lit": "^2.0.0"
+    "lit": "file:../../../lit"
   },
   "devDependencies": {
-    "typescript": "~4.7.4"
+    "typescript": "~5.9.0"
   },
   "wireit": {
     "build": {
@@ -36,6 +38,7 @@
         "element-events.{js,js.map,d.ts,d.ts.map}",
         "element-props.{js,js.map,d.ts,d.ts.map}",
         "element-slots.{js,js.map,d.ts,d.ts.map}",
+        "sub/element-sub.{js,js.map,d.ts,d.ts.map}",
         "detail-type.{js,js.map,d.ts,d.ts.map}",
         "package-stuff.{js,js.map,d.ts,d.ts.map}",
         "special-event.{js,js.map,d.ts,d.ts.map}",
@@ -54,6 +57,7 @@
         "element-events.{js,js.map,d.ts,d.ts.map}",
         "element-props.{js,js.map,d.ts,d.ts.map}",
         "element-slots.{js,js.map,d.ts,d.ts.map}",
+        "sub/element-sub.{js,js.map,d.ts,d.ts.map}",
         "detail-type.{js,js.map,d.ts,d.ts.map}",
         "package-stuff.{js,js.map,d.ts,d.ts.map}",
         "special-event.{js,js.map,d.ts,d.ts.map}"

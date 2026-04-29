@@ -11,7 +11,7 @@
  * subclasses.
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {getClassMembers, getHeritage} from '../javascript/classes.js';
 import {
   AnalyzerInterface,
@@ -20,7 +20,11 @@ import {
   NamedDescribed,
 } from '../model.js';
 import {addEventsToMap} from './events.js';
-import {parseNodeJSDocInfo, parseNamedJSDocInfo} from '../javascript/jsdoc.js';
+import {
+  parseNodeJSDocInfo,
+  parseNamedTypedJSDocInfo,
+} from '../javascript/jsdoc.js';
+import {getBaseTypes} from '../utils.js';
 
 const _isCustomElementClassDeclaration = (
   t: ts.BaseType,
@@ -30,7 +34,7 @@ const _isCustomElementClassDeclaration = (
   return (
     declarations?.some(
       (declaration) =>
-        (ts.isInterfaceDeclaration(declaration) &&
+        (analyzer.typescript.isInterfaceDeclaration(declaration) &&
           declaration.name?.text === 'HTMLElement') ||
         isCustomElementSubclass(declaration, analyzer)
     ) === true
@@ -45,15 +49,16 @@ export const isCustomElementSubclass = (
   node: ts.Node,
   analyzer: AnalyzerInterface
 ): node is CustomElementClassDeclaration => {
-  if (!ts.isClassLike(node)) {
+  if (!analyzer.typescript.isClassLike(node)) {
     return false;
   }
-  if (getTagName(node) !== undefined) {
+  if (getTagName(node, analyzer) !== undefined) {
     return true;
   }
   const checker = analyzer.program.getTypeChecker();
-  const type = checker.getTypeAtLocation(node) as ts.InterfaceType;
-  const baseTypes = checker.getBaseTypes(type);
+  const type = checker.getTypeAtLocation(node);
+  const baseTypes = getBaseTypes(type);
+
   for (const t of baseTypes) {
     if (_isCustomElementClassDeclaration(t, analyzer)) {
       return true;
@@ -63,9 +68,10 @@ export const isCustomElementSubclass = (
 };
 
 export const getTagName = (
-  node: ts.ClassDeclaration | ts.ClassExpression
+  node: ts.ClassDeclaration | ts.ClassExpression,
+  analyzer: AnalyzerInterface
 ): string | undefined => {
-  const jsdocTag = ts
+  const jsdocTag = analyzer.typescript
     .getJSDocTags(node)
     .find((tag) => tag.tagName.text.toLowerCase() === 'customelement');
 
@@ -79,20 +85,22 @@ export const getTagName = (
   // `customElements.define('x-foo', XFoo);`
   node.parent.forEachChild((child) => {
     if (
-      ts.isExpressionStatement(child) &&
-      ts.isCallExpression(child.expression) &&
-      ts.isPropertyAccessExpression(child.expression.expression) &&
+      analyzer.typescript.isExpressionStatement(child) &&
+      analyzer.typescript.isCallExpression(child.expression) &&
+      analyzer.typescript.isPropertyAccessExpression(
+        child.expression.expression
+      ) &&
       child.expression.arguments.length >= 2
     ) {
       const [tagNameArg, ctorArg] = child.expression.arguments;
       const {expression, name} = child.expression.expression;
       if (
-        ts.isIdentifier(expression) &&
+        analyzer.typescript.isIdentifier(expression) &&
         expression.text === 'customElements' &&
-        ts.isIdentifier(name) &&
+        analyzer.typescript.isIdentifier(name) &&
         name.text === 'define' &&
-        ts.isStringLiteralLike(tagNameArg) &&
-        ts.isIdentifier(ctorArg) &&
+        analyzer.typescript.isStringLiteralLike(tagNameArg) &&
+        analyzer.typescript.isIdentifier(ctorArg) &&
         ctorArg.text === node.name?.text
       ) {
         tagName = tagNameArg.text;
@@ -109,9 +117,10 @@ export const getTagName = (
  */
 const addNamedJSDocInfoToMap = (
   map: Map<string, NamedDescribed>,
-  tag: ts.JSDocTag
+  tag: ts.JSDocTag,
+  analyzer: AnalyzerInterface
 ) => {
-  const info = parseNamedJSDocInfo(tag);
+  const info = parseNamedTypedJSDocInfo(tag, analyzer);
   if (info !== undefined) {
     map.set(info.name, info);
   }
@@ -129,7 +138,7 @@ export const getJSDocData = (
   const slots = new Map<string, NamedDescribed>();
   const cssProperties = new Map<string, NamedDescribed>();
   const cssParts = new Map<string, NamedDescribed>();
-  const jsDocTags = ts.getJSDocTags(node);
+  const jsDocTags = analyzer.typescript.getJSDocTags(node);
   if (jsDocTags !== undefined) {
     for (const tag of jsDocTags) {
       switch (tag.tagName.text) {
@@ -137,22 +146,23 @@ export const getJSDocData = (
           addEventsToMap(tag, events, analyzer);
           break;
         case 'slot':
-          addNamedJSDocInfoToMap(slots, tag);
+          addNamedJSDocInfoToMap(slots, tag, analyzer);
           break;
         case 'cssProp':
-          addNamedJSDocInfoToMap(cssProperties, tag);
-          break;
+        case 'cssprop':
         case 'cssProperty':
-          addNamedJSDocInfoToMap(cssProperties, tag);
+        case 'cssproperty':
+          addNamedJSDocInfoToMap(cssProperties, tag, analyzer);
           break;
         case 'cssPart':
-          addNamedJSDocInfoToMap(cssParts, tag);
+        case 'csspart':
+          addNamedJSDocInfoToMap(cssParts, tag, analyzer);
           break;
       }
     }
   }
   return {
-    ...parseNodeJSDocInfo(node),
+    ...parseNodeJSDocInfo(node, analyzer),
     events,
     slots,
     cssProperties,
@@ -162,14 +172,15 @@ export const getJSDocData = (
 
 export const getCustomElementDeclaration = (
   node: CustomElementClassDeclaration,
-  analyzer: AnalyzerInterface
+  analyzer: AnalyzerInterface,
+  isMixinClass?: boolean
 ): CustomElementDeclaration => {
   return new CustomElementDeclaration({
-    tagname: getTagName(node),
+    tagname: getTagName(node, analyzer),
     name: node.name?.text ?? '',
     node,
     ...getJSDocData(node, analyzer),
-    getHeritage: () => getHeritage(node, analyzer),
+    getHeritage: () => getHeritage(node, analyzer, isMixinClass),
     ...getClassMembers(node, analyzer),
   });
 };

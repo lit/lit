@@ -24,7 +24,7 @@ At Lit's core is a boilerplate-killing component base class that provides reacti
 
 See the full documentation for Lit at [lit.dev](https://lit.dev).
 
-For information about upgrading lit-html 1.x and lit-element 2.x code, see the [Lit 2.0 Upgrade Guide](https://lit.dev/docs/releases/upgrade/).
+Additional documentation for developers looking to contribute or understand more about the project can be found in [`dev-docs`](./dev-docs).
 
 ### npm
 
@@ -36,8 +36,9 @@ npm i lit
 
 ## Lit Monorepo
 
-This is the monorepo for upcoming Lit packages, including `lit`, `lit-html` 2.0 and `lit-element` 3.0.
+This is the monorepo for Lit packages.
 
+lit 2.x source is available on the [`2.x`](https://github.com/lit/lit/tree/2.x) branch.
 lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/lit/lit/tree/lit-html-1.x) branch.
 
 ### Packages
@@ -50,16 +51,25 @@ lit-html 1.x source is available on the [`lit-html-1.x`](https://github.com/lit/
 - Additional libraries
   - [`@lit/localize`](./packages/localize) - A library and command-line tool for localizing web applications built using Lit.
   - [`@lit/localize-tools`](./packages/localize-tools) - Localization tooling for use with `@lit/localize`.
+  - [`@lit/react`](./packages/react) - A React component wrapper for web components.
+  - [`@lit/task`](./packages/task) - A controller for Lit that renders asynchronous tasks.
+  - [`@lit/context`](./packages/context) - A system for passing data through a tree of elements using browser events, avoiding the need to pass properties down every layer of the tree using [a community defined protocol](https://github.com/webcomponents-cg/community-protocols/blob/main/proposals/context.md).
 - Labs
   - [`@lit-labs/ssr`](./packages/labs/ssr) - A server package for rendering Lit templates and components on the server.
   - [`@lit-labs/ssr-client`](./packages/labs/ssr-client) - A set of client-side support modules for rendering Lit components and templates on the server using `@lit-labs/ssr`.
   - [`@lit-labs/eleventy-plugin-lit`](./packages/labs/eleventy-plugin-lit) - A plugin for Eleventy that pre-renders
     Lit components using `@lit-labs/ssr` with optional hydration.
-  - [`@lit-labs/react`](./packages/labs/react) - A React component wrapper for web components.
+  - [`@lit-labs/ssr-react`](./packages/labs/ssr-react) - A package for integrating Lit SSR with React and React frameworks.
+  - [`@lit-labs/nextjs`](./packages/labs/nextjs) - A plugin for [Next.js](https://nextjs.org/) that enables deep server rendering of Lit components with Lit SSR.
   - [`@lit-labs/router`](./packages/labs/router) - A router for Lit.
-  - [`@lit-labs/task`](./packages/labs/task) - A controller for Lit that renders asynchronous tasks.
   - [`@lit-labs/motion`](./packages/labs/motion) - Lit directives for making things move
   - [`@lit-labs/scoped-registry-mixin`](./packages/labs/scoped-registry-mixin) - A mixin for LitElement that integrates with the speculative Scoped CustomElementRegistry polyfill.
+  - [`@lit-labs/observers`](./packages/labs/observers) - A set of reactive controllers that facilitate using the platform observer objects.
+  - [`@lit-labs/preact-signals`](./packages/labs/preact-signals) - [Preact Signals](https://preactjs.com/guide/v10/signals/) integration for Lit.
+  - [`@lit-labs/signals`](./packages/labs/signals) - [TC39 proposal Signals](https://github.com/tc39/proposal-signals) integration for Lit.
+  - [`@lit-labs/testing`](./packages/labs/testing) - Utilities for testing Lit components.
+  - [`@lit-labs/virtualizer`](./packages/labs/virtualizer) - Viewport-based virtualization (including virtual scrolling).
+  - [`@lit-labs/compiler`](./packages/labs/compiler) - A compiler for optimizing Lit templates.
 - Starter kits (not published to npm)
   - [`lit-starter-ts`](./packages/lit-starter-ts) ([template
     repo](https://github.com/lit/lit-element-starter-ts)) - A starter repo for building reusable components using Lit in TypeScript.

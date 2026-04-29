@@ -4,7 +4,14 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {_$LH, Part, DirectiveParent, TemplateResult} from './lit-html.js';
+import {
+  _$LH,
+  Part,
+  DirectiveParent,
+  CompiledTemplateResult,
+  MaybeCompiledTemplateResult,
+  UncompiledTemplateResult,
+} from './lit-html.js';
 import {
   DirectiveResult,
   DirectiveClass,
@@ -37,22 +44,40 @@ export const isPrimitive = (value: unknown): value is Primitive =>
 export const TemplateResultType = {
   HTML: 1,
   SVG: 2,
+  MATHML: 3,
 } as const;
 
 export type TemplateResultType =
   (typeof TemplateResultType)[keyof typeof TemplateResultType];
 
+type IsTemplateResult = {
+  (val: unknown): val is MaybeCompiledTemplateResult;
+  <T extends TemplateResultType>(
+    val: unknown,
+    type: T
+  ): val is UncompiledTemplateResult<T>;
+};
+
 /**
- * Tests if a value is a TemplateResult.
+ * Tests if a value is a TemplateResult or a CompiledTemplateResult.
  */
-export const isTemplateResult = (
+export const isTemplateResult: IsTemplateResult = (
   value: unknown,
   type?: TemplateResultType
-): value is TemplateResult =>
+): value is UncompiledTemplateResult =>
   type === undefined
     ? // This property needs to remain unminified.
-      (value as TemplateResult)?.['_$litType$'] !== undefined
-    : (value as TemplateResult)?.['_$litType$'] === type;
+      (value as UncompiledTemplateResult)?.['_$litType$'] !== undefined
+    : (value as UncompiledTemplateResult)?.['_$litType$'] === type;
+
+/**
+ * Tests if a value is a CompiledTemplateResult.
+ */
+export const isCompiledTemplateResult = (
+  value: unknown
+): value is CompiledTemplateResult => {
+  return (value as CompiledTemplateResult)?.['_$litType$']?.h != null;
+};
 
 /**
  * Tests if a value is a DirectiveResult.
@@ -208,19 +233,18 @@ export const setCommittedValue = (part: Part, value: unknown = RESET_VALUE) =>
 export const getCommittedValue = (part: ChildPart) => part._$committedValue;
 
 /**
- * Removes a ChildPart from the DOM, including any of its content.
+ * Removes a ChildPart from the DOM, including any of its content and markers.
+ *
+ * Note: The only difference between this and clearPart() is that this also
+ * removes the part's start node. This means that the ChildPart must own its
+ * start node, ie it must be a marker node specifically for this part and not an
+ * anchor from surrounding content.
  *
  * @param part The Part to remove
  */
 export const removePart = (part: ChildPart) => {
-  part._$notifyConnectionChanged?.(false, true);
-  let start: ChildNode | null = part._$startNode;
-  const end: ChildNode | null = wrap(part._$endNode!).nextSibling;
-  while (start !== end) {
-    const n: ChildNode | null = wrap(start!).nextSibling;
-    (wrap(start!) as ChildNode).remove();
-    start = n;
-  }
+  part._$clear();
+  part._$startNode.remove();
 };
 
 export const clearPart = (part: ChildPart) => {

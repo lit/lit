@@ -1,0 +1,10 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "compiled"
+  },
+  "include": [
+    "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
+    "src/test/**/*.ts"
+  ]
+}

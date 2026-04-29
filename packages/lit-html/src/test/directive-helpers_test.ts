@@ -3,8 +3,18 @@
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {html, ChildPart, render, svg} from 'lit-html';
-import {assert} from '@esm-bundle/chai';
+import {
+  html,
+  ChildPart,
+  render,
+  svg,
+  TemplateResult,
+  CompiledTemplateResult,
+  CompiledTemplate,
+  UncompiledTemplateResult,
+  mathml,
+} from 'lit-html';
+import {assert} from 'chai';
 import {stripExpressionComments} from '@lit-labs/testing';
 import {
   getDirectiveClass,
@@ -15,6 +25,7 @@ import {
   removePart,
   setChildPartValue,
   TemplateResultType,
+  isCompiledTemplateResult,
 } from 'lit-html/directive-helpers.js';
 import {classMap} from 'lit-html/directives/class-map.js';
 import {
@@ -22,6 +33,17 @@ import {
   Directive,
   AsyncDirective,
 } from 'lit-html/async-directive.js';
+
+const branding_tag = (s: TemplateStringsArray) => s;
+const _$lit_template_1: CompiledTemplate = {
+  h: branding_tag``,
+  parts: [],
+};
+
+/**
+ * Use to check if the file has been compiled with @lit-labs/compiler.
+ */
+const isTestFileNotCompiled = html``['_$litType$'] === 1;
 
 suite('directive-helpers', () => {
   let container: HTMLDivElement;
@@ -52,17 +74,120 @@ suite('directive-helpers', () => {
   test('isTemplateResult', () => {
     assert.isTrue(isTemplateResult(html``));
     assert.isTrue(isTemplateResult(svg``));
-    assert.isTrue(isTemplateResult(html``, TemplateResultType.HTML));
+    assert.isTrue(isTemplateResult(mathml``));
+    if (isTestFileNotCompiled) {
+      assert.isTrue(isTemplateResult(html``, TemplateResultType.HTML));
+    } else {
+      // This template was compiled, so `isTemplateResult` with an explicit
+      // check for `TemplateResultType.HTML` returns false.
+      assert.isFalse(isTemplateResult(html``, TemplateResultType.HTML));
+    }
     assert.isTrue(isTemplateResult(svg``, TemplateResultType.SVG));
+    assert.isTrue(isTemplateResult(mathml``, TemplateResultType.MATHML));
 
     assert.isFalse(isTemplateResult(null));
     assert.isFalse(isTemplateResult(undefined));
     assert.isFalse(isTemplateResult({}));
     assert.isFalse(isTemplateResult(html``, TemplateResultType.SVG));
+    assert.isFalse(isTemplateResult(html``, TemplateResultType.MATHML));
     assert.isFalse(isTemplateResult(svg``, TemplateResultType.HTML));
+    assert.isFalse(isTemplateResult(svg``, TemplateResultType.MATHML));
     assert.isFalse(isTemplateResult(null, TemplateResultType.HTML));
     assert.isFalse(isTemplateResult(undefined, TemplateResultType.HTML));
     assert.isFalse(isTemplateResult({}, TemplateResultType.HTML));
+
+    assert.isTrue(
+      isTemplateResult({
+        _$litType$: _$lit_template_1,
+        values: [],
+      })
+    );
+    assert.isFalse(
+      isTemplateResult(
+        {
+          _$litType$: _$lit_template_1,
+          values: [],
+        },
+        TemplateResultType.HTML
+      )
+    );
+    assert.isFalse(
+      isTemplateResult(
+        {
+          _$litType$: _$lit_template_1,
+          values: [],
+        },
+        TemplateResultType.SVG
+      )
+    );
+  });
+
+  test('isTemplateResult type only test', () => {
+    // This test has no runtime checks, and fails at build time if there are
+    // type issues.
+    function acceptUncompiledTemplateResult(_v: UncompiledTemplateResult) {}
+
+    function acceptTemplateOrCompiledTemplateResult(
+      _v: TemplateResult | CompiledTemplateResult
+    ) {}
+    function acceptTemplateResultHtml(
+      _v: TemplateResult<typeof TemplateResultType.HTML>
+    ) {}
+    function acceptTemplateResultSvg(
+      _v: TemplateResult<typeof TemplateResultType.SVG>
+    ) {}
+    function acceptTemplateResultMathMl(
+      _v: TemplateResult<typeof TemplateResultType.MATHML>
+    ) {}
+
+    const v = html`` as TemplateResult | CompiledTemplateResult;
+    if (isTemplateResult(v)) {
+      acceptTemplateOrCompiledTemplateResult(v);
+
+      // @ts-expect-error v could be a CompiledTemplateResult
+      acceptUncompiledTemplateResult(v);
+    }
+    if (isTemplateResult(v, TemplateResultType.HTML)) {
+      acceptUncompiledTemplateResult(v);
+      acceptTemplateResultHtml(v);
+      // @ts-expect-error v is an html template result
+      acceptTemplateResultSvg(v);
+      // @ts-expect-error v is an html template result
+      acceptTemplateResultMathMl(v);
+    }
+    if (isTemplateResult(v, TemplateResultType.SVG)) {
+      acceptUncompiledTemplateResult(v);
+      acceptTemplateResultSvg(v);
+      // @ts-expect-error v is an svg template result
+      acceptTemplateResultHtml(v);
+      // @ts-expect-error v is an svg template result
+      acceptTemplateResultMathMl(v);
+    }
+    if (isTemplateResult(v, TemplateResultType.MATHML)) {
+      acceptUncompiledTemplateResult(v);
+      acceptTemplateResultMathMl(v);
+      // @ts-expect-error v is a MathML template result
+      acceptTemplateResultSvg(v);
+      // @ts-expect-error v is a MathML template result
+      acceptTemplateResultHtml(v);
+    }
+  });
+
+  test('isCompiledTemplateResult', () => {
+    assert.isTrue(
+      isCompiledTemplateResult({
+        _$litType$: _$lit_template_1,
+        values: [],
+      })
+    );
+
+    if (isTestFileNotCompiled) {
+      assert.isFalse(isCompiledTemplateResult(html``));
+    }
+    assert.isFalse(isCompiledTemplateResult(svg``));
+    assert.isFalse(isCompiledTemplateResult(null));
+    assert.isFalse(isCompiledTemplateResult(undefined));
+    assert.isFalse(isCompiledTemplateResult({}));
   });
 
   test('isDirectiveResult', () => {
@@ -74,7 +199,13 @@ suite('directive-helpers', () => {
   });
 
   test('getDirectiveClass', () => {
-    assert.instanceOf(getDirectiveClass(classMap({}))?.prototype, Directive);
+    interface Constructor<T> {
+      new (...args: any[]): T;
+    }
+    assert.instanceOf(
+      getDirectiveClass(classMap({}))?.prototype,
+      Directive as Constructor<Directive>
+    );
     assert.equal(getDirectiveClass(null), undefined);
     assert.equal(getDirectiveClass(undefined), undefined);
     assert.equal(getDirectiveClass({}), undefined);
@@ -90,10 +221,15 @@ suite('directive-helpers', () => {
         // Create two parts and remove the first, then the second to make sure
         // that removing the first doesn't move the second's markers. This
         // fails if the parts accidentally share a marker.
-        const childPart2 = insertPart(part, undefined);
-        const childPart1 = insertPart(part, undefined, childPart2);
+        const childPart2 = insertPart(part);
+        const childPart1 = insertPart(part, childPart2);
+
+        // Check that the test is correctly inserting two different parts:
+        assert.notEqual(childPart1, childPart2);
+
         removePart(childPart1);
         removePart(childPart2);
+
         return v;
       }
     }
@@ -104,6 +240,31 @@ suite('directive-helpers', () => {
 
     go('A');
     assertContent('<div>A</div>');
+  });
+
+  test('removePart removes the start marker', () => {
+    let testPart: ChildPart | undefined;
+    const testDirective = directive(
+      class TestDirective extends Directive {
+        render(v: unknown) {
+          return v;
+        }
+
+        override update(part: ChildPart, [v]: Parameters<this['render']>) {
+          testPart = part;
+          return v;
+        }
+      }
+    );
+
+    const go = (v: unknown) =>
+      render(html`<div>${testDirective(v)}</div>`, container);
+
+    go('A');
+    assertContent('<div>A</div>');
+    removePart(testPart!);
+    assertContent('<div></div>');
+    assert.strictEqual(container.firstElementChild?.childNodes.length, 0);
   });
 
   test('insertPart keeps connection state in sync', () => {

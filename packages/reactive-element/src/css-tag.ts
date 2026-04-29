@@ -5,12 +5,14 @@
  */
 
 const NODE_MODE = false;
-const global = NODE_MODE ? globalThis : window;
+
+// Allows minifiers to rename references to globalThis
+const global = globalThis;
 
 /**
  * Whether the current browser supports `adoptedStyleSheets`.
  */
-export const supportsAdoptingStyleSheets =
+export const supportsAdoptingStyleSheets: boolean =
   global.ShadowRoot &&
   (global.ShadyCSS === undefined || global.ShadyCSS.nativeShadow) &&
   'adoptedStyleSheets' in Document.prototype &&
@@ -159,7 +161,7 @@ export const css = (
 /**
  * Applies the given styles to a `shadowRoot`. When Shadow DOM is
  * available but `adoptedStyleSheets` is not, styles are appended to the
- * `shadowRoot` to [mimic spec behavior](https://wicg.github.io/construct-stylesheets/#using-constructed-stylesheets).
+ * `shadowRoot` to [mimic the native feature](https://developer.mozilla.org/en-US/docs/Web/API/ShadowRoot/adoptedStyleSheets).
  * Note, when shimming is used, any styles that are subsequently placed into
  * the shadowRoot should be placed *before* any shimmed adopted styles. This
  * will match spec behavior that gives adopted sheets precedence over styles in
@@ -174,7 +176,7 @@ export const adoptStyles = (
       s instanceof CSSStyleSheet ? s : s.styleSheet!
     );
   } else {
-    styles.forEach((s) => {
+    for (const s of styles) {
       const style = document.createElement('style');
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const nonce = (global as any)['litNonce'];
@@ -183,7 +185,7 @@ export const adoptStyles = (
       }
       style.textContent = (s as CSSResult).cssText;
       renderRoot.appendChild(style);
-    });
+    }
   }
 };
 

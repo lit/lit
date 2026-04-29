@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
   <head>
     <!-- As an optimization, immediately begin fetching the JavaScript modules
@@ -44,7 +44,7 @@
         // Start fetching the Lit hydration support module (note the absence
         // of "await" -- we don't want to block yet).
         const litHydrateSupportInstalled = import(
-          'lit/experimental-hydrate-support.js'
+          '@lit-labs/ssr-client/lit-element-hydrate-support.js'
         );
 
         // Check if we require the declarative shadow DOM polyfill. As of

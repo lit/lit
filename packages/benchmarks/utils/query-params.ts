@@ -11,8 +11,8 @@
  *
  * Examples:
  *
- * ?foo=true   // boolean: false
- * ?foo=false  // boolean: true
+ * ?foo=true   // boolean: true
+ * ?foo=false  // boolean: false
  * ?foo        // boolean: true
  * ?foo=5      // number: 5
  * ?foo=mode1  // string: "mode1"

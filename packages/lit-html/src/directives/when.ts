@@ -4,6 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+type Falsy = null | undefined | false | 0 | -0 | 0n | '';
+
 /**
  * When `condition` is true, returns the result of calling `trueCase()`, else
  * returns the result of calling `falseCase()` if `falseCase` is defined.
@@ -21,25 +23,25 @@
  * }
  * ```
  */
-export function when<T, F>(
-  condition: true,
-  trueCase: () => T,
-  falseCase?: () => F
-): T;
-export function when<T, F = undefined>(
-  condition: false,
-  trueCase: () => T,
-  falseCase?: () => F
+export function when<C extends Falsy, T, F = undefined>(
+  condition: C,
+  trueCase: (c: C) => T,
+  falseCase?: (c: C) => F
 ): F;
-export function when<T, F = undefined>(
-  condition: unknown,
-  trueCase: () => T,
-  falseCase?: () => F
-): T | F;
+export function when<C, T, F>(
+  condition: C extends Falsy ? never : C,
+  trueCase: (c: C) => T,
+  falseCase?: (c: C) => F
+): T;
+export function when<C, T, F = undefined>(
+  condition: C,
+  trueCase: (c: Exclude<C, Falsy>) => T,
+  falseCase?: (c: Extract<C, Falsy>) => F
+): C extends Falsy ? F : T;
 export function when(
   condition: unknown,
-  trueCase: () => unknown,
-  falseCase?: () => unknown
+  trueCase: (c: unknown) => unknown,
+  falseCase?: (c: unknown) => unknown
 ): unknown {
-  return condition ? trueCase() : falseCase?.();
+  return condition ? trueCase(condition) : falseCase?.(condition);
 }

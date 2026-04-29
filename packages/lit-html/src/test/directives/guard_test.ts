@@ -8,7 +8,7 @@ import {html, nothing, render} from 'lit-html';
 import {guard} from 'lit-html/directives/guard.js';
 import {Directive, directive, PartInfo} from 'lit-html/directive.js';
 import {stripExpressionMarkers} from '@lit-labs/testing';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('guard', () => {
   let container: HTMLDivElement;

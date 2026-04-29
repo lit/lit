@@ -153,7 +153,10 @@ async function generateReleaseImage(contents: string) {
        </body>
      </html>
    `;
-  const browser = await puppeteer.launch({headless: true});
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox'],
+  });
   const page = await browser.newPage();
   await page.setViewport({width: 800, height: 800, deviceScaleFactor: 2});
   await page.setContent(html);

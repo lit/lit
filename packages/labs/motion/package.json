@@ -1,12 +1,12 @@
 {
   "name": "@lit-labs/motion",
-  "version": "1.0.3",
+  "version": "1.1.0",
   "description": "Lit directives for making things move.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/motion"
   },
   "type": "module",
@@ -21,6 +21,11 @@
       "types": "./development/index.d.ts",
       "development": "./development/index.js",
       "default": "./index.js"
+    },
+    "./spring.js": {
+      "types": "./development/spring.d.ts",
+      "development": "./development/spring.js",
+      "default": "./spring.js"
     }
   },
   "files": [
@@ -29,7 +34,8 @@
     "/index.{d.ts,d.ts.map,js,js.map}",
     "/animate.{d.ts,d.ts.map,js,js.map}",
     "/animate-controller.{d.ts,d.ts.map,js,js.map}",
-    "/position.{d.ts,d.ts.map,js,js.map}"
+    "/position.{d.ts,d.ts.map,js,js.map}",
+    "/spring.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "start": "wireit",
@@ -44,10 +50,13 @@
   },
   "wireit": {
     "start": {
-      "command": "web-dev-server -- --node-resolve --watch --preserve-sym-links --open demo/index.html",
-      "#comment": "TODO(aomarks) Depend only on build:ts, but needs export conditions",
+      "command": "web-dev-server -- --watch --preserve-sym-links --open demo/index.html",
+      "service": true,
       "dependencies": [
-        "build"
+        {
+          "script": "build:ts",
+          "cascade": false
+        }
       ]
     },
     "build": {
@@ -122,7 +131,7 @@
     "test:dev": {
       "command": "MODE=dev node ../../tests/run-web-tests.js \"development/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
       "dependencies": [
-        "build",
+        "build:ts",
         "../../tests:build"
       ],
       "env": {
@@ -150,11 +159,12 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@types/trusted-types": "^2.0.2",
-    "@lit-internal/scripts": "^1.0.0"
+    "@lit-internal/scripts": "^1.0.1",
+    "@types/trusted-types": "^2.0.2"
   },
   "dependencies": {
-    "lit": "^2.0.0"
+    "lit": "^3.1.2",
+    "wobble": "^1.5.1"
   },
   "publishConfig": {
     "access": "public"

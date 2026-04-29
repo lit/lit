@@ -9,7 +9,7 @@ import {LitElement /*css, html, CSSResultGroup, TemplateResult*/} from 'lit';
 // import {classMap} from 'lit/directives/class-map.js';
 // import {generateElementName, nextFrame} from './test-helpers';
 // import {animate, Animate, AnimateOptions, CSSValues} from '../animate.js';
-// import {assert} from '@esm-bundle/chai';
+// import {assert} from 'chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
 // by checking if warning API is available.

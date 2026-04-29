@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {_installMsgImplementation} from '../lit-localize.js';
 import {runtimeMsg} from '../internal/runtime-msg.js';
 
 import type {
@@ -13,6 +12,7 @@ import type {
   LocaleModule,
   MsgOptions,
 } from '../internal/types.js';
+import {_installMsgImplementation} from './install.js';
 
 /**
  * Configuration parameters for lit-localize when in reentrant mode.

@@ -2,97 +2,17 @@
   "folders": [
     {
       "name": "lit",
-      "path": "packages/lit"
-    },
-    {
-      "name": "lit-html",
-      "path": "packages/lit-html"
-    },
-    {
-      "name": "lit-element",
-      "path": "packages/lit-element"
-    },
-    {
-      "name": "reactive-element",
-      "path": "packages/reactive-element"
-    },
-    {
-      "name": "ssr",
-      "path": "packages/labs/ssr"
-    },
-    {
-      "name": "lit-starter-ts",
-      "path": "packages/lit-starter-ts"
-    },
-    {
-      "name": "lit-starter-js",
-      "path": "packages/lit-starter-js"
-    },
-    {
-      "name": "localize",
-      "path": "packages/localize"
-    },
-    {
-      "name": "labs",
-      "path": "packages/labs"
-    },
-    {
-      "name": "tests",
-      "path": "packages/tests"
-    },
-    {
-      "name": "benchmarks",
-      "path": "packages/benchmarks"
-    },
-    {
-      "name": "analyzer",
-      "path": "packages/labs/analyzer"
-    },
-    {
-      "name": "testing",
-      "path": "packages/labs/testing"
-    },
-    {
-      "name": "cli",
-      "path": "packages/labs/cli"
-    },
-    {
-      "name": "gen-manifest",
-      "path": "packages/labs/gen-manifest"
-    },
-    {
-      "name": "gen-react",
-      "path": "packages/labs/gen-manifest"
-    },
-    {
-      "name": "gen-angular",
-      "path": "packages/labs/gen-manifest"
-    },
-    {
-      "name": "gen-vue",
-      "path": "packages/labs/gen-manifest"
-    },
-    {
-      "name": "gen-utils",
-      "path": "packages/labs/gen-manifest"
-    },
-    {
-      "name": "examples",
-      "path": "examples"
-    },
-    {
-      "name": "lit-monorepo",
-      "path": "."
+      "path": "./"
     }
   ],
   "settings": {
     "typescript.tsdk": "node_modules/typescript/lib",
-    "debug.javascript.warnOnLongPrediction": false,
     // Regardless of the user's usual formatter, files
     // in the Lit repo must be formatted using prettier.
     "editor.defaultFormatter": "esbenp.prettier-vscode",
     "files.exclude": {
-      "**/.wireit": true
+      "**/.wireit": true,
+      "**/*.tsbuildinfo": true
     },
     "javascript.preferences.importModuleSpecifierEnding": "js",
     "eslint.workingDirectories": [{"mode": "auto"}]

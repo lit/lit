@@ -1,9 +1,9 @@
 {
   "compilerOptions": {
     "composite": true,
-    "target": "es2019",
+    "target": "es2021",
     "module": "NodeNext",
-    "lib": ["es2020", "DOM", "DOM.Iterable"],
+    "lib": ["es2021", "DOM", "DOM.Iterable", "esnext.decorators"],
     "declaration": true,
     "declarationMap": true,
     "sourceMap": true,
@@ -21,12 +21,16 @@
     "allowSyntheticDefaultImports": true,
     "experimentalDecorators": true,
     "stripInternal": true,
-    "noImplicitOverride": true
+    "noImplicitOverride": true,
+    "types": ["mocha", "node"]
   },
   "include": [
     "../../node_modules/@webcomponents/webcomponentsjs/webcomponents-bundle.d.ts",
     "src/**/*.ts"
   ],
-  "exclude": ["src/polyfill-support.ts"],
+  "exclude": [
+    "src/polyfill-support.ts",
+    "src/test/decorators-modern/decorators-standard/**/*.ts"
+  ],
   "references": [{"path": "./tsconfig.polyfill-support.json"}]
 }

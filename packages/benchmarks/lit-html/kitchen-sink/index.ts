@@ -45,10 +45,10 @@ import {styleMap} from 'lit-html/directives/style-map.js';
 import {queryParams} from '../../utils/query-params.js';
 
 // Configurable params
-const width = queryParams.width ?? 4;
-const depth = queryParams.depth ?? 4;
-const updateCount = queryParams.updateCount ?? 10;
-const nopUpdateCount = queryParams.nopUpdateCount ?? 10;
+const width = Number(queryParams.width ?? 4);
+const depth = Number(queryParams.depth ?? 4);
+const updateCount = Number(queryParams.updateCount ?? 10);
+const nopUpdateCount = Number(queryParams.nopUpdateCount ?? 10);
 
 // Data model
 interface Data {
@@ -122,8 +122,8 @@ const renderItem: any = (data: Data) => html`
     ${data.text}
     <!-- Comment binding ${data.text} -->
     <div .property=${data.property} attr=${data.text} multi="~${data.text}~${
-  data.text
-}~${data.text}~"></div>
+      data.text
+    }~${data.text}~"></div>
     <div @click=${data.handler}></div>
     ${data.node}
     <!-- Make sure to have a decent ratio of static:dynamic nodes  -->

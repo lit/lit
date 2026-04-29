@@ -33,25 +33,25 @@ interface RefInternal {
 // has already been rendered to a new spot. It is double-keyed on both the
 // context (`options.host`) and the callback, since we auto-bind class methods
 // to `options.host`.
-const lastElementForContextAndCallback: WeakMap<
+const lastElementForContextAndCallback = new WeakMap<
   object,
   WeakMap<Function, Element | undefined>
-> = new WeakMap();
+>();
 
-export type RefOrCallback = Ref | ((el: Element | undefined) => void);
+export type RefOrCallback<T = Element> = Ref<T> | ((el: T | undefined) => void);
 
 class RefDirective extends AsyncDirective {
   private _element?: Element;
   private _ref?: RefOrCallback;
   private _context?: object;
 
-  render(_ref: RefOrCallback) {
+  render(_ref?: RefOrCallback) {
     return nothing;
   }
 
   override update(part: ElementPart, [ref]: Parameters<this['render']>) {
     const refChanged = ref !== this._ref;
-    if (refChanged && this._ref !== undefined) {
+    if (refChanged) {
       // The ref passed to the directive has changed;
       // unset the previous ref's value
       this._updateRefValue(undefined);
@@ -67,6 +67,12 @@ class RefDirective extends AsyncDirective {
   }
 
   private _updateRefValue(element: Element | undefined) {
+    if (this._ref === undefined) {
+      return;
+    }
+    if (!this.isConnected) {
+      element = undefined;
+    }
     if (typeof this._ref === 'function') {
       // If the current ref was called with a previous value, call with
       // `undefined`; We do this to ensure callbacks are called in a consistent

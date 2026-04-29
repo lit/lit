@@ -7,7 +7,7 @@
 import '@webcomponents/scoped-custom-element-registry/scoped-custom-element-registry.min.js';
 import {LitElement, html, css} from 'lit';
 import {ScopedRegistryHost} from '@lit-labs/scoped-registry-mixin';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 // Prevent ie11 or other incompatible browsers from running
 // scoped-registry-mixin tests.

@@ -17,7 +17,18 @@ import {
   Part,
   Disconnectable,
 } from './lit-html.js';
-export type {Template} from './lit-html.js';
+
+import type {
+  PropertyPart,
+  ChildPart,
+  BooleanAttributePart,
+  EventPart,
+  ElementPart,
+  TemplateInstance,
+} from './lit-html.js';
+
+// Contains either the minified or unminified `_$resolve` Directive method name.
+let resolveMethodName: Extract<keyof Directive, '_$resolve'> | null = null;
 
 /**
  * END USERS SHOULD NOT RELY ON THIS OBJECT.
@@ -49,6 +60,40 @@ export const _$LH = {
         return resolveOverrideFn(this, values);
       }
     },
+  patchDirectiveResolve: (
+    directiveClass: typeof Directive,
+    resolveOverrideFn: (
+      this: Directive,
+      _part: Part,
+      values: unknown[]
+    ) => unknown
+  ) => {
+    if (directiveClass.prototype._$resolve.name !== resolveOverrideFn.name) {
+      resolveMethodName ??= directiveClass.prototype._$resolve
+        .name as NonNullable<typeof resolveMethodName>;
+      for (
+        let proto = directiveClass.prototype;
+        proto !== Object.prototype;
+        proto = Object.getPrototypeOf(proto)
+      ) {
+        if (proto.hasOwnProperty(resolveMethodName)) {
+          proto[resolveMethodName] = resolveOverrideFn;
+          return;
+        }
+      }
+      // Nothing was patched which indicates an error. The most likely error is
+      // that somehow both minified and unminified lit code passed through this
+      // codepath. This is possible as lit-labs/ssr contains its own lit-html
+      // module as a dependency for server rendering client Lit code. If a
+      // client contains multiple duplicate Lit modules with minified and
+      // unminified exports, we currently cannot handle both.
+      throw new Error(
+        `Internal error: It is possible that both dev mode and production mode` +
+          ` Lit was mixed together during SSR. Please comment on the issue: ` +
+          `https://github.com/lit/lit/issues/4527`
+      );
+    }
+  },
   setDirectiveClass(value: DirectiveResult, directiveClass: DirectiveClass) {
     // This property needs to remain unminified.
     value['_$litDirective$'] = directiveClass;
@@ -74,8 +119,11 @@ export const _$LH = {
   }),
   resolveDirective: p._resolveDirective,
   AttributePart: p._AttributePart,
-  PropertyPart: p._PropertyPart,
-  BooleanAttributePart: p._BooleanAttributePart,
-  EventPart: p._EventPart,
-  ElementPart: p._ElementPart,
+  PropertyPart: p._PropertyPart as typeof PropertyPart,
+  BooleanAttributePart: p._BooleanAttributePart as typeof BooleanAttributePart,
+  EventPart: p._EventPart as typeof EventPart,
+  ElementPart: p._ElementPart as typeof ElementPart,
+  TemplateInstance: p._TemplateInstance as typeof TemplateInstance,
+  isIterable: p._isIterable,
+  ChildPart: p._ChildPart as typeof ChildPart,
 };

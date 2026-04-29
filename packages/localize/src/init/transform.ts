@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {_installMsgImplementation} from '../lit-localize.js';
 import {defaultMsg} from '../internal/default-msg.js';
+import {_installMsgImplementation} from './install.js';
 
 /**
  * Configuration parameters for lit-localize when in transform mode.

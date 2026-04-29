@@ -23,7 +23,7 @@ import {
   flyAbove,
   flyBelow,
 } from '@lit-labs/motion';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 // Note, since tests are not built with production support, detect DEV_MODE
 // by checking if warning API is available.
@@ -129,6 +129,70 @@ const testSkipSafari = isSafari ? test.skip : test;
     }
   });
 
+  test('can animate to zero', async () => {
+    class ToZero extends LitElement {
+      static override styles = css`
+        :host {
+          display: block;
+        }
+        div {
+          width: 100px;
+          height: 100px;
+        }
+        div.collapse {
+          width: 0;
+          height: 0;
+        }
+      `;
+
+      @property()
+      collapse = false;
+
+      @query('div')
+      div!: HTMLElement;
+
+      animationComplete = new Promise<void>(
+        (res) => (this._onComplete = () => res())
+      );
+
+      _onComplete!: () => void;
+
+      override render() {
+        return html`
+          <div
+            class="${this.collapse ? 'collapse' : ''}"
+            ${animate({
+              onComplete: this._onComplete,
+            })}
+          ></div>
+        `;
+      }
+    }
+    customElements.define(generateElementName(), ToZero);
+    const el = new ToZero();
+    container.append(el);
+    await el.updateComplete;
+
+    const div = el.div;
+    const initialRect = div.getBoundingClientRect();
+    assert.equal(initialRect.width, 100);
+    assert.equal(initialRect.height, 100);
+
+    el.collapse = true;
+    await el.updateComplete;
+    // The animation hasn't started yet, but the first keyframe should be
+    // applied, meaning we have the same size as the initial state. If the
+    // size-to-zero bug were present, the size would be 0.
+    const startRect = div.getBoundingClientRect();
+    assert.equal(startRect.width, 100);
+    assert.equal(startRect.height, 100);
+
+    await el.animationComplete;
+    const collapsedRect = div.getBoundingClientRect();
+    assert.equal(collapsedRect.width, 0);
+    assert.equal(collapsedRect.height, 0);
+  });
+
   // TODO(sorvell): when should onComplete go?
   test('onStart/onComplete', async () => {
     let completeEl;
@@ -140,12 +204,12 @@ const testSkipSafari = isSafari ? test.skip : test;
     el = new El();
     container.appendChild(el);
     await el.updateComplete;
-    assert.ok(theAnimate!);
+    assert.ok(theAnimate);
     assert.equal(el.div, animateElement);
-    await theAnimate!.finished;
+    await theAnimate.finished;
     el.shift = true;
     await el.updateComplete;
-    await theAnimate!.finished;
+    await theAnimate.finished;
     assert.equal(el.div, completeEl);
   });
 
@@ -161,25 +225,27 @@ const testSkipSafari = isSafari ? test.skip : test;
     el.shift = true;
     await el.updateComplete;
     await theAnimate!.finished;
-    assert.ok(frames!);
+    assert.ok(frames);
     assert.equal(
-      (frames![0].transform as string).trim(),
+      (frames[0].transform as string).trim(),
       'translateX(-200px) translateY(-200px)'
     );
-    assert.equal(frames![1].opacity, 0);
+    assert.equal(frames[1].opacity, 0);
     const r2 = el.div.getBoundingClientRect();
     assert.equal(r2.left - b.left, 200);
     assert.equal(r2.top - b.top, 200);
 
     theAnimate = undefined;
-    frames = undefined;
+    // The cast prevents too-aggressive type narrowing. TypeScript can't see
+    // that frames is mutated to be possibly defined elsewhere.
+    frames = undefined as Keyframe[] | undefined;
     el.shift = false;
     await el.updateComplete;
     await theAnimate!.finished;
     const r3 = el.div.getBoundingClientRect();
-    assert.ok(frames!);
+    assert.ok(frames);
     assert.equal(
-      (frames![0].transform as string).trim(),
+      (frames[0].transform as string).trim(),
       'translateX(200px) translateY(200px)'
     );
     assert.equal(r3.left - r2.left, -200);
@@ -351,7 +417,7 @@ const testSkipSafari = isSafari ? test.skip : test;
     el.shift = true;
     await el.updateComplete;
     await theAnimate!.finished;
-    assert.ok(frames!);
+    assert.ok(frames);
     assert.deepEqual(animateProps, {left: -200});
     assert.equal((frames![0].transform as string).trim(), 'translateX(-200px)');
     assert.equal((frames![0].color as string).trim(), 'rgb(0, 0, 0)');
@@ -400,18 +466,19 @@ const testSkipSafari = isSafari ? test.skip : test;
           top: 20px;
         }
       `,
-      () => html`<div
-        class="child ${classMap({shiftChild})}"
-        ${animate({onComplete: childComplete})}
-      >
-        Child
-        <div
-          class="gChild ${classMap({shiftGChild})}"
-          ${animate({onStart: gChildStart, onComplete: gChildComplete})}
+      () =>
+        html`<div
+          class="child ${classMap({shiftChild})}"
+          ${animate({onComplete: childComplete})}
         >
-          GChild
-        </div>
-      </div>`
+          Child
+          <div
+            class="gChild ${classMap({shiftGChild})}"
+            ${animate({onStart: gChildStart, onComplete: gChildComplete})}
+          >
+            GChild
+          </div>
+        </div>`
     );
     el = new El();
     container.appendChild(el);

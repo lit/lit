@@ -2,7 +2,28 @@
 
 `@lit-labs/virtualizer` provides viewport-based virtualization (including virtual scrolling) for [Lit](https://lit.dev).
 
-⚠️ `@lit-labs/virtualizer` is in late prerelease. Its API is intended to remain quite stable going forward, but you should expect (increasingly minor) changes before 1.0. Some of these changes may be technically breaking, but we anticipate that they will be mechanical and straightforward to make.
+[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/@lit-labs/virtualizer.svg?logo=npm)](https://www.npmjs.com/package/@lit-labs/virtualizer)
+[![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
+[![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
+
+> [!WARNING]
+>
+> This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
+> is published in order to get feedback on the design and may receive breaking
+> changes or stop being supported.
+>
+> Please read our [Lit Labs documentation](https://lit.dev/docs/libraries/labs/)
+> before using this library in production.
+>
+> Give feedback: https://github.com/lit/lit/discussions/3362
+
+> [!WARNING]
+>
+> `@lit-labs/virtualizer` is in late prerelease. Its API is intended to remain
+> quite stable going forward, but you should expect (increasingly minor) changes
+> before 1.0. Some of these changes may be technically breaking, but we
+> anticipate that they will be mechanical and straightforward to make.
 
 ## Getting Started
 
@@ -12,7 +33,7 @@ Get this package:
 npm i @lit-labs/virtualizer
 ```
 
-Like Lit itself, the `@lit-labs/virtualizer` package is published as ES2019, using [ES modules](https://developers.google.com/web/fundamentals/primers/modules). The Lit packages use [bare specifiers](https://github.com/WICG/import-maps#bare-specifiers) to refer to their dependencies.
+Like Lit itself, the `@lit-labs/virtualizer` package is published as ES2021, using [ES modules](https://developers.google.com/web/fundamentals/primers/modules). The Lit packages use [bare specifiers](https://github.com/WICG/import-maps#bare-specifiers) to refer to their dependencies.
 
 Shipping packages this way lets you control how whether and how they (along with your own source code) are bundled and transpiled for delivery to your users. However, it does require that you use a development server (or alternative tool chain) capable of _resolving_ bare specifiers on the fly, since browsers don't natively support them.
 
@@ -280,7 +301,7 @@ export class MyItems extends LitElement {
   scrollToListItem(idx) {
     // Use the `virtualizerRef` symbol as a property key on the
     // host element to access the virtualizer reference
-    this.list[virtualizerRef].scrollElementIntoView({index: idx});
+    this.list[virtualizerRef].element(idx).scrollIntoView();
   }
 }
 ```
@@ -343,6 +364,77 @@ async function myCustomLoader() {
   provideResizeObserver(ResizeObserverPolyfill);
 }
 ```
+
+### "ResizeObserver loop limit exceeded" errors
+
+When using Virtualizer, you may see this error in your console and depending on your testing framework, it may be causing your tests to fail. The error itself is benign and only means that the ResizeObserver was not able to deliver all observations within a single animation frame. It may be safely ignored, but it may be necessary to instruct your framework to ignore it as well to prevent unnecessary side-effects and error-handling.
+
+To assist with this, a few functions are provided in the support folder. These functions are independent of each other and you will need to choose which best fits to your situation.
+
+#### window.onerror patches
+
+Testing frameworks like Mocha define an `onerror` handler directly on `window` which catch any unhandled exceptions and report them as failures. The following two solutions wrap this handler to ignore the loop limit errors specifically.
+
+#### setupIgnoreWindowResizeObserverLoopErrors()
+
+The simplest approach is to use this function to wrap and unwrap the onerror handler before and after each test. With a Mocha setup you would use it like this:
+
+```ts
+import {setupIgnoreWindowResizeObserverLoopErrors} from '@lit-labs/virtualizer/support/resize-observer-errors.js';
+
+describe('My virtualized collection', () => {
+  setupIgnoreWindowResizeObserverLoopErrors(beforeEach, afterEach);
+
+  it('does this and that', () => {
+    /* test stuff */
+  });
+});
+```
+
+By handing `setupIgnoreWindowResizeObserverLoopErrors` the `beforeEach` and `afterEach` callbacks, it is able to define the appropriate setup and teardown for you. The only case where this may not work is if you are for some reason patching `window.onerror` as well; if the teardown step does not see the expected handler in place before restoring the original handler it will throw and error to alert you to an "out-of-sequence interceptor teardown." In the rare case you have competing patches of `window.onerror` you can use the next option, `ignoreWindowResizeObserverLoopErrors`.
+
+#### ignoreWindowResizeObserverLoopErrors()
+
+This method allows you to be specific about the timing/ordering that the `window.onerror` patch is removed, which may be necessary if you have more complicated setups and/or multiple patches to `window.onerror`. `ignoreWindowResizeObserverLoopErrors` returns a function that restores `onerror` to its original form prior to the patch. Notice that multiple patches generally need to removed in reverse order.
+
+```ts
+import {ignoreWindowResizeObserverLoopErrors} from '@lit-labs/virtualizer/support/resize-observer-errors.js';
+
+describe('My virtualized collection', () => {
+  let teardown;
+
+  beforeEach(() => (teardown = ignoreWindowResizeObserverLoopErrors()));
+  beforeEach(() => applyOtherWindowOnErrorPatch());
+
+  afterEach(() => removeOtherWindowOnErrorPatch());
+  afterEach(() => teardown());
+
+  it('does this and that', () => {
+    // etc
+  });
+});
+```
+
+#### preventResizeObserverLoopErrorEventDefaults()
+
+If an explicit `window.onerror` handler function has not been defined, you may be able to swallow up the loop limit errors with an event listener. This function adds that event listener to window and attempts to ignore and prevent any further event propogation or behaviors as a result.
+
+```ts
+import {preventResizeObserverLoopErrorEventDefaults} from '@lit-labs/virtualizer/support/resize-observer-errors.js';
+
+preventResizeObserverLoopErrorEventDefaults();
+```
+
+If you need to remove the event listener that this function adds at some point, you can assign the return of the function, which is a function that removes the listener, to a variable for later use:
+
+```ts
+const teardown = preventResizeObserverLoopErrorEventDefaults();
+
+/* some time later... */
+teardown();
+```
+
+Note that for this to be effective, you'll need to call it to add the event listener to window as early as you can, to ensure it is in place prior to any other event listeners who would otherwise receive the event first.
 
 ## API Reference
 

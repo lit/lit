@@ -10,6 +10,7 @@
 import ReactDOMServer from 'react-dom/server';
 
 import '../test-element.js';
+import '../parent-element.js';
 
 import {test} from 'uvu';
 // eslint-disable-next-line import/extensions
@@ -120,7 +121,74 @@ test('single element with dynamic children', () => {
   );
 });
 
-test('nested element', () => {
+test('single element with string child via props', () => {
+  assert.equal(
+    ReactDOMServer.renderToString(
+      <test-element children="some string child"></test-element>
+    ),
+    `<test-element><template shadowroot="open" shadowrootmode="open"><style>
+    p {
+      color: blue;
+    }
+  </style><!--lit-part aHUgh01By8I=--><p>Hello, <!--lit-part-->Somebody<!--/lit-part-->!</p>
+      <slot></slot><!--/lit-part--></template>some string child</test-element>`
+  );
+});
+
+test('single element with element child via props', () => {
+  assert.equal(
+    ReactDOMServer.renderToString(
+      <test-element children={<span>span child</span>}></test-element>
+    ),
+    `<test-element><template shadowroot="open" shadowrootmode="open"><style>
+    p {
+      color: blue;
+    }
+  </style><!--lit-part aHUgh01By8I=--><p>Hello, <!--lit-part-->Somebody<!--/lit-part-->!</p>
+      <slot></slot><!--/lit-part--></template><span>span child</span></test-element>`
+  );
+});
+
+test('single element with multiple children via props', () => {
+  assert.equal(
+    ReactDOMServer.renderToString(
+      <test-element
+        children={
+          <>
+            <span>span</span>
+            <p>p</p>
+          </>
+        }
+      ></test-element>
+    ),
+    `<test-element><template shadowroot="open" shadowrootmode="open"><style>
+    p {
+      color: blue;
+    }
+  </style><!--lit-part aHUgh01By8I=--><p>Hello, <!--lit-part-->Somebody<!--/lit-part-->!</p>
+      <slot></slot><!--/lit-part--></template><span>span</span><p>p</p></test-element>`
+  );
+});
+
+test('single element with dynamic children via props', () => {
+  assert.equal(
+    ReactDOMServer.renderToString(
+      <test-element
+        children={[1, 2, 3].map((i) => (
+          <span key={i}>{i}</span>
+        ))}
+      ></test-element>
+    ),
+    `<test-element><template shadowroot="open" shadowrootmode="open"><style>
+    p {
+      color: blue;
+    }
+  </style><!--lit-part aHUgh01By8I=--><p>Hello, <!--lit-part-->Somebody<!--/lit-part-->!</p>
+      <slot></slot><!--/lit-part--></template><span>1</span><span>2</span><span>3</span></test-element>`
+  );
+});
+
+test('custom element child', () => {
   assert.equal(
     ReactDOMServer.renderToString(
       <test-element>
@@ -138,6 +206,16 @@ test('nested element', () => {
     }
   </style><!--lit-part aHUgh01By8I=--><p>Hello, <!--lit-part-->Somebody<!--/lit-part-->!</p>
       <slot></slot><!--/lit-part--></template></test-element></test-element>`
+  );
+});
+
+test('nested custom element', () => {
+  // Note: <child-element> should have defer-hydration attribute to ensure
+  // proper hydration order from parent to child
+  assert.equal(
+    ReactDOMServer.renderToString(<parent-element />),
+    `<parent-element><template shadowroot="open" shadowrootmode="open"><!--lit-part VWvXc8PRUIg=--><p>Parent</p>
+      <!--lit-node 1--><child-element defer-hydration><template shadowroot="open" shadowrootmode="open"><!--lit-part z0Ym6Oo3MXM=--><p>Child</p><!--/lit-part--></template></child-element><!--/lit-part--></template></parent-element>`
   );
 });
 

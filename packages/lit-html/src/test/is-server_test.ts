@@ -5,7 +5,7 @@
  */
 
 import {isServer} from 'lit-html/is-server.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('is-server', () => {
   test('isServer is false', () => {

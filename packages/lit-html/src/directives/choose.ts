@@ -29,9 +29,9 @@
  * }
  * ```
  */
-export const choose = <T, V>(
+export const choose = <T, V, K extends T = T>(
   value: T,
-  cases: Array<[T, () => V]>,
+  cases: Array<[K, () => V]>,
   defaultCase?: () => V
 ) => {
   for (const c of cases) {

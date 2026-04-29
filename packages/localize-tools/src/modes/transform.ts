@@ -150,7 +150,7 @@ export function litLocalizeTransform(
         program,
         file
       );
-      return ts.visitNode(file, transformer.boundVisitNode);
+      return ts.visitNode(file, transformer.boundVisitNode) as ts.SourceFile;
     };
   };
 }
@@ -183,7 +183,7 @@ class Transformer {
   /**
    * Top-level delegating visitor for all nodes.
    */
-  visitNode(node: ts.Node): ts.VisitResult<ts.Node> {
+  visitNode(node: ts.Node): ts.VisitResult<ts.Node | undefined> {
     // msg('greeting', 'hello') -> 'hola'
     if (isMsgCall(node, this.typeChecker)) {
       return this.replaceMsgCall(node);
@@ -194,7 +194,9 @@ class Transformer {
       // If an html-tagged template literal embeds a msg call, we want to
       // collapse the result of that msg call into the parent template.
       return tagLit(
+        this.context.factory,
         makeTemplateLiteral(
+          this.context.factory,
           this.recursivelyFlattenTemplate(node.template, true)
         )
       );
@@ -210,6 +212,7 @@ class Transformer {
       }
     }
 
+    const factory = this.context.factory;
     if (ts.isCallExpression(node)) {
       // configureTransformLocalization(...) -> {getLocale: () => "es-419"}
       if (
@@ -218,17 +221,17 @@ class Transformer {
           '_LIT_LOCALIZE_CONFIGURE_TRANSFORM_LOCALIZATION_'
         )
       ) {
-        return ts.createObjectLiteral(
+        return factory.createObjectLiteralExpression(
           [
-            ts.createPropertyAssignment(
-              ts.createIdentifier('getLocale'),
-              ts.createArrowFunction(
+            factory.createPropertyAssignment(
+              factory.createIdentifier('getLocale'),
+              factory.createArrowFunction(
                 undefined,
                 undefined,
                 [],
                 undefined,
-                ts.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
-                ts.createStringLiteral(this.locale)
+                factory.createToken(ts.SyntaxKind.EqualsGreaterThanToken),
+                factory.createStringLiteral(this.locale)
               )
             ),
           ],
@@ -255,7 +258,7 @@ class Transformer {
       if (
         this.typeHasProperty(node.expression, '_LIT_LOCALIZE_CONTROLLER_FN_')
       ) {
-        return ts.createIdentifier('undefined');
+        return factory.createIdentifier('undefined');
       }
     }
 
@@ -305,7 +308,7 @@ class Transformer {
           sourceFileSymbol &&
           this.fileNameAppearsToBeLitLocalize(sourceFileSymbol)
         ) {
-          return ts.createStringLiteral('lit-localize-status');
+          return factory.createStringLiteral('lit-localize-status');
         }
       }
     }
@@ -435,7 +438,7 @@ class Transformer {
             newParts.push(sourceExpression.expression);
             newParts.push(span.literal.text);
           }
-          newTemplate = makeTemplateLiteral(newParts);
+          newTemplate = makeTemplateLiteral(this.context.factory, newParts);
         }
       }
       // TODO(aomarks) Emit a warning that a translation was missing.
@@ -457,9 +460,12 @@ class Transformer {
     // Given: html`Hello <b>${"World"}</b>`
     // Generate: html`Hello <b>World</b>`
     newTemplate = makeTemplateLiteral(
+      this.context.factory,
       this.recursivelyFlattenTemplate(newTemplate, tag === 'html')
     );
-    return tag === 'html' ? tagLit(newTemplate) : newTemplate;
+    return tag === 'html'
+      ? tagLit(this.context.factory, newTemplate)
+      : newTemplate;
   }
 
   /**
@@ -489,7 +495,7 @@ class Transformer {
         if (value === undefined) {
           throw new KnownError('No value provided');
         }
-        return ts.createTemplateSpan(value, span.literal);
+        return this.context.factory.createTemplateSpan(value, span.literal);
       },
       this.context
     );
@@ -519,7 +525,10 @@ class Transformer {
     }
 
     const fragments: Array<string | ts.Expression> = [template.head.text];
-    const subsume = (expression: ts.Expression): boolean => {
+    const subsume = (expression: ts.Node | undefined): boolean => {
+      if (expression === undefined) {
+        return false;
+      }
       if (ts.isStringLiteral(expression)) {
         fragments.push(expression.text);
       } else if (ts.isTemplateLiteral(expression)) {
@@ -546,15 +555,31 @@ class Transformer {
           : template.templateSpans[i - 1].literal.text
         ).endsWith('=')
       ) {
-        fragments.push(ts.visitNode(span.expression, this.boundVisitNode));
+        const expr = ts.visitNode(span.expression, this.boundVisitNode);
+        if (expr === undefined || !ts.isExpression(expr)) {
+          throw new Error(
+            `Internal error: expected expression, but got ${
+              expr ? ts.SyntaxKind[expr.kind] : 'undefined'
+            }`
+          );
+        }
+        fragments.push(expr);
         fragments.push(span.literal.text);
         continue;
       }
-      let expression = span.expression;
+      let expression: ts.Node | undefined = span.expression;
       // Can we directly subsume this span?
       if (!subsume(expression)) {
         // No, but it may still need transformation.
         expression = ts.visitNode(expression, this.boundVisitNode);
+        if (expression === undefined || !ts.isExpression(expression)) {
+          throw new Error(
+            `Internal error: expected expression, but got ${
+              expression ? ts.SyntaxKind[expression.kind] : 'undefined'
+            }`
+          );
+        }
+
         // Maybe we can subsume it after transformation (e.g a `msg` call which
         // is now transformed to a template)?
         if (!subsume(expression)) {
@@ -605,8 +630,15 @@ class Transformer {
 /**
  * Wrap a TemplateLiteral in the lit `html` tag.
  */
-function tagLit(template: ts.TemplateLiteral): ts.TaggedTemplateExpression {
-  return ts.createTaggedTemplate(ts.createIdentifier('html'), template);
+function tagLit(
+  factory: ts.NodeFactory,
+  template: ts.TemplateLiteral
+): ts.TaggedTemplateExpression {
+  return factory.createTaggedTemplateExpression(
+    factory.createIdentifier('html'),
+    undefined,
+    template
+  );
 }
 
 /**
@@ -616,6 +648,7 @@ function tagLit(template: ts.TemplateLiteral): ts.TaggedTemplateExpression {
  * TemplateSpan.
  */
 function makeTemplateLiteral(
+  factory: ts.NodeFactory,
   fragments: Array<string | ts.Expression>
 ): ts.TemplateLiteral {
   let textBuf: string[] = [];
@@ -628,18 +661,18 @@ function makeTemplateLiteral(
       const text = textBuf.join('');
       const literal =
         spans.length === 0
-          ? ts.createTemplateTail(text)
-          : ts.createTemplateMiddle(text);
-      const span = ts.createTemplateSpan(fragment, literal);
+          ? factory.createTemplateTail(text)
+          : factory.createTemplateMiddle(text);
+      const span = factory.createTemplateSpan(fragment, literal);
       spans.unshift(span);
       textBuf = [];
     }
   }
   if (spans.length === 0) {
-    return ts.createNoSubstitutionTemplateLiteral(textBuf.join(''));
+    return factory.createNoSubstitutionTemplateLiteral(textBuf.join(''));
   }
-  return ts.createTemplateExpression(
-    ts.createTemplateHead(textBuf.join('')),
+  return factory.createTemplateExpression(
+    factory.createTemplateHead(textBuf.join('')),
     spans
   );
 }

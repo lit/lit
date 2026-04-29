@@ -9,7 +9,7 @@ import {playwrightLauncher} from '@web/test-runner-playwright';
 // https://modern-web.dev/docs/test-runner/cli-and-configuration/
 export default {
   rootDir: '.',
-  files: ['./tests/**/*.test.js'],
+  files: ['./tests/**/*.test.js', './tests-std-decorators/**/*.test.js'],
   nodeResolve: true,
   browsers: [
     playwrightLauncher({product: 'chromium'}),

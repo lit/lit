@@ -5,21 +5,24 @@
     "build": "tsc",
     "build:watch": "tsc --watch"
   },
-  "version": "1.0.0",
+  "version": "1.0.2",
   "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.0"
+    "@lit-internal/test-element-a": "^1.0.2"
   },
   "peerDependencies": {
     "@angular/common": "^13.3.0",
     "@angular/core": "^13.3.0"
   },
   "devDependencies": {
-    "typescript": "~4.7.4"
+    "typescript": "~5.9.0"
   },
   "files": [
     "element-a.js",
     "element-events.js",
+    "element-mixins.js",
     "element-props.js",
-    "element-slots.js"
+    "element-slots.js",
+    "element-without-props.js",
+    "sub/element-sub.js"
   ]
 }

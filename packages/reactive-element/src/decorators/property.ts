@@ -10,70 +10,169 @@
  * an @ExportDecoratedItems annotation must be defined as a regular function,
  * not an arrow function.
  */
-import {PropertyDeclaration, ReactiveElement} from '../reactive-element.js';
-import {ClassElement} from './base.js';
 
-const standardProperty = (
-  options: PropertyDeclaration,
-  element: ClassElement
-) => {
-  // When decorating an accessor, pass it through and add property metadata.
-  // Note, the `hasOwnProperty` check in `createProperty` ensures we don't
-  // stomp over the user's accessor.
-  if (
-    element.kind === 'method' &&
-    element.descriptor &&
-    !('value' in element.descriptor)
-  ) {
-    return {
-      ...element,
-      finisher(clazz: typeof ReactiveElement) {
-        clazz.createProperty(element.key, options);
-      },
-    };
-  } else {
-    // createProperty() takes care of defining the property, but we still
-    // must return some kind of descriptor, so return a descriptor for an
-    // unused prototype field. The finisher calls createProperty().
-    return {
-      kind: 'field',
-      key: Symbol(),
-      placement: 'own',
-      descriptor: {},
-      // store the original key so subsequent decorators have access to it.
-      originalKey: element.key,
-      // When @babel/plugin-proposal-decorators implements initializers,
-      // do this instead of the initializer below. See:
-      // https://github.com/babel/babel/issues/9260 extras: [
-      //   {
-      //     kind: 'initializer',
-      //     placement: 'own',
-      //     initializer: descriptor.initializer,
-      //   }
-      // ],
-      initializer(this: {[key: string]: unknown}) {
-        if (typeof element.initializer === 'function') {
-          this[element.key as string] = element.initializer.call(this);
-        }
-      },
-      finisher(clazz: typeof ReactiveElement) {
-        clazz.createProperty(element.key, options);
-      },
-    };
-  }
+import {
+  type PropertyDeclaration,
+  type ReactiveElement,
+  defaultConverter,
+  notEqual,
+} from '../reactive-element.js';
+import type {Interface} from './base.js';
+
+const DEV_MODE = true;
+
+let issueWarning: (code: string, warning: string) => void;
+
+if (DEV_MODE) {
+  // Ensure warnings are issued only 1x, even if multiple versions of Lit
+  // are loaded.
+  globalThis.litIssuedWarnings ??= new Set();
+
+  /**
+   * Issue a warning if we haven't already, based either on `code` or `warning`.
+   * Warnings are disabled automatically only by `warning`; disabling via `code`
+   * can be done by users.
+   */
+  issueWarning = (code: string, warning: string) => {
+    warning += ` See https://lit.dev/msg/${code} for more information.`;
+    if (
+      !globalThis.litIssuedWarnings!.has(warning) &&
+      !globalThis.litIssuedWarnings!.has(code)
+    ) {
+      console.warn(warning);
+      globalThis.litIssuedWarnings!.add(warning);
+    }
+  };
+}
+
+// Overloads for property decorator so that TypeScript can infer the correct
+// return type when a decorator is used as an accessor decorator or a setter
+// decorator.
+export type PropertyDecorator = {
+  // accessor decorator signature
+  <C extends Interface<ReactiveElement>, V>(
+    target: ClassAccessorDecoratorTarget<C, V>,
+    context: ClassAccessorDecoratorContext<C, V>
+  ): ClassAccessorDecoratorResult<C, V>;
+
+  // setter decorator signature
+  <C extends Interface<ReactiveElement>, V>(
+    target: (value: V) => void,
+    context: ClassSetterDecoratorContext<C, V>
+  ): (this: C, value: V) => void;
+
+  // legacy decorator signature
+  (
+    protoOrDescriptor: Object,
+    name: PropertyKey,
+    descriptor?: PropertyDescriptor
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any;
 };
 
 const legacyProperty = (
-  options: PropertyDeclaration,
+  options: PropertyDeclaration | undefined,
   proto: Object,
   name: PropertyKey
 ) => {
+  const hasOwnProperty = proto.hasOwnProperty(name);
   (proto.constructor as typeof ReactiveElement).createProperty(name, options);
+  // For accessors (which have a descriptor on the prototype) we need to
+  // return a descriptor, otherwise TypeScript overwrites the descriptor we
+  // define in createProperty() with the original descriptor. We don't do this
+  // for fields, which don't have a descriptor, because this could overwrite
+  // descriptor defined by other decorators.
+  return hasOwnProperty
+    ? Object.getOwnPropertyDescriptor(proto, name)
+    : undefined;
+};
+
+// This is duplicated from a similar variable in reactive-element.ts, but
+// actually makes sense to have this default defined with the decorator, so
+// that different decorators could have different defaults.
+const defaultPropertyDeclaration: PropertyDeclaration = {
+  attribute: true,
+  type: String,
+  converter: defaultConverter,
+  reflect: false,
+  hasChanged: notEqual,
+};
+
+// Temporary type, until google3 is on TypeScript 5.2
+type StandardPropertyContext<C, V> = (
+  | ClassAccessorDecoratorContext<C, V>
+  | ClassSetterDecoratorContext<C, V>
+) & {metadata: object};
+
+/**
+ * Wraps a class accessor or setter so that `requestUpdate()` is called with the
+ * property name and old value when the accessor is set.
+ */
+export const standardProperty = <C extends Interface<ReactiveElement>, V>(
+  options: PropertyDeclaration = defaultPropertyDeclaration,
+  target: ClassAccessorDecoratorTarget<C, V> | ((value: V) => void),
+  context: StandardPropertyContext<C, V>
+): ClassAccessorDecoratorResult<C, V> | ((this: C, value: V) => void) => {
+  const {kind, metadata} = context;
+
+  if (DEV_MODE && metadata == null) {
+    issueWarning(
+      'missing-class-metadata',
+      `The class ${target} is missing decorator metadata. This ` +
+        `could mean that you're using a compiler that supports decorators ` +
+        `but doesn't support decorator metadata, such as TypeScript 5.1. ` +
+        `Please update your compiler.`
+    );
+  }
+
+  // Store the property options
+  let properties = globalThis.litPropertyMetadata.get(metadata);
+  if (properties === undefined) {
+    globalThis.litPropertyMetadata.set(metadata, (properties = new Map()));
+  }
+  if (kind === 'setter') {
+    options = Object.create(options);
+    options.wrapped = true;
+  }
+  properties.set(context.name, options);
+
+  if (kind === 'accessor') {
+    // Standard decorators cannot dynamically modify the class, so we can't
+    // replace a field with accessors. The user must use the new `accessor`
+    // keyword instead.
+    const {name} = context;
+    return {
+      set(this: ReactiveElement, v: V) {
+        const oldValue = (
+          target as ClassAccessorDecoratorTarget<C, V>
+        ).get.call(this as unknown as C);
+        (target as ClassAccessorDecoratorTarget<C, V>).set.call(
+          this as unknown as C,
+          v
+        );
+        this.requestUpdate(name, oldValue, options, true, v);
+      },
+      init(this: ReactiveElement, v: V): V {
+        if (v !== undefined) {
+          this._$changeProperty(name, undefined, options, v);
+        }
+        return v;
+      },
+    } as unknown as ClassAccessorDecoratorResult<C, V>;
+  } else if (kind === 'setter') {
+    const {name} = context;
+    return function (this: ReactiveElement, value: V) {
+      const oldValue = this[name as keyof ReactiveElement];
+      (target as (value: V) => void).call(this, value);
+      this.requestUpdate(name, oldValue, options, true, value);
+    } as unknown as (this: C, value: V) => void;
+  }
+  throw new Error(`Unsupported decorator location: ${kind}`);
 };
 
 /**
- * A property decorator which creates a reactive property that reflects a
- * corresponding attribute value. When a decorated property is set
+ * A class field or accessor decorator which creates a reactive property that
+ * reflects a corresponding attribute value. When a decorated property is set
  * the element will update and render. A {@linkcode PropertyDeclaration} may
  * optionally be supplied to configure property features.
  *
@@ -103,10 +202,32 @@ const legacyProperty = (
  * @category Decorator
  * @ExportDecoratedItems
  */
-export function property(options?: PropertyDeclaration) {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return (protoOrDescriptor: Object | ClassElement, name?: PropertyKey): any =>
-    name !== undefined
-      ? legacyProperty(options!, protoOrDescriptor as Object, name)
-      : standardProperty(options!, protoOrDescriptor as ClassElement);
+export function property(options?: PropertyDeclaration): PropertyDecorator {
+  return <C extends Interface<ReactiveElement>, V>(
+    protoOrTarget:
+      | object
+      | ClassAccessorDecoratorTarget<C, V>
+      | ((value: V) => void),
+    nameOrContext:
+      | PropertyKey
+      | ClassAccessorDecoratorContext<C, V>
+      | ClassSetterDecoratorContext<C, V>
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ): any => {
+    return (
+      typeof nameOrContext === 'object'
+        ? standardProperty<C, V>(
+            options,
+            protoOrTarget as
+              | ClassAccessorDecoratorTarget<C, V>
+              | ((value: V) => void),
+            nameOrContext as StandardPropertyContext<C, V>
+          )
+        : legacyProperty(
+            options,
+            protoOrTarget as Object,
+            nameOrContext as PropertyKey
+          )
+    ) as PropertyDecorator;
+  };
 }

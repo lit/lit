@@ -6,10 +6,12 @@
 
 import {isCustomElement} from '../utils.js';
 import {renderCustomElement} from './render-custom-element.js';
+import {collectResultSync} from '@lit-labs/ssr/lib/render-result.js';
 
 import type {
   createElement as ReactCreateElement,
   ElementType,
+  PropsWithChildren,
   ReactElement,
   ReactNode,
 } from 'react';
@@ -23,9 +25,9 @@ export function wrapCreateElement(
   // non-React alternatives like preact?
   originalCreateElement: typeof ReactCreateElement
 ) {
-  return function createElement<P extends {}>(
+  return function litPatchedCreateElement<P>(
     type: ElementType<P>,
-    props: P,
+    props: PropsWithChildren<P> | null,
     ...children: ReactNode[]
   ): ReactElement {
     if (isCustomElement(type)) {
@@ -36,18 +38,31 @@ export function wrapCreateElement(
         const templateShadowRoot = originalCreateElement('template', {
           ...templateAttributes,
           dangerouslySetInnerHTML: {
-            __html: [...shadowContents].join(''),
+            __html: collectResultSync(shadowContents),
           },
         });
+
+        const newChildren: ReactNode[] = [templateShadowRoot];
+        // React.createElement prefers children arguments over props.children
+        // https://github.com/facebook/react/blob/v18.2.0/packages/react/src/ReactElement.js#L401-L417
+        if (children.length > 0) {
+          newChildren.push(...children);
+        } else if (Array.isArray(props?.children)) {
+          newChildren.push(...props!.children);
+        } else if (props?.children !== undefined) {
+          newChildren.push(props.children);
+        }
 
         return originalCreateElement(
           type,
           {...props, ...elementAttributes},
-          templateShadowRoot,
-          ...children
+          ...newChildren
         );
       }
     }
-    return originalCreateElement(type, props, ...children);
+    // The types here are complex, but the important thing is just that we're
+    // passing through the arguments to the original createElement function.
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    return originalCreateElement(type as any, props, ...children);
   };
 }

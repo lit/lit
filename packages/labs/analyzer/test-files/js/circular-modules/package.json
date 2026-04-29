@@ -1,0 +1,9 @@
+{
+  "name": "@lit-internal/test-circular",
+  "exports": {
+    "./sub-a.js": "./sub-a.js"
+  },
+  "dependencies": {
+    "lit": "^2.0.0"
+  }
+}

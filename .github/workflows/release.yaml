@@ -5,32 +5,44 @@ on:
     branches:
       - main
 
+permissions:
+  contents: read
+
 jobs:
   release:
     # Don't run on forks. We can and should only release from the main repo.
+    permissions:
+      contents: write # for Git to git push
+      pull-requests: write # to allow creating PR
+      id-token: write # for npm provenance
+
     if: github.repository == 'lit/lit'
 
     name: Release
     environment: Changesets
     runs-on: ubuntu-latest
+    env:
+      WIREIT_LOGGER: quiet-ci
     steps:
       - name: Use Lit Robot's name and email for all git actions
         run: |
           git config --global user.name "Lit Robot"
           git config --global user.email "lit-robot@google.com"
 
-      - name: Setup Node.js 16
-        uses: actions/setup-node@v2
-        with:
-          node-version: 16
-
       - name: Checkout Lit Repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           path: lit
           # This makes Actions fetch all Git history so that Changesets can
           # generate changelogs with the correct commits
           fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 24.5
+          cache: 'npm'
+          cache-dependency-path: lit/package-lock.json
 
       - name: Install Dependencies
         working-directory: lit
@@ -42,7 +54,9 @@ jobs:
         # run, and its output will appear in the raw logs). Unknown why this is the case,
         # see https://github.com/changesets/action/issues/149 for discussion.
         id: cs
-        uses: changesets/action@v1
+        # Pinning to v1.5.1 as v1.5.2 introduced a bug with sub directories
+        # See https://github.com/changesets/action/issues/501
+        uses: changesets/action@v1.5.1
         with:
           # The `working-directory` option is only available for steps that use
           # `run`. This `cwd` option is the same, but specific to this action.
@@ -56,9 +70,10 @@ jobs:
           HUSKY: 0
           GITHUB_TOKEN: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
           NPM_TOKEN: ${{ secrets.LIT_ROBOT_NPM_PUBLISH_ACCESS_TOKEN }}
+          NPM_CONFIG_PROVENANCE: true
 
       - name: Checkout dist repo
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         # GitHub Actions outputs are strings and the string 'false' converts to
         # `true` because it isn't the empty string.
         if: steps.cs.outputs.published == 'true'

@@ -5,7 +5,6 @@
  */
 
 export {Analyzer} from './lib/analyzer.js';
-export {createPackageAnalyzer} from './lib/analyze-package.js';
 
 export type {
   Package,
@@ -21,6 +20,7 @@ export type {
   Parameter,
   Return,
   LitElementDeclaration,
+  MixinDeclaration,
   CustomElementDeclaration,
   LitElementExport,
   PackageJson,

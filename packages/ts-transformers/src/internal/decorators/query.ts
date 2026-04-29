@@ -86,7 +86,6 @@ export class QueryVisitor implements MemberDecoratorVisitor {
     );
     return factory.createGetAccessorDeclaration(
       undefined,
-      undefined,
       factory.createIdentifier(name),
       [],
       undefined,

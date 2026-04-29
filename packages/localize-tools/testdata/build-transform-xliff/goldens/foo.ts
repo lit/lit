@@ -86,3 +86,7 @@ html`Hello <b foo=${msg('World')}>World</b>`;
 html`<b foo=${msg('Hello')}>Hello</b><b bar=${msg('World')}>World</b>`;
 html`Hello <b .foo=${'World'}>World</b>`;
 html`Hello <b .foo=${msg('World')}>World</b>`;
+
+// Placeholder in translation has different expression
+msg(str`Different ${user}`);
+msg(html`Different <b>${user}</b>`);

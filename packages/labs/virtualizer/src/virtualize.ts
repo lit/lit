@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {TemplateResult, ChildPart, html} from 'lit';
+import {TemplateResult, ChildPart, html, noChange} from 'lit';
 import {directive, DirectiveResult, PartInfo, PartType} from 'lit/directive.js';
 import {AsyncDirective} from 'lit/async-directive.js';
 import {repeat, KeyFn} from 'lit/directives/repeat.js';
@@ -72,14 +72,9 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
       this._setFunctions(config);
     }
     const itemsToRender: Array<T> = [];
-    // TODO (graynorton): Is this the best / only place to ensure
-    // that _last isn't outside the current bounds of the items array?
-    // Not sure we should ever arrive here with it out of bounds.
-    // Repro case for original issue: https://tinyurl.com/yes8b2e6
-    const lastItem = Math.min(this._items.length, this._last + 1);
 
     if (this._first >= 0 && this._last >= this._first) {
-      for (let i = this._first; i < lastItem; i++) {
+      for (let i = this._first; i <= this._last; i++) {
         itemsToRender.push(this._items[i]);
       }
     }
@@ -88,13 +83,14 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
 
   update(part: ChildPart, [config]: [VirtualizeDirectiveConfig<T>]) {
     this._setFunctions(config);
+    const itemsChanged = this._items !== config.items;
     this._items = config.items || [];
     if (this._virtualizer) {
       this._updateVirtualizerConfig(part, config);
     } else {
       this._initialize(part, config);
     }
-    return this.render();
+    return itemsChanged ? noChange : this.render();
   }
 
   private async _updateVirtualizerConfig(
@@ -131,7 +127,7 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     const {layout, scroller, items} = config;
     this._virtualizer = new Virtualizer({hostElement, layout, scroller});
     this._virtualizer.items = items;
-    this._virtualizer!.connected();
+    this._virtualizer.connected();
   }
 
   private _initialize(part: ChildPart, config: VirtualizeDirectiveConfig<T>) {

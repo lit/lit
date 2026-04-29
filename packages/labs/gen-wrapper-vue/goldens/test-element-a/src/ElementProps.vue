@@ -32,15 +32,15 @@ const emit = defineEmits<{
   (e: 'a-changed', payload: CustomEvent<unknown>): void;
 }>();
 
-const slots = useSlots();
+const slots = useSlots() as Slots;
 
 const render = () => {
   const eventProps = {
     onAChanged: (event: CustomEvent<unknown>) =>
       emit('a-changed', event as CustomEvent<unknown>),
   };
-
   const props = eventProps as typeof eventProps & Props;
+
   for (const p in vueProps) {
     const v = vueProps[p as keyof Props];
     if (v !== undefined || hasRendered) {
@@ -50,7 +50,7 @@ const render = () => {
 
   hasRendered = true;
 
-  return h('element-props', props, assignSlotNodes(slots as Slots));
+  return h('element-props', props, assignSlotNodes(slots));
 };
 </script>
 <template><render v-defaults /></template>

@@ -4,11 +4,13 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import ts from 'typescript';
+import type ts from 'typescript';
 import {AbsolutePath, PackagePath} from './paths.js';
 
 import {IPackageJson as PackageJson} from 'package-json-type';
 export {PackageJson};
+
+export type TypeScript = typeof ts;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Constructor<T> = new (...args: any[]) => T;
@@ -272,6 +274,7 @@ export class Module {
 
 interface DeclarationInit extends DeprecatableDescribed {
   name: string;
+  node: ts.Node;
 }
 
 export abstract class Declaration {
@@ -279,30 +282,44 @@ export abstract class Declaration {
   readonly description?: string | undefined;
   readonly summary?: string | undefined;
   readonly deprecated?: string | boolean | undefined;
+  readonly node: ts.Node;
+
   constructor(init: DeclarationInit) {
     this.name = init.name;
     this.description = init.description;
     this.summary = init.summary;
     this.deprecated = init.deprecated;
+    this.node = init.node;
   }
+
   isVariableDeclaration(): this is VariableDeclaration {
     return this instanceof VariableDeclaration;
   }
+
   isClassDeclaration(): this is ClassDeclaration {
     return this instanceof ClassDeclaration;
   }
+
   isLitElementDeclaration(): this is LitElementDeclaration {
     return this instanceof LitElementDeclaration;
   }
+
   isFunctionDeclaration(): this is FunctionDeclaration {
     return this instanceof FunctionDeclaration;
   }
+
+  isMixinDeclaration(): this is MixinDeclaration {
+    return this instanceof MixinDeclaration;
+  }
+
   isClassField(): this is ClassField {
     return this instanceof ClassField;
   }
+
   isClassMethod(): this is ClassMethod {
     return this instanceof ClassMethod;
   }
+
   isCustomElementDeclaration(): this is CustomElementDeclaration {
     return this instanceof CustomElementDeclaration;
   }
@@ -314,31 +331,48 @@ export interface VariableDeclarationInit extends DeclarationInit {
 }
 
 export class VariableDeclaration extends Declaration {
-  readonly node:
+  readonly type: Type | undefined;
+  declare readonly node:
     | ts.VariableDeclaration
     | ts.ExportAssignment
     | ts.EnumDeclaration;
-  readonly type: Type | undefined;
+
   constructor(init: VariableDeclarationInit) {
     super(init);
-    this.node = init.node;
     this.type = init.type;
   }
 }
 
-export interface FunctionLikeInit extends DeprecatableDescribed {
+export interface FunctionLikeInit extends DeclarationInit {
   name: string;
   parameters?: Parameter[] | undefined;
   return?: Return | undefined;
+  overloads?: FunctionOverloadDeclaration[] | undefined;
+  node: ts.FunctionLikeDeclaration;
 }
 
 export class FunctionDeclaration extends Declaration {
   parameters?: Parameter[] | undefined;
   return?: Return | undefined;
+  overloads?: FunctionOverloadDeclaration[] | undefined;
+  declare readonly node: ts.FunctionLikeDeclaration;
+
   constructor(init: FunctionLikeInit) {
     super(init);
     this.parameters = init.parameters;
     this.return = init.return;
+    this.overloads = init.overloads;
+  }
+}
+
+export interface FunctionLikeOverloadInit extends FunctionLikeInit {
+  overloads?: undefined;
+}
+
+export class FunctionOverloadDeclaration extends FunctionDeclaration {
+  override overloads: undefined;
+  constructor(init: FunctionLikeOverloadInit) {
+    super(init);
   }
 }
 
@@ -353,6 +387,7 @@ export interface ClassMethodInit extends FunctionLikeInit {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  node: ts.MethodDeclaration;
 }
 
 export class ClassMethod extends FunctionDeclaration {
@@ -360,20 +395,28 @@ export class ClassMethod extends FunctionDeclaration {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  override readonly node: ts.MethodDeclaration;
+
   constructor(init: ClassMethodInit) {
     super(init);
     this.static = init.static;
     this.privacy = init.privacy;
     this.inheritedFrom = init.inheritedFrom;
     this.source = init.source;
+    this.node = init.node;
   }
 }
 
-export interface ClassFieldInit extends PropertyLike {
+export interface ClassFieldInit extends DeclarationInit, PropertyLike {
   static?: boolean | undefined;
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  readonly?: boolean | undefined;
+  node:
+    | ts.PropertyDeclaration
+    | ts.AssignmentExpression<ts.EqualsToken>
+    | ts.AccessorDeclaration;
 }
 
 export class ClassField extends Declaration {
@@ -381,8 +424,14 @@ export class ClassField extends Declaration {
   privacy?: Privacy | undefined;
   inheritedFrom?: Reference | undefined;
   source?: SourceReference | undefined;
+  readonly?: boolean | undefined;
   type?: Type | undefined;
   default?: string | undefined;
+  declare node:
+    | ts.PropertyDeclaration
+    | ts.AssignmentExpression<ts.EqualsToken>
+    | ts.AccessorDeclaration;
+
   constructor(init: ClassFieldInit) {
     super(init);
     this.static = init.static;
@@ -391,6 +440,7 @@ export class ClassField extends Declaration {
     this.source = init.source;
     this.type = init.type;
     this.default = init.default;
+    this.readonly = init.readonly;
   }
 }
 
@@ -400,7 +450,7 @@ export type ClassHeritage = {
 };
 
 export interface ClassDeclarationInit extends DeclarationInit {
-  node: ts.ClassDeclaration;
+  node: ts.ClassDeclaration | ts.ClassLikeDeclaration | ts.CallExpression;
   getHeritage: () => ClassHeritage;
   fieldMap?: Map<string, ClassField> | undefined;
   staticFieldMap?: Map<string, ClassField> | undefined;
@@ -409,13 +459,13 @@ export interface ClassDeclarationInit extends DeclarationInit {
 }
 
 export class ClassDeclaration extends Declaration {
-  readonly node: ts.ClassDeclaration;
   private _getHeritage: () => ClassHeritage;
   private _heritage: ClassHeritage | undefined = undefined;
   readonly _fieldMap: Map<string, ClassField>;
   readonly _staticFieldMap: Map<string, ClassField>;
   readonly _methodMap: Map<string, ClassMethod>;
   readonly _staticMethodMap: Map<string, ClassMethod>;
+  override readonly node: ts.ClassLikeDeclaration | ts.CallExpression;
 
   constructor(init: ClassDeclarationInit) {
     super(init);
@@ -513,6 +563,21 @@ export class ClassDeclaration extends Declaration {
   }
 }
 
+export interface MixinDeclarationInit extends FunctionLikeInit {
+  classDeclaration: ClassDeclaration;
+  superClassArgIndex: number;
+}
+
+export class MixinDeclaration extends FunctionDeclaration {
+  readonly classDeclaration: ClassDeclaration;
+  readonly superClassArgIndex: number;
+  constructor(init: MixinDeclarationInit) {
+    super(init);
+    this.classDeclaration = init.classDeclaration;
+    this.superClassArgIndex = init.superClassArgIndex;
+  }
+}
+
 export interface Described {
   description?: string | undefined;
   summary?: string | undefined;
@@ -520,6 +585,11 @@ export interface Described {
 
 export interface NamedDescribed extends Described {
   name: string;
+  default?: string;
+}
+
+export interface CSSPropertyInfo extends NamedDescribed {
+  syntax?: string;
 }
 
 export interface TypedNamedDescribed extends NamedDescribed {
@@ -534,7 +604,7 @@ interface CustomElementDeclarationInit extends ClassDeclarationInit {
   tagname: string | undefined;
   events: Map<string, Event>;
   slots: Map<string, NamedDescribed>;
-  cssProperties: Map<string, NamedDescribed>;
+  cssProperties: Map<string, CSSPropertyInfo>;
   cssParts: Map<string, NamedDescribed>;
 }
 
@@ -555,7 +625,7 @@ export class CustomElementDeclaration extends ClassDeclaration {
   readonly tagname: string | undefined;
   readonly events: Map<string, Event>;
   readonly slots: Map<string, NamedDescribed>;
-  readonly cssProperties: Map<string, NamedDescribed>;
+  readonly cssProperties: Map<string, CSSPropertyInfo>;
   readonly cssParts: Map<string, NamedDescribed>;
 
   constructor(init: CustomElementDeclarationInit) {
@@ -586,6 +656,7 @@ export interface LitElementExport extends LitElementDeclaration {
 
 export interface PropertyLike extends DeprecatableDescribed {
   name: string;
+  node: ts.Node;
   type: Type | undefined;
   default?: string | undefined;
 }
@@ -597,11 +668,23 @@ export interface Return {
 }
 
 export interface Parameter extends PropertyLike {
+  node: ts.ParameterDeclaration;
   optional?: boolean | undefined;
   rest?: boolean | undefined;
 }
 
 export interface ReactiveProperty extends PropertyLike {
+  /**
+   * The property declaration.
+   *
+   * A ts.PropertyDeclaration if the property was declared as a class field,
+   * or a ts.PropertyAssignment if the property was declared in a static
+   * properties block.
+   */
+  node: ts.PropertyDeclaration | ts.PropertyAssignment;
+
+  optionsNode: ts.ObjectLiteralExpression | undefined;
+
   reflect: boolean;
 
   // TODO(justinfagnani): should we convert into attribute name?
@@ -736,6 +819,7 @@ export const getImportsStringForReferences = (references: Reference[]) => {
 
 export interface AnalyzerInterface {
   moduleCache: Map<AbsolutePath, Module>;
+  typescript: TypeScript;
   program: ts.Program;
   commandLine: ts.ParsedCommandLine;
   fs: Pick<
@@ -756,7 +840,11 @@ export interface AnalyzerInterface {
     | 'parse'
     | 'normalize'
     | 'isAbsolute'
+    | 'sep'
   >;
+
+  addDiagnostic(diagnostic: ts.Diagnostic): void;
+  getDiagnostics(): IterableIterator<ts.Diagnostic>;
 }
 
 /**
@@ -764,6 +852,7 @@ export interface AnalyzerInterface {
  */
 export type DeclarationInfo = {
   name: string;
+  node: ts.Node;
   factory: () => Declaration;
   isExport?: boolean;
 };

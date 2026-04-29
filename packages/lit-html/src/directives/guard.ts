@@ -5,15 +5,20 @@
  */
 
 import {noChange, Part} from '../lit-html.js';
-import {directive, Directive, DirectiveParameters} from '../directive.js';
+import {
+  directive,
+  Directive,
+  DirectiveParameters,
+  DirectiveResult,
+} from '../directive.js';
 
 // A sentinel that indicates guard() hasn't rendered anything yet
 const initialValue = {};
 
-class GuardDirective extends Directive {
+class GuardDirective<T> extends Directive {
   private _previousValue: unknown = initialValue;
 
-  render(_value: unknown, f: () => unknown) {
+  render(_value: unknown, f: () => T): T {
     return f();
   }
 
@@ -38,6 +43,10 @@ class GuardDirective extends Directive {
     const r = this.render(value, f);
     return r;
   }
+}
+
+interface Guard {
+  <T>(vals: unknown[], f: () => T): DirectiveResult<typeof GuardDirective<T>>;
 }
 
 /**
@@ -81,7 +90,7 @@ class GuardDirective extends Directive {
  * @param value the value to check before re-rendering
  * @param f the template function
  */
-export const guard = directive(GuardDirective);
+export const guard: Guard = directive(GuardDirective);
 
 /**
  * The type of the class that powers this directive. Necessary for naming the

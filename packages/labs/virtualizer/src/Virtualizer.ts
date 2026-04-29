@@ -34,7 +34,8 @@ import {ScrollerController} from './ScrollerController.js';
 // polyfill in the package; this bit of module state facilitates
 // a simple mechanism (see ./polyfillLoaders/ResizeObserver.js.)
 // for loading the polyfill.
-let _ResizeObserver: typeof ResizeObserver | undefined = window?.ResizeObserver;
+let _ResizeObserver: typeof ResizeObserver | undefined =
+  typeof window !== 'undefined' ? window.ResizeObserver : undefined;
 
 /**
  * Call this function to provide a `ResizeObserver` polyfill for Virtualizer to use.
@@ -126,7 +127,7 @@ export class Virtualizer {
   // TODO: (graynorton): type
   private _childMeasurements: ChildMeasurements | null = null;
 
-  private _toBeMeasured: Map<HTMLElement, unknown> = new Map();
+  private _toBeMeasured = new Map<HTMLElement, unknown>();
 
   private _rangeChanged = true;
 
@@ -203,7 +204,7 @@ export class Virtualizer {
    */
   private _lastVisible = -1;
 
-  protected _scheduled = new WeakSet();
+  protected _scheduled = new WeakSet<Function>();
 
   /**
    * Invoked at the end of each render cycle: children in the range are
@@ -229,6 +230,11 @@ export class Virtualizer {
    * whether init is complete.
    */
   private _layoutInitialized: Promise<void> | null = null;
+
+  /**
+   * Track connection state to guard against errors / unnecessary work
+   */
+  private _connected = false;
 
   constructor(config: VirtualizerConfig) {
     if (!config) {
@@ -298,6 +304,7 @@ export class Virtualizer {
 
     this._schedule(this._updateLayout);
     this._observeAndListen();
+    this._connected = true;
   }
 
   _observeAndListen() {
@@ -331,11 +338,16 @@ export class Virtualizer {
     );
     this._scrollEventListeners = [];
     this._clippingAncestors = [];
-    this._scrollerController = this._scrollerController!.detach(this) || null;
-    this._mutationObserver!.disconnect();
-    this._hostElementRO!.disconnect();
-    this._childrenRO!.disconnect();
+    this._scrollerController?.detach(this);
+    this._scrollerController = null;
+    this._mutationObserver?.disconnect();
+    this._mutationObserver = null;
+    this._hostElementRO?.disconnect();
+    this._hostElementRO = null;
+    this._childrenRO?.disconnect();
+    this._childrenRO = null;
     this._rejectLayoutCompletePromise('disconnected');
+    this._connected = false;
   }
 
   private _applyVirtualizerStyles() {
@@ -377,7 +389,7 @@ export class Virtualizer {
         visibility: 'hidden',
         fontSize: '2px',
       });
-      sizer.innerHTML = '&nbsp;';
+      sizer.textContent = '&nbsp;';
       sizer.setAttribute(SIZER_ATTRIBUTE, '');
       this._sizer = sizer;
     }
@@ -533,25 +545,27 @@ export class Virtualizer {
     if (_rangeChanged || _itemsChanged) {
       this._notifyRange();
       this._rangeChanged = false;
-    } else {
-      this._finishDOMUpdate();
     }
+    this._finishDOMUpdate();
   }
 
   _finishDOMUpdate() {
-    this._children.forEach((child) => this._childrenRO!.observe(child));
-    this._checkScrollIntoViewTarget(this._childrenPos);
-    this._positionChildren(this._childrenPos);
-    this._sizeHostElement(this._scrollSize);
-    this._correctScrollError();
-    if (this._benchmarkStart && 'mark' in window.performance) {
-      window.performance.mark('uv-end');
+    if (this._connected) {
+      // _childrenRO should be non-null if we're connected
+      this._children.forEach((child) => this._childrenRO!.observe(child));
+      this._checkScrollIntoViewTarget(this._childrenPos);
+      this._positionChildren(this._childrenPos);
+      this._sizeHostElement(this._scrollSize);
+      this._correctScrollError();
+      if (this._benchmarkStart && 'mark' in window.performance) {
+        window.performance.mark('uv-end');
+      }
     }
   }
 
   _updateLayout() {
-    if (this._layout) {
-      this._layout!.items = this._items;
+    if (this._layout && this._connected) {
+      this._layout.items = this._items;
       this._updateView();
       if (this._childMeasurements !== null) {
         // If the layout has been changed, we may have measurements but no callback
@@ -560,7 +574,7 @@ export class Virtualizer {
         }
         this._childMeasurements = null;
       }
-      this._layout!.reflowIfNeeded();
+      this._layout.reflowIfNeeded();
       if (this._benchmarkStart && 'mark' in window.performance) {
         window.performance.mark('uv-end');
       }
@@ -601,13 +615,17 @@ export class Virtualizer {
   _handleLayoutMessage(message: LayoutHostMessage) {
     if (message.type === 'stateChanged') {
       this._updateDOM(message);
+    } else if (message.type === 'visibilityChanged') {
+      this._firstVisible = message.firstVisible;
+      this._lastVisible = message.lastVisible;
+      this._notifyVisibility();
     } else if (message.type === 'unpinned') {
       this._hostElement!.dispatchEvent(new UnpinnedEvent());
     }
   }
 
   get _children(): Array<HTMLElement> {
-    const arr = [];
+    const arr: Array<HTMLElement> = [];
     let next = this._hostElement!.firstElementChild as HTMLElement;
     while (next) {
       if (!next.hasAttribute(SIZER_ATTRIBUTE)) {
@@ -660,8 +678,8 @@ export class Virtualizer {
       const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
       const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
 
-      const height = Math.max(1, bottom - top);
-      const width = Math.max(1, right - left);
+      const height = Math.max(0, bottom - top);
+      const width = Math.max(0, right - left);
 
       layout.viewportSize = {width, height};
       layout.viewportScroll = {top: scrollTop, left: scrollLeft};
@@ -817,12 +835,12 @@ export class Virtualizer {
         this._layoutCompleteRejecter = reject;
       });
     }
-    return this._layoutCompletePromise!;
+    return this._layoutCompletePromise;
   }
 
   private _rejectLayoutCompletePromise(reason: string) {
     if (this._layoutCompleteRejecter !== null) {
-      this._layoutCompleteRejecter!(reason);
+      this._layoutCompleteRejecter(reason);
     }
     this._resetLayoutCompleteState();
   }
@@ -874,7 +892,7 @@ export class Virtualizer {
   // the virtualizer update cycle.
   private _childrenSizeChanged(changes: ResizeObserverEntry[]) {
     // Only measure if the layout requires it
-    if (this._layout!.measureChildren) {
+    if (this._layout?.measureChildren) {
       for (const change of changes) {
         this._toBeMeasured.set(
           change.target as HTMLElement,
@@ -926,7 +944,7 @@ function getParentElement(el: Element) {
 ///
 
 function getElementAncestors(el: HTMLElement, includeSelf = false) {
-  const ancestors = [];
+  const ancestors: Array<HTMLElement> = [];
   let parent = includeSelf ? el : (getParentElement(el) as HTMLElement);
   while (parent !== null) {
     ancestors.push(parent);
@@ -936,7 +954,13 @@ function getElementAncestors(el: HTMLElement, includeSelf = false) {
 }
 
 function getClippingAncestors(el: HTMLElement, includeSelf = false) {
-  return getElementAncestors(el, includeSelf).filter(
-    (a) => getComputedStyle(a).overflow !== 'visible'
-  );
+  let foundFixed = false;
+  return getElementAncestors(el, includeSelf).filter((a) => {
+    if (foundFixed) {
+      return false;
+    }
+    const style = getComputedStyle(a);
+    foundFixed = style.position === 'fixed';
+    return style.overflow !== 'visible';
+  });
 }

@@ -1,14 +1,17 @@
 {
-  "private": true,
   "name": "@lit-labs/gen-manifest",
   "description": "Code generator for generating Custom Elements Manifests for Lit components",
-  "version": "0.1.0",
+  "version": "0.3.5",
   "author": "Google LLC",
   "license": "BSD-3-Clause",
   "bugs": "https://github.com/lit/lit/issues",
   "type": "module",
-  "main": "lib/index.js",
-  "repository": "lit/lit",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/gen-manifest"
+  },
   "scripts": {
     "build": "wireit",
     "test": "wireit",
@@ -20,7 +23,8 @@
       "dependencies": [
         "../../tests:build",
         "../analyzer:build",
-        "../gen-utils:build"
+        "../gen-utils:build",
+        "../../lit:build"
       ],
       "files": [
         "src/**/*",
@@ -48,20 +52,24 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.5.0",
-    "@lit-labs/gen-utils": "^0.2.0",
+    "@lit-labs/analyzer": "^0.14.0",
+    "@lit-labs/gen-utils": "^0.3.0",
     "custom-elements-manifest": "^2.0.0"
   },
   "devDependencies": {
-    "@types/node": "^17.0.31",
-    "@lit-internal/tests": "^0.0.0",
+    "@lit-internal/tests": "^0.0.1",
+    "@types/node": "^22.17.0",
+    "lit": "^3.2.0",
     "uvu": "^0.5.3"
   },
   "engines": {
     "node": ">=14.8.0"
   },
   "files": [
-    "index.js"
+    "index.js",
+    "index.map.js",
+    "index.d.ts",
+    "index.d.ts.map"
   ],
   "homepage": "https://github.com/lit/lit",
   "keywords": [

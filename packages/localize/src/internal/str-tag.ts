@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {TemplateLike} from './types';
+import type {TemplateLike} from './types.js';
 
 export interface StrResult {
   strTag: true;

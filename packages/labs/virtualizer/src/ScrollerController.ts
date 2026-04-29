@@ -8,10 +8,11 @@ import {ScrollToCoordinates} from './layouts/shared/Layout.js';
 
 type retargetScrollCallback = () => ScrollToCoordinates;
 type endScrollCallback = () => void;
+type Nullable<T> = T | null;
 
 export class ScrollerShim {
-  protected _node: Element | Window | null = null;
-  protected _element: Element | null = null;
+  protected _node: Element | Window;
+  protected _element: Nullable<Element> = null;
 
   constructor(element?: Element) {
     const node = element ?? window;
@@ -65,42 +66,34 @@ export class ScrollerShim {
 }
 
 export class ScrollerController extends ScrollerShim {
-  private static _instanceMap: WeakMap<Element | Window, ScrollerController> =
-    new WeakMap();
   private _originalScrollTo:
     | typeof Element.prototype.scrollTo
-    | typeof window.scrollTo
-    | null = null;
+    | typeof window.scrollTo;
   private _originalScrollBy:
     | typeof Element.prototype.scrollBy
-    | typeof window.scrollBy
-    | null = null;
+    | typeof window.scrollBy;
   private _originalScroll:
     | typeof Element.prototype.scroll
-    | typeof window.scroll
-    | null = null;
-  private _clients: Array<unknown> = [];
-  private _retarget: retargetScrollCallback | null = null;
-  private _end: endScrollCallback | null = null;
-  private __destination: ScrollToOptions | null = null;
+    | typeof window.scroll;
+  private _clients = new Set<unknown>();
+  private _retarget: Nullable<retargetScrollCallback> = null;
+  private _end: Nullable<endScrollCallback> = null;
+  private __destination: Nullable<ScrollToOptions> = null;
 
   constructor(client: unknown, element?: Element) {
     super(element);
-    const node = this._node!;
-    const instance = ScrollerController._instanceMap.get(node!);
-    if (instance) {
-      instance._attach(client);
-      return instance;
-    } else {
-      this._checkForArrival = this._checkForArrival.bind(this);
-      this._updateManagedScrollTo = this._updateManagedScrollTo.bind(this);
-      this.scrollTo = this.scrollTo.bind(this);
-      this.scrollBy = this.scrollBy.bind(this);
-      this._originalScrollTo = node.scrollTo;
-      this._originalScrollBy = node.scrollBy;
-      this._originalScroll = node.scroll;
-      this._attach(client);
-    }
+
+    this._checkForArrival = this._checkForArrival.bind(this);
+    this._updateManagedScrollTo = this._updateManagedScrollTo.bind(this);
+    this.scrollTo = this.scrollTo.bind(this);
+    this.scrollBy = this.scrollBy.bind(this);
+
+    const node = this._node;
+
+    this._originalScrollTo = node.scrollTo;
+    this._originalScrollBy = node.scrollBy;
+    this._originalScroll = node.scroll;
+    this._attach(client);
   }
 
   public correctingScrollError = false;
@@ -244,23 +237,33 @@ export class ScrollerController extends ScrollerShim {
   }
 
   public detach(client: unknown) {
-    this._clients = this._clients.splice(this._clients.indexOf(client), 1);
-    if (this._clients.length === 0) {
-      this._node!.scrollTo = this._originalScrollTo!;
-      this._node!.scrollBy = this._originalScrollBy!;
-      this._node!.scroll = this._originalScroll!;
-      this._node!.removeEventListener('scroll', this._checkForArrival);
+    this._clients.delete(client);
+
+    /**
+     * If there aren't any more clients, then return the node's default
+     * scrolling methods
+     */
+    if (this._clients.size === 0) {
+      this._node.scrollTo = this._originalScrollTo;
+      this._node.scrollBy = this._originalScrollBy;
+      this._node.scroll = this._originalScroll;
+      this._node.removeEventListener('scroll', this._checkForArrival);
     }
     return null;
   }
 
   private _attach(client: unknown) {
-    this._clients.push(client);
-    if (this._clients.length === 1) {
-      this._node!.scrollTo = this.scrollTo;
-      this._node!.scrollBy = this.scrollBy;
-      this._node!.scroll = this.scrollTo;
-      this._node!.addEventListener('scroll', this._checkForArrival);
+    this._clients.add(client);
+
+    /**
+     * The node should only have the methods shimmed when adding the first
+     * client – otherwise it's redundant
+     */
+    if (this._clients.size === 1) {
+      this._node.scrollTo = this.scrollTo;
+      this._node.scrollBy = this.scrollBy;
+      this._node.scroll = this.scrollTo;
+      this._node.addEventListener('scroll', this._checkForArrival);
     }
   }
 }

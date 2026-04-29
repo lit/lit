@@ -1,0 +1,37 @@
+// See https://go.microsoft.com/fwlink/?LinkId=733558
+// for the documentation about the tasks.json format
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "build-vscode-extension",
+      "type": "shell",
+      "command": "npm",
+      "args": ["run", "build", "-w", "@lit-labs/vscode-extension"],
+      "problemMatcher": [
+        {
+          "owner": "wireit",
+          "source": "Wireit",
+          "severity": "error",
+          "pattern": {
+            "regexp": ""
+          },
+          "background": {
+            "activeOnStart": true,
+            "beginsPattern": "[build]",
+            "endsPattern": "Watching for file changes"
+          }
+        },
+        "$tsc-watch"
+      ],
+      "isBackground": true,
+      "presentation": {
+        "reveal": "always"
+      },
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      }
+    }
+  ]
+}

@@ -2,7 +2,7 @@
 /test/
 /node_modules/
 /index.*
-/mutation_controller.*
-/performance_controller.*
-/resize_controller.*
-/intersection_controller.*
+/mutation-controller.*
+/performance-controller.*
+/resize-controller.*
+/intersection-controller.*

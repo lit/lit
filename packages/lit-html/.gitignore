@@ -4,7 +4,6 @@
 /directives/
 /node_modules/
 /test/
-/experimental-hydrate.*
 /lit-html.*
 /directive.*
 /directive-helpers.*
@@ -13,3 +12,4 @@
 /private-ssr-support.*
 /static.*
 /is-server.*
+/compiled/

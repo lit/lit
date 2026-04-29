@@ -14,8 +14,6 @@ e2eGoldensTest(
 
 Placeholder error in es-419 localization of extra-expression: unexpected "\${alert("evil")}"
 Placeholder error in es-419 localization of missing-expression: missing "\${name}"
-Placeholder error in es-419 localization of changed-expression: unexpected "\${alert("evil") || name}"
-Placeholder error in es-419 localization of changed-expression: missing "\${name}"
 Placeholder error in es-419 localization of missing-html: missing "<b>"
 Placeholder error in es-419 localization of missing-html: missing "</b>"
 Placeholder error in es-419 localization of changed-html: unexpected "<blink>"

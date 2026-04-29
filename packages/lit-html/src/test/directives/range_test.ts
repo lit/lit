@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import {range} from 'lit-html/directives/range.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('range', () => {
   test('positive end', () => {

@@ -84,7 +84,7 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
   private _chunkSizeCache = new SizeCache();
   private _rolumnSizeCache = new SizeCache();
   private _rolumnLengthCache = new SizeCache({roundAverageSize: false});
-  // private _rolumnStartPositions: Map<number, number> = new Map();
+  // private _rolumnStartPositions = new Map<number, number>();
   private _aspectRatios: AspectRatios = {};
   private _numberOfAspectRatiosMeasured = 0;
   // protected _config: FlexWrapLayoutConfig = {};
@@ -92,7 +92,7 @@ export class FlexWrapLayout extends SizeGapPaddingBaseLayout<FlexWrapLayoutConfi
   listenForChildLoadEvents = true;
 
   set gap(spec: GapSpec) {
-    super.gap = spec;
+    this._setGap(spec);
   }
 
   /**

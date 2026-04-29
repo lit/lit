@@ -26,6 +26,7 @@ export const wrapperModuleTemplateSFC = (
   moduleJsPath: string,
   elements: LitElementDeclaration[]
 ) => {
+  moduleJsPath = moduleJsPath.replace(/\\/g, '/');
   const wcPath = `${packageJson.name}/${moduleJsPath}`;
   return elements.map((element) => [
     element.name!,
@@ -48,6 +49,23 @@ const renderPropsInterface = (props: Map<string, ModelProperty>) =>
        .map((prop) => `${prop.name}?: ${prop.type?.text || 'any'}`)
        .join(';\n     ')}
    }`;
+
+const renderVueProps = (props: Map<string, ModelProperty>) =>
+  props.size > 0
+    ? javascript`
+  const vueProps = defineProps<Props>();
+
+  const defaults = reactive({} as Props);
+  const vDefaults = {
+    created(el: any) {
+      for (const p in vueProps) {
+        defaults[p as keyof Props] = el[p];
+      }
+    }
+  };
+
+  let hasRendered = false;`
+    : ``;
 
 const wrapEvents = (events: Map<string, EventModel>) =>
   Array.from(events.values())
@@ -88,6 +106,24 @@ const getElementTypeImports = (declaration: LitElementDeclaration) => {
 const getElementTypeExportsFromImports = (imports: string) =>
   imports.replace(/(?:^import)/gm, 'export type');
 
+const renderPropsParam = (reactiveProperties: Map<string, ModelProperty>) => {
+  const hasProps = reactiveProperties.size > 0;
+  if (hasProps) {
+    return javascript`
+      for (const p in vueProps) {
+        const v = vueProps[p as keyof Props];
+        if ((v !== undefined) || hasRendered) {
+          (props[p as keyof Props] as unknown) = v ?? defaults[p as keyof Props];
+        }
+      }
+
+      hasRendered = true;
+    `;
+  }
+
+  return '';
+};
+
 // TODO(sorvell): Add support for `v-bind`.
 // TODO(sorvell): Investigate if it's possible to save the ~15 lines related to
 // handling defaults by factoring the defaults directive and associated code
@@ -99,6 +135,7 @@ const wrapperTemplate = (
   const {tagname, events, reactiveProperties} = declaration;
   const typeImports = getElementTypeImports(declaration);
   const typeExports = getElementTypeExportsFromImports(typeImports);
+  const hasProps = reactiveProperties.size > 0;
   return javascript`${
     typeExports
       ? javascript`
@@ -108,25 +145,14 @@ const wrapperTemplate = (
       : ''
   }
     <script setup lang="ts">
-      import { h, useSlots, reactive } from "vue";
+      import { h, useSlots${hasProps ? `, reactive` : ``} } from "vue";
       import { assignSlotNodes, Slots } from "@lit-labs/vue-utils/wrapper-utils.js";
       import '${wcPath}';
       ${typeImports}
 
       ${renderPropsInterface(reactiveProperties)}
 
-      const vueProps = defineProps<Props>();
-
-      const defaults = reactive({} as Props);
-      const vDefaults = {
-        created(el: any) {
-          for (const p in vueProps) {
-            defaults[p as keyof Props] = el[p];
-          }
-        }
-      };
-
-      let hasRendered = false;
+      ${renderVueProps(reactiveProperties)}
 
       ${
         events.size
@@ -136,27 +162,20 @@ const wrapperTemplate = (
           : ''
       }
 
-      const slots = useSlots();
+      const slots = useSlots() as Slots;
 
       const render = () => {
         const eventProps = ${renderEvents(events)};
-
         const props = eventProps as (typeof eventProps & Props);
-        for (const p in vueProps) {
-          const v = vueProps[p as keyof Props];
-          if ((v !== undefined) || hasRendered) {
-            (props[p as keyof Props] as unknown) = v ?? defaults[p as keyof Props];
-          }
-        }
 
-        hasRendered = true;
+        ${renderPropsParam(reactiveProperties)}
 
         return h(
           '${tagname}',
           props,
-          assignSlotNodes(slots as Slots)
+          assignSlotNodes(slots)
         );
       };
     </script>
-    <template><render v-defaults /></template>`;
+    <template><render${hasProps ? ' v-defaults' : ''} /></template>`;
 };

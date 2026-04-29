@@ -1,12 +1,12 @@
 {
   "name": "@lit-labs/ssr-client",
-  "version": "1.0.1",
+  "version": "1.1.8",
   "description": "Client package for @lit-labs/ssr.",
   "license": "BSD-3-Clause",
   "homepage": "https://lit.dev/",
   "repository": {
     "type": "git",
-    "url": "https://github.com/lit/lit.git",
+    "url": "git+https://github.com/lit/lit.git",
     "directory": "packages/labs/ssr-client"
   },
   "type": "module",
@@ -18,10 +18,33 @@
   },
   "exports": {
     ".": {
+      "types": "./development/index.d.ts",
+      "browser": {
+        "development": "./development/index.js",
+        "default": "./index.js"
+      },
+      "node": {
+        "development": "./node/development/index.js",
+        "default": "./node/index.js"
+      },
       "development": "./development/index.js",
       "default": "./index.js"
     },
+    "./lit-element-hydrate-support.js": {
+      "types": "./development/lit-element-hydrate-support.d.ts",
+      "browser": {
+        "development": "./development/lit-element-hydrate-support.js",
+        "default": "./lit-element-hydrate-support.js"
+      },
+      "node": {
+        "development": "./node/development/lit-element-hydrate-support.js",
+        "default": "./node/lit-element-hydrate-support.js"
+      },
+      "development": "./development/lit-element-hydrate-support.js",
+      "default": "./lit-element-hydrate-support.js"
+    },
     "./directives/render-light.js": {
+      "types": "./development/directives/render-light.d.ts",
       "development": "./development/directives/render-light.js",
       "default": "./directives/render-light.js"
     }
@@ -30,14 +53,20 @@
     "/development/",
     "!/development/test/",
     "/directives/",
-    "/index.{d.ts,d.ts.map,js,js.map}"
+    "/lib/",
+    "/node/",
+    "/index.{d.ts,d.ts.map,js,js.map}",
+    "/lit-element-hydrate-support.{d.ts,d.ts.map,js,js.map}"
   ],
   "scripts": {
     "build": "wireit",
     "build:ts": "wireit",
     "build:ts:types": "wireit",
     "build:rollup": "wireit",
-    "checksize": "wireit"
+    "checksize": "wireit",
+    "test": "wireit",
+    "test:dev": "wireit",
+    "test:prod": "wireit"
   },
   "wireit": {
     "build": {
@@ -72,7 +101,8 @@
       "files": [],
       "output": [
         "*.d.ts{,.map}",
-        "directives/*.d.ts{,.map}"
+        "directives/*.d.ts{,.map}",
+        "lib/*.d.ts{,.map}"
       ]
     },
     "build:rollup": {
@@ -86,8 +116,45 @@
       ],
       "output": [
         "index.js{,.map}",
-        "directives/*.js{,.map}"
+        "lit-element-hydrate-support.js{,.map}",
+        "directives/*.js{,.map}",
+        "lib/*.js{,.map}",
+        "node/"
       ]
+    },
+    "test": {
+      "dependencies": [
+        "test:dev",
+        "test:prod"
+      ]
+    },
+    "test:dev": {
+      "command": "MODE=dev node ../../tests/run-web-tests.js \"development/test/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build:ts",
+        "../../tests:build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
+      "files": [],
+      "output": []
+    },
+    "test:prod": {
+      "command": "MODE=prod node ../../tests/run-web-tests.js \"development/test/**/*_test.js\" --config ../../tests/web-test-runner.config.js",
+      "dependencies": [
+        "build",
+        "../../tests:build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
+      "files": [],
+      "output": []
     },
     "checksize": {
       "command": "rollup -c --environment=CHECKSIZE",
@@ -103,12 +170,12 @@
   },
   "author": "Google LLC",
   "devDependencies": {
-    "@lit-internal/scripts": "^1.0.0"
+    "@lit-internal/scripts": "^1.0.1"
   },
   "dependencies": {
-    "lit": "^2.0.0",
-    "lit-html": "^2.0.0",
-    "@lit/reactive-element": "^1.0.0"
+    "@lit/reactive-element": "^2.0.4",
+    "lit": "^3.1.2",
+    "lit-html": "^3.1.2"
   },
   "publishConfig": {
     "access": "public"

@@ -50,21 +50,21 @@ interface GridLayoutMetrics {
 ///
 
 export abstract class GridBaseLayout<
-  C extends GridBaseLayoutConfig
+  C extends GridBaseLayoutConfig,
 > extends SizeGapPaddingBaseLayout<C> {
   protected _metrics: GridLayoutMetrics | null = null;
   flex: FlexSpec | null = null;
   justify: JustifySpec | null = null;
 
-  protected get _defaultConfig(): C {
-    return Object.assign({}, super._defaultConfig, {
+  protected _getDefaultConfig(): C {
+    return Object.assign({}, super._getDefaultConfig(), {
       flex: false,
       justify: 'start',
     });
   }
 
   set gap(spec: AutoGapSpec) {
-    super.gap = spec;
+    super._setGap(spec);
   }
 
   protected _updateLayout() {
@@ -187,8 +187,8 @@ export abstract class GridBaseLayout<
           this.flex || justify === 'start'
             ? metrics.padding2.start
             : justify === 'end'
-            ? this._viewDim2 - metrics.padding2.end - spaceTaken
-            : Math.round(this._viewDim2 / 2 - spaceTaken / 2);
+              ? this._viewDim2 - metrics.padding2.end - spaceTaken
+              : Math.round(this._viewDim2 / 2 - spaceTaken / 2);
       } else {
         const spaceToDivide =
           availableSpace - metrics.rolumns * metrics.itemSize2;

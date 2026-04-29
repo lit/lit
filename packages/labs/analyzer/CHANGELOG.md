@@ -1,5 +1,173 @@
 # @lit-labs/analyzer
 
+## 0.14.0
+
+### Minor Changes
+
+- [#5056](https://github.com/lit/lit/pull/5056) [`a131af1be63f917a5e245bc0cf7e2b5eddce7180`](https://github.com/lit/lit/commit/a131af1be63f917a5e245bc0cf7e2b5eddce7180) - Support type checking lit-html property bindings in our tsserver-plugin.
+
+- [#4267](https://github.com/lit/lit/pull/4267) [`5a7ae16fe5afcfd434158852ad1aef18623318a2`](https://github.com/lit/lit/commit/5a7ae16fe5afcfd434158852ad1aef18623318a2) - Add a template parser
+
+- [#5177](https://github.com/lit/lit/pull/5177) [`e51a47b06163384961b639854627189f7c3d37fe`](https://github.com/lit/lit/commit/e51a47b06163384961b639854627189f7c3d37fe) Thanks [@ClaudioHoffmann](https://github.com/ClaudioHoffmann)! - Declared union types are now preserved instead of being widened to their base type. This fixes unexpected type errors in the property accessors created by the Angular wrapper generator.
+
+- [#4805](https://github.com/lit/lit/pull/4805) [`f570059d527de0f04bf4b02a67a35edf288998e0`](https://github.com/lit/lit/commit/f570059d527de0f04bf4b02a67a35edf288998e0) - Add template parser to analyzer
+
+### Patch Changes
+
+- [#5057](https://github.com/lit/lit/pull/5057) [`945f5aa7b1c01e514c69089bb6d13719dade928a`](https://github.com/lit/lit/commit/945f5aa7b1c01e514c69089bb6d13719dade928a) - Adjust attribute source locations in template parser
+
+- [#4984](https://github.com/lit/lit/pull/4984) [`ad23f26ae908a160d30ed2a939b322fe9cc2ee83`](https://github.com/lit/lit/commit/ad23f26ae908a160d30ed2a939b322fe9cc2ee83) Thanks [@kyubisation](https://github.com/kyubisation)! - Update TypeScript dependencies to version 5.8 with related ARIAMixin changes (ariaColIndexText, ariaRelevant and ariaRowIndexText)
+
+## 0.13.2
+
+### Patch Changes
+
+- [#4903](https://github.com/lit/lit/pull/4903) [`6a232e92`](https://github.com/lit/lit/commit/6a232e92af9372892c7a916dd3d25947be674ee0) - Add Lit Labs noticed to README
+
+## 0.13.1
+
+### Patch Changes
+
+- [#4746](https://github.com/lit/lit/pull/4746) [`bc3ba558`](https://github.com/lit/lit/commit/bc3ba558e02f609ca2f1bffd7a05b058904307ba) - Properly ignore class private fields when analyzing LitElement reactive properties.
+
+- [#4744](https://github.com/lit/lit/pull/4744) [`55a6a0ce`](https://github.com/lit/lit/commit/55a6a0cec63e1f4f57adc8d3ac2a6424b0a554fc) - Fix bugs with type resolution and Lit module detection when using NodeNext module resolution in TypeScript
+
+## 0.13.0
+
+### Minor Changes
+
+- [#4682](https://github.com/lit/lit/pull/4682) [`290a608a`](https://github.com/lit/lit/commit/290a608aa2297e8b99a5424dc90632b97c66386c) - Update typescript to 5.5.0
+
+## 0.12.1
+
+### Patch Changes
+
+- [#4147](https://github.com/lit/lit/pull/4147) [`634d8624`](https://github.com/lit/lit/commit/634d86248d8943f15930d2b1d281991c174970b7) Thanks [@43081j](https://github.com/43081j)! - Support for mixin classes/functions as super classes of analyzed classes
+
+## 0.12.0
+
+### Minor Changes
+
+- [#4261](https://github.com/lit/lit/pull/4261) [`1b17a369`](https://github.com/lit/lit/commit/1b17a369f3ecf54d2617fe08b0d52fd0f993074b) - Add lib/lit-html/template.js module with initial template utilities.
+
+## 0.11.1
+
+### Patch Changes
+
+- [#4520](https://github.com/lit/lit/pull/4520) [`89c5bdfb`](https://github.com/lit/lit/commit/89c5bdfbc9bc9177f25d4d8f35e41e842afa0d63) - Update typescript dependency
+
+## 0.11.0
+
+### Minor Changes
+
+- [#4322](https://github.com/lit/lit/pull/4322) [`2896209b`](https://github.com/lit/lit/commit/2896209b925169793898b10dc3409de4056c93f7) - Remove dependencies on Node-specific libaries. This change requries passing a path separator to `absoluteToPackage()`.
+
+- [#4260](https://github.com/lit/lit/pull/4260) [`7a9804ad`](https://github.com/lit/lit/commit/7a9804adc676eb2e84252d31d600e59032b0482a) - Adds TypeScript node reference to analyzer model objects
+
+## 0.10.0
+
+### Minor Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+### Patch Changes
+
+- [#4252](https://github.com/lit/lit/pull/4252) [`c0195cba`](https://github.com/lit/lit/commit/c0195cbac61e51ee89ca141ce90381befe165f14) Thanks [@43081j](https://github.com/43081j)! - Always use consumer's typescript rather than analyzer's dependency to avoid version mismatches
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+## 0.10.0-pre.0
+
+### Minor Changes
+
+- [#4141](https://github.com/lit/lit/pull/4141) [`6b515e43`](https://github.com/lit/lit/commit/6b515e43c3a24cc8a593247d3aa72d81bcc724d5) - Update TypeScript to ~5.2.0
+
+## 0.9.2
+
+### Patch Changes
+
+- [#4135](https://github.com/lit/lit/pull/4135) [`5ff19a06`](https://github.com/lit/lit/commit/5ff19a06378a2e9aaafd87e9eaeeff6f1850d0ad) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports class accessors (pairs, readonly, or setter-only)
+
+- [#4135](https://github.com/lit/lit/pull/4135) [`5ff19a06`](https://github.com/lit/lit/commit/5ff19a06378a2e9aaafd87e9eaeeff6f1850d0ad) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports non-reactive, constructor assigned class fields
+
+- [#4135](https://github.com/lit/lit/pull/4135) [`5ff19a06`](https://github.com/lit/lit/commit/5ff19a06378a2e9aaafd87e9eaeeff6f1850d0ad) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports jsDoc `@readonly` tag on non-reactive class fields
+
+- [#4135](https://github.com/lit/lit/pull/4135) [`5ff19a06`](https://github.com/lit/lit/commit/5ff19a06378a2e9aaafd87e9eaeeff6f1850d0ad) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports typescript `readonly` keyword on non-reactive class fields
+
+- [#4132](https://github.com/lit/lit/pull/4132) [`b9c34431`](https://github.com/lit/lit/commit/b9c3443185ef2f7bbe728dc61eb4b13b7a0dccb4) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports `@fires {EventType} name`, with type preceding name
+
+- [#4132](https://github.com/lit/lit/pull/4132) [`b9c34431`](https://github.com/lit/lit/commit/b9c3443185ef2f7bbe728dc61eb4b13b7a0dccb4) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports lowercase `@cssprop`, `@cssproperty`, and `@csspart`
+
+- [#4148](https://github.com/lit/lit/pull/4148) [`5d68e64e`](https://github.com/lit/lit/commit/5d68e64ee612d28b713fc8513ea3d6cc10cf92b5) Thanks [@bennypowers](https://github.com/bennypowers)! - Correctly sets `privacy` field for ECMAScript private methods
+
+- [#4132](https://github.com/lit/lit/pull/4132) [`b9c34431`](https://github.com/lit/lit/commit/b9c3443185ef2f7bbe728dc61eb4b13b7a0dccb4) Thanks [@bennypowers](https://github.com/bennypowers)! - Supports `@cssProperty {<color>} --my-color` with syntax metadata
+
+## 0.9.1
+
+### Patch Changes
+
+- [#4065](https://github.com/lit/lit/pull/4065) [`47be5910`](https://github.com/lit/lit/commit/47be5910ebff413e504a6582f476123437982e32) Thanks [@bennypowers](https://github.com/bennypowers)! - Analyzer can now handle module graphs which reexport names from their circular dependencies
+
+## 0.9.0
+
+### Minor Changes
+
+- [#4030](https://github.com/lit/lit/pull/4030) [`55bfed2f`](https://github.com/lit/lit/commit/55bfed2f95cfcf10757e24edf56092b8e9d36405) - Upgrade TypeScript to ~5.0
+
+- [#3980](https://github.com/lit/lit/pull/3980) [`91611d73`](https://github.com/lit/lit/commit/91611d73600e163459da5d2bfb9753c88ad3f45a) - Add separate entrypoint for createPackageAnalyzer() which requires Node APIs
+
+- [#4029](https://github.com/lit/lit/pull/4029) [`da6646d8`](https://github.com/lit/lit/commit/da6646d827d8932ba7c241780cbd03a9ade64009) - Require a TypeScript object to construct an Analyzer
+
+### Patch Changes
+
+- [#4006](https://github.com/lit/lit/pull/4006) [`9001f9c1`](https://github.com/lit/lit/commit/9001f9c12e0ba125b930dcc126476e384ddc23fe) Thanks [@bennypowers](https://github.com/bennypowers)! - Detect sources when the `tsconfig.json` `extends` from another config.
+
+## 0.8.0
+
+### Minor Changes
+
+- [#3866](https://github.com/lit/lit/pull/3866) [`d8e80656`](https://github.com/lit/lit/commit/d8e806561e2d5c12bc99fcee34bce1825c3ca1ae) - The analyzer no longer crashes in many cases when encountering code with unexpected syntax or cases that the analyzer does not yet handle. The custom elements manifest generator also logs diagnostics collected while generating the manifest, but generates the manifest whenever possible.
+
+## 0.7.0
+
+### Minor Changes
+
+- [#3812](https://github.com/lit/lit/pull/3812) [`2c59ceb9`](https://github.com/lit/lit/commit/2c59ceb9427ca76a591084258eedab76644f2a63) - Add CSS Custom Property fallback (default) values to manifest
+
+## 0.6.1-pre.0
+
+### Patch Changes
+
+- [#3814](https://github.com/lit/lit/pull/3814) [`23326c6b`](https://github.com/lit/lit/commit/23326c6b9a6abdf01998dadf5d0f20a643e457aa) - Update to TypeScript v5.0
+
+## 0.6.0
+
+### Minor Changes
+
+- [#3621](https://github.com/lit/lit/pull/3621) [`dfdc3f71`](https://github.com/lit/lit/commit/dfdc3f714e511d30acc28809fa6643a4c764cad1) - Added analysys of vanilla custom elements that extend HTMLElement.
+
+- [#3662](https://github.com/lit/lit/pull/3662) [`cabc6189`](https://github.com/lit/lit/commit/cabc61894e57ba89ecadc1deb20f121fecdfffc9) - Added support for analyzing const variables initialized to class or function expressions as ClassDeclaration and FunctionDeclaration, respectively.
+
+- [#3658](https://github.com/lit/lit/pull/3658) [`b7b01c0d`](https://github.com/lit/lit/commit/b7b01c0d21c0ac301cd5b8d4cb595f3bbfeebe6b) - JSDoc types in TS files now have no effect on the analyzer's output, matching TS itself.
+
+- [#3702](https://github.com/lit/lit/pull/3702) [`520b4713`](https://github.com/lit/lit/commit/520b47132af8e21868df5dc4dfdf5e003a38d158) - Adds support for overloaded functions. Methods of model objects that accept a
+  string key will now specifically return the `FunctionDeclaration` of the
+  implementation signature of an overloaded function, which has a new `overloads`
+  field containing a `FunctionOverloadDeclaration` for each overload signature.
+
+- [#3648](https://github.com/lit/lit/pull/3648) [`39ac5275`](https://github.com/lit/lit/commit/39ac52758064dc521c2e3701e28348d7dc637a98) - Fix support for static class members by storing them in separate maps by name.
+
+- [#3655](https://github.com/lit/lit/pull/3655) [`7e20a528`](https://github.com/lit/lit/commit/7e20a5287a46eadcd06a0804147b3b27110326ad) - Added support for analyzing function declarations.
+
+- [#3529](https://github.com/lit/lit/pull/3529) [`389d0c55`](https://github.com/lit/lit/commit/389d0c558d78982d8265588d1935ede91f46f3a0) - Added CLI improvements:
+  - Add support for --exclude options (important for excluding test files from e.g. manifest or wrapper generation)
+
+  Added more analysis support and manifest emit:
+  - TS enum type variables
+  - description, summary, and deprecated for all models
+  - module-level description & summary
+  - ClassField and ClassMethod
+
 ## 0.5.0
 
 ### Minor Changes

@@ -11,7 +11,6 @@ import '@lit/reactive-element';
 import '@lit/reactive-element/reactive-controller.js';
 import '@lit/reactive-element/css-tag.js';
 import '@lit/reactive-element/decorators.js';
-import '@lit/reactive-element/decorators/base.js';
 import '@lit/reactive-element/decorators/custom-element.js';
 import '@lit/reactive-element/decorators/event-options.js';
 import '@lit/reactive-element/decorators/state.js';

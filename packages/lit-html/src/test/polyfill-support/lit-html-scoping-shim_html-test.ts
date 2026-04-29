@@ -6,7 +6,7 @@
 import 'lit-html/polyfill-support.js';
 import {renderShadowRoot} from '../test-utils/shadow-root.js';
 import {html} from 'lit-html';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 suite('ShadyCSS scoping shim', () => {
   setup(function () {

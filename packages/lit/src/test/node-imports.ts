@@ -42,8 +42,6 @@ import 'lit/directives/until.js';
 import 'lit/directives/when.js';
 import 'lit/async-directive.js';
 import 'lit/html.js';
-import 'lit/experimental-hydrate-support.js';
-import 'lit/experimental-hydrate.js';
 import 'lit/static-html.js';
 
 import assert from 'node:assert/strict';

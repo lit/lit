@@ -9,6 +9,7 @@ import {BLANK_LINE_PLACEHOLDER_COMMENT} from '../../preserve-blank-lines.js';
 
 import type {LitClassContext} from '../lit-class-context.js';
 import type {MemberDecoratorVisitor} from '../visitor.js';
+import {removeDecorators} from '../util.js';
 
 /**
  * Copies the comments and, optionally, leading blank lines from one node to
@@ -88,8 +89,7 @@ export class PropertyVisitor implements MemberDecoratorVisitor {
     if (isGetter) {
       // Decorators is readonly so clone the property.
       const getterWithoutDecorators = factory.createGetAccessorDeclaration(
-        undefined,
-        propertyOrGetter.modifiers,
+        removeDecorators(factory, propertyOrGetter.modifiers),
         propertyOrGetter.name,
         propertyOrGetter.parameters,
         propertyOrGetter.type,

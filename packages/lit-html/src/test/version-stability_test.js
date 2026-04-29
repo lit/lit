@@ -15,7 +15,7 @@ import * as asyncDirective2 from 'lit-html/version-stability-build/async-directi
 import * as repeat2 from 'lit-html/version-stability-build/directives/repeat.js';
 
 import {stripExpressionComments} from 'lit-html/development/test/test-utils/strip-markers.js';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 const nextFrame = () => new Promise((r) => requestAnimationFrame(() => r()));
 

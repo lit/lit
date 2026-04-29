@@ -1,6 +1,8 @@
 /node_modules/
 /tests/
+/tests-std-decorators/
 /.tsbuildinfo
+/tsconfig.std-decorators-tests.tsbuildinfo
 /lit-localize.*
 /examples/*/node_modules/
 /internal/

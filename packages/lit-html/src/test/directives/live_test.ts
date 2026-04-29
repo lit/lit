@@ -6,7 +6,7 @@
 
 import {live} from 'lit-html/directives/live.js';
 import {html, noChange, nothing, render} from 'lit-html';
-import {assert} from '@esm-bundle/chai';
+import {assert} from 'chai';
 
 class LiveTester extends HTMLElement {
   _x?: string;

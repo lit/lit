@@ -7,9 +7,16 @@ node_modules/
 *.tgz
 *.tsbuildinfo
 .DS_Store
-.vscode/
 .wireit
 /temp
+.idea
+/scripts/check-size-out.md
+/playground/p/**/package-lock.json
+/playground/p/scratch/*/
+!/playground/p/scratch/*.*
+/.direnv/
+/.envrc
+/.actrc
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
@@ -22,6 +29,14 @@ packages/benchmarks/**/*.d.ts.map
 packages/benchmarks/**/*.js
 packages/benchmarks/**/*.js.map
 
+packages/context/development/
+packages/context/test/
+packages/context/node_modules/
+packages/context/lib/
+packages/context/index.*
+packages/context/lit2/test/
+packages/context/lit2/lit2-scope/context/
+
 packages/internal-scripts/node_modules/
 packages/internal-scripts/lib/
 
@@ -31,13 +46,11 @@ packages/lit/directives/
 packages/lit/node_modules/
 packages/lit/test/
 
+packages/lit/async-directive.*
 packages/lit/decorators.*
 packages/lit/directive-helpers.*
 packages/lit/directive.*
-packages/lit/async-directive.*
 packages/lit/html.*
-packages/lit/experimental-hydrate-support.*
-packages/lit/experimental-hydrate.*
 packages/lit/index.*
 packages/lit/static-html.*
 
@@ -46,15 +59,16 @@ packages/lit/lit-core.min.*
 packages/lit/polyfill-support.*
 
 packages/lit-element/decorators/
+packages/lit-element/development/
+packages/lit-element/node_modules/
+packages/lit-element/test/
+
 packages/lit-element/demo/**/*.d.ts
 packages/lit-element/demo/**/*.d.ts.map
 packages/lit-element/demo/**/*.js
 packages/lit-element/demo/**/*.js.map
-packages/lit-element/development/
-packages/lit-element/node_modules/
-packages/lit-element/test/
+
 packages/lit-element/decorators.*
-packages/lit-element/experimental-hydrate-support.*
 packages/lit-element/index.*
 packages/lit-element/lit-element.*
 packages/lit-element/lit.min.*
@@ -67,7 +81,6 @@ packages/lit-html/version-stability-build/
 packages/lit-html/directives/
 packages/lit-html/node_modules/
 packages/lit-html/test/
-packages/lit-html/experimental-hydrate.*
 packages/lit-html/lit-html.*
 packages/lit-html/directive.*
 packages/lit-html/directive-helpers.*
@@ -76,7 +89,7 @@ packages/lit-html/polyfill-support.*
 packages/lit-html/private-ssr-support.*
 packages/lit-html/static.*
 packages/lit-html/is-server.*
-
+packages/lit-html/compiled/
 packages/lit-starter-js/node_modules/*
 packages/lit-starter-js/docs/*
 packages/lit-starter-js/docs-src/*
@@ -108,7 +121,9 @@ packages/lit-starter-ts/**/my-element.d.ts.map
 packages/lit-starter-ts/**/my-element.bundled.js
 packages/localize/node_modules/
 packages/localize/tests/
+packages/localize/tests-std-decorators/
 packages/localize/.tsbuildinfo
+packages/localize/tsconfig.std-decorators-tests.tsbuildinfo
 packages/localize/lit-localize.*
 packages/localize/examples/*/node_modules/
 packages/localize/internal/
@@ -118,15 +133,35 @@ packages/localize-tools/lib/
 packages/localize-tools/node_modules/
 packages/localize-tools/testdata/*/output/
 
+packages/react/development/
+packages/react/node/
+packages/react/test/
+packages/react/node_modules/
+packages/react/index.*
+packages/react/create-component.*
+packages/react/use-controller.*
+
 packages/reactive-element/decorators/
 packages/reactive-element/development/
+packages/reactive-element/legacy-decorators/
 packages/reactive-element/node/
+packages/reactive-element/std-decorators/
 packages/reactive-element/test/
+
 packages/reactive-element/css-tag.*
 packages/reactive-element/decorators.*
+packages/reactive-element/legacy-decorators.*
 packages/reactive-element/polyfill-support.*
+packages/reactive-element/std-decorators.*
 packages/reactive-element/reactive-element.*
 packages/reactive-element/reactive-controller.*
+
+packages/task/development/
+packages/task/test/
+packages/task/node_modules/
+packages/task/deep-equals.*
+packages/task/index.*
+packages/task/task.*
 
 packages/tests/node_modules/
 packages/tests/utils/
@@ -152,6 +187,11 @@ packages/labs/analyzer/**/index.js.map
 packages/labs/analyzer/**/index.d.ts
 packages/labs/analyzer/**/index.d.ts.map
 
+packages/labs/analyzer/**/package-analyzer.js
+packages/labs/analyzer/**/package-analyzer.js.map
+packages/labs/analyzer/**/package-analyzer.d.ts
+packages/labs/analyzer/**/package-analyzer.d.ts.map
+
 packages/labs/cli/lib/
 packages/labs/cli/test/
 packages/labs/cli/index.js
@@ -162,6 +202,14 @@ packages/labs/cli/test-gen/
 
 packages/labs/cli-localize/lib/
 packages/labs/cli-localize/node_modules/
+
+packages/labs/compiler/**/test_files
+packages/labs/compiler/development/
+packages/labs/compiler/node_modules/
+packages/labs/compiler/test/
+packages/labs/compiler/lib/
+packages/labs/compiler/index.*
+packages/labs/compiler/test_files/source_map_tests/*.js.map
 
 packages/labs/context/development/
 packages/labs/context/test/
@@ -177,6 +225,23 @@ packages/labs/eleventy-plugin-lit/worker/worker.*
 packages/labs/eleventy-plugin-lit/test/
 # Switches Node into module mode for tests
 !packages/labs/eleventy-plugin-lit/test/package.json
+
+packages/labs/eslint-plugin/lib/
+packages/labs/eslint-plugin/rules/
+packages/labs/eslint-plugin/test/
+
+packages/labs/eslint-plugin/**/index.js
+packages/labs/eslint-plugin/**/index.js.map
+packages/labs/eslint-plugin/**/index.d.ts
+packages/labs/eslint-plugin/**/index.d.ts.map
+
+packages/labs/forms/development/
+packages/labs/forms/test/
+packages/labs/forms/lib/
+packages/labs/forms/node_modules/
+packages/labs/forms/index.*
+packages/labs/forms/form-associated.*
+packages/labs/forms/form-control.*
 
 packages/labs/gen-manifest/index.js
 packages/labs/gen-manifest/index.js.map
@@ -231,21 +296,43 @@ packages/labs/motion/node_modules/
 packages/labs/motion/index.*
 packages/labs/motion/animate.*
 packages/labs/motion/position.*
+packages/labs/motion/spring.*
 packages/labs/motion/animate-controller.*
+packages/labs/motion/demo/*.d.ts
+packages/labs/motion/demo/*.d.ts.map
+
+packages/labs/nextjs/index.*
+packages/labs/nextjs/lib/
+
 packages/labs/observers/development/
 packages/labs/observers/test/
 packages/labs/observers/node_modules/
 packages/labs/observers/index.*
-packages/labs/observers/mutation_controller.*
-packages/labs/observers/performance_controller.*
-packages/labs/observers/resize_controller.*
-packages/labs/observers/intersection_controller.*
+packages/labs/observers/mutation-controller.*
+packages/labs/observers/performance-controller.*
+packages/labs/observers/resize-controller.*
+packages/labs/observers/intersection-controller.*
+
+packages/labs/preact-signals/development/
+packages/labs/preact-signals/lib/
+packages/labs/preact-signals/node_modules/
+packages/labs/preact-signals/test/
+packages/labs/preact-signals/index.*
+
 packages/labs/react/development/
+packages/labs/react/node/
 packages/labs/react/test/
 packages/labs/react/node_modules/
 packages/labs/react/index.*
 packages/labs/react/create-component.*
 packages/labs/react/use-controller.*
+
+packages/labs/rollup-plugin-minify-html-literals/node_modules
+packages/labs/rollup-plugin-minify-html-literals/coverage
+packages/labs/rollup-plugin-minify-html-literals/.nyc_output
+packages/labs/rollup-plugin-minify-html-literals/lib
+packages/labs/rollup-plugin-minify-html-literals/test
+packages/labs/rollup-plugin-minify-html-literals/**/index.*
 
 packages/labs/router/development/
 packages/labs/router/test/
@@ -259,6 +346,12 @@ packages/labs/scoped-registry-mixin/development/
 packages/labs/scoped-registry-mixin/test/
 packages/labs/scoped-registry-mixin/node_modules/
 packages/labs/scoped-registry-mixin/scoped-registry-mixin.*
+packages/labs/signals/development/
+packages/labs/signals/lib/
+packages/labs/signals/node_modules/
+packages/labs/signals/test/
+packages/labs/signals/index.*
+
 packages/labs/ssr/demo/
 packages/labs/ssr/lib/
 packages/labs/ssr/node_modules/
@@ -271,11 +364,16 @@ packages/labs/ssr/index.*
 
 packages/labs/ssr-client/development/
 packages/labs/ssr-client/directives/
-packages/labs/ssr-client/controllers/
+packages/labs/ssr-client/lib/
+packages/labs/ssr-client/node/
 packages/labs/ssr-client/node_modules/
 packages/labs/ssr-client/index.*
-
+packages/labs/ssr-client/lit-element-hydrate-support.*
+packages/labs/ssr-client/test/
+packages/labs/ssr-dom-shim/register-css-hook.*
 packages/labs/ssr-dom-shim/index.*
+packages/labs/ssr-dom-shim/lib/
+packages/labs/ssr-dom-shim/test/
 
 packages/labs/ssr-react/node/
 packages/labs/ssr-react/lib/
@@ -288,14 +386,24 @@ packages/labs/ssr-react/enable-lit-ssr.*
 packages/labs/task/development/
 packages/labs/task/test/
 packages/labs/task/node_modules/
+packages/labs/task/deep-equals.*
 packages/labs/task/index.*
 packages/labs/task/task.*
+
 packages/labs/testing/index.*
 packages/labs/testing/fixtures.*
 packages/labs/testing/web-test-runner-ssr-plugin.*
 packages/labs/testing/lib
 packages/labs/testing/test
 packages/labs/testing/**/.tsbuildinfo-utils
+
+packages/labs/tsserver-plugin/example/
+packages/labs/tsserver-plugin/example/node_modules/
+
+packages/labs/tsserver-plugin/lib/
+packages/labs/tsserver-plugin/test/
+
+packages/labs/tsserver-plugin/index.*
 
 packages/labs/virtualizer/polyfills/resize-observer-polyfill/ResizeObserver.js
 packages/labs/virtualizer/src/polyfills/resize-observer-polyfill/ResizeObserver.js
@@ -323,6 +431,10 @@ packages/labs/virtualizer/ScrollerController.js
 packages/labs/virtualizer/ScrollerController.d.ts
 packages/labs/virtualizer/ScrollerController.d.ts.map
 packages/labs/virtualizer/ScrollerController.js.map
+packages/labs/virtualizer/support/**/*.d.ts
+packages/labs/virtualizer/support/**/*.d.ts.map
+packages/labs/virtualizer/support/**/*.js
+packages/labs/virtualizer/support/**/*.js.map
 packages/labs/virtualizer/test/**/*.d.ts
 packages/labs/virtualizer/test/**/*.d.ts.map
 packages/labs/virtualizer/test/**/*.js
@@ -331,6 +443,12 @@ packages/labs/virtualizer/test/screenshot/cases/*/actual.*.png
 packages/labs/virtualizer/events.d.ts*
 packages/labs/virtualizer/events.js
 packages/labs/virtualizer/events.js.map
+
+packages/labs/vscode-extension/lib/
+packages/labs/vscode-extension/test/
+packages/labs/vscode-extension/.vscode-test/
+packages/labs/vscode-extension/**/extension.cjs
+packages/labs/vscode-extension/**/extension.cjs.map
 
 packages/labs/vue-utils/development/
 packages/labs/vue-utils/test/
@@ -342,6 +460,11 @@ packages/labs/test-projects/test-element-a/**/*.d.ts
 packages/labs/test-projects/test-element-a/**/*.d.ts.map
 packages/labs/test-projects/test-element-a/**/*.js
 packages/labs/test-projects/test-element-a/**/*.js.map
+
+packages/labs/test-projects/test-elements-react/node_modules/
+packages/labs/test-projects/test-elements-react/element-a.*
+packages/labs/test-projects/test-elements-react/element-events.*
+packages/labs/test-projects/test-elements-react/element-props.*
 
 packages/localize/testdata/
 packages/localize/examples/

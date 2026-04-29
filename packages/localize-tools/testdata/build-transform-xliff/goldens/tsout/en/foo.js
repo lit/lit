@@ -60,3 +60,6 @@ html`Hello <b foo=${'World'}>World</b>`;
 html`<b foo=${'Hello'}>Hello</b><b bar=${'World'}>World</b>`;
 html`Hello <b .foo=${'World'}>World</b>`;
 html`Hello <b .foo=${'World'}>World</b>`;
+// Placeholder in translation has different expression
+`Different ${user}`;
+html`Different <b>${user}</b>`;

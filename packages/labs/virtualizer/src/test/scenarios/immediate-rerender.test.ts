@@ -23,7 +23,7 @@ export class MyExample extends LitElement {
 
   render() {
     return html`
-      <slot @slotchange=${this.#onSlotChange} style="display: none;"></slot>
+      <slot @slotchange=${this._onSlotChange} style="display: none;"></slot>
       <lit-virtualizer
         .items=${this.items}
         .renderItem=${(item: ExampleItem) => html`<p>${item.text}</p>`}
@@ -31,7 +31,7 @@ export class MyExample extends LitElement {
     `;
   }
 
-  #onSlotChange() {
+  _onSlotChange() {
     this.requestUpdate();
   }
 }

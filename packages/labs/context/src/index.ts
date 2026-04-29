@@ -5,33 +5,75 @@
  */
 
 export {
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
   ContextCallback,
-  ContextRequestEvent as ContextEvent,
-} from './lib/context-request-event.js';
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
+  ContextEvent,
+} from '@lit/context';
 
 export {
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
   Context,
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
   ContextKey,
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
   ContextType,
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
   createContext,
-} from './lib/create-context.js';
+} from '@lit/context';
 
-export {ContextConsumer} from './lib/controllers/context-consumer.js';
-export {ContextProvider} from './lib/controllers/context-provider.js';
-export {ContextRoot} from './lib/context-root.js';
+export {
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
+  ContextConsumer,
+} from '@lit/context';
+export {
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
+  ContextProvider,
+} from '@lit/context';
+export {
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
+  ContextRoot,
+} from '@lit/context';
 
-export {provide} from './lib/decorators/provide.js';
-export {consume} from './lib/decorators/consume.js';
+export {
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
+  provide,
+} from '@lit/context';
+export {
+  /**
+   * @deprecated import from `@lit/context` instead
+   */
+  consume,
+} from '@lit/context';
 
-import {provide} from './lib/decorators/provide.js';
-import {consume} from './lib/decorators/consume.js';
+import {provide, consume} from '@lit/context';
 
 /**
- * @deprecated use `provide` instead
+ * @deprecated use `provide` from `@lit/context` instead
  */
 export const contextProvider = provide;
 
 /**
- * @deprecated use `consume` instead
+ * @deprecated use `consume` from `@lit/context` instead
  */
 export const contextProvided = consume;

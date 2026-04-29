@@ -1,21 +1,15 @@
-# ReactiveElement 1.0
+# ReactiveElement
+
+A simple low level base class for creating fast, lightweight web components.
 
 [![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
 [![Published on npm](https://img.shields.io/npm/v/@lit/reactive-element?logo=npm)](https://www.npmjs.com/package/@lit/reactive-element)
 [![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
 [![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
 
-# ReactiveElement
-
-A simple low level base class for creating fast, lightweight web components.
-
-## About this release
-
-This is a stable release of `@lit/reactive-element` 1.0.0 (part of the Lit 2.0 release). If upgrading from previous versions of `UpdatingElement`, please see the [Upgrade Guide](https://lit.dev/docs/releases/upgrade/).
-
 ## Documentation
 
-Full documentation is available at [lit.dev](https://lit.dev/docs/api/ReactiveElement/).
+Full documentation is available at [lit.dev/docs/api/ReactiveElement/](https://lit.dev/docs/api/ReactiveElement/).
 
 ## Overview
 

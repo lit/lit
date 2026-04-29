@@ -153,7 +153,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
    */
   private _hostSink: LayoutHostSink;
 
-  protected get _defaultConfig(): C {
+  protected _getDefaultConfig(): C {
     return {
       direction: 'vertical',
     } as C;
@@ -162,11 +162,13 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   constructor(hostSink: LayoutHostSink, config?: C) {
     this._hostSink = hostSink;
     // Delay setting config so that subclasses do setup work first
-    Promise.resolve().then(() => (this.config = config || this._defaultConfig));
+    Promise.resolve().then(
+      () => (this.config = config || this._getDefaultConfig())
+    );
   }
 
   set config(config: C) {
-    Object.assign(this, Object.assign({}, this._defaultConfig, config));
+    Object.assign(this, Object.assign({}, this._getDefaultConfig(), config));
   }
 
   get config(): C {
@@ -182,7 +184,12 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   get items(): unknown[] {
     return this._items;
   }
+
   set items(items: unknown[]) {
+    this._setItems(items);
+  }
+
+  protected _setItems(items: unknown[]) {
     if (items !== this._items) {
       this._items = items;
       this._scheduleReflow();

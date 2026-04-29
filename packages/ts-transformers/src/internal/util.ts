@@ -10,6 +10,7 @@ import ts from 'typescript';
  * Return whether the given node has the static keyword modifier.
  */
 export const isStatic = (node: ts.Node) =>
+  ts.canHaveModifiers(node) &&
   node.modifiers?.find(
     (modifier) => modifier.kind === ts.SyntaxKind.StaticKeyword
   ) !== undefined;
@@ -72,4 +73,16 @@ function getSuperClassTypeExpression(
   // type.
   const parentExpression = extendsClause.types[0];
   return parentExpression;
+}
+
+export function removeDecorators(
+  factory: ts.NodeFactory,
+  modifiers: ts.NodeArray<ts.ModifierLike> | undefined
+) {
+  if (modifiers === undefined) {
+    return undefined;
+  }
+  return factory.createNodeArray(
+    modifiers.filter((mod) => !ts.isDecorator(mod))
+  );
 }
