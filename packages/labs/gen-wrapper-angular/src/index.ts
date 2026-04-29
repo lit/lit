@@ -83,23 +83,26 @@ const wrapperFiles = (
 ) => {
   const wrapperFiles: FileTree = {};
   for (const {module, declarations} of litModules) {
-    const {sourcePath, jsPath} = module;
+    const {jsPath} = module;
     if (declarations.length === 0) {
       continue;
     }
-    let folderName = declarations[0].tagname;
-
-    if (declarations.length > 1 || folderName === undefined) {
-      folderName = path.basename(sourcePath, '.ts');
+    const tags = declarations
+      .map((d) => d.tagname)
+      .filter((d) => d !== undefined);
+    if (tags.length === 0) {
+      continue;
     }
-    const fileName = path.join(folderName, folderName + '.ts');
+    const folderName = tags[0];
+    const fileName = path.join(folderName, 'src', folderName + '.ts');
     wrapperFiles[fileName] = wrapperModuleTemplate(
       packageJson,
       jsPath,
       declarations
     );
-    wrapperFiles[path.join(folderName, 'index.ts')] = componentIndexTemplate;
-    wrapperFiles[path.join(folderName, 'public-api.ts')] =
+    wrapperFiles[path.join(folderName, 'src', 'index.ts')] =
+      componentIndexTemplate;
+    wrapperFiles[path.join(folderName, 'src', 'public-api.ts')] =
       componentPublicApiTemplate(folderName!);
     wrapperFiles[path.join(folderName, 'ng-package.json')] =
       componentNgPackageTemplate();
@@ -111,9 +114,9 @@ const componentIndexTemplate = `/* eslint-disable import/extensions */\nexport *
 const componentPublicApiTemplate = (fileName: string) =>
   `/* eslint-disable import/extensions */\nexport * from "./${fileName}";`;
 const componentNgPackageTemplate = () => `{
-  $schema: "https://json.schemastore.org/ng-package",
-  lib: {
-    entryFile: "public-api.ts"
+  "$schema": "https://json.schemastore.org/ng-package",
+  "lib": {
+    "entryFile": "src/public-api.ts"
   }
 }`;
 
