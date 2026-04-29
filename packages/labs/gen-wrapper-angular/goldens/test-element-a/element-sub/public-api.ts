@@ -1,1 +1,2 @@
-export * from './element-sub.ts';
+/* eslint-disable import/extensions */
+export * from './element-sub';

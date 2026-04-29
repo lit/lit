@@ -1,1 +1,2 @@
-export * from './element-events.ts';
+/* eslint-disable import/extensions */
+export * from './element-events';

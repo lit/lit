@@ -37,7 +37,7 @@ test('basic wrapper generation', async () => {
   await writeFileTree(outputFolder, await generateAngularWrapper(pkg));
 
   const wrapperSourceFile = fs.readFileSync(
-    path.join(outputPackage, 'src', 'element-a.ts')
+    path.join(outputPackage, 'element-a', 'element-a.ts')
   );
   assert.ok(wrapperSourceFile.length > 0);
 

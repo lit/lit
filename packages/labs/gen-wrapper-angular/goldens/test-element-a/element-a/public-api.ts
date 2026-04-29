@@ -1,1 +1,2 @@
-export * from './element-a.ts';
+/* eslint-disable import/extensions */
+export * from './element-a';

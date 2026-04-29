@@ -7,7 +7,7 @@
   },
   "version": "1.0.1",
   "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.1",
+    "@lit-internal/test-element-a": "file:../../test-projects/test-element-a",
     "tslib": "^2.8.1"
   },
   "peerDependencies": {

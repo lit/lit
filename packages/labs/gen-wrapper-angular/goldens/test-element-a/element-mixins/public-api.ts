@@ -1,1 +1,2 @@
-export * from './element-mixins.ts';
+/* eslint-disable import/extensions */
+export * from './element-mixins';
