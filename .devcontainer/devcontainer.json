@@ -2,7 +2,7 @@
 // README at: https://github.com/devcontainers/templates/tree/main/src/typescript-node
 {
   "name": "Lit Development Container",
-  "image": "mcr.microsoft.com/devcontainers/typescript-node:0-18",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   // https://containers.dev/implementors/json_reference/#min-host-reqs
   "hostRequirements": {
     // Going under 4 cores makes running builds very tight
@@ -12,6 +12,7 @@
   },
   // Features to add to the dev container. More info: https://containers.dev/features.
   "features": {
+    "ghcr.io/devcontainers/features/node:1": {},
     // Github CLI for anyone accustomed to it in their workflow.
     "ghcr.io/devcontainers/features/github-cli:1": {
       "installDirectlyFromGitHubRelease": true,
