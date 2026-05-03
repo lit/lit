@@ -289,7 +289,7 @@ const getLocalReference = (
   return new Reference({
     name,
     package: module.packageJson.name,
-    module: module.jsPath,
+    module: module.jsPath.replace(/\\/g, '/'),
     dereference: () =>
       getResolvedExportFromSourcePath(
         location.getSourceFile().fileName as AbsolutePath,
