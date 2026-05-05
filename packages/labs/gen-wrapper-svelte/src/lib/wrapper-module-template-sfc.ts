@@ -153,11 +153,64 @@ const slotNameToPropName = (name: string) => {
     .join('');
 };
 
-const renderSlotsInterface = (slots: Map<string, NamedDescribed>) => {
-  const items = Array.from(slots.values()).map((slot) => {
+type NamingPlan = {
+  snippetNamesBySlotName: Map<string, string>;
+  propNamesByPropName: Map<string, string>;
+  remappedProps: {name: string; alias: string}[];
+};
+
+const createNamingPlan = (
+  slots: Map<string, NamedDescribed>,
+  props: Map<string, ModelProperty>
+): NamingPlan => {
+  const propNames = new Set(
+    Array.from(props.values()).map((prop) => prop.name)
+  );
+  const snippetNamesBySlotName = new Map<string, string>();
+  const collidingPropNames = new Set<string>();
+
+  for (const slot of slots.values()) {
     const isDefault =
       slot.name === 'default' || slot.name === '' || slot.name === '-';
-    const propName = isDefault ? 'children' : slotNameToPropName(slot.name);
+    const snippetName = isDefault ? 'children' : slotNameToPropName(slot.name);
+    snippetNamesBySlotName.set(slot.name, snippetName);
+    if (propNames.has(snippetName)) {
+      collidingPropNames.add(snippetName);
+    }
+  }
+
+  const propNamesByPropName = new Map<string, string>();
+  const remappedProps: {name: string; alias: string}[] = [];
+  for (const prop of props.values()) {
+    if (collidingPropNames.has(prop.name)) {
+      const alias = `${prop.name}Prop`;
+      propNamesByPropName.set(prop.name, alias);
+      remappedProps.push({name: prop.name, alias});
+    } else {
+      propNamesByPropName.set(prop.name, prop.name);
+    }
+  }
+
+  for (const [slotName, snippetName] of snippetNamesBySlotName) {
+    if (collidingPropNames.has(snippetName)) {
+      snippetNamesBySlotName.set(slotName, `${snippetName}Snippet`);
+    }
+  }
+
+  return {
+    snippetNamesBySlotName,
+    propNamesByPropName,
+    remappedProps,
+  };
+};
+
+const renderSlotsInterface = (
+  slots: Map<string, NamedDescribed>,
+  namingPlan: NamingPlan
+) => {
+  const items = Array.from(slots.values()).map((slot) => {
+    const propName =
+      namingPlan.snippetNamesBySlotName.get(slot.name) ?? 'children';
     const isDynamic = slot.name.includes('<');
     return `${propName}?: Snippet${isDynamic ? '<[any]>' : ''}`;
   });
@@ -168,12 +221,13 @@ const renderSlotsInterface = (slots: Map<string, NamedDescribed>) => {
   return `export interface Slots {\n  ${items.join(';\n  ')}\n}`;
 };
 
-const renderSlotsDestructureList = (slots: Map<string, NamedDescribed>) => {
-  const names = Array.from(slots.values()).map((slot) => {
-    const isDefault =
-      slot.name === 'default' || slot.name === '' || slot.name === '-';
-    return isDefault ? 'children' : slotNameToPropName(slot.name);
-  });
+const renderSlotsDestructureList = (
+  slots: Map<string, NamedDescribed>,
+  namingPlan: NamingPlan
+) => {
+  const names = Array.from(slots.values()).map(
+    (slot) => namingPlan.snippetNamesBySlotName.get(slot.name) ?? 'children'
+  );
   if (names.length === 0) {
     names.push('children');
   }
@@ -182,7 +236,8 @@ const renderSlotsDestructureList = (slots: Map<string, NamedDescribed>) => {
 
 const renderSnippets = (
   slots: Map<string, NamedDescribed>,
-  props: Map<string, ModelProperty>
+  props: Map<string, ModelProperty>,
+  namingPlan: NamingPlan
 ) => {
   const parts = Array.from(slots.values()).map((slot) => {
     const isDefault =
@@ -193,7 +248,8 @@ const renderSnippets = (
         {@render children()}
       {/if}`;
     }
-    const propName = slotNameToPropName(slot.name);
+    const propName =
+      namingPlan.snippetNamesBySlotName.get(slot.name) ?? 'children';
     const placeholderMatch = slot.name.match(/<([^>]+)>/);
     if (placeholderMatch) {
       const placeholder = placeholderMatch[1];
@@ -243,11 +299,28 @@ const renderEventsProps = (events: Map<string, EventModel>) => {
   return eventsProps ? `${eventsProps},` : '';
 };
 
+const renderPropsDestructureAndAssignment = (namingPlan: NamingPlan) => {
+  if (namingPlan.remappedProps.length === 0) {
+    return `...props} = $props<Props & Events & Slots>()`;
+  }
+
+  const remappedProps = namingPlan.remappedProps
+    .map(({name, alias}) => `${name}: rawProps.${alias}`)
+    .join(',\n        ');
+
+  return `...rawProps} = $props<Props & Events & Slots>();
+      const props = {
+        ...rawProps,
+        ${remappedProps}
+      }`;
+};
+
 const wrapperTemplate = (
   declaration: LitElementDeclaration,
   wcPath: string
 ) => {
   const {tagname, events, reactiveProperties, slots} = declaration;
+  const namingPlan = createNamingPlan(slots, reactiveProperties);
   const typeImports = getElementTypeImports(declaration);
   const typeExports = getElementTypeExportsFromImports(typeImports);
   return javascript`
@@ -258,10 +331,14 @@ const wrapperTemplate = (
       ${typeImports}
       import type { Snippet } from 'svelte';
 
-      ${renderPropsInterface(reactiveProperties)}
+      ${renderPropsInterface(reactiveProperties).replace(
+        /\b([A-Za-z_][A-Za-z0-9_]*)\?:/g,
+        (_match, propName: string) =>
+          `${namingPlan.propNamesByPropName.get(propName) ?? propName}?:`
+      )}
       ${renderEventsInterface(events)}
-      ${renderSlotsInterface(slots)}
-      const {${renderEventsProps(events)} class: className, style, ${renderSlotsDestructureList(slots)}, ...props} = $props<Props & Events & Slots>();
+      ${renderSlotsInterface(slots, namingPlan)}
+      const {${renderEventsProps(events)} class: className, style, ${renderSlotsDestructureList(slots, namingPlan)}, ${renderPropsDestructureAndAssignment(namingPlan)};
 
     </script>
     <${tagname}
@@ -269,6 +346,6 @@ const wrapperTemplate = (
     class={className}
     style={style}
     ${renderEventsMapper(events)} >
-      ${renderSnippets(slots, reactiveProperties)}
+      ${renderSnippets(slots, reactiveProperties, namingPlan)}
     </${tagname}>`;
 };

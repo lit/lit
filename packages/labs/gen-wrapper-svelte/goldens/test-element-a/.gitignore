@@ -1,4 +1,5 @@
 /lib/ElementA.svelte.*
+/lib/ElementCollidingPropAndSlot.svelte.*
 /lib/ElementEvents.svelte.*
 /lib/ElementMixins.svelte.*
 /lib/ElementProps.svelte.*
