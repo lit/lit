@@ -65,7 +65,7 @@ test('basic wrapper generation', async () => {
   assert.ok(wrapperJsFile.length > 0);
 });
 
-test('README.md generation', async () => {
+test('README.md is not copied to generated Angular wrapper', async () => {
   const folderName = 'test-element-a';
   const inputPackage = path.resolve(testProjects, folderName);
   const outputPackage = path.resolve(outputFolder, folderName + '-ng');
@@ -82,11 +82,7 @@ test('README.md generation', async () => {
     const pkg = analyzer.getPackage();
     await writeFileTree(outputFolder, await generateAngularWrapper(pkg));
 
-    const readmeFile = fs.readFileSync(
-      path.join(outputPackage, 'README.md'),
-      'utf8'
-    );
-    assert.equal(readmeFile, '# Test Element A\n\nThis is a test.');
+    assert.equal(fs.existsSync(path.join(outputPackage, 'README.md')), false);
 
     const packageJson = JSON.parse(
       fs.readFileSync(path.join(outputPackage, 'package.json'), 'utf8')
