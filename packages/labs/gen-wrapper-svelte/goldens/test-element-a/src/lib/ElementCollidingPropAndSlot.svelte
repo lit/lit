@@ -7,7 +7,7 @@
   export interface Props {
     class?: string;
     style?: string;
-    contentProp?: string;
+    content?: string;
   }
   export interface Events {}
   export interface Slots {
@@ -17,12 +17,8 @@
     class: className,
     style,
     contentSnippet,
-    ...rawProps
+    ...props
   } = $props<Props & Events & Slots>();
-  const props = {
-    ...rawProps,
-    content: rawProps.contentProp,
-  };
 </script>
 
 <element-colliding-prop-and-slot

@@ -155,8 +155,6 @@ const slotNameToPropName = (name: string) => {
 
 type NamingPlan = {
   snippetNamesBySlotName: Map<string, string>;
-  propNamesByPropName: Map<string, string>;
-  remappedProps: {name: string; alias: string}[];
 };
 
 const createNamingPlan = (
@@ -179,18 +177,6 @@ const createNamingPlan = (
     }
   }
 
-  const propNamesByPropName = new Map<string, string>();
-  const remappedProps: {name: string; alias: string}[] = [];
-  for (const prop of props.values()) {
-    if (collidingPropNames.has(prop.name)) {
-      const alias = `${prop.name}Prop`;
-      propNamesByPropName.set(prop.name, alias);
-      remappedProps.push({name: prop.name, alias});
-    } else {
-      propNamesByPropName.set(prop.name, prop.name);
-    }
-  }
-
   for (const [slotName, snippetName] of snippetNamesBySlotName) {
     if (collidingPropNames.has(snippetName)) {
       snippetNamesBySlotName.set(slotName, `${snippetName}Snippet`);
@@ -199,8 +185,6 @@ const createNamingPlan = (
 
   return {
     snippetNamesBySlotName,
-    propNamesByPropName,
-    remappedProps,
   };
 };
 
@@ -299,22 +283,6 @@ const renderEventsProps = (events: Map<string, EventModel>) => {
   return eventsProps ? `${eventsProps},` : '';
 };
 
-const renderPropsDestructureAndAssignment = (namingPlan: NamingPlan) => {
-  if (namingPlan.remappedProps.length === 0) {
-    return `...props} = $props<Props & Events & Slots>()`;
-  }
-
-  const remappedProps = namingPlan.remappedProps
-    .map(({name, alias}) => `${name}: rawProps.${alias}`)
-    .join(',\n        ');
-
-  return `...rawProps} = $props<Props & Events & Slots>();
-      const props = {
-        ...rawProps,
-        ${remappedProps}
-      }`;
-};
-
 const wrapperTemplate = (
   declaration: LitElementDeclaration,
   wcPath: string
@@ -331,14 +299,10 @@ const wrapperTemplate = (
       ${typeImports}
       import type { Snippet } from 'svelte';
 
-      ${renderPropsInterface(reactiveProperties).replace(
-        /\b([A-Za-z_][A-Za-z0-9_]*)\?:/g,
-        (_match, propName: string) =>
-          `${namingPlan.propNamesByPropName.get(propName) ?? propName}?:`
-      )}
+      ${renderPropsInterface(reactiveProperties)}
       ${renderEventsInterface(events)}
       ${renderSlotsInterface(slots, namingPlan)}
-      const {${renderEventsProps(events)} class: className, style, ${renderSlotsDestructureList(slots, namingPlan)}, ${renderPropsDestructureAndAssignment(namingPlan)};
+      const {${renderEventsProps(events)} class: className, style, ${renderSlotsDestructureList(slots, namingPlan)}, ...props} = $props<Props & Events & Slots>();
 
     </script>
     <${tagname}
