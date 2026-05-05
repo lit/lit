@@ -4,7 +4,6 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 import * as path from 'path';
-import * as fs from 'fs';
 import {
   Package,
   PackageJson,
@@ -52,13 +51,6 @@ export const generateSvelteWrapper = async (
       return moduleName;
     });
 
-    const readmePath = ['README.md', 'readme.md'].find((f) =>
-      fs.existsSync(path.join(pkg.rootDir, f))
-    );
-    const readme = readmePath
-      ? fs.readFileSync(path.join(pkg.rootDir, readmePath), 'utf8')
-      : undefined;
-
     return {
       [sveltePkgName]: {
         '.gitignore': gitIgnoreTemplate(moduleNames),
@@ -69,7 +61,6 @@ export const generateSvelteWrapper = async (
         'svelte.config.js': svelteConfigTemplate(),
         'src/app.html': appHtmlTemplate(),
         'src/lib/util.ts': utilTemplate(),
-        ...(readme ? {'README.md': readme} : {}),
         ...sfcFiles,
       },
     };

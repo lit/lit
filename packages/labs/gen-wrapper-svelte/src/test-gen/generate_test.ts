@@ -41,14 +41,8 @@ test('basic wrapper generation', async () => {
   );
   assert.ok(wrapperSourceFile.length > 0);
 
-  const readmeFile = fs.readFileSync(
-    path.join(outputPackage, 'README.md'),
-    'utf8'
-  );
-  assert.ok(readmeFile.includes('# Test Element A'));
-
   await assertGoldensMatch(outputPackage, path.join('goldens', project), {
-    formatGlob: '**/*.{svelte,ts,js,json,md}',
+    formatGlob: '**/*.{svelte,ts,js,json,html}',
   });
 
   await installPackage(outputPackage, {
