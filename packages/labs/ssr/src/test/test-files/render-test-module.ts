@@ -234,12 +234,12 @@ let nextId = 0;
 // Pattern: element-name{id,host?}/capture/eventPhase/target{id}
 let eventPath: string[] = [];
 
-export const setupEvents = (options?: {connectedCallbackElement?: string}) => {
+export const setupEvents = (options?: {excludeConnectedCallback?: string}) => {
   nextId = 0;
   eventPath = [];
-  if (options?.connectedCallbackElement) {
-    LitElementRenderer.renderOptions.push((element) =>
-      element.localName === options.connectedCallbackElement
+  if (options?.excludeConnectedCallback) {
+    LitElementRenderer.renderOptions.unshift((element) =>
+      element.localName !== options.excludeConnectedCallback
         ? {connectedCallback: true}
         : undefined
     );

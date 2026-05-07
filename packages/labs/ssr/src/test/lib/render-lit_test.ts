@@ -1391,7 +1391,7 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       setupEvents,
     } = await setup();
     const {eventPath, reset} = setupEvents({
-      connectedCallbackElement: 'test-events-child',
+      excludeConnectedCallback: 'test-events-child-inert',
     });
     try {
       const result = await render(
@@ -1411,14 +1411,18 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
       );
       // structuredClone is necessary, as the identity across module loader is not equal.
       assert.equal(structuredClone(eventPath), [
+        'document/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'lit-server-root/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'test-events-parent{id:0}/capture/CAPTURING_PHASE/test-events-child{id:1}',
+        '#shadow-root{test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'slot{id:2,host:test-events-parent}/capture/CAPTURING_PHASE/test-events-child{id:1}',
         'test-events-child{id:1}/capture/AT_TARGET/test-events-child{id:1}',
         'test-events-child{id:1}/non-capture/AT_TARGET/test-events-child{id:1}',
         'slot{id:2,host:test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        '#shadow-root{test-events-parent}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
         'test-events-parent{id:0}/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
         'lit-server-root/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
+        'document/non-capture/BUBBLING_PHASE/test-events-child{id:1}',
       ]);
     } finally {
       reset();
