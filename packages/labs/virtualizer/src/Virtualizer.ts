@@ -29,8 +29,10 @@ import {
 } from './layouts/shared/Layout.js';
 import {
   computeEffectiveWritingMode,
+  isWritingModeConforming,
   readDirection,
   readWritingMode,
+  setLogicalMinSize,
 } from './utils/writing-mode.js';
 
 // Internal physical-coordinate label types used by `_updateView` when
@@ -1337,9 +1339,13 @@ export class Virtualizer {
       }
       this._getSizer().style.transform = `translate(${h}, ${v})`;
     } else {
-      const style = this._hostElement!.style;
-      style.minInlineSize = inline;
-      style.minBlockSize = block;
+      setLogicalMinSize(
+        this._hostElement!,
+        block,
+        inline,
+        this._effectiveWritingMode,
+        isWritingModeConforming()
+      );
     }
   }
 

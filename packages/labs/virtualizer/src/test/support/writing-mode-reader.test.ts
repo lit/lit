@@ -5,9 +5,13 @@
  */
 
 import {
+  _resetWritingModeConformanceForTesting,
+  _setWritingModeConformanceForTesting,
   computeEffectiveWritingMode,
+  isWritingModeConforming,
   readDirection,
   readWritingMode,
+  setLogicalMinSize,
 } from '../../utils/writing-mode.js';
 import {expect} from '@open-wc/testing';
 
@@ -173,5 +177,95 @@ describe('computeEffectiveWritingMode', () => {
     expect(
       computeEffectiveWritingMode('inline', 'vertical-rl', 'rtl')
     ).to.equal('horizontal-tb');
+  });
+});
+
+describe('isWritingModeConforming', () => {
+  beforeEach(() => {
+    _resetWritingModeConformanceForTesting();
+  });
+  afterEach(() => {
+    _resetWritingModeConformanceForTesting();
+  });
+
+  it('reports the host engine as conforming', () => {
+    // The test runner is Chrome, which honors writing-mode.
+    expect(isWritingModeConforming()).to.equal(true);
+  });
+
+  it('caches the result on subsequent calls', () => {
+    const first = isWritingModeConforming();
+    // Force a different cached value to confirm it isn't re-probing.
+    _setWritingModeConformanceForTesting(!first);
+    expect(isWritingModeConforming()).to.equal(!first);
+  });
+
+  it('returns optimistic true and does not cache when document.body is missing', () => {
+    const realBody = document.body;
+    Object.defineProperty(document, 'body', {
+      configurable: true,
+      get: () => null,
+    });
+    try {
+      expect(isWritingModeConforming()).to.equal(true);
+    } finally {
+      Object.defineProperty(document, 'body', {
+        configurable: true,
+        value: realBody,
+        writable: true,
+      });
+    }
+    // No cache was written, so a real probe should still run on next call.
+    const probed = isWritingModeConforming();
+    expect(probed).to.equal(true);
+  });
+});
+
+describe('setLogicalMinSize', () => {
+  let el: HTMLElement;
+  beforeEach(() => {
+    el = document.createElement('div');
+  });
+
+  it('writes logical properties on conforming engines', () => {
+    setLogicalMinSize(el, '200px', '100px', 'horizontal-tb', true);
+    expect(el.style.minBlockSize).to.equal('200px');
+    expect(el.style.minInlineSize).to.equal('100px');
+    expect(el.style.minHeight).to.equal('');
+    expect(el.style.minWidth).to.equal('');
+  });
+
+  it('translates logical → physical on non-conforming horizontal-tb', () => {
+    setLogicalMinSize(el, '200px', '100px', 'horizontal-tb', false);
+    expect(el.style.minHeight).to.equal('200px');
+    expect(el.style.minWidth).to.equal('100px');
+    expect(el.style.minBlockSize).to.equal('');
+    expect(el.style.minInlineSize).to.equal('');
+  });
+
+  it('translates logical → physical on non-conforming vertical-lr', () => {
+    setLogicalMinSize(el, '200px', '100px', 'vertical-lr', false);
+    expect(el.style.minWidth).to.equal('200px');
+    expect(el.style.minHeight).to.equal('100px');
+    expect(el.style.minBlockSize).to.equal('');
+    expect(el.style.minInlineSize).to.equal('');
+  });
+
+  it('translates logical → physical on non-conforming vertical-rl', () => {
+    setLogicalMinSize(el, '200px', '100px', 'vertical-rl', false);
+    expect(el.style.minWidth).to.equal('200px');
+    expect(el.style.minHeight).to.equal('100px');
+    expect(el.style.minBlockSize).to.equal('');
+    expect(el.style.minInlineSize).to.equal('');
+  });
+
+  it('clears stale logical properties when switching to non-conforming', () => {
+    el.style.minBlockSize = '50px';
+    el.style.minInlineSize = '40px';
+    setLogicalMinSize(el, '200px', '100px', 'horizontal-tb', false);
+    expect(el.style.minBlockSize).to.equal('');
+    expect(el.style.minInlineSize).to.equal('');
+    expect(el.style.minHeight).to.equal('200px');
+    expect(el.style.minWidth).to.equal('100px');
   });
 });
