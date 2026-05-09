@@ -27,7 +27,11 @@ import {
   VirtualizerSizeValue,
   LogicalCoordinates,
 } from './layouts/shared/Layout.js';
-import {readDirection, readWritingMode} from './utils/writing-mode.js';
+import {
+  computeEffectiveWritingMode,
+  readDirection,
+  readWritingMode,
+} from './utils/writing-mode.js';
 
 // Internal physical-coordinate label types used by `_updateView` when
 // translating between logical (block/inline) coordinates and the
@@ -256,9 +260,16 @@ export class Virtualizer {
    */
   private _lastVisible = -1;
 
-  private _writingMode: writingMode = 'horizontal-tb';
+  /**
+   * The writing-mode the virtualizer treats as authoritative for its
+   * own internal coordinate logic (sizing, positioning, scroll-error
+   * correction). Computed from the host's context writing-mode and
+   * the current `axis` setting in `_applyAxisSwap`, so that internal
+   * logic does not depend on a CSS round-trip succeeding (which it
+   * does not on engines that don't honor `writing-mode`).
+   */
+  private _effectiveWritingMode: writingMode = 'horizontal-tb';
   private _scrollerWritingMode: writingMode = 'horizontal-tb';
-  private _direction: direction = 'ltr';
 
   /**
    * Controls which CSS logical axis the virtualizer scrolls along.
@@ -270,22 +281,23 @@ export class Virtualizer {
   /**
    * The writing-mode of the context (i.e. the host element before
    * any axis-swap override is applied). Used to restore children's
-   * writing-mode when axis='inline'.
+   * writing-mode when axis='inline' and as the basis for computing
+   * `_effectiveWritingMode`.
    *
-   * Captured only at the moment the swap is first applied (see
-   * `_applyAxisSwap`), not live-tracked. If an ancestor's
-   * writing-mode changes while `axis='inline'` is active, children
-   * will continue to be restored to the originally-captured value.
-   * In practice writing-mode is almost always a stable declaration,
-   * so this is an acceptable edge-case simplification.
+   * Refreshed each layout cycle by `_applyAxisSwap`, except while
+   * `axis='inline'` is actively keeping the host's writing-mode
+   * swapped — in that case the originally-captured context value is
+   * preserved (since reading the host's CSS would return the swapped
+   * value, not the context value).
    */
   private _contextWritingMode: writingMode = 'horizontal-tb';
 
   /**
-   * The CSS direction of the context (i.e. the host element before
-   * any axis-swap override is applied). Used to determine the correct
-   * swapped writing-mode for axis='inline'. Capture semantics match
-   * `_contextWritingMode`.
+   * The CSS direction of the host. Always reflects the host's CSS
+   * direction (axis swap does not affect direction). Used both as
+   * an input to the axis='inline' writing-mode swap and as the
+   * direction for child-relative comparisons in
+   * `_readElementLayoutInfo`.
    */
   private _contextDirection: direction = 'ltr';
 
@@ -584,10 +596,10 @@ export class Virtualizer {
       this._legacyDirectionWritingModeInjected = true;
       // @deprecated: Store expected writingMode so it can be set on the layout
       // immediately after creation, before _updateView runs. Also set
-      // this._writingMode immediately so it's correct even if connected() is
+      // this._effectiveWritingMode immediately so it's correct even if connected() is
       // called before layout creation (due to async _initLayout).
       this._pendingWritingMode = 'vertical-lr';
-      this._writingMode = 'vertical-lr';
+      this._effectiveWritingMode = 'vertical-lr';
     } else {
       // direction: 'vertical' (or unspecified) - revert to default if we
       // previously injected a writing-mode
@@ -597,10 +609,10 @@ export class Virtualizer {
       }
       // @deprecated: Store expected writingMode so it can be set on the layout
       // immediately after creation, before _updateView runs. Also set
-      // this._writingMode immediately so it's correct even if connected() is
+      // this._effectiveWritingMode immediately so it's correct even if connected() is
       // called before layout creation (due to async _initLayout).
       this._pendingWritingMode = 'horizontal-tb';
-      this._writingMode = 'horizontal-tb';
+      this._effectiveWritingMode = 'horizontal-tb';
       // Only warn if direction was explicitly specified
       if (config.direction !== undefined) {
         issueWarning(
@@ -616,7 +628,11 @@ export class Virtualizer {
   }
 
   /**
-   * Applies or removes the writing-mode swap for `axis='inline'`.
+   * Applies or removes the writing-mode swap for `axis='inline'`,
+   * and refreshes `_contextWritingMode` / `_contextDirection` /
+   * `_effectiveWritingMode` so that internal coordinate logic always
+   * has a current source of truth that does not depend on a CSS
+   * round-trip succeeding.
    *
    * When `axis='inline'`, the host's writing-mode is swapped so the
    * virtualizer scrolls along the inline axis. The context (original)
@@ -652,29 +668,44 @@ export class Virtualizer {
           );
         }
 
-        // Capture the context writing-mode before we override it
+        // Capture the context writing-mode before we override it.
+        // Direction is independent of axis swap, so we always read it.
         this._contextWritingMode = readWritingMode(host);
+        this._contextDirection = readDirection(host);
+      } else {
+        // Refresh direction (host's CSS direction is unaffected by the
+        // writing-mode swap we apply for axis='inline').
         this._contextDirection = readDirection(host);
       }
 
-      // Swap: horizontal-tb → vertical-lr/rl (depending on CSS direction),
-      //        vertical-lr/rl → horizontal-tb
-      const swapped =
-        this._contextWritingMode === 'horizontal-tb'
-          ? this._contextDirection === 'rtl'
-            ? 'vertical-rl'
-            : 'vertical-lr'
-          : 'horizontal-tb';
+      const swapped = computeEffectiveWritingMode(
+        'inline',
+        this._contextWritingMode,
+        this._contextDirection
+      );
       host.style.writingMode = swapped;
       this._axisWritingModeInjected = true;
-    } else if (this._axisWritingModeInjected) {
-      // Revert to context writing-mode
-      host.style.writingMode = '';
-      this._axisWritingModeInjected = false;
-      // Clear restored writing-mode from children
-      this._children.forEach((child) => {
-        child.style.writingMode = '';
-      });
+      this._effectiveWritingMode = swapped;
+    } else {
+      if (this._axisWritingModeInjected) {
+        // Revert to context writing-mode
+        host.style.writingMode = '';
+        this._axisWritingModeInjected = false;
+        // Clear restored writing-mode from children
+        this._children.forEach((child) => {
+          child.style.writingMode = '';
+        });
+      }
+      // axis='block': read the host's current writing-mode/direction
+      // (from user CSS or a legacy-direction-config injection) and
+      // use it directly as the effective value.
+      this._contextWritingMode = readWritingMode(host);
+      this._contextDirection = readDirection(host);
+      this._effectiveWritingMode = computeEffectiveWritingMode(
+        'block',
+        this._contextWritingMode,
+        this._contextDirection
+      );
     }
   }
 
@@ -731,7 +762,7 @@ export class Virtualizer {
         // before the next reflow.
         if (this._pendingWritingMode !== null) {
           this._layout.writingMode = this._pendingWritingMode;
-          this._writingMode = this._pendingWritingMode;
+          this._effectiveWritingMode = this._pendingWritingMode;
           this._pendingWritingMode = null;
         }
         // Schedule _updateLayout to re-read the CSS writing-mode
@@ -808,7 +839,7 @@ export class Virtualizer {
     // This can be removed when the deprecated `direction` config option is removed.
     if (this._pendingWritingMode !== null) {
       this._layout.writingMode = this._pendingWritingMode;
-      this._writingMode = this._pendingWritingMode;
+      this._effectiveWritingMode = this._pendingWritingMode;
       this._pendingWritingMode = null;
     }
 
@@ -878,13 +909,15 @@ export class Virtualizer {
     // offsetWidth doesn't take transforms in consideration, so we use
     // getBoundingClientRect which does.
     const {width, height} = element.getBoundingClientRect();
-    const hostIsHorizontal = isHorizontalWritingMode(this._writingMode);
+    const hostIsHorizontal = isHorizontalWritingMode(
+      this._effectiveWritingMode
+    );
     const blockSize = hostIsHorizontal ? height : width;
     const inlineSize = hostIsHorizontal ? width : height;
     const writingMode = readWritingMode(element);
     const direction = readDirection(element);
     const flipAxis = isHorizontalWritingMode(writingMode) !== hostIsHorizontal;
-    const reverseDirection = direction !== this._direction;
+    const reverseDirection = direction !== this._contextDirection;
     const baselineInfo = Object.assign(
       {writingMode, direction},
       {blockSize, inlineSize},
@@ -1028,10 +1061,15 @@ export class Virtualizer {
     const layout = this._layout;
 
     if (hostElement && hostElement.isConnected && scrollingElement && layout) {
-      const direction = (this._direction = readDirection(hostElement));
-      // Host writing-mode: used for child positioning and sizing
-      const writingMode = (this._writingMode = readWritingMode(hostElement));
-      // Scroller writing-mode: used for scroll coordinate handling
+      // Host writing-mode and direction are sourced from internal state
+      // populated by `_applyAxisSwap` rather than re-read from CSS, so
+      // that engines that don't honor `writing-mode` writes still get
+      // correct internal coordinate logic.
+      const direction = this._contextDirection;
+      const writingMode = this._effectiveWritingMode;
+      // Scroller writing-mode: used for scroll coordinate handling.
+      // Read directly from the scroller (not the host) since the two
+      // can have independent writing-modes.
       const scrollerWritingMode = (this._scrollerWritingMode =
         readWritingMode(scrollingElement));
 
@@ -1243,7 +1281,7 @@ export class Virtualizer {
       // This can be removed when the deprecated `direction` config option is removed.
       const previousWritingMode = layout.writingMode;
       layout.writingMode = writingMode;
-      layout.direction = this._direction;
+      layout.direction = this._contextDirection;
       if (previousWritingMode !== writingMode) {
         this._writingModeChanged = true;
       }
@@ -1290,12 +1328,12 @@ export class Virtualizer {
 
     if (this._isScroller) {
       let h: string, v: string;
-      if (this._writingMode === 'horizontal-tb') {
+      if (this._effectiveWritingMode === 'horizontal-tb') {
         v = block;
-        h = this._direction === 'ltr' ? inline : `-${inline}`;
+        h = this._contextDirection === 'ltr' ? inline : `-${inline}`;
       } else {
-        h = this._writingMode === 'vertical-lr' ? block : `-${block}`;
-        v = this._direction === 'ltr' ? inline : `-${inline}`;
+        h = this._effectiveWritingMode === 'vertical-lr' ? block : `-${block}`;
+        v = this._contextDirection === 'ltr' ? inline : `-${inline}`;
       }
       this._getSizer().style.transform = `translate(${h}, ${v})`;
     } else {
@@ -1323,7 +1361,7 @@ export class Virtualizer {
             if (childLayoutInfo) {
               if (
                 isHorizontalWritingMode(childLayoutInfo.writingMode) !==
-                isHorizontalWritingMode(this._writingMode)
+                isHorizontalWritingMode(this._effectiveWritingMode)
               ) {
                 const oInlineSize = inlineSize;
                 inlineSize = blockSize;
@@ -1340,14 +1378,14 @@ export class Virtualizer {
             }
 
             let left, top;
-            if (this._writingMode === 'horizontal-tb') {
+            if (this._effectiveWritingMode === 'horizontal-tb') {
               top = insetBlockStart;
               left =
-                this._direction === 'ltr'
+                this._contextDirection === 'ltr'
                   ? insetInlineStart
                   : -insetInlineStart;
             } else {
-              if (this._writingMode === 'vertical-lr') {
+              if (this._effectiveWritingMode === 'vertical-lr') {
                 left = insetBlockStart;
               } else {
                 // vertical-rl: scrollLeft is 0 at block-start (right edge),
@@ -1355,7 +1393,7 @@ export class Virtualizer {
                 left = -insetBlockStart;
               }
               top =
-                this._direction === 'ltr'
+                this._contextDirection === 'ltr'
                   ? insetInlineStart
                   : -insetInlineStart;
             }
@@ -1400,10 +1438,13 @@ export class Virtualizer {
         this._scrollerWritingMode === 'vertical-rl' ? -block : block;
       this._scrollerController!.correctScrollError({
         top:
-          scrollTop - (this._writingMode === 'horizontal-tb' ? block : inline),
+          scrollTop -
+          (this._effectiveWritingMode === 'horizontal-tb' ? block : inline),
         left:
           scrollLeft -
-          (this._writingMode === 'horizontal-tb' ? inline : blockCorrection),
+          (this._effectiveWritingMode === 'horizontal-tb'
+            ? inline
+            : blockCorrection),
       });
     }
   }

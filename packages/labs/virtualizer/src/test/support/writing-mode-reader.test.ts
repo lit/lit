@@ -4,7 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {readDirection, readWritingMode} from '../../utils/writing-mode.js';
+import {
+  computeEffectiveWritingMode,
+  readDirection,
+  readWritingMode,
+} from '../../utils/writing-mode.js';
 import {expect} from '@open-wc/testing';
 
 type StyleProps = {
@@ -122,5 +126,52 @@ describe('readDirection', () => {
     } finally {
       el.remove();
     }
+  });
+});
+
+describe('computeEffectiveWritingMode', () => {
+  it('returns the context writing-mode unchanged for axis="block"', () => {
+    expect(
+      computeEffectiveWritingMode('block', 'horizontal-tb', 'ltr')
+    ).to.equal('horizontal-tb');
+    expect(
+      computeEffectiveWritingMode('block', 'horizontal-tb', 'rtl')
+    ).to.equal('horizontal-tb');
+    expect(computeEffectiveWritingMode('block', 'vertical-lr', 'ltr')).to.equal(
+      'vertical-lr'
+    );
+    expect(computeEffectiveWritingMode('block', 'vertical-rl', 'ltr')).to.equal(
+      'vertical-rl'
+    );
+  });
+
+  it('swaps to vertical-lr for inline + horizontal-tb + ltr', () => {
+    expect(
+      computeEffectiveWritingMode('inline', 'horizontal-tb', 'ltr')
+    ).to.equal('vertical-lr');
+  });
+
+  it('swaps to vertical-rl for inline + horizontal-tb + rtl', () => {
+    expect(
+      computeEffectiveWritingMode('inline', 'horizontal-tb', 'rtl')
+    ).to.equal('vertical-rl');
+  });
+
+  it('swaps to horizontal-tb for inline + vertical-lr (ltr or rtl)', () => {
+    expect(
+      computeEffectiveWritingMode('inline', 'vertical-lr', 'ltr')
+    ).to.equal('horizontal-tb');
+    expect(
+      computeEffectiveWritingMode('inline', 'vertical-lr', 'rtl')
+    ).to.equal('horizontal-tb');
+  });
+
+  it('swaps to horizontal-tb for inline + vertical-rl (ltr or rtl)', () => {
+    expect(
+      computeEffectiveWritingMode('inline', 'vertical-rl', 'ltr')
+    ).to.equal('horizontal-tb');
+    expect(
+      computeEffectiveWritingMode('inline', 'vertical-rl', 'rtl')
+    ).to.equal('horizontal-tb');
   });
 });
