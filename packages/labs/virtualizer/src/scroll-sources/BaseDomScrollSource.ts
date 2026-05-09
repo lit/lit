@@ -20,6 +20,7 @@ import {
   ScrollElementIntoViewOptions,
 } from './ScrollSource.js';
 import {_ResizeObserver, getClippingAncestors} from './_dom-utils.js';
+import {readWritingMode} from '../utils/writing-mode.js';
 import {DomSmoothIntent} from './ScrollIntoViewIntent.js';
 
 /**
@@ -59,7 +60,7 @@ export abstract class BaseDomScrollSource implements ScrollSource {
   // Cached during the most recent updateView() so correctScrollError()
   // can perform writing-mode-aware coordinate conversion without
   // re-reading computed styles.
-  protected _scrollerWritingMode: writingMode = 'unknown';
+  protected _scrollerWritingMode: writingMode = 'horizontal-tb';
   // EventListenerObject implementation: scroll/resize events are
   // dispatched here. Defined as an arrow-bound member below.
   protected _eventHandler: EventListenerObject;
@@ -216,10 +217,9 @@ export abstract class BaseDomScrollSource implements ScrollSource {
     }
     const scrollingElement = scrollerController.element;
 
-    const scrollerStyle = getComputedStyle(scrollingElement);
     // Cache for use by correctScrollError().
     const scrollerWritingMode = (this._scrollerWritingMode =
-      scrollerStyle.writingMode as writingMode);
+      readWritingMode(scrollingElement));
 
     let insetBlockStart: number,
       insetBlockEnd: number,
@@ -410,8 +410,7 @@ export abstract class BaseDomScrollSource implements ScrollSource {
     // the HOST's writing-mode, which we read from the host element.
     const blockCorrection =
       this._scrollerWritingMode === 'vertical-rl' ? -block : block;
-    const hostWritingMode = getComputedStyle(this._host.hostElement)
-      .writingMode as writingMode;
+    const hostWritingMode = readWritingMode(this._host.hostElement);
     sc.correctScrollError({
       top: scrollTop - (hostWritingMode === 'horizontal-tb' ? block : inline),
       left:

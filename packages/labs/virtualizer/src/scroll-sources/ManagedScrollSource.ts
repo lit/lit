@@ -20,6 +20,7 @@ import {
   Viewport,
 } from './ScrollSource.js';
 import {DestinationChangedEvent, ScrollErrorEvent} from '../events.js';
+import {readWritingMode} from '../utils/writing-mode.js';
 import {
   ManagedSmoothIntent,
   ScrollIntoViewIntent,
@@ -210,7 +211,7 @@ export class ManagedScrollSource implements ScrollSource {
     let inlineOffset: number;
     let blockSize: number;
     let inlineSize: number;
-    if (writingMode === 'horizontal-tb' || writingMode === 'unknown') {
+    if (writingMode === 'horizontal-tb') {
       blockOffset = scrollTop;
       inlineOffset = scrollLeft;
       blockSize = height;
@@ -264,13 +265,11 @@ export class ManagedScrollSource implements ScrollSource {
     // Convert the logical correction to physical (top/left) using the
     // host's writing mode. This is the only DOM read in this source,
     // and only happens when a correction occurs (rare).
-    const wm =
-      (getComputedStyle(this._host.hostElement).writingMode as writingMode) ||
-      'horizontal-tb';
+    const wm = readWritingMode(this._host.hostElement);
 
     let top: number;
     let left: number;
-    if (wm === 'horizontal-tb' || wm === 'unknown') {
+    if (wm === 'horizontal-tb') {
       top = error.block;
       left = error.inline;
     } else {
