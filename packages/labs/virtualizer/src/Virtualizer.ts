@@ -104,6 +104,10 @@ export interface VirtualizerHostElement extends HTMLElement {
  * a call that looks and behaves essentially the same as for
  * a real Element. May be useful for other things later.
  */
+export type ChildPositioningMethod = 'absolute' | 'translate';
+export const defaultChildPositioningMethod: ChildPositioningMethod =
+  'translate';
+
 export interface VirtualizerChildElementProxy {
   scrollIntoView: (options?: ScrollIntoViewOptions) => void;
 }
@@ -144,6 +148,13 @@ export interface VirtualizerConfig {
    * fires an `unpinned` event.
    */
   pin?: PinOptions;
+
+  /**
+   * Controls how the virtualizer positions its child elements.
+   * - `'translate'` (default): uses CSS `transform: translate()`.
+   * - `'absolute'`: uses CSS `left` and `top` properties.
+   */
+  positioning?: ChildPositioningMethod;
 }
 
 let DefaultLayoutConstructor: LayoutConstructor;
@@ -158,6 +169,9 @@ let DefaultLayoutConstructor: LayoutConstructor;
  */
 export class Virtualizer {
   private _warnings = new InstanceWarnings();
+
+  private _childPositioningMethod: ChildPositioningMethod =
+    defaultChildPositioningMethod;
 
   private _benchmarkStart: number | null = null;
 
@@ -465,6 +479,8 @@ export class Virtualizer {
 
   _init(config: VirtualizerConfig) {
     this._isScroller = !!config.scroller;
+    this._childPositioningMethod =
+      config.positioning || defaultChildPositioningMethod;
     if (config.axis) {
       this._axis = config.axis;
     }
@@ -1537,7 +1553,12 @@ export class Virtualizer {
                   : -insetInlineStart;
             }
 
-            child.style.transform = `translate(${left}px, ${top}px)`;
+            if (this._childPositioningMethod === 'absolute') {
+              child.style.left = left + 'px';
+              child.style.top = top + 'px';
+            } else {
+              child.style.transform = `translate(${left}px, ${top}px)`;
+            }
 
             if (inlineSize !== undefined) {
               child.style.inlineSize = inlineSize + 'px';
