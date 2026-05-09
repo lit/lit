@@ -256,9 +256,9 @@ export class Virtualizer {
    */
   private _lastVisible = -1;
 
-  private _writingMode: writingMode = 'unknown';
-  private _scrollerWritingMode: writingMode = 'unknown';
-  private _direction: direction = 'unknown';
+  private _writingMode: writingMode = 'horizontal-tb';
+  private _scrollerWritingMode: writingMode = 'horizontal-tb';
+  private _direction: direction = 'ltr';
 
   /**
    * Controls which CSS logical axis the virtualizer scrolls along.
@@ -279,7 +279,7 @@ export class Virtualizer {
    * In practice writing-mode is almost always a stable declaration,
    * so this is an acceptable edge-case simplification.
    */
-  private _contextWritingMode: writingMode = 'unknown';
+  private _contextWritingMode: writingMode = 'horizontal-tb';
 
   /**
    * The CSS direction of the context (i.e. the host element before
@@ -287,7 +287,7 @@ export class Virtualizer {
    * swapped writing-mode for axis='inline'. Capture semantics match
    * `_contextWritingMode`.
    */
-  private _contextDirection: direction = 'unknown';
+  private _contextDirection: direction = 'ltr';
 
   /**
    * Tracks whether we've injected a writing-mode style for the axis
@@ -1244,10 +1244,7 @@ export class Virtualizer {
       const previousWritingMode = layout.writingMode;
       layout.writingMode = writingMode;
       layout.direction = this._direction;
-      if (
-        previousWritingMode !== 'unknown' &&
-        previousWritingMode !== writingMode
-      ) {
+      if (previousWritingMode !== writingMode) {
         this._writingModeChanged = true;
       }
     }

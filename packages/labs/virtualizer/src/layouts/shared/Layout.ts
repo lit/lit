@@ -38,13 +38,9 @@ export type margin =
   | 'marginInlineStart'
   | 'marginInlineEnd';
 
-export type writingMode =
-  | 'horizontal-tb'
-  | 'vertical-lr'
-  | 'vertical-rl'
-  | 'unknown';
+export type writingMode = 'horizontal-tb' | 'vertical-lr' | 'vertical-rl';
 
-export type direction = 'ltr' | 'rtl' | 'unknown';
+export type direction = 'ltr' | 'rtl';
 
 export type virtualizerAxis = 'block' | 'inline';
 

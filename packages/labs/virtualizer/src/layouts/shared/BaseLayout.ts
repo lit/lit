@@ -41,9 +41,9 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
 
   public offsetWithinScroller: LogicalCoordinates = {inline: 0, block: 0};
 
-  public writingMode: writingMode = 'unknown';
+  public writingMode: writingMode = 'horizontal-tb';
 
-  public direction: direction = 'unknown';
+  public direction: direction = 'ltr';
 
   /**
    * Flag for debouncing asynchronous reflow requests.
