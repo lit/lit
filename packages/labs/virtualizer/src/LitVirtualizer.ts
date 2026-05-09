@@ -101,6 +101,14 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   @property({attribute: false})
   viewport: Viewport | undefined;
 
+  /**
+   * Lift the layout's clamp on scroll-into-view destinations and
+   * pinned positions. Managed-mode only — see
+   * `VirtualizerConfig.unboundedScrollPosition`.
+   */
+  @property({type: Boolean, attribute: 'unbounded-scroll-position'})
+  unboundedScrollPosition = false;
+
   createRenderRoot() {
     return this;
   }
@@ -115,6 +123,7 @@ export class LitVirtualizer<T = unknown> extends LitElement {
       axis,
       pin,
       viewport,
+      unboundedScrollPosition,
     } = this;
     return html`${virtualize({
       items,
@@ -125,6 +134,7 @@ export class LitVirtualizer<T = unknown> extends LitElement {
       axis,
       pin,
       viewport,
+      unboundedScrollPosition,
     })}`;
   }
 

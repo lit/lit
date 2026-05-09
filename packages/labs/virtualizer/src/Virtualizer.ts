@@ -194,6 +194,23 @@ export interface VirtualizerConfig {
    * fires an `unpinned` event.
    */
   pin?: PinOptions;
+
+  /**
+   * Lift the layout's clamp on scroll-into-view destinations and pinned
+   * positions, so values past the end of content (or before the start)
+   * are returned and applied unchanged. **Managed-mode only**: in native
+   * scroll modes the browser would re-clamp, so the option is ignored
+   * (with a dev-mode warning) when `scroller` is anything other than
+   * `'managed'`.
+   *
+   * Use this when the consumer is the scroll authority and wants
+   * leading-edge alignment for items near the end of the list (e.g. a
+   * focus-driven managed viewport that always positions the focused
+   * item at the start of the visible area). The consumer is responsible
+   * for handling out-of-bounds positions in its own coordinate system —
+   * `scrollSize` is unaffected by this option.
+   */
+  unboundedScrollPosition?: boolean;
 }
 
 let DefaultLayoutConstructor: LayoutConstructor;
@@ -266,6 +283,13 @@ export class Virtualizer {
    * Set via the `viewport` getter/setter.
    */
   private _viewport: Viewport | null = null;
+
+  /**
+   * `true` when the consumer opted into unbounded scroll positions via
+   * config. Forwarded to the layout only when `_managed` is also true;
+   * see `VirtualizerConfig.unboundedScrollPosition`.
+   */
+  private _unboundedScrollPosition = false;
 
   /**
    * The `ScrollSource` strategy in use. Populated in `connected()` based
@@ -548,6 +572,18 @@ export class Virtualizer {
     }
     if (config.pin) {
       this._pendingPin = config.pin;
+    }
+    if (config.unboundedScrollPosition) {
+      this._unboundedScrollPosition = true;
+      if (!this._managed) {
+        this._warnings.warnOnce(
+          'unbounded-scroll-position-non-managed',
+          '[lit-virtualizer] `unboundedScrollPosition` has no effect when ' +
+            "`scroller` is not `'managed'` — native browser scrolling " +
+            're-clamps scroll positions to the bounds of the content. ' +
+            "Set `scroller: 'managed'` to make the option take effect."
+        );
+      }
     }
     this._initHostElement(config);
     // If no layout is specified, we make an empty
@@ -987,6 +1023,13 @@ export class Virtualizer {
       (message: LayoutHostMessage) => this._handleLayoutMessage(message),
       config
     );
+
+    // The unboundedScrollPosition option only makes sense in managed
+    // mode — native browser scrolling re-clamps any value we hand it.
+    // The dev warning for the non-managed case was issued in `_init`.
+    if (this._managed && this._unboundedScrollPosition) {
+      this._layout.unboundedScrollPosition = true;
+    }
 
     // @deprecated: If legacy direction config was used, set the writingMode
     // on the layout immediately so it's correct before the first reflow.

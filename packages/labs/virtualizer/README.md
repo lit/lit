@@ -127,6 +127,32 @@ Smooth scroll in managed mode requires a deliberate consumer-side animation stra
 > [!NOTE]
 > The same scroll-into-view return value and `AbortSignal` option are also available in DOM scroll modes; the destination coordinates are useful for coordinating other effects with the scroll, and `AbortSignal` lets the consumer cancel an in-flight smooth scroll. `scrollintoviewended` fires for smooth-scroll intents in all modes; `scrollerror` and `destinationchanged` are managed-mode-only.
 
+#### Unbounded scroll position
+
+By default the virtualizer's layout clamps scroll-into-view destinations and pinned positions to the bounds of `[0, scrollSize - viewportSize]`. That matches what native browsers do — values outside the range would be saturated by the platform anyway — and is the correct default for the ancestor and self scroller modes.
+
+In managed mode the consumer is the scroll authority and may want positions outside that range. The most common case: a consumer that drives scrolling via focus moves and always wants the focused element pinned to the leading edge of the viewport, including when the focused element is at or near the end of the list. With the clamp in place, the leading-edge alignment for the last few items collapses to the same trailing-edge frame.
+
+Set `unboundedScrollPosition: true` to lift the clamp:
+
+```js
+<lit-virtualizer
+  .scroller=${'managed'}
+  .viewport=${this.viewport}
+  .items=${this.items}
+  unbounded-scroll-position
+  .renderItem=${item => html`<div>${item.name}</div>`}
+></lit-virtualizer>
+```
+
+When set:
+
+- `scrollIntoView` returns destinations unchanged — past the end (greater than `scrollSize - viewportSize`) and before the start (negative) are both allowed.
+- A pin to a near-end item with `block: 'start'` produces a `scrollerror` whose magnitude can exceed the clamped range.
+- `scrollSize` is **not** inflated; the option only affects the destinations the layout returns. If you need the consumer's coordinate space to extend past the end of content (e.g. for headroom rendering), that's a separate concern in the consumer's own viewport math.
+
+The option only takes effect when `scroller` is `'managed'` — in native scroll modes the browser would re-clamp any unclamped value the layout produced. Setting it together with a non-managed `scroller` issues a single dev-mode warning and is otherwise a no-op.
+
 ### Writing mode and direction
 
 The virtualizer is aware of CSS `writing-mode` and `direction` and should generally "just work" if you want virtualization along the block axis (e.g., the vertical axis in the browser's default `horizontal-tb` writing mode):
@@ -754,6 +780,14 @@ Type: `{index: number, block?: 'start' | 'center' | 'end' | 'nearest'}`
 Optional. Declaratively pin the viewport to a specific item. The viewport remains pinned until the user scrolls, at which point the virtualizer fires an `unpinned` event and the pin is released. Set to `undefined` (or omit) to leave the viewport in its current scroll position. See [Framing a child element within the viewport](#framing-a-child-element-within-the-viewport) for details and examples.
 
 When using the `virtualize` directive, set `pin` in the directive config instead of as an attribute/property.
+
+### `unboundedScrollPosition` attribute / property
+
+Type: `boolean`
+
+Default: `false`
+
+Optional. When set, the layout's clamp on scroll-into-view destinations and pinned positions is lifted, so values past the end of content (or before the start) are returned and applied unchanged. **Managed-mode only** — setting it together with a non-managed `scroller` is a no-op (with a dev-mode warning). See [Unbounded scroll position](#unbounded-scroll-position) for details.
 
 ### `scrollToIndex` method
 

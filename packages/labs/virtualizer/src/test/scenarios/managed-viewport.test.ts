@@ -436,6 +436,163 @@ describe('managed viewport mode', () => {
     });
   });
 
+  describe('unboundedScrollPosition', () => {
+    /**
+     * Helper: build a managed virtualizer with the option in the
+     * desired state and wait for the initial range to render.
+     *
+     * Note that the layout's `scrollSize` is only populated after a
+     * subsequent layout cycle (the source needs `virtualizerSize` to
+     * be reported once before it can echo it back as `scrollSize`).
+     * The unbounded path doesn't read `scrollSize` at all, so this
+     * helper deliberately doesn't wait for the second cycle.
+     */
+    async function createManaged(opts: {items: number[]; unbounded: boolean}) {
+      const host = (await fixture(
+        html`<div style="display: block; position: relative;"></div>`
+      )) as HTMLElement;
+
+      const events: RangeChangedEvent[] = [];
+      host.addEventListener('rangeChanged', (e) =>
+        events.push(e as RangeChangedEvent)
+      );
+
+      const virtualizer = new Virtualizer({
+        hostElement: host,
+        scroller: 'managed',
+        viewport: {scrollTop: 0, scrollLeft: 0, width: 200, height: 200},
+        unboundedScrollPosition: opts.unbounded,
+      });
+      virtualizer.items = opts.items;
+      virtualizer.connected();
+
+      await pass(() => expect(events.length).to.be.greaterThan(0));
+      return {host, virtualizer, events};
+    }
+
+    it('returns an unclamped destination for the last item with block: "start" (instant)', async () => {
+      // Items: 50 × default 100px estimate ≈ 5000px scrollable size;
+      // viewport height 200 → clamped maximum is 4800. The unclamped
+      // last-item-start destination is ≈ 4900.
+      const items = array(50);
+      const {virtualizer} = await createManaged({items, unbounded: true});
+
+      const dest = virtualizer
+        .element(items.length - 1)!
+        .scrollIntoView({block: 'start'});
+      expect(dest.top!).to.be.greaterThan(4800);
+    });
+
+    it('clamps the last-item destination when the option is not set (regression guard)', async () => {
+      const items = array(50);
+      const {virtualizer} = await createManaged({items, unbounded: false});
+
+      const dest = virtualizer
+        .element(items.length - 1)!
+        .scrollIntoView({block: 'start'});
+      // The unclamped value would be ≈ 4900. With the clamp in place,
+      // the destination is bounded to (scrollSize - viewport) and is
+      // strictly less than that — even before scrollSize has fully
+      // propagated, since it starts at zero and is monotonically
+      // refined upward.
+      expect(dest.top!).to.be.lessThan(4900);
+    });
+
+    it('returns an unclamped destination for the last item with block: "start" (smooth)', async () => {
+      const items = array(50);
+      const {virtualizer} = await createManaged({items, unbounded: true});
+
+      const dest = virtualizer
+        .element(items.length - 1)!
+        .scrollIntoView({block: 'start', behavior: 'smooth'});
+      expect(dest.top!).to.be.greaterThan(4800);
+    });
+
+    it('allows negative destinations for block: "end" on the first item', async () => {
+      // Item 0 with block: 'end' would land at
+      // `itemEndPosition = 0 - viewport(200) + itemSize(100) = -100`.
+      // Without the flag the clamp floors the value at 0.
+      const items = array(50);
+      const {virtualizer} = await createManaged({items, unbounded: true});
+
+      const dest = virtualizer.element(0)!.scrollIntoView({block: 'end'});
+      expect(dest.top!).to.be.lessThan(0);
+    });
+
+    it('allows the pin-driven scroll position to go past the end', async () => {
+      // Drives the pin path through `<lit-virtualizer>` so that
+      // rangeChanged → DOM mutation → `_finishDOMUpdate` runs the
+      // scroll-error correction. With unbounded set, pinning to the
+      // last item with `block: 'start'` produces a scroll-error
+      // magnitude that exceeds the clamped maximum (4800).
+      const items = array(50);
+
+      const lvs = (await fixture(
+        html`<lit-virtualizer
+          .scroller=${'managed'}
+          .viewport=${{
+            scrollTop: 0,
+            scrollLeft: 0,
+            width: 200,
+            height: 200,
+          }}
+          .items=${items}
+          .renderItem=${(i: number) => html`<div>${i}</div>`}
+          .unboundedScrollPosition=${true}
+        ></lit-virtualizer>`
+      )) as LitVirtualizer;
+
+      const errors: ScrollErrorEvent[] = [];
+      lvs.addEventListener('scrollerror', (e) =>
+        errors.push(e as ScrollErrorEvent)
+      );
+
+      lvs.pin = {index: items.length - 1, block: 'start'};
+      await pass(() => expect(errors.length).to.be.greaterThan(0));
+      // Sum dispatched deltas by magnitude — the dispatched
+      // `delta.top` is `previous - new`, so a forward pin jump is
+      // negative.
+      const totalShift = errors.reduce(
+        (sum, e) => sum + Math.abs(e.delta.top),
+        0
+      );
+      expect(totalShift).to.be.greaterThan(4800);
+    });
+
+    it('warns once and is a no-op when set on a non-managed virtualizer', async () => {
+      const host = (await fixture(
+        html`<div
+          style="display: block; position: relative; block-size: 200px; inline-size: 200px;"
+        ></div>`
+      )) as HTMLElement;
+
+      const originalWarn = console.warn;
+      const warnings: string[] = [];
+      console.warn = (msg: string) => warnings.push(msg);
+
+      try {
+        const virtualizer = new Virtualizer({
+          hostElement: host,
+          scroller: 'self',
+          unboundedScrollPosition: true,
+        });
+        virtualizer.items = array(50);
+        virtualizer.connected();
+        // Let the async `_initLayout` settle so we exercise the path
+        // that *would* have forwarded the flag had we been in managed
+        // mode.
+        await new Promise((resolve) => setTimeout(resolve, 50));
+
+        const matched = warnings.filter((w) =>
+          w.includes('unboundedScrollPosition')
+        );
+        expect(matched.length).to.equal(1);
+      } finally {
+        console.warn = originalWarn;
+      }
+    });
+  });
+
   describe('via <lit-virtualizer>', () => {
     it('renders in managed mode and updates when viewport changes', async () => {
       const items = array(1000);

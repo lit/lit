@@ -69,6 +69,13 @@ export interface VirtualizeDirectiveConfig<T> {
    * update on the next frame.
    */
   viewport?: Viewport;
+
+  /**
+   * Lift the layout's clamp on scroll-into-view destinations and
+   * pinned positions. Managed-mode only — see
+   * `VirtualizerConfig.unboundedScrollPosition`.
+   */
+  unboundedScrollPosition?: boolean;
 }
 
 export type RenderItemFunction<T = unknown> = (
@@ -171,7 +178,15 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
     if (this._virtualizer) {
       this._virtualizer.disconnected();
     }
-    const {layout, scroller, items, axis, pin, viewport} = config;
+    const {
+      layout,
+      scroller,
+      items,
+      axis,
+      pin,
+      viewport,
+      unboundedScrollPosition,
+    } = config;
     const virtualizer = (this._virtualizer = new Virtualizer({
       hostElement,
       layout,
@@ -179,6 +194,7 @@ class VirtualizeDirective<T = unknown> extends AsyncDirective {
       axis,
       pin,
       viewport,
+      unboundedScrollPosition,
     }));
     virtualizer.items = items;
     // On initial render, lit-html runs directives while the new DOM is

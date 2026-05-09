@@ -55,6 +55,13 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   protected _pin: PinOptions | null = null;
 
   /**
+   * When true, `_clampScrollPosition` returns its input unchanged.
+   * Toggled by the Virtualizer in managed mode only — see
+   * `VirtualizerConfig.unboundedScrollPosition`.
+   */
+  public unboundedScrollPosition = false;
+
+  /**
    * The index of the first item intersecting the viewport.
    */
   protected _firstVisible = 0;
@@ -231,6 +238,7 @@ export abstract class BaseLayout<C extends BaseLayoutConfig> implements Layout {
   }
 
   _clampScrollPosition(val: number) {
+    if (this.unboundedScrollPosition) return val;
     return Math.max(
       -this.offsetWithinScroller.block,
       Math.min(val, this.scrollSize.blockSize - this._viewDim1)
