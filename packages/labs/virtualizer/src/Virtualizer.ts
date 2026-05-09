@@ -27,6 +27,7 @@ import {
   VirtualizerSizeValue,
   LogicalCoordinates,
 } from './layouts/shared/Layout.js';
+import {readDirection, readWritingMode} from './utils/writing-mode.js';
 
 // Internal physical-coordinate label types used by `_updateView` when
 // translating between logical (block/inline) coordinates and the
@@ -652,9 +653,8 @@ export class Virtualizer {
         }
 
         // Capture the context writing-mode before we override it
-        const style = getComputedStyle(host);
-        this._contextWritingMode = style.writingMode as writingMode;
-        this._contextDirection = style.direction as direction;
+        this._contextWritingMode = readWritingMode(host);
+        this._contextDirection = readDirection(host);
       }
 
       // Swap: horizontal-tb → vertical-lr/rl (depending on CSS direction),
@@ -881,9 +881,8 @@ export class Virtualizer {
     const hostIsHorizontal = isHorizontalWritingMode(this._writingMode);
     const blockSize = hostIsHorizontal ? height : width;
     const inlineSize = hostIsHorizontal ? width : height;
-    const style = getComputedStyle(element);
-    const writingMode = style.writingMode as writingMode;
-    const direction = style.direction as direction;
+    const writingMode = readWritingMode(element);
+    const direction = readDirection(element);
     const flipAxis = isHorizontalWritingMode(writingMode) !== hostIsHorizontal;
     const reverseDirection = direction !== this._direction;
     const baselineInfo = Object.assign(
@@ -1029,16 +1028,12 @@ export class Virtualizer {
     const layout = this._layout;
 
     if (hostElement && hostElement.isConnected && scrollingElement && layout) {
-      const hostStyle = getComputedStyle(hostElement);
-      const scrollerStyle = getComputedStyle(scrollingElement);
-
-      const direction = (this._direction = hostStyle.direction as direction);
+      const direction = (this._direction = readDirection(hostElement));
       // Host writing-mode: used for child positioning and sizing
-      const writingMode = (this._writingMode =
-        hostStyle.writingMode as writingMode);
+      const writingMode = (this._writingMode = readWritingMode(hostElement));
       // Scroller writing-mode: used for scroll coordinate handling
       const scrollerWritingMode = (this._scrollerWritingMode =
-        scrollerStyle.writingMode as writingMode);
+        readWritingMode(scrollingElement));
 
       let insetBlockStart: number,
         insetBlockEnd: number,
