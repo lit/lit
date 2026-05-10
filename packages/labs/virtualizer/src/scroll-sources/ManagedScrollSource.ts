@@ -20,7 +20,6 @@ import {
   Viewport,
 } from './ScrollSource.js';
 import {DestinationChangedEvent, ScrollErrorEvent} from '../events.js';
-import {readWritingMode} from '../utils/writing-mode.js';
 import {
   ManagedSmoothIntent,
   ScrollIntoViewIntent,
@@ -135,6 +134,7 @@ export class ManagedScrollSource implements ScrollSource {
   // `host.viewport` whenever the consumer pushes a new viewport object.
   private _internalViewport: Viewport | null = null;
   private _lastSeenHostViewport: Viewport | null = null;
+  private _currentWritingMode: writingMode = 'horizontal-tb';
 
   /**
    * The currently active smooth-scroll intent, or null. Instant scroll
@@ -179,6 +179,7 @@ export class ManagedScrollSource implements ScrollSource {
     writingMode: writingMode,
     direction: direction
   ): void {
+    this._currentWritingMode = writingMode;
     const hostViewport = this._host.viewport;
     if (!hostViewport) {
       // Managed mode is selected but no viewport has been provided yet.
@@ -262,10 +263,10 @@ export class ManagedScrollSource implements ScrollSource {
   }
 
   correctScrollError(error: LogicalCoordinates): void {
-    // Convert the logical correction to physical (top/left) using the
-    // host's writing mode. This is the only DOM read in this source,
-    // and only happens when a correction occurs (rare).
-    const wm = readWritingMode(this._host.hostElement);
+    // Use the cached writing mode passed down to updateView rather than
+    // reading CSS directly from the DOM, so mapping stays robust on
+    // non-conforming engines.
+    const wm = this._currentWritingMode;
 
     let top: number;
     let left: number;
