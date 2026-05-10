@@ -187,6 +187,15 @@ export interface Layout {
 
   pin: PinOptions | null;
 
+  /**
+   * When true, the layout returns scroll-into-view destinations and
+   * pinned positions without applying the usual clamp to the bounds of
+   * `[0, scrollSize - viewportSize]`. Set by the Virtualizer only when
+   * the host opted in via config and the active scroll mode is
+   * `'managed'`. Default `false`.
+   */
+  unboundedScrollPosition: boolean;
+
   unpin: Function;
 
   getScrollIntoViewCoordinates: (options: PinOptions) => ScrollToCoordinates;
