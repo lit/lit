@@ -754,6 +754,13 @@ class CustomElementRegistry implements RealCustomElementRegistry {
     return this.__reverseDefinitions.get(ctor) ?? null;
   }
 
+  initialize(_root: Node): void {
+    throw new Error(
+      `customElements.initialize is not currently supported in SSR. ` +
+        `Please file a bug if you need it.`
+    );
+  }
+
   upgrade(_element: HTMLElement) {
     // In SSR this doesn't make a lot of sense, so we do nothing.
     throw new Error(
