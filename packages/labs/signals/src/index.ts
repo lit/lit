@@ -12,7 +12,10 @@ export * from './lib/watch.js';
 export * from './lib/html-tag.js';
 
 export const State = Signal.State;
+export type State<T> = Signal.State<T>;
+
 export const Computed = Signal.Computed;
+export type Computed<T> = Signal.Computed<T>;
 
 export const signal = <T>(value: T, options?: Signal.Options<T>) =>
   new Signal.State(value, options);
