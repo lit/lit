@@ -103,12 +103,17 @@ export function escapeTextContentToEmbedInTemplateLiteral(
 export function parseStringAsTemplateLiteral(
   templateLiteralBody: string
 ): ts.TemplateLiteral {
+  // Parse as TypeScript (not JavaScript) so that generic call expressions
+  // such as `foo<T>(arg)` inside `${...}` substitutions are recognized as
+  // type-argument calls. With ScriptKind.JS they would be misparsed as a
+  // chain of comparison operators (`foo < T > (arg)`) which evaluates to
+  // `false` at runtime.
   const file = ts.createSourceFile(
     '__DUMMY__.ts',
     '`' + templateLiteralBody + '`',
     ts.ScriptTarget.ESNext,
     false,
-    ts.ScriptKind.JS
+    ts.ScriptKind.TS
   );
   if (file.statements.length !== 1) {
     throw new Error('Internal error: expected 1 statement');
