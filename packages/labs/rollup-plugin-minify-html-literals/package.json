@@ -1,6 +1,6 @@
 {
   "name": "@lit-labs/rollup-plugin-minify-html-literals",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "Rollup plugin to minify HTML template literal strings",
   "main": "index.js",
   "types": "index.d.ts",

@@ -1,5 +1,19 @@
 # @lit-labs/ssr-dom-shim
 
+## 1.6.0
+
+### Minor Changes
+
+- [#4893](https://github.com/lit/lit/pull/4893) [`6c051d517bd92761787897b2c8c060ed419126e2`](https://github.com/lit/lit/commit/6c051d517bd92761787897b2c8c060ed419126e2) Thanks [@kyubisation](https://github.com/kyubisation)! - Implement ShadowRoot and document in event path
+
+- [#4894](https://github.com/lit/lit/pull/4894) [`baa780d2b78a4b792cf61b220b8e3e186739d48c`](https://github.com/lit/lit/commit/baa780d2b78a4b792cf61b220b8e3e186739d48c) Thanks [@kyubisation](https://github.com/kyubisation)! - Add DOM shim implementation for `MutationObserver`, `ResizeObserver` and `IntersectionObserver`
+
+### Patch Changes
+
+- [#5240](https://github.com/lit/lit/pull/5240) [`b9de4295489b0caf91069bfe21f640f3ab5e12bb`](https://github.com/lit/lit/commit/b9de4295489b0caf91069bfe21f640f3ab5e12bb) Thanks [@kyubisation](https://github.com/kyubisation)! - Register CSSStyleSheet polyfill in global scope when using Node.js hook for importing CSS files
+
+- [#5330](https://github.com/lit/lit/pull/5330) [`077a4b727d0d30540f1813bbbe66477790c9805e`](https://github.com/lit/lit/commit/077a4b727d0d30540f1813bbbe66477790c9805e) Thanks [@cecilyhunt](https://github.com/cecilyhunt)! - fix(ssr-dom-shim): Add stubs for TS 6.0.3 compatibility
+
 ## 1.5.1
 
 ### Patch Changes
