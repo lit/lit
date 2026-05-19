@@ -15,8 +15,6 @@ import {queryParams} from '../../utils/query-params.js';
     decorators = await import('lit-element/decorators.js');
   } catch (e) {
     decorators = await (import(
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-expect-error
       'lit-element/lib/decorators.js'
     ) as unknown as typeof import('lit-element/decorators.js'));
   }
