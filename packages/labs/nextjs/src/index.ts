@@ -39,6 +39,41 @@ export = (
     const dsdPolyfillImport =
       'side-effects @lit-labs/nextjs/lib/apply-dsd-polyfill.js';
 
+    // Only emit the `turbopack` config when the user is actually running
+    // Turbopack AND the installed Next.js supports the advanced
+    // `{condition, loaders}` rule form (Next.js 16+).
+    //
+    // Detection:
+    // - Next.js 16+ defaults to Turbopack for `next dev`/`next build`; the
+    //   user can opt out with `--webpack`. (`process.env.TURBOPACK` is set
+    //   for `--turbopack` but is *not* reliably set when Turbopack is the
+    //   default, so we also key off the major version.)
+    // - Next.js 15 and earlier default to webpack; `--turbopack` opts in,
+    //   but its `turbopack.rules` schema only accepts simple
+    //   `{loader, options}` rules — too limited for the per-file conditions
+    //   this plugin needs (page/app dir scoping, RSC directive exclusion,
+    //   client-only DSD polyfill). So on Next.js < 16 we omit the
+    //   `turbopack` key entirely; the user's app will still run under
+    //   webpack via the config below. Upgrade to Next.js 16+ for Turbopack
+    //   support from this plugin.
+    let nextMajorVersion = 0;
+    try {
+      // Resolve `next` from the user's project root (cwd) rather than from
+      // this plugin's location. In a monorepo, the plugin and the consuming
+      // app can have different `next` versions hoisted in their respective
+      // `node_modules`, and we care about the version the app actually runs.
+      const nextPkgPath = require.resolve('next/package.json', {
+        paths: [process.cwd()],
+      });
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const nextPkg = require(nextPkgPath) as {version?: string};
+      nextMajorVersion = parseInt(nextPkg.version ?? '0', 10) || 0;
+    } catch {
+      // If we can't detect the version, fall back to webpack-only behavior.
+    }
+    const explicitWebpack = process.argv.includes('--webpack');
+    const turbopackActive = nextMajorVersion >= 16 && !explicitWebpack;
+
     // Turbopack rules: use imports-loader (which is compatible with Turbopack's
     // webpack loader implementation) to inject side-effectful imports into page
     // and app directory files, mirroring what the webpack config does below.
@@ -114,14 +149,18 @@ export = (
       : [];
 
     return Object.assign({}, nextConfig, {
-      turbopack: {
-        ...existingTurbopack,
-        rules: {
-          ...existingRules,
-          // Append our rules to any existing wildcard rules.
-          '*': [...normalizedExistingWildcard, ...turbopackPageRules],
-        },
-      },
+      ...(turbopackActive
+        ? {
+            turbopack: {
+              ...existingTurbopack,
+              rules: {
+                ...existingRules,
+                // Append our rules to any existing wildcard rules.
+                '*': [...normalizedExistingWildcard, ...turbopackPageRules],
+              },
+            },
+          }
+        : {}),
       webpack: (config, options) => {
         const {isServer} = options;
 
