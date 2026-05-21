@@ -8,7 +8,7 @@ export default function Home() {
       <main className={styles.main}>
         <h1 className={styles.title}>
           Welcome to <a href="https://lit.dev">Lit</a> and{' '}
-          <a href="https://nextjs.org">Next.js 15!</a>
+          <a href="https://nextjs.org">Next.js 16!</a>
         </h1>
         <p className={styles.description}>
           The component below is a web component #builtWithLit

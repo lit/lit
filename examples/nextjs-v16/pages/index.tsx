@@ -1,26 +1,32 @@
-import styles from './Home.module.css';
-import SimpleGreeter from './simple-greeter';
-import SimpleGreeterReact from '../src/simple-greeter-react';
+import Head from 'next/head';
+import styles from '../styles/Home.module.css';
+import '../src/simple-greeter';
+import SimpleGreeter from '../src/simple-greeter-react';
 
 export default function Home() {
   return (
     <div className={styles.container}>
+      <Head>
+        <title>Lit in Next.js</title>
+        <link rel="icon" href="/flame-favicon.svg" />
+      </Head>
+
       <main className={styles.main}>
         <h1 className={styles.title}>
           Welcome to <a href="https://lit.dev">Lit</a> and{' '}
-          <a href="https://nextjs.org">Next.js 15!</a>
+          <a href="https://nextjs.org">Next.js 16!</a>
         </h1>
         <p className={styles.description}>
           The component below is a web component #builtWithLit
         </p>
-        <SimpleGreeter name="Friend" />
+        <simple-greeter name="Friend"></simple-greeter>
         <p className={styles.description}>
           The component below is a component wrapped with{' '}
           <a href="https://github.com/lit/lit/tree/main/packages/labs/react">
             <code>@lit-labs/react</code>
           </a>
         </p>
-        <SimpleGreeterReact name="React" />
+        <SimpleGreeter name="React" />
       </main>
     </div>
   );
