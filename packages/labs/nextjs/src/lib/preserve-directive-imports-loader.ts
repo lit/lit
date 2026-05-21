@@ -1,10 +1,4 @@
 /**
- * @license
- * Copyright 2025 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-
-/**
  * A webpack-compatible loader (also accepted by Turbopack) that prepends
  * side-effectful imports to a module, but inserts them *after* any leading
  * React Server Components directive (`'use client'` / `'use server'`).
