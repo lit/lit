@@ -28,28 +28,112 @@ export = (
     pluginOptions: LitSsrPluginOptions = {}
   ): ((nextConfig: NextConfig) => NextConfig) =>
   (nextConfig: NextConfig = {}) => {
+    const {
+      addDeclarativeShadowDomPolyfill = true,
+      webpackModuleRulesTest = /\/pages\/.*\.(?:j|t)sx?$|\/app\/.*\.(?:j|t)sx?$/,
+      webpackModuleRulesExclude = [/next\/dist\//, /node_modules/],
+    } = pluginOptions;
+
+    const enableLitSsrImport =
+      'side-effects @lit-labs/ssr-react/enable-lit-ssr.js';
+    const dsdPolyfillImport =
+      'side-effects @lit-labs/nextjs/lib/apply-dsd-polyfill.js';
+
+    // Turbopack rules: use imports-loader (which is compatible with Turbopack's
+    // webpack loader implementation) to inject side-effectful imports into page
+    // and app directory files, mirroring what the webpack config does below.
+    //
+    // The `browser` built-in condition is the Turbopack equivalent of webpack's
+    // `!isServer` flag.
+    // In webpack, RSC directives ('use client'/'use server') are extracted
+    // before loaders run. In Turbopack, loaders run first and Turbopack then
+    // checks for the directive — so an import prepended by imports-loader
+    // before 'use client' causes a build error. Exclude those files; the
+    // side-effect imports only need to run once per page load and will be
+    // picked up from non-directive entry files (e.g. layout.tsx, _app.tsx).
+    const noRscDirective = {
+      not: {content: /['"]use (?:client|server)['"]/},
+    } as const;
+
+    const turbopackPageCondition = {
+      all: [
+        // Exclude Next.js internals and node_modules (equivalent to
+        // webpackModuleRulesExclude defaults).
+        {not: 'foreign'} as const,
+        // Match the same files as webpackModuleRulesTest.
+        {path: webpackModuleRulesTest},
+        // Skip files with RSC directives — see noRscDirective above.
+        noRscDirective,
+      ],
+    };
+
+    const turbopackPageRules = [
+      // Rule 1: Inject enable-lit-ssr.js on both server and client.
+      // On the server, the `node` export condition of @lit-labs/ssr-react
+      // patches React for SSR. On the client, it installs hydration support.
+      {
+        condition: turbopackPageCondition,
+        loaders: [
+          {
+            loader: 'imports-loader',
+            options: {imports: [enableLitSsrImport]},
+          },
+        ],
+      },
+      // Rule 2: Inject the DSD polyfill only on the client.
+      ...(addDeclarativeShadowDomPolyfill
+        ? [
+            {
+              condition: {
+                all: [
+                  'browser' as const,
+                  {not: 'foreign'} as const,
+                  {path: webpackModuleRulesTest},
+                  noRscDirective,
+                ],
+              },
+              loaders: [
+                {
+                  loader: 'imports-loader',
+                  options: {imports: [dsdPolyfillImport]},
+                },
+              ],
+            },
+          ]
+        : []),
+    ];
+    // Merge our Turbopack rules with any existing ones from the user's config.
+    const existingTurbopack = nextConfig.turbopack ?? {};
+    const existingRules = existingTurbopack.rules ?? {};
+    const existingWildcard = existingRules['*'];
+    const normalizedExistingWildcard = existingWildcard
+      ? Array.isArray(existingWildcard)
+        ? existingWildcard
+        : [existingWildcard]
+      : [];
+
     return Object.assign({}, nextConfig, {
+      turbopack: {
+        ...existingTurbopack,
+        rules: {
+          ...existingRules,
+          // Append our rules to any existing wildcard rules.
+          '*': [...normalizedExistingWildcard, ...turbopackPageRules],
+        },
+      },
       webpack: (config, options) => {
         const {isServer} = options;
-
-        const {
-          addDeclarativeShadowDomPolyfill = true,
-          webpackModuleRulesTest = /\/pages\/.*\.(?:j|t)sx?$|\/app\/.*\.(?:j|t)sx?$/,
-          webpackModuleRulesExclude = [/next\/dist\//, /node_modules/],
-        } = pluginOptions;
 
         // This adds a side-effectful import which monkey patches
         // `React.createElement` and Runtime JSX functions in the server and
         // imports `@lit-labs/ssr-client/lit-element-hydrate-support.js` in the
         // client.
-        const imports = ['side-effects @lit-labs/ssr-react/enable-lit-ssr.js'];
+        const imports = [enableLitSsrImport];
 
         if (!isServer && addDeclarativeShadowDomPolyfill) {
           // Add script that applies @webcomponents/template-shadowroot ponyfill
           // on document.body
-          imports.push(
-            'side-effects @lit-labs/nextjs/lib/apply-dsd-polyfill.js'
-          );
+          imports.push(dsdPolyfillImport);
         }
 
         config.module.rules.unshift({
@@ -74,5 +158,5 @@ export = (
 
         return config;
       },
-    } as Pick<NextConfig, 'webpack'>);
+    } as Pick<NextConfig, 'webpack' | 'turbopack'>);
   };

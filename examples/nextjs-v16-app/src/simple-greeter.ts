@@ -35,11 +35,15 @@ export class SimpleGreeter extends LitElement {
     }
   `;
 
-  @property()
-  name = 'Somebody';
+  @property() declare name: string;
 
-  @property({type: Number})
-  count = 0;
+  @property({type: Number}) declare count: number;
+
+  constructor() {
+    super();
+    this.name = 'Somebody';
+    this.count = 0;
+  }
 
   render() {
     return html`
