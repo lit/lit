@@ -102,6 +102,7 @@ export = (
           ]
         : []),
     ];
+
     // Merge our Turbopack rules with any existing ones from the user's config.
     const existingTurbopack = nextConfig.turbopack ?? {};
     const existingRules = existingTurbopack.rules ?? {};
