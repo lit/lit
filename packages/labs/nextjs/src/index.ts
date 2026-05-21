@@ -39,6 +39,17 @@ export = (
     const dsdPolyfillImport =
       'side-effects @lit-labs/nextjs/lib/apply-dsd-polyfill.js';
 
+    // Bare specifiers (no `side-effects ` prefix) for the custom Turbopack
+    // loader, which takes a plain array of module specifiers.
+    const enableLitSsrSpecifier = '@lit-labs/ssr-react/enable-lit-ssr.js';
+    const dsdPolyfillSpecifier = '@lit-labs/nextjs/lib/apply-dsd-polyfill.js';
+
+    // Resolved path to our custom loader. It is shipped as part of this
+    // package (compiled by tsc into `./lib/`).
+    const preserveDirectiveLoader = require.resolve(
+      './lib/preserve-directive-imports-loader.js'
+    );
+
     // Only emit the `turbopack` config when the user is actually running
     // Turbopack AND the installed Next.js supports the advanced
     // `{condition, loaders}` rule form (Next.js 16+).
@@ -74,22 +85,19 @@ export = (
     const explicitWebpack = process.argv.includes('--webpack');
     const turbopackActive = nextMajorVersion >= 16 && !explicitWebpack;
 
-    // Turbopack rules: use imports-loader (which is compatible with Turbopack's
-    // webpack loader implementation) to inject side-effectful imports into page
-    // and app directory files, mirroring what the webpack config does below.
+    // Turbopack rules: use a small custom loader (shipped with this package)
+    // to inject side-effectful imports into page and app directory files,
+    // mirroring what the webpack config does below.
     //
     // The `browser` built-in condition is the Turbopack equivalent of webpack's
     // `!isServer` flag.
-    // In webpack, RSC directives ('use client'/'use server') are extracted
-    // before loaders run. In Turbopack, loaders run first and Turbopack then
-    // checks for the directive — so an import prepended by imports-loader
-    // before 'use client' causes a build error. Exclude those files; the
-    // side-effect imports only need to run once per page load and will be
-    // picked up from non-directive entry files (e.g. layout.tsx, _app.tsx).
-    const noRscDirective = {
-      not: {content: /['"]use (?:client|server)['"]/},
-    } as const;
-
+    //
+    // In webpack, RSC directives ('use client'/'use server') are extracted in
+    // a pre-pass before loaders run, so prepending imports with imports-loader
+    // is safe. In Turbopack, loaders run *before* the directive is detected —
+    // an import prepended ahead of `'use client'` causes that file to lose
+    // its client-component status. Our custom loader preserves the directive
+    // position by inserting the imports immediately *after* it.
     const turbopackPageCondition = {
       all: [
         // Exclude Next.js internals and node_modules (equivalent to
@@ -97,8 +105,6 @@ export = (
         {not: 'foreign'} as const,
         // Match the same files as webpackModuleRulesTest.
         {path: webpackModuleRulesTest},
-        // Skip files with RSC directives — see noRscDirective above.
-        noRscDirective,
       ],
     };
 
@@ -110,8 +116,8 @@ export = (
         condition: turbopackPageCondition,
         loaders: [
           {
-            loader: 'imports-loader',
-            options: {imports: [enableLitSsrImport]},
+            loader: preserveDirectiveLoader,
+            options: {imports: [enableLitSsrSpecifier]},
           },
         ],
       },
@@ -124,13 +130,12 @@ export = (
                   'browser' as const,
                   {not: 'foreign'} as const,
                   {path: webpackModuleRulesTest},
-                  noRscDirective,
                 ],
               },
               loaders: [
                 {
-                  loader: 'imports-loader',
-                  options: {imports: [dsdPolyfillImport]},
+                  loader: preserveDirectiveLoader,
+                  options: {imports: [dsdPolyfillSpecifier]},
                 },
               ],
             },
