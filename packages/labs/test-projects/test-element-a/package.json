@@ -9,6 +9,7 @@
   },
   "files": [
     "/element-a.{js,js.map,d.ts,d.ts.map}",
+    "/element-colliding-prop-and-slot.{js,js.map,d.ts,d.ts.map}",
     "/element-events.{js,js.map,d.ts,d.ts.map}",
     "/element-props.{js,js.map,d.ts,d.ts.map}",
     "/element-slots.{js,js.map,d.ts,d.ts.map}",
@@ -35,6 +36,7 @@
       "command": "tsc --build --pretty",
       "output": [
         "element-a.{js,js.map,d.ts,d.ts.map}",
+        "element-colliding-prop-and-slot.{js,js.map,d.ts,d.ts.map}",
         "element-events.{js,js.map,d.ts,d.ts.map}",
         "element-props.{js,js.map,d.ts,d.ts.map}",
         "element-slots.{js,js.map,d.ts,d.ts.map}",
@@ -54,6 +56,7 @@
       "files": [
         "package.json",
         "element-a.{js,js.map,d.ts,d.ts.map}",
+        "element-colliding-prop-and-slot.{js,js.map,d.ts,d.ts.map}",
         "element-events.{js,js.map,d.ts,d.ts.map}",
         "element-props.{js,js.map,d.ts,d.ts.map}",
         "element-slots.{js,js.map,d.ts,d.ts.map}",

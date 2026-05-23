@@ -40,6 +40,14 @@ const angularCommand: Command = {
   importSpecifier: '@lit-labs/gen-wrapper-angular/index.js',
 };
 
+const svelteCommand: Command = {
+  name: 'svelte',
+  description: 'Generate Svelte wrapper for a LitElement',
+  kind: 'reference',
+  installFrom: '@lit-labs/gen-wrapper-svelte',
+  importSpecifier: '@lit-labs/gen-wrapper-svelte/index.js',
+};
+
 const manifestCommand: Command = {
   name: 'manifest',
   description: 'Generate custom-elements.json manifest.',
@@ -57,6 +65,7 @@ const frameworkCommands = {
   react: reactCommand,
   vue: vueCommand,
   angular: angularCommand,
+  svelte: svelteCommand,
 };
 
 type FrameworkName = keyof typeof frameworkCommands;
