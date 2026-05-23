@@ -65,8 +65,8 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.14.0",
-    "@lit-labs/gen-utils": "^0.3.0",
+    "@oicl-lit/analyzer": "^0.14.0",
+    "@oicl-lit/gen-utils": "^0.3.0",
     "@lit-labs/vue-utils": "^0.1.1"
   },
   "devDependencies": {

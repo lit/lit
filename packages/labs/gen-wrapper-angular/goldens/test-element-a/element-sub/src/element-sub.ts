@@ -6,7 +6,8 @@ import {
   EventEmitter,
   Output,
 } from '@angular/core';
-
+import {ElementSubEnum} from '@lit-internal/test-element-a/sub/element-sub.js';
+export type {ElementSubEnum} from '@lit-internal/test-element-a/sub/element-sub.js';
 import type {ElementSub as ElementSubElement} from '@lit-internal/test-element-a/sub/element-sub.js';
 import '@lit-internal/test-element-a/sub/element-sub.js';
 
@@ -38,6 +39,15 @@ export class ElementSub {
 
   get foo() {
     return this._el.foo;
+  }
+
+  @Input()
+  set enum(v: ElementSubEnum | undefined) {
+    this._ngZone.runOutsideAngular(() => (this._el.enum = v));
+  }
+
+  get enum() {
+    return this._el.enum;
   }
 
   @Output()

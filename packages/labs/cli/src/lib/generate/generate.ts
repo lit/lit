@@ -7,12 +7,12 @@
 import {
   AbsolutePath,
   createPackageAnalyzer,
-} from '@lit-labs/analyzer/package-analyzer.js';
+} from '@oicl-lit/analyzer/package-analyzer.js';
 import {FileTree, writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {LitCli} from '../lit-cli.js';
 import * as path from 'path';
 import {Command, ResolvedCommand} from '../command.js';
-import {Package} from '@lit-labs/analyzer/lib/model.js';
+import {Package} from '@oicl-lit/analyzer/lib/model.js';
 import {EOL} from 'os';
 import * as ts from 'typescript';
 

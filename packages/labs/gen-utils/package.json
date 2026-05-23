@@ -1,5 +1,5 @@
 {
-  "name": "@lit-labs/gen-utils",
+  "name": "@oicl-lit/gen-utils",
   "description": "Utilities for lit code generators",
   "version": "0.3.4",
   "publishConfig": {
@@ -50,7 +50,7 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.14.0"
+    "@oicl-lit/analyzer": "^0.14.0"
   },
   "devDependencies": {
     "@lit-internal/tests": "^0.0.1",

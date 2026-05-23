@@ -8,12 +8,12 @@ import {
   LitElementDeclaration,
   PackageJson,
   getImportsStringForReferences,
-} from '@lit-labs/analyzer';
+} from '@oicl-lit/analyzer';
 import {
   ReactiveProperty as ModelProperty,
   Event as EventModel,
   Reference,
-} from '@lit-labs/analyzer/lib/model.js';
+} from '@oicl-lit/analyzer/lib/model.js';
 import {javascript} from '@lit-labs/gen-utils/lib/str-utils.js';
 
 const getTypeReferencesForMap = (

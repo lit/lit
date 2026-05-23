@@ -8,7 +8,7 @@ import {
   Package,
   PackageJson,
   ModuleWithLitElementDeclarations,
-} from '@lit-labs/analyzer';
+} from '@oicl-lit/analyzer';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {packageJsonTemplate} from './lib/package-json-template.js';
 import {ngPackageJsonTemplate} from './lib/ng-package-json-template.js';

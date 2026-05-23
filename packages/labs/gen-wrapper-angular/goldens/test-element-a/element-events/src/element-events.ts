@@ -8,10 +8,12 @@ import {
 } from '@angular/core';
 import {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
 import {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
+import {TypeSub} from '@lit-internal/test-element-a/sub/type-sub.js';
 import {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
 import {TemplateResult} from 'lit';
 export type {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
 export type {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
+export type {TypeSub} from '@lit-internal/test-element-a/sub/type-sub.js';
 export type {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
 export type {TemplateResult} from 'lit';
 import type {ElementEvents as ElementEventsElement} from '@lit-internal/test-element-a/element-events.js';
@@ -58,7 +60,7 @@ export class ElementEvents {
     this._el.addEventListener('type-sub-custom-event', (e: Event) => {
       // TODO(justinfagnani): we need to let the element say how to get a value
       // from an event, ex: e.value
-      this.typeSubCustomEventEvent.emit(e);
+      this.typeSubCustomEventEvent.emit(e as CustomEvent<TypeSub>);
     });
 
     this._el.addEventListener('special-event', (e: Event) => {
@@ -97,10 +99,11 @@ export class ElementEvents {
   @Output()
   eventSubclassEvent = new EventEmitter<EventSubclass>();
 
-  typeSubCustomEventEvent = new EventEmitter<unknown>();
+  @Output()
+  typeSubCustomEventEvent = new EventEmitter<CustomEvent<TypeSub>>();
 
   @Output()
-  specialEventEvent = new EventEmitter<unknown>();
+  specialEventEvent = new EventEmitter<SpecialEvent>();
 
   @Output()
   templateResultCustomEventEvent = new EventEmitter<

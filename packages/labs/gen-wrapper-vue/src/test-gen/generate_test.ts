@@ -9,8 +9,8 @@ import {test} from 'uvu';
 import * as assert from 'uvu/assert';
 import * as fs from 'fs';
 import * as path from 'path';
-import {createPackageAnalyzer} from '@lit-labs/analyzer/package-analyzer.js';
-import {AbsolutePath} from '@lit-labs/analyzer/lib/paths.js';
+import {createPackageAnalyzer} from '@oicl-lit/analyzer/package-analyzer.js';
+import {AbsolutePath} from '@oicl-lit/analyzer/lib/paths.js';
 import {
   installPackage,
   buildPackage,

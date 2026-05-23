@@ -12,7 +12,7 @@ import {
   ModuleWithLitElementDeclarations,
   getImportsStringForReferences,
 } from '@lit-labs/analyzer';
-import {Event as EventModel} from '@lit-labs/analyzer/lib/model.js';
+import {Event as EventModel} from '@oicl-lit/analyzer/lib/model.js';
 import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
 import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
 
