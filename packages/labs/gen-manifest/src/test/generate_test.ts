@@ -12,7 +12,7 @@ import {
   AbsolutePath,
   createPackageAnalyzer,
 } from '@oicl-lit/analyzer/package-analyzer.js';
-import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {writeFileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
 import {generateManifest} from '../index.js';
 import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
 
