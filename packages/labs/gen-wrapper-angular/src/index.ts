@@ -9,7 +9,7 @@ import {
   PackageJson,
   ModuleWithLitElementDeclarations,
 } from '@oicl-lit/analyzer';
-import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {FileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
 import {packageJsonTemplate} from './lib/package-json-template.js';
 import {ngPackageJsonTemplate} from './lib/ng-package-json-template.js';
 import {tsconfigTemplate} from './lib/tsconfig-template.js';

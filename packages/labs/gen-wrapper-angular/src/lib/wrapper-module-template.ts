@@ -14,7 +14,7 @@ import {
   Event as EventModel,
   Reference,
 } from '@oicl-lit/analyzer/lib/model.js';
-import {javascript} from '@lit-labs/gen-utils/lib/str-utils.js';
+import {javascript} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 const getTypeReferencesForMap = (
   map: Map<string, ModelProperty | EventModel>
