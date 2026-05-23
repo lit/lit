@@ -206,7 +206,7 @@ var ResizeObserverController = /** @class */ (function () {
   ResizeObserverController.prototype.updateObservers_ = function () {
     // Collect observers that have active observations.
     var activeObservers = this.observers_.filter(function (observer) {
-      return observer.gatherActive(), observer.hasActive();
+      return (observer.gatherActive(), observer.hasActive());
     });
     // Deliver notifications in a separate cycle in order to avoid any
     // collisions between observers, e.g. when multiple instances of

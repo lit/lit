@@ -1,5 +1,11 @@
 # @lit-internal/scripts
 
+## 1.0.2
+
+### Patch Changes
+
+- [#4991](https://github.com/lit/lit/pull/4991) [`909ea738`](https://github.com/lit/lit/commit/909ea738ff25dd9c07e119179204ee080459232c) - Fix CI issue regarding release image
+
 ## 1.0.1
 
 ### Patch Changes

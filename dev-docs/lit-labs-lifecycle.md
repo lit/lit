@@ -173,7 +173,6 @@ Once approved, a non-labs version can be published, along with merging the docs 
 ### Graduating a package on npm
 
 1. Make a new package in the monorepo at `packages/{name}`
-
    1. Copy the source from `packages/labs/{name}` and update all the places that reference labs
    2. Remove any deprecated APIs. You should not have to remove or change non-deprecated APIs. If there's a specific reason to do so, make sure you point this out in the review. If there are any breaking changes made at this point they must be reflected in the final version of the labs package published.
    3. Update the version to `1.0.0`, regardless of what the version of the labs package is.
@@ -181,26 +180,22 @@ Once approved, a non-labs version can be published, along with merging the docs 
 2. Update the labs package to re-export the production package
 
    In order to reduce code duplication, we will re-export the production package from the labs package. Labs users will get the production code on their next npm upgrade, and can start updating their imports one-by-one.
-
    1. Each module in the labs package must re-export the corresponding module in the production package.
    2. Ideally, each symbol is re-exported along with an `@deprecated` jsdoc so that tools and IDEs will show the deprecation message and guide users to the production package.
    3. Deprecate the npm package in `package.json`
    4. If the production package had any breaking changes from the labs package, mark the labs package as a major in changesets.
 
 3. Update lit.dev
-
    1. Remove labs labels, icons and warnings from lit.dev docs
    2. Update the labs page to mark the package as graduated
 
 4. Cleanup GitHub
-
    1. Close the feedback discussion. If there are remaining open items, open issues for them.
    2. Update the titles of any open issues to remove the labs prefix.
 
 5. Promotion
 
    Graduation is a big deal, make sure we tell people about it!
-
    1. Write a lit.dev blog post
    2. Consider a release day and a small talk
    3. Tweet about it

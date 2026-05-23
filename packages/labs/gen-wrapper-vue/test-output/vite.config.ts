@@ -12,5 +12,8 @@ export default defineConfig({
     },
     outDir: './tests',
   },
+  define: {
+    'process.env.NODE_ENV': JSON.stringify('development'),
+  },
   plugins: [vue()],
 });

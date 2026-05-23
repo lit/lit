@@ -1,6 +1,6 @@
 {
   "name": "@lit/reactive-element",
-  "version": "2.1.0",
+  "version": "2.1.2",
   "publishConfig": {
     "access": "public"
   },
@@ -251,6 +251,7 @@
       ],
       "files": [
         "src/**/*.ts",
+        "!src/test/decorators-modern/decorators-standard/**/*.ts",
         "tsconfig.json",
         "tsconfig.polyfill-support.json"
       ],
@@ -274,7 +275,8 @@
         "decorators/*.d.ts{,.map}",
         "legacy-decorators/*.d.ts{,.map}",
         "std-decorators/*.d.ts{,.map}"
-      ]
+      ],
+      "clean": "if-file-deleted"
     },
     "build:ts:std-decorators-tests": {
       "#comment": "This is a separate script from build:ts because it needs a tsconfig without experimentalDecorators.",
@@ -285,6 +287,7 @@
       ],
       "files": [
         "src/test/decorators-modern/**/*.ts",
+        "src/test/decorators-standard/**/*.ts",
         "tsconfig.std-decorators-tests.json"
       ],
       "output": [
@@ -318,7 +321,7 @@
       ]
     },
     "build:babel": {
-      "command": "babel --extensions .ts src/test/decorators-modern --out-dir development/test/decorators-babel",
+      "command": "babel --extensions .ts src/test/decorators-modern/*_test.ts --out-dir development/test/decorators-babel",
       "files": [
         ".babelrc",
         "src/test/decorators-modern/**/*.ts"
@@ -330,7 +333,8 @@
     "build:esbuild": {
       "command": "esbuild src/test/decorators-modern/**/*.ts --outdir=development/test/decorators-esbuild --target=es2022",
       "files": [
-        "src/test/decorators-modern/**/*.ts"
+        "src/test/decorators-modern/**/*.ts",
+        "!src/test/decorators-modern/decorators-standard/**/*.ts"
       ],
       "output": [
         "development/test/decorators-esbuild"
@@ -453,7 +457,7 @@
     "/node/"
   ],
   "dependencies": {
-    "@lit-labs/ssr-dom-shim": "^1.2.0"
+    "@lit-labs/ssr-dom-shim": "^1.5.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.22.10",

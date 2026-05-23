@@ -1,5 +1,13 @@
 # Change Log
 
+## 1.1.8
+
+### Patch Changes
+
+- [#5115](https://github.com/lit/lit/pull/5115) [`ed877c841293014721a51fcac40fc9702b19f624`](https://github.com/lit/lit/commit/ed877c841293014721a51fcac40fc9702b19f624) Thanks [@zeroedin](https://github.com/zeroedin)! - Fixed removal of all `hydrate-internals-` and `aria-` attributes added by SSR on hydration.
+
+- [#5074](https://github.com/lit/lit/pull/5074) [`12e3d94ddd8e72891446c9b21a86f8c33c8ca713`](https://github.com/lit/lit/commit/12e3d94ddd8e72891446c9b21a86f8c33c8ca713) Thanks [@jimsimon](https://github.com/jimsimon)! - Add a digest cache to reduce the overhead of rendering the same template multiple times
+
 ## 1.1.7
 
 ### Patch Changes

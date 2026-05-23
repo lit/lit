@@ -17,7 +17,8 @@
               "kind": "field",
               "name": "foo",
               "privacy": "public",
-              "type": {"text": "string | undefined"}
+              "type": {"text": "string | undefined"},
+              "attribute": "foo"
             },
             {
               "kind": "field",
@@ -59,6 +60,9 @@
           ],
           "tagName": "element-a",
           "customElement": true,
+          "attributes": [
+            {"name": "foo", "type": {"text": "string"}, "fieldName": "foo"}
+          ],
           "events": [
             {
               "name": "a-changed",
@@ -235,7 +239,8 @@
               "kind": "field",
               "name": "foo",
               "privacy": "public",
-              "type": {"text": "string | undefined"}
+              "type": {"text": "string | undefined"},
+              "attribute": "foo"
             },
             {
               "kind": "method",
@@ -390,6 +395,9 @@
           ],
           "tagName": "element-events",
           "customElement": true,
+          "attributes": [
+            {"name": "foo", "type": {"text": "string"}, "fieldName": "foo"}
+          ],
           "events": [
             {
               "name": "string-custom-event",
@@ -640,28 +648,33 @@
               "name": "aStr",
               "privacy": "public",
               "type": {"text": "string"},
-              "default": "'aStr'"
+              "default": "'aStr'",
+              "attribute": "astr"
             },
             {
               "kind": "field",
               "name": "aNum",
               "privacy": "public",
               "type": {"text": "number"},
-              "default": "-1"
+              "default": "-1",
+              "attribute": "anum"
             },
             {
               "kind": "field",
               "name": "aBool",
               "privacy": "public",
               "type": {"text": "boolean"},
-              "default": "false"
+              "default": "false",
+              "attribute": "abool",
+              "reflects": true
             },
             {
               "kind": "field",
               "name": "aStrArray",
               "privacy": "public",
               "type": {"text": "string[]"},
-              "default": "['a', 'b']"
+              "default": "['a', 'b']",
+              "attribute": "astrarray"
             },
             {
               "kind": "field",
@@ -679,7 +692,8 @@
                   }
                 ]
               },
-              "default": "{\n    a: 'a',\n    b: -1,\n    c: false,\n    d: ['a', 'b'],\n    e: 'isUnknown',\n    strOrNum: 'strOrNum',\n  }"
+              "default": "{\n    a: 'a',\n    b: -1,\n    c: false,\n    d: ['a', 'b'],\n    e: 'isUnknown',\n    strOrNum: 'strOrNum',\n  }",
+              "attribute": "amytype"
             },
             {
               "kind": "field",
@@ -709,6 +723,25 @@
           ],
           "tagName": "element-props",
           "customElement": true,
+          "attributes": [
+            {"name": "astr", "type": {"text": "string"}, "fieldName": "aStr"},
+            {"name": "anum", "type": {"text": "number"}, "fieldName": "aNum"},
+            {
+              "name": "abool",
+              "type": {"text": "boolean"},
+              "fieldName": "aBool"
+            },
+            {
+              "name": "astrarray",
+              "type": {"text": "array"},
+              "fieldName": "aStrArray"
+            },
+            {
+              "name": "amytype",
+              "type": {"text": "object"},
+              "fieldName": "aMyType"
+            }
+          ],
           "events": [
             {
               "name": "a-changed",
@@ -746,7 +779,8 @@
               "name": "mainDefault",
               "privacy": "public",
               "type": {"text": "string"},
-              "default": "'mainDefault'"
+              "default": "'mainDefault'",
+              "attribute": "maindefault"
             },
             {
               "kind": "method",
@@ -768,7 +802,14 @@
             }
           ],
           "tagName": "element-slots",
-          "customElement": true
+          "customElement": true,
+          "attributes": [
+            {
+              "name": "maindefault",
+              "type": {"text": "string"},
+              "fieldName": "mainDefault"
+            }
+          ]
         }
       ],
       "exports": [
@@ -974,7 +1015,8 @@
               "kind": "field",
               "name": "foo",
               "privacy": "public",
-              "type": {"text": "string | undefined"}
+              "type": {"text": "string | undefined"},
+              "attribute": "foo"
             },
             {
               "kind": "field",
@@ -1016,6 +1058,9 @@
           ],
           "tagName": "element-sub",
           "customElement": true,
+          "attributes": [
+            {"name": "foo", "type": {"text": "string"}, "fieldName": "foo"}
+          ],
           "events": [
             {
               "name": "sub-changed",

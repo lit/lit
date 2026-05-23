@@ -30,7 +30,7 @@ export class ElementProps extends LitElement {
   @property({type: Number})
   aNum = -1;
 
-  @property({type: Boolean})
+  @property({type: Boolean, reflect: true})
   aBool = false;
 
   @property({type: Array})

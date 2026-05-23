@@ -1,5 +1,22 @@
 # Change Log
 
+## 4.0.0
+
+### Major Changes
+
+- [#5106](https://github.com/lit/lit/pull/5106) [`5016b8f81091689282aa8a021c80e949f055e8ca`](https://github.com/lit/lit/commit/5016b8f81091689282aa8a021c80e949f055e8ca) - Convert all generator usage to a thunk/trampoline pattern to increase performance.
+
+  This is a breaking change to the ElementRenderer interface.
+
+### Patch Changes
+
+- [#4820](https://github.com/lit/lit/pull/4820) [`7fc24497242bce4d65f75c2ef4691ab7832dc016`](https://github.com/lit/lit/commit/7fc24497242bce4d65f75c2ef4691ab7832dc016) Thanks [@kyubisation](https://github.com/kyubisation)! - Change @types/node to a peer dependency and range to prevent conflicts in consumer projects
+
+- [#5088](https://github.com/lit/lit/pull/5088) [`956d9579e5faa4933b208e32690cbbdbd7fa8e5c`](https://github.com/lit/lit/commit/956d9579e5faa4933b208e32690cbbdbd7fa8e5c) - Fix bug where import.meta.url had a VM context ID appended to it.
+
+- Updated dependencies [[`5057feeac96cc6eb3c5e5c1cb6c42bc01ac6aab1`](https://github.com/lit/lit/commit/5057feeac96cc6eb3c5e5c1cb6c42bc01ac6aab1), [`ad23f26ae908a160d30ed2a939b322fe9cc2ee83`](https://github.com/lit/lit/commit/ad23f26ae908a160d30ed2a939b322fe9cc2ee83)]:
+  - @lit-labs/ssr-dom-shim@1.5.0
+
 ## 3.3.1
 
 ### Patch Changes
@@ -212,7 +229,6 @@
   Including Promises in the sync iterable creates a kind of hybrid sync/async iteration protocol. Consumers of RenderResults must check each value to see if it is a Promise or iterable and wait or recurse as needed.
 
   This change introduces three new utilities to do this:
-
   - `collectResult(result: RenderResult): Promise<string>` - an async function that joins a RenderResult into a string. It waits for Promises and recurses into nested iterables.
   - `collectResultSync(result: RenderResult)` - a sync function that joins a RenderResult into a string. It recurses into nested iterables, but _throws_ when it encounters a Promise.
   - `RenderResultReadable` - a Node `Readable` stream implementation that provides values from a `RenderResult`. This can be piped into a `Writable` stream, or passed to web server frameworks like Koa.

@@ -1,12 +1,16 @@
 import { html } from 'lit-html';
 const b_1 = i => i;
-const lit_template_1 = { h: b_1 `<script>\n  potato;\n</script>`, parts: [] };
+const lit_template_1 = { h: b_1 `<script>
+  potato;
+</script>`, parts: [] };
 // TODO: In the future we can figure out a way to correctly compile raw text
 // elements. The complexity is that they depend on creating adjacent Text nodes
 // which cannot be represented in the prepared HTML. Thus a binding in a raw
 // text node results in the template not being optimized.
 const scriptTemplateNoBinding = { ["_$litType$"]: lit_template_1, values: [] };
-const lit_template_2 = { h: b_1 `<style>\n  carrot\n</style>`, parts: [] };
+const lit_template_2 = { h: b_1 `<style>
+  carrot
+</style>`, parts: [] };
 const styleTemplateNoBinding = { ["_$litType$"]: lit_template_2, values: [] };
 const lit_template_3 = { h: b_1 `<textarea>tomato</textarea>`, parts: [] };
 const textareaTemplateNoBinding = { ["_$litType$"]: lit_template_3, values: [] };

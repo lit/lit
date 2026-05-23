@@ -6,11 +6,9 @@
 
 import Router from '@koa/router';
 import cors from 'koa-cors';
-
-import {ModuleLoader} from '../../../lib/module-loader.js';
 import {getWindow} from '../../../lib/dom-shim.js';
-import {Readable} from 'stream';
-
+import {ModuleLoader} from '../../../lib/module-loader.js';
+import {RenderResultReadable} from '../../../lib/render-result-readable.js';
 import * as testModule from '../tests/basic-ssr.js';
 import {SSRTest} from '../tests/ssr-test.js';
 
@@ -32,8 +30,8 @@ export const ssrMiddleware = () => {
   router.get('/render/:mode/:testFile/:testName', async (context) => {
     const {mode, testFile, testName} = context.params;
 
-    let module: typeof testModule,
-      render: typeof import('../../../lib/render-lit-html.js').render;
+    let module: typeof testModule;
+    let render: typeof import('../../../lib/render.js').render;
     switch (mode) {
       case 'vm': {
         const loader = new ModuleLoader();
@@ -61,7 +59,7 @@ export const ssrMiddleware = () => {
         break;
       }
       case 'global': {
-        render = (await import('../../../lib/render-lit-html.js')).render;
+        render = (await import('../../../lib/render.js')).render;
         module = await import(`../tests/${testFile}-ssr.js`);
         break;
       }
@@ -104,7 +102,7 @@ export const ssrMiddleware = () => {
       test.serverRenderOptions
     );
     context.type = 'text/html';
-    context.body = Readable.from(result);
+    context.body = new RenderResultReadable(result);
   });
   return [cors(), router.routes(), router.allowedMethods()];
 };

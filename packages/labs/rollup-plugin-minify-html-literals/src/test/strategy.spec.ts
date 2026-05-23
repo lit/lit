@@ -1,6 +1,6 @@
 import {test, describe as suite} from 'node:test';
 import * as assert from 'node:assert/strict';
-import {minify} from 'html-minifier';
+import {minify} from 'html-minifier-next';
 import {defaultMinifyOptions, defaultStrategy} from '../lib/strategy.js';
 import {TemplatePart} from '../lib/models.js';
 
@@ -57,9 +57,9 @@ suite('strategy', () => {
         assert.ok(twoUnderscores.includes('__'));
       });
 
-      test('should return a value that is preserved by html-minifier when splitting', () => {
+      test('should return a value that is preserved by html-minifier when splitting', async () => {
         const placeholder = defaultStrategy.getPlaceholder(parts);
-        const minHtml = defaultStrategy.minifyHTML(
+        const minHtml = await defaultStrategy.minifyHTML(
           `
           <style>
             ${placeholder}
@@ -100,7 +100,7 @@ suite('strategy', () => {
     });
 
     suite('minifyHTML()', () => {
-      test('should call minify() with html and options', () => {
+      test('should call minify() with html and options', async () => {
         const placeholder = defaultStrategy.getPlaceholder(parts);
         const html = `
           <style>${placeholder}</style>
@@ -111,8 +111,8 @@ suite('strategy', () => {
         `;
 
         assert.equal(
-          defaultStrategy.minifyHTML(html, defaultMinifyOptions),
-          minify(html, defaultMinifyOptions)
+          await defaultStrategy.minifyHTML(html, defaultMinifyOptions),
+          await minify(html, defaultMinifyOptions)
         );
       });
     });

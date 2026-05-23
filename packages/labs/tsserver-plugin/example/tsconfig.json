@@ -1,6 +1,5 @@
 {
   "compilerOptions": {
-    // This matches the package name given in this package.json
     "plugins": [
       {
         "name": "@lit-labs/tsserver-plugin"
@@ -17,13 +16,14 @@
     "outDir": "./",
     "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "exactOptionalPropertyTypes": true,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitOverride": true,
     "skipLibCheck": true
   },
   "include": ["src/**/*.ts"],

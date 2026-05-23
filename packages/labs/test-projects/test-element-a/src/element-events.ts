@@ -8,8 +8,10 @@ import {LitElement, html, TemplateResult} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {SpecialEvent} from './special-event.js';
 import {MyDetail} from './detail-type.js';
+import {TypeSub} from './sub/type-sub.js';
 
 export {SpecialEvent} from './special-event.js';
+export {TypeSub} from './sub/type-sub.js';
 export {MyDetail} from './detail-type.js';
 export class EventSubclass extends Event {
   aStr: string;
@@ -31,6 +33,7 @@ declare global {
   interface HTMLElementEventMap {
     'event-subclass': EventSubclass;
     'special-event': SpecialEvent;
+    'type-sub-custom-event': CustomEvent<TypeSub>;
     'string-custom-event': CustomEvent<string>;
     'number-custom-event': CustomEvent<number>;
     'my-detail-custom-event': CustomEvent<MyDetail>;
@@ -44,6 +47,7 @@ declare global {
  * @fires number-custom-event {CustomEvent<number>} A custom event with a number payload
  * @fires my-detail-custom-event {CustomEvent<MyDetail>} A custom event with a MyDetail payload.
  * @fires event-subclass {EventSubclass} The subclass event with a string and number payload
+ * @fires type-sub-custom-event {CustomEvent<TypeSub>} A custom event with a TypeSub payload.
  * @fires special-event {SpecialEvent} The special event with a number payload
  * @fires template-result-custom-event {CustomEvent<TemplateResult>} The result-custom-event with a TemplateResult payload.
  */
@@ -95,6 +99,20 @@ export class ElementEvents extends LitElement {
   fireTemplateResultCustomEvent(detail = html``, fromNode = this) {
     fromNode.dispatchEvent(
       new CustomEvent('template-result-custom-event', {
+        detail,
+        bubbles: true,
+        composed: true,
+        cancelable: true,
+      })
+    );
+  }
+
+  fireTypeSubCustomEvent(
+    detail = {name: 'John', age: 30} as TypeSub,
+    fromNode = this
+  ) {
+    fromNode.dispatchEvent(
+      new CustomEvent<TypeSub>('type-sub-custom-event', {
         detail,
         bubbles: true,
         composed: true,

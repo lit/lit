@@ -1,5 +1,12 @@
 # @lit-labs/gen-manifest
 
+## 0.3.5
+
+### Patch Changes
+
+- Updated dependencies [[`945f5aa7b1c01e514c69089bb6d13719dade928a`](https://github.com/lit/lit/commit/945f5aa7b1c01e514c69089bb6d13719dade928a), [`a131af1be63f917a5e245bc0cf7e2b5eddce7180`](https://github.com/lit/lit/commit/a131af1be63f917a5e245bc0cf7e2b5eddce7180), [`5a7ae16fe5afcfd434158852ad1aef18623318a2`](https://github.com/lit/lit/commit/5a7ae16fe5afcfd434158852ad1aef18623318a2), [`e51a47b06163384961b639854627189f7c3d37fe`](https://github.com/lit/lit/commit/e51a47b06163384961b639854627189f7c3d37fe), [`f570059d527de0f04bf4b02a67a35edf288998e0`](https://github.com/lit/lit/commit/f570059d527de0f04bf4b02a67a35edf288998e0), [`ad23f26ae908a160d30ed2a939b322fe9cc2ee83`](https://github.com/lit/lit/commit/ad23f26ae908a160d30ed2a939b322fe9cc2ee83)]:
+  - @lit-labs/analyzer@0.14.0
+
 ## 0.3.4
 
 ### Patch Changes
@@ -99,11 +106,9 @@
 ### Minor Changes
 
 - [#3529](https://github.com/lit/lit/pull/3529) [`389d0c55`](https://github.com/lit/lit/commit/389d0c558d78982d8265588d1935ede91f46f3a0) - Added CLI improvements:
-
   - Add support for --exclude options (important for excluding test files from e.g. manifest or wrapper generation)
 
   Added more analysis support and manifest emit:
-
   - TS enum type variables
   - description, summary, and deprecated for all models
   - module-level description & summary

@@ -19,8 +19,10 @@ import {
 
 const assertTemplate = document.createElement('template');
 
-// For now, don't run SSR tests on IE
-const skipSSRTests = window.navigator.userAgent.indexOf('Trident/') >= 0;
+// Safari is behaving weird wrt to custom element upgrades!
+// Hopefully a very specific version check will make us see the error again if
+// it persists across versions.
+const skipSSRTests = window.navigator.userAgent.indexOf('Safari/605.1.15') >= 0;
 
 /**
  * Removes comments, normalizes text content, and normalizes style attribute

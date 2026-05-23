@@ -3,11 +3,13 @@
  * Copyright 2021 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-import {isServer} from 'lit-html/is-server.js';
 import {
   ReactiveController,
   ReactiveControllerHost,
 } from '@lit/reactive-element/reactive-controller.js';
+import {AsyncDirective} from 'lit-html/async-directive.js';
+import {directive, type ElementPart, type Part} from 'lit-html/directive.js';
+import {isServer} from 'lit-html/is-server.js';
 
 /**
  * The callback function for a ResizeController.
@@ -167,4 +169,58 @@ export class ResizeController<T = unknown> implements ReactiveController {
   protected disconnect() {
     this._observer.disconnect();
   }
+
+  /**
+   * An element directive that automatically observes the element it's applied
+   * to. The element is unobserved when the directive is removed, if the
+   * host or target element is disconnected, or if the `observe` parameter is
+   * false.
+   *
+   * @param observe When false, the element is not observed.
+   */
+  target(observe?: boolean) {
+    return observeTarget(this, observe);
+  }
 }
+
+class ObserveTargetDirective extends AsyncDirective {
+  controller?: ResizeController;
+  part?: Part;
+  observe?: boolean;
+  observing = false;
+
+  render(_controller: ResizeController, _observe?: boolean) {
+    // Since this is an element directive, render() will not be called.
+    return undefined;
+  }
+
+  override update(
+    part: Part,
+    [controller, observe]: [ResizeController, boolean | undefined]
+  ) {
+    this.controller = controller;
+    this.part = part;
+    this.observe = observe;
+
+    if (observe === false) {
+      controller.unobserve((part as ElementPart).element);
+      this.observing = false;
+    } else if (this.observing === false) {
+      controller.observe((part as ElementPart).element);
+      this.observing = true;
+    }
+  }
+
+  protected override disconnected(): void {
+    this.controller?.unobserve((this.part as ElementPart).element);
+    this.observing = false;
+  }
+
+  protected override reconnected(): void {
+    if (this.observe !== false && this.observing === false) {
+      this.controller?.observe((this.part as ElementPart).element);
+      this.observing = true;
+    }
+  }
+}
+const observeTarget = directive(ObserveTargetDirective);

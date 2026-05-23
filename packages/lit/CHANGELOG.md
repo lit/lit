@@ -1,5 +1,23 @@
 # Change Log
 
+## 3.3.2
+
+### Patch Changes
+
+- [#5044](https://github.com/lit/lit/pull/5044) [`0d0170e87b06edd8295a31893c820162d0f16a23`](https://github.com/lit/lit/commit/0d0170e87b06edd8295a31893c820162d0f16a23) Thanks [@ava-cassiopeia](https://github.com/ava-cassiopeia)! - Make ClassInfo mutable
+
+- [#4999](https://github.com/lit/lit/pull/4999) [`6c174c8d0ed0230ba765d699591d933d7ab5d4bb`](https://github.com/lit/lit/commit/6c174c8d0ed0230ba765d699591d933d7ab5d4bb) - Fix a bug in change detection with decorated standard private accessors.
+
+## 3.3.1
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+- [#4988](https://github.com/lit/lit/pull/4988) [`6792b7ef`](https://github.com/lit/lit/commit/6792b7ef422a090374e67581b5c8f07dd779edc9) Thanks [@ADNolan](https://github.com/ADNolan)! - Adjusted the comparison to use the name property of the \_$resolve function and the resolveOverrideFn in private ssr support to prevent duplicated patching of the directive class.
+
+- [#4976](https://github.com/lit/lit/pull/4976) [`a126d8df`](https://github.com/lit/lit/commit/a126d8dfb05df0bbf30d771685b9c8034d7be542) - Fix minor regression in property converters. fromAttribute may return either null or undefined.
+
 ## 3.3.0
 
 ### Minor Changes

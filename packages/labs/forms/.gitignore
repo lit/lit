@@ -1,0 +1,7 @@
+/development/
+/test/
+/lib/
+/node_modules/
+/index.*
+/form-associated.*
+/form-control.*

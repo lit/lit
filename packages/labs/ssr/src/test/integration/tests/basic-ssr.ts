@@ -14,5 +14,5 @@
  * instanceof for certain value types. We might be able to change render()
  * and/or how it's loaded to not need this module.
  */
-export {render} from '../../../lib/render-lit-html.js';
+export {render} from '../../../lib/render.js';
 export * from './basic.js';

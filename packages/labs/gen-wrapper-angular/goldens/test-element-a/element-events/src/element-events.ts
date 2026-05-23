@@ -55,6 +55,12 @@ export class ElementEvents {
       this.eventSubclassEvent.emit(e as EventSubclass);
     });
 
+    this._el.addEventListener('type-sub-custom-event', (e: Event) => {
+      // TODO(justinfagnani): we need to let the element say how to get a value
+      // from an event, ex: e.value
+      this.typeSubCustomEventEvent.emit(e);
+    });
+
     this._el.addEventListener('special-event', (e: Event) => {
       // TODO(justinfagnani): we need to let the element say how to get a value
       // from an event, ex: e.value
@@ -91,8 +97,10 @@ export class ElementEvents {
   @Output()
   eventSubclassEvent = new EventEmitter<EventSubclass>();
 
+  typeSubCustomEventEvent = new EventEmitter<unknown>();
+
   @Output()
-  specialEventEvent = new EventEmitter<SpecialEvent>();
+  specialEventEvent = new EventEmitter<unknown>();
 
   @Output()
   templateResultCustomEventEvent = new EventEmitter<

@@ -19,6 +19,7 @@ import {
   Event,
   CustomEvent,
   EventTarget,
+  CSSStyleSheet,
   CustomElementRegistry,
 } from '@lit-labs/ssr-dom-shim';
 
@@ -53,10 +54,6 @@ export const getWindow = ({
     }
   }
 
-  class CSSStyleSheet {
-    replace() {}
-  }
-
   const window = {
     EventTarget,
     Event: globalThis.Event ?? Event,
@@ -69,6 +66,9 @@ export const getWindow = ({
     ShadowRoot,
     CustomElementRegistry,
     customElements: new CustomElementRegistry(),
+    atob(s: string) {
+      return Buffer.from(s, 'base64').toString('binary');
+    },
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
