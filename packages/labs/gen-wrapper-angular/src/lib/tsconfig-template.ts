@@ -8,9 +8,9 @@ export const tsconfigTemplate = () => {
   return JSON.stringify(
     {
       compilerOptions: {
-        target: 'es2021',
-        module: 'es2015',
-        lib: ['es2021', 'DOM', 'DOM.Iterable'],
+        target: 'es2022',
+        module: 'es2022',
+        lib: ['es2022', 'DOM', 'DOM.Iterable'],
         declaration: true,
         declarationMap: true,
         sourceMap: true,
@@ -24,7 +24,7 @@ export const tsconfigTemplate = () => {
         noFallthroughCasesInSwitch: true,
         noImplicitAny: true,
         noImplicitThis: true,
-        moduleResolution: 'node',
+        moduleResolution: 'bundler',
         allowSyntheticDefaultImports: true,
         experimentalDecorators: true,
         noImplicitOverride: true,

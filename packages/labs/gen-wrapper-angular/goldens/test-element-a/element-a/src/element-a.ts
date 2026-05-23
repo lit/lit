@@ -13,6 +13,8 @@ import '@lit-internal/test-element-a/element-a.js';
 @Component({
   selector: 'element-a',
   template: '<ng-content></ng-content>',
+  standalone: true,
+  imports: [],
 })
 export class ElementA {
   private _el: ElementAElement;

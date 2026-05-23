@@ -6,6 +6,8 @@ import '@lit-internal/test-element-a/element-mixins.js';
 @Component({
   selector: 'element-mixins',
   template: '<ng-content></ng-content>',
+  standalone: true,
+  imports: [],
 })
 export class ElementMixins {
   constructor(_e: ElementRef<ElementMixinsElement>, _ngZone: NgZone) {}

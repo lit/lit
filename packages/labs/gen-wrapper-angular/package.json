@@ -75,7 +75,8 @@
     "node": ">=14.8.0"
   },
   "files": [
-    "index.js"
+    "/index.js",
+    "/lib/*.js"
   ],
   "homepage": "https://github.com/lit/lit",
   "keywords": [

@@ -6,14 +6,22 @@ import {
   EventEmitter,
   Output,
 } from '@angular/core';
-import {MyType} from '@lit-internal/test-element-a/element-props.js';
-export type {MyType} from '@lit-internal/test-element-a/element-props.js';
+import {
+  MyType,
+  AttributeVariant,
+} from '@lit-internal/test-element-a/element-props.js';
+export type {
+  MyType,
+  AttributeVariant,
+} from '@lit-internal/test-element-a/element-props.js';
 import type {ElementProps as ElementPropsElement} from '@lit-internal/test-element-a/element-props.js';
 import '@lit-internal/test-element-a/element-props.js';
 
 @Component({
   selector: 'element-props',
   template: '<ng-content></ng-content>',
+  standalone: true,
+  imports: [],
 })
 export class ElementProps {
   private _el: ElementPropsElement;
@@ -73,6 +81,15 @@ export class ElementProps {
 
   get aMyType() {
     return this._el.aMyType;
+  }
+
+  @Input()
+  set variant(v: AttributeVariant) {
+    this._ngZone.runOutsideAngular(() => (this._el.variant = v));
+  }
+
+  get variant() {
+    return this._el.variant;
   }
 
   @Output()

@@ -32,6 +32,14 @@ const vueCommand: Command = {
   importSpecifier: '@lit-labs/gen-wrapper-vue/index.js',
 };
 
+const angularCommand: Command = {
+  name: 'angular',
+  description: 'Generate angular wrapper for a LitElement',
+  kind: 'reference',
+  installFrom: '@lit-labs/gen-wrapper-angular',
+  importSpecifier: '@lit-labs/gen-wrapper-angular/index.js',
+};
+
 const manifestCommand: Command = {
   name: 'manifest',
   description: 'Generate custom-elements.json manifest.',
@@ -48,6 +56,7 @@ interface GenerateCommand extends Omit<ResolvedCommand, 'run'> {
 const frameworkCommands = {
   react: reactCommand,
   vue: vueCommand,
+  angular: angularCommand,
 };
 
 type FrameworkName = keyof typeof frameworkCommands;
@@ -86,7 +95,9 @@ export const run = async (
       for (const name of (frameworkNames ?? []) as FrameworkName[]) {
         const framework = frameworkCommands[name];
         if (framework == null) {
-          throw new Error(`No generator exists for framework '${framework}'`);
+          throw new Error(
+            `No generator exists for framework test '${framework}'`
+          );
         }
         generatorReferences.push(framework);
       }
@@ -134,8 +145,8 @@ export const run = async (
       const errors = results
         .map((r, i) =>
           r.status === 'rejected'
-            ? `Error generating '${generators[i].name}' wrapper for package '${packageRoot}': ` +
-                (r.reason as Error).stack ?? r.reason
+            ? (`Error generating '${generators[i].name}' wrapper for package '${packageRoot}': ` +
+                (r.reason as Error).stack ?? r.reason)
             : ''
         )
         .filter((e) => e)

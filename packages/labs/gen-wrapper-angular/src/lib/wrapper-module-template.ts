@@ -23,10 +23,9 @@ const getTypeReferencesForMap = (
 const getElementTypeImports = (declarations: LitElementDeclaration[]) => {
   const refs: Reference[] = [];
   declarations.forEach((declaration) => {
-    const {/*events,*/ reactiveProperties} = declaration;
+    const {events, reactiveProperties} = declaration;
     refs.push(
-      // TODO(sorvell): Add event types.
-      //...getTypeReferencesForMap(events),
+      ...getTypeReferencesForMap(events),
       ...getTypeReferencesForMap(reactiveProperties)
     );
   });
@@ -76,6 +75,8 @@ const wrapperTemplate = (element: LitElementDeclaration) => {
   return javascript`@Component({
   selector: '${tagname}',
   template: '<ng-content></ng-content>',
+  standalone: true,
+  imports: []
 })
 export class ${name} {
   ${requiresEl ? javascript`private _el: ${name}Element;` : ''}
@@ -87,15 +88,16 @@ export class ${name} {
   ) {
     ${requiresEl ? javascript`this._el = e.nativeElement;` : ''}
     ${requiresNgZone ? javascript`this._ngZone = ngZone;` : ''}
-    ${Array.from(events.keys()).map(
-      (eventName) => javascript`
+    ${Array.from(events.keys()).map((eventName) => {
+      const eventType = events.get(eventName)!.type?.text;
+      return javascript`
     this._el.addEventListener('${eventName}', (e: Event) => {
       // TODO(justinfagnani): we need to let the element say how to get a value
       // from an event, ex: e.value
-      this.${eventToPropertyName(eventName)}Event.emit(e);
+      this.${eventToPropertyName(eventName)}Event.emit(${eventType ? javascript`e as ${eventType}` : 'e'});
     });
-    `
-    )}
+    `;
+    })}
   }
 
   ${Array.from(reactiveProperties.entries()).map(
@@ -114,7 +116,9 @@ export class ${name} {
   ${Array.from(events.keys()).map(
     (eventName) => javascript`
   @Output()
-  ${eventToPropertyName(eventName)}Event = new EventEmitter<unknown>();
+  ${eventToPropertyName(eventName)}Event = new EventEmitter<${
+    events.get(eventName)!.type?.text || `unknown`
+  }>();
   `
   )}
 }

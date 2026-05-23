@@ -13,6 +13,8 @@ import '@lit-internal/test-element-a/sub/element-sub.js';
 @Component({
   selector: 'element-sub',
   template: '<ng-content></ng-content>',
+  standalone: true,
+  imports: [],
 })
 export class ElementSub {
   private _el: ElementSubElement;

@@ -6,6 +6,8 @@ import '@lit-internal/test-element-a/element-slots.js';
 @Component({
   selector: 'element-slots',
   template: '<ng-content></ng-content>',
+  standalone: true,
+  imports: [],
 })
 export class ElementSlots {
   private _el: ElementSlotsElement;

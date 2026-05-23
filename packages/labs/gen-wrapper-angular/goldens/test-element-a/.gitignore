@@ -1,7 +1,7 @@
-element-a.js
-element-events.js
-element-mixins.js
-element-props.js
-element-slots.js
-element-without-props.js
-sub/element-sub.js
+src/element-a.ts
+src/element-events.ts
+src/element-mixins.ts
+src/element-props.ts
+src/element-slots.ts
+src/element-without-props.ts
+src/sub/element-sub.ts

@@ -4,15 +4,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {
-  ModuleWithLitElementDeclarations,
-  PackageJson,
-} from '@lit-labs/analyzer/lib/model.js';
+import {PackageJson} from '@lit-labs/analyzer/lib/model.js';
 
 export const packageJsonTemplate = (
   angularPackageName: string,
-  packageJson: PackageJson,
-  litModules: ModuleWithLitElementDeclarations[]
+  packageJson: PackageJson
 ) => {
   // Refinement of package.json generation ala the TODOs below tracked in
   // https://github.com/lit/lit/issues/2855
@@ -24,25 +20,27 @@ export const packageJsonTemplate = (
       name: angularPackageName,
       type: 'module',
       scripts: {
-        build: 'tsc',
-        'build:watch': 'tsc --watch',
+        build: 'ng-packagr -p ng-package.json',
+        'build:watch': 'ng-packagr -p ng-package.json --watch',
       },
       // TODO(kschaaf): Version in lock-step with source?
       version: packageJson.version,
       dependencies: {
-        [packageJson.name!]: '^' + packageJson.version!,
+        [packageJson.name as string]: '^' + packageJson.version,
+        tslib: '^2.8.1',
       },
       peerDependencies: {
-        '@angular/common': '^13.3.0',
-        '@angular/core': '^13.3.0',
+        '@angular/common': '^20.0.1',
+        '@angular/core': '^20.0.1',
       },
       devDependencies: {
-        // Use typescript from source package, assuming it exists
-        typescript: packageJson?.devDependencies?.typescript ?? '~4.7.4',
+        '@angular/core': '^20.0.1',
+        '@angular/common': '^20.0.1',
+        '@angular/compiler': '^20.0.1',
+        '@angular/compiler-cli': '^20.0.1',
+        'ng-packagr': '^20.0.1',
+        typescript: '~5.8.0',
       },
-      files: [
-        ...litModules.map(({module}) => module.jsPath.replace(/\\/g, '/')),
-      ],
     },
     null,
     2

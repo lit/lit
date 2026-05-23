@@ -227,7 +227,7 @@ const testSkipSafari = isSafari ? test.skip : test;
     await theAnimate!.finished;
     assert.ok(frames!);
     assert.equal(
-      (frames![0].transform as string).trim(),
+      ((frames![0] as Record<string, unknown>).transform as string).trim(),
       'translateX(-200px) translateY(-200px)'
     );
     assert.equal(frames![1].opacity, 0);
@@ -243,7 +243,7 @@ const testSkipSafari = isSafari ? test.skip : test;
     const r3 = el.div.getBoundingClientRect();
     assert.ok(frames!);
     assert.equal(
-      (frames![0].transform as string).trim(),
+      ((frames![0] as Record<string, unknown>).transform as string).trim(),
       'translateX(200px) translateY(200px)'
     );
     assert.equal(r3.left - r2.left, -200);

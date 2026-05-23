@@ -6,6 +6,8 @@ import '@lit-internal/test-element-a/element-without-props.js';
 @Component({
   selector: 'element-without-props',
   template: '<ng-content></ng-content>',
+  standalone: true,
+  imports: [],
 })
 export class ElementWithoutProps {
   constructor(_e: ElementRef<ElementWithoutPropsElement>, _ngZone: NgZone) {}
