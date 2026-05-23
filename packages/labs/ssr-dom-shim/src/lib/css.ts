@@ -84,6 +84,7 @@ const CSSRuleShim = class CSSRule implements CSSRuleInterface {
   static readonly SUPPORTS_RULE: 12 = 12 as const;
   static readonly COUNTER_STYLE_RULE: 11 = 11 as const;
   static readonly FONT_FEATURE_VALUES_RULE: 14 = 14 as const;
+  static readonly MARGIN_RULE: 9 = 9 as const;
   readonly STYLE_RULE: 1 = 1 as const;
   readonly CHARSET_RULE: 2 = 2 as const;
   readonly IMPORT_RULE: 3 = 3 as const;
@@ -96,6 +97,7 @@ const CSSRuleShim = class CSSRule implements CSSRuleInterface {
   readonly SUPPORTS_RULE: 12 = 12 as const;
   readonly COUNTER_STYLE_RULE: 11 = 11 as const;
   readonly FONT_FEATURE_VALUES_RULE: 14 = 14 as const;
+  readonly MARGIN_RULE: 9 = 9 as const;
   __parentStyleSheet: CSSStyleSheet | null = null;
 
   cssText: string = '';

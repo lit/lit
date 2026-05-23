@@ -3,8 +3,9 @@
 ## Overview
 
 This package provides minimal implementations of `Element`, `HTMLElement`,
-`EventTarget`, `Event`, `CustomEvent`, `CustomElementRegistry`, and
-`customElements`, designed to be used when Server Side Rendering (SSR) web
+`EventTarget`, `Event`, `CustomEvent`, `MutationObserver`, `ResizeObserver`,
+`IntersectionObserver`, `CustomElementRegistry`, and `customElements`,
+designed to be used when Server Side Rendering (SSR) web
 components from Node, including Lit components.
 
 ## Usage
@@ -46,8 +47,11 @@ this module.
   - [`addEventListener`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
   - [`dispatchEvent`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent)
   - [`removeEventListener`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener)
-- [`Element`](https://developer.mozilla.org/en-US/docs/Web/API/Element)
+- [`Node`](https://developer.mozilla.org/en-US/docs/Web/API/Node)
   - (Inherits from EventTarget)
+  - [`getRootNode`](https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode)
+- [`Element`](https://developer.mozilla.org/en-US/docs/Web/API/Element)
+  - (Inherits from Node)
   - [`attachShadow`](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow)
   - [`shadowRoot`](https://developer.mozilla.org/en-US/docs/Web/API/Element/shadowRoot)
   - [`attributes`](https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes)
@@ -61,6 +65,22 @@ this module.
 - [`customElements`](https://developer.mozilla.org/en-US/docs/Web/API/Window/customElements)
 - [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event)
 - [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
+- [`MutationObserver`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe)
+  - [`takeRecords`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/takeRecords)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/disconnect)
+- [`ResizeObserver`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/observe)
+  - [`unobserve`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/unobserve)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/disconnect)
+- [`IntersectionObserver`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver)
+  - [`root`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/root)
+  - [`rootMargin`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/rootMargin)
+  - [`thresholds`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/thresholds)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/observe)
+  - [`takeRecords`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/takeRecords)
+  - [`unobserve`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/unobserve)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/disconnect)
 - [`MediaList`](https://developer.mozilla.org/en-US/docs/Web/API/MediaList)
 - [`StyleSheet`](https://developer.mozilla.org/en-US/docs/Web/API/StyleSheet)
 - [`CSSRule`](https://developer.mozilla.org/en-US/docs/Web/API/CSSRule)

@@ -1,5 +1,11 @@
 # Change Log
 
+## 3.3.3
+
+### Patch Changes
+
+- [#5218](https://github.com/lit/lit/pull/5218) [`be6b275035079db3239be4019c4f93c2b1f32428`](https://github.com/lit/lit/commit/be6b275035079db3239be4019c4f93c2b1f32428) Thanks [@louis-bompart](https://github.com/louis-bompart)! - Ensure the `ref` directive disconnect gracefuly when its internal ref is `undefined`.
+
 ## 3.3.2
 
 ### Patch Changes

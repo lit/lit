@@ -7,7 +7,11 @@
 import {suite} from 'uvu';
 // eslint-disable-next-line import/extensions
 import * as assert from 'uvu/assert';
-import {HTMLElement, HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
+import {
+  HTMLElement,
+  EventTargetShimMeta,
+  document,
+} from '@lit-labs/ssr-dom-shim';
 
 const test = suite('Event Target Shim');
 
@@ -17,7 +21,7 @@ const eventPhases = ['NONE', 'CAPTURING_PHASE', 'AT_TARGET', 'BUBBLING_PHASE'];
 let eventPath: string[] = [];
 let nextId = 0;
 const createElementWithListener = (localName: string) => {
-  const el = new HTMLElement() as HTMLElementWithEventMeta;
+  const el = new HTMLElement() as HTMLElement & EventTargetShimMeta;
   Object.defineProperty(el, 'localName', {
     get() {
       return localName;
@@ -324,6 +328,34 @@ test('should handle dispatched bubbling event from nested Shadow DOM with compos
     'shadowHost:1/non-capture/BUBBLING_PHASE/child:5',
     'host:0/non-capture/AT_TARGET/host:0',
   ]);
+});
+
+test('should handle event listeners on document', () => {
+  const controller = new AbortController();
+  try {
+    let result = '';
+    const event = new Event('test', {bubbles: true});
+    document.addEventListener(
+      'test',
+      (e) => {
+        assert.equal(e, event);
+        result += 'capture ';
+      },
+      {capture: true, signal: controller.signal}
+    );
+    document.addEventListener(
+      'test',
+      (e) => {
+        assert.equal(e, event);
+        result += 'non-capture';
+      },
+      {signal: controller.signal}
+    );
+    new HTMLElement().dispatchEvent(event);
+    assert.equal(result, 'capture non-capture');
+  } finally {
+    controller.abort();
+  }
 });
 
 test.run();
