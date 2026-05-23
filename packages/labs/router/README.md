@@ -154,7 +154,7 @@ html`<main>${this.routes.outlet()}</main>`;
 
 #### enter() callbacks
 
-A route can define an `enter()` callback that lets it do work before rendering and optionally reject that route as a match.
+A route can define an `enter()` callback that lets it do work before rendering and optionally cancel the navigation by returning false.
 
 `enter()` can be used to load and wait for necessary component definitions:
 
