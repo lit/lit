@@ -23,6 +23,7 @@
   },
   "files": [
     "ElementA.*",
+    "ElementCollidingPropAndSlot.*",
     "ElementEvents.*",
     "ElementMixins.*",
     "ElementProps.*",

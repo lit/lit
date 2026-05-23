@@ -13,6 +13,7 @@
     aBool?: boolean;
     aStrArray?: string[];
     aMyType?: MyType;
+    variant?: string;
   }
   export interface Events {
     onAChanged?: (event: CustomEvent<unknown>) => void;

@@ -26,4 +26,13 @@ export class ElementSlots {
   get mainDefault() {
     return this._el.mainDefault;
   }
+
+  @Input()
+  set tabs(v: {id: string; title: string}[]) {
+    this._ngZone.runOutsideAngular(() => (this._el.tabs = v));
+  }
+
+  get tabs() {
+    return this._el.tabs;
+  }
 }

@@ -8,14 +8,14 @@ import {
   LitElementDeclaration,
   PackageJson,
   getImportsStringForReferences,
-} from '@lit-labs/analyzer';
+} from '@oicl-lit/analyzer';
 
 import {
   ReactiveProperty as ModelProperty,
   Event as EventModel,
   MixinDeclaration,
-} from '@lit-labs/analyzer/lib/model.js';
-import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
+} from '@oicl-lit/analyzer/lib/model.js';
+import {javascript, kabobToOnEvent} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 /**
  * Generates a Vue wrapper component as a Vue single file component. This
@@ -171,7 +171,7 @@ const wrapperTemplate = (
   const allProps = new Map([...reactiveProperties, ...heritageProps]);
   const typeImports = getElementTypeImports(declaration);
   const typeExports = getElementTypeExportsFromImports(typeImports);
-  const hasProps = reactiveProperties.size > 0;
+  const hasProps = allProps.size > 0;
   return javascript`${
     typeExports
       ? javascript`
@@ -204,7 +204,7 @@ const wrapperTemplate = (
         const eventProps = ${renderEvents(events)};
         const props = eventProps as (typeof eventProps & Props);
 
-        ${renderPropsParam(reactiveProperties)}
+        ${renderPropsParam(allProps)}
 
         return h(
           '${tagname}',

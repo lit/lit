@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import {h, useSlots} from 'vue';
+import {h, useSlots, reactive} from 'vue';
 import {assignSlotNodes, Slots} from '@lit-labs/vue-utils/wrapper-utils.js';
 import '@lit-internal/test-element-a/element-mixins.js';
 
@@ -26,7 +26,16 @@ const render = () => {
   const eventProps = {};
   const props = eventProps as typeof eventProps & Props;
 
+  for (const p in vueProps) {
+    const v = vueProps[p as keyof Props];
+    if (v !== undefined || hasRendered) {
+      (props[p as keyof Props] as unknown) = v ?? defaults[p as keyof Props];
+    }
+  }
+
+  hasRendered = true;
+
   return h('element-mixins', props, assignSlotNodes(slots));
 };
 </script>
-<template><render /></template>
+<template><render v-defaults /></template>

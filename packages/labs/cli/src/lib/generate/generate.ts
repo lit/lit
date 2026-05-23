@@ -8,7 +8,7 @@ import {
   AbsolutePath,
   createPackageAnalyzer,
 } from '@oicl-lit/analyzer/package-analyzer.js';
-import {FileTree, writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {FileTree, writeFileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
 import {LitCli} from '../lit-cli.js';
 import * as path from 'path';
 import {Command, ResolvedCommand} from '../command.js';
@@ -20,40 +20,40 @@ const reactCommand: Command = {
   name: 'react',
   description: 'Generate React wrapper for a LitElement',
   kind: 'reference',
-  installFrom: '@lit-labs/gen-wrapper-react',
-  importSpecifier: '@lit-labs/gen-wrapper-react/index.js',
+  installFrom: '@oicl-lit/gen-wrapper-react',
+  importSpecifier: '@oicl-lit/gen-wrapper-react/index.js',
 };
 
 const vueCommand: Command = {
   name: 'vue',
   description: 'Generate Vue wrapper for a LitElement',
   kind: 'reference',
-  installFrom: '@lit-labs/gen-wrapper-vue',
-  importSpecifier: '@lit-labs/gen-wrapper-vue/index.js',
+  installFrom: '@oicl-lit/gen-wrapper-vue',
+  importSpecifier: '@oicl-lit/gen-wrapper-vue/index.js',
 };
 
 const angularCommand: Command = {
   name: 'angular',
   description: 'Generate angular wrapper for a LitElement',
   kind: 'reference',
-  installFrom: '@lit-labs/gen-wrapper-angular',
-  importSpecifier: '@lit-labs/gen-wrapper-angular/index.js',
+  installFrom: '@oicl-lit/gen-wrapper-angular',
+  importSpecifier: '@oicl-lit/gen-wrapper-angular/index.js',
 };
 
 const svelteCommand: Command = {
   name: 'svelte',
   description: 'Generate Svelte wrapper for a LitElement',
   kind: 'reference',
-  installFrom: '@lit-labs/gen-wrapper-svelte',
-  importSpecifier: '@lit-labs/gen-wrapper-svelte/index.js',
+  installFrom: '@oicl-lit/gen-wrapper-svelte',
+  importSpecifier: '@oicl-lit/gen-wrapper-svelte/index.js',
 };
 
 const manifestCommand: Command = {
   name: 'manifest',
   description: 'Generate custom-elements.json manifest.',
   kind: 'reference',
-  installFrom: '@lit-labs/gen-manifest',
-  importSpecifier: '@lit-labs/gen-manifest/index.js',
+  installFrom: '@oicl-lit/gen-manifest',
+  importSpecifier: '@oicl-lit/gen-manifest/index.js',
 };
 
 // A generate command has a generate method instead of a run method.

@@ -1,6 +1,6 @@
 {
   "name": "@lit-internal/test-element-a-svelte",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "scripts": {
     "dev": "vite dev",
     "build": "vite build && npm run prepack",
@@ -30,7 +30,7 @@
     }
   },
   "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.1"
+    "@lit-internal/test-element-a": "^1.0.2"
   },
   "peerDependencies": {
     "svelte": "^5.0.0"

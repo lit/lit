@@ -5,8 +5,8 @@
  */
 
 import {PackageJson} from '@oicl-lit/analyzer/lib/model.js';
-import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
-import {javascript} from '@lit-labs/gen-utils/lib/str-utils.js';
+import {FileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
+import {javascript} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 /**
  * Generates a Vite config.
