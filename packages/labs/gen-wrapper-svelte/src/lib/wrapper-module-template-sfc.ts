@@ -15,7 +15,7 @@ import {
   NamedDescribed,
   ReactiveProperty as ModelProperty,
 } from '@lit-labs/analyzer/lib/model.js';
-import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
+import {javascript, kabobToOnEvent} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 const nameToSvelteName = (name: string) => {
   return name

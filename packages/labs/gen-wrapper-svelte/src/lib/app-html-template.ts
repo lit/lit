@@ -1,4 +1,4 @@
-import {html} from '@lit-labs/gen-utils/lib/str-utils.js';
+import {html} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 export const appHtmlTemplate = () => {
   return html`

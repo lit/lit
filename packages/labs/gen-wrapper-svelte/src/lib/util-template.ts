@@ -1,4 +1,4 @@
-import {javascript} from '@lit-labs/gen-utils/lib/str-utils.js';
+import {javascript} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 export const utilTemplate = () => javascript`
 

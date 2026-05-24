@@ -5,7 +5,7 @@
  */
 
 import {PackageJson} from '@lit-labs/analyzer/lib/model.js';
-import {javascript} from '@lit-labs/gen-utils/lib/str-utils.js';
+import {javascript} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 /**
  * Generates a Vite config.

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {FileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
 
 export const generateTsconfig = (): FileTree => {
   return {

@@ -15,8 +15,8 @@ import {
   installPackage,
   buildPackage,
   packPackage,
-} from '@lit-labs/gen-utils/lib/package-utils.js';
-import {writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+} from '@oicl-lit/gen-utils/lib/package-utils.js';
+import {writeFileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
 import {generateSvelteWrapper} from '../index.js';
 import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
 
