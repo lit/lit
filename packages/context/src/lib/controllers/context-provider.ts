@@ -61,9 +61,9 @@ type ReactiveElementHost = Partial<ReactiveControllerHost> & HTMLElement;
  * ReactiveControllerHost.
  */
 export class ContextProvider<
-    T extends Context<unknown, unknown>,
-    HostElement extends ReactiveElementHost = ReactiveElementHost,
-  >
+  T extends Context<unknown, unknown>,
+  HostElement extends ReactiveElementHost = ReactiveElementHost,
+>
   extends ValueNotifier<ContextType<T>>
   implements ReactiveController
 {
