@@ -9,6 +9,6 @@ import {createRequire} from 'module';
 
 export default litProdConfig({
   packageName: createRequire(import.meta.url)('./package.json').name,
-  entryPoints: ['index', 'animate', 'position', 'animate-controller'],
+  entryPoints: ['index', 'animate', 'position', 'animate-controller', 'spring'],
   external: ['lit'],
 });

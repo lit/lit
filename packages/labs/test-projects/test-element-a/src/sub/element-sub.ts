@@ -8,6 +8,12 @@ import {LitElement, html, css} from 'lit';
 import {customElement, property} from 'lit/decorators.js';
 import {Foo, Bar as Baz} from '../package-stuff.js';
 
+export enum ElementSubEnum {
+  FOO = 'foo',
+  BAR = 'bar',
+  BAZ = 'baz',
+}
+
 /**
  * This is a description of my element. It's pretty great. The description has
  * text that spans multiple lines.
@@ -33,6 +39,9 @@ export class ElementSub extends LitElement {
 
   @property()
   foo?: string;
+
+  @property()
+  enum?: ElementSubEnum;
 
   override render() {
     return html`

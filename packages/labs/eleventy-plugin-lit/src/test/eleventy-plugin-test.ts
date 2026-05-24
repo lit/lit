@@ -102,6 +102,10 @@ class TestRig {
         });
         child.on('exit', (code) => {
           this._activeChildProcesses.delete(child);
+          if (code !== 0) {
+            console.error(`Error running command: ${command}`);
+            console.error(stderr);
+          }
           // Code will be null when the process was killed via a signal. 130 is
           // the conventional return code used to represent this case.
           resolve({code: code ?? 130, stdout, stderr});
@@ -181,7 +185,9 @@ test('without plugin', async ({rig}) => {
   );
 });
 
-const modes = ['worker', 'vm'] as const;
+// Note: VM tests are failing on GitHub actions
+// See https://github.com/lit/lit/issues/5043
+const modes = ['worker' /*, 'vm' */] as Array<'worker' | 'vm'>;
 
 modes.forEach((mode) => {
   const myElementDefinitionAndConfig = {

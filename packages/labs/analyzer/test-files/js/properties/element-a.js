@@ -34,6 +34,8 @@ export class ElementA extends LitElement {
     importedClass: {},
     globalClass: {},
     union: {},
+    stringLiteralUnion: {},
+    reflectedStringLiteralUnion: {type: String, reflect: true},
     staticProp: {attribute: 'static-prop', type: Number},
   };
 
@@ -75,6 +77,8 @@ export class ElementA extends LitElement {
     this.localClass = new LocalClass();
     this.importedClass = new ImportedClass();
     this.globalClass = document.createElement('foo');
+    this.stringLiteralUnion = /** @type {'hi' | 'hello'} */ ('hi');
+    this.reflectedStringLiteralUnion = /** @type {'hi' | 'hello'} */ ('hi');
     this.staticProp = 42;
   }
 

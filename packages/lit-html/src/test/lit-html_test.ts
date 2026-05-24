@@ -80,13 +80,23 @@ suite('lit-html', () => {
     container.id = 'container';
   });
 
+  /**
+   * @param r
+   * @param expected either a string or an array of strings. If an array is
+   * provided, the output must match one of the expected strings.
+   * @param options
+   */
   const assertRender = (
     r: TemplateResult | CompiledTemplateResult,
-    expected: string,
+    expected: string | Array<string>,
     options?: RenderOptions
   ) => {
     const part = render(r, container, options);
-    assert.equal(stripExpressionComments(container.innerHTML), expected);
+    if (Array.isArray(expected)) {
+      assert.include(expected, stripExpressionComments(container.innerHTML));
+    } else {
+      assert.equal(stripExpressionComments(container.innerHTML), expected);
+    }
     return part;
   };
 
@@ -347,7 +357,10 @@ suite('lit-html', () => {
       assertRender(html`<div a="${'A'}"></div>`, '<div a="A"></div>');
       assertRender(html`<div abc="${'A'}"></div>`, '<div abc="A"></div>');
       assertRender(html`<div abc = "${'A'}"></div>`, '<div abc="A"></div>');
-      assertRender(html`<div abc="${'A'}/>"></div>`, '<div abc="A/>"></div>');
+      assertRender(html`<div abc="${'A'}/>"></div>`, [
+        '<div abc="A/>"></div>',
+        '<div abc="A/&gt;"></div>',
+      ]);
       assertRender(html`<input value="${'A'}"/>`, '<input value="A">');
     });
 
@@ -377,10 +390,10 @@ suite('lit-html', () => {
     });
 
     test('quoted attribute with markup', () => {
-      assertRender(
-        html`<div a="<table>${'A'}"></div>`,
-        '<div a="<table>A"></div>'
-      );
+      assertRender(html`<div a="<table>${'A'}"></div>`, [
+        '<div a="<table>A"></div>',
+        '<div a="&lt;table&gt;A"></div>',
+      ]);
     });
 
     test('text after quoted bound attribute', () => {

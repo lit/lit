@@ -239,7 +239,6 @@ class HomePage {
 ### Changed
 
 - **[BREAKING]** Lit Localize is now distributed as two packages:
-
   - `@lit/localize` provides the browser library (`msg`, `LocalizedElement`, etc.)
   - `@lit/localize-tools` provides the `lit-localize` CLI.
 

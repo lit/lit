@@ -84,8 +84,11 @@ export const getTypeForType = (
 ): Type => {
   const {typescript} = analyzer;
   const checker = analyzer.program.getTypeChecker();
-  // Ensure we treat inferred `foo = 'hi'` as 'string' not '"hi"'
-  type = checker.getBaseTypeOfLiteralType(type);
+  // Ensure we treat inferred `foo = 'hi'` as 'string' not '"hi"',
+  // but retain explicitly defined unions
+  if (!type.isUnion()) {
+    type = checker.getBaseTypeOfLiteralType(type);
+  }
   const text = checker.typeToString(type);
   const typeNode = checker.typeToTypeNode(
     type,

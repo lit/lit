@@ -1,5 +1,17 @@
 # Changelog
 
+## 0.8.2
+
+### Patch Changes
+
+- [#5334](https://github.com/lit/lit/pull/5334) [`a691944cbf67a8ab047218f50deceee0fa8dda4c`](https://github.com/lit/lit/commit/a691944cbf67a8ab047218f50deceee0fa8dda4c) Thanks [@jimsimon](https://github.com/jimsimon)! - Fix `parseStringAsTemplateLiteral` misparsing TypeScript generic call expressions inside `${...}` template substitutions. Previously the helper parsed template literal bodies with `ts.ScriptKind.JS`, so an expression like `${foo<T>(arg)}` was parsed as a chain of comparison operators (`(foo < T) > (arg)`) instead of a generic call. Parsing as TypeScript now correctly recognizes the type argument list and produces a `CallExpression`.
+
+## 0.8.1
+
+### Patch Changes
+
+- [#4984](https://github.com/lit/lit/pull/4984) [`ad23f26ae908a160d30ed2a939b322fe9cc2ee83`](https://github.com/lit/lit/commit/ad23f26ae908a160d30ed2a939b322fe9cc2ee83) Thanks [@kyubisation](https://github.com/kyubisation)! - Update TypeScript dependencies to version 5.8 with related ARIAMixin changes (ariaColIndexText, ariaRelevant and ariaRowIndexText)
+
 ## 0.8.0
 
 ### Minor Changes

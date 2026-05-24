@@ -1,5 +1,27 @@
 # @lit-labs/signals
 
+## 0.3.0
+
+### Minor Changes
+
+- [#5194](https://github.com/lit/lit/pull/5194) [`3e54ba22b24bdd6f5e29e74534aeab65d08c669e`](https://github.com/lit/lit/commit/3e54ba22b24bdd6f5e29e74534aeab65d08c669e) Thanks [@malobre](https://github.com/malobre)! - export `SignalWatcherApi` interface which is used in the return type of the `SignalWatcher` mixin
+
+## 0.2.0
+
+### Minor Changes
+
+- [#4941](https://github.com/lit/lit/pull/4941) [`5ee7c1fc61a29e51dd263518af6040b95812f114`](https://github.com/lit/lit/commit/5ee7c1fc61a29e51dd263518af6040b95812f114) - `watch` no longer triggers update; adds `effect(callback, options)`
+
+### Patch Changes
+
+- [#5031](https://github.com/lit/lit/pull/5031) [`1889e0eb1cdda28a9e9981ac4657d381e1d1bfbf`](https://github.com/lit/lit/commit/1889e0eb1cdda28a9e9981ac4657d381e1d1bfbf) - Remove a workaround for a fixed bug in signal-polyfillwq
+
+## 0.1.3
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
 ## 0.1.2
 
 ### Patch Changes

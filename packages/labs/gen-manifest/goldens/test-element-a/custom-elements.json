@@ -17,7 +17,8 @@
               "kind": "field",
               "name": "foo",
               "privacy": "public",
-              "type": {"text": "string | undefined"}
+              "type": {"text": "string | undefined"},
+              "attribute": "foo"
             },
             {
               "kind": "field",
@@ -59,6 +60,9 @@
           ],
           "tagName": "element-a",
           "customElement": true,
+          "attributes": [
+            {"name": "foo", "type": {"text": "string"}, "fieldName": "foo"}
+          ],
           "events": [
             {
               "name": "a-changed",
@@ -68,7 +72,11 @@
           ],
           "slots": [
             {"name": "default", "description": "The default slot"},
-            {"name": "stuff", "description": "A slot for stuff"}
+            {"name": "stuff", "description": "A slot for stuff"},
+            {
+              "name": "tab-title-0",
+              "description": "A slot with a hyphenated name"
+            }
           ],
           "cssParts": [
             {"name": "header", "description": "The header"},
@@ -204,6 +212,73 @@
     },
     {
       "kind": "javascript-module",
+      "path": "element-colliding-prop-and-slot.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementCollidingPropAndSlot",
+          "description": "Element with a slot/property name collision for wrapper generator tests.",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "members": [
+            {
+              "kind": "field",
+              "name": "content",
+              "privacy": "public",
+              "type": {"text": "string"},
+              "default": "'default-content'",
+              "attribute": "content"
+            },
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "tagName": "element-colliding-prop-and-slot",
+          "customElement": true,
+          "attributes": [
+            {
+              "name": "content",
+              "type": {"text": "string"},
+              "fieldName": "content"
+            }
+          ],
+          "slots": [
+            {
+              "name": "content",
+              "description": "Named slot that collides with `content` property after Svelte name mapping."
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ElementCollidingPropAndSlot",
+          "declaration": {"name": "ElementCollidingPropAndSlot"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-colliding-prop-and-slot",
+          "declaration": {"name": "ElementCollidingPropAndSlot"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "element-events.js",
       "declarations": [
         {
@@ -235,7 +310,8 @@
               "kind": "field",
               "name": "foo",
               "privacy": "public",
-              "type": {"text": "string | undefined"}
+              "type": {"text": "string | undefined"},
+              "attribute": "foo"
             },
             {
               "kind": "method",
@@ -358,6 +434,37 @@
             },
             {
               "kind": "method",
+              "name": "fireTypeSubCustomEvent",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "detail",
+                  "type": {
+                    "text": "TypeSub",
+                    "references": [
+                      {
+                        "name": "TypeSub",
+                        "package": "@lit-internal/test-element-a",
+                        "module": "sub/type-sub.js",
+                        "start": 0,
+                        "end": 7
+                      }
+                    ]
+                  },
+                  "default": "{name: 'John', age: 30} as TypeSub",
+                  "optional": true
+                },
+                {
+                  "name": "fromNode",
+                  "type": {"text": "this"},
+                  "default": "this",
+                  "optional": true
+                }
+              ],
+              "return": {"type": {"text": "void"}}
+            },
+            {
+              "kind": "method",
               "name": "fireEventSubclass",
               "privacy": "public",
               "parameters": [
@@ -390,6 +497,9 @@
           ],
           "tagName": "element-events",
           "customElement": true,
+          "attributes": [
+            {"name": "foo", "type": {"text": "string"}, "fieldName": "foo"}
+          ],
           "events": [
             {
               "name": "string-custom-event",
@@ -460,6 +570,28 @@
               "description": "The subclass event with a string and number payload"
             },
             {
+              "name": "type-sub-custom-event",
+              "type": {
+                "text": "CustomEvent<TypeSub>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  },
+                  {
+                    "name": "TypeSub",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "sub/type-sub.js",
+                    "start": 12,
+                    "end": 19
+                  }
+                ]
+              },
+              "description": "A custom event with a TypeSub payload."
+            },
+            {
               "name": "special-event",
               "type": {
                 "text": "SpecialEvent",
@@ -507,6 +639,15 @@
             "name": "SpecialEvent",
             "package": "@lit-internal/test-element-a",
             "module": "special-event.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "TypeSub",
+          "declaration": {
+            "name": "TypeSub",
+            "package": "@lit-internal/test-element-a",
+            "module": "sub/type-sub.js"
           }
         },
         {
@@ -640,28 +781,33 @@
               "name": "aStr",
               "privacy": "public",
               "type": {"text": "string"},
-              "default": "'aStr'"
+              "default": "'aStr'",
+              "attribute": "astr"
             },
             {
               "kind": "field",
               "name": "aNum",
               "privacy": "public",
               "type": {"text": "number"},
-              "default": "-1"
+              "default": "-1",
+              "attribute": "anum"
             },
             {
               "kind": "field",
               "name": "aBool",
               "privacy": "public",
               "type": {"text": "boolean"},
-              "default": "false"
+              "default": "false",
+              "attribute": "abool",
+              "reflects": true
             },
             {
               "kind": "field",
               "name": "aStrArray",
               "privacy": "public",
               "type": {"text": "string[]"},
-              "default": "['a', 'b']"
+              "default": "['a', 'b']",
+              "attribute": "astrarray"
             },
             {
               "kind": "field",
@@ -679,7 +825,27 @@
                   }
                 ]
               },
-              "default": "{\n    a: 'a',\n    b: -1,\n    c: false,\n    d: ['a', 'b'],\n    e: 'isUnknown',\n    strOrNum: 'strOrNum',\n  }"
+              "default": "{\n    a: 'a',\n    b: -1,\n    c: false,\n    d: ['a', 'b'],\n    e: 'isUnknown',\n    strOrNum: 'strOrNum',\n  }",
+              "attribute": "amytype"
+            },
+            {
+              "kind": "field",
+              "name": "variant",
+              "privacy": "public",
+              "type": {
+                "text": "AttributeVariant",
+                "references": [
+                  {
+                    "name": "AttributeVariant",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-props.js",
+                    "start": 0,
+                    "end": 16
+                  }
+                ]
+              },
+              "default": "'normal'",
+              "attribute": "variant"
             },
             {
               "kind": "field",
@@ -709,6 +875,30 @@
           ],
           "tagName": "element-props",
           "customElement": true,
+          "attributes": [
+            {"name": "astr", "type": {"text": "string"}, "fieldName": "aStr"},
+            {"name": "anum", "type": {"text": "number"}, "fieldName": "aNum"},
+            {
+              "name": "abool",
+              "type": {"text": "boolean"},
+              "fieldName": "aBool"
+            },
+            {
+              "name": "astrarray",
+              "type": {"text": "array"},
+              "fieldName": "aStrArray"
+            },
+            {
+              "name": "amytype",
+              "type": {"text": "object"},
+              "fieldName": "aMyType"
+            },
+            {
+              "name": "variant",
+              "type": {"text": "string"},
+              "fieldName": "variant"
+            }
+          ],
           "events": [
             {
               "name": "a-changed",
@@ -746,7 +936,16 @@
               "name": "mainDefault",
               "privacy": "public",
               "type": {"text": "string"},
-              "default": "'mainDefault'"
+              "default": "'mainDefault'",
+              "attribute": "maindefault"
+            },
+            {
+              "kind": "field",
+              "name": "tabs",
+              "privacy": "public",
+              "type": {"text": "{ id: string; title: string; }[]"},
+              "default": "[]",
+              "attribute": "tabs"
             },
             {
               "kind": "method",
@@ -768,7 +967,18 @@
             }
           ],
           "tagName": "element-slots",
-          "customElement": true
+          "customElement": true,
+          "attributes": [
+            {
+              "name": "maindefault",
+              "type": {"text": "string"},
+              "fieldName": "mainDefault"
+            },
+            {"name": "tabs", "type": {"text": "array"}, "fieldName": "tabs"}
+          ],
+          "slots": [
+            {"name": "tab-<id>-icon", "description": "A dynamic slot for icons"}
+          ]
         }
       ],
       "exports": [
@@ -964,6 +1174,22 @@
       "path": "sub/element-sub.js",
       "declarations": [
         {
+          "kind": "variable",
+          "name": "ElementSubEnum",
+          "type": {
+            "text": "ElementSubEnum",
+            "references": [
+              {
+                "name": "ElementSubEnum",
+                "package": "@lit-internal/test-element-a",
+                "module": "sub/element-sub.js",
+                "start": 0,
+                "end": 14
+              }
+            ]
+          }
+        },
+        {
           "kind": "class",
           "name": "ElementSub",
           "description": "This is a description of my element. It's pretty great. The description has\ntext that spans multiple lines.",
@@ -974,7 +1200,26 @@
               "kind": "field",
               "name": "foo",
               "privacy": "public",
-              "type": {"text": "string | undefined"}
+              "type": {"text": "string | undefined"},
+              "attribute": "foo"
+            },
+            {
+              "kind": "field",
+              "name": "enum",
+              "privacy": "public",
+              "type": {
+                "text": "ElementSubEnum | undefined",
+                "references": [
+                  {
+                    "name": "ElementSubEnum",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "sub/element-sub.js",
+                    "start": 0,
+                    "end": 14
+                  }
+                ]
+              },
+              "attribute": "enum"
             },
             {
               "kind": "field",
@@ -1016,6 +1261,10 @@
           ],
           "tagName": "element-sub",
           "customElement": true,
+          "attributes": [
+            {"name": "foo", "type": {"text": "string"}, "fieldName": "foo"},
+            {"name": "enum", "type": {"text": "string"}, "fieldName": "enum"}
+          ],
           "events": [
             {
               "name": "sub-changed",
@@ -1110,6 +1359,11 @@
       "exports": [
         {
           "kind": "js",
+          "name": "ElementSubEnum",
+          "declaration": {"name": "ElementSubEnum"}
+        },
+        {
+          "kind": "js",
           "name": "ElementSub",
           "declaration": {"name": "ElementSub"}
         },
@@ -1162,6 +1416,7 @@
           "declaration": {"name": "ElementSub"}
         }
       ]
-    }
+    },
+    {"kind": "javascript-module", "path": "sub/type-sub.js"}
   ]
 }

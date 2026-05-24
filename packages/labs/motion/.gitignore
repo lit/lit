@@ -4,4 +4,7 @@
 /index.*
 /animate.*
 /position.*
+/spring.*
 /animate-controller.*
+/demo/*.d.ts
+/demo/*.d.ts.map

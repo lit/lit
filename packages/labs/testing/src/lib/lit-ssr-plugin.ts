@@ -27,8 +27,7 @@ export interface Payload {
 }
 
 export interface PayloadWithWorkerInitModules
-  extends Payload,
-    Required<LitSsrPluginOptions> {}
+  extends Payload, Required<LitSsrPluginOptions> {}
 
 export function litSsrPlugin(
   options: LitSsrPluginOptions = {}

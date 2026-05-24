@@ -20,9 +20,12 @@ import {wrapJsx, wrapJsxDev, wrapJsxs} from '../lib/node/wrap-jsx.js';
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // The `.default ??` is used to get around inconsistent behavior with how
 // tools like webpack seem to do es module interop.
-Object.assign((React as any).default ?? React, {
-  createElement: wrapCreateElement(React.createElement),
-});
+if (React.createElement.name !== 'litPatchedCreateElement') {
+  Object.assign((React as any).default ?? React, {
+    createElement: wrapCreateElement(React.createElement),
+  });
+}
+
 if (process.env.NODE_ENV === 'production') {
   Object.assign((ReactJSXRuntime as any).default ?? ReactJSXRuntime, {
     jsx: wrapJsx(ReactJSXRuntime.jsx, ReactJSXRuntime.jsxs),

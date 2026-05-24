@@ -1,0 +1,6 @@
+{
+  "name": "@lit-internal/test-properties",
+  "dependencies": {
+    "lit": "^2.0.0"
+  }
+}

@@ -1,11 +1,17 @@
 <script lang="ts">
-export type {MyType} from '@lit-internal/test-element-a/element-props.js';
+export type {
+  MyType,
+  AttributeVariant,
+} from '@lit-internal/test-element-a/element-props.js';
 </script>
 <script setup lang="ts">
 import {h, useSlots, reactive} from 'vue';
 import {assignSlotNodes, Slots} from '@lit-labs/vue-utils/wrapper-utils.js';
 import '@lit-internal/test-element-a/element-props.js';
-import {MyType} from '@lit-internal/test-element-a/element-props.js';
+import {
+  MyType,
+  AttributeVariant,
+} from '@lit-internal/test-element-a/element-props.js';
 
 export interface Props {
   aStr?: string;
@@ -13,6 +19,7 @@ export interface Props {
   aBool?: boolean;
   aStrArray?: string[];
   aMyType?: MyType;
+  variant?: AttributeVariant;
 }
 
 const vueProps = defineProps<Props>();

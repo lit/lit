@@ -1270,12 +1270,20 @@ export abstract class ReactiveElement
    * @param oldValue old value of requesting property
    * @param options property options to use instead of the previously
    *     configured options
+   * @param useNewValue if true, the newValue argument is used instead of
+   *     reading the property value. This is important to use if the reactive
+   *     property is a standard private accessor, as opposed to a plain
+   *     property, since private members can't be dynamically read by name.
+   * @param newValue the new value of the property. This is only used if
+   *     `useNewValue` is true.
    * @category updates
    */
   requestUpdate(
     name?: PropertyKey,
     oldValue?: unknown,
-    options?: PropertyDeclaration
+    options?: PropertyDeclaration,
+    useNewValue = false,
+    newValue?: unknown
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -1286,7 +1294,9 @@ export abstract class ReactiveElement
         );
       }
       const ctor = this.constructor as typeof ReactiveElement;
-      const newValue = this[name as keyof this];
+      if (useNewValue === false) {
+        newValue = this[name as keyof this];
+      }
       options ??= ctor.getPropertyOptions(name);
       const changed =
         (options.hasChanged ?? notEqual)(newValue, oldValue) ||
@@ -1732,7 +1742,7 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(global.reactiveElementVersions ??= []).push('2.1.0');
+(global.reactiveElementVersions ??= []).push('2.1.2');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
   queueMicrotask(() => {
     issueWarning!(

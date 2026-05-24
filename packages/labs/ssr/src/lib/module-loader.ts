@@ -122,6 +122,7 @@ export function makeDefaultContextObject() {
 
 /**
  * A subset of the Node vm.Module API.
+ * @deprecated Use vm.Module instead.
  */
 export interface VmModule {
   /**
@@ -133,14 +134,14 @@ export interface VmModule {
 
 export interface ModuleRecord {
   path: string;
-  module?: VmModule;
+  module?: vm.Module;
   imports: Array<string>;
-  evaluated: Promise<VmModule>;
+  evaluated: Promise<vm.Module>;
 }
 
 interface ImportResult {
   path: string;
-  module: VmModule;
+  module: vm.Module;
 }
 
 export interface Options {
@@ -409,7 +410,9 @@ export const resolveSpecifier = async (
  * Web-like import.meta initializer that sets up import.meta.url
  */
 const initializeImportMeta = (meta: {url: string}, module: vm.Module) => {
-  meta.url = module.identifier;
+  // Module identifiers end in a `:n` where `n` is the vm context ID,
+  // which we don't want in the URL.
+  meta.url = module.identifier.replace(/:\d+$/, '');
 };
 
 const resolve = async (

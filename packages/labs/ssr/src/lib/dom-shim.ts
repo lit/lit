@@ -14,12 +14,19 @@
 
 import fetch from 'node-fetch';
 import {
+  Document,
+  document,
   HTMLElement,
   Element,
   Event,
   CustomEvent,
   EventTarget,
+  CSSStyleSheet,
   CustomElementRegistry,
+  ShadowRoot,
+  IntersectionObserver,
+  MutationObserver,
+  ResizeObserver,
 } from '@lit-labs/ssr-dom-shim';
 
 /**
@@ -36,27 +43,6 @@ export const getWindow = ({
   includeJSBuiltIns = false,
   props = {},
 }): {[key: string]: unknown} => {
-  class ShadowRoot {}
-
-  class Document {
-    get adoptedStyleSheets() {
-      return [];
-    }
-    createTreeWalker() {
-      return {};
-    }
-    createTextNode() {
-      return {};
-    }
-    createElement() {
-      return {};
-    }
-  }
-
-  class CSSStyleSheet {
-    replace() {}
-  }
-
   const window = {
     EventTarget,
     Event: globalThis.Event ?? Event,
@@ -64,11 +50,14 @@ export const getWindow = ({
     Element,
     HTMLElement,
     Document,
-    document: new Document(),
+    document,
     CSSStyleSheet,
     ShadowRoot,
     CustomElementRegistry,
     customElements: new CustomElementRegistry(),
+    atob(s: string) {
+      return Buffer.from(s, 'base64').toString('binary');
+    },
     btoa(s: string) {
       return Buffer.from(s, 'binary').toString('base64');
     },
@@ -78,9 +67,9 @@ export const getWindow = ({
       fetch(url as unknown as Parameters<typeof fetch>[0], init),
 
     location: new URL('http://localhost'),
-    MutationObserver: class {
-      observe() {}
-    },
+    IntersectionObserver,
+    MutationObserver,
+    ResizeObserver,
 
     // No-op any async tasks
     requestAnimationFrame() {},

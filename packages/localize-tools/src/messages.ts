@@ -99,7 +99,7 @@ export function sortProgramMessages(
   messages: ProgramMessage[]
 ): ProgramMessage[] {
   return messages.sort((a, b) => {
-    if (a.desc ?? '' !== b.desc ?? '') {
+    if ((a.desc ?? '') !== (b.desc ?? '')) {
       return (a.desc ?? '').localeCompare(b.desc ?? '');
     }
     return a.file.fileName.localeCompare(b.file.fileName);

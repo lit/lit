@@ -1,4 +1,5 @@
 /ElementA.*
+/ElementCollidingPropAndSlot.*
 /ElementEvents.*
 /ElementMixins.*
 /ElementProps.*

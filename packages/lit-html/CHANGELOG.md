@@ -1,5 +1,31 @@
 # Change Log
 
+## 3.3.3
+
+### Patch Changes
+
+- [#5218](https://github.com/lit/lit/pull/5218) [`be6b275035079db3239be4019c4f93c2b1f32428`](https://github.com/lit/lit/commit/be6b275035079db3239be4019c4f93c2b1f32428) Thanks [@louis-bompart](https://github.com/louis-bompart)! - Ensure the `ref` directive disconnect gracefuly when its internal ref is `undefined`.
+
+## 3.3.2
+
+### Patch Changes
+
+- [#5044](https://github.com/lit/lit/pull/5044) [`0d0170e87b06edd8295a31893c820162d0f16a23`](https://github.com/lit/lit/commit/0d0170e87b06edd8295a31893c820162d0f16a23) Thanks [@ava-cassiopeia](https://github.com/ava-cassiopeia)! - Make ClassInfo mutable
+
+- [#5064](https://github.com/lit/lit/pull/5064) [`bc2926eb99a97ef4efb7eefbe133d6a33f216e18`](https://github.com/lit/lit/commit/bc2926eb99a97ef4efb7eefbe133d6a33f216e18) Thanks [@brysonbw](https://github.com/brysonbw)! - Add `SVGElement` to the `render()` container type, allowing SVG elements to be used as render roots without type errors.
+
+- [#5035](https://github.com/lit/lit/pull/5035) [`c36626b8018ca78a47e61abdfa5b5904bed06843`](https://github.com/lit/lit/commit/c36626b8018ca78a47e61abdfa5b5904bed06843) - Make some of our directives generic, so that their DirectiveResult types capture everything needed to infer their render types. This is useful in template type checking.
+
+## 3.3.1
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+- [#4988](https://github.com/lit/lit/pull/4988) [`6792b7ef`](https://github.com/lit/lit/commit/6792b7ef422a090374e67581b5c8f07dd779edc9) Thanks [@ADNolan](https://github.com/ADNolan)! - Adjusted the comparison to use the name property of the \_$resolve function and the resolveOverrideFn in private ssr support to prevent duplicated patching of the directive class.
+
+- [#4975](https://github.com/lit/lit/pull/4975) [`43a3f4dc`](https://github.com/lit/lit/commit/43a3f4dc9a130d053f787a0ec150278d78e2442d) - Remove some redundant code from removePart()
+
 ## 3.3.0
 
 ### Minor Changes
