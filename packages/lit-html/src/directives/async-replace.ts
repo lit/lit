@@ -12,7 +12,7 @@ import {
 } from '../async-directive.js';
 import {Pauser, PseudoWeakRef, forAwaitOf} from './private-async-helpers.js';
 
-type Mapper<T> = (v: T, index?: number) => unknown;
+export type Mapper<T> = (v: T, index?: number) => unknown;
 
 export class AsyncReplaceDirective extends AsyncDirective {
   private __value?: AsyncIterable<unknown>;
@@ -113,4 +113,10 @@ export class AsyncReplaceDirective extends AsyncDirective {
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the iterable.
  */
-export const asyncReplace = directive(AsyncReplaceDirective);
+export interface AsyncReplaceDirectiveFn {
+  <T>(value: AsyncIterable<T>, mapper?: Mapper<T>): unknown;
+}
+
+export const asyncReplace = directive(
+  AsyncReplaceDirective
+) as AsyncReplaceDirectiveFn;

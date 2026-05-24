@@ -11,7 +11,7 @@ import {
   PartInfo,
   PartType,
 } from '../directive.js';
-import {AsyncReplaceDirective} from './async-replace.js';
+import {AsyncReplaceDirective, Mapper} from './async-replace.js';
 import {
   clearPart,
   insertPart,
@@ -66,7 +66,13 @@ class AsyncAppendDirective extends AsyncReplaceDirective {
  * @param mapper An optional function that maps from (value, index) to another
  *     value. Useful for generating templates for each item in the iterable.
  */
-export const asyncAppend = directive(AsyncAppendDirective);
+export interface AsyncAppendDirectiveFn {
+  <T>(value: AsyncIterable<T>, mapper?: Mapper<T>): unknown;
+}
+
+export const asyncAppend = directive(
+  AsyncAppendDirective
+) as AsyncAppendDirectiveFn;
 
 /**
  * The type of the class that powers this directive. Necessary for naming the
