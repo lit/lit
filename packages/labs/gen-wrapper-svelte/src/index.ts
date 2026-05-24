@@ -8,7 +8,7 @@ import {
   Package,
   PackageJson,
   ModuleWithLitElementDeclarations,
-} from '@lit-labs/analyzer';
+} from '@oicl-lit/analyzer';
 import {packageJsonTemplate} from './lib/package-json-template.js';
 import {tsconfigTemplate} from './lib/tsconfig-template.js';
 import {wrapperModuleTemplateSFC} from './lib/wrapper-module-template-sfc.js';
