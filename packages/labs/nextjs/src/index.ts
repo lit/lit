@@ -5,6 +5,7 @@
  */
 
 import type {NextConfig} from 'next';
+import path from 'path';
 
 /**
  * Options for the Lit SSR plugin
@@ -24,6 +25,16 @@ interface LitSsrPluginOptions {
   webpackModuleRulesExclude?: Array<RegExp>;
 }
 
+const {sep}= path;
+const normalizedSep = sep === "\\" ? "\\\\" : "/";
+const defaultWebpackModuleRulesTest = new RegExp(
+  `[${normalizedSep}]pages[${normalizedSep}].*\\.(?:j|t)sx?$|[${normalizedSep}]app[${normalizedSep}].*\\.(?:j|t)sx?$`
+);
+const defaultWebpackModuleRulesExclude = [
+  new RegExp(`next${normalizedSep}dist${normalizedSep}`),
+  new RegExp(`node_modules`)
+];
+
 export = (
     pluginOptions: LitSsrPluginOptions = {}
   ): ((nextConfig: NextConfig) => NextConfig) =>
@@ -34,8 +45,8 @@ export = (
 
         const {
           addDeclarativeShadowDomPolyfill = true,
-          webpackModuleRulesTest = /\/pages\/.*\.(?:j|t)sx?$|\/app\/.*\.(?:j|t)sx?$/,
-          webpackModuleRulesExclude = [/next\/dist\//, /node_modules/],
+          webpackModuleRulesTest = defaultWebpackModuleRulesTest,
+          webpackModuleRulesExclude = defaultWebpackModuleRulesExclude,
         } = pluginOptions;
 
         // This adds a side-effectful import which monkey patches
