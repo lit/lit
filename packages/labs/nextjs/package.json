@@ -20,9 +20,11 @@
     "/lib/"
   ],
   "dependencies": {
+    "@lit-labs/ssr-client": "^1.1.6",
     "@lit-labs/ssr-react": "^0.3.0",
     "@webcomponents/template-shadowroot": "^0.2.1",
-    "imports-loader": "^4.0.1"
+    "imports-loader": "^4.0.1",
+    "lit-element": "^4.0.0"
   },
   "peerDependencies": {
     "next": "13 || 14 || 15 || 16"
