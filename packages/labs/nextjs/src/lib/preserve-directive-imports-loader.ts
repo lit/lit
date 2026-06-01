@@ -15,6 +15,12 @@
 
 interface LoaderOptions {
   imports: ReadonlyArray<string>;
+  /**
+   * When `true`, only inject into `'use client'` modules. Used to install
+   * hydration support in every client component so it runs before any Lit
+   * element they import, regardless of Turbopack's module evaluation order.
+   */
+  clientOnly?: boolean;
 }
 
 interface LoaderThis {
@@ -24,20 +30,24 @@ interface LoaderThis {
 
 /**
  * Matches a leading RSC directive, allowing for shebangs, BOM, comments, and
- * whitespace before it (per the spec for directive prologues).
+ * whitespace before it (per the directive-prologue spec). Capture group 1 is
+ * the directive kind (`client` or `server`).
  */
 const directiveRegex =
-  /^(?:\uFEFF)?(?:#![^\n]*\n)?(?:\s|\/\/[^\n]*\n|\/\*[\s\S]*?\*\/)*['"]use (?:client|server)['"]\s*;?[^\n]*\n?/;
+  /^(?:\uFEFF)?(?:#![^\n]*\n)?(?:\s|\/\/[^\n]*\n|\/\*[\s\S]*?\*\/)*['"]use (client|server)['"]\s*;?[^\n]*\n?/;
 
 function loader(this: LoaderThis, source: string): string {
   this.cacheable?.(true);
-  const {imports} = this.getOptions();
+  const {imports, clientOnly} = this.getOptions();
   if (!imports || imports.length === 0) {
+    return source;
+  }
+  const match = source.match(directiveRegex);
+  if (clientOnly && match?.[1] !== 'client') {
     return source;
   }
   const importStatements =
     imports.map((spec) => `import ${JSON.stringify(spec)};`).join('\n') + '\n';
-  const match = source.match(directiveRegex);
   if (match) {
     const directive = match[0];
     return directive + importStatements + source.slice(directive.length);

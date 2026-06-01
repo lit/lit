@@ -108,8 +108,17 @@ export = (
       ],
     };
 
+    // Client components outside the page/app directories. Route files are
+    // excluded here since Rule 1 already covers them.
+    const turbopackClientComponentCondition = {
+      all: [
+        {not: 'foreign'} as const,
+        {not: {path: webpackModuleRulesTest}} as const,
+      ],
+    };
+
     const turbopackPageRules = [
-      // Rule 1: Inject enable-lit-ssr.js on both server and client.
+      // Inject enable-lit-ssr.js into page/app files on both server and client.
       // On the server, the `node` export condition of @lit-labs/ssr-react
       // patches React for SSR. On the client, it installs hydration support.
       {
@@ -121,7 +130,19 @@ export = (
           },
         ],
       },
-      // Rule 2: Inject the DSD polyfill only on the client.
+      // Also inject into other client components. Turbopack doesn't guarantee
+      // the import above runs before an unrelated client component defines a
+      // Lit element, which would render SSR'd shadow roots twice.
+      {
+        condition: turbopackClientComponentCondition,
+        loaders: [
+          {
+            loader: preserveDirectiveLoader,
+            options: {imports: [enableLitSsrSpecifier], clientOnly: true},
+          },
+        ],
+      },
+      // Inject the DSD polyfill only on the client.
       ...(addDeclarativeShadowDomPolyfill
         ? [
             {
