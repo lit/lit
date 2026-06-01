@@ -31,7 +31,7 @@ const importantFlag = ' !' + important;
 const flagTrim = 0 - importantFlag.length;
 
 class StyleMapDirective extends Directive {
-  private _previousStyleProperties?: Set<string>;
+  private _previousStyleProperties = new Set<string>();
 
   constructor(partInfo: PartInfo) {
     super(partInfo);
@@ -71,11 +71,6 @@ class StyleMapDirective extends Directive {
 
   override update(part: AttributePart, [styleInfo]: DirectiveParameters<this>) {
     const {style} = part.element as HTMLElement;
-
-    if (this._previousStyleProperties === undefined) {
-      this._previousStyleProperties = new Set(Object.keys(styleInfo));
-      return this.render(styleInfo);
-    }
 
     // Remove old properties that no longer exist in styleInfo
     for (const name of this._previousStyleProperties) {
