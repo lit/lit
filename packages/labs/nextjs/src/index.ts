@@ -108,8 +108,8 @@ export = (
       ],
     };
 
-    // Client components outside the page/app directories. Route files are
-    // excluded here since Rule 1 already covers them.
+    // Client components outside the page/app directories. Page/app files are
+    // excluded here since they're already handled above.
     const turbopackClientComponentCondition = {
       all: [
         {not: 'foreign'} as const,
