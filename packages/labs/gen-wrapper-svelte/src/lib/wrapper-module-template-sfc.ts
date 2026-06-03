@@ -249,8 +249,8 @@ const renderSnippets = (
       if (collectionProp) {
         const collectionName = collectionProp.name;
         return javascript`
-      {#if ${collectionName} && ${propName}}
-        {#each ${collectionName} as item}
+      {#if props.${collectionName} && ${propName}}
+        {#each props.${collectionName} as item}
           <div slot="${slot.name.replace(`<${placeholder}>`, `{item.${placeholder}}`)}">
             {@render ${propName}(item)}
           </div>
