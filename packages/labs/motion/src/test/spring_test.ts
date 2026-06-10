@@ -11,19 +11,23 @@ import {
   SpringController2D,
 } from '@lit-labs/motion/spring.js';
 import {assert} from 'chai';
+import {useFakeTimers, type SinonFakeTimers} from 'sinon';
 import {LitElement} from 'lit';
 import {customElement} from 'lit/decorators.js';
 
 suite('Spring', () => {
   let container: HTMLElement;
+  let clock: SinonFakeTimers;
 
   setup(() => {
     container = document.createElement('div');
     document.body.appendChild(container);
+    clock = useFakeTimers();
   });
 
   teardown(() => {
     container?.remove();
+    clock.restore();
   });
 
   suite('SpringController', () => {
@@ -36,7 +40,7 @@ suite('Spring', () => {
       }
     }
 
-    test('spring is initially stopped, and initial params', async () => {
+    test('spring is initially stopped, and initial params', () => {
       const el = new SpringControllerTest({fromValue: 100, toValue: 50});
       // This one isn't what you might expect, but is what Wobble returns
       assert.isFalse(el.spring.isAtRest);
@@ -45,7 +49,9 @@ suite('Spring', () => {
       assert.equal(el.spring.currentValue, 100);
       assert.equal(el.spring.currentVelocity, 0);
       assert.equal(el.spring.toValue, 50);
-      await new Promise((res) => setTimeout(res, 1));
+
+      // Wait at least a frame
+      clock.runToFrame();
 
       // Make sure it's not moving
       assert.isFalse(el.spring.isAnimating);
@@ -54,7 +60,7 @@ suite('Spring', () => {
       assert.equal(el.spring.toValue, 50);
     });
 
-    test('spring starts when connected, stops when disconnected', async () => {
+    test('spring starts when connected, stops when disconnected', () => {
       const el = new SpringControllerTest({fromValue: 100, toValue: 50});
       container.append(el);
       assert.isFalse(el.spring.isAtRest);
@@ -64,7 +70,7 @@ suite('Spring', () => {
       assert.equal(el.spring.toValue, 50);
 
       // Wait at least a frame
-      await new Promise((res) => requestAnimationFrame(res));
+      clock.runToFrame();
 
       // Make sure it's moving
       assert.isFalse(el.spring.isAtRest);
@@ -74,6 +80,9 @@ suite('Spring', () => {
 
       // make sure it stops
       el.remove();
+
+      // Wait at least a frame
+      clock.runToFrame();
       assert.isFalse(el.spring.isAnimating);
     });
   });
@@ -88,7 +97,7 @@ suite('Spring', () => {
       }
     }
 
-    test('spring is initially stopped, and initial params', async () => {
+    test('spring is initially stopped, and initial params', () => {
       const el = new SpringController2DTest({
         fromPosition: {x: 100, y: 100},
         toPosition: {x: 50, y: 50},
@@ -100,7 +109,9 @@ suite('Spring', () => {
       assert.deepEqual(el.spring.currentPosition, {x: 100, y: 100});
       assert.deepEqual(el.spring.currentVelocity, {x: 0, y: 0});
       assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
-      await new Promise((res) => setTimeout(res, 1));
+
+      // Wait at least a frame
+      clock.runToFrame();
 
       // Make sure it's not moving
       assert.isFalse(el.spring.isAnimating);
@@ -109,7 +120,7 @@ suite('Spring', () => {
       assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
     });
 
-    test('spring starts when connected, stop when disconnected', async () => {
+    test('spring starts when connected, stop when disconnected', () => {
       const el = new SpringController2DTest({
         fromPosition: {x: 100, y: 100},
         toPosition: {x: 50, y: 50},
@@ -122,8 +133,7 @@ suite('Spring', () => {
       assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
 
       // Wait at least a frame
-      await new Promise((res) => requestAnimationFrame(res));
-      await new Promise((res) => setTimeout(res, 4));
+      clock.runToFrame();
 
       // Make sure it's moving
       assert.isFalse(el.spring.isAtRest);
@@ -138,6 +148,8 @@ suite('Spring', () => {
 
       // make sure it stops
       el.remove();
+      // Wait at least a frame
+      clock.runToFrame();
       assert.isFalse(el.spring.isAnimating);
     });
   });
