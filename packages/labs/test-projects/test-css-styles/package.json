@@ -1,0 +1,6 @@
+{
+  "private": true,
+  "name": "@lit-internal/test-css-styles",
+  "version": "1.0.0",
+  "type": "module"
+}

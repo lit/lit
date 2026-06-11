@@ -349,6 +349,26 @@ export const getPathForModuleSpecifierExpression = (
 };
 
 /**
+ * Extensions that TypeScript can resolve and the analyzer can process.
+ * Specifiers ending in any other extension that don't resolve to a file
+ * generate a warning.
+ */
+const analyzableExtensions = [
+  '.js',
+  '.mjs',
+  '.cjs',
+  '.ts',
+  '.mts',
+  '.cts',
+  '.tsx',
+  '.jsx',
+];
+
+const hasNonAnalyzableExtension = (specifier: string) =>
+  specifier.includes('.') &&
+  !analyzableExtensions.some((e) => specifier.endsWith(e));
+
+/**
  * Resolve a module specifier to an absolute path on disk.
  */
 export const getPathForModuleSpecifier = (
@@ -362,18 +382,32 @@ export const getPathForModuleSpecifier = (
     analyzer.commandLine.options,
     analyzer.fs
   ).resolvedModule?.resolvedFileName;
-  if (resolvedPath === undefined) {
+  if (resolvedPath !== undefined) {
+    return analyzer.path.normalize(resolvedPath) as AbsolutePath;
+  }
+  // TypeScript's resolveModuleName doesn't resolve non-JS/TS files (e.g.
+  // CSS modules imported with `import ... with {type: 'css'}`). Emit a
+  // warning and return undefined since the analyzer can't analyze those files.
+  if (hasNonAnalyzableExtension(specifier)) {
     analyzer.addDiagnostic(
       createDiagnostic({
         typescript: analyzer.typescript,
         node: location,
-        message: `Could not resolve specifier ${specifier} to filesystem path.`,
-        category: analyzer.typescript.DiagnosticCategory.Error,
+        message: `Could not resolve specifier ${specifier} to an analyzable file.`,
+        category: analyzer.typescript.DiagnosticCategory.Warning,
       })
     );
     return undefined;
   }
-  return analyzer.path.normalize(resolvedPath) as AbsolutePath;
+  analyzer.addDiagnostic(
+    createDiagnostic({
+      typescript: analyzer.typescript,
+      node: location,
+      message: `Could not resolve specifier ${specifier} to filesystem path.`,
+      category: analyzer.typescript.DiagnosticCategory.Error,
+    })
+  );
+  return undefined;
 };
 
 /**

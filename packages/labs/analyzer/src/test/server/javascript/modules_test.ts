@@ -19,13 +19,13 @@ import {
 
 for (const lang of languages) {
   suite(`Module tests (${lang})`, () => {
-    const {module} = setupAnalyzerForTestWithModule(
-      lang,
-      'modules',
-      'module-a'
-    );
-
     test('Dependencies correctly analyzed', () => {
+      const {module} = setupAnalyzerForTestWithModule(
+        lang,
+        'modules',
+        'module-a'
+      );
+
       const getMonorepoSubpath = (f: string) =>
         f?.slice(f.lastIndexOf('packages' + path.sep));
       const expectedDeps = new Set([
@@ -40,6 +40,68 @@ for (const lang of languages) {
         path.normalize(`packages/lit/index.d.ts`),
       ]);
       assert.equal(expectedDeps.size, module.dependencies.size);
+      for (const d of module.dependencies) {
+        assert.ok(
+          expectedDeps.has(getMonorepoSubpath(d)),
+          `${getMonorepoSubpath(d)} not in\n ${Array.from(expectedDeps).join(
+            '\n'
+          )}`
+        );
+      }
+    });
+
+    test('Handles relative CSS imports without errors', () => {
+      const {
+        module,
+        analyzer,
+        typescript: ts,
+      } = setupAnalyzerForTestWithModule(lang, 'css-modules', 'element-a', {
+        throwOnWarnings: false,
+      });
+
+      // CSS imports should produce warnings, not errors
+      const diagnostics = [...analyzer.getDiagnostics()];
+      assert.ok(diagnostics.length > 0, 'Expected warnings for CSS imports');
+      for (const d of diagnostics) {
+        assert.equal(d.category, ts.DiagnosticCategory.Warning);
+      }
+
+      // CSS files are not tracked as dependencies (the analyzer can't
+      // analyze them), but the import should not cause an error
+      const getMonorepoSubpath = (f: string) =>
+        f?.slice(f.lastIndexOf('packages' + path.sep));
+      const expectedDeps = new Set([path.normalize(`packages/lit/index.d.ts`)]);
+      assert.equal(module.dependencies.size, expectedDeps.size);
+      for (const d of module.dependencies) {
+        assert.ok(
+          expectedDeps.has(getMonorepoSubpath(d)),
+          `${getMonorepoSubpath(d)} not in\n ${Array.from(expectedDeps).join(
+            '\n'
+          )}`
+        );
+      }
+    });
+
+    test('Handles cross-package CSS imports without errors', () => {
+      const {
+        module,
+        analyzer,
+        typescript: ts,
+      } = setupAnalyzerForTestWithModule(lang, 'css-modules', 'element-b', {
+        throwOnWarnings: false,
+      });
+
+      // CSS imports should produce warnings, not errors
+      const diagnostics = [...analyzer.getDiagnostics()];
+      assert.ok(diagnostics.length > 0, 'Expected warnings for CSS imports');
+      for (const d of diagnostics) {
+        assert.equal(d.category, ts.DiagnosticCategory.Warning);
+      }
+
+      const getMonorepoSubpath = (f: string) =>
+        f?.slice(f.lastIndexOf('packages' + path.sep));
+      const expectedDeps = new Set([path.normalize(`packages/lit/index.d.ts`)]);
+      assert.equal(module.dependencies.size, expectedDeps.size);
       for (const d of module.dependencies) {
         assert.ok(
           expectedDeps.has(getMonorepoSubpath(d)),

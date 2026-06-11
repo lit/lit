@@ -1,0 +1,8 @@
+{
+  "name": "@lit-internal/test-css-modules",
+  "type": "module",
+  "dependencies": {
+    "lit": "^3.3.0",
+    "@lit-internal/test-css-styles": "1.0.0"
+  }
+}
