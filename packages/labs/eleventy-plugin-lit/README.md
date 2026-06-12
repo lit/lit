@@ -175,7 +175,7 @@ Then the Eleventy will produce `greeting/index.html`:
 <h1>Greetings</h1>
 
 <demo-greeter name="World">
-  <template shadowroot="open">
+  <template shadowrootmode="open">
     <style>
       b { color: red; }
     </style>
@@ -185,7 +185,7 @@ Then the Eleventy will produce `greeting/index.html`:
 ```
 <!-- prettier-ignore-end -->
 
-The `<template shadowroot="open">` element above is an HTML standard called
+The `<template shadowrootmode="open">` element above is an HTML standard called
 declarative shadow DOM. See the [Declarative Shadow
 DOM](#declarative-shadow-dom) section below for more details.
 

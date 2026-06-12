@@ -309,7 +309,7 @@ const REGEXP_TEMPLATE_HAS_TOP_LEVEL_PAGE_TAG =
  * - `text`
  *   - Emit end of open tag `>`
  * - `custom-element-shadow`
- *   - Emit `renderer.renderShadow()` (emits `<template shadowroot>` +
+ *   - Emit `renderer.renderShadow()` (emits `<template shadowrootmode>` +
  *     recurses to emit `render()`)
  * - `text`
  *   - Emit run of static text within tag: `<div>child</div>...`
@@ -1004,7 +1004,7 @@ And the inner template was:
               ? ' shadowrootdelegatesfocus'
               : '';
             shadowResult.push(
-              `<template shadowroot="${mode}" shadowrootmode="${mode}"${delegatesfocusAttr}>`
+              `<template shadowrootmode="${mode}"${delegatesfocusAttr}>`
             );
             shadowResult.push(() => shadowContents);
             shadowResult.push('</template>');
