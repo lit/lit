@@ -28,6 +28,8 @@ export = (
     pluginOptions: LitSsrPluginOptions = {}
   ): ((nextConfig: NextConfig) => NextConfig) =>
   (nextConfig: NextConfig = {}) => {
+    const usesDefaultWebpackModuleRulesExclude =
+      pluginOptions.webpackModuleRulesExclude === undefined;
     const {
       addDeclarativeShadowDomPolyfill = true,
       webpackModuleRulesTest = /\/pages\/.*\.(?:j|t)sx?$|\/app\/.*\.(?:j|t)sx?$/,
@@ -98,11 +100,15 @@ export = (
     // an import prepended ahead of `'use client'` causes that file to lose
     // its client-component status. Our custom loader preserves the directive
     // position by inserting the imports immediately *after* it.
+    const turbopackExcludeConditions = usesDefaultWebpackModuleRulesExclude
+      ? [{not: 'foreign'} as const]
+      : webpackModuleRulesExclude.map(
+          (exclude) => ({not: {path: exclude}}) as const
+        );
+
     const turbopackPageCondition = {
       all: [
-        // Exclude Next.js internals and node_modules (equivalent to
-        // webpackModuleRulesExclude defaults).
-        {not: 'foreign'} as const,
+        ...turbopackExcludeConditions,
         // Match the same files as webpackModuleRulesTest.
         {path: webpackModuleRulesTest},
       ],
@@ -112,7 +118,7 @@ export = (
     // excluded here since they're already handled above.
     const turbopackClientComponentCondition = {
       all: [
-        {not: 'foreign'} as const,
+        ...turbopackExcludeConditions,
         {not: {path: webpackModuleRulesTest}} as const,
       ],
     };
@@ -149,7 +155,7 @@ export = (
               condition: {
                 all: [
                   'browser' as const,
-                  {not: 'foreign'} as const,
+                  ...turbopackExcludeConditions,
                   {path: webpackModuleRulesTest},
                 ],
               },
