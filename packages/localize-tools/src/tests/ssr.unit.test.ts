@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {test} from 'uvu';
-// eslint-disable-next-line import/extensions
-import * as assert from 'uvu/assert';
+import {test} from 'node:test';
+import * as assert from 'node:assert';
 import {configureSsrLocalization} from '../ssr.js';
 import {render} from '@lit-labs/ssr';
 import {html} from 'lit';
@@ -81,5 +80,3 @@ test('renders all 3 locales concurrently', async () => {
     assert.equal(await nl, 'Hallo Wereld', `[${i}] nl`);
   }
 });
-
-test.run();

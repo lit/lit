@@ -79,7 +79,7 @@
       ]
     },
     "test:unit": {
-      "command": "uvu lib/tests \"\\.test\\.js$\" --ignore \"ssr\\.unit\\.test\\.js$\"",
+      "command": "node --enable-source-maps --test-reporter=spec --test lib/tests/[!s]*.test.js lib/tests/e2e/*.test.js",
       "dependencies": [
         "build"
       ],
@@ -92,7 +92,7 @@
       ]
     },
     "test:unit:ssr": {
-      "command": "uvu lib/tests \"ssr\\.unit\\.test\\.js$\"",
+      "command": "node --enable-source-maps --test-reporter=spec --test lib/tests/ssr.unit.test.js",
       "dependencies": [
         "build"
       ],
@@ -100,7 +100,7 @@
       "output": []
     },
     "test:update-goldens": {
-      "command": "UPDATE_TEST_GOLDENS=true uvu lib/tests \"\\.test\\.js$\" --ignore \"ssr\\.unit\\.test\\.js$\"",
+      "command": "UPDATE_TEST_GOLDENS=true node --enable-source-maps --test-reporter=spec --test lib/tests/[!s]*.test.js lib/tests/e2e/*.test.js",
       "dependencies": [
         "build"
       ],
