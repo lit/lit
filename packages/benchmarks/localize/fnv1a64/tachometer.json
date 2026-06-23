@@ -1,0 +1,17 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
+  "sampleSize": 50,
+  "timeout": 0,
+  "benchmarks": [
+    {
+      "name": "fnv1a64",
+      "url": "fnv1a64.html",
+      "measurement": "callback",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      }
+    }
+  ]
+}
