@@ -57,11 +57,11 @@ test('parseXLB: string message', () => {
     const cfg = makeXlbConfig(dir, 'en.xlb', '*.xlb');
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.equal(bundles.length, 1);
-    assert.equal(bundles[0].locale, 'es-419');
-    assert.equal(bundles[0].messages.length, 1);
-    assert.equal(bundles[0].messages[0].name, 'greeting');
-    assert.deepEqual(bundles[0].messages[0].contents, ['Hola Mundo']);
+    assert.strictEqual(bundles.length, 1);
+    assert.strictEqual(bundles[0].locale, 'es-419');
+    assert.strictEqual(bundles[0].messages.length, 1);
+    assert.strictEqual(bundles[0].messages[0].name, 'greeting');
+    assert.deepStrictEqual(bundles[0].messages[0].contents, ['Hola Mundo']);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -82,7 +82,7 @@ test('parseXLB: string message unnecessarily tagged with str', () => {
     const cfg = makeXlbConfig(dir, 'en.xlb', '*.xlb');
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.deepEqual(bundles[0].messages[0].contents, ['Hola Mundo']);
+    assert.deepStrictEqual(bundles[0].messages[0].contents, ['Hola Mundo']);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -102,8 +102,8 @@ test('parseXLB: HTML message', () => {
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.equal(msg.name, 'greeting');
-    assert.deepEqual(msg.contents, [
+    assert.strictEqual(msg.name, 'greeting');
+    assert.deepStrictEqual(msg.contents, [
       'Hola ',
       {untranslatable: '<b>', index: 0} as Placeholder,
       'Mundo',
@@ -129,7 +129,7 @@ test('parseXLB: HTML message with comment', () => {
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.deepEqual(msg.contents, [
+    assert.deepStrictEqual(msg.contents, [
       'Hola ',
       {untranslatable: '<b><!-- comment -->', index: 0} as Placeholder,
       'Mundo',
@@ -155,7 +155,7 @@ test('parseXLB: parameterized string message', () => {
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.deepEqual(msg.contents, [
+    assert.deepStrictEqual(msg.contents, [
       'Hola ',
       {untranslatable: '${user}', index: 0} as Placeholder,
       '!',
@@ -179,7 +179,7 @@ test('parseXLB: parameterized HTML message', () => {
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.deepEqual(msg.contents, [
+    assert.deepStrictEqual(msg.contents, [
       'Hola ',
       {untranslatable: '<b>${user}</b>', index: 0} as Placeholder,
       '!',
@@ -203,8 +203,8 @@ test('parseXLB: HTML message with expression and attribute', () => {
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.equal(msg.name, 'click_link');
-    assert.deepEqual(msg.contents, [
+    assert.strictEqual(msg.name, 'click_link');
+    assert.deepStrictEqual(msg.contents, [
       'Clic ',
       {untranslatable: '<a href="${url}">', index: 0} as Placeholder,
       'aquí',
@@ -230,7 +230,7 @@ test('parseXLB: HTML message with nested msg expression', () => {
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.deepEqual(msg.contents, [
+    assert.deepStrictEqual(msg.contents, [
       '[SALT] Hola ',
       {untranslatable: "<b>${msg('World')}</b>", index: 0} as Placeholder,
       '!',
@@ -254,9 +254,9 @@ test('parseXLB: multiple messages', () => {
     const cfg = makeXlbConfig(dir, 'en.xlb', '*.xlb');
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.equal(bundles[0].messages.length, 2);
-    assert.equal(bundles[0].messages[0].name, 'greeting');
-    assert.equal(bundles[0].messages[1].name, 'farewell');
+    assert.strictEqual(bundles[0].messages.length, 2);
+    assert.strictEqual(bundles[0].messages[0].name, 'greeting');
+    assert.strictEqual(bundles[0].messages[1].name, 'farewell');
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -276,7 +276,7 @@ test('parseXLB: placeholder index numbering', () => {
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.deepEqual(msg.contents, [
+    assert.deepStrictEqual(msg.contents, [
       {untranslatable: '<b>', index: 0} as Placeholder,
       'Hola',
       {untranslatable: '</b>', index: 1} as Placeholder,
@@ -301,7 +301,7 @@ test('parseXLB: text with special XML characters', () => {
     const cfg = makeXlbConfig(dir, 'en.xlb', '*.xlb');
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.deepEqual(bundles[0].messages[0].contents, [
+    assert.deepStrictEqual(bundles[0].messages[0].contents, [
       'Hola <Mundo> & "Amigos"',
     ]);
   } finally {
@@ -322,8 +322,8 @@ test('parseXLB: different locale', () => {
     const cfg = makeXlbConfig(dir, 'en.xlb', '*.xlb');
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.equal(bundles[0].locale, 'ja');
-    assert.deepEqual(bundles[0].messages[0].contents, ['こんにちは世界']);
+    assert.strictEqual(bundles[0].locale, 'ja');
+    assert.deepStrictEqual(bundles[0].messages[0].contents, ['こんにちは世界']);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -341,7 +341,7 @@ test('parseXLB: no messages', () => {
     const cfg = makeXlbConfig(dir, 'en.xlb', '*.xlb');
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.equal(bundles[0].messages.length, 0);
+    assert.strictEqual(bundles[0].messages.length, 0);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -360,8 +360,8 @@ test('parseXLB: desc attribute is ignored during parsing', () => {
     const cfg = makeXlbConfig(dir, 'en.xlb', '*.xlb');
     const formatter = xlbFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.equal(bundles[0].messages[0].name, 'greeting');
-    assert.deepEqual(bundles[0].messages[0].contents, ['Hola Mundo']);
+    assert.strictEqual(bundles[0].messages[0].name, 'greeting');
+    assert.deepStrictEqual(bundles[0].messages[0].contents, ['Hola Mundo']);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }

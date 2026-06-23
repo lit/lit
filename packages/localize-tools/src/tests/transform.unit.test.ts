@@ -82,8 +82,8 @@ async function checkTransform(
     formattedExpected = expectedJs;
     formattedActual = unformattedActual;
   }
-  assert.equal(formattedActual, formattedExpected);
-  assert.deepEqual(result.diagnostics, []);
+  assert.strictEqual(formattedActual, formattedExpected);
+  assert.deepStrictEqual(result.diagnostics, []);
 }
 
 async function assertRejects(
@@ -484,7 +484,7 @@ test('configureTransformLocalization() -> {getLocale: () => "es-419"}', async ()
 });
 
 test('configureLocalization() throws', async () => {
-  assertRejects(
+  await assertRejects(
     checkTransform(
       `import {configureLocalization} from '@lit/localize';
          configureLocalization({

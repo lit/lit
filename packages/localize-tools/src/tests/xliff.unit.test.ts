@@ -59,11 +59,11 @@ test('parseXLIFF: string message', () => {
     const cfg = makeXliffConfig(dir);
     const formatter = xliffFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.equal(bundles.length, 1);
-    assert.equal(bundles[0].locale, 'es-419');
-    assert.equal(bundles[0].messages.length, 1);
-    assert.equal(bundles[0].messages[0].name, 'greeting');
-    assert.deepEqual(bundles[0].messages[0].contents, ['Hola Mundo']);
+    assert.strictEqual(bundles.length, 1);
+    assert.strictEqual(bundles[0].locale, 'es-419');
+    assert.strictEqual(bundles[0].messages.length, 1);
+    assert.strictEqual(bundles[0].messages[0].name, 'greeting');
+    assert.deepStrictEqual(bundles[0].messages[0].contents, ['Hola Mundo']);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -87,7 +87,7 @@ test('parseXLIFF: HTML message with x elements', () => {
     const formatter = xliffFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.deepEqual(msg.contents, [
+    assert.deepStrictEqual(msg.contents, [
       'Hola ',
       {untranslatable: '<b>', index: 0} as Placeholder,
       'Mundo',
@@ -117,7 +117,7 @@ test('parseXLIFF: HTML message with comment', () => {
     const formatter = xliffFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.deepEqual(msg.contents, [
+    assert.deepStrictEqual(msg.contents, [
       'Hola ',
       {untranslatable: '<b><!-- comment -->', index: 0} as Placeholder,
       'Mundo',
@@ -147,7 +147,7 @@ test('parseXLIFF: parameterized string message', () => {
     const formatter = xliffFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.deepEqual(msg.contents, [
+    assert.deepStrictEqual(msg.contents, [
       'Hola ',
       {untranslatable: '${user}', index: 0} as Placeholder,
       '!',
@@ -175,7 +175,7 @@ test('parseXLIFF: parameterized HTML message', () => {
     const formatter = xliffFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.deepEqual(msg.contents, [
+    assert.deepStrictEqual(msg.contents, [
       'Hola ',
       {untranslatable: '<b>${user}</b>', index: 0} as Placeholder,
       '!',
@@ -205,9 +205,9 @@ test('parseXLIFF: multiple messages', () => {
     const cfg = makeXliffConfig(dir);
     const formatter = xliffFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.equal(bundles[0].messages.length, 2);
-    assert.equal(bundles[0].messages[0].name, 'greeting');
-    assert.equal(bundles[0].messages[1].name, 'farewell');
+    assert.strictEqual(bundles[0].messages.length, 2);
+    assert.strictEqual(bundles[0].messages[0].name, 'greeting');
+    assert.strictEqual(bundles[0].messages[1].name, 'farewell');
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -233,8 +233,8 @@ test('parseXLIFF: trans-unit without target is skipped', () => {
     const cfg = makeXliffConfig(dir);
     const formatter = xliffFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.equal(bundles[0].messages.length, 1);
-    assert.equal(bundles[0].messages[0].name, 'translated');
+    assert.strictEqual(bundles[0].messages.length, 1);
+    assert.strictEqual(bundles[0].messages[0].name, 'translated');
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -247,7 +247,7 @@ test('parseXLIFF: missing file returns empty bundles', () => {
     const cfg = makeXliffConfig(dir);
     const formatter = xliffFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.equal(bundles.length, 0);
+    assert.strictEqual(bundles.length, 0);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -270,8 +270,8 @@ test('parseXLIFF: different locale', () => {
     const cfg = makeXliffConfig(dir, ['ja' as Locale]);
     const formatter = xliffFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.equal(bundles[0].locale, 'ja');
-    assert.deepEqual(bundles[0].messages[0].contents, ['こんにちは世界']);
+    assert.strictEqual(bundles[0].locale, 'ja');
+    assert.deepStrictEqual(bundles[0].messages[0].contents, ['こんにちは世界']);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -294,7 +294,7 @@ test('parseXLIFF: text with special XML characters', () => {
     const cfg = makeXliffConfig(dir);
     const formatter = xliffFactory(cfg);
     const bundles = formatter.readTranslations();
-    assert.deepEqual(bundles[0].messages[0].contents, [
+    assert.deepStrictEqual(bundles[0].messages[0].contents, [
       'Hola <Mundo> & "Amigos"',
     ]);
   } finally {
@@ -320,7 +320,7 @@ test('parseXLIFF: HTML message with expression and attribute', () => {
     const formatter = xliffFactory(cfg);
     const bundles = formatter.readTranslations();
     const msg = bundles[0].messages[0];
-    assert.deepEqual(msg.contents, [
+    assert.deepStrictEqual(msg.contents, [
       'Clic ',
       {untranslatable: '<a href="${url}">', index: 0} as Placeholder,
       'aquí',

@@ -29,7 +29,7 @@ const isLocaleTests: Array<{name: string; in: string; want: boolean}> = [
 for (const tt of isLocaleTests) {
   test(`isLocale: ${tt.name}`, () => {
     const got = isLocale(tt.in);
-    assert.equal(got, tt.want, `isLocale(${JSON.stringify(tt.in)})`);
+    assert.strictEqual(got, tt.want, `isLocale(${JSON.stringify(tt.in)})`);
   });
 }
 
@@ -67,7 +67,7 @@ export const allLocales = [
   \`zh-Hans\`,
 ] as const;
 `;
-    assert.equal(got, want);
+    assert.strictEqual(got, want);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -105,7 +105,7 @@ export const allLocales = [
   \`zh-Hans\`,
 ];
 `;
-    assert.equal(got, want);
+    assert.strictEqual(got, want);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -145,7 +145,7 @@ export const allLocales = [
   \`zh-Hans\`,
 ] as const;
 `;
-    assert.equal(got, want);
+    assert.strictEqual(got, want);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -181,7 +181,7 @@ export const allLocales = [
   \`es\`,
 ] as const;
 `;
-    assert.equal(got, want);
+    assert.strictEqual(got, want);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }
@@ -219,7 +219,7 @@ export const allLocales = [
   \`zh\`,
 ] as const;
 `;
-    assert.equal(got, want);
+    assert.strictEqual(got, want);
   } finally {
     rmSync(dir, {recursive: true, force: true});
   }

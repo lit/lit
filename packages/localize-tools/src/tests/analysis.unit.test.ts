@@ -45,11 +45,11 @@ function checkAnalysis(
     () => undefined
   );
   const {messages, errors} = extractMessagesFromProgram(program);
-  assert.deepEqual(
+  assert.deepStrictEqual(
     errors.map((diagnostic) => ts.formatDiagnostic(diagnostic, host).trim()),
     expectedErrors
   );
-  assert.deepEqual(
+  assert.deepStrictEqual(
     messages.map(({name, contents, desc}) => ({
       name,
       contents,

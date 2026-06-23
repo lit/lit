@@ -47,27 +47,27 @@ test('ValidXLBRuntime', () => {
 
   const cfg = readConfigFileAndWriteSchema(configPath);
 
-  assert.equal(cfg.sourceLocale, 'en');
-  assert.deepEqual(cfg.targetLocales, ['es-419', 'zh_CN']);
-  assert.deepEqual(cfg.inputFiles, ['src/**/*.ts']);
-  assert.equal(cfg.tsConfig, 'tsconfig.json');
-  assert.equal(cfg.interchange.format, 'xlb');
-  assert.equal(
+  assert.strictEqual(cfg.sourceLocale, 'en');
+  assert.deepStrictEqual(cfg.targetLocales, ['es-419', 'zh_CN']);
+  assert.deepStrictEqual(cfg.inputFiles, ['src/**/*.ts']);
+  assert.strictEqual(cfg.tsConfig, 'tsconfig.json');
+  assert.strictEqual(cfg.interchange.format, 'xlb');
+  assert.strictEqual(
     (cfg.interchange as {outputFile: string}).outputFile,
     'data/en.xlb'
   );
-  assert.equal(
+  assert.strictEqual(
     (cfg.interchange as {translationsGlob: string}).translationsGlob,
     'data/*.xlb'
   );
-  assert.equal(cfg.output.mode, 'runtime');
-  assert.equal((cfg.output as {language: string}).language, 'ts');
-  assert.equal((cfg.output as {outputDir: string}).outputDir, 'out');
-  assert.equal(
+  assert.strictEqual(cfg.output.mode, 'runtime');
+  assert.strictEqual((cfg.output as {language: string}).language, 'ts');
+  assert.strictEqual((cfg.output as {outputDir: string}).outputDir, 'out');
+  assert.strictEqual(
     (cfg.output as {localeCodesModule: string}).localeCodesModule,
     'src/locale-codes.ts'
   );
-  assert.equal(cfg.baseDir, dir);
+  assert.strictEqual(cfg.baseDir, dir);
 });
 
 test('ValidXLIFFTransform', () => {
@@ -91,14 +91,14 @@ test('ValidXLIFFTransform', () => {
 
   const cfg = readConfigFileAndWriteSchema(configPath);
 
-  assert.equal(cfg.interchange.format, 'xliff');
-  assert.equal((cfg.interchange as {xliffDir: string}).xliffDir, 'xliff');
-  assert.equal(
+  assert.strictEqual(cfg.interchange.format, 'xliff');
+  assert.strictEqual((cfg.interchange as {xliffDir: string}).xliffDir, 'xliff');
+  assert.strictEqual(
     (cfg.interchange as {placeholderStyle: string}).placeholderStyle,
     'ph'
   );
-  assert.equal(cfg.output.mode, 'transform');
-  assert.equal((cfg.output as {outputDir: string}).outputDir, 'build');
+  assert.strictEqual(cfg.output.mode, 'transform');
+  assert.strictEqual((cfg.output as {outputDir: string}).outputDir, 'build');
 });
 
 test('ValidWithPatches', () => {
@@ -137,9 +137,9 @@ test('ValidWithPatches', () => {
   assert.ok(localePatch);
   const msgPatches = localePatch['greeting'];
   assert.ok(msgPatches);
-  assert.equal(msgPatches.length, 1);
-  assert.equal(msgPatches[0].before, 'Buenos dias');
-  assert.equal(msgPatches[0].after, 'Buenos días');
+  assert.strictEqual(msgPatches.length, 1);
+  assert.strictEqual(msgPatches[0].before, 'Buenos dias');
+  assert.strictEqual(msgPatches[0].after, 'Buenos días');
 });
 
 // -- Error cases --
@@ -334,7 +334,7 @@ test('PreservesExistingSchema', () => {
   );
 
   const cfg = readConfigFileAndWriteSchema(configPath);
-  assert.equal(cfg.$schema, customSchema);
+  assert.strictEqual(cfg.$schema, customSchema);
 
   // Verify the file was not rewritten with the default schema.
   const data = readFileSync(configPath, 'utf8');
@@ -366,7 +366,7 @@ test('Resolve relative path', () => {
   const cfg = readConfigFileAndWriteSchema(configPath);
   const got = cfg.resolve('src/foo.ts');
   const want = path.join(dir, 'src/foo.ts');
-  assert.equal(got, want);
+  assert.strictEqual(got, want);
 });
 
 test('Resolve absolute path', () => {
@@ -388,7 +388,7 @@ test('Resolve absolute path', () => {
   const cfg = readConfigFileAndWriteSchema(configPath);
   const abs = '/absolute/path/foo.ts';
   const got = cfg.resolve(abs);
-  assert.equal(got, abs);
+  assert.strictEqual(got, abs);
 });
 
 // -- Schema validation tests --

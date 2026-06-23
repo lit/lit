@@ -57,15 +57,15 @@ const renderHelloWorld = (locale: string) =>
   });
 
 test('renders en in isolation', async () => {
-  assert.equal(await renderHelloWorld('en'), 'Hello World');
+  assert.strictEqual(await renderHelloWorld('en'), 'Hello World');
 });
 
 test('renders es in isolation', async () => {
-  assert.equal(await renderHelloWorld('es'), 'Hola Mundo');
+  assert.strictEqual(await renderHelloWorld('es'), 'Hola Mundo');
 });
 
 test('renders nl in isolation', async () => {
-  assert.equal(await renderHelloWorld('nl'), 'Hallo Wereld');
+  assert.strictEqual(await renderHelloWorld('nl'), 'Hallo Wereld');
 });
 
 test('renders all 3 locales concurrently', async () => {
@@ -75,8 +75,8 @@ test('renders all 3 locales concurrently', async () => {
     const es = renderHelloWorld('es');
     const nl = renderHelloWorld('nl');
 
-    assert.equal(await en, 'Hello World', `[${i}] en`);
-    assert.equal(await es, 'Hola Mundo', `[${i}] es`);
-    assert.equal(await nl, 'Hallo Wereld', `[${i}] nl`);
+    assert.strictEqual(await en, 'Hello World', `[${i}] en`);
+    assert.strictEqual(await es, 'Hola Mundo', `[${i}] es`);
+    assert.strictEqual(await nl, 'Hallo Wereld', `[${i}] nl`);
   }
 });

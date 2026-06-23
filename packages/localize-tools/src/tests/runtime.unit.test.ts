@@ -932,7 +932,7 @@ test('makeMessageString: plain string', () => {
   const contents: Array<string | Placeholder> = ['Hello World'];
   const canon = makeProgramMessage('test', ['Hello World']);
   const result = makeMessageString(contents, canon);
-  assert.equal(result, '`Hello World`');
+  assert.strictEqual(result, '`Hello World`');
 });
 
 test('makeMessageString: html tag', () => {
@@ -951,7 +951,7 @@ test('makeMessageString: html tag', () => {
     'html'
   );
   const result = makeMessageString(contents, canon);
-  assert.equal(result, 'html`<b>Bold</b>`');
+  assert.strictEqual(result, 'html`<b>Bold</b>`');
 });
 
 test('makeMessageString: str tag with expression', () => {
@@ -966,7 +966,7 @@ test('makeMessageString: str tag with expression', () => {
     'str'
   );
   const result = makeMessageString(contents, canon);
-  assert.equal(result, 'str`Hello ${0}!`');
+  assert.strictEqual(result, 'str`Hello ${0}!`');
 });
 
 test('makeMessageString: expression reindexing', () => {
@@ -987,12 +987,12 @@ test('makeMessageString: expression reindexing', () => {
     'str'
   );
   const result = makeMessageString(contents, canon);
-  assert.equal(result, 'str`${1} then ${0}`');
+  assert.strictEqual(result, 'str`${1} then ${0}`');
 });
 
 test('makeMessageString: escapes special characters', () => {
   const contents: Array<string | Placeholder> = ['back\\tick` dollar$'];
   const canon = makeProgramMessage('test', ['original']);
   const result = makeMessageString(contents, canon);
-  assert.equal(result, '`back\\\\tick\\` dollar\\$`');
+  assert.strictEqual(result, '`back\\\\tick\\` dollar\\$`');
 });

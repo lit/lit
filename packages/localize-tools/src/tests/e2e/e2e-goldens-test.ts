@@ -97,7 +97,7 @@ export function e2eGoldensTest(
         console.log(stdOutErr);
       }
 
-      assert.equal(exitCode, expectedExitCode);
+      assert.strictEqual(exitCode, expectedExitCode);
       assert.ok(
         stdOutErr.includes(expectedStdOutErr),
         `stdout/stderr did not include expected value, got: ${stdOutErr}`

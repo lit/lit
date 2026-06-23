@@ -10,7 +10,7 @@ import type {Locale} from '../types/locale.js';
 
 test('no patches', () => {
   const got = applyPatches({}, 'es-419' as Locale, 'greeting', 'Hola Mundo');
-  assert.equal(got, 'Hola Mundo');
+  assert.strictEqual(got, 'Hola Mundo');
 });
 
 test('no patches for locale', () => {
@@ -25,7 +25,7 @@ test('no patches for locale', () => {
     'greeting',
     'Hola Mundo'
   );
-  assert.equal(got, 'Hola Mundo');
+  assert.strictEqual(got, 'Hola Mundo');
 });
 
 test('no patches for message', () => {
@@ -40,7 +40,7 @@ test('no patches for message', () => {
     'greeting',
     'Hola Mundo'
   );
-  assert.equal(got, 'Hola Mundo');
+  assert.strictEqual(got, 'Hola Mundo');
 });
 
 test('single patch', () => {
@@ -55,7 +55,7 @@ test('single patch', () => {
     'greeting',
     'Buenos dias'
   );
-  assert.equal(got, 'Buenos días');
+  assert.strictEqual(got, 'Buenos días');
 });
 
 test('multiple patches for same message', () => {
@@ -73,7 +73,7 @@ test('multiple patches for same message', () => {
     'greeting',
     'Buenos dias amigo'
   );
-  assert.equal(got, 'Buenos días amig@');
+  assert.strictEqual(got, 'Buenos días amig@');
 });
 
 test('patch replaces all occurrences', () => {
@@ -83,5 +83,5 @@ test('patch replaces all occurrences', () => {
     },
   };
   const got = applyPatches(patches, 'es-419' as Locale, 'greeting', 'aaaaaa');
-  assert.equal(got, 'bbb');
+  assert.strictEqual(got, 'bbb');
 });

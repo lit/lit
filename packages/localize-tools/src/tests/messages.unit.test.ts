@@ -40,7 +40,7 @@ test('valid translation', () => {
     programMsgs,
     new Map([['es-419' as Locale, localizedMsgs]])
   );
-  assert.deepEqual(errs, []);
+  assert.deepStrictEqual(errs, []);
 });
 
 test('extra expression', () => {
@@ -60,7 +60,7 @@ test('extra expression', () => {
     programMsgs,
     new Map([['es-419' as Locale, localizedMsgs]])
   );
-  assert.deepEqual(errs, [
+  assert.deepStrictEqual(errs, [
     `Placeholder error in es-419 localization of extra-expression: unexpected "\${alert("evil")}"`,
   ]);
 });
@@ -82,7 +82,7 @@ test('missing expression', () => {
     programMsgs,
     new Map([['es-419' as Locale, localizedMsgs]])
   );
-  assert.deepEqual(errs, [
+  assert.deepStrictEqual(errs, [
     `Placeholder error in es-419 localization of missing-expression: missing "\${name}"`,
   ]);
 });
@@ -108,7 +108,7 @@ test('missing HTML', () => {
     programMsgs,
     new Map([['es-419' as Locale, localizedMsgs]])
   );
-  assert.deepEqual(errs, [
+  assert.deepStrictEqual(errs, [
     `Placeholder error in es-419 localization of missing-html: missing "<b>"`,
     `Placeholder error in es-419 localization of missing-html: missing "</b>"`,
   ]);
@@ -139,7 +139,7 @@ test('changed HTML', () => {
     programMsgs,
     new Map([['es-419' as Locale, localizedMsgs]])
   );
-  assert.deepEqual(errs, [
+  assert.deepStrictEqual(errs, [
     `Placeholder error in es-419 localization of changed-html: unexpected "<blink>"`,
     `Placeholder error in es-419 localization of changed-html: unexpected "</blink>"`,
     `Placeholder error in es-419 localization of changed-html: missing "<b>"`,
@@ -180,7 +180,7 @@ test('reordered placeholders', () => {
     programMsgs,
     new Map([['es-419' as Locale, localizedMsgs]])
   );
-  assert.deepEqual(errs, []);
+  assert.deepStrictEqual(errs, []);
 });
 
 test('extra message not in source', () => {
@@ -204,5 +204,5 @@ test('extra message not in source', () => {
     programMsgs,
     new Map([['es-419' as Locale, localizedMsgs]])
   );
-  assert.deepEqual(errs, []);
+  assert.deepStrictEqual(errs, []);
 });

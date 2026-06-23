@@ -12,7 +12,10 @@ import {parseStringAsTemplateLiteral} from '../typescript.js';
 test('parses a no-substitution template literal body', () => {
   const node = parseStringAsTemplateLiteral('Hello World');
   assert.ok(ts.isNoSubstitutionTemplateLiteral(node));
-  assert.equal((node as ts.NoSubstitutionTemplateLiteral).text, 'Hello World');
+  assert.strictEqual(
+    (node as ts.NoSubstitutionTemplateLiteral).text,
+    'Hello World'
+  );
 });
 
 test('parses an identifier substitution as an Identifier', () => {
@@ -20,7 +23,7 @@ test('parses an identifier substitution as an Identifier', () => {
   assert.ok(ts.isTemplateExpression(node));
   const span = (node as ts.TemplateExpression).templateSpans[0];
   assert.ok(ts.isIdentifier(span.expression));
-  assert.equal((span.expression as ts.Identifier).text, 'name');
+  assert.strictEqual((span.expression as ts.Identifier).text, 'name');
 });
 
 // Regression test for a bug where TypeScript generic call expressions inside
@@ -45,9 +48,9 @@ test('parses a generic call expression substitution as a CallExpression', () => 
   );
   const call = expr as ts.CallExpression;
   assert.ok(ts.isIdentifier(call.expression));
-  assert.equal((call.expression as ts.Identifier).text, 'fn');
-  assert.equal(call.typeArguments?.length, 1);
-  assert.equal(call.arguments.length, 1);
+  assert.strictEqual((call.expression as ts.Identifier).text, 'fn');
+  assert.strictEqual(call.typeArguments?.length, 1);
+  assert.strictEqual(call.arguments.length, 1);
 });
 
 test('parses nested generic call substitutions correctly', () => {
@@ -56,10 +59,10 @@ test('parses nested generic call substitutions correctly', () => {
   );
   assert.ok(ts.isTemplateExpression(node));
   const spans = (node as ts.TemplateExpression).templateSpans;
-  assert.equal(spans.length, 2);
+  assert.strictEqual(spans.length, 2);
   assert.ok(ts.isCallExpression(spans[0].expression));
   assert.ok(ts.isCallExpression(spans[1].expression));
-  assert.equal(
+  assert.strictEqual(
     (spans[1].expression as ts.CallExpression).typeArguments?.length,
     2
   );
