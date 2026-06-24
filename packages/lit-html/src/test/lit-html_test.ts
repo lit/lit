@@ -1749,6 +1749,77 @@ suite('lit-html', () => {
     });
   });
 
+  suite('creationScope', () => {
+    test('uses creationScope.importNode', () => {
+      let usedImportNode = false;
+      render(html``, container, {
+        creationScope: {
+          importNode: (n) => {
+            usedImportNode = true;
+            return n;
+          },
+        },
+      });
+      assert.isTrue(usedImportNode);
+    });
+
+    test('uses creationScope.customElementsRegistry', () => {
+      let importNodeDescriptor: PropertyDescriptor | undefined;
+      // Note, patches importNode for this test only if scoped custom
+      // elements is not supported.
+      const needsImportNodePatch =
+        (document as any).customElementRegistry === undefined ||
+        typeof window.customElements.forcePolyfill;
+      if (needsImportNodePatch) {
+        importNodeDescriptor = Object.getOwnPropertyDescriptor(
+          document,
+          'importNode'
+        );
+        const nativeImportNode = document.importNode;
+        (document as any).importNode = (
+          node: Node,
+          options: {customElementRegistry: CustomElementRegistry}
+        ) => {
+          const fragment = nativeImportNode.call(document, node, true);
+          const div = fragment.firstChild;
+          Object.defineProperty(div!, 'customElementRegistry', {
+            value: options.customElementRegistry,
+            configurable: true,
+            enumerable: true,
+          });
+          return fragment;
+        };
+      }
+
+      const creationScope = document.createElement('div') as HTMLDivElement & {
+        customElementRegistry?: CustomElementRegistry;
+      };
+      if (creationScope.customElementRegistry !== window.customElements) {
+        Object.defineProperty(creationScope!, 'customElementRegistry', {
+          value: window.customElements,
+          configurable: true,
+          enumerable: true,
+        });
+      }
+      render(html`<div></div>`, container, {
+        creationScope,
+      });
+      const div = container.firstElementChild as HTMLElement & {
+        customElementRegistry?: CustomElementRegistry;
+      };
+      assert.equal(div.customElementRegistry, window.customElements);
+
+      // restore importNode if patched
+      if (needsImportNodePatch) {
+        if (importNodeDescriptor != null) {
+          Object.defineProperty(document, 'importNode', importNodeDescriptor);
+        } else {
+          delete (document as any).importNode;
+        }
+      }
+    });
+  });
+
   suite('directives', () => {
     // A stateful directive
     class CountDirective extends Directive {
@@ -3316,6 +3387,11 @@ suite('lit-html', () => {
         container
       );
       assertNoWarning();
+    });
+
+    test('warns on creationScope.importNode', () => {
+      render(html``, container, {creationScope: {importNode: (n) => n}});
+      assertWarning('import-node');
     });
 
     skipTestIfCompiled(
