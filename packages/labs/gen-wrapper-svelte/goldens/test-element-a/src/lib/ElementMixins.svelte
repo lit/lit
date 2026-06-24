@@ -7,6 +7,7 @@
   export interface Props {
     class?: string;
     style?: string;
+    mixedProp?: number | undefined;
   }
   export interface Events {}
   export interface Slots {
