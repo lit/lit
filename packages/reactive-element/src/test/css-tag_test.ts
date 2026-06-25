@@ -4,58 +4,18 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {
-  css,
-  CSSResult,
-  unsafeCSS,
-  supportsAdoptingStyleSheets,
-} from '@lit/reactive-element/css-tag.js';
+import {css, CSSResult, unsafeCSS} from '@lit/reactive-element/css-tag.js';
 import {assert} from 'chai';
 
 suite('Styling', () => {
   suite('css tag', () => {
-    test('stylesheet from same template literal without expressions are cached', () => {
-      // Alias avoids syntax highlighting issues in editors
-      const cssValue = css;
-      const makeStyle = () => cssValue`foo`;
-      const style1 = makeStyle();
-      if (supportsAdoptingStyleSheets) {
-        assert.isDefined(style1.styleSheet);
-        assert.strictEqual(style1.styleSheet, style1.styleSheet);
-        const style2 = makeStyle();
-        // Equal because we cache stylesheets based on TemplateStringArrays
-        assert.strictEqual(style1.styleSheet, style2.styleSheet);
-      } else {
-        assert.isUndefined(style1.styleSheet);
-      }
-    });
-
-    test('stylesheet from same template literal with expressions are not cached', () => {
-      // Alias avoids syntax highlighting issues in editors
-      const cssValue = css;
-      const makeStyle = () => cssValue`background: ${cssValue`blue`}`;
-      const style1 = makeStyle();
-      if (supportsAdoptingStyleSheets) {
-        assert.isDefined(style1.styleSheet);
-        assert.strictEqual(style1.styleSheet, style1.styleSheet);
-        const style2 = makeStyle();
-        assert.notStrictEqual(style1.styleSheet, style2.styleSheet);
-      } else {
-        assert.isUndefined(style1.styleSheet);
-      }
-    });
-
     test('unsafeCSS() always produces a new stylesheet', () => {
       const makeStyle = () => unsafeCSS(`foo`);
       const style1 = makeStyle();
-      if (supportsAdoptingStyleSheets) {
-        assert.isDefined(style1.styleSheet);
-        assert.strictEqual(style1.styleSheet, style1.styleSheet);
-        const style2 = makeStyle();
-        assert.notStrictEqual(style1.styleSheet, style2.styleSheet);
-      } else {
-        assert.isUndefined(style1.styleSheet);
-      }
+      assert.isDefined(style1.styleSheet);
+      assert.strictEqual(style1.styleSheet, style1.styleSheet);
+      const style2 = makeStyle();
+      assert.notStrictEqual(style1.styleSheet, style2.styleSheet);
     });
 
     test('`css` get styles throws when unsafe values are used', async () => {
