@@ -10,8 +10,51 @@ import copy from 'rollup-plugin-copy';
 import nodeResolve from '@rollup/plugin-node-resolve';
 import sourcemaps from 'rollup-plugin-sourcemaps';
 import replace from '@rollup/plugin-replace';
-import virtual from '@rollup/plugin-virtual';
+import {resolve as pathResolve, dirname as pathDirname} from 'path';
 import inject from '@rollup/plugin-inject';
+
+// Minimal inline replacement for @rollup/plugin-virtual, used only by the
+// name-cache seeder build below. Inlining it (rather than depending on the
+// published plugin) keeps rollup-common.js buildable from source in
+// environments where @rollup/plugin-virtual is not available as a package
+// (e.g. Linux distributions that build everything from source), which is
+// required for the seeder — and therefore reproducible minified output — to
+// work there. Behaviour matches @rollup/plugin-virtual: it serves the
+// in-memory seeder module and resolves relative imports from it to real files.
+const VIRTUAL_PREFIX = '\0virtual:';
+const virtual = (modules) => {
+  const resolvedIds = new Map();
+  for (const id of Object.keys(modules)) {
+    resolvedIds.set(pathResolve(id), modules[id]);
+  }
+  return {
+    name: 'virtual',
+    resolveId(id, importer) {
+      if (id in modules) {
+        return VIRTUAL_PREFIX + id;
+      }
+      if (importer) {
+        const importerNoPrefix = importer.startsWith(VIRTUAL_PREFIX)
+          ? importer.slice(VIRTUAL_PREFIX.length)
+          : importer;
+        const resolved = pathResolve(pathDirname(importerNoPrefix), id);
+        if (resolvedIds.has(resolved)) {
+          return VIRTUAL_PREFIX + resolved;
+        }
+      }
+      return null;
+    },
+    load(id) {
+      if (id.startsWith(VIRTUAL_PREFIX)) {
+        const idNoPrefix = id.slice(VIRTUAL_PREFIX.length);
+        return idNoPrefix in modules
+          ? modules[idNoPrefix]
+          : resolvedIds.get(idNoPrefix);
+      }
+      return null;
+    },
+  };
+};
 
 // Prefixes used with minified class and stable properties on objects to avoid
 // collisions with user code and/or subclasses between packages. They are
