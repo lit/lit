@@ -7,8 +7,9 @@
 type Falsy = null | undefined | false | 0 | -0 | 0n | '';
 
 /**
- * When `condition` is true, returns the result of calling `trueCase()`, else
- * returns the result of calling `falseCase()` if `falseCase` is defined.
+ * When `condition` is truthy, returns the result of calling `trueCase()`, else
+ * returns the result of calling `falseCase()` if `falseCase` is defined. The
+ * (type-narrowed) `condition` value is passed to both case functions.
  *
  * This is a convenience wrapper around a ternary expression that makes it a
  * little nicer to write an inline conditional without an else.
@@ -18,7 +19,7 @@ type Falsy = null | undefined | false | 0 | -0 | 0n | '';
  * ```ts
  * render() {
  *   return html`
- *     ${when(this.user, () => html`User: ${this.user.username}`, () => html`Sign In...`)}
+ *     ${when(this.user, (user) => html`User: ${user.username}`, () => html`Sign In...`)}
  *   `;
  * }
  * ```
