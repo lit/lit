@@ -968,6 +968,7 @@ class Template {
     let node: Node | null;
     let nodeIndex = 0;
     let attrNameIndex = 0;
+    let hasDuplicateAttrs = false;
     const partCount = strings.length - 1;
     const parts = this.parts;
 
@@ -1010,24 +1011,49 @@ class Template {
         if ((node as Element).hasAttributes()) {
           for (const name of (node as Element).getAttributeNames()) {
             if (name.endsWith(boundAttributeSuffix)) {
-              const realName = attrNames[attrNameIndex++];
               const value = (node as Element).getAttribute(name)!;
               const statics = value.split(marker);
-              const m = /([.?@])?(.*)/.exec(realName)!;
-              parts.push({
-                type: ATTRIBUTE_PART,
-                index: nodeIndex,
-                name: m[2],
-                strings: statics,
-                ctor:
-                  m[1] === '.'
-                    ? PropertyPart
-                    : m[1] === '?'
-                      ? BooleanAttributePart
-                      : m[1] === '@'
-                        ? EventPart
-                        : AttributePart,
-              });
+              // Extract the base attribute name (without the bound suffix)
+              const domAttrName = name.slice(0, -boundAttributeSuffix.length);
+              // Handle duplicate attribute names: when the same attribute name
+              // appears multiple times in a template (e.g., ?disabled twice),
+              // the HTML parser collapses them into a single DOM attribute.
+              // We need to create parts for all template bindings with this name.
+              let attrCount = 0;
+              while (
+                attrNameIndex < attrNames.length &&
+                attrNames[attrNameIndex] !== undefined
+              ) {
+                const realName = attrNames[attrNameIndex];
+                const m = /([.?@])?(.*)/.exec(realName)!;
+                const templateAttrName = m[2];
+
+                // Check if this template attribute matches the DOM attribute
+                if (templateAttrName !== domAttrName) {
+                  break;
+                }
+
+                attrCount++;
+                if (attrCount > 1) {
+                  hasDuplicateAttrs = true;
+                }
+
+                parts.push({
+                  type: ATTRIBUTE_PART,
+                  index: nodeIndex,
+                  name: templateAttrName,
+                  strings: statics,
+                  ctor:
+                    m[1] === '.'
+                      ? PropertyPart
+                      : m[1] === '?'
+                        ? BooleanAttributePart
+                        : m[1] === '@'
+                          ? EventPart
+                          : AttributePart,
+                });
+                attrNameIndex++;
+              }
               (node as Element).removeAttribute(name);
             } else if (name.startsWith(marker)) {
               parts.push({
@@ -1083,22 +1109,27 @@ class Template {
     }
 
     if (DEV_MODE) {
-      // If there was a duplicate attribute on a tag, then when the tag is
-      // parsed into an element the attribute gets de-duplicated. We can detect
-      // this mismatch if we haven't precisely consumed every attribute name
-      // when preparing the template. This works because `attrNames` is built
-      // from the template string and `attrNameIndex` comes from processing the
-      // resulting DOM.
-      if (attrNames.length !== attrNameIndex) {
-        throw new Error(
+      // Emit a warning if we detected duplicate attributes
+      if (hasDuplicateAttrs) {
+        issueWarning(
+          'multiple-bound-attribute-values',
           `Detected duplicate attribute bindings. This occurs if your template ` +
             `has duplicate attributes on an element tag. For example ` +
             `"<input ?disabled=\${true} ?disabled=\${false}>" contains a ` +
-            `duplicate "disabled" attribute. The error was detected in ` +
+            `duplicate "disabled" attribute. The warning was detected in ` +
             `the following template: \n` +
             '`' +
             strings.join('${...}') +
             '`'
+        );
+      }
+      // Assert that we found all the attribute names we expected. This is a
+      // sanity check that the template compiler and runtime are in sync.
+      // Please report an issue if you see this error.
+      if (attrNames.length !== attrNameIndex) {
+        throw new Error(
+          `Internal error: expected ${attrNames.length} attribute names, found ${attrNameIndex}. ` +
+            `Please report an issue at https://github.com/lit/lit/issues/new`
         );
       }
     }

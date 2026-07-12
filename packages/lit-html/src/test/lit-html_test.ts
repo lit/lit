@@ -1166,6 +1166,70 @@ suite('lit-html', () => {
         'B'
       );
     });
+
+    test('does not throw with duplicate attribute bindings', () => {
+      // Regression test for lit/lit#2241: duplicate attributes should not cause errors
+      const disabled = false;
+      const length = 8;
+      const placeholder = 'Name';
+      const myTemplate = () => html`
+        <input ?disabled=${disabled} length=${length} ?disabled=${disabled} placeholder=${placeholder}>
+      `;
+      // This should not throw
+      assert.doesNotThrow(() => render(myTemplate(), container));
+      // The element should exist and have the correct bound attributes
+      const input = container.querySelector('input');
+      assert.ok(input);
+      assert.equal(input.hasAttribute('disabled'), false);
+      assert.equal(input.getAttribute('length'), '8');
+      assert.equal(input.getAttribute('placeholder'), 'Name');
+    });
+
+    test('handles duplicate attribute with static and bound values', () => {
+      // Test case: one static, one bound occurrence of the same attribute
+      const value = 'bound-value';
+      const myTemplate = () => html`
+        <div data-test="static" data-test=${value}></div>
+      `;
+      assert.doesNotThrow(() => render(myTemplate(), container));
+      const div = container.querySelector('div');
+      assert.ok(div);
+      // The bound value should take precedence (last binding wins)
+      assert.equal(div.getAttribute('data-test'), 'bound-value');
+    });
+
+    test('handles multiple duplicate boolean attributes on same element', () => {
+      const flag1 = true;
+      const flag2 = false;
+      const myTemplate = () => html`
+        <button ?disabled=${flag1} ?disabled=${flag2}></button>
+      `;
+      assert.doesNotThrow(() => render(myTemplate(), container));
+      const button = container.querySelector('button');
+      assert.ok(button);
+      // Both bindings should work correctly
+      assert.equal(button.hasAttribute('disabled'), false);
+      // Re-render with different values
+      render(
+        html`<button ?disabled=${true} ?disabled=${true}></button>`,
+        container
+      );
+      assert.equal(button.hasAttribute('disabled'), true);
+    });
+
+    test('handles duplicate attributes across multiple elements', () => {
+      const value1 = 'val1';
+      const value2 = 'val2';
+      const myTemplate = () => html`
+        <input data-x=${value1} data-x=${value2}>
+        <input data-y=${value1}>
+      `;
+      assert.doesNotThrow(() => render(myTemplate(), container));
+      const inputs = container.querySelectorAll('input');
+      assert.equal(inputs.length, 2);
+      assert.equal(inputs[0].getAttribute('data-x'), 'val2'); // Last value wins
+      assert.equal(inputs[1].getAttribute('data-y'), 'val1');
+    });
   });
 
   suite('boolean attributes', () => {
