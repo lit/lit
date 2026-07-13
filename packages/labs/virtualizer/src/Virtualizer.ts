@@ -156,6 +156,12 @@ export class Virtualizer {
    */
   private _childrenRO: ResizeObserver | null = null;
 
+  /**
+   * Children currently observed by `_childrenRO`, so we can unobserve ones
+   * that leave the range instead of leaking them forever.
+   */
+  private _observedChildren = new Set<HTMLElement>();
+
   private _mutationObserver: MutationObserver | null = null;
 
   private _scrollEventListeners: (Element | Window)[] = [];
@@ -281,6 +287,24 @@ export class Virtualizer {
     this._childrenRO = new _ResizeObserver!(
       this._childrenSizeChanged.bind(this)
     );
+    this._observedChildren.clear();
+  }
+
+  // Syncs _childrenRO's observed set with the current range, unobserving
+  // children that are no longer rendered.
+  private _updateObservedChildren(
+    children: Array<HTMLElement> = this._children
+  ) {
+    const current = new Set(children);
+    for (const child of this._observedChildren) {
+      if (!current.has(child)) {
+        this._childrenRO!.unobserve(child);
+      }
+    }
+    for (const child of current) {
+      this._childrenRO!.observe(child);
+    }
+    this._observedChildren = current;
   }
 
   _initHostElement(config: VirtualizerConfig) {
@@ -322,7 +346,7 @@ export class Virtualizer {
       this._hostElementRO!.observe(ancestor);
     });
     this._hostElementRO!.observe(this._scrollerController!.element);
-    this._children.forEach((child) => this._childrenRO!.observe(child));
+    this._updateObservedChildren();
     this._scrollEventListeners.forEach((target) =>
       target.addEventListener('scroll', this, this._scrollEventListenerOptions)
     );
@@ -346,6 +370,7 @@ export class Virtualizer {
     this._hostElementRO = null;
     this._childrenRO?.disconnect();
     this._childrenRO = null;
+    this._observedChildren.clear();
     this._rejectLayoutCompletePromise('disconnected');
     this._connected = false;
   }
@@ -552,7 +577,13 @@ export class Virtualizer {
   _finishDOMUpdate() {
     if (this._connected) {
       // _childrenRO should be non-null if we're connected
-      this._children.forEach((child) => this._childrenRO!.observe(child));
+      const children = this._children;
+      this._updateObservedChildren(children);
+      if (children.length === 0) {
+        // No children means _childrenSizeChanged won't fire, so
+        // layoutComplete would never resolve otherwise.
+        this._scheduleLayoutComplete();
+      }
       this._checkScrollIntoViewTarget(this._childrenPos);
       this._positionChildren(this._childrenPos);
       this._sizeHostElement(this._scrollSize);
