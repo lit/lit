@@ -659,6 +659,72 @@ suite('@property', () => {
     ]);
   });
 
+  test('useDefault with nullish default values', async () => {
+    class E extends ReactiveElement {
+      @property({reflect: true, useDefault: true})
+      accessor accNul: string | null = null;
+
+      @property({reflect: true, useDefault: true})
+      accessor accUndef: string | undefined = undefined;
+
+      #gsNul: string | null = null;
+      get gsNul() {
+        return this.#gsNul;
+      }
+      @property({reflect: true, useDefault: true})
+      set gsNul(v: string | null) {
+        const old = this.gsNul;
+        this.#gsNul = v;
+        this.requestUpdate('gsNul', old);
+      }
+
+      #gsUndef: string | undefined = undefined;
+      get gsUndef() {
+        return this.#gsUndef;
+      }
+      @property({reflect: true, useDefault: true})
+      set gsUndef(v: string | undefined) {
+        const old = this.gsUndef;
+        this.#gsUndef = v;
+        this.requestUpdate('gsUndef', old);
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    // Nullish defaults are not reflected.
+    assert.isFalse(el.hasAttributes());
+    assert.strictEqual(el.accNul, null);
+    assert.strictEqual(el.accUndef, undefined);
+    assert.strictEqual(el.gsNul, null);
+    assert.strictEqual(el.gsUndef, undefined);
+
+    // Setting a value reflects it.
+    el.accNul = 'c';
+    el.accUndef = 'd';
+    el.gsNul = 'e';
+    el.gsUndef = 'f';
+    await el.updateComplete;
+    assert.equal(el.getAttribute('accnul'), 'c');
+    assert.equal(el.getAttribute('accundef'), 'd');
+    assert.equal(el.getAttribute('gsnul'), 'e');
+    assert.equal(el.getAttribute('gsundef'), 'f');
+
+    // Removing the attribute restores the nullish default, and preserves the
+    // difference between a `null` and an `undefined` default.
+    el.removeAttribute('accnul');
+    el.removeAttribute('accundef');
+    el.removeAttribute('gsnul');
+    el.removeAttribute('gsundef');
+    assert.strictEqual(el.accNul, null);
+    assert.strictEqual(el.accUndef, undefined);
+    assert.strictEqual(el.gsNul, null);
+    assert.strictEqual(el.gsUndef, undefined);
+    await el.updateComplete;
+    assert.isFalse(el.hasAttributes());
+  });
+
   test('useDefault does not reflect', async () => {
     class E extends ReactiveElement {
       @property({reflect: true, useDefault: true})
