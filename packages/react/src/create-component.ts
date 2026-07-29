@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type React from 'react';
+import React from 'react';
 
 const NODE_MODE = false;
 const DEV_MODE = true;
