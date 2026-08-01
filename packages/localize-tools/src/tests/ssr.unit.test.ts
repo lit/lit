@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {test} from 'uvu';
-// eslint-disable-next-line import/extensions
-import * as assert from 'uvu/assert';
+import {test} from 'node:test';
+import * as assert from 'node:assert';
 import {configureSsrLocalization} from '../ssr.js';
 import {render} from '@lit-labs/ssr';
 import {html} from 'lit';
@@ -58,15 +57,15 @@ const renderHelloWorld = (locale: string) =>
   });
 
 test('renders en in isolation', async () => {
-  assert.equal(await renderHelloWorld('en'), 'Hello World');
+  assert.strictEqual(await renderHelloWorld('en'), 'Hello World');
 });
 
 test('renders es in isolation', async () => {
-  assert.equal(await renderHelloWorld('es'), 'Hola Mundo');
+  assert.strictEqual(await renderHelloWorld('es'), 'Hola Mundo');
 });
 
 test('renders nl in isolation', async () => {
-  assert.equal(await renderHelloWorld('nl'), 'Hallo Wereld');
+  assert.strictEqual(await renderHelloWorld('nl'), 'Hallo Wereld');
 });
 
 test('renders all 3 locales concurrently', async () => {
@@ -76,10 +75,8 @@ test('renders all 3 locales concurrently', async () => {
     const es = renderHelloWorld('es');
     const nl = renderHelloWorld('nl');
 
-    assert.equal(await en, 'Hello World', `[${i}] en`);
-    assert.equal(await es, 'Hola Mundo', `[${i}] es`);
-    assert.equal(await nl, 'Hallo Wereld', `[${i}] nl`);
+    assert.strictEqual(await en, 'Hello World', `[${i}] en`);
+    assert.strictEqual(await es, 'Hola Mundo', `[${i}] es`);
+    assert.strictEqual(await nl, 'Hallo Wereld', `[${i}] nl`);
   }
 });
-
-test.run();

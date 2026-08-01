@@ -34,6 +34,7 @@ import {ContextProvider} from '../controllers/context-provider.js';
  * }
  * ```
  * @category Decorator
+ * @ExportDecoratedItems
  */
 export function provide<ValueType>({
   context: context,

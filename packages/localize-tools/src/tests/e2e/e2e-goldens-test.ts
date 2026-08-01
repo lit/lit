@@ -5,9 +5,8 @@
  */
 
 import * as path from 'path';
-import {suite} from 'uvu';
-// eslint-disable-next-line import/extensions
-import * as assert from 'uvu/assert';
+import {describe, test, before, after} from 'node:test';
+import * as assert from 'node:assert';
 import {runAndLog} from '../../cli.js';
 import fsExtra from 'fs-extra';
 import {dirname} from 'path';
@@ -59,53 +58,52 @@ export function e2eGoldensTest(
   const outputDir = path.join(root, 'output');
   const goldensDir = path.join(root, 'goldens');
 
-  const testSuite = suite(`e2e: ${name}`);
-  let oldCwd: string;
+  describe(`e2e: ${name}`, () => {
+    let oldCwd: string;
 
-  testSuite.before(async () => {
-    fsExtra.emptyDirSync(outputDir);
-    fsExtra.copySync(inputDir, outputDir);
-    oldCwd = process.cwd();
-    process.chdir(outputDir);
+    before(async () => {
+      fsExtra.emptyDirSync(outputDir);
+      fsExtra.copySync(inputDir, outputDir);
+      oldCwd = process.cwd();
+      process.chdir(outputDir);
+    });
+
+    after(async () => {
+      process.chdir(oldCwd);
+    });
+
+    test(`e2e: ${name}`, async () => {
+      const realStdoutWrite = process.stdout.write;
+      const realStderrWrite = process.stderr.write;
+      let stdOutErr = '';
+      process.stdout.write = (buffer: string) => {
+        stdOutErr += buffer;
+        return true;
+      };
+      process.stderr.write = (buffer: string) => {
+        stdOutErr += buffer;
+        return true;
+      };
+
+      let exitCode;
+      try {
+        exitCode = await runAndLog(['node', 'lit-localize', ...args]);
+      } finally {
+        process.stdout.write = realStdoutWrite;
+        process.stderr.write = realStderrWrite;
+      }
+
+      if (expectedExitCode === 0 && exitCode !== 0) {
+        console.log(stdOutErr);
+      }
+
+      assert.strictEqual(exitCode, expectedExitCode);
+      assert.ok(
+        stdOutErr.includes(expectedStdOutErr),
+        `stdout/stderr did not include expected value, got: ${stdOutErr}`
+      );
+
+      await assertGoldensMatch(outputDir, goldensDir);
+    });
   });
-
-  testSuite.after(async () => {
-    process.chdir(oldCwd);
-  });
-
-  testSuite(`e2e: ${name}`, async () => {
-    const realStdoutWrite = process.stdout.write;
-    const realStderrWrite = process.stderr.write;
-    let stdOutErr = '';
-    process.stdout.write = (buffer: string) => {
-      stdOutErr += buffer;
-      return true;
-    };
-    process.stderr.write = (buffer: string) => {
-      stdOutErr += buffer;
-      return true;
-    };
-
-    let exitCode;
-    try {
-      exitCode = await runAndLog(['node', 'lit-localize', ...args]);
-    } finally {
-      process.stdout.write = realStdoutWrite;
-      process.stderr.write = realStderrWrite;
-    }
-
-    if (expectedExitCode === 0 && exitCode !== 0) {
-      console.log(stdOutErr);
-    }
-
-    assert.is(exitCode, expectedExitCode);
-    assert.ok(
-      stdOutErr.includes(expectedStdOutErr),
-      `stdout/stderr did not include expected value, got: ${stdOutErr}`
-    );
-
-    await assertGoldensMatch(outputDir, goldensDir);
-  });
-
-  testSuite.run();
 }

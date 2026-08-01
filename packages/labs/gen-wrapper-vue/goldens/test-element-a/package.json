@@ -22,12 +22,12 @@
     "vue-tsc": "^2.0.22"
   },
   "files": [
-    "ElementA.*",
-    "ElementEvents.*",
-    "ElementMixins.*",
-    "ElementProps.*",
-    "ElementSlots.*",
-    "ElementWithoutProps.*",
-    "sub/ElementSub.*"
+    "ElementA*",
+    "ElementEvents*",
+    "ElementMixins*",
+    "ElementProps*",
+    "ElementSlots*",
+    "ElementWithoutProps*",
+    "sub/ElementSub*"
   ]
 }
