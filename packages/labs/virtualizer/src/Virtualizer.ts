@@ -781,7 +781,19 @@ export class Virtualizer {
     const v = size && size.height !== null ? Math.min(max, size.height) : 0;
 
     if (this._isScroller) {
-      this._getSizer().style.transform = `translate(${h}px, ${v}px)`;
+      const sizer = this._getSizer();
+      if (this._isHorizontalRtl()) {
+        // In RTL, position: absolute elements start from the right edge.
+        // Anchor explicitly to right: 0 and translate leftward to extend
+        // the scroll area in the inline-start (leftward) direction.
+        sizer.style.right = '0';
+        sizer.style.left = 'auto';
+        sizer.style.transform = `translate(${-h}px, ${v}px)`;
+      } else {
+        sizer.style.right = '';
+        sizer.style.left = '';
+        sizer.style.transform = `translate(${h}px, ${v}px)`;
+      }
     } else {
       const style = this._hostElement!.style;
       (style.minWidth as string | null) = h ? `${h}px` : '100%';
