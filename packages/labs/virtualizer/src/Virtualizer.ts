@@ -790,8 +790,8 @@ export class Virtualizer {
         sizer.style.left = 'auto';
         sizer.style.transform = `translate(${-h}px, ${v}px)`;
       } else {
-        sizer.style.right = '';
-        sizer.style.left = '';
+        sizer.style.left = '0';
+        sizer.style.right = 'auto';
         sizer.style.transform = `translate(${h}px, ${v}px)`;
       }
     } else {
@@ -811,6 +811,7 @@ export class Virtualizer {
         const child = this._children[index - this._first];
         if (child) {
           const horizontalRtl = this._isHorizontalRtl();
+          const crossAxisOffset = xOffset ?? 0;
           const translatedLeft = horizontalRtl ? -left : left;
           child.style.position = 'absolute';
           child.style.boxSizing = 'border-box';
@@ -822,13 +823,11 @@ export class Virtualizer {
             child.style.height = height + 'px';
           }
           if (horizontalRtl) {
-            (child.style.right as string | null) =
-              xOffset === undefined ? null : xOffset + 'px';
-            (child.style.left as string | null) = null;
+            child.style.right = crossAxisOffset + 'px';
+            child.style.left = 'auto';
           } else {
-            (child.style.left as string | null) =
-              xOffset === undefined ? null : xOffset + 'px';
-            (child.style.right as string | null) = null;
+            child.style.left = crossAxisOffset + 'px';
+            child.style.right = 'auto';
           }
           (child.style.top as string | null) =
             yOffset === undefined ? null : yOffset + 'px';

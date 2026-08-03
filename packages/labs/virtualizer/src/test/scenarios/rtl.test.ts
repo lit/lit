@@ -74,6 +74,7 @@ const rtlVerticalFixtureStyles = html`
     }
 
     .item {
+      width: 60px;
       height: 60px;
     }
   </style>
@@ -145,7 +146,7 @@ describe('rtl + horizontal layout', () => {
       // virtualizer must apply via style.right in RTL (not style.left).
       const item = host.querySelector('[id="0"]') as HTMLElement;
       expect(item).to.be.instanceOf(HTMLElement);
-      expect(item.style.left).to.equal('');
+      expect(item.style.left).to.equal('auto');
       expect(item.style.right).not.to.equal('');
     });
 
@@ -325,14 +326,32 @@ describe('rtl direction with vertical layout', () => {
     );
   });
 
-  it('sizer uses positive translateX in vertical RTL (only Y is relevant)', async () => {
+  it('anchors vertical rtl children from the physical left edge', async () => {
+    const {host} = await virtualizerFixture(verticalRtlOptions);
+
+    const first = host.querySelector('[id="0"]') as HTMLElement;
+    expect(first).to.be.instanceOf(HTMLElement);
+
+    await pass(() => {
+      const hostRect = host.getBoundingClientRect();
+      const firstRect = first.getBoundingClientRect();
+      expect(first.style.left).to.equal('0px');
+      expect(first.style.right).to.equal('auto');
+      expect(firstRect.left).to.be.closeTo(
+        hostRect.left,
+        1,
+        'vertical rtl items should stay left-aligned'
+      );
+    });
+  });
+
+  it('sizer stays anchored to the physical left edge in vertical rtl', async () => {
     const {host} = await virtualizerFixture(verticalRtlOptions);
     await pass(() => {
       const sizer = getSizer(host);
       expect(sizer).to.be.instanceOf(HTMLElement);
-      // Vertical layout: RTL does not affect horizontal scroll expansion.
-      // The sizer should NOT have right:0 / negative X.
-      expect(sizer.style.right).not.to.equal('0px');
+      expect(sizer.style.left).to.equal('0px');
+      expect(sizer.style.right).to.equal('auto');
       const tx = getTranslateX(sizer.style.transform);
       expect(tx).to.equal(
         0,
@@ -366,7 +385,11 @@ describe('ltr horizontal layout (non-regression)', () => {
     await pass(() => {
       const sizer = getSizer(host);
       expect(sizer).to.be.instanceOf(HTMLElement);
-      expect(sizer.style.right).to.equal('', 'LTR sizer should not set right');
+      expect(sizer.style.left).to.equal('0px');
+      expect(sizer.style.right).to.equal(
+        'auto',
+        'LTR sizer should stay left-anchored'
+      );
       const tx = getTranslateX(sizer.style.transform);
       expect(tx).to.be.greaterThan(
         0,
@@ -379,6 +402,7 @@ describe('ltr horizontal layout (non-regression)', () => {
     const {host} = await virtualizerFixture(horizontalLtrOptions);
     const item = host.querySelector('[id="1"]') as HTMLElement;
     expect(item).to.be.instanceOf(HTMLElement);
-    expect(item.style.right).to.equal('');
+    expect(item.style.left).not.to.equal('');
+    expect(item.style.right).to.equal('auto');
   });
 });
