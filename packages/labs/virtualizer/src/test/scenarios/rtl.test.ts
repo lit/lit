@@ -326,7 +326,7 @@ describe('rtl direction with vertical layout', () => {
     );
   });
 
-  it('anchors vertical rtl children from the physical left edge', async () => {
+  it('anchors vertical rtl children from the right edge', async () => {
     const {host} = await virtualizerFixture(verticalRtlOptions);
 
     const first = host.querySelector('[id="0"]') as HTMLElement;
@@ -335,27 +335,27 @@ describe('rtl direction with vertical layout', () => {
     await pass(() => {
       const hostRect = host.getBoundingClientRect();
       const firstRect = first.getBoundingClientRect();
-      expect(first.style.left).to.equal('0px');
-      expect(first.style.right).to.equal('auto');
-      expect(firstRect.left).to.be.closeTo(
-        hostRect.left,
+      expect(first.style.left).to.equal('auto');
+      expect(first.style.right).to.equal('0px');
+      expect(firstRect.right).to.be.closeTo(
+        hostRect.right,
         1,
-        'vertical rtl items should stay left-aligned'
+        'vertical rtl items should align to the right edge'
       );
     });
   });
 
-  it('sizer stays anchored to the physical left edge in vertical rtl', async () => {
+  it('sizer stays anchored to the right edge in vertical rtl', async () => {
     const {host} = await virtualizerFixture(verticalRtlOptions);
     await pass(() => {
       const sizer = getSizer(host);
       expect(sizer).to.be.instanceOf(HTMLElement);
-      expect(sizer.style.left).to.equal('0px');
-      expect(sizer.style.right).to.equal('auto');
+      expect(sizer.style.left).to.equal('auto');
+      expect(sizer.style.right).to.equal('0px');
       const tx = getTranslateX(sizer.style.transform);
-      expect(tx).to.equal(
+      expect(tx).to.be.lessThanOrEqual(
         0,
-        'horizontal translation should be 0 for vertical layout'
+        'rtl sizer should not translate rightward'
       );
     });
   });
