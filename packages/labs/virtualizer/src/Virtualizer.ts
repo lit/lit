@@ -644,8 +644,15 @@ export class Virtualizer {
   }
 
   private _isHorizontalRtl() {
+    return this._layout?.direction === 'horizontal' && this._isRtl();
+  }
+
+  private _isVerticalRtl() {
+    return this._layout?.direction !== 'horizontal' && this._isRtl();
+  }
+
+  private _isRtl() {
     return (
-      this._layout?.direction === 'horizontal' &&
       this._hostElement !== undefined &&
       getComputedStyle(this._hostElement).direction === 'rtl'
     );
@@ -782,7 +789,7 @@ export class Virtualizer {
 
     if (this._isScroller) {
       const sizer = this._getSizer();
-      if (this._isHorizontalRtl()) {
+      if (this._isHorizontalRtl() || this._isVerticalRtl()) {
         // In RTL, position: absolute elements start from the right edge.
         // Anchor explicitly to right: 0 and translate leftward to extend
         // the scroll area in the inline-start (leftward) direction.
@@ -810,9 +817,9 @@ export class Virtualizer {
       pos.forEach(({top, left, width, height, xOffset, yOffset}, index) => {
         const child = this._children[index - this._first];
         if (child) {
-          const horizontalRtl = this._isHorizontalRtl();
+          const rtl = this._isHorizontalRtl() || this._isVerticalRtl();
           const crossAxisOffset = xOffset ?? 0;
-          const translatedLeft = horizontalRtl ? -left : left;
+          const translatedLeft = rtl ? -left : left;
           child.style.position = 'absolute';
           child.style.boxSizing = 'border-box';
           child.style.transform = `translate(${translatedLeft}px, ${top}px)`;
@@ -822,7 +829,7 @@ export class Virtualizer {
           if (height !== undefined) {
             child.style.height = height + 'px';
           }
-          if (horizontalRtl) {
+          if (rtl) {
             child.style.right = crossAxisOffset + 'px';
             child.style.left = 'auto';
           } else {
