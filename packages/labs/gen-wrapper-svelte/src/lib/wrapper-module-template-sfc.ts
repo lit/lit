@@ -89,12 +89,10 @@ const renderEventsInterface = (events: Map<string, EventModel>) =>
   }`;
 
 export const renderEventsMapper = (events: Map<string, EventModel>) => {
-  return Array.from(events.values())
-    .map((event) => {
-      const {name} = event;
-      return `on${name}={${kabobToOnEvent(name)}}`;
-    })
-    .join('\n   ');
+  const handlers = Array.from(events.values())
+    .map((event) => `'${event.name}': ${kabobToOnEvent(event.name)}`)
+    .join(', ');
+  return handlers ? `use:forwardEvents={{${handlers}}}` : '';
 };
 
 export const renderPropsMapper = (props: Map<string, ModelProperty>) => {
@@ -341,7 +339,9 @@ const wrapperTemplate = (
   <script lang="ts">
     ${typeExports ?? ''}
       import '${wcPath}';
-      import { setProperties } from "$lib/util.js";
+      import { setProperties${
+        events.size > 0 ? ', forwardEvents' : ''
+      } } from "$lib/util.js";
       ${typeImports}
       import type { Snippet } from 'svelte';
 
