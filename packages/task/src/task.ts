@@ -226,6 +226,8 @@ export class Task<
   private _resolveTaskComplete?: (value: R) => void;
   private _rejectTaskComplete?: (e: unknown) => void;
   private _taskComplete?: Promise<R>;
+  private _initialValue?: R;
+  private _hasInitialValue = false;
 
   constructor(host: ReactiveControllerHost, task: TaskConfig<T, R>);
   constructor(
@@ -250,6 +252,8 @@ export class Task<
     // Providing initialValue puts the task in COMPLETE state and stores the
     // args immediately so it only runs when they change again.
     if ('initialValue' in taskConfig) {
+      this._initialValue = taskConfig.initialValue as R;
+      this._hasInitialValue = true;
       this._value = taskConfig.initialValue;
       this._status = TaskStatus.COMPLETE;
       this._previousArgs = this._getArgs?.();
@@ -402,6 +406,41 @@ export class Task<
     if (this._status === TaskStatus.PENDING) {
       this._abortController?.abort(reason);
     }
+  }
+
+  /**
+   * Resets the task to it's initial state. If an initial value was provided, the
+   * task is set to the COMPLETE state with that value. Otherwise, the task is
+   * set to the INITIAL state.
+   *
+   * Resetting a task while it is running will throw an error. The task must be
+   * aborted or completed before it can be reset.
+   */
+  reset() {
+    if (this._status === TaskStatus.PENDING) {
+      throw new Error(
+        'Cannot reset while task is running; call abort() or wait for completion first.'
+      );
+    }
+
+    if (this._hasInitialValue) {
+      // Restore value to configured initial value/state.
+      this._value = this._initialValue;
+      this._status = TaskStatus.COMPLETE;
+      this._previousArgs = this._getArgs?.();
+    } else {
+      this._status = TaskStatus.INITIAL;
+      this._value = undefined;
+      // Clear remembered args so auto-run can run on same args again.
+      this._previousArgs = undefined;
+    }
+
+    this._error = undefined;
+    this._taskComplete = undefined;
+    this._resolveTaskComplete = undefined;
+    this._rejectTaskComplete = undefined;
+    // Notify host so cleared  initial value/state is rendered promptly.
+    this._host.requestUpdate();
   }
 
   /**
