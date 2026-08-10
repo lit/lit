@@ -2,6 +2,7 @@
 /ElementCollidingPropAndSlot.*
 /ElementEvents.*
 /ElementMixins.*
+/ElementNativeEvents.*
 /ElementProps.*
 /ElementSlots.*
 /ElementWithoutProps.*

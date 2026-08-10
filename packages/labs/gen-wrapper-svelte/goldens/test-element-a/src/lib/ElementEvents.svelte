@@ -1,12 +1,14 @@
 <script lang="ts">
   export type { MyDetail } from "@lit-internal/test-element-a/detail-type.js";
   export type { EventSubclass } from "@lit-internal/test-element-a/element-events.js";
+  export type { TypeSub } from "@lit-internal/test-element-a/sub/type-sub.js";
   export type { SpecialEvent } from "@lit-internal/test-element-a/special-event.js";
   export type { TemplateResult } from "lit";
   import "@lit-internal/test-element-a/element-events.js";
   import { setProperties, forwardEvents } from "$lib/util.js";
   import type { MyDetail } from "@lit-internal/test-element-a/detail-type.js";
   import type { EventSubclass } from "@lit-internal/test-element-a/element-events.js";
+  import type { TypeSub } from "@lit-internal/test-element-a/sub/type-sub.js";
   import type { SpecialEvent } from "@lit-internal/test-element-a/special-event.js";
   import type { TemplateResult } from "lit";
   import type { Snippet } from "svelte";
@@ -21,6 +23,7 @@
     onNumberCustomEvent?: (event: CustomEvent<number>) => void;
     onMyDetailCustomEvent?: (event: CustomEvent<MyDetail>) => void;
     onEventSubclass?: (event: EventSubclass) => void;
+    onTypeSubCustomEvent?: (event: CustomEvent<TypeSub>) => void;
     onSpecialEvent?: (event: SpecialEvent) => void;
     onTemplateResultCustomEvent?: (event: CustomEvent<TemplateResult>) => void;
   }
@@ -32,6 +35,7 @@
     onNumberCustomEvent,
     onMyDetailCustomEvent,
     onEventSubclass,
+    onTypeSubCustomEvent,
     onSpecialEvent,
     onTemplateResultCustomEvent,
     class: className,
@@ -50,6 +54,7 @@
     "number-custom-event": onNumberCustomEvent,
     "my-detail-custom-event": onMyDetailCustomEvent,
     "event-subclass": onEventSubclass,
+    "type-sub-custom-event": onTypeSubCustomEvent,
     "special-event": onSpecialEvent,
     "template-result-custom-event": onTemplateResultCustomEvent,
   }}

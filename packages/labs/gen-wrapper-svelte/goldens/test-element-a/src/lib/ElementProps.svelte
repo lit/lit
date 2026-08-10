@@ -1,8 +1,14 @@
 <script lang="ts">
-  export type { MyType } from "@lit-internal/test-element-a/element-props.js";
+  export type {
+    MyType,
+    AttributeVariant,
+  } from "@lit-internal/test-element-a/element-props.js";
   import "@lit-internal/test-element-a/element-props.js";
   import { setProperties, forwardEvents } from "$lib/util.js";
-  import type { MyType } from "@lit-internal/test-element-a/element-props.js";
+  import type {
+    MyType,
+    AttributeVariant,
+  } from "@lit-internal/test-element-a/element-props.js";
   import type { Snippet } from "svelte";
 
   export interface Props {
@@ -13,6 +19,7 @@
     aBool?: boolean;
     aStrArray?: string[];
     aMyType?: MyType;
+    variant?: AttributeVariant;
   }
   export interface Events {
     onAChanged?: (event: CustomEvent<unknown>) => void;

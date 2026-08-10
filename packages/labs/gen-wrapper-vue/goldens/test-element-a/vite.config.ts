@@ -14,6 +14,7 @@ export default {
         './src/ElementCollidingPropAndSlot.vue',
         './src/ElementEvents.vue',
         './src/ElementMixins.vue',
+        './src/ElementNativeEvents.vue',
         './src/ElementProps.vue',
         './src/ElementSlots.vue',
         './src/ElementWithoutProps.vue',
