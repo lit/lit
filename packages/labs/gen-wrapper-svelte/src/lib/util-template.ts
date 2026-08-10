@@ -29,4 +29,26 @@ export function setProperties(
   };
 }
 
+type EventHandlers = Record<string, ((event: Event) => void) | undefined>;
+
+export function forwardEvents(node: HTMLElement, handlers: EventHandlers) {
+  let current = handlers;
+  const listeners = new Map<string, (event: Event) => void>();
+  for (const name of Object.keys(handlers)) {
+    const listener = (event: Event) => current[name]?.(event);
+    listeners.set(name, listener);
+    node.addEventListener(name, listener);
+  }
+  return {
+    update(handlers: EventHandlers) {
+      current = handlers;
+    },
+    destroy() {
+      for (const [name, listener] of listeners) {
+        node.removeEventListener(name, listener);
+      }
+    },
+  };
+}
+
 `;

@@ -5,7 +5,7 @@
   export type { SpecialEvent } from "@lit-internal/test-element-a/special-event.js";
   export type { TemplateResult } from "lit";
   import "@lit-internal/test-element-a/element-events.js";
-  import { setProperties } from "$lib/util.js";
+  import { setProperties, forwardEvents } from "$lib/util.js";
   import type { MyDetail } from "@lit-internal/test-element-a/detail-type.js";
   import type { EventSubclass } from "@lit-internal/test-element-a/element-events.js";
   import type { TypeSub } from "@lit-internal/test-element-a/sub/type-sub.js";
@@ -49,13 +49,15 @@
   use:setProperties={props}
   class={className}
   {style}
-  onstring-custom-event={onStringCustomEvent}
-  onnumber-custom-event={onNumberCustomEvent}
-  onmy-detail-custom-event={onMyDetailCustomEvent}
-  onevent-subclass={onEventSubclass}
-  ontype-sub-custom-event={onTypeSubCustomEvent}
-  onspecial-event={onSpecialEvent}
-  ontemplate-result-custom-event={onTemplateResultCustomEvent}
+  use:forwardEvents={{
+    "string-custom-event": onStringCustomEvent,
+    "number-custom-event": onNumberCustomEvent,
+    "my-detail-custom-event": onMyDetailCustomEvent,
+    "event-subclass": onEventSubclass,
+    "type-sub-custom-event": onTypeSubCustomEvent,
+    "special-event": onSpecialEvent,
+    "template-result-custom-event": onTemplateResultCustomEvent,
+  }}
 >
   {#if children}
     {@render children()}

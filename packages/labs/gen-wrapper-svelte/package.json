@@ -68,7 +68,8 @@
   },
   "devDependencies": {
     "@lit-internal/tests": "^0.0.1",
-    "prettier-plugin-svelte": "^3.2.6"
+    "prettier-plugin-svelte": "^3.2.6",
+    "svelte": "^5.0.0"
   },
   "engines": {
     "node": ">=14.8.0"

@@ -1,7 +1,7 @@
 <script lang="ts">
   export type { ElementSubEnum } from "@lit-internal/test-element-a/sub/element-sub.js";
   import "@lit-internal/test-element-a/sub/element-sub.js";
-  import { setProperties } from "$lib/util.js";
+  import { setProperties, forwardEvents } from "$lib/util.js";
   import type { ElementSubEnum } from "@lit-internal/test-element-a/sub/element-sub.js";
   import type { Snippet } from "svelte";
 
@@ -32,7 +32,7 @@
   use:setProperties={props}
   class={className}
   {style}
-  onsub-changed={onSubChanged}
+  use:forwardEvents={{ "sub-changed": onSubChanged }}
 >
   {#if children}
     {@render children()}

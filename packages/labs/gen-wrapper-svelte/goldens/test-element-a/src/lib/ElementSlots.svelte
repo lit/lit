@@ -23,8 +23,8 @@
 </script>
 
 <element-slots use:setProperties={props} class={className} {style}>
-  {#if tabs && tabIcon}
-    {#each tabs as item}
+  {#if props.tabs && tabIcon}
+    {#each props.tabs as item}
       <div slot="tab-{item.id}-icon">
         {@render tabIcon(item)}
       </div>

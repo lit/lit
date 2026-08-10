@@ -1,6 +1,6 @@
 <script lang="ts">
   import "@lit-internal/test-element-a/element-a.js";
-  import { setProperties } from "$lib/util.js";
+  import { setProperties, forwardEvents } from "$lib/util.js";
 
   import type { Snippet } from "svelte";
 
@@ -32,7 +32,7 @@
   use:setProperties={props}
   class={className}
   {style}
-  ona-changed={onAChanged}
+  use:forwardEvents={{ "a-changed": onAChanged }}
 >
   {#if children}
     {@render children()}

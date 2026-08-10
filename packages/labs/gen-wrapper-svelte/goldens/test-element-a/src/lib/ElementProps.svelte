@@ -4,7 +4,7 @@
     AttributeVariant,
   } from "@lit-internal/test-element-a/element-props.js";
   import "@lit-internal/test-element-a/element-props.js";
-  import { setProperties } from "$lib/util.js";
+  import { setProperties, forwardEvents } from "$lib/util.js";
   import type {
     MyType,
     AttributeVariant,
@@ -40,7 +40,7 @@
   use:setProperties={props}
   class={className}
   {style}
-  ona-changed={onAChanged}
+  use:forwardEvents={{ "a-changed": onAChanged }}
 >
   {#if children}
     {@render children()}

@@ -12,6 +12,7 @@ import {
 
 import {
   Event as EventModel,
+  MixinDeclaration,
   NamedDescribed,
   ReactiveProperty as ModelProperty,
 } from '@oicl-lit/analyzer/lib/model.js';
@@ -88,12 +89,10 @@ const renderEventsInterface = (events: Map<string, EventModel>) =>
   }`;
 
 export const renderEventsMapper = (events: Map<string, EventModel>) => {
-  return Array.from(events.values())
-    .map((event) => {
-      const {name} = event;
-      return `on${name}={${kabobToOnEvent(name)}}`;
-    })
-    .join('\n   ');
+  const handlers = Array.from(events.values())
+    .map((event) => `'${event.name}': ${kabobToOnEvent(event.name)}`)
+    .join(', ');
+  return handlers ? `use:forwardEvents={{${handlers}}}` : '';
 };
 
 export const renderPropsMapper = (props: Map<string, ModelProperty>) => {
@@ -116,8 +115,10 @@ const getTypeReferencesForMap = (
   map: Map<string, ModelProperty | EventModel>
 ) => Array.from(map.values()).flatMap((e) => e.type?.references ?? []);
 
-const getElementTypeImports = (declaration: LitElementDeclaration) => {
-  const {events, reactiveProperties} = declaration;
+const getElementTypeImports = (
+  events: Map<string, EventModel>,
+  reactiveProperties: Map<string, ModelProperty>
+) => {
   const refs = [
     ...getTypeReferencesForMap(events),
     ...getTypeReferencesForMap(reactiveProperties),
@@ -126,6 +127,43 @@ const getElementTypeImports = (declaration: LitElementDeclaration) => {
     /(?:^import)/gm,
     'import type'
   );
+};
+
+/**
+ * Collects reactive properties inherited from superclasses and mixins so that
+ * the generated wrapper exposes the full public API, not just properties
+ * declared directly on the element class. Mirrors the Vue generator's
+ * heritage resolution.
+ */
+const getHeritageReactiveProperties = (
+  declaration: LitElementDeclaration
+): Map<string, ModelProperty> => {
+  const {heritage} = declaration;
+  if (
+    heritage == null ||
+    (heritage.superClass?.name === 'LitElement' && heritage.mixins.length === 0)
+  ) {
+    return new Map();
+  }
+  const props: Array<[string, ModelProperty]> = heritage.mixins
+    .map((mixin) => mixin.dereference(MixinDeclaration).classDeclaration)
+    .filter((cls): cls is LitElementDeclaration =>
+      cls.isLitElementDeclaration()
+    )
+    .flatMap((cls) => [
+      ...cls.reactiveProperties.entries(),
+      ...getHeritageReactiveProperties(cls).entries(),
+    ]);
+  if (heritage.superClass != null) {
+    const superClass = heritage.superClass.dereference();
+    if (superClass.isLitElementDeclaration()) {
+      props.push(...superClass.reactiveProperties.entries());
+      if (heritage.superClass.name !== 'LitElement') {
+        props.push(...getHeritageReactiveProperties(superClass).entries());
+      }
+    }
+  }
+  return new Map(props);
 };
 
 // TODO(sorvell): add support for getting exports in analyzer.
@@ -249,8 +287,8 @@ const renderSnippets = (
       if (collectionProp) {
         const collectionName = collectionProp.name;
         return javascript`
-      {#if ${collectionName} && ${propName}}
-        {#each ${collectionName} as item}
+      {#if props.${collectionName} && ${propName}}
+        {#each props.${collectionName} as item}
           <div slot="${slot.name.replace(`<${placeholder}>`, `{item.${placeholder}}`)}">
             {@render ${propName}(item)}
           </div>
@@ -287,15 +325,23 @@ const wrapperTemplate = (
   declaration: LitElementDeclaration,
   wcPath: string
 ) => {
-  const {tagname, events, reactiveProperties, slots} = declaration;
+  const {tagname, events, slots} = declaration;
+  // Merge inherited reactive properties (from superclasses and mixins) with
+  // those declared directly on the element. Own properties take precedence.
+  const reactiveProperties = new Map([
+    ...getHeritageReactiveProperties(declaration),
+    ...declaration.reactiveProperties,
+  ]);
   const namingPlan = createNamingPlan(slots, reactiveProperties);
-  const typeImports = getElementTypeImports(declaration);
+  const typeImports = getElementTypeImports(events, reactiveProperties);
   const typeExports = getElementTypeExportsFromImports(typeImports);
   return javascript`
   <script lang="ts">
     ${typeExports ?? ''}
       import '${wcPath}';
-      import { setProperties } from "$lib/util.js";
+      import { setProperties${
+        events.size > 0 ? ', forwardEvents' : ''
+      } } from "$lib/util.js";
       ${typeImports}
       import type { Snippet } from 'svelte';
 
