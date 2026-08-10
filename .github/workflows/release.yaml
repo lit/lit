@@ -44,12 +44,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: lit/package-lock.json
 
-      # npm's trusted publishing (OIDC) support requires npm >= 11.5.1, which is
-      # newer than the npm bundled with Node 24.5. Without this, `npm publish`
-      # falls back to looking for a token and fails with E401.
-      - name: Upgrade npm for trusted publishing
-        run: npm install -g npm@latest
-
+      # Note: trusted publishing (OIDC) requires npm >= 11.5.1. Node 24.5 bundles
+      # exactly 11.5.1, so no upgrade step is needed. Don't add one that installs
+      # npm@latest: npm 12 requires node ^22.22.2 || ^24.15.0 || >=26, which the
+      # pinned Node 24.5 does not satisfy, and the install fails with EBADENGINE.
       - name: Install Dependencies
         working-directory: lit
         run: npm ci
