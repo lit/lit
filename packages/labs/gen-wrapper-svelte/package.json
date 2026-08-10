@@ -12,7 +12,7 @@
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lit/lit.git",
+    "url": "git+https://github.com/Ocean-Industries-Concept-Lab/lit.git",
     "directory": "packages/labs/gen-wrapper-svelte"
   },
   "scripts": {
