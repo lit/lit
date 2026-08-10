@@ -1,5 +1,11 @@
 # @lit-labs/gen-wrapper-vue
 
+## 0.4.3
+
+### Patch Changes
+
+- [`0ab6453353379273fd7d3e03a68717f284b5803d`](https://github.com/Ocean-Industries-Concept-Lab/lit/commit/0ab6453353379273fd7d3e03a68717f284b5803d) Thanks [@tibnor](https://github.com/tibnor)! - Add properties herited from mixins in vue wrapper
+
 ## 0.4.2
 
 ### Patch Changes

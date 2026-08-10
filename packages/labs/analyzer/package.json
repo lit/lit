@@ -1,6 +1,6 @@
 {
   "name": "@oicl-lit/analyzer",
-  "version": "0.14.1",
+  "version": "0.14.2",
   "publishConfig": {
     "access": "public"
   },
