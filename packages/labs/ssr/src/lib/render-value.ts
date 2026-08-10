@@ -37,7 +37,7 @@ const {
 } = _$LH;
 
 import {digestForTemplateResult} from '@lit-labs/ssr-client';
-import {HTMLElement, HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
+import {EventTargetShimMeta, HTMLSlotElement} from '@lit-labs/ssr-dom-shim';
 
 import {
   ElementRenderer,
@@ -61,7 +61,7 @@ import {
 import {isRenderLightDirective} from '@lit-labs/ssr-client/directives/render-light.js';
 import {reflectedAttributeName} from './reflected-attributes.js';
 
-import type {RenderResult} from './render-result.js';
+import type {ThunkedRenderResult} from './render-result.js';
 import {isHydratable} from './server-template.js';
 import type {Part} from 'lit-html';
 
@@ -108,22 +108,6 @@ const patchAnyDirectives = (
 };
 
 const templateCache = new WeakMap<TemplateStringsArray, Array<Op>>();
-
-// This is a map for which slots exist for a given custom element.
-// With a named slot, it is represented as a string with the name
-// and the unnamed slot is represented as undefined.
-const elementSlotMap = new WeakMap<
-  HTMLElement,
-  Map<string | undefined, HTMLSlotElement>
->();
-
-// We want the slot element to be able to be identified.
-class HTMLSlotElement extends HTMLElement {
-  name!: string;
-  override get localName(): string {
-    return 'slot';
-  }
-}
 
 /**
  * Operation to output static text
@@ -397,7 +381,7 @@ const getTemplateOpcodes = (result: TemplateResult) => {
    * previous opcode was not `text)
    */
   const flush = (value: string) => {
-    const op = getLast(ops);
+    const op = ops.at(-1);
     if (op !== undefined && op.type === 'text') {
       op.value += value;
     } else {
@@ -425,6 +409,8 @@ const getTemplateOpcodes = (result: TemplateResult) => {
   // Depth-first node index, counting only comment and element nodes, to match
   // client-side lit-html.
   let nodeIndex = 0;
+
+  // TODO (justinfagnani): Replace with template parser from @lit-labs/analyzer
 
   traverse(ast, {
     'pre:node'(node, parent) {
@@ -694,7 +680,7 @@ export type RenderInfo = {
   /**
    * Stack of open event target instances.
    */
-  eventTargetStack: Array<HTMLElement | undefined>;
+  eventTargetStack: Array<EventTarget | undefined>;
 
   /**
    * Stack of current slot context.
@@ -721,11 +707,11 @@ declare global {
   }
 }
 
-export function* renderValue(
+export function renderValue(
   value: unknown,
   renderInfo: RenderInfo,
   hydratable = true
-): RenderResult {
+): ThunkedRenderResult {
   if (renderInfo.customElementHostStack.length === 0) {
     // If the SSR root event target is not at the start of the event target
     // stack, we add it to the beginning of the array.
@@ -738,7 +724,7 @@ export function* renderValue(
         // If an entry in the event target stack was provided and it was not
         // the event root target, we need to connect the given event target
         // to the root event target.
-        (rootEventTarget as HTMLElementWithEventMeta).__eventTargetParent =
+        (rootEventTarget as EventTargetShimMeta).__eventTargetParent =
           rootEventTarget;
       }
     }
@@ -748,11 +734,11 @@ export function* renderValue(
   if (isRenderLightDirective(value)) {
     // If a value was produced with renderLight(), we want to call and render
     // the renderLight() method.
-    const instance = getLast(renderInfo.customElementInstanceStack);
+    const instance = renderInfo.customElementInstanceStack.at(-1);
     if (instance !== undefined) {
       const renderLightResult = instance.renderLight(renderInfo);
       if (renderLightResult !== undefined) {
-        yield* renderLightResult;
+        return renderLightResult;
       }
     }
     value = null;
@@ -762,19 +748,24 @@ export function* renderValue(
       value
     );
   }
+
+  const result: ThunkedRenderResult = [];
+
   if (value != null && isTemplateResult(value)) {
     if (hydratable) {
-      yield `<!--lit-part ${digestForTemplateResult(
-        value as TemplateResult
-      )}-->`;
+      result.push(
+        `<!--lit-part ${digestForTemplateResult(value as TemplateResult)}-->`
+      );
     }
-    yield* renderTemplateResult(value as TemplateResult, renderInfo);
+    result.push(() =>
+      renderTemplateResult(value as TemplateResult, renderInfo)
+    );
     if (hydratable) {
-      yield `<!--/lit-part-->`;
+      result.push(`<!--/lit-part-->`);
     }
   } else {
     if (hydratable) {
-      yield `<!--lit-part-->`;
+      result.push(`<!--lit-part-->`);
     }
     if (
       value === undefined ||
@@ -782,25 +773,29 @@ export function* renderValue(
       value === nothing ||
       value === noChange
     ) {
-      // yield nothing
+      // add nothing
     } else if (!isPrimitive(value) && isIterable(value)) {
       // Check that value is not a primitive, since strings are iterable
       for (const item of value) {
-        yield* renderValue(item, renderInfo, hydratable);
+        result.push(() => renderValue(item, renderInfo, hydratable));
       }
     } else {
-      yield escapeHtml(String(value));
+      result.push(
+        escapeHtml(typeof value === 'string' ? value : String(value))
+      );
     }
     if (hydratable) {
-      yield `<!--/lit-part-->`;
+      result.push(`<!--/lit-part-->`);
     }
   }
+
+  return result;
 }
 
-function* renderTemplateResult(
+function renderTemplateResult(
   result: TemplateResult,
   renderInfo: RenderInfo
-): RenderResult {
+): ThunkedRenderResult {
   // In order to render a TemplateResult we have to handle and stream out
   // different parts of the result separately:
   //   - Literal sections of the template
@@ -821,240 +816,265 @@ function* renderTemplateResult(
 
   /* The next value in result.values to render */
   let partIndex = 0;
+  const renderResult: ThunkedRenderResult = [];
 
   for (const op of ops) {
     switch (op.type) {
       case 'text':
-        yield op.value;
+        renderResult.push(op.value);
         break;
       case 'child-part': {
-        const value = result.values[partIndex++];
-        let isValueHydratable = hydratable;
-        if (isTemplateResult(value)) {
-          isValueHydratable = isHydratable(value);
-          if (!isValueHydratable && hydratable) {
-            throw new Error(
-              `A server-only template can't be rendered inside an ordinary, hydratable template. A server-only template can only be rendered at the top level, or within other server-only templates. The outer template was:
+        renderResult.push(() => {
+          const value = result.values[partIndex++];
+          let isValueHydratable = hydratable;
+          if (isTemplateResult(value)) {
+            isValueHydratable = isHydratable(value);
+            if (!isValueHydratable && hydratable) {
+              throw new Error(
+                `A server-only template can't be rendered inside an ordinary, hydratable template. A server-only template can only be rendered at the top level, or within other server-only templates. The outer template was:
     ${displayTemplateResult(result)}
 
 And the inner template was:
     ${displayTemplateResult(value)}
               `
-            );
+              );
+            }
           }
-        }
-        yield* renderValue(value, renderInfo, isValueHydratable);
+          return renderValue(value, renderInfo, isValueHydratable);
+        });
         break;
       }
       case 'attribute-part': {
-        const statics = op.strings;
-        const part = new op.ctor(
-          // Passing only object with tagName for the element is fine since the
-          // directive only gets PartInfo without the node available in the
-          // constructor
-          {tagName: op.tagName} as HTMLElement,
-          op.name,
-          statics,
-          connectedDisconnectable(),
-          {}
-        );
-        const value =
-          part.strings === undefined ? result.values[partIndex] : result.values;
-        patchAnyDirectives(part, value, partIndex);
-        let committedValue: unknown = noChange;
-        // Values for EventParts are never emitted
-        if (!(part.type === PartType.EVENT)) {
-          committedValue = getAttributePartCommittedValue(
-            part,
-            value,
-            partIndex
+        renderResult.push(() => {
+          const statics = op.strings;
+          const part = new op.ctor(
+            // Passing only object with tagName for the element is fine since the
+            // directive only gets PartInfo without the node available in the
+            // constructor
+            {tagName: op.tagName} as HTMLElement,
+            op.name,
+            statics,
+            connectedDisconnectable(),
+            {}
           );
-        }
-        // We don't emit anything on the server when value is `noChange` or
-        // `nothing`
-        if (committedValue !== noChange) {
-          const instance = op.useCustomElementInstance
-            ? getLast(renderInfo.customElementInstanceStack)
-            : undefined;
-          if (part.type === PartType.PROPERTY) {
-            yield* renderPropertyPart(instance, op, committedValue);
-          } else if (part.type === PartType.BOOLEAN_ATTRIBUTE) {
-            // Boolean attribute binding
-            yield* renderBooleanAttributePart(instance, op, committedValue);
-          } else {
-            yield* renderAttributePart(instance, op, committedValue);
+          const value =
+            part.strings === undefined
+              ? result.values[partIndex]
+              : result.values;
+          patchAnyDirectives(part, value, partIndex);
+          let committedValue: unknown = noChange;
+          // Values for EventParts are never emitted
+          if (!(part.type === PartType.EVENT)) {
+            committedValue = getAttributePartCommittedValue(
+              part,
+              value,
+              partIndex
+            );
           }
-        }
-        partIndex += statics.length - 1;
+          let attributeResult: string | undefined = undefined;
+          // We don't emit anything on the server when value is `noChange`
+          if (committedValue !== noChange) {
+            const instance = op.useCustomElementInstance
+              ? renderInfo.customElementInstanceStack.at(-1)
+              : undefined;
+            if (part.type === PartType.PROPERTY) {
+              attributeResult = renderPropertyPart(
+                instance,
+                op,
+                committedValue
+              );
+            } else if (part.type === PartType.BOOLEAN_ATTRIBUTE) {
+              // Boolean attribute binding
+              attributeResult = renderBooleanAttributePart(
+                instance,
+                op,
+                committedValue
+              );
+            } else {
+              attributeResult = renderAttributePart(
+                instance,
+                op,
+                committedValue
+              );
+            }
+          }
+          partIndex += statics.length - 1;
+          return attributeResult;
+        });
         break;
       }
       case 'element-part': {
         // We don't emit anything for element parts (since we only support
         // directives for now; since they can't render, we don't even bother
         // running them), but we still need to advance the part index
-        partIndex++;
+        renderResult.push(() => {
+          partIndex++;
+        });
         break;
       }
       case 'custom-element-open': {
-        // Instantiate the element and its renderer
-        const instance = getElementRenderer(
-          renderInfo,
-          op.tagName,
-          op.ctor,
-          op.staticAttributes
-        );
-        if (instance.element) {
-          // In the case the renderer has created an instance, we want to set
-          // the event target parent and the host of the element. Our
-          // EventTarget polyfill uses these values to calculate the
-          // composedPath of a dispatched event.
-          // Note that the event target parent is either the unnamed/named slot
-          // in the parent event target if it exists or the parent event target
-          // if no matching slot exists.
-          const eventTarget = getLast(
-            renderInfo.eventTargetStack
-          ) as HTMLElementWithEventMeta;
-          const slotName = getLast(renderInfo.slotStack);
-          (instance.element as HTMLElementWithEventMeta).__eventTargetParent =
-            elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
-          (instance.element as HTMLElementWithEventMeta).__host = getLast(
-            renderInfo.customElementHostStack
-          )?.element;
-          renderInfo.eventTargetStack.push(instance.element);
-        }
-        // Set static attributes to the element renderer
-        for (const [name, value] of op.staticAttributes) {
-          instance.setAttribute(name, value);
-        }
-        renderInfo.customElementInstanceStack.push(instance);
-        renderInfo.customElementRendered?.(op.tagName);
+        // Even though we don't emit anything for the custom element open, we
+        // need to return a thunk function so that we mutate the renderInfo
+        // state at the right time during the render.
+        renderResult.push(() => {
+          // Instantiate the element and its renderer
+          const instance = getElementRenderer(
+            renderInfo,
+            op.tagName,
+            op.ctor,
+            op.staticAttributes
+          );
+          if (instance.element) {
+            addElementToEventPath(instance.element, renderInfo);
+            renderInfo.eventTargetStack.push(instance.element);
+          }
+          // Set static attributes to the element renderer
+          for (const [name, value] of op.staticAttributes) {
+            instance.setAttribute(name, value);
+          }
+          renderInfo.customElementInstanceStack.push(instance);
+          renderInfo.customElementRendered?.(op.tagName);
+        });
         break;
       }
       case 'custom-element-attributes': {
-        const instance = getLast(renderInfo.customElementInstanceStack);
-        if (instance === undefined) {
-          throw new Error(
-            `Internal error: ${op.type} outside of custom element context`
-          );
-        }
-        // Perform any connect-time work via the renderer (e.g. reflecting any
-        // properties to attributes, for example)
-        if (instance.connectedCallback) {
-          instance.connectedCallback();
-        }
-        // Render out any attributes on the instance (both static and those
-        // that may have been dynamically set by the renderer)
-        yield* instance.renderAttributes();
-        // If deferHydration flag is true or if this element is nested in
-        // another, add the `defer-hydration` attribute, so that it does not
-        // enable before the host element hydrates
-        if (
-          renderInfo.deferHydration ||
-          renderInfo.customElementHostStack.length > 0
-        ) {
-          yield ' defer-hydration';
-        }
+        renderResult.push(() => {
+          const instance = renderInfo.customElementInstanceStack.at(-1);
+          if (instance === undefined) {
+            throw new Error(
+              `Internal error: ${op.type} outside of custom element context`
+            );
+          }
+          // Perform any connect-time work via the renderer (e.g. reflecting any
+          // properties to attributes, for example)
+          instance?.connectedCallback();
+
+          // Render out any attributes on the instance (both static and those
+          // that may have been dynamically set by the renderer)
+          let result = instance.renderAttributes();
+          // If deferHydration flag is true or if this element is nested in
+          // another, add the `defer-hydration` attribute, so that it does not
+          // enable before the host element hydrates
+          if (
+            renderInfo.deferHydration ||
+            renderInfo.customElementHostStack.length > 0
+          ) {
+            result = result.concat(' defer-hydration');
+          }
+          return result;
+        });
         break;
       }
       case 'possible-node-marker': {
-        // Add a node marker if this element had attribute bindings or if it
-        // was nested in another and we rendered the `defer-hydration` attribute
-        // since the hydration node walk will need to stop at this element
-        // to hydrate it
-        if (
-          op.boundAttributesCount > 0 ||
-          renderInfo.customElementHostStack.length > 0
-        ) {
-          if (hydratable) {
-            yield `<!--lit-node ${op.nodeIndex}-->`;
+        renderResult.push(() => {
+          // Add a node marker if this element had attribute bindings or if it
+          // was nested in another and we rendered the `defer-hydration` attribute
+          // since the hydration node walk will need to stop at this element
+          // to hydrate it
+          if (
+            (op.boundAttributesCount > 0 ||
+              renderInfo.customElementHostStack.length > 0) &&
+            hydratable
+          ) {
+            return `<!--lit-node ${op.nodeIndex}-->`;
           }
-        }
+          return undefined;
+        });
         break;
       }
       case 'custom-element-shadow': {
-        const instance = getLast(renderInfo.customElementInstanceStack);
-        if (instance === undefined) {
-          throw new Error(
-            `Internal error: ${op.type} outside of custom element context`
-          );
-        }
-        renderInfo.customElementHostStack.push(instance);
-        const shadowContents = instance.renderShadow(renderInfo);
-        // Only emit a DSR if renderShadow() emitted something (returning
-        // undefined allows effectively no-op rendering the element)
-        if (shadowContents !== undefined) {
-          const {mode = 'open', delegatesFocus} =
-            instance.shadowRootOptions ?? {};
-          // `delegatesFocus` is intentionally allowed to coerce to boolean to
-          // match web platform behavior.
-          const delegatesfocusAttr = delegatesFocus
-            ? ' shadowrootdelegatesfocus'
-            : '';
-          yield `<template shadowroot="${mode}" shadowrootmode="${mode}"${delegatesfocusAttr}>`;
-          yield* shadowContents;
-          yield '</template>';
-        }
-        renderInfo.customElementHostStack.pop();
+        renderResult.push(() => {
+          const instance = renderInfo.customElementInstanceStack.at(-1);
+          if (instance === undefined) {
+            throw new Error(
+              `Internal error: ${op.type} outside of custom element context`
+            );
+          }
+          renderInfo.customElementHostStack.push(instance);
+          const shadowContents = instance.renderShadow(renderInfo);
+          // Only emit a DSR if renderShadow() emitted something (returning
+          // undefined allows effectively no-op rendering the element)
+          const shadowResult: ThunkedRenderResult = [];
+          if (shadowContents !== undefined) {
+            const {mode = 'open', delegatesFocus} =
+              instance.shadowRootOptions ?? {};
+            // `delegatesFocus` is intentionally allowed to coerce to boolean to
+            // match web platform behavior.
+            const delegatesfocusAttr = delegatesFocus
+              ? ' shadowrootdelegatesfocus'
+              : '';
+            shadowResult.push(
+              `<template shadowroot="${mode}" shadowrootmode="${mode}"${delegatesfocusAttr}>`
+            );
+            shadowResult.push(() => shadowContents);
+            shadowResult.push('</template>');
+            shadowResult.push(() => {
+              renderInfo.customElementHostStack.pop();
+            });
+          }
+          return shadowResult;
+        });
         break;
       }
       case 'custom-element-close':
-        renderInfo.customElementInstanceStack.pop();
-        renderInfo.eventTargetStack.pop();
+        renderResult.push(() => {
+          renderInfo.customElementInstanceStack.pop();
+          renderInfo.eventTargetStack.pop();
+        });
         break;
       case 'slot-element-open': {
-        const host = getLast(renderInfo.customElementHostStack);
-        if (host === undefined) {
-          throw new Error(
-            `Internal error: ${op.type} outside of custom element context`
-          );
-        } else if (host.element) {
-          // We need to track which element has which slots. This is necessary
-          // to calculate the correct event path by connecting children of the
-          // host element to the corresponding slot.
-          let slots = elementSlotMap.get(host.element);
-          if (slots === undefined) {
-            slots = new Map();
-            elementSlotMap.set(host.element, slots);
-          }
-          // op.name is either the slot name or undefined, which represents
-          // the unnamed slot case.
-          if (!slots.has(op.name)) {
-            const element = new HTMLSlotElement() as HTMLSlotElement &
-              HTMLElementWithEventMeta;
+        renderResult.push(() => {
+          const host = renderInfo.customElementHostStack.at(-1);
+          if (host === undefined) {
+            throw new Error(
+              `Internal error: ${op.type} outside of custom element context`
+            );
+          } else if (host.element) {
+            // We need to track which element has which slots. This is necessary
+            // to calculate the correct event path by connecting children of the
+            // host element to the corresponding slot.
+            const slots = ((host.element as EventTargetShimMeta).__slots ??=
+              new Map());
+            // op.name is either the slot name or undefined, which represents
+            // the unnamed slot case.
+            const element = new HTMLSlotElement();
             element.name = op.name ?? '';
-            const eventTarget = getLast(
-              renderInfo.eventTargetStack
-            ) as HTMLElementWithEventMeta;
-            const slotName = getLast(renderInfo.slotStack);
-            element.__eventTargetParent =
-              elementSlotMap.get(eventTarget)?.get(slotName) ?? eventTarget;
-            element.__host = getLast(
-              renderInfo.customElementHostStack
-            )?.element;
-            slots.set(op.name, element);
+            addElementToEventPath(element, renderInfo);
+            if (!slots.has(op.name)) {
+              slots.set(op.name, element);
+            }
             renderInfo.eventTargetStack.push(element);
           }
-        }
-
+        });
         break;
       }
       case 'slot-element-close':
-        renderInfo.eventTargetStack.pop();
+        renderResult.push(() => {
+          renderInfo.eventTargetStack.pop();
+        });
         break;
       case 'slotted-element-open':
-        renderInfo.slotStack.push(op.name);
+        renderResult.push(() => {
+          renderInfo.slotStack.push(op.name);
+        });
         break;
       case 'slotted-element-close':
-        renderInfo.slotStack.pop();
+        renderResult.push(() => {
+          renderInfo.slotStack.pop();
+        });
         break;
       default:
         throw new Error('internal error');
     }
   }
 
-  if (partIndex !== result.values.length) {
-    throwErrorForPartIndexMismatch(partIndex, result);
-  }
+  renderResult.push(() => {
+    if (partIndex !== result.values.length) {
+      throwErrorForPartIndexMismatch(partIndex, result);
+    }
+  });
+
+  return renderResult;
 }
 
 function throwErrorForPartIndexMismatch(
@@ -1076,48 +1096,56 @@ function throwErrorForPartIndexMismatch(
   throw new Error(errorMsg);
 }
 
-function* renderPropertyPart(
+function renderPropertyPart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
-) {
+): string | undefined {
   value = value === nothing ? undefined : value;
   // Property should be reflected to attribute
   const reflectedName = reflectedAttributeName(op.tagName, op.name);
   if (instance !== undefined) {
     instance.setProperty(op.name, value);
   }
-  if (reflectedName !== undefined) {
-    yield `${reflectedName}="${escapeHtml(String(value))}"`;
-  }
+  return reflectedName !== undefined
+    ? `${reflectedName}="${escapeHtml(typeof value === 'string' ? value : String(value))}"`
+    : undefined;
 }
 
-function* renderBooleanAttributePart(
+function renderBooleanAttributePart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
-) {
+): string | undefined {
   if (value && value !== nothing) {
     if (instance !== undefined) {
       instance.setAttribute(op.name, '');
     } else {
-      yield op.name;
+      return op.name;
     }
   }
+  return undefined;
 }
 
-function* renderAttributePart(
+function renderAttributePart(
   instance: ElementRenderer | undefined,
   op: AttributePartOp,
   value: unknown
-) {
+): string | undefined {
   if (value !== nothing) {
+    value =
+      typeof value === 'string'
+        ? value
+        : value == null || value === noChange
+          ? ''
+          : String(value);
     if (instance !== undefined) {
-      instance.setAttribute(op.name, String(value ?? ''));
+      instance.setAttribute(op.name, value as string);
     } else {
-      yield `${op.name}="${escapeHtml(String(value ?? ''))}"`;
+      return `${op.name}="${escapeHtml(value as string)}"`;
     }
   }
+  return undefined;
 }
 
 /**
@@ -1132,8 +1160,6 @@ function displayTemplateResult(
   }
   return result.strings.join('${...}');
 }
-
-const getLast = <T>(a: Array<T>) => a[a.length - 1];
 
 /**
  * Returns true if the given node is a <script> node that the browser will
@@ -1188,4 +1214,35 @@ function isJavaScriptScriptTag(node: Element | Template): boolean {
   // we can return false.
   const willExecute = !safeTypeSeen;
   return willExecute;
+}
+
+/**
+ * To add the element to the event path, we need to set the host of the element
+ * (if the element is inside a shadow root) and the event target parent.
+ * Our EventTarget polyfill uses these values to calculate the composedPath of a dispatched event.
+ *
+ * The event target parent is either the unnamed/named slot to which the current element
+ * is assigned to, the host of the current element or the event target from the stack
+ * (which can be a parent element, a custom root event target or our litServerRoot instance).
+ *
+ * See packages/labs/ssr-dom-shim/src/index.ts for more details about the EventTarget
+ * polyfill and how the event path is calculated.
+ */
+function addElementToEventPath(
+  element: HTMLElement & EventTargetShimMeta,
+  renderInfo: RenderInfo
+): void {
+  const eventTarget = renderInfo.eventTargetStack.at(-1);
+  const slotName = renderInfo.slotStack.at(-1);
+  element.__host = renderInfo.customElementHostStack.at(-1)?.element;
+  const assignedSlot = (
+    eventTarget as EventTargetShimMeta | undefined
+  )?.__slots?.get(slotName);
+  if (assignedSlot) {
+    element.__eventTargetParent = assignedSlot;
+  } else if (element.__host === eventTarget) {
+    element.__eventTargetParent = element.getRootNode() ?? eventTarget;
+  } else {
+    element.__eventTargetParent = eventTarget;
+  }
 }

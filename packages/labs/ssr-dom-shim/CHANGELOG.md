@@ -1,5 +1,41 @@
 # @lit-labs/ssr-dom-shim
 
+## 1.6.0
+
+### Minor Changes
+
+- [#4893](https://github.com/lit/lit/pull/4893) [`6c051d517bd92761787897b2c8c060ed419126e2`](https://github.com/lit/lit/commit/6c051d517bd92761787897b2c8c060ed419126e2) Thanks [@kyubisation](https://github.com/kyubisation)! - Implement ShadowRoot and document in event path
+
+- [#4894](https://github.com/lit/lit/pull/4894) [`baa780d2b78a4b792cf61b220b8e3e186739d48c`](https://github.com/lit/lit/commit/baa780d2b78a4b792cf61b220b8e3e186739d48c) Thanks [@kyubisation](https://github.com/kyubisation)! - Add DOM shim implementation for `MutationObserver`, `ResizeObserver` and `IntersectionObserver`
+
+### Patch Changes
+
+- [#5240](https://github.com/lit/lit/pull/5240) [`b9de4295489b0caf91069bfe21f640f3ab5e12bb`](https://github.com/lit/lit/commit/b9de4295489b0caf91069bfe21f640f3ab5e12bb) Thanks [@kyubisation](https://github.com/kyubisation)! - Register CSSStyleSheet polyfill in global scope when using Node.js hook for importing CSS files
+
+- [#5330](https://github.com/lit/lit/pull/5330) [`077a4b727d0d30540f1813bbbe66477790c9805e`](https://github.com/lit/lit/commit/077a4b727d0d30540f1813bbbe66477790c9805e) Thanks [@cecilyhunt](https://github.com/cecilyhunt)! - fix(ssr-dom-shim): Add stubs for TS 6.0.3 compatibility
+
+## 1.5.1
+
+### Patch Changes
+
+- [#5202](https://github.com/lit/lit/pull/5202) [`f7b60025d93463c74d59001c6f01c38c41b1e816`](https://github.com/lit/lit/commit/f7b60025d93463c74d59001c6f01c38c41b1e816) Thanks [@kyubisation](https://github.com/kyubisation)! - Add register css hook file to publishable files
+
+## 1.5.0
+
+### Minor Changes
+
+- [#4879](https://github.com/lit/lit/pull/4879) [`5057feeac96cc6eb3c5e5c1cb6c42bc01ac6aab1`](https://github.com/lit/lit/commit/5057feeac96cc6eb3c5e5c1cb6c42bc01ac6aab1) Thanks [@kyubisation](https://github.com/kyubisation)! - Implement limited shim for CSSStyleSheet and CSS loader for Node.js
+
+### Patch Changes
+
+- [#4984](https://github.com/lit/lit/pull/4984) [`ad23f26ae908a160d30ed2a939b322fe9cc2ee83`](https://github.com/lit/lit/commit/ad23f26ae908a160d30ed2a939b322fe9cc2ee83) Thanks [@kyubisation](https://github.com/kyubisation)! - Update TypeScript dependencies to version 5.8 with related ARIAMixin changes (ariaColIndexText, ariaRelevant and ariaRowIndexText)
+
+## 1.4.0
+
+### Minor Changes
+
+- [#4987](https://github.com/lit/lit/pull/4987) [`3ac01aee`](https://github.com/lit/lit/commit/3ac01aeee8de3182c48c842d1a6084e58d729b14) - Implement the full CustomElementRegistry type for the ssr shim. Improves fidelity and compilability.
+
 ## 1.3.0
 
 ### Minor Changes

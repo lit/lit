@@ -49,10 +49,10 @@ export default function (
 
   return {
     name: 'minify-html-literals',
-    transform(this: PluginContext, code: string, id: string) {
+    async transform(this: PluginContext, code: string, id: string) {
       if (options.filter!(id)) {
         try {
-          return <SourceDescription>options.minifyHTMLLiterals!(code, {
+          return <SourceDescription>await options.minifyHTMLLiterals!(code, {
             ...minifyOptions,
             fileName: id,
           });

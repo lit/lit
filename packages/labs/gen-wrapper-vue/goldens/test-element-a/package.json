@@ -8,14 +8,14 @@
     "build:declarations": "vue-tsc --declaration --emitDeclarationOnly",
     "preview": "vite preview"
   },
-  "version": "1.0.1",
+  "version": "1.0.2",
   "dependencies": {
-    "@lit-internal/test-element-a": "^1.0.1",
+    "@lit-internal/test-element-a": "^1.0.2",
     "vue": "^3.2.41",
     "@lit-labs/vue-utils": "^0.1.0"
   },
   "devDependencies": {
-    "typescript": "~5.5.0",
+    "typescript": "~5.9.0",
     "@vitejs/plugin-vue": "^5.0.5",
     "@rollup/plugin-typescript": "^11.1.6",
     "vite": "^5.3.1",
@@ -23,6 +23,7 @@
   },
   "files": [
     "ElementA.*",
+    "ElementCollidingPropAndSlot.*",
     "ElementEvents.*",
     "ElementMixins.*",
     "ElementProps.*",

@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {LitElement, html} from 'lit';
+import {LitElement, html, render} from 'lit';
 import {property} from 'lit/decorators.js';
 import {cache} from 'lit/directives/cache.js';
 import {assert} from '@esm-bundle/chai';
@@ -50,7 +50,8 @@ suite('watch directive', () => {
 
     // The DOM updates because signal update
     count.set(1);
-    assert.isTrue(el.isUpdatePending);
+    // watch does *not* trigger update
+    assert.isFalse(el.isUpdatePending);
     await el.updateComplete;
     assert.equal(
       el.shadowRoot?.querySelector('p')?.textContent,
@@ -59,6 +60,162 @@ suite('watch directive', () => {
     );
     // The updated DOM is not because of an element render
     assert.equal(renderCount, 1);
+  });
+
+  test('watches a signal with Lit render', async () => {
+    const count = signal(0);
+    const template = () => {
+      return html` <p>count: ${watch(count)}</p>
+        <p>count: ${watch(count)}</p>
+        <p>count: ${watch(count)}</p>`;
+    };
+    const el = document.createElement('div');
+    container.append(el);
+    render(template(), el);
+    el.querySelectorAll('p').forEach((p) => {
+      assert.equal(p.textContent, 'count: 0', 'A');
+    });
+    // The DOM updates because signal update
+    count.set(1);
+    await new Promise(requestAnimationFrame);
+    el.querySelectorAll('p').forEach((p) => {
+      assert.equal(p.textContent, 'count: 1', 'B');
+    });
+    count.set(2);
+    await new Promise(requestAnimationFrame);
+    el.querySelectorAll('p').forEach((p) => {
+      assert.equal(p.textContent, 'count: 2', 'C');
+    });
+  });
+
+  test('can mix signals in render with watch', async () => {
+    let renderCount = 0;
+    const count = signal(0);
+    const renderSignal = signal(0);
+    class TestElement extends SignalWatcher(LitElement) {
+      override render() {
+        renderCount++;
+        return html`<p>count: ${watch(count)}</p>
+          <div>renderSignal: ${renderSignal.get()}</div>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.append(el);
+
+    // The first DOM update is because of an element render
+    await el.updateComplete;
+    assert.equal(
+      el.shadowRoot?.querySelector('p')?.textContent,
+      'count: 0',
+      'A'
+    );
+    assert.equal(
+      el.shadowRoot?.querySelector('div')?.textContent,
+      'renderSignal: 0',
+      'A'
+    );
+    assert.equal(renderCount, 1);
+    assert.isFalse(el.isUpdatePending);
+
+    // The DOM updates because signal update
+    count.set(1);
+    assert.isFalse(el.isUpdatePending);
+    await el.updateComplete;
+    assert.equal(
+      el.shadowRoot?.querySelector('p')?.textContent,
+      'count: 1',
+      'B'
+    );
+    assert.equal(
+      el.shadowRoot?.querySelector('div')?.textContent,
+      'renderSignal: 0',
+      'B'
+    );
+    // The updated DOM is not because of an element render
+    assert.equal(renderCount, 1);
+    renderSignal.set(1);
+    assert.isTrue(el.isUpdatePending);
+    await el.updateComplete;
+    assert.equal(
+      el.shadowRoot?.querySelector('p')?.textContent,
+      'count: 1',
+      'C'
+    );
+    assert.equal(
+      el.shadowRoot?.querySelector('div')?.textContent,
+      'renderSignal: 1',
+      'C'
+    );
+    // The updated DOM is because of an element render
+    assert.equal(renderCount, 2);
+    // Update watch signal again, after a render signal update
+    count.set(2);
+    assert.isFalse(el.isUpdatePending);
+    await el.updateComplete;
+    assert.equal(
+      el.shadowRoot?.querySelector('p')?.textContent,
+      'count: 2',
+      'B'
+    );
+    assert.equal(
+      el.shadowRoot?.querySelector('div')?.textContent,
+      'renderSignal: 1',
+      'B'
+    );
+  });
+
+  test('updateEffect + watch', async () => {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    let renderCount = 0;
+    const count = signal(0);
+    class TestElement extends SignalWatcher(LitElement) {
+      override render() {
+        renderCount++;
+        return html`<p>count: ${watch(count)}</p>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.append(el);
+
+    // The first DOM update is because of an element render
+    await el.updateComplete;
+    let effectBeforeValue = -1;
+    let effectBeforeDom: string | null | undefined = '';
+    const disposeEffectBefore = el.updateEffect(
+      () => {
+        effectBeforeValue = count.get();
+        effectBeforeDom = el.shadowRoot?.querySelector('p')?.textContent;
+      },
+      {beforeUpdate: true}
+    );
+    let effectValue = -1;
+    let effectDom: string | null | undefined = '';
+    const disposeEffect = el.updateEffect(() => {
+      effectValue = count.get();
+      effectDom = el.shadowRoot?.querySelector('p')?.textContent;
+    });
+    await el.updateComplete;
+    assert.equal(effectBeforeValue, 0);
+    assert.equal(effectBeforeDom, 'count: 0');
+    assert.equal(effectValue, 0);
+    assert.equal(effectDom, 'count: 0');
+
+    count.set(1);
+    await el.updateComplete;
+    assert.equal(effectBeforeValue, 1);
+    assert.equal(effectBeforeDom, 'count: 0');
+    assert.equal(effectValue, 1);
+    assert.equal(effectDom, 'count: 1');
+    disposeEffect();
+    disposeEffectBefore();
+
+    count.set(2);
+    assert.equal(effectBeforeValue, 1);
+    assert.equal(effectBeforeDom, 'count: 0');
+    assert.equal(effectValue, 1);
+    assert.equal(effectDom, 'count: 1');
   });
 
   test('unsubscribes to a signal on element disconnect', async () => {

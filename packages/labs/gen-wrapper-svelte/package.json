@@ -1,7 +1,7 @@
 {
-  "name": "@lit-labs/gen-wrapper-svelte",
+  "name": "@oicl-lit/gen-wrapper-svelte",
   "description": "Code generator for Svelte wrapper for Lit components",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "publishConfig": {
     "access": "public"
   },
@@ -12,7 +12,7 @@
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lit/lit.git",
+    "url": "git+https://github.com/Ocean-Industries-Concept-Lab/lit.git",
     "directory": "packages/labs/gen-wrapper-svelte"
   },
   "scripts": {
@@ -63,8 +63,8 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.13.0",
-    "@lit-labs/gen-utils": "^0.3.0"
+    "@oicl-lit/analyzer": "^0.14.0",
+    "@oicl-lit/gen-utils": "^0.3.0"
   },
   "devDependencies": {
     "@lit-internal/tests": "^0.0.1",

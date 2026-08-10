@@ -4,7 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import type {TrustedHTML} from 'trusted-types/lib';
+import type {TrustedHTML} from 'trusted-types/lib/index.js';
 import ts from 'typescript';
 import {_$LH as litHtmlPrivate} from 'lit-html/private-ssr-support.js';
 import {parseFragment, serialize} from 'parse5';
@@ -194,7 +194,7 @@ class CompiledTemplatePass {
         nodeStack.push(node);
         if (
           ts.isTaggedTemplateExpression(node) &&
-          this.checker.isLitTaggedTemplateExpression(node)
+          this.checker.isLitHtmlTaggedTemplateExpression(node)
         ) {
           const topStatement = nodeStack[1] as ts.Statement;
           const templateInfo = {
@@ -253,6 +253,8 @@ class CompiledTemplatePass {
    *
    * Because the prepared HTML will contribute to file size, markers have been
    * stripped out, and comment nodes always use the 3 byte `<?>` format.
+   *
+   * TODO (justinfagnani): Replace with template parser from @lit-labs/analyzer
    */
   private litHtmlPrepareRenderPhase(templateExpression: ts.TemplateLiteral):
     | {

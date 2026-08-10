@@ -1,6 +1,16 @@
 # @lit/task
 
-A controller for Lit that renders asynchronous tasks.
+Easily manage and render asynchronous tasks for Lit.
+
+[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/@lit/task.svg?logo=npm)](https://www.npmjs.com/package/@lit/task)
+[![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
+[![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
+
+## Documentation
+
+Full documentation is available at
+[lit.dev/docs/data/task/](https://lit.dev/docs/data/task/).
 
 ## Overview
 
@@ -83,4 +93,4 @@ If your arguments are objects, you will want to use a more sophisticated equalit
 
 ## Contributing
 
-Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).
+Please see [CONTRIBUTING.md](../../CONTRIBUTING.md).

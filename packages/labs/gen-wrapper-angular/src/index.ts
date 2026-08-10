@@ -8,9 +8,13 @@ import {
   Package,
   PackageJson,
   ModuleWithLitElementDeclarations,
-} from '@lit-labs/analyzer';
-import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+} from '@oicl-lit/analyzer';
+import {FileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
 import {packageJsonTemplate} from './lib/package-json-template.js';
+import {ngPackageJsonTemplate} from './lib/ng-package-json-template.js';
+import {tsconfigTemplate} from './lib/tsconfig-template.js';
+import {tsconfigLibTemplate} from './lib/tsconfig-lib-json-template.js';
+import {publicApiTemplate} from './lib/public-api-template.js';
 import {wrapperModuleTemplate} from './lib/wrapper-module-template.js';
 import * as path from 'path';
 
@@ -52,9 +56,12 @@ export const generateAngularWrapper = async (
         '.gitignore': gitIgnoreTemplate(litModules),
         'package.json': packageJsonTemplate(
           angularPackageName,
-          pkg.packageJson,
-          litModules
+          pkg.packageJson
         ),
+        'tsconfig.json': tsconfigTemplate(),
+        'tsconfig.lib.json': tsconfigLibTemplate(),
+        'ng-package.json': ngPackageJsonTemplate(),
+        'src/public-api.ts': publicApiTemplate(),
         ...wrapperFiles(pkg.packageJson, litModules),
       },
     };
@@ -69,15 +76,42 @@ const wrapperFiles = (
 ) => {
   const wrapperFiles: FileTree = {};
   for (const {module, declarations} of litModules) {
-    const {sourcePath, jsPath} = module;
-    wrapperFiles[sourcePath] = wrapperModuleTemplate(
+    const {jsPath} = module;
+    if (declarations.length === 0) {
+      continue;
+    }
+    const tags = declarations
+      .map((d) => d.tagname)
+      .filter((d) => d !== undefined);
+    if (tags.length === 0) {
+      continue;
+    }
+    const folderName = tags[0];
+    const fileName = path.join(folderName, 'src', folderName + '.ts');
+    wrapperFiles[fileName] = wrapperModuleTemplate(
       packageJson,
       jsPath,
       declarations
     );
+    wrapperFiles[path.join(folderName, 'src', 'index.ts')] =
+      componentIndexTemplate;
+    wrapperFiles[path.join(folderName, 'src', 'public-api.ts')] =
+      componentPublicApiTemplate(folderName!);
+    wrapperFiles[path.join(folderName, 'ng-package.json')] =
+      componentNgPackageTemplate();
   }
   return wrapperFiles;
 };
+
+const componentIndexTemplate = `/* eslint-disable import/extensions */\nexport * from "./public-api";`;
+const componentPublicApiTemplate = (fileName: string) =>
+  `/* eslint-disable import/extensions */\nexport * from "./${fileName}";`;
+const componentNgPackageTemplate = () => `{
+  "$schema": "https://json.schemastore.org/ng-package",
+  "lib": {
+    "entryFile": "src/public-api.ts"
+  }
+}`;
 
 const gitIgnoreTemplate = (litModules: ModuleWithLitElementDeclarations[]) => {
   return litModules

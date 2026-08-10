@@ -31,7 +31,7 @@
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/test/**/*.js",
         "${workspaceFolder}/../analyzer/index.js",
-        "${workspaceFolder}/../analyzer/lib/**/*.js",
+        "${workspaceFolder}/../analyzer/lib/**/*.js"
       ],
       "console": "integratedTerminal"
     }

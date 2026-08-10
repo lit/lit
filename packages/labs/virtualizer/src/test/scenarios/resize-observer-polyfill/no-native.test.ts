@@ -20,9 +20,8 @@ describe('ResizeObserver polyfill and loader should work', () => {
   ignoreBenignErrors(beforeEach, afterEach);
 
   it('should load the polyfill as needed', async () => {
-    const {loadPolyfillIfNeeded} = await import(
-      '../../../polyfillLoaders/ResizeObserver.js'
-    );
+    const {loadPolyfillIfNeeded} =
+      await import('../../../polyfillLoaders/ResizeObserver.js');
     const RO = await loadPolyfillIfNeeded();
     expect(RO).not.to.equal(NativeResizeObserver);
     testBehavior();

@@ -2,6 +2,11 @@
 
 TC39 Signals Proposal integration for Lit.
 
+[![Build Status](https://github.com/lit/lit/workflows/Tests/badge.svg)](https://github.com/lit/lit/actions?query=workflow%3ATests)
+[![Published on npm](https://img.shields.io/npm/v/@lit-labs/signals.svg?logo=npm)](https://www.npmjs.com/package/@lit-labs/signals)
+[![Join our Discord](https://img.shields.io/badge/discord-join%20chat-5865F2.svg?logo=discord&logoColor=fff)](https://lit.dev/discord/)
+[![Mentioned in Awesome Lit](https://awesome.re/mentioned-badge.svg)](https://github.com/web-padawan/awesome-lit)
+
 > [!WARNING]
 >
 > This package is part of [Lit Labs](https://lit.dev/docs/libraries/labs/). It
@@ -14,6 +19,11 @@ TC39 Signals Proposal integration for Lit.
 > Give feedback: https://github.com/lit/lit/discussions/4779
 >
 > RFC: https://github.com/lit/rfcs/blob/main/rfcs/0005-standard-signals.md
+
+## Documentation
+
+Full documentation is available at
+[lit.dev/docs/data/signals/](https://lit.dev/docs/data/signals/).
 
 ## Overview
 
@@ -196,30 +206,38 @@ export class SignalExample extends SignalWatcher(LitElement) {
 }
 ```
 
-`watch()` updates are batched and run in coordination with the reactive update
-lifecycle. When a watched signal changes, it is added to a batch and a reactive
-update is requested. Other changes, to reactive properties or signals accessed
-outside of `watch()`, are trigger reactive updates as usual.
-
-> [!NOTE]
->
-> <!-- -->
->
-> During a reactive update, if there are only updates from `watch()` directives,
-> then those updates are commited directly _without_ a full template render. If
-> any other changes triggered the reactive update, then the whole template is
-> re-rendered, along with the latest signal values.
-
-This approach preserves both DOM coherence and targeted updates, and coalesces
-updates when both signals and reactive properties change.
-
-`watch()` must be used in conjunction with the `SignalWatcher` mixin.
+`watch()` updates do not trigger the Lit reactive update cycle. However, they
+are batched and run in coordination with reactive updates. When a watched
+signal changes, if a reactive update is pending, the watched signal update
+renders with the update; otherwise, it renders in a batch with any other
+watched signals. Other changes, to reactive properties or signals accessed
+outside of `watch()`, trigger reactive updates as usual.
 
 You can mix and match targeted updates with `watch()` directive and
 auto-tracking with `SignalWatcher`. When you pass a signal directly to `watch()`
 it is not accessed in a callback watched by `SignalWatcher`, so an update to
 that signal will only cause a targeted DOM update and not an full template
 render.
+
+> [!NOTE]
+>
+> <!-- -->
+>
+> The value passed to `watch` must be a signal. If it isn't, it can be
+> converted to one using `computed`. For example
+> `${watch(computed(() => list.get().map(item => item))}`.
+
+### this.effect
+
+`SignalWatcher` also exposes an `effect(callback)` method that allows targeted
+reactions to signal changes independent of but coordinated with the reactive
+update lifecycle. This provides an easy mechanism to react generally to signals
+used only with `watch` that do not trigger a reactive update. By default,
+the `effect` is run after any DOM based updates are rendered, including
+the element's reactive update cycle, if it is pending when the effect would
+trigger. Adding an options argument with `beforeUpdate: true` allows effects
+to run before any DOM is updated. For example,
+`this.effect(() => console.log(this.aSignal.get())), {beforeUpdate: true});`
 
 ### html tag and withWatch()
 

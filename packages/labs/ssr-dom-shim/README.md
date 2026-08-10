@@ -3,8 +3,9 @@
 ## Overview
 
 This package provides minimal implementations of `Element`, `HTMLElement`,
-`EventTarget`, `Event`, `CustomEvent`, `CustomElementRegistry`, and
-`customElements`, designed to be used when Server Side Rendering (SSR) web
+`EventTarget`, `Event`, `CustomEvent`, `MutationObserver`, `ResizeObserver`,
+`IntersectionObserver`, `CustomElementRegistry`, and `customElements`,
+designed to be used when Server Side Rendering (SSR) web
 components from Node, including Lit components.
 
 ## Usage
@@ -46,8 +47,11 @@ this module.
   - [`addEventListener`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
   - [`dispatchEvent`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent)
   - [`removeEventListener`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener)
-- [`Element`](https://developer.mozilla.org/en-US/docs/Web/API/Element)
+- [`Node`](https://developer.mozilla.org/en-US/docs/Web/API/Node)
   - (Inherits from EventTarget)
+  - [`getRootNode`](https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode)
+- [`Element`](https://developer.mozilla.org/en-US/docs/Web/API/Element)
+  - (Inherits from Node)
   - [`attachShadow`](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow)
   - [`shadowRoot`](https://developer.mozilla.org/en-US/docs/Web/API/Element/shadowRoot)
   - [`attributes`](https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes)
@@ -61,6 +65,51 @@ this module.
 - [`customElements`](https://developer.mozilla.org/en-US/docs/Web/API/Window/customElements)
 - [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event)
 - [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
+- [`MutationObserver`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe)
+  - [`takeRecords`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/takeRecords)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/disconnect)
+- [`ResizeObserver`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/observe)
+  - [`unobserve`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/unobserve)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/disconnect)
+- [`IntersectionObserver`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver)
+  - [`root`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/root)
+  - [`rootMargin`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/rootMargin)
+  - [`thresholds`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/thresholds)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/observe)
+  - [`takeRecords`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/takeRecords)
+  - [`unobserve`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/unobserve)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/disconnect)
+- [`MediaList`](https://developer.mozilla.org/en-US/docs/Web/API/MediaList)
+- [`StyleSheet`](https://developer.mozilla.org/en-US/docs/Web/API/StyleSheet)
+- [`CSSRule`](https://developer.mozilla.org/en-US/docs/Web/API/CSSRule)
+- [`CSSRuleList`](https://developer.mozilla.org/en-US/docs/Web/API/CSSRuleList)
+- [`CSSStyleSheet`](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet)
+  - (Inherits from StyleSheet)
+  - [`replace`](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/replace)
+  - [`replaceSync`](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/replaceSync)
+
+### CSS Node.js customization hook
+
+`@lit-labs/ssr-dom-shim/register-css-hook.js` implements/registers a
+[Node.js customization hook](https://nodejs.org/api/module.html#customization-hooks)
+(Node.js >= 18.6.0) to import CSS files/modules as instances of `CSSStyleSheet`.
+
+```ts
+import styles from 'my-styles.css' with {type: 'css'};
+// styles is now an instance of CSSStyleSheet
+```
+
+This can either be used as a parameter with the Node.js CLI
+(e.g. `node --import @lit-labs/ssr-dom-shim/register-css-hook.js my-script.js` or via
+environment variable `NODE_OPTIONS="--import @lit-labs/ssr-dom-shim/register-css-hook.js"`)
+or imported inline, and it will apply to any module dynamically imported afterwards
+(e.g. `import @lit-labs/ssr-dom-shim/register-css-hook.js` and
+subsequently `await import('./my-component.js')`).
+
+- [Node.js Customization Hooks](https://nodejs.org/api/module.html#customization-hooks)
+- [Import Attributes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import/with)
 
 ## Contributing
 

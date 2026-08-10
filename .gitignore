@@ -2,7 +2,6 @@ node_modules/
 *.tgz
 *.tsbuildinfo
 .DS_Store
-.vscode/
 .wireit
 /temp
 .idea
@@ -10,3 +9,6 @@ node_modules/
 /playground/p/**/package-lock.json
 /playground/p/scratch/*/
 !/playground/p/scratch/*.*
+/.direnv/
+/.envrc
+/.actrc

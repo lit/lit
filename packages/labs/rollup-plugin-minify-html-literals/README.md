@@ -1,5 +1,9 @@
 # @lit-labs/rollup-plugin-minify-html-literals
 
+A Rollup plugin to minify HTML and CSS markup inside JavaScript template literal strings.
+
+This plugin uses [html-minifier-next](https://www.npmjs.com/package/html-minifier-next) (a maintained continuation of html-minifier) for HTML minification and [lightningcss](https://lightningcss.dev/) for CSS minification, providing excellent support for modern CSS features including nesting, container queries, and more.
+
 ## Usage
 
 ```js
@@ -37,7 +41,28 @@ export default {
       failOnError: false,
       // minify-html-literals options
       // https://www.npmjs.com/package/minify-html-literals#options
-      options: null,
+      options: {
+        // html-minifier options
+        minifyOptions: {
+          minifyCSS: false, // Disable CSS minification
+          // OR pass LightningCSS options for CSS minification
+          minifyCSS: {
+            minify: true, // Enable minification (default)
+            // Browser targets for CSS feature transpilation
+            // Use bit-shift notation: version << 16
+            targets: {
+              chrome: 95 << 16,
+              firefox: 90 << 16,
+              safari: 14 << 16,
+            },
+            // Enable draft CSS features
+            drafts: {
+              customMedia: true,
+            },
+          },
+        },
+        // Custom strategy for minification (optional)
+      },
 
       // Advanced Options
       // Override minify-html-literals function
@@ -80,3 +105,11 @@ export default {
   ],
 };
 ```
+
+# Acknowledgements
+
+This is a combination and continuation of three previous projects:
+
+1. [rollup-plugin-minify-html-literals](https://github.com/asyncLiz/rollup-plugin-minify-html-literals)
+2. [minify html literals](https://github.com/asyncLiz/minify-html-literals)
+3. [parse literals](https://github.com/asyncLiz/parse-literals)

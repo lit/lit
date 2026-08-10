@@ -8,15 +8,15 @@ import {
   getImportsStringForReferences,
   LitElementDeclaration,
   PackageJson,
-} from '@lit-labs/analyzer';
+} from '@oicl-lit/analyzer';
 
 import {
   Event as EventModel,
   MixinDeclaration,
   NamedDescribed,
   ReactiveProperty as ModelProperty,
-} from '@lit-labs/analyzer/lib/model.js';
-import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
+} from '@oicl-lit/analyzer/lib/model.js';
+import {javascript, kabobToOnEvent} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 const nameToSvelteName = (name: string) => {
   return name

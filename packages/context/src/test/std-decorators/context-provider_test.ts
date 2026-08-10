@@ -108,6 +108,42 @@ suite('@consume', () => {
   });
 });
 
+suite('initial value', () => {
+  let consumer: ContextConsumerElement;
+  let provider: ContextProviderElement;
+  let container: HTMLElement;
+  setup(async () => {
+    container = document.createElement('div');
+    container.innerHTML = `
+        <context-provider>
+            <context-consumer></context-consumer>
+        </context-provider>
+    `;
+    document.body.appendChild(container);
+
+    provider = container.querySelector(
+      'context-provider'
+    ) as ContextProviderElement;
+
+    consumer = container.querySelector(
+      'context-consumer'
+    ) as ContextConsumerElement;
+
+    await provider.updateComplete;
+    await consumer.updateComplete;
+  });
+
+  teardown(() => {
+    document.body.removeChild(container);
+  });
+
+  test(`consumer receives initial context`, async () => {
+    // Check that the consumer value is the value set in the provider's
+    // initializer.
+    assert.strictEqual(consumer.value, 0);
+  });
+});
+
 suite('@consume: multiple instances', () => {
   let consumers: ContextConsumerElement[];
   let providers: ContextProviderElement[];

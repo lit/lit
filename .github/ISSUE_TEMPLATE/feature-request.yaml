@@ -1,6 +1,6 @@
 name: 🦄 Feature Request
 description: Request a new feature for Lit or a Lit library/tool.
-
+type: Feature
 body:
   - type: checkboxes
     attributes:

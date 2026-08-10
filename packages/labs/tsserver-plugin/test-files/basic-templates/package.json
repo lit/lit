@@ -1,0 +1,10 @@
+{
+  "name": "@lit-internal/tsserver-plugin-tests",
+  "#dependencies-comment": "These packages do not to be installed from npm. They will be found by Node just fine",
+  "dependencies": {
+    "lit": "^3.0.0",
+    "lit-html": "^3.0.0",
+    "lit-element": "^4.0.0",
+    "@lit-labs/tsserver-plugin": "file:../.."
+  }
+}

@@ -7,7 +7,6 @@ node_modules/
 *.tgz
 *.tsbuildinfo
 .DS_Store
-.vscode/
 .wireit
 /temp
 .idea
@@ -15,6 +14,9 @@ node_modules/
 /playground/p/**/package-lock.json
 /playground/p/scratch/*/
 !/playground/p/scratch/*.*
+/.direnv/
+/.envrc
+/.actrc
 
 packages/benchmarks/generated/
 packages/benchmarks/generator/build/
@@ -233,6 +235,14 @@ packages/labs/eslint-plugin/**/index.js.map
 packages/labs/eslint-plugin/**/index.d.ts
 packages/labs/eslint-plugin/**/index.d.ts.map
 
+packages/labs/forms/development/
+packages/labs/forms/test/
+packages/labs/forms/lib/
+packages/labs/forms/node_modules/
+packages/labs/forms/index.*
+packages/labs/forms/form-associated.*
+packages/labs/forms/form-control.*
+
 packages/labs/gen-manifest/index.js
 packages/labs/gen-manifest/index.js.map
 packages/labs/gen-manifest/index.d.ts
@@ -300,7 +310,11 @@ packages/labs/motion/node_modules/
 packages/labs/motion/index.*
 packages/labs/motion/animate.*
 packages/labs/motion/position.*
+packages/labs/motion/spring.*
 packages/labs/motion/animate-controller.*
+packages/labs/motion/demo/*.d.ts
+packages/labs/motion/demo/*.d.ts.map
+
 packages/labs/nextjs/index.*
 packages/labs/nextjs/lib/
 
@@ -369,7 +383,8 @@ packages/labs/ssr-client/node/
 packages/labs/ssr-client/node_modules/
 packages/labs/ssr-client/index.*
 packages/labs/ssr-client/lit-element-hydrate-support.*
-
+packages/labs/ssr-client/test/
+packages/labs/ssr-dom-shim/register-css-hook.*
 packages/labs/ssr-dom-shim/index.*
 packages/labs/ssr-dom-shim/lib/
 packages/labs/ssr-dom-shim/test/
@@ -402,10 +417,7 @@ packages/labs/tsserver-plugin/example/node_modules/
 packages/labs/tsserver-plugin/lib/
 packages/labs/tsserver-plugin/test/
 
-packages/labs/tsserver-plugin/**/index.js
-packages/labs/tsserver-plugin/**/index.js.map
-packages/labs/tsserver-plugin/**/index.d.ts
-packages/labs/tsserver-plugin/**/index.d.ts.map
+packages/labs/tsserver-plugin/index.*
 
 packages/labs/virtualizer/polyfills/resize-observer-polyfill/ResizeObserver.js
 packages/labs/virtualizer/src/polyfills/resize-observer-polyfill/ResizeObserver.js
@@ -445,6 +457,12 @@ packages/labs/virtualizer/test/screenshot/cases/*/actual.*.png
 packages/labs/virtualizer/events.d.ts*
 packages/labs/virtualizer/events.js
 packages/labs/virtualizer/events.js.map
+
+packages/labs/vscode-extension/lib/
+packages/labs/vscode-extension/test/
+packages/labs/vscode-extension/.vscode-test/
+packages/labs/vscode-extension/**/extension.cjs
+packages/labs/vscode-extension/**/extension.cjs.map
 
 packages/labs/vue-utils/development/
 packages/labs/vue-utils/test/

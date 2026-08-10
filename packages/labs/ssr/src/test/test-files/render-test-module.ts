@@ -10,11 +10,12 @@ import {classMap} from 'lit/directives/class-map.js';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
-import type {HTMLElementWithEventMeta} from '@lit-labs/ssr-dom-shim';
+import {document, type EventTargetShimMeta} from '@lit-labs/ssr-dom-shim';
 import {html as serverhtml} from '../../lib/server-template.js';
+import {LitElementRenderer} from '../../lib/lit-element-renderer.js';
 export {digestForTemplateResult} from '@lit-labs/ssr-client';
 
-export {render} from '../../lib/render-lit-html.js';
+export {renderThunked as render} from '../../lib/render.js';
 
 /* Real Tests */
 // prettier-ignore
@@ -233,18 +234,26 @@ let nextId = 0;
 // Pattern: element-name{id,host?}/capture/eventPhase/target{id}
 let eventPath: string[] = [];
 
-export const setupEvents = () => {
+export const setupEvents = (options?: {excludeConnectedCallback?: string}) => {
   nextId = 0;
   eventPath = [];
-  globalThis.litSsrCallConnectedCallback = true;
+  if (options?.excludeConnectedCallback) {
+    LitElementRenderer.renderOptions.unshift((element) =>
+      element.localName !== options.excludeConnectedCallback
+        ? {connectedCallback: true}
+        : undefined
+    );
+  } else {
+    LitElementRenderer.renderOptions.push(() => ({connectedCallback: true}));
+  }
   return {
     eventPath,
-    reset: () => delete globalThis.litSsrCallConnectedCallback,
+    reset: () => (LitElementRenderer.renderOptions.length = 0),
   };
 };
 
 // The event handlers for slots should only be added once per slot.
-const registeredEventHandlerElements = new WeakSet<HTMLElement>();
+const registeredEventHandlerElements = new WeakSet<EventTarget>();
 export class EventTargetTestBase extends LitElement {
   static testInitializer?: (el: EventTargetTestBase) => void;
 
@@ -257,54 +266,58 @@ export class EventTargetTestBase extends LitElement {
   override connectedCallback() {
     super.connectedCallback();
     // We want to also track slot element events, which we can resolve via event parents
-    const rootEventTargetAndSlots: HTMLElementWithEventMeta[] = [];
-    let el = this as HTMLElement as HTMLElementWithEventMeta;
+    const eventTargets: EventTarget[] = [document, this.shadowRoot!];
+    let el = this as Partial<EventTargetShimMeta> | undefined;
     while (
+      el &&
       [litServerRoot.localName, 'slot'].includes(
         (el.__eventTargetParent as HTMLElement | undefined)?.localName as string
       )
     ) {
-      rootEventTargetAndSlots.push(
-        el.__eventTargetParent as HTMLElementWithEventMeta
-      );
-      el = el.__eventTargetParent as HTMLElementWithEventMeta;
+      eventTargets.push(el.__eventTargetParent!);
+      el = el.__eventTargetParent as Partial<EventTargetShimMeta> | undefined;
     }
 
-    for (const el of rootEventTargetAndSlots
+    for (const el of eventTargets
       .reverse()
       .filter((el) => !registeredEventHandlerElements.has(el))) {
-      if (el.localName === 'slot') {
-        el.id = `${nextId++}`;
+      if ((el as HTMLElement).localName === 'slot') {
+        (el as HTMLElement).id = `${nextId++}`;
       }
       this._attachEventHandler(el);
       registeredEventHandlerElements.add(el);
     }
   }
-  private _attachEventHandler(el: HTMLElement) {
+  private _attachEventHandler(et: EventTarget) {
+    const el = et as HTMLElement;
     const isSlotElementWithName = (
       e: HTMLElement
     ): e is HTMLElement & {name: string} =>
       e.localName === 'slot' && 'name' in e && !!e.name;
     for (const capture of [true, false]) {
-      el.addEventListener(
+      et.addEventListener(
         'test',
         ({target, eventPhase}) => {
-          const elementName =
-            el.localName +
-            `${isSlotElementWithName(el) ? `[name=${el.name}]` : ''}`;
-          const host = (el as HTMLElementWithEventMeta).__host as
+          const name =
+            et === document
+              ? 'document'
+              : et === this.shadowRoot
+                ? `#shadow-root{${this.localName}}`
+                : el.localName +
+                  `${isSlotElementWithName(el) ? `[name=${el.name}]` : ''}`;
+          const host = (et as Partial<EventTargetShimMeta>).__host as
             | HTMLElement
             | undefined;
           // Unfortunately we cannot use the host element id here,
           // as it is lost across the module loader border.
           const elementDetails = el.id
-            ? `{id:${el.id}${host ? `,host:${host.localName}` : ''}}`
+            ? `{id:${(el as HTMLElement).id}${host ? `,host:${host.localName}` : ''}}`
             : '';
           const captureDetails = capture ? 'capture' : 'non-capture';
-          const {localName, id: targetId} = target as HTMLElementWithEventMeta;
+          const {localName, id: targetId} = target as HTMLElement;
           const targetDetails = `${localName}{id:${targetId}}`;
           eventPath.push(
-            `${elementName}${elementDetails}/${captureDetails}/${eventPhases[eventPhase]}/${targetDetails}`
+            `${name}${elementDetails}/${captureDetails}/${eventPhases[eventPhase]}/${targetDetails}`
           );
         },
         {capture}
@@ -371,6 +384,14 @@ export class TestEventsChild extends EventTargetTestBase {
   }
 }
 
+@customElement('test-events-child-inert')
+export class TestEventsChildInert extends TestEventsChild {
+  override render() {
+    // prettier-ignore
+    return html`<div>events child inert</div>`;
+  }
+}
+
 @customElement('test-events-shadow-nested')
 export class TestEventsShadowNested extends EventTargetTestBase {
   override render() {
@@ -403,8 +424,27 @@ export class TestEventsNestedSlots extends EventTargetTestBase {
   }
 }
 
+@customElement('test-events-intermediate')
+export class TestEventsIntermediate extends EventTargetTestBase {
+  override render() {
+    // prettier-ignore
+    return html`<slot name="b"></slot><slot name="b"></slot>`;
+  }
+}
+
+@customElement('test-events-parent-retarget')
+export class TestEventsParentRetarget extends EventTargetTestBase {
+  override render() {
+    // prettier-ignore
+    return html`<test-events-intermediate><slot name="a" slot="b"></slot></test-events-intermediate>`;
+  }
+}
+
 // prettier-ignore
 export const eventParentAndSingleChildWithoutValue = html`<test-events-parent><test-events-child></test-events-child></test-events-parent>`;
+
+// prettier-ignore
+export const eventParentAndChildrenForCallbackConnectedFilter = html`<test-events-parent><test-events-child></test-events-child><test-events-child-inert></test-events-child-inert></test-events-parent>`;
 
 // prettier-ignore
 export const eventParentAndSingleChildWithValue = html`<test-events-parent value="my-test"><test-events-child></test-events-child></test-events-parent>`;
@@ -441,6 +481,9 @@ export const eventNestedSlotWithUnnamedAndNamedSlotChild = html`<test-events-nes
 
 // prettier-ignore
 export const eventNestedSlotWithNamedAndUnnamedSlotChild = html`<test-events-nested-slots><test-events-child slot="a"></test-events-child><test-events-child></test-events-child></test-events-nested-slots>`;
+
+// prettier-ignore
+export const eventNestedDuplicateSlotNames = html`<test-events-parent-retarget><test-events-child slot="a"></test-events-child></test-events-parent-retarget>`;
 
 /* Directives */
 
@@ -656,3 +699,26 @@ export const renderServerScriptNotJavaScript = serverhtml`
 // This doesn't have to make sense, the test is that it'll throw at the
 // template preparation phase.
 export const renderServerOnlyElementPart = serverhtml`<div ${'foo'}></div>`;
+
+/* Render Options */
+
+export const setupExclusion = () => {
+  LitElementRenderer.renderOptions.push((element) =>
+    element.localName === 'no-ssr' ? {disableSsr: true} : undefined
+  );
+  return {
+    [Symbol.dispose]() {
+      LitElementRenderer.renderOptions.length = 0;
+    },
+  };
+};
+
+@customElement('no-ssr')
+export class NoSsr extends LitElement {
+  override render() {
+    // prettier-ignore
+    return html`<main></main>`;
+  }
+}
+
+export const noSsrTemplate = html`<test-simple></test-simple><no-ssr></no-ssr>`;

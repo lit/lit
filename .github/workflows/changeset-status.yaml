@@ -10,9 +10,11 @@ jobs:
   # without changesets result in this job failing.
   changeset:
     runs-on: ubuntu-latest
-    # Skip if author is lit-robot which means it's a release PR that doesn't
-    # need this check.
-    if: ${{ github.event.pull_request.user.login != 'lit-robot' }}
+    # Skip the release PR, which consumes changesets rather than adding one and
+    # so can never satisfy this check. Match on the branch Changesets always
+    # creates rather than on the PR author: the author is whoever owns the
+    # token in RELEASE_PAT, not a fixed bot account.
+    if: ${{ github.head_ref != 'changeset-release/main' }}
     steps:
       - uses: actions/checkout@v3
         with:
@@ -20,7 +22,7 @@ jobs:
 
       - uses: actions/setup-node@v3
         with:
-          node-version: 20
+          node-version: 24.5
           cache: 'npm'
           cache-dependency-path: package-lock.json
 

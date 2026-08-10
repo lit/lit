@@ -4,8 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {PackageJson} from '@lit-labs/analyzer/lib/model.js';
-import {javascript} from '@lit-labs/gen-utils/lib/str-utils.js';
+import {PackageJson} from '@oicl-lit/analyzer/lib/model.js';
+import {javascript} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 /**
  * Generates a Vite config.

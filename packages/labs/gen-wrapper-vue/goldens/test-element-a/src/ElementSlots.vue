@@ -5,6 +5,7 @@ import '@lit-internal/test-element-a/element-slots.js';
 
 export interface Props {
   mainDefault?: string;
+  tabs?: {id: string; title: string}[];
 }
 
 const vueProps = defineProps<Props>();

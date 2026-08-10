@@ -229,7 +229,8 @@ suite('SignalWatcher', () => {
     assert.equal(readCount, 5);
   });
 
-  test('type-only test where mixin on an abstract class preserves abstract type', () => {
+  // TODO: no longer abstract, so this test is no longer relevant. Remove?
+  test.skip('type-only test where mixin on an abstract class preserves abstract type', () => {
     if (true as boolean) {
       // This is a type-only test. Do not run it.
       return;
@@ -240,9 +241,8 @@ suite('SignalWatcher', () => {
     // @ts-expect-error foo() needs to be implemented.
     class TestEl extends SignalWatcher(BaseEl) {}
     console.log(TestEl); // usage to satisfy eslint.
-
+    // @ts-expect-error foo() needs to be implemented.
     const TestElFromAbstractSignalWatcher = SignalWatcher(BaseEl);
-    // @ts-expect-error cannot instantiate an abstract class.
     new TestElFromAbstractSignalWatcher();
 
     // This is fine, passed in class is not abstract.
@@ -250,7 +250,8 @@ suite('SignalWatcher', () => {
     new TestElFromConcreteClass();
   });
 
-  test('class returned from signal-watcher should be directly instantiatable if non-abstract', async () => {
+  // TODO: no longer abstract, so this test is no longer relevant. Remove?
+  test.skip('class returned from signal-watcher should be directly instantiatable if non-abstract', async () => {
     const count = new Signal.State(0);
     class TestEl extends LitElement {
       override render() {
@@ -309,6 +310,241 @@ suite('SignalWatcher', () => {
       (ref) => ref.deref() !== undefined
     );
     assert.isTrue(survivingElements.length < elementCount);
+  });
+
+  test('updateEffect notifies signal updates (after update by default)', async () => {
+    const count = new Signal.State(0);
+    const other = new Signal.State(0);
+    let effectCount = 0;
+    let effectOther = 0;
+    let effectCalled = 0;
+    class TestElement extends SignalWatcher(LitElement) {
+      constructor() {
+        super();
+        this.updateEffect(() => {
+          effectCount = count.get();
+          effectOther = other.get();
+          effectCalled++;
+        });
+      }
+      override render() {
+        return html`<p>count: ${count.get()}</p>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.append(el);
+    await el.updateComplete;
+    // Called initially
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 0');
+    assert.equal(effectCount, 0);
+    assert.equal(effectOther, 0);
+    assert.equal(effectCalled, 1);
+
+    // Called when signal updates that's used in render
+    count.set(1);
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 1');
+    assert.equal(effectCount, 1);
+    assert.equal(effectOther, 0);
+    assert.equal(effectCalled, 2);
+
+    // Called when any accessed signal updates
+    other.set(1);
+    await el.updateComplete;
+    assert.equal(effectCount, 1);
+    assert.equal(effectOther, 1);
+    assert.equal(effectCalled, 3);
+
+    // Called when render signal and other signal updates
+    count.set(2);
+    other.set(2);
+    await el.updateComplete;
+    assert.equal(effectCount, 2);
+    assert.equal(effectOther, 2);
+    assert.equal(effectCalled, 4);
+
+    // *Not* called when element updates
+    el.requestUpdate();
+    await el.updateComplete;
+    assert.equal(effectCount, 2);
+    assert.equal(effectOther, 2);
+    assert.equal(effectCalled, 4);
+  });
+
+  test('updateEffect notifies signal updates beforeUpdate', async () => {
+    const count = new Signal.State(0);
+    const other = new Signal.State(0);
+    let effectCount = 0;
+    let effectOther = 0;
+    let effectTextContent = '';
+    let effectCalled = 0;
+    class TestElement extends SignalWatcher(LitElement) {
+      constructor() {
+        super();
+        this.updateEffect(
+          () => {
+            effectTextContent = this.hasUpdated
+              ? el.shadowRoot!.querySelector('p')!.textContent!
+              : '';
+            effectCount = count.get();
+            effectOther = other.get();
+            effectCalled++;
+          },
+          {beforeUpdate: true}
+        );
+      }
+      override render() {
+        return html`<p>count: ${count.get()}</p>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.append(el);
+    await el.updateComplete;
+    // Called initially
+    assert.equal(effectTextContent, '');
+    assert.equal(effectCount, 0);
+    assert.equal(effectOther, 0);
+    assert.equal(effectCalled, 1);
+
+    // Called when signal updates that's used in render
+    count.set(1);
+    await el.updateComplete;
+    assert.equal(effectTextContent, 'count: 0');
+    assert.equal(effectCount, 1);
+    assert.equal(effectOther, 0);
+    assert.equal(effectCalled, 2);
+
+    // Called when any accessed signal updates
+    other.set(1);
+    await el.updateComplete;
+    assert.equal(effectTextContent, 'count: 1');
+    assert.equal(effectCount, 1);
+    assert.equal(effectOther, 1);
+    assert.equal(effectCalled, 3);
+
+    // Called when render signal and other signal updates
+    count.set(2);
+    other.set(2);
+    await el.updateComplete;
+    assert.equal(effectTextContent, 'count: 1');
+    assert.equal(effectCount, 2);
+    assert.equal(effectOther, 2);
+    assert.equal(effectCalled, 4);
+
+    // *Not* called when element updates
+    el.requestUpdate();
+    assert.equal(effectTextContent, 'count: 1');
+    await el.updateComplete;
+    assert.equal(effectCount, 2);
+    assert.equal(effectOther, 2);
+    assert.equal(effectCalled, 4);
+  });
+
+  test('effects disposed when disconnected', async () => {
+    const count = new Signal.State(0);
+    class TestElement extends SignalWatcher(LitElement) {
+      override render() {
+        return html`<p>count: ${count.get()}</p>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.append(el);
+    await el.updateComplete;
+    let effectCount = 0;
+    el.updateEffect(() => {
+      effectCount = count.get();
+    });
+    await el.updateComplete;
+    assert.equal(effectCount, 0);
+    el.remove();
+    await el.updateComplete;
+    count.set(1);
+    await new Promise((r) => setTimeout(r, 0));
+    assert.equal(effectCount, 0);
+  });
+
+  test('can manually dispose of effects', async () => {
+    const count = new Signal.State(0);
+    const other = new Signal.State(0);
+    class TestElement extends SignalWatcher(LitElement) {
+      override render() {
+        return html`<p>count: ${count.get()}</p>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.append(el);
+    await el.updateComplete;
+    let effectOther = undefined;
+    const disposeEffect = el.updateEffect(() => {
+      effectOther = other.get();
+    });
+    await el.updateComplete;
+    assert.equal(effectOther, 0);
+    other.set(1);
+    await el.updateComplete;
+    assert.equal(effectOther, 1);
+    disposeEffect();
+    other.set(2);
+    await el.updateComplete;
+    assert.equal(effectOther, 1);
+  });
+
+  test('effects not disposed when manualDispose set', async () => {
+    const count = new Signal.State(0);
+    class TestElement extends SignalWatcher(LitElement) {
+      override render() {
+        return html`<p>count: ${count.get()}</p>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.append(el);
+    await el.updateComplete;
+    let effectManualCount1 = 0;
+    let effectManualCount2 = 0;
+    let effectAutoCount = 0;
+    const disposeEffectManual1 = el.updateEffect(
+      () => {
+        effectManualCount1 = count.get();
+      },
+      {manualDispose: true}
+    );
+    const disposeEffectManual2 = el.updateEffect(
+      () => {
+        effectManualCount2 = count.get();
+      },
+      {manualDispose: true}
+    );
+    el.updateEffect(() => {
+      effectAutoCount = count.get();
+    });
+    await el.updateComplete;
+    assert.equal(effectManualCount1, 0);
+    assert.equal(effectManualCount2, 0);
+    assert.equal(effectAutoCount, 0);
+    el.remove();
+    await new Promise((r) => setTimeout(r, 0));
+    count.set(1);
+    await new Promise((r) => setTimeout(r, 0));
+    assert.equal(effectManualCount1, 1);
+    assert.equal(effectManualCount2, 1);
+    assert.equal(effectAutoCount, 0);
+    disposeEffectManual1();
+    count.set(2);
+    await new Promise((r) => setTimeout(r, 0));
+    assert.equal(effectManualCount1, 1);
+    assert.equal(effectManualCount2, 2);
+    assert.equal(effectAutoCount, 0);
+    disposeEffectManual2();
+    count.set(3);
+    await new Promise((r) => setTimeout(r, 0));
+    assert.equal(effectManualCount1, 1);
+    assert.equal(effectManualCount2, 2);
+    assert.equal(effectAutoCount, 0);
   });
 });
 

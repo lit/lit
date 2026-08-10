@@ -11,10 +11,10 @@ import {
   LitElementDeclaration,
   ModuleWithLitElementDeclarations,
   getImportsStringForReferences,
-} from '@lit-labs/analyzer';
-import {Event as EventModel} from '@lit-labs/analyzer/lib/model.js';
-import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
-import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
+} from '@oicl-lit/analyzer';
+import {Event as EventModel} from '@oicl-lit/analyzer/lib/model.js';
+import {FileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
+import {javascript, kabobToOnEvent} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 /**
  * Our command for the Lit CLI.
@@ -96,8 +96,8 @@ const packageJsonTemplate = (
       },
       peerDependencies: {
         // TODO(kschaaf): make react version(s) configurable?
-        react: '^17 || ^18',
-        '@types/react': '^17 || ^18',
+        react: '^17 || ^18 || ^19',
+        '@types/react': '^17 || ^18 || ^19',
       },
       devDependencies: {
         // Use typescript from source package, assuming it exists

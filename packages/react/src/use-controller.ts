@@ -20,9 +20,9 @@ const microtask = Promise.resolve();
  * An implementation of ReactiveControllerHost that is driven by React hooks
  * and `useController()`.
  */
-class ReactControllerHost<C extends ReactiveController>
-  implements ReactiveControllerHost
-{
+class ReactControllerHost<
+  C extends ReactiveController,
+> implements ReactiveControllerHost {
   /* @internal */
   _primaryController!: C;
   private _controllers: Array<ReactiveController> = [];

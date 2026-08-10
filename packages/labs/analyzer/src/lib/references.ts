@@ -222,7 +222,9 @@ export const getImportReference = (
       const sourceFilePath = location.getSourceFile().fileName as AbsolutePath;
       const module = getModuleInfo(sourceFilePath, analyzer);
       refPackage = module.packageJson.name;
-      refModule = path.join(path.dirname(module.jsPath), specifier);
+      refModule = path
+        .join(path.dirname(module.jsPath), specifier)
+        .replace(/\\/g, '/');
     } else if (analyzer.path.isAbsolute(specifier)) {
       // Absolute import; no package, just use the entire path as the
       // module
@@ -287,7 +289,7 @@ const getLocalReference = (
   return new Reference({
     name,
     package: module.packageJson.name,
-    module: module.jsPath,
+    module: module.jsPath.replace(/\\/g, '/'),
     dereference: () =>
       getResolvedExportFromSourcePath(
         location.getSourceFile().fileName as AbsolutePath,

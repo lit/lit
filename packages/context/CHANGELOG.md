@@ -1,5 +1,20 @@
 # @lit-labs/context
 
+## 1.1.6
+
+### Patch Changes
+
+- [#4997](https://github.com/lit/lit/pull/4997) [`aea85e24`](https://github.com/lit/lit/commit/aea85e24b88108fb13302d0120d9f7cd6bdb08a8) - Update README
+
+## 1.1.5
+
+### Patch Changes
+
+- [#4917](https://github.com/lit/lit/pull/4917) [`aced5a93`](https://github.com/lit/lit/commit/aced5a93b70a17aa34e6b5ee9654d161eb484031) Thanks [@djrenren](https://github.com/djrenren)! - Fixed a bug where initial values were not handled by the @provide() decorator
+  when using standard decorators (#4675)
+- Updated dependencies [[`c9160405`](https://github.com/lit/lit/commit/c9160405deaf8de68bb1e587ef9b2484cb58b353), [`3e2f87f6`](https://github.com/lit/lit/commit/3e2f87f688d7f447f5bd8517cc5a2f29ee1f3ce5), [`4824c4ce`](https://github.com/lit/lit/commit/4824c4ce094fabf9d96c92f0d986827b046b2705)]:
+  - @lit/reactive-element@2.1.0
+
 ## 1.1.4
 
 ### Patch Changes

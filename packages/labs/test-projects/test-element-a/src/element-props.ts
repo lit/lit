@@ -7,6 +7,8 @@
 import {LitElement, html} from 'lit';
 import {customElement, property, state} from 'lit/decorators.js';
 
+export type AttributeVariant = 'normal' | 'running' | 'loading';
+
 export interface MyType {
   a: string;
   b: number;
@@ -28,7 +30,7 @@ export class ElementProps extends LitElement {
   @property({type: Number})
   aNum = -1;
 
-  @property({type: Boolean})
+  @property({type: Boolean, reflect: true})
   aBool = false;
 
   @property({type: Array})
@@ -43,6 +45,9 @@ export class ElementProps extends LitElement {
     e: 'isUnknown',
     strOrNum: 'strOrNum',
   };
+
+  @property()
+  variant: AttributeVariant = 'normal';
 
   @state()
   aState = 'aState';

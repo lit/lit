@@ -1,7 +1,7 @@
 {
-  "name": "@lit-labs/gen-wrapper-vue",
+  "name": "@oicl-lit/gen-wrapper-vue",
   "description": "Code generator for Vue wrapper for Lit components",
-  "version": "0.4.1",
+  "version": "0.4.3",
   "publishConfig": {
     "access": "public"
   },
@@ -12,14 +12,14 @@
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lit/lit.git",
+    "url": "git+https://github.com/Ocean-Industries-Concept-Lab/lit.git",
     "directory": "packages/labs/gen-wrapper-vue"
   },
   "scripts": {
     "build": "wireit",
     "test": "wireit",
     "test:gen": "wireit",
-    "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:gen"
+    "test:update-goldens": "cross-env UPDATE_TEST_GOLDENS=true npm run test:gen"
   },
   "wireit": {
     "build": {
@@ -65,8 +65,8 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.13.0",
-    "@lit-labs/gen-utils": "^0.3.0",
+    "@oicl-lit/analyzer": "^0.14.0",
+    "@oicl-lit/gen-utils": "^0.3.0",
     "@lit-labs/vue-utils": "^0.1.1"
   },
   "devDependencies": {

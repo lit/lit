@@ -53,19 +53,19 @@ export function provide<ValueType>({
     >();
     if (typeof nameOrContext === 'object') {
       // Standard decorators branch
-      nameOrContext.addInitializer(function () {
-        controllerMap.set(this, new ContextProvider(this, {context}));
-      });
       return {
         get(this: ReactiveElement) {
           return protoOrTarget.get.call(this);
         },
         set(this: ReactiveElement, value: ValueType) {
-          controllerMap.get(this)?.setValue(value);
+          controllerMap.get(this)!.setValue(value);
           return protoOrTarget.set.call(this, value);
         },
         init(this: ReactiveElement, value: ValueType) {
-          controllerMap.get(this)?.setValue(value);
+          controllerMap.set(
+            this,
+            new ContextProvider(this, {context, initialValue: value})
+          );
           return value;
         },
       };

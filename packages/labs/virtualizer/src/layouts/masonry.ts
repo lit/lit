@@ -10,8 +10,10 @@ import {PixelSize} from './shared/SizeGapPaddingBaseLayout.js';
 
 type GetAspectRatio = (item: unknown) => number;
 
-export interface MasonryLayoutConfig
-  extends Omit<GridBaseLayoutConfig, 'flex' | 'itemSize'> {
+export interface MasonryLayoutConfig extends Omit<
+  GridBaseLayoutConfig,
+  'flex' | 'itemSize'
+> {
   flex: boolean;
   itemSize: PixelSize;
   getAspectRatio: GetAspectRatio;

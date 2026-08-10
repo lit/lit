@@ -82,31 +82,39 @@ const polyfillSupport = DEV_MODE
 if (DEV_MODE) {
   // Ensure warnings are issued only 1x, even if multiple versions of Lit
   // are loaded.
-  const issuedWarnings: Set<string | undefined> = (global.litIssuedWarnings ??=
-    new Set());
+  global.litIssuedWarnings ??= new Set();
 
-  // Issue a warning, if we haven't already.
+  /**
+   * Issue a warning if we haven't already, based either on `code` or `warning`.
+   * Warnings are disabled automatically only by `warning`; disabling via `code`
+   * can be done by users.
+   */
   issueWarning = (code: string, warning: string) => {
     warning += ` See https://lit.dev/msg/${code} for more information.`;
-    if (!issuedWarnings.has(warning)) {
+    if (
+      !global.litIssuedWarnings!.has(warning) &&
+      !global.litIssuedWarnings!.has(code)
+    ) {
       console.warn(warning);
-      issuedWarnings.add(warning);
+      global.litIssuedWarnings!.add(warning);
     }
   };
 
-  issueWarning(
-    'dev-mode',
-    `Lit is in dev mode. Not recommended for production!`
-  );
-
-  // Issue polyfill support warning.
-  if (global.ShadyDOM?.inUse && polyfillSupport === undefined) {
+  queueMicrotask(() => {
     issueWarning(
-      'polyfill-support-missing',
-      `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
-        `the \`polyfill-support\` module has not been loaded.`
+      'dev-mode',
+      `Lit is in dev mode. Not recommended for production!`
     );
-  }
+
+    // Issue polyfill support warning.
+    if (global.ShadyDOM?.inUse && polyfillSupport === undefined) {
+      issueWarning(
+        'polyfill-support-missing',
+        `Shadow DOM is being polyfilled via \`ShadyDOM\` but ` +
+          `the \`polyfill-support\` module has not been loaded.`
+      );
+    }
+  });
 }
 
 /**
@@ -274,6 +282,25 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
    * @internal
    */
   wrapped?: boolean;
+
+  /**
+   * When `true`, uses the initial value of the property as the default value,
+   * which changes how attributes are handled:
+   *  - The initial value does *not* reflect, even if the `reflect` option is `true`.
+   *    Subsequent changes to the property will reflect, even if they are equal to the
+   *     default value.
+   *  - When the attribute is removed, the property is set to the default value
+   *  - The initial value will not trigger an old value in the `changedProperties` map
+   *    argument to update lifecycle methods.
+   *
+   * When set, properties must be initialized, either with a field initializer, or an
+   * assignment in the constructor. Not initializing the property may lead to
+   * improper handling of subsequent property assignments.
+   *
+   * While this behavior is opt-in, most properties that reflect to attributes should
+   * use `useDefault: true` so that their initial values do not reflect.
+   */
+  useDefault?: boolean;
 }
 
 /**
@@ -381,6 +408,7 @@ const defaultPropertyDeclaration: PropertyDeclaration = {
   type: String,
   converter: defaultConverter,
   reflect: false,
+  useDefault: false,
   hasChanged: notEqual,
 };
 
@@ -676,6 +704,12 @@ export abstract class ReactiveElement
       (options as Mutable<PropertyDeclaration, 'attribute'>).attribute = false;
     }
     this.__prepare();
+    // Whether this property is wrapping accessors.
+    // Helps control the initial value change and reflection logic.
+    if (this.prototype.hasOwnProperty(name)) {
+      options = Object.create(options);
+      options.wrapped = true;
+    }
     this.elementProperties.set(name, options);
     if (!options.noAccessor) {
       const key = DEV_MODE
@@ -748,12 +782,10 @@ export abstract class ReactiveElement
       );
     }
     return {
-      get(this: ReactiveElement) {
-        return get?.call(this);
-      },
+      get,
       set(this: ReactiveElement, value: unknown) {
         const oldValue = get?.call(this);
-        set!.call(this, value);
+        set?.call(this, value);
         this.requestUpdate(name, oldValue, options);
       },
       configurable: true,
@@ -979,6 +1011,12 @@ export abstract class ReactiveElement
    * @internal
    */
   _$changedProperties!: PropertyValues;
+
+  /**
+   * Records property default values when the
+   * `useDefault` option is used.
+   */
+  private __defaultValues?: Map<PropertyKey, unknown>;
 
   /**
    * Properties that should be reflected when updated.
@@ -1209,11 +1247,12 @@ export abstract class ReactiveElement
             : defaultConverter;
       // mark state reflecting
       this.__reflectingProperty = propName;
-      this[propName as keyof this] = converter.fromAttribute!(
-        value,
-        options.type
+      const convertedValue = converter.fromAttribute!(value, options.type);
+      this[propName as keyof this] =
+        convertedValue ??
+        this.__defaultValues?.get(propName) ??
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      ) as any;
+        (convertedValue as any);
       // mark state not reflecting
       this.__reflectingProperty = null;
     }
@@ -1231,12 +1270,20 @@ export abstract class ReactiveElement
    * @param oldValue old value of requesting property
    * @param options property options to use instead of the previously
    *     configured options
+   * @param useNewValue if true, the newValue argument is used instead of
+   *     reading the property value. This is important to use if the reactive
+   *     property is a standard private accessor, as opposed to a plain
+   *     property, since private members can't be dynamically read by name.
+   * @param newValue the new value of the property. This is only used if
+   *     `useNewValue` is true.
    * @category updates
    */
   requestUpdate(
     name?: PropertyKey,
     oldValue?: unknown,
-    options?: PropertyDeclaration
+    options?: PropertyDeclaration,
+    useNewValue = false,
+    newValue?: unknown
   ): void {
     // If we have a property key, perform property update steps.
     if (name !== undefined) {
@@ -1246,12 +1293,24 @@ export abstract class ReactiveElement
           `The requestUpdate() method was called with an Event as the property name. This is probably a mistake caused by binding this.requestUpdate as an event listener. Instead bind a function that will call it with no arguments: () => this.requestUpdate()`
         );
       }
-      options ??= (
-        this.constructor as typeof ReactiveElement
-      ).getPropertyOptions(name);
-      const hasChanged = options.hasChanged ?? notEqual;
-      const newValue = this[name as keyof this];
-      if (hasChanged(newValue, oldValue)) {
+      const ctor = this.constructor as typeof ReactiveElement;
+      if (useNewValue === false) {
+        newValue = this[name as keyof this];
+      }
+      options ??= ctor.getPropertyOptions(name);
+      const changed =
+        (options.hasChanged ?? notEqual)(newValue, oldValue) ||
+        // When there is no change, check a corner case that can occur when
+        // 1. there's a initial value which was not reflected
+        // 2. the property is subsequently set to this value.
+        // For example, `prop: {useDefault: true, reflect: true}`
+        // and el.prop = 'foo'. This should be considered a change if the
+        // attribute is not set because we will now reflect the property to the attribute.
+        (options.useDefault &&
+          options.reflect &&
+          newValue === this.__defaultValues?.get(name) &&
+          !this.hasAttribute(ctor.__attributeNameForProperty(name, options)!));
+      if (changed) {
         this._$changeProperty(name, oldValue, options);
       } else {
         // Abort the request if the property should not be considered changed.
@@ -1269,18 +1328,37 @@ export abstract class ReactiveElement
   _$changeProperty(
     name: PropertyKey,
     oldValue: unknown,
-    options: PropertyDeclaration
+    {useDefault, reflect, wrapped}: PropertyDeclaration,
+    initializeValue?: unknown
   ) {
+    // Record default value when useDefault is used. This allows us to
+    // restore this value when the attribute is removed.
+    if (useDefault && !(this.__defaultValues ??= new Map()).has(name)) {
+      this.__defaultValues.set(
+        name,
+        initializeValue ?? oldValue ?? this[name as keyof this]
+      );
+      // if this is not wrapping an accessor, it must be an initial setting
+      // and in this case we do not want to record the change or reflect.
+      if (wrapped !== true || initializeValue !== undefined) {
+        return;
+      }
+    }
     // TODO (justinfagnani): Create a benchmark of Map.has() + Map.set(
     // vs just Map.set()
     if (!this._$changedProperties.has(name)) {
+      // On the initial change, the old value should be `undefined`, except
+      // with `useDefault`
+      if (!this.hasUpdated && !useDefault) {
+        oldValue = undefined;
+      }
       this._$changedProperties.set(name, oldValue);
     }
     // Add to reflecting properties set.
     // Note, it's important that every change has a chance to add the
     // property to `__reflectingProperties`. This ensures setting
     // attribute + property reflects correctly.
-    if (options.reflect === true && this.__reflectingProperty !== name) {
+    if (reflect === true && this.__reflectingProperty !== name) {
       (this.__reflectingProperties ??= new Set<PropertyKey>()).add(name);
     }
   }
@@ -1402,25 +1480,26 @@ export abstract class ReactiveElement
         this.__instanceProperties = undefined;
       }
       // Trigger initial value reflection and populate the initial
-      // changedProperties map, but only for the case of experimental
-      // decorators on accessors, which will not have already populated the
-      // changedProperties map. We can't know if these accessors had
-      // initializers, so we just set them anyway - a difference from
-      // experimental decorators on fields and standard decorators on
-      // auto-accessors.
-      // For context why experimentalDecorators with auto accessors are handled
-      // specifically also see:
+      // `changedProperties` map, but only for the case of properties created
+      // via `createProperty` on accessors, which will not have already
+      // populated the `changedProperties` map since they are not set.
+      // We can't know if these accessors had initializers, so we just set
+      // them anyway - a difference from experimental decorators on fields and
+      // standard decorators on auto-accessors.
+      // For context see:
       // https://github.com/lit/lit/pull/4183#issuecomment-1711959635
       const elementProperties = (this.constructor as typeof ReactiveElement)
         .elementProperties;
       if (elementProperties.size > 0) {
         for (const [p, options] of elementProperties) {
+          const {wrapped} = options;
+          const value = this[p as keyof this];
           if (
-            options.wrapped === true &&
+            wrapped === true &&
             !this._$changedProperties.has(p) &&
-            this[p as keyof this] !== undefined
+            value !== undefined
           ) {
-            this._$changeProperty(p, this[p as keyof this], options);
+            this._$changeProperty(p, undefined, options, value);
           }
         }
       }
@@ -1663,11 +1742,13 @@ if (DEV_MODE) {
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for ReactiveElement usage.
-(global.reactiveElementVersions ??= []).push('2.0.4');
+(global.reactiveElementVersions ??= []).push('2.1.2');
 if (DEV_MODE && global.reactiveElementVersions.length > 1) {
-  issueWarning!(
-    'multiple-versions',
-    `Multiple versions of Lit loaded. Loading multiple versions ` +
-      `is not recommended.`
-  );
+  queueMicrotask(() => {
+    issueWarning!(
+      'multiple-versions',
+      `Multiple versions of Lit loaded. Loading multiple versions ` +
+        `is not recommended.`
+    );
+  });
 }

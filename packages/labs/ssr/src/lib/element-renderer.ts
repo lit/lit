@@ -8,7 +8,7 @@
 
 import {escapeHtml} from './util/escape-html.js';
 import type {RenderInfo} from './render-value.js';
-import type {RenderResult} from './render-result.js';
+import type {ThunkedRenderResult} from './render-result.js';
 
 type Interface<T> = {
   [P in keyof T]: T[P];
@@ -52,6 +52,16 @@ export type ShadowRootOptions = ShadowRootInit;
 
 /**
  * An object that renders elements of a certain type.
+ *
+ * The `render*()` methods return a ThunkedRenderResult, which is an array of
+ * strings and/or thunks that return strings or Promises for strings. This allows
+ * the renderer to emit content in chunks, and to perform async work (e.g.
+ * fetching data) as part of rendering. Renderers can assume that their
+ * thunks will be invoked in order, and that any Promises will be awaited before
+ * subsequent thunks are invoked.
+ *
+ * If a renderer does not need to emit content in chunks or perform async work,
+ * it can simply return an array of strings.
  */
 export abstract class ElementRenderer {
   // TODO (justinfagnani): We shouldn't assume that ElementRenderer subclasses
@@ -168,14 +178,14 @@ export abstract class ElementRenderer {
    * If `renderShadow()` returns undefined, no declarative shadow root is
    * emitted.
    */
-  renderShadow(_renderInfo: RenderInfo): RenderResult | undefined {
+  renderShadow(_renderInfo: RenderInfo): ThunkedRenderResult | undefined {
     return undefined;
   }
 
   /**
    * Render the element's light DOM children.
    */
-  renderLight(_renderInfo: RenderInfo): RenderResult | undefined {
+  renderLight(_renderInfo: RenderInfo): ThunkedRenderResult | undefined {
     return undefined;
   }
 
@@ -185,7 +195,8 @@ export abstract class ElementRenderer {
    * The default implementation serializes all attributes on the element
    * instance.
    */
-  *renderAttributes(): RenderResult {
+  renderAttributes(): ThunkedRenderResult {
+    const result: ThunkedRenderResult = [];
     if (this.element !== undefined) {
       const {attributes} = this.element;
       for (
@@ -194,12 +205,13 @@ export abstract class ElementRenderer {
         i++
       ) {
         if (value === '' || value === undefined || value === null) {
-          yield ` ${name}`;
+          result.push(` ${name}`);
         } else {
-          yield ` ${name}="${escapeHtml(value)}"`;
+          result.push(` ${name}="${escapeHtml(value)}"`);
         }
       }
     }
+    return result;
   }
 }
 
@@ -215,13 +227,15 @@ export class FallbackRenderer extends ElementRenderer {
     this._attributes[name.toLowerCase()] = value;
   }
 
-  override *renderAttributes(): RenderResult {
+  override renderAttributes(): ThunkedRenderResult {
+    const result: ThunkedRenderResult = [];
     for (const [name, value] of Object.entries(this._attributes)) {
       if (value === '' || value === undefined || value === null) {
-        yield ` ${name}`;
+        result.push(` ${name}`);
       } else {
-        yield ` ${name}="${escapeHtml(value)}"`;
+        result.push(` ${name}="${escapeHtml(value)}"`);
       }
     }
+    return result;
   }
 }

@@ -43,13 +43,13 @@ into a `Writable` stream, or passed to web server frameworks like [Koa](https://
 ```js
 // Example: server.js:
 
-import {render} from '@lit-labs/ssr';
+import {renderThunked} from '@lit-labs/ssr';
 import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import {myTemplate} from './my-template.js';
 
 //...
 
-const ssrResult = render(myTemplate(data));
+const ssrResult = renderThunked(myTemplate(data));
 // Assume `context` is a Koa.Context.
 context.body = new RenderResultReadable(ssrResult);
 ```
@@ -59,7 +59,7 @@ context.body = new RenderResultReadable(ssrResult);
 To render to a string, you can use the `collectResult` or `collectResultSync` helper functions.
 
 ```js
-import {render} from '@lit-labs/ssr';
+import {renderThunked} from '@lit-labs/ssr';
 import {
   collectResult,
   collectResultSync,
@@ -67,7 +67,7 @@ import {
 import {html} from 'lit';
 
 const myServerTemplate = (name) => html`<p>Hello ${name}</p>`;
-const ssrResult = render(myServerTemplate('SSR with Lit!'));
+const ssrResult = renderThunked(myServerTemplate('SSR with Lit!'));
 
 // Will throw if a Promise is encountered
 console.log(collectResultSync(ssrResult));
@@ -91,17 +91,17 @@ iterable that incrementally emits the serialized strings of the given template.
 ```js
 // Example: render-template.js
 
-import {render} from '@lit-labs/ssr';
-import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
+import {renderThunked} from '@lit-labs/ssr';
 import {myTemplate} from './my-template.js';
 export const renderTemplate = (someData) => {
-  return render(myTemplate(someData));
+  return renderThunked(myTemplate(someData));
 };
 ```
 
 ```js
 // Example: server.js:
 
+import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import {renderModule} from '@lit-labs/ssr/lib/render-module.js';
 
 // Execute the above `renderTemplate` in a separate VM context with a minimal DOM shim
@@ -141,7 +141,7 @@ const update = (data) => render(myTemplate(data), document.body);
 
 ### Hydrating LitElements
 
-When `LitElement`s are server rendered, their shadow root contents are emitted inside a `<template shadowroot>`, also known as a [Declarative Shadow Root](https://web.dev/declarative-shadow-dom/), a new browser feature that is shipping in [most modern browsers](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template#browser_compatibility). Declarative shadow roots automatically attach their contents to a shadow root on the template's parent element when parsed. For browsers that do not yet implement declarative shadow root, there is a [`template-shadowroot`](https://github.com/webcomponents/template-shadowroot) polyfill, described below.
+When `LitElement`s are server rendered, their shadow root contents are emitted inside a `<template shadowrootmode>`, also known as a [Declarative Shadow Root](https://web.dev/declarative-shadow-dom/), a new browser feature that shipped in [all modern browsers](https://developer.mozilla.org/en-US/docs/Web/HTML/Element/template#browser_compatibility). Declarative shadow roots automatically attach their contents to a shadow root on the template's parent element when parsed. For browsers that do not yet implement declarative shadow root, there is a [`template-shadowroot`](https://github.com/webcomponents/template-shadowroot) polyfill, described below.
 
 `hydrate()` does not descend into shadow roots - it only works on one scope of the DOM at a time. To hydrate `LitElement` shadow roots, load the `@lit-labs/ssr-client/lit-element-hydrate-support.js` module, which installs support for `LitElement` to automatically hydrate itself when it detects it was server-rendered with declarative shadow DOM. This module must be loaded before the `lit` module is loaded, to ensure hydration support is properly installed.
 
@@ -202,7 +202,7 @@ Server-only templates can only be rendered on the server, they can't be rendered
 Here's an example that shows how to use a server-only template to render a full document, and then lazily hydrate both a custom element and a template:
 
 ```js
-import {render, html} from '@lit-labs/ssr';
+import {renderThunked, html} from '@lit-labs/ssr';
 import {RenderResultReadable} from '@lit-labs/ssr/lib/render-result-readable.js';
 import './app-shell.js';
 import {getContent} from './content-template.js';
@@ -211,7 +211,7 @@ const pageInfo = {
   /* ... */
 };
 
-const ssrResult = render(html`
+const ssrResult = renderThunked(html`
   <!DOCTYPE html>
   <html>
     <head><title>MyApp ${pageInfo.title}</head>
@@ -256,6 +256,53 @@ const ssrResult = render(html`
 context.body = new RenderResultReadable(ssrResult);
 ```
 
+## Thunked vs non-Thunked Rendering
+
+You may notice that SSR has two render function exports: `render()` and
+`renderThunked()`.
+
+The difference between the two is that `renderThunked()` returns a
+`ThunkedRenderResult`, which is a lower-level representation of a render that
+has lower overhead compared to the `RenderResult` returned by `render()`.
+
+You should prefer `renderThunked()` over `render()`, which exists for backwards
+compatibility.
+
+In the future we may introduce APIs like `renderToString()` and
+`renderToStream()` that eliminate the need to expose the underlying
+representation.
+
+## LitElementRenderer Configuration
+
+The `LitElementRenderer` has the static property `renderOptions`, which accepts
+callback functions with the element instance to be rendered as the parameter.
+A callback can return an object to indicate the render options for the given
+element or `undefined` to let the next callback evaluate it or fall back to
+the default options.
+
+By default, the `connectedCallback` method is not called during SSR. To enable
+calling `connectedCallback`, return an object with `connectedCallback` set to
+`true`.
+
+```js
+import {LitElementRenderer} from '@lit-labs/ssr';
+
+LitElementRenderer.renderOptions.push((element) =>
+  element.localName === 'my-element' ? {connectedCallback: true} : undefined
+);
+```
+
+To disable rendering an element during SSR, return an object with `disableSsr`
+set to `true`.
+
+```js
+import {LitElementRenderer} from '@lit-labs/ssr';
+
+LitElementRenderer.renderOptions.push((element) =>
+  element.localName === 'my-element' ? {disableSsr: true} : undefined
+);
+```
+
 ## Notes and limitations
 
 Please note the following current limitations with the SSR package:
@@ -270,5 +317,5 @@ Please note the following current limitations with the SSR package:
   - Be aware that you cannot mutate a parent via events, due to the way we stream data via SSR. This means only a use case like `@lit/context` is supported, where events are used to pass data from a parent back to a child to use in its rendering.
   - The DOM tree is not fully formed and the `event.composedPath()` returns a simplified tree, only containing the custom elements.
   - As an alternative to `document.documentElement` or `document.body` (which are expected to be undefined in the server environment) for global event listeners (e.g. for `@lit/context ContextProvider`), you can use the global variable `globalThis.litServerRoot` which is (only) available during SSR (e.g. `new ContextProvider(isServer ? globalThis.litServerRoot : document.body, {...})`).
-- **connectedCallback Opt-In**: We provide an opt-in for calling `connectedCallback`, which can be enabled via `globalThis.litSsrCallConnectedCallback = true;`. This will enable calling `connectedCallback` (and the `hostConnected` hook for controllers, but not the `hostUpdate` hook) on the server. This e.g. enables using `@lit/context` on the server.
+- **connectedCallback Opt-In**: We provide an opt-in for calling `connectedCallback`, as seen above in `LitElementRenderer Configuration`. Configuring this enables calling `connectedCallback` (and the `hostConnected` hook for controllers, but not the `hostUpdate` hook) on the server. This e.g. enables using `@lit/context` on the server.
 - **Patterns for usage**: As mentioned above under "Status", we intend to flesh out a number of common patterns for using this package, and provide appropriate APIs and documentation for these as the package reaches maturity. Concerns like server/client data management, incremental loading and hydration, etc. are currently beyond the scope of what this package offers, but we believe it should support building these patterns on top of it going forward. Please [file issues](https://github.com/lit/lit/issues/new/choose) for ideas, suggestions, and use cases you may encounter.
