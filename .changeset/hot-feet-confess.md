@@ -1,5 +1,5 @@
 ---
-'@lit-labs/gen-wrapper-vue': patch
+'@oicl-lit/gen-wrapper-vue': patch
 ---
 
 Add properties herited from mixins in vue wrapper

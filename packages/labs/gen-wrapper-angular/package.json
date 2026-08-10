@@ -1,5 +1,4 @@
 {
-  "private": true,
   "name": "@oicl-lit/gen-wrapper-angular",
   "description": "Code generator for Angular wrappers for Lit components",
   "version": "0.1.5",
