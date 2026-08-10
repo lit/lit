@@ -1,7 +1,7 @@
 {
   "name": "@oicl-lit/gen-utils",
   "description": "Utilities for lit code generators",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "publishConfig": {
     "access": "public"
   },
