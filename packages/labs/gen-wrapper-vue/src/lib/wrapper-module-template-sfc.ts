@@ -94,8 +94,10 @@ const getTypeReferencesForMap = (
   map: Map<string, ModelProperty | EventModel>
 ) => Array.from(map.values()).flatMap((e) => e.type?.references ?? []);
 
-const getElementTypeImports = (declaration: LitElementDeclaration) => {
-  const {events, reactiveProperties} = declaration;
+const getElementTypeImports = (
+  events: Map<string, EventModel>,
+  reactiveProperties: Map<string, ModelProperty>
+) => {
   const refs = [
     ...getTypeReferencesForMap(events),
     ...getTypeReferencesForMap(reactiveProperties),
@@ -169,7 +171,9 @@ const wrapperTemplate = (
   const {tagname, events, reactiveProperties} = declaration;
   const heritageProps = getHeritageReactiveProperties(declaration);
   const allProps = new Map([...reactiveProperties, ...heritageProps]);
-  const typeImports = getElementTypeImports(declaration);
+  // Type imports must be derived from the merged props: inherited properties
+  // can reference named types that are otherwise never imported.
+  const typeImports = getElementTypeImports(events, allProps);
   const typeExports = getElementTypeExportsFromImports(typeImports);
   const hasProps = allProps.size > 0;
   return javascript`${
