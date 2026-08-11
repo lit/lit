@@ -1,5 +1,11 @@
 # @lit-labs/context
 
+## 1.1.7
+
+### Patch Changes
+
+- [#5350](https://github.com/lit/lit/pull/5350) [`35284df7a0a2a087bd024e7d10259ff7528f2ae1`](https://github.com/Ocean-Industries-Concept-Lab/lit/commit/35284df7a0a2a087bd024e7d10259ff7528f2ae1) - Add ExportDecoratedItems for closure compiler compatibility
+
 ## 1.1.6
 
 ### Patch Changes
