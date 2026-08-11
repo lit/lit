@@ -1,5 +1,11 @@
 # @lit-labs/ssr-react
 
+## 0.3.5
+
+### Patch Changes
+
+- [#5342](https://github.com/lit/lit/pull/5342) [`ada3ffce30cdb6a2f9a9d476767eaf747a0b2667`](https://github.com/Ocean-Industries-Concept-Lab/lit/commit/ada3ffce30cdb6a2f9a9d476767eaf747a0b2667) Thanks [@JamesIves](https://github.com/JamesIves)! - Add missing conversion to use `collectResultSync()` in `wrapJsxDev`.
+
 ## 0.3.4
 
 ### Patch Changes
