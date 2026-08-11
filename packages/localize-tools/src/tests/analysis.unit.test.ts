@@ -4,9 +4,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {test} from 'uvu';
-// eslint-disable-next-line import/extensions
-import * as assert from 'uvu/assert';
+import {test} from 'node:test';
+import * as assert from 'node:assert';
 
 import {extractMessagesFromProgram} from '../program-analysis.js';
 import {ProgramMessage} from '../messages.js';
@@ -46,11 +45,11 @@ function checkAnalysis(
     () => undefined
   );
   const {messages, errors} = extractMessagesFromProgram(program);
-  assert.equal(
+  assert.deepStrictEqual(
     errors.map((diagnostic) => ts.formatDiagnostic(diagnostic, host).trim()),
     expectedErrors
   );
-  assert.equal(
+  assert.deepStrictEqual(
     messages.map(({name, contents, desc}) => ({
       name,
       contents,
@@ -399,5 +398,3 @@ test('error: string with expressions must use str tag', () => {
     ]
   );
 });
-
-test.run();

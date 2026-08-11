@@ -7,9 +7,8 @@
 import {litLocalizeTransform} from '../modes/transform.js';
 import ts from 'typescript';
 import {Message, makeMessageIdMap} from '../messages.js';
-import {test} from 'uvu';
-// eslint-disable-next-line import/extensions
-import * as assert from 'uvu/assert';
+import {test} from 'node:test';
+import * as assert from 'node:assert';
 import prettier from 'prettier';
 import {
   compileTsFragment,
@@ -83,8 +82,8 @@ async function checkTransform(
     formattedExpected = expectedJs;
     formattedActual = unformattedActual;
   }
-  assert.is(formattedActual, formattedExpected);
-  assert.equal(result.diagnostics, []);
+  assert.strictEqual(formattedActual, formattedExpected);
+  assert.deepStrictEqual(result.diagnostics, []);
 }
 
 async function assertRejects(
@@ -93,9 +92,9 @@ async function assertRejects(
 ) {
   try {
     await promise;
-    assert.unreachable('Expected promise to reject');
+    assert.fail('Expected promise to reject');
   } catch (e) {
-    assert.match(String(e), expected);
+    assert.match(String(e), new RegExp(expected));
   }
 }
 
@@ -485,7 +484,7 @@ test('configureTransformLocalization() -> {getLocale: () => "es-419"}', async ()
 });
 
 test('configureLocalization() throws', async () => {
-  assertRejects(
+  await assertRejects(
     checkTransform(
       `import {configureLocalization} from '@lit/localize';
          configureLocalization({
@@ -585,5 +584,3 @@ test('@localized removed', async () => {
     {autoImport: false}
   );
 });
-
-test.run();

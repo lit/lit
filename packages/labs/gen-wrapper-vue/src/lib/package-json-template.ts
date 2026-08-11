@@ -43,7 +43,9 @@ export const packageJsonTemplate = (
         vite: '^5.3.1',
         'vue-tsc': '^2.0.22',
       },
-      files: [...moduleNames.map((f) => `${f}.*`)],
+      // Use `${f}*` (not `${f}.*`) so that Vite code-split chunks like
+      // `ElementA2.vue.js` are included alongside `ElementA.vue.js`.
+      files: [...moduleNames.map((f) => `${f}*`)],
     },
     null,
     2

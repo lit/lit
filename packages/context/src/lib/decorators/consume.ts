@@ -39,6 +39,7 @@ import {Context} from '../create-context.js';
  * }
  * ```
  * @category Decorator
+ * @ExportDecoratedItems
  */
 export function consume<ValueType>({
   context,
