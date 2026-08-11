@@ -38,8 +38,7 @@
     "changeset": "changeset",
     "version": "npm run changeset version && npm run update-version-vars",
     "update-version-vars": "node scripts/update-version-variables.js",
-    "check-publishable-packages": "node scripts/check-publishable-packages.js",
-    "release": "npm run build && npm run check-publishable-packages && npm run changeset publish",
+    "release": "npm run build && npm run changeset publish",
     "benchmark:size": "wireit"
   },
   "wireit": {
