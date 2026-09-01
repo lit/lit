@@ -22,6 +22,7 @@ export const defaultConfig = (options = {}) =>
       'directives/keyed',
       'directives/live',
       'directives/map',
+      'directives/part-map',
       'directives/range',
       'directives/ref',
       'directives/repeat',
