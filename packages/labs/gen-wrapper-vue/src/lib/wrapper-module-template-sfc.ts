@@ -9,13 +9,14 @@ import {
   LitElementDeclaration,
   PackageJson,
   getImportsStringForReferences,
-} from '@lit-labs/analyzer';
+} from '@oicl-lit/analyzer';
 
 import {
   ReactiveProperty as ModelProperty,
   Event as EventModel,
-} from '@lit-labs/analyzer/lib/model.js';
-import {javascript, kabobToOnEvent} from '@lit-labs/gen-utils/lib/str-utils.js';
+  MixinDeclaration,
+} from '@oicl-lit/analyzer/lib/model.js';
+import {javascript, kabobToOnEvent} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 /**
  * Generates a Vue wrapper component as a Vue single file component. This
@@ -94,8 +95,10 @@ const getTypeReferencesForMap = (
   map: Map<string, ModelProperty | EventModel>
 ) => Array.from(map.values()).flatMap((e) => e.type?.references ?? []);
 
-const getElementTypeImports = (declaration: LitElementDeclaration) => {
-  const {events, reactiveProperties} = declaration;
+const getElementTypeImports = (
+  events: Map<string, EventModel>,
+  reactiveProperties: Map<string, ModelProperty>
+) => {
   const refs = [
     ...getTypeReferencesForMap(events),
     ...getTypeReferencesForMap(reactiveProperties),
@@ -125,6 +128,39 @@ const renderPropsParam = (reactiveProperties: Map<string, ModelProperty>) => {
   return '';
 };
 
+const getHeritageReactiveProperties = (
+  declaration: LitElementDeclaration
+): Map<string, ModelProperty> => {
+  const {heritage} = declaration;
+  if (
+    heritage == null ||
+    (heritage.superClass?.name === 'LitElement' && heritage.mixins.length === 0)
+  ) {
+    return new Map();
+  }
+  const props = heritage.mixins
+    .flatMap(
+      (mixin) => (mixin.dereference() as MixinDeclaration).classDeclaration
+    )
+    .filter((mixin) => mixin.isLitElementDeclaration())
+    .flatMap((mixin) => {
+      const props = Array.from(mixin.reactiveProperties.entries());
+      props.push(...getHeritageReactiveProperties(mixin).entries());
+      return props;
+    });
+  if (heritage.superClass != null) {
+    const superClass =
+      heritage.superClass.dereference() as LitElementDeclaration;
+    if (superClass.isLitElementDeclaration()) {
+      props.push(...superClass.reactiveProperties.entries());
+    }
+    if (heritage.superClass.name !== 'LitElement') {
+      props.push(...getHeritageReactiveProperties(superClass).entries());
+    }
+  }
+  return new Map(props);
+};
+
 // TODO(sorvell): Add support for `v-bind`.
 // TODO(sorvell): Investigate if it's possible to save the ~15 lines related to
 // handling defaults by factoring the defaults directive and associated code
@@ -134,9 +170,13 @@ const wrapperTemplate = (
   wcPath: string
 ) => {
   const {tagname, events, reactiveProperties} = declaration;
-  const typeImports = getElementTypeImports(declaration);
+  const heritageProps = getHeritageReactiveProperties(declaration);
+  const allProps = new Map([...reactiveProperties, ...heritageProps]);
+  // Type imports must be derived from the merged props: inherited properties
+  // can reference named types that are otherwise never imported.
+  const typeImports = getElementTypeImports(events, allProps);
   const typeExports = getElementTypeExportsFromImports(typeImports);
-  const hasProps = reactiveProperties.size > 0;
+  const hasProps = allProps.size > 0;
   return javascript`${
     typeExports
       ? javascript`
@@ -151,9 +191,9 @@ const wrapperTemplate = (
       import '${wcPath}';
       ${typeImports}
 
-      ${renderPropsInterface(reactiveProperties)}
+      ${renderPropsInterface(allProps)}
 
-      ${renderVueProps(reactiveProperties)}
+      ${renderVueProps(allProps)}
 
       ${
         events.size
@@ -169,7 +209,7 @@ const wrapperTemplate = (
         const eventProps = ${renderEvents(events)};
         const props = eventProps as (typeof eventProps & Props);
 
-        ${renderPropsParam(reactiveProperties)}
+        ${renderPropsParam(allProps)}
 
         return h(
           '${tagname}',

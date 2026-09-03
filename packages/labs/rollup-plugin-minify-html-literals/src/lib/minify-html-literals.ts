@@ -23,8 +23,9 @@ export interface DefaultOptions extends BaseOptions {
 /**
  * Options for <code>minifyHTMLLiterals()</code>, using a custom strategy.
  */
-export interface CustomOptions<S extends Strategy | unknown>
-  extends BaseOptions {
+export interface CustomOptions<
+  S extends Strategy | unknown,
+> extends BaseOptions {
   /**
    * HTML minification options.
    */

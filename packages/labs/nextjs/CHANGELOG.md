@@ -1,5 +1,11 @@
 # @lit-labs/nextjs
 
+## 0.3.0
+
+### Minor Changes
+
+- [#5342](https://github.com/lit/lit/pull/5342) [`ada3ffce30cdb6a2f9a9d476767eaf747a0b2667`](https://github.com/Ocean-Industries-Concept-Lab/lit/commit/ada3ffce30cdb6a2f9a9d476767eaf747a0b2667) Thanks [@JamesIves](https://github.com/JamesIves)! - Includes support for NextJS 16 and Turbopack.
+
 ## 0.2.4
 
 ### Patch Changes

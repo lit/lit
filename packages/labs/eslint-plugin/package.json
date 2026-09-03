@@ -64,7 +64,7 @@
     "eslint": "^8.56.0"
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.14.0",
+    "@oicl-lit/analyzer": "^0.14.0",
     "@typescript-eslint/utils": "^6.19.0",
     "typescript": "~5.9.0"
   }

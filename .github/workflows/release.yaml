@@ -16,7 +16,7 @@ jobs:
       pull-requests: write # to allow creating PR
       id-token: write # for npm provenance
 
-    if: github.repository == 'lit/lit'
+    if: github.repository == 'Ocean-Industries-Concept-Lab/lit'
 
     name: Release
     environment: Changesets
@@ -24,10 +24,10 @@ jobs:
     env:
       WIREIT_LOGGER: quiet-ci
     steps:
-      - name: Use Lit Robot's name and email for all git actions
+      - name: Use the release bot's name and email for all git actions
         run: |
-          git config --global user.name "Lit Robot"
-          git config --global user.email "lit-robot@google.com"
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
       - name: Checkout Lit Repo
         uses: actions/checkout@v3
@@ -44,6 +44,10 @@ jobs:
           cache: 'npm'
           cache-dependency-path: lit/package-lock.json
 
+      # Note: trusted publishing (OIDC) requires npm >= 11.5.1. Node 24.5 bundles
+      # exactly 11.5.1, so no upgrade step is needed. Don't add one that installs
+      # npm@latest: npm 12 requires node ^22.22.2 || ^24.15.0 || >=26, which the
+      # pinned Node 24.5 does not satisfy, and the install fails with EBADENGINE.
       - name: Install Dependencies
         working-directory: lit
         run: npm ci
@@ -68,51 +72,9 @@ jobs:
           publish: npm run release
         env:
           HUSKY: 0
-          GITHUB_TOKEN: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
-          NPM_TOKEN: ${{ secrets.LIT_ROBOT_NPM_PUBLISH_ACCESS_TOKEN }}
-          NPM_CONFIG_PROVENANCE: true
-
-      - name: Checkout dist repo
-        uses: actions/checkout@v3
-        # GitHub Actions outputs are strings and the string 'false' converts to
-        # `true` because it isn't the empty string.
-        if: steps.cs.outputs.published == 'true'
-        with:
-          repository: lit/dist
-          ref: empty
-          path: dist
-          token: ${{ secrets.LIT_ROBOT_AUTOMATION_PAT }}
-
-      - name: Push bundles to dist repo
-        # GitHub Actions outputs are strings and the string 'false' converts to
-        # `true` because it isn't the empty string.
-        if: steps.cs.outputs.published == 'true'
-        working-directory: dist
-        run: |
-          # Extract the version of `lit` that was published or the empty string.
-          echo "Checking if Lit was published..."
-          LIT_VERSION=$(node ../lit/scripts/extract-published-lit-version.js <<EOF
-            ${{ steps.cs.outputs.publishedPackages }}
-          EOF
-          )
-          # Don't create a bundle commit if `lit` wasn't published.
-          if [[ -z "$LIT_VERSION" ]]; then
-            echo "Lit wasn't published, so bundles will not be pushed."
-            exit 0
-          fi
-          echo "Lit was published (${LIT_VERSION}), so bundles will be pushed."
-          echo "Checking out the empty root commit..."
-          git checkout --detach empty
-          echo "Copying in all of the bundles..."
-          mkdir all
-          cp ../lit/packages/lit/lit-all.min.js all
-          cp ../lit/packages/lit/lit-all.min.js.map all
-          mkdir core
-          cp ../lit/packages/lit/lit-core.min.js core
-          cp ../lit/packages/lit/lit-core.min.js.map core
-          echo "Committing and pushing new bundles with tag 'v${LIT_VERSION}'..."
-          git add .
-          git commit -m "Bundles for lit@${LIT_VERSION}"
-          git tag "v${LIT_VERSION}"
-          git push origin "v${LIT_VERSION}"
-          echo "Done."
+          # GITHUB_TOKEN must be a PAT (not the default job token) so that the
+          # "Version Packages" PR it opens can itself trigger workflow runs.
+          GITHUB_TOKEN: ${{ secrets.RELEASE_PAT }}
+          # No NPM_TOKEN: authentication happens via OIDC trusted publishing,
+          # which relies on the `id-token: write` permission above. Provenance
+          # is implied by trusted publishing, so NPM_CONFIG_PROVENANCE is unset.

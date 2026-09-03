@@ -79,9 +79,9 @@ type InternalRenderResultIterator = Iterator<string | Thunk>;
 /**
  * Wraps a ThunkedRenderResult to implement a RenderResult.
  */
-export class RenderResultIterator
-  implements IterableIterator<string | Promise<RenderResult>>
-{
+export class RenderResultIterator implements IterableIterator<
+  string | Promise<RenderResult>
+> {
   /**
    * A stack of open iterators.
    *

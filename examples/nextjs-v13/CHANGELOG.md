@@ -1,5 +1,12 @@
 # @lit-examples/nextjs-v13
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [[`ada3ffce30cdb6a2f9a9d476767eaf747a0b2667`](https://github.com/Ocean-Industries-Concept-Lab/lit/commit/ada3ffce30cdb6a2f9a9d476767eaf747a0b2667)]:
+  - @lit-labs/nextjs@0.3.0
+
 ## 0.1.2
 
 ### Patch Changes

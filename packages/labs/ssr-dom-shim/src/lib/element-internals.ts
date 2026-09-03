@@ -71,9 +71,7 @@ type ElementInternalsInterface = ElementInternals;
 // Shim the global element internals object
 // Methods should be fine as noops and properties can generally
 // be while on the server.
-export const ElementInternalsShim = class ElementInternals
-  implements ElementInternalsInterface
-{
+export const ElementInternalsShim = class ElementInternals implements ElementInternalsInterface {
   ariaActiveDescendantElement = null;
   ariaAtomic = '';
   ariaAutoComplete = '';

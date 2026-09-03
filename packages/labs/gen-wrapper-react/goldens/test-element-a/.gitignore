@@ -1,6 +1,8 @@
 element-a.js
+element-colliding-prop-and-slot.js
 element-events.js
 element-mixins.js
+element-native-events.js
 element-props.js
 element-slots.js
 element-without-props.js
