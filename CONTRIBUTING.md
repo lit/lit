@@ -97,13 +97,25 @@ When submitting code, please take care to follow the conventions below:
    short property name chosen by Terser to namespace private class fields by
    package, to avoid collisions.
 
-## Contributor License Agreement
+## Developer Certificate of Origin (DCO)
 
-You might notice our friendly CLA-bot commenting on a pull request you open if you haven't yet signed our CLA. We use the same CLA for all open-source Google projects, so you only have to sign it once. Once you complete the CLA, all your pull-requests will automatically get the `cla: yes` tag.
+We require that all commits are certified under the [Developer Certificate of Origin (DCO)](https://developercertificate.org/). By contributing, you agree that you have the right to submit your work under the project's license.
 
-If you've already signed a CLA but are still getting bothered by the awfully insistent CLA bot, it's possible we don't have your GitHub username or you're using a different email address. Check the [information on your CLA](https://cla.developers.google.com/clas) or see this help article on [setting the email on your git commits](https://help.github.com/articles/setting-your-email-in-git/).
+To certify your commits, include a `Signed-off-by` line in every commit message using your real legal name and an active email address:
 
-[Complete the CLA](https://cla.developers.google.com/clas)
+    Signed-off-by: Jane Doe <jane.doe@example.com>
+
+A GitHub DCO check runs on all pull requests to enforce this requirement.
+
+### How to Sign Your Commits
+
+#### Using the Git CLI
+Git provides a built-in flag to append this line automatically using your configured `user.name` and `user.email`:
+
+```bash
+git commit -s -m "Your commit message"
+
+```
 
 ## Set up
 
