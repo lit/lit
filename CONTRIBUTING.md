@@ -110,6 +110,7 @@ A GitHub DCO check runs on all pull requests to enforce this requirement.
 ### How to Sign Your Commits
 
 #### Using the Git CLI
+
 Git provides a built-in flag to append this line automatically using your configured `user.name` and `user.email`:
 
 ```bash
