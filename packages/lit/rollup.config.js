@@ -57,6 +57,7 @@ export default litProdConfig({
     'directives/keyed',
     'directives/live',
     'directives/map',
+    'directives/part-map',
     'directives/range',
     'directives/ref',
     'directives/repeat',
