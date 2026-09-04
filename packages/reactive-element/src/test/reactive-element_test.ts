@@ -1108,6 +1108,132 @@ suite('ReactiveElement', () => {
     assert.deepEqual(el.gsReflectArr, [0]);
   });
 
+  test('useDefault with nullish default values', async () => {
+    class E extends ReactiveElement {
+      static override get properties() {
+        return {
+          nul: {reflect: true, useDefault: true},
+          undef: {reflect: true, useDefault: true},
+          accNul: {reflect: true, useDefault: true},
+          accUndef: {reflect: true, useDefault: true},
+          gsNul: {reflect: true, useDefault: true},
+          gsUndef: {reflect: true, useDefault: true},
+        };
+      }
+
+      nul: string | null = null;
+      undef: string | undefined = undefined;
+      accessor accNul: string | null = null;
+      accessor accUndef: string | undefined = undefined;
+
+      #gsNul: string | null = null;
+      get gsNul() {
+        return this.#gsNul;
+      }
+      set gsNul(value: string | null) {
+        this.#gsNul = value;
+      }
+      #gsUndef: string | undefined = undefined;
+      get gsUndef() {
+        return this.#gsUndef;
+      }
+      set gsUndef(value: string | undefined) {
+        this.#gsUndef = value;
+      }
+
+      changes = new Map<PropertyKey, unknown>();
+
+      override updated(changed: PropertyValues) {
+        this.changes = new Map(changed);
+      }
+    }
+    customElements.define(generateElementName(), E);
+    const el = new E();
+    container.appendChild(el);
+    await el.updateComplete;
+    // Nullish defaults are not reflected.
+    assert.isFalse(el.hasAttributes());
+    assert.strictEqual(el.nul, null);
+    assert.strictEqual(el.undef, undefined);
+    assert.strictEqual(el.accNul, null);
+    assert.strictEqual(el.accUndef, undefined);
+    assert.strictEqual(el.gsNul, null);
+    assert.strictEqual(el.gsUndef, undefined);
+
+    // Setting a value reflects it.
+    el.nul = 'a';
+    el.undef = 'b';
+    el.accNul = 'c';
+    el.accUndef = 'd';
+    el.gsNul = 'e';
+    el.gsUndef = 'f';
+    await el.updateComplete;
+    assert.equal(el.getAttribute('nul'), 'a');
+    assert.equal(el.getAttribute('undef'), 'b');
+    assert.equal(el.getAttribute('accnul'), 'c');
+    assert.equal(el.getAttribute('accundef'), 'd');
+    assert.equal(el.getAttribute('gsnul'), 'e');
+    assert.equal(el.getAttribute('gsundef'), 'f');
+    // The nullish defaults are reported as the previous values.
+    assert.deepEqual(Array.from(el.changes), [
+      ['nul', null],
+      ['undef', undefined],
+      ['accNul', null],
+      ['accUndef', undefined],
+      ['gsNul', null],
+      ['gsUndef', undefined],
+    ]);
+
+    // Removing the attribute restores the nullish default, and preserves
+    // the difference between a `null` and an `undefined` default.
+    el.removeAttribute('nul');
+    el.removeAttribute('undef');
+    el.removeAttribute('accnul');
+    el.removeAttribute('accundef');
+    el.removeAttribute('gsnul');
+    el.removeAttribute('gsundef');
+    assert.strictEqual(el.nul, null);
+    assert.strictEqual(el.undef, undefined);
+    assert.strictEqual(el.accNul, null);
+    assert.strictEqual(el.accUndef, undefined);
+    assert.strictEqual(el.gsNul, null);
+    assert.strictEqual(el.gsUndef, undefined);
+    await el.updateComplete;
+    assert.isFalse(el.hasAttributes());
+
+    // The defaults are also recorded when properties are set before the
+    // first update.
+    const el2 = new E();
+    container.appendChild(el2);
+    el2.nul = 'a';
+    el2.undef = 'b';
+    el2.accNul = 'c';
+    el2.accUndef = 'd';
+    el2.gsNul = 'e';
+    el2.gsUndef = 'f';
+    await el2.updateComplete;
+    assert.deepEqual(Array.from(el2.changes), [
+      ['nul', null],
+      ['undef', undefined],
+      ['accNul', null],
+      ['accUndef', undefined],
+      ['gsNul', null],
+      ['gsUndef', undefined],
+    ]);
+    el2.removeAttribute('nul');
+    el2.removeAttribute('undef');
+    el2.removeAttribute('accnul');
+    el2.removeAttribute('accundef');
+    el2.removeAttribute('gsnul');
+    el2.removeAttribute('gsundef');
+    assert.strictEqual(el2.nul, null);
+    assert.strictEqual(el2.undef, undefined);
+    assert.strictEqual(el2.accNul, null);
+    assert.strictEqual(el2.accUndef, undefined);
+    assert.strictEqual(el2.gsNul, null);
+    assert.strictEqual(el2.gsUndef, undefined);
+  });
+
   test('fromAttribute can set prop to null or undefined', () => {
     class A extends ReactiveElement {
       static override get properties() {
