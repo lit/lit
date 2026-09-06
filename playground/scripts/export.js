@@ -12,7 +12,7 @@ npm run export -- path
 
 - <path> must be a path to a directory beneath <lit-monorepo>/playground/p
   - You may use the 'p/' prefix, but it is not required
-- Prerequisite: Install https://github.com/defunkt/gist
+- Prerequisite: Install GitHub CLI (https://cli.github.com/)
 `;
 
 async function exportPlayground(path) {
@@ -49,10 +49,10 @@ async function exportPlayground(path) {
     }
   }
 
-  // Create a Gist from the temporary directory using the gist CLI
+  // Create a Gist from the temporary directory using the GitHub CLI
 
-  const {stdout} = await exec(`gist -p ${tempDir}/*.*`);
-  const gistId = stdout.split('/').at(-1);
+  const {stdout} = await exec(`gh gist create ${tempDir}/*.*`);
+  const gistId = stdout.split('/').at(-1).trim();
 
   // Delete the temporary directory
 
