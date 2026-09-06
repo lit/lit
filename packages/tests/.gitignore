@@ -8,3 +8,7 @@ web-test-runner.config.js
 web-test-runner.config.js.map
 web-test-runner.config.d.ts
 web-test-runner.config.d.ts.map
+mocha-skip-in-ci.js
+mocha-skip-in-ci.js.map
+mocha-skip-in-ci.d.ts
+mocha-skip-in-ci.d.ts.map
