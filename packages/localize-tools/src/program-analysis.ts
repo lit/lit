@@ -7,7 +7,7 @@
 
 import ts from 'typescript';
 import * as parse5 from 'parse5';
-import {ChildNode, ParentNode, TextNode, CommentNode} from '@parse5/tools';
+import {ChildNode, ParentNode, CommentNode} from '@parse5/tools';
 import {ProgramMessage, Placeholder} from './messages.js';
 import {createDiagnostic} from './typescript.js';
 import {
@@ -518,7 +518,10 @@ function replaceHtmlWithPlaceholders(
 
   const traverse = (node: ChildNode): void => {
     if (node.nodeName === '#text') {
-      const text = (node as TextNode).value;
+      // Copy source range to preserve escape sequences from the source text intact.
+      // parse5 does not preserve escape sequences, so node.value has html like escape sequences removed.
+      const location = node.sourceCodeLocation!;
+      const text = html.substring(location.startOffset, location.endOffset);
       components.push(text);
     } else if (node.nodeName === '#comment') {
       components.push({
@@ -536,7 +539,7 @@ function replaceHtmlWithPlaceholders(
     }
   };
 
-  const frag = parse5.parseFragment(html);
+  const frag = parse5.parseFragment(html, {sourceCodeLocationInfo: true});
   for (const child of frag.childNodes) {
     traverse(child);
   }
