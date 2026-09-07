@@ -295,7 +295,10 @@ export class Routes implements ReactiveController {
 const getTailGroup = (groups: {[key: string]: string | undefined}) => {
   let tailKey: string | undefined;
   for (const key of Object.keys(groups)) {
-    if (/\d+/.test(key) && (tailKey === undefined || key > tailKey!)) {
+    if (
+      /^\d+$/.test(key) &&
+      (tailKey === undefined || Number(key) > Number(tailKey))
+    ) {
       tailKey = key;
     }
   }
