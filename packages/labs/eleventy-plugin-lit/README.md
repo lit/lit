@@ -92,7 +92,7 @@ NODE_OPTIONS=--experimental-vm-modules eleventy
 
 > 🚧 Note: Support for specifying component modules in Eleventy front matter is
 > on the [roadmap](#roadmap). Follow
-> [#2494](https://github.com/lit/lit/issues/2483) for progress and discussion. 🚧
+> [#2483](https://github.com/lit/lit/issues/2483) for progress and discussion. 🚧
 
 Use the `componentModules` setting to tell the plugin where to find the
 definitions of your components.
@@ -208,7 +208,7 @@ details.
 ### Passing data to components
 
 > 🚧 Note: Support for passing data as properties is on the [roadmap](#roadmap).
-> Follow [#2494](https://github.com/lit/lit/issues/2485) for progress and
+> Follow [#2485](https://github.com/lit/lit/issues/2485) for progress and
 > discussion. 🚧
 
 Data can be passed to your components by setting attributes (see the `name`
