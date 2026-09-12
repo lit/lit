@@ -105,7 +105,7 @@ This can either be used as a parameter with the Node.js CLI
 (e.g. `node --import @lit-labs/ssr-dom-shim/register-css-hook.js my-script.js` or via
 environment variable `NODE_OPTIONS="--import @lit-labs/ssr-dom-shim/register-css-hook.js"`)
 or imported inline, and it will apply to any module dynamically imported afterwards
-(e.g. `import @lit-labs/ssr-dom-shim/register-css-hook.js` and
+(e.g. `import '@lit-labs/ssr-dom-shim/register-css-hook.js'` and
 subsequently `await import('./my-component.js')`).
 
 - [Node.js Customization Hooks](https://nodejs.org/api/module.html#customization-hooks)
