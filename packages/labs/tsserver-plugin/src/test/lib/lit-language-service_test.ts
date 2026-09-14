@@ -116,7 +116,7 @@ export class XFoo extends LitElement {
       const infos = languageService.getQuickInfoAtPosition(pathName, position);
       assert.deepEqual(infos, {
         kind: 'label',
-        textSpan: {start: 415, length: 7},
+        textSpan: {start: 458, length: 7},
         kindModifiers: '',
         displayParts: [
           {
