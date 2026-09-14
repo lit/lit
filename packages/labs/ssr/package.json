@@ -215,7 +215,7 @@
     "@types/koa-static": "^4.0.1",
     "@types/node": "^20.0.0",
     "@types/resolve": "^1.20.2",
-    "@webcomponents/template-shadowroot": "^0.1.0",
+    "@webcomponents/template-shadowroot": "^0.2.1",
     "command-line-args": "^5.1.1",
     "deepmerge": "^4.2.2",
     "koa": "^2.7.0",
