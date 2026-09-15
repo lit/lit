@@ -90,10 +90,7 @@ export function escapeTextContentToEmbedInTemplateLiteral(
   return unescaped
     .replace(/\\/g, `\\\\`)
     .replace(/`/g, '\\`')
-    .replace(/\$/g, '\\$')
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;');
+    .replace(/\$/g, '\\$');
 }
 
 /**

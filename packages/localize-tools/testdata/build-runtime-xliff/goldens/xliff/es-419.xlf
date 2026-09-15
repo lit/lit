@@ -51,8 +51,8 @@
   <target><x id="0" equiv-text="&lt;b>"/>Hola<x id="1" equiv-text="&lt;/b>"/>! Clic <x id="2" equiv-text="&lt;a href=&quot;${urlBase}/${urlPath}&quot;>"/>aquí<x id="3" equiv-text="&lt;/a>"/>!</target>
 </trans-unit>
 <trans-unit id="h02c268d9b1fcb031">
-  <source>&lt;Hello<x id="0" equiv-text="&lt;b>"/>&lt;World &amp; Friends><x id="1" equiv-text="&lt;/b>"/>!></source>
-  <target>&lt;Hola<x id="0" equiv-text="&lt;b>"/>&lt;Mundo &amp; Amigos><x id="1" equiv-text="&lt;/b>"/>!></target>
+  <source>&amp;lt;Hello<x id="0" equiv-text="&lt;b>"/>&amp;lt;World &amp;amp; Friends&amp;gt;<x id="1" equiv-text="&lt;/b>"/>!&amp;gt;</source>
+  <target>&amp;lt;Hola<x id="0" equiv-text="&lt;b>"/>&amp;lt;Mundo &amp;amp; Amigos&amp;gt;<x id="1" equiv-text="&lt;/b>"/>!&amp;gt;</target>
 </trans-unit>
 <trans-unit id="s03c68d79ad36e8d4">
   <note>Description of 0</note>
