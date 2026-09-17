@@ -20,7 +20,7 @@
     "build": "wireit",
     "test": "wireit",
     "test:gen": "wireit",
-    "test:update-goldens": "UPDATE_TEST_GOLDENS=true npm run test:gen"
+    "test:update-goldens": "cross-env UPDATE_TEST_GOLDENS=true npm run test:gen"
   },
   "wireit": {
     "build": {
