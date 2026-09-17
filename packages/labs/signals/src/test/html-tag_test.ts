@@ -8,7 +8,14 @@
 import {LitElement} from 'lit';
 import {assert} from '@esm-bundle/chai';
 
-import {SignalWatcher, html, signal} from '../index.js';
+import {
+  Computed,
+  Signal,
+  SignalWatcher,
+  State,
+  html,
+  signal,
+} from '../index.js';
 
 let elementNameId = 0;
 const generateElementName = () => `test-${elementNameId++}`;
@@ -26,7 +33,7 @@ suite('html tag', () => {
   });
 
   test('watches a signal', async () => {
-    const count = signal(0);
+    const count: State<number> = signal(0);
     class TestElement extends SignalWatcher(LitElement) {
       override render() {
         return html`<p>count: ${count}</p>`;
@@ -43,5 +50,28 @@ suite('html tag', () => {
     await el.updateComplete;
 
     assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 1');
+  });
+
+  test('watches a computed', async () => {
+    const count: State<number> = signal(10);
+    const countTwice: Computed<number> = new Signal.Computed(() => {
+      return count.get() * 2;
+    });
+    class TestElement extends SignalWatcher(LitElement) {
+      override render() {
+        return html`<p>count: ${countTwice}</p>`;
+      }
+    }
+    customElements.define(generateElementName(), TestElement);
+    const el = new TestElement();
+    container.append(el);
+
+    await el.updateComplete;
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 20');
+
+    count.set(50);
+    await el.updateComplete;
+
+    assert.equal(el.shadowRoot?.querySelector('p')?.textContent, 'count: 100');
   });
 });
