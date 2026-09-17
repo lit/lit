@@ -9,7 +9,11 @@ import {expect, html, fixture} from '@open-wc/testing';
 import {isInViewport, until, last, first} from './helpers.js';
 import {Virtualizer} from '../Virtualizer.js';
 import {ScrollerShim} from '../ScrollerController.js';
-import {LayoutSpecifier, BaseLayoutConfig} from '../layouts/shared/Layout.js';
+import {
+  LayoutSpecifier,
+  BaseLayoutConfig,
+  virtualizerAxis,
+} from '../layouts/shared/Layout.js';
 import {LitVirtualizer} from '../LitVirtualizer.js';
 import '../lit-virtualizer.js';
 import {
@@ -41,6 +45,34 @@ class Scroller extends ScrollerShim {
   constructor(target: Element | Window) {
     super(target === window ? undefined : (target as Element));
   }
+}
+
+/**
+ * Trigger a smooth scroll and wait for it to settle, retrying up to
+ * `maxAttempts` times if the final position didn't reach the requested
+ * coordinate. This can happen when the scroll dimensions change partway
+ * through a smooth scroll — for example, when a layout shift adjusts the
+ * virtualizer's sizer element mid-scroll. Rather than making callers
+ * reason about that race per-test, this helper centralizes the retry.
+ *
+ * Returns the last observed scroll results (position, events, distance).
+ */
+export async function observeScrollUntilReached(
+  target: Element | Window,
+  trigger: () => void,
+  targetValue: number,
+  targetKey: 'top' | 'left',
+  maxAttempts = 3,
+  wait = 100
+): Promise<ScrollObserverResults> {
+  let result: ScrollObserverResults = null!;
+  for (let i = 0; i < maxAttempts; i++) {
+    result = await observeScroll(target, trigger, wait);
+    if (result.endPos[targetKey] === targetValue) {
+      break;
+    }
+  }
+  return result;
 }
 
 export function observeScroll(
@@ -116,13 +148,22 @@ class VirtualizerInspector {
 type emptyString = '';
 type ItemGenFn<T = unknown> = (item: emptyString, idx: number) => T;
 type RenderItem<T = unknown> = (item: T, idx: number) => TemplateResult;
-type VirtualizerFixtureLayoutOptions = LayoutSpecifier | BaseLayoutConfig;
+/**
+ * @deprecated The `direction` property is deprecated. Use CSS `writing-mode`
+ * instead. This type extension can be removed when the deprecated `direction`
+ * config option is removed.
+ */
+type LegacyDirectionConfig = {direction?: 'vertical' | 'horizontal'};
+type VirtualizerFixtureLayoutOptions =
+  | LayoutSpecifier
+  | (BaseLayoutConfig & LegacyDirectionConfig);
 interface RenderVirtualizerOptions<T = unknown> {
   items: T[];
   renderItem: RenderItem<T>;
   scroller?: boolean;
   keyFunction?: KeyFn<T>;
   layout?: VirtualizerFixtureLayoutOptions;
+  axis?: virtualizerAxis;
 }
 type RenderVirtualizer<T = unknown> = (
   options: RenderVirtualizerOptions<T>
@@ -176,6 +217,7 @@ const defaultRenderVirtualizeDirective: RenderVirtualizer<DefaultItem> = ({
   scroller,
   keyFunction,
   layout,
+  axis,
 }) => html`
   <div class="virtualizerHost" ?scroller=${scroller}>
     ${virtualize({
@@ -184,6 +226,7 @@ const defaultRenderVirtualizeDirective: RenderVirtualizer<DefaultItem> = ({
       renderItem,
       keyFunction,
       layout,
+      axis,
     })}
   </div>
 `;
@@ -194,6 +237,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
   scroller,
   keyFunction,
   layout,
+  axis,
 }) => {
   return keyFunction
     ? layout
@@ -204,6 +248,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             .renderItem=${renderItem as RenderItem<unknown>}
             .keyFunction=${keyFunction as KeyFn<unknown>}
             .layout=${layout}
+            .axis=${axis ?? 'block'}
           ></lit-virtualizer>
         `
       : html`
@@ -212,6 +257,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             .items=${items}
             .renderItem=${renderItem as RenderItem<unknown>}
             .keyFunction=${keyFunction as KeyFn<unknown>}
+            .axis=${axis ?? 'block'}
           ></lit-virtualizer>
         `
     : layout
@@ -221,6 +267,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             .items=${items}
             .renderItem=${renderItem}
             .layout=${layout}
+            .axis=${axis ?? 'block'}
           ></lit-virtualizer>
         `
       : html`
@@ -228,6 +275,7 @@ const defaultRenderLitVirtualizer: RenderVirtualizer<DefaultItem> = ({
             ?scroller=${scroller}
             .items=${items}
             .renderItem=${renderItem}
+            .axis=${axis ?? 'block'}
           ></lit-virtualizer>
         `;
 };
@@ -246,6 +294,7 @@ export interface VirtualizerFixtureOptions<T = unknown> {
   scroller?: boolean;
   scrollerSelector?: string;
   layout?: VirtualizerFixtureLayoutOptions;
+  axis?: virtualizerAxis;
 }
 
 export async function virtualizerFixture<T = unknown>(
@@ -270,12 +319,14 @@ export async function virtualizerFixture<T = unknown>(
       : (defaultRenderLitVirtualizer as RenderVirtualizer<unknown> as RenderVirtualizer<T>);
   const keyFunction = options.keyFunction;
   const layout = options.layout;
+  const axis = options.axis;
   const virtualizerMarkup = renderVirtualizer({
     items,
     renderItem,
     scroller,
     keyFunction,
     layout,
+    axis,
   });
   const container = await fixture(html`
     <section>${fixtureStyles} ${itemStyles} ${virtualizerMarkup}</section>

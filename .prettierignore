@@ -393,6 +393,7 @@ packages/labs/tsserver-plugin/index.*
 packages/labs/virtualizer/layouts/
 packages/labs/virtualizer/polyfillLoaders/
 packages/labs/virtualizer/polyfills/
+packages/labs/virtualizer/utils/
 packages/labs/virtualizer/lit-virtualizer.js
 packages/labs/virtualizer/lit-virtualizer.d.ts
 packages/labs/virtualizer/lit-virtualizer.d.ts.map
@@ -425,6 +426,10 @@ packages/labs/virtualizer/test/screenshot/cases/*/actual.*.png
 packages/labs/virtualizer/events.d.ts*
 packages/labs/virtualizer/events.js
 packages/labs/virtualizer/events.js.map
+packages/labs/virtualizer/warnings.js
+packages/labs/virtualizer/warnings.d.ts
+packages/labs/virtualizer/warnings.d.ts.map
+packages/labs/virtualizer/warnings.js.map
 
 packages/labs/vscode-extension/lib/
 packages/labs/vscode-extension/test/
