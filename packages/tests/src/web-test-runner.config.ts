@@ -19,6 +19,7 @@ import type {
   TestRunnerPlugin,
 } from '@web/test-runner';
 import type {PolyfillConfig} from '@web/polyfills-loader';
+import {mochaSkipInCITestRunnerHtml} from './mocha-skip-in-ci.js';
 
 const mode = process.env.MODE || 'dev';
 if (!['dev', 'prod'].includes(mode)) {
@@ -286,6 +287,7 @@ const config: TestRunnerConfig = {
       timeout: '60000', // default 2000
     },
   },
+  testRunnerHtml: mochaSkipInCITestRunnerHtml,
 };
 
 export default config;
