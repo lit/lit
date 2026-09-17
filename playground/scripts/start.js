@@ -28,7 +28,12 @@ async function start(path) {
   // Make sure dependencies are installed
   await exec('npm install');
 
-  const devServer = await spawn('node', [viteBin, '--config', viteConfig]);
+  const devServer = await spawn('node', [
+    viteBin,
+    '--config',
+    viteConfig,
+    ...process.argv.slice(3),
+  ]);
 
   devServer.stdout.on('data', (data) => console.log(data.toString()));
   devServer.stderr.on('data', (data) => console.error(data.toString()));
