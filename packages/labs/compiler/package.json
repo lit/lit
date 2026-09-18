@@ -103,7 +103,7 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.14.0",
+    "@oicl-lit/analyzer": "^0.14.0",
     "@parse5/tools": "^0.3.0",
     "lit-html": "^3.2.0",
     "parse5": "^7.1.2",

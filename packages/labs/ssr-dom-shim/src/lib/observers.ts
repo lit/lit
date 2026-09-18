@@ -17,9 +17,7 @@ type MutationObserverInterface = MutationObserver;
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver
  */
-const MutationObserverShim = class MutationObserver
-  implements MutationObserverInterface
-{
+const MutationObserverShim = class MutationObserver implements MutationObserverInterface {
   constructor(_callback: MutationCallback) {}
   disconnect(): void {}
   observe(_target: Node, _options?: MutationObserverInit): void {}
@@ -36,9 +34,7 @@ type ResizeObserverInterface = ResizeObserver;
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver
  */
-const ResizeObserverShim = class ResizeObserver
-  implements ResizeObserverInterface
-{
+const ResizeObserverShim = class ResizeObserver implements ResizeObserverInterface {
   constructor(_callback: ResizeObserverCallback) {}
   disconnect(): void {}
   observe(_target: Element, _options?: ResizeObserverOptions): void {}
@@ -53,9 +49,7 @@ type IntersectionObserverInterface = IntersectionObserver;
 /**
  * @see https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver
  */
-const IntersectionObserverShim = class IntersectionObserver
-  implements IntersectionObserverInterface
-{
+const IntersectionObserverShim = class IntersectionObserver implements IntersectionObserverInterface {
   constructor(
     _callback: IntersectionObserverCallback,
     private __options?: IntersectionObserverInit

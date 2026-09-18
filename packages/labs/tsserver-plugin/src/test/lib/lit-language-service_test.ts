@@ -2,7 +2,7 @@ import assert from 'node:assert';
 import * as path from 'node:path';
 import {describe as suite, test} from 'node:test';
 import {getReusableTestProjectService} from '../project-service.js';
-import {getLitTemplateExpressions} from '@lit-labs/analyzer/lib/lit/template.js';
+import {getLitTemplateExpressions} from '@oicl-lit/analyzer/lib/lit/template.js';
 import ts from 'typescript';
 
 function setupLanguageService(pathName: string): {

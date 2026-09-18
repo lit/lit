@@ -24,8 +24,10 @@ type JustifySpec =
   | 'space-around'
   | 'space-between';
 
-export interface GridBaseLayoutConfig
-  extends Omit<SizeGapPaddingBaseLayoutConfig, 'gap'> {
+export interface GridBaseLayoutConfig extends Omit<
+  SizeGapPaddingBaseLayoutConfig,
+  'gap'
+> {
   gap?: AutoGapSpec;
   flex?: FlexSpec;
   justify?: JustifySpec;

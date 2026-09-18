@@ -9,11 +9,11 @@ import {
   Package,
   PackageJson,
   ModuleWithLitElementDeclarations,
-} from '@lit-labs/analyzer';
+} from '@oicl-lit/analyzer';
 import {packageJsonTemplate} from './lib/package-json-template.js';
 import {tsconfigTemplate} from './lib/tsconfig-template.js';
 import {wrapperModuleTemplateSFC} from './lib/wrapper-module-template-sfc.js';
-import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {FileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
 import {tsconfigNodeTemplate} from './lib/tsconfig.node-template.js';
 import {viteConfigTemplate} from './lib/vite.config-template.js';
 
@@ -92,7 +92,7 @@ const wrapperSFCFiles = (
     // probably intended to make them available via a single import and this
     // separate module preserves that intent.
     if (wrappers.length > 1) {
-      wrapperFiles[sourcePath] = exports.join('/n');
+      wrapperFiles[sourcePath] = exports.join('\n');
     }
   }
   return wrapperFiles;

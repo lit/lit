@@ -38,8 +38,7 @@ export type QueryAssignedElementsDecorator = {
  * options that can be passed into
  * [HTMLSlotElement.assignedElements](https://developer.mozilla.org/en-US/docs/Web/API/HTMLSlotElement/assignedElements).
  */
-export interface QueryAssignedElementsOptions
-  extends QueryAssignedNodesOptions {
+export interface QueryAssignedElementsOptions extends QueryAssignedNodesOptions {
   /**
    * CSS selector used to filter the elements returned. For example, a selector
    * of `".item"` will only include elements with the `item` class.

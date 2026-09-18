@@ -96,6 +96,7 @@
   "devDependencies": {
     "@11ty/eleventy": "^1.0.0",
     "@webcomponents/template-shadowroot": "^0.1.0",
-    "rimraf": "^3.0.2"
+    "rimraf": "^3.0.2",
+    "strip-indent": "^4.0.0"
   }
 }

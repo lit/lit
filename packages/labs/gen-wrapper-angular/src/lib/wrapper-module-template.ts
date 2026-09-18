@@ -9,34 +9,76 @@ import {
   LitElementDeclaration,
   PackageJson,
   getImportsStringForReferences,
-} from '@lit-labs/analyzer';
+} from '@oicl-lit/analyzer';
 import {
+  Declaration,
   ReactiveProperty as ModelProperty,
   Event as EventModel,
   Reference,
-} from '@lit-labs/analyzer/lib/model.js';
-import {javascript} from '@lit-labs/gen-utils/lib/str-utils.js';
+} from '@oicl-lit/analyzer/lib/model.js';
+import {javascript} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 const getTypeReferencesForMap = (
   map: Map<string, ModelProperty | EventModel>
 ) => Array.from(map.values()).flatMap((e) => e.type?.references ?? []);
 
-const getElementTypeImports = (declarations: LitElementDeclaration[]) => {
+const getElementTypeReferences = (declarations: LitElementDeclaration[]) => {
   const refs: Reference[] = [];
   declarations.forEach((declaration) => {
-    const {/*events,*/ reactiveProperties} = declaration;
+    const {events, reactiveProperties} = declaration;
     refs.push(
-      // TODO(sorvell): Add event types.
-      //...getTypeReferencesForMap(events),
+      ...getTypeReferencesForMap(events),
       ...getTypeReferencesForMap(reactiveProperties)
     );
   });
-  return getImportsStringForReferences(refs);
+  return refs;
 };
 
-// TODO(sorvell): add support for getting exports in analyzer.
-const getElementTypeExportsFromImports = (imports: string) =>
-  imports.replace(/(?:^import)/gm, 'export type');
+// A reference that resolves to something the module has at runtime: a class,
+// an enum or variable, a function. Anything the analyzer cannot resolve, such
+// as an interface or a type alias, is a type.
+const isValueReference = (ref: Reference) => {
+  try {
+    const declaration = ref.dereference() as Declaration | undefined;
+    return (
+      declaration !== undefined &&
+      (declaration.isClassDeclaration() ||
+        declaration.isVariableDeclaration() ||
+        declaration.isFunctionDeclaration())
+    );
+  } catch {
+    return false;
+  }
+};
+
+// The flattened .d.ts that ng-packagr publishes drops `type` from a re-export,
+// so `export type {X}` of a runtime value promises a value the bundle does
+// not have. Values are re-exported as values; types keep `export type`.
+const renderReexports = (refs: Reference[], localNames: Set<string>) => {
+  const modules = new Map<string, {types: Set<string>; values: Set<string>}>();
+  for (const ref of refs) {
+    if (ref.isGlobal) {
+      continue;
+    }
+    const specifier = ref.moduleSpecifier!;
+    let names = modules.get(specifier);
+    if (names === undefined) {
+      modules.set(specifier, (names = {types: new Set(), values: new Set()}));
+    }
+    const asValue = !localNames.has(ref.name) && isValueReference(ref);
+    (asValue ? names.values : names.types).add(ref.name);
+  }
+  return Array.from(modules)
+    .flatMap(([specifier, {types, values}]) => [
+      ...(types.size > 0
+        ? [`export type {${Array.from(types).join(', ')}} from '${specifier}';`]
+        : []),
+      ...(values.size > 0
+        ? [`export {${Array.from(values).join(', ')}} from '${specifier}';`]
+        : []),
+    ])
+    .join('\n');
+};
 
 export const wrapperModuleTemplate = (
   packageJson: PackageJson,
@@ -50,8 +92,14 @@ export const wrapperModuleTemplate = (
   if (elements.filter((e) => e.events.size).length > 0) {
     imports.push(`EventEmitter`, `Output`);
   }
-  const typeImports = getElementTypeImports(elements);
-  const typeExports = getElementTypeExportsFromImports(typeImports);
+  const refs = getElementTypeReferences(elements);
+  const typeImports = getImportsStringForReferences(refs);
+  // The wrapper classes carry the element names; a reference to one of them
+  // must not become a conflicting value re-export.
+  const typeExports = renderReexports(
+    refs,
+    new Set(elements.map((element) => element.name!))
+  );
   moduleJsPath = moduleJsPath.replace(/\\/g, '/');
   return javascript`import {
   ${imports.join(',\n  ')}
@@ -77,6 +125,8 @@ const wrapperTemplate = (element: LitElementDeclaration) => {
   return javascript`@Component({
   selector: '${tagname}',
   template: '<ng-content></ng-content>',
+  standalone: true,
+  imports: []
 })
 export class ${name} {
   ${requiresEl ? javascript`private _el: ${name}Element;` : ''}
@@ -88,15 +138,16 @@ export class ${name} {
   ) {
     ${requiresEl ? javascript`this._el = e.nativeElement;` : ''}
     ${requiresNgZone ? javascript`this._ngZone = ngZone;` : ''}
-    ${Array.from(events.keys()).map(
-      (eventName) => javascript`
+    ${Array.from(events.keys()).map((eventName) => {
+      const eventType = events.get(eventName)!.type?.text;
+      return javascript`
     this._el.addEventListener('${eventName}', (e: Event) => {
       // TODO(justinfagnani): we need to let the element say how to get a value
       // from an event, ex: e.value
-      this.${eventToPropertyName(eventName)}Event.emit(e);
+      this.${eventToPropertyName(eventName)}Event.emit(${eventType ? javascript`e as ${eventType}` : 'e'});
     });
-    `
-    )}
+    `;
+    })}
   }
 
   ${Array.from(reactiveProperties.entries()).map(
@@ -115,7 +166,9 @@ export class ${name} {
   ${Array.from(events.keys()).map(
     (eventName) => javascript`
   @Output()
-  ${eventToPropertyName(eventName)}Event = new EventEmitter<unknown>();
+  ${eventToPropertyName(eventName)}Event = new EventEmitter<${
+    events.get(eventName)!.type?.text || `unknown`
+  }>();
   `
   )}
 }

@@ -1,7 +1,7 @@
 {
-  "name": "@lit-labs/cli",
+  "name": "@oicl-lit/cli",
   "description": "Tooling for Lit development",
-  "version": "0.6.6",
+  "version": "0.6.7",
   "publishConfig": {
     "access": "public"
   },
@@ -15,7 +15,7 @@
   "main": "lib/index.js",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lit/lit.git",
+    "url": "git+https://github.com/Ocean-Industries-Concept-Lab/lit.git",
     "directory": "packages/labs/cli"
   },
   "scripts": {
@@ -50,6 +50,7 @@
         "../analyzer:build",
         "../gen-wrapper-react:build",
         "../gen-wrapper-vue:build",
+        "../gen-wrapper-angular:build",
         "../gen-manifest:build",
         "../gen-utils:build"
       ]
@@ -83,8 +84,8 @@
     }
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.14.0",
-    "@lit-labs/gen-utils": "^0.3.0",
+    "@oicl-lit/analyzer": "^0.14.0",
+    "@oicl-lit/gen-utils": "^0.3.0",
     "@lit/localize-tools": "^0.8.0",
     "chalk": "^5.0.1",
     "command-line-args": "^5.2.1",

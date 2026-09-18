@@ -1,6 +1,6 @@
 {
-  "name": "@lit-labs/analyzer",
-  "version": "0.14.0",
+  "name": "@oicl-lit/analyzer",
+  "version": "0.14.2",
   "publishConfig": {
     "access": "public"
   },
@@ -10,7 +10,7 @@
   "homepage": "https://github.com/lit/lit/tree/main/packages/labs/analyzer",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/lit/lit.git",
+    "url": "git+https://github.com/Ocean-Industries-Concept-Lab/lit.git",
     "directory": "packages/labs/analyzer"
   },
   "main": "index.js",

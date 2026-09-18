@@ -23,8 +23,8 @@ import {
   Return,
   DeprecatableDescribed,
   FunctionDeclaration,
-} from '@lit-labs/analyzer';
-import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+} from '@oicl-lit/analyzer';
+import {FileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
 import type * as cem from 'custom-elements-manifest/schema';
 
 /**

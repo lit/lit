@@ -11,7 +11,7 @@ const {
 
 // Forked from: https://github.com/atlassian/changesets/blob/main/packages/changelog-github/src/index.ts
 
-const repo = 'lit/lit';
+const repo = 'Ocean-Industries-Concept-Lab/lit';
 
 const changelogFunctions = {
   getDependencyReleaseLine: async (

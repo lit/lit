@@ -205,9 +205,7 @@ const config: TestRunnerConfig = {
         custom: [
           {
             name: 'webcomponents-2.5.0',
-            path: require.resolve(
-              '@webcomponents/webcomponentsjs/webcomponents-bundle.js'
-            ),
+            path: require.resolve('@webcomponents/webcomponentsjs/webcomponents-bundle.js'),
             // Don't load if the page is tagged with a special meta indicating
             // the polyfills will be loaded manually
             test: '!document.querySelector("meta[name=manual-polyfills]")',

@@ -1,5 +1,15 @@
 # @lit-labs/gen-wrapper-react
 
+## 0.3.6
+
+### Patch Changes
+
+- [`844825603161df56a78721caba0252f141542563`](https://github.com/Ocean-Industries-Concept-Lab/lit/commit/844825603161df56a78721caba0252f141542563) Thanks [@tibnor](https://github.com/tibnor)! - Point `repository.url` at the Ocean-Industries-Concept-Lab fork
+
+  npm's trusted publishing verifies the provenance bundle against
+  `repository.url`, so publishing failed with E422 while it still pointed at
+  `lit/lit`.
+
 ## 0.3.5
 
 ### Patch Changes

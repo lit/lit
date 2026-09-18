@@ -1,0 +1,12 @@
+/test-gen/
+# We're always going to test fresh installation (which includes the generated
+# package tarballs, so don't ever check in the package-lock
+/test-output/package-lock.json
+/test-output/js/
+/test-output/tests/
+/lib/
+/*.js
+/*.js.map
+/*.d.ts
+/*.d.ts.map
+/gen-output/
