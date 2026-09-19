@@ -372,6 +372,69 @@ suite('Task', () => {
     assert.strictEqual(el.signal?.aborted, false);
   });
 
+  test('reset throwsn while pending', async () => {
+    const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
+    await renderElement(el);
+
+    // Start a run so the task is pending
+    el.task.run();
+    assert.equal(el.task.status, TaskStatus.PENDING);
+
+    // Resetting while pending should throw
+    assert.throws(() => el.task.reset());
+
+    // Clean up and abort the task
+    el.task.abort();
+    await tasksUpdateComplete();
+  });
+
+  test('reset clears value and error when not running', async () => {
+    const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
+    await renderElement(el);
+
+    el.task.run();
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.task.value, 'a,b');
+
+    // Reset should clear all - status, value, error, and taskComplete
+    el.task.reset();
+    assert.equal(el.task.status, TaskStatus.INITIAL);
+    assert.equal(el.task.value, undefined);
+    assert.equal(el.task.error, undefined);
+
+    const resolved = await el.task.taskComplete;
+    assert.equal(resolved, undefined);
+  });
+
+  test('reset restores initialValue when provided', async () => {
+    let initializing = true; // Allow args to reference el before it's initialized
+    const el = getTestElement({
+      initialValue: 'initial',
+      args: () => [initializing ? 'a' : el.a, initializing ? 'b' : el.b],
+      autoRun: false,
+    });
+    initializing = false;
+
+    await renderElement(el);
+    // Initially the task should be COMPLETE with the initialValue
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.task.value, 'initial');
+
+    // Run the task to produce a different value
+    el.task.run();
+    el.resolveTask();
+    await tasksUpdateComplete();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.task.value, 'a,b');
+
+    // Reset the task to restore the configured initialValue and COMPLETE status
+    el.task.reset();
+    assert.equal(el.task.status, TaskStatus.COMPLETE);
+    assert.equal(el.task.value, 'initial');
+  });
+
   test('tasks do not run when `autoRun` is `false`', async () => {
     const el = getTestElement({args: () => [el.a, el.b], autoRun: false});
     await renderElement(el);
