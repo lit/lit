@@ -324,6 +324,7 @@ export const createComponent = <
     }
 
     return React.createElement(tagName, {
+      ...elementProps,
       ...reactProps,
       ref: React.useCallback(
         (node: I) => {
