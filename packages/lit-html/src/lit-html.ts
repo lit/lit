@@ -1,5 +1,6 @@
 /**
  * @license
+ * Copyright The Lit Project Contributors.
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -2207,7 +2208,7 @@ polyfillSupport?.(Template, ChildPart);
 
 // IMPORTANT: do not change the property name or the assignment expression.
 // This line will be used in regexes to search for lit-html usage.
-(global.litHtmlVersions ??= []).push('3.3.2');
+(global.litHtmlVersions ??= []).push('3.3.3');
 if (DEV_MODE && global.litHtmlVersions.length > 1) {
   queueMicrotask(() => {
     issueWarning!(

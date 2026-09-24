@@ -1,5 +1,11 @@
 # @lit-labs/gen-manifest
 
+## 0.3.6
+
+### Patch Changes
+
+- [#5263](https://github.com/lit/lit/pull/5263) [`c5f4811d8ddfea2031a634b1e3abd7a5e4f084f6`](https://github.com/lit/lit/commit/c5f4811d8ddfea2031a634b1e3abd7a5e4f084f6) - Emit attributes for LitElement properties
+
 ## 0.3.5
 
 ### Patch Changes

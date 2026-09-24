@@ -1,5 +1,6 @@
 /**
  * @license
+ * Copyright The Lit Project Contributors.
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -14,6 +15,8 @@
 
 import fetch from 'node-fetch';
 import {
+  Document,
+  document,
   HTMLElement,
   Element,
   Event,
@@ -21,6 +24,10 @@ import {
   EventTarget,
   CSSStyleSheet,
   CustomElementRegistry,
+  ShadowRoot,
+  IntersectionObserver,
+  MutationObserver,
+  ResizeObserver,
 } from '@lit-labs/ssr-dom-shim';
 
 /**
@@ -37,23 +44,6 @@ export const getWindow = ({
   includeJSBuiltIns = false,
   props = {},
 }): {[key: string]: unknown} => {
-  class ShadowRoot {}
-
-  class Document {
-    get adoptedStyleSheets() {
-      return [];
-    }
-    createTreeWalker() {
-      return {};
-    }
-    createTextNode() {
-      return {};
-    }
-    createElement() {
-      return {};
-    }
-  }
-
   const window = {
     EventTarget,
     Event: globalThis.Event ?? Event,
@@ -61,7 +51,7 @@ export const getWindow = ({
     Element,
     HTMLElement,
     Document,
-    document: new Document(),
+    document,
     CSSStyleSheet,
     ShadowRoot,
     CustomElementRegistry,
@@ -78,9 +68,9 @@ export const getWindow = ({
       fetch(url as unknown as Parameters<typeof fetch>[0], init),
 
     location: new URL('http://localhost'),
-    MutationObserver: class {
-      observe() {}
-    },
+    IntersectionObserver,
+    MutationObserver,
+    ResizeObserver,
 
     // No-op any async tasks
     requestAnimationFrame() {},

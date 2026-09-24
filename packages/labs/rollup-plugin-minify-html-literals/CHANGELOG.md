@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.2.0
+
+### Minor Changes
+
+- [#5208](https://github.com/lit/lit/pull/5208) [`fb64afc2fbe5d086d1586feaf1a9b9646e5aaccd`](https://github.com/lit/lit/commit/fb64afc2fbe5d086d1586feaf1a9b9646e5aaccd) Thanks [@bencbradshaw](https://github.com/bencbradshaw)! - feat: replace clean-css with lightningcss for CSS minification
+
 ## 0.1.1
 
 ### Patch Changes

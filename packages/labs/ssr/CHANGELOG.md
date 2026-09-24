@@ -1,5 +1,20 @@
 # Change Log
 
+## 4.1.0
+
+### Minor Changes
+
+- [#4893](https://github.com/lit/lit/pull/4893) [`6c051d517bd92761787897b2c8c060ed419126e2`](https://github.com/lit/lit/commit/6c051d517bd92761787897b2c8c060ed419126e2) Thanks [@kyubisation](https://github.com/kyubisation)! - Implement ShadowRoot and document in event path
+
+- [#5265](https://github.com/lit/lit/pull/5265) [`1e85a64f2add060087e85d3aa456078e5c3793a2`](https://github.com/lit/lit/commit/1e85a64f2add060087e85d3aa456078e5c3793a2) Thanks [@kyubisation](https://github.com/kyubisation)! - Add configuration on LitElementRenderer for disabling SSR or calling connectedCallback on LitElement subclasses
+
+- [#4894](https://github.com/lit/lit/pull/4894) [`baa780d2b78a4b792cf61b220b8e3e186739d48c`](https://github.com/lit/lit/commit/baa780d2b78a4b792cf61b220b8e3e186739d48c) Thanks [@kyubisation](https://github.com/kyubisation)! - Add DOM shim implementation for `MutationObserver`, `ResizeObserver` and `IntersectionObserver`
+
+### Patch Changes
+
+- Updated dependencies [[`6c051d517bd92761787897b2c8c060ed419126e2`](https://github.com/lit/lit/commit/6c051d517bd92761787897b2c8c060ed419126e2), [`b9de4295489b0caf91069bfe21f640f3ab5e12bb`](https://github.com/lit/lit/commit/b9de4295489b0caf91069bfe21f640f3ab5e12bb), [`077a4b727d0d30540f1813bbbe66477790c9805e`](https://github.com/lit/lit/commit/077a4b727d0d30540f1813bbbe66477790c9805e), [`baa780d2b78a4b792cf61b220b8e3e186739d48c`](https://github.com/lit/lit/commit/baa780d2b78a4b792cf61b220b8e3e186739d48c)]:
+  - @lit-labs/ssr-dom-shim@1.6.0
+
 ## 4.0.0
 
 ### Major Changes

@@ -1,8 +1,8 @@
-import {test, describe as suite} from 'node:test';
-import * as assert from 'node:assert/strict';
 import {minify} from 'html-minifier-next';
-import {defaultMinifyOptions, defaultStrategy} from '../lib/strategy.js';
+import * as assert from 'node:assert/strict';
+import {describe as suite, test} from 'node:test';
 import {TemplatePart} from '../lib/models.js';
+import {defaultMinifyOptions, defaultStrategy} from '../lib/strategy.js';
 
 suite('strategy', () => {
   suite('default', () => {

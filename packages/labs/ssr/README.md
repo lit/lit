@@ -272,6 +272,37 @@ In the future we may introduce APIs like `renderToString()` and
 `renderToStream()` that eliminate the need to expose the underlying
 representation.
 
+## LitElementRenderer Configuration
+
+The `LitElementRenderer` has the static property `renderOptions`, which accepts
+callback functions with the element instance to be rendered as the parameter.
+A callback can return an object to indicate the render options for the given
+element or `undefined` to let the next callback evaluate it or fall back to
+the default options.
+
+By default, the `connectedCallback` method is not called during SSR. To enable
+calling `connectedCallback`, return an object with `connectedCallback` set to
+`true`.
+
+```js
+import {LitElementRenderer} from '@lit-labs/ssr';
+
+LitElementRenderer.renderOptions.push((element) =>
+  element.localName === 'my-element' ? {connectedCallback: true} : undefined
+);
+```
+
+To disable rendering an element during SSR, return an object with `disableSsr`
+set to `true`.
+
+```js
+import {LitElementRenderer} from '@lit-labs/ssr';
+
+LitElementRenderer.renderOptions.push((element) =>
+  element.localName === 'my-element' ? {disableSsr: true} : undefined
+);
+```
+
 ## Notes and limitations
 
 Please note the following current limitations with the SSR package:
@@ -286,5 +317,5 @@ Please note the following current limitations with the SSR package:
   - Be aware that you cannot mutate a parent via events, due to the way we stream data via SSR. This means only a use case like `@lit/context` is supported, where events are used to pass data from a parent back to a child to use in its rendering.
   - The DOM tree is not fully formed and the `event.composedPath()` returns a simplified tree, only containing the custom elements.
   - As an alternative to `document.documentElement` or `document.body` (which are expected to be undefined in the server environment) for global event listeners (e.g. for `@lit/context ContextProvider`), you can use the global variable `globalThis.litServerRoot` which is (only) available during SSR (e.g. `new ContextProvider(isServer ? globalThis.litServerRoot : document.body, {...})`).
-- **connectedCallback Opt-In**: We provide an opt-in for calling `connectedCallback`, which can be enabled via `globalThis.litSsrCallConnectedCallback = true;`. This will enable calling `connectedCallback` (and the `hostConnected` hook for controllers, but not the `hostUpdate` hook) on the server. This e.g. enables using `@lit/context` on the server.
+- **connectedCallback Opt-In**: We provide an opt-in for calling `connectedCallback`, as seen above in `LitElementRenderer Configuration`. Configuring this enables calling `connectedCallback` (and the `hostConnected` hook for controllers, but not the `hostUpdate` hook) on the server. This e.g. enables using `@lit/context` on the server.
 - **Patterns for usage**: As mentioned above under "Status", we intend to flesh out a number of common patterns for using this package, and provide appropriate APIs and documentation for these as the package reaches maturity. Concerns like server/client data management, incremental loading and hydration, etc. are currently beyond the scope of what this package offers, but we believe it should support building these patterns on top of it going forward. Please [file issues](https://github.com/lit/lit/issues/new/choose) for ideas, suggestions, and use cases you may encounter.

@@ -1,5 +1,6 @@
 /**
  * @license
+ * Copyright The Lit Project Contributors.
  * Copyright 2024 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -119,7 +120,7 @@ export function wrapJsxDev(originalJsxDEV: typeof jsxDEV) {
         const templateShadowRoot = createElement('template', {
           ...templateAttributes,
           dangerouslySetInnerHTML: {
-            __html: [...shadowContents].join(''),
+            __html: collectResultSync(shadowContents),
           },
         });
 

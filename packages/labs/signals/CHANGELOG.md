@@ -1,5 +1,11 @@
 # @lit-labs/signals
 
+## 0.3.0
+
+### Minor Changes
+
+- [#5194](https://github.com/lit/lit/pull/5194) [`3e54ba22b24bdd6f5e29e74534aeab65d08c669e`](https://github.com/lit/lit/commit/3e54ba22b24bdd6f5e29e74534aeab65d08c669e) Thanks [@malobre](https://github.com/malobre)! - export `SignalWatcherApi` interface which is used in the return type of the `SignalWatcher` mixin
+
 ## 0.2.0
 
 ### Minor Changes
