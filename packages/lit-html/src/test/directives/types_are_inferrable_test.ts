@@ -4,6 +4,8 @@ import {classMap} from 'lit-html/directives/class-map.js';
 import {keyed} from 'lit-html/directives/keyed.js';
 import {live} from 'lit-html/directives/live.js';
 import {until} from 'lit-html/directives/until.js';
+import {asyncReplace} from 'lit-html/directives/async-replace.js';
+import {asyncAppend} from 'lit-html/directives/async-append.js';
 
 type GetRenderAs<D extends DirectiveResult> =
   D extends DirectiveResult<infer C>
@@ -121,5 +123,51 @@ if (false as boolean) {
     vRendersAs4 satisfies string;
     // @ts-expect-error
     vRendersAs4 satisfies Promise<any>;
+  };
+
+  // Test the asyncReplace directive's type inference with mapper
+  () => {
+    async function* asyncGenerator() {
+      yield 42 as const;
+    }
+
+    const v = asyncReplace(asyncGenerator(), (value) => {
+      // The value parameter should be typed as the generic type (42)
+      value satisfies 42;
+      // @ts-expect-error - value should not be string
+      value satisfies string;
+      return `rendered-${value}`;
+    });
+
+    type VRendersAs = GetRenderAs<typeof v>;
+    const vRendersAs = null! as VRendersAs;
+    // GetRenderAs returns the render method's return type.
+    // For asyncReplace, the render method always returns noChange, which is a Symbol.
+    vRendersAs satisfies symbol;
+    // @ts-expect-error
+    vRendersAs satisfies string;
+  };
+
+  // Test the asyncAppend directive's type inference with mapper
+  () => {
+    async function* asyncGenerator() {
+      yield 42 as const;
+    }
+
+    const v = asyncAppend(asyncGenerator(), (value) => {
+      // The value parameter should be typed as the generic type (42)
+      value satisfies 42;
+      // @ts-expect-error - value should not be string
+      value satisfies string;
+      return `rendered-${value}`;
+    });
+
+    type VRendersAs = GetRenderAs<typeof v>;
+    const vRendersAs = null! as VRendersAs;
+    // GetRenderAs returns the render method's return type.
+    // For asyncAppend, the render method always returns noChange, which is a Symbol.
+    vRendersAs satisfies symbol;
+    // @ts-expect-error
+    vRendersAs satisfies string;
   };
 }
