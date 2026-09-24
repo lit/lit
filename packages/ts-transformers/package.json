@@ -59,7 +59,7 @@
     "ts-clone-node": "^3.0.0"
   },
   "peerDependencies": {
-    "typescript": "^5.5.0"
+    "typescript": "^5.9.0"
   },
   "devDependencies": {
     "@lit/localize": "^0.12.0",
