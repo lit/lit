@@ -6,4 +6,5 @@
 /test/**/*.d.ts
 /test/**/*.d.ts.map
 /index.*
+/shadow-realm.*
 !/custom_typings/*.d.ts
