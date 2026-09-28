@@ -26,6 +26,21 @@ export class SizeCache {
     this.totalSize += value - prev;
   }
 
+  /**
+   * Drops all cached numeric-indexed entries at or beyond `length`, keeping
+   * `totalSize` and the entry count (used by `averageSize`) in sync. Called when
+   * the item list shrinks so measurements for removed items no longer skew the
+   * average.
+   */
+  prune(length: number): void {
+    for (const key of [...this._map.keys()]) {
+      if (typeof key === 'number' && key >= length) {
+        this.totalSize -= this._map.get(key)!;
+        this._map.delete(key);
+      }
+    }
+  }
+
   get averageSize(): number {
     if (this._map.size > 0) {
       const average = this.totalSize / this._map.size;
