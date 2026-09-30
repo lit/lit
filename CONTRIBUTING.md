@@ -35,7 +35,7 @@ Pull requests are greatly appreciated! To ensure a smooth review process, please
 7.  Please run `npm run lint` and `npm run format` before submitting PRs. PRs that don't lint and aren't formatted will fail continuous integration tests.
 8.  This repo uses [changesets](https://github.com/changesets/changesets). All PRs _must_ have a changeset file. Run `npm run changeset` to create one.
 
-    If you change one of the "core" libraries, (`lit-html`, `@lit/reactive-element`, `lit-element` and `lit`), include the other core libraries that depend on it in the change. For example, if you change lit-html, include lit-element and lit in the change. This will ensure that there's a version of the dependant library that can be used to guarentee that the dependent library is updated.
+    If you change one of the "core" libraries, (`lit-html`, `@lit/reactive-element`, `lit-element` and `lit`), include the other core libraries that depend on it in the change. For example, if you change lit-html, include lit-element and lit in the change. This will ensure that there's a version of the dependant library that can be used to guarantee that the dependent library is updated.
 
     If you made a change that doesn't require the release of a package - like adding tests - you can generate an empty changeset with `npm run changeset -- --empty`.
 
