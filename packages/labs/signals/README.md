@@ -31,7 +31,7 @@ Full documentation is available at
 Proposal](https://github.com/tc39/proposal-signals) with Lit's template system
 and reactive update lifecycle. Signals used within an element's update
 lifecycle, such as in a template, will cause the element to re-render when the
-signal value changes. Signals can also be used for targetted or "pin-point" DOM
+signal value changes. Signals can also be used for targeted or "pin-point" DOM
 updates, which can update the DOM without running the entire `render()` method.
 
 ### The TC39 Signals Proposal
@@ -59,7 +59,7 @@ Signals have several nice attributes for use with reactive components like Lit:
 
 2. Signals can be individually observed, and when used in a template binding,
    can be handled so that they only update the DOM their bound to. These
-   targetted DOM updates don't re-render the entire template.
+   targeted DOM updates don't re-render the entire template.
 
 3. Standard signals are an observability interoperabiliy point that many
    different libraries can use. Any library that produces signals will work with
