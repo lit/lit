@@ -59,6 +59,7 @@ suite('styleMap', () => {
           webkitAppearance: 'none',
           ['padding-left']: '4px',
           '--fooBar': 'red',
+          '--with\\ space': 'blue',
         })}
       ></div>`,
       container
@@ -72,6 +73,7 @@ suite('styleMap', () => {
     if (supportsCSSVariables) {
       assert.equal(style.getPropertyValue('--fooBar'), 'red');
       assert.equal(style.getPropertyValue('--foobar'), '');
+      assert.equal(style.getPropertyValue('--with space'), 'blue');
     }
   });
 
@@ -150,6 +152,66 @@ suite('styleMap', () => {
     assert.equal(el.style.getPropertyValue('--size'), '4px');
     renderStyleMap({});
     assert.equal(el.style.getPropertyValue('--size'), '');
+  });
+
+  for (const [escapedName, name] of [
+    ['--with\\ space', '--with space'],
+    ['--\\31 23', '--123'],
+    ['--\\000041B', '--AB'],
+    ['--\\41\tB', '--AB'],
+    ['--\\41\nB', '--AB'],
+    ['--\\41\r\nB', '--AB'],
+    ['--\\41\fB', '--AB'],
+    ['--\\1f680', '--🚀'],
+    ['--with\\:colon', '--with:colon'],
+    ['--with\\\\slash', '--with\\slash'],
+    ['--\\0', '--\uFFFD'],
+    ['--\\d800', '--\uFFFD'],
+    ['--\\110000', '--\uFFFD'],
+  ]) {
+    testIfSupportsCSSVariables(test)(
+      `updates and removes escaped property ${escapedName}`,
+      () => {
+        renderStyleMap({[escapedName]: 'red'});
+        const style = (container.firstElementChild as HTMLElement).style;
+        assert.equal(style.getPropertyValue(name), 'red');
+        renderStyleMap({[escapedName]: 'blue'});
+        assert.equal(style.getPropertyValue(name), 'blue');
+        assert.equal(style.length, 1);
+        renderStyleMap({[escapedName]: 'green !important'});
+        assert.equal(style.getPropertyValue(name), 'green');
+        assert.equal(style.getPropertyPriority(name), 'important');
+        renderStyleMap({[escapedName]: null});
+        assert.equal(style.length, 0);
+        renderStyleMap({[escapedName]: 'red'});
+        assert.equal(style.getPropertyValue(name), 'red');
+        assert.equal(style.getPropertyPriority(name), '');
+        renderStyleMap({});
+        assert.equal(style.length, 0);
+      }
+    );
+  }
+
+  test('updates and removes escaped standard properties', () => {
+    renderStyleMap({'\\63 olor': 'red', 'background-\\63 olor': 'blue'});
+    const style = (container.firstElementChild as HTMLElement).style;
+    assert.equal(style.color, 'red');
+    assert.equal(style.backgroundColor, 'blue');
+    renderStyleMap({'\\63 olor': 'blue', 'background-\\63 olor': 'red'});
+    assert.equal(style.color, 'blue');
+    assert.equal(style.backgroundColor, 'red');
+    renderStyleMap({});
+    assert.equal(style.length, 0);
+  });
+
+  test('preserves escapes when serializing CSS property names', () => {
+    renderStyleMap({'\\000043OLOR': 'red'});
+    const style = (container.firstElementChild as HTMLElement).style;
+    assert.equal(style.color, 'red');
+    renderStyleMap({'\\000043OLOR': 'blue'});
+    assert.equal(style.color, 'blue');
+    renderStyleMap({});
+    assert.equal(style.length, 0);
   });
 
   // IE does not seeem to properly handle priority argument to
