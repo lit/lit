@@ -31,6 +31,27 @@ const importantFlag = ' !' + important;
 // How many characters to remove from a value, as a negative number
 const flagTrim = 0 - importantFlag.length;
 
+// Unlike CSS text, CSSOM property names are already decoded identifiers.
+const unescapeProperty = (name: string) =>
+  name.includes('\\')
+    ? name.replace(
+        /\\(?:([0-9a-f]{1,6})(?:\r\n|[\t\n\f\r ])?|([^\n\f\r]))/gi,
+        (_match: string, hex: string | undefined, character: string) => {
+          if (hex === undefined) {
+            return character;
+          }
+          const codePoint = parseInt(hex, 16);
+          return String.fromCodePoint(
+            codePoint === 0 ||
+              codePoint > 0x10ffff ||
+              (codePoint >= 0xd800 && codePoint <= 0xdfff)
+              ? 0xfffd
+              : codePoint
+          );
+        }
+      )
+    : name;
+
 class StyleMapDirective extends Directive {
   private _previousStyleProperties?: Set<string>;
 
@@ -58,14 +79,14 @@ class StyleMapDirective extends Directive {
       //  `backgroundColor` -> `background-color`
       // Vendor-prefixed names need an extra `-` appended to front:
       //  `webkitAppearance` -> `-webkit-appearance`
-      // Exception is any property name containing a dash, including
-      // custom properties; we assume these are already dash-cased i.e.:
+      // Names containing a dash or escape are already CSS identifiers, i.e.:
       //  `--my-button-color` --> `--my-button-color`
-      prop = prop.includes('-')
-        ? prop
-        : prop
-            .replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g, '-$&')
-            .toLowerCase();
+      prop =
+        prop.includes('-') || prop.includes('\\')
+          ? prop
+          : prop
+              .replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g, '-$&')
+              .toLowerCase();
       return style + `${prop}:${value};`;
     }, '');
   }
@@ -83,8 +104,8 @@ class StyleMapDirective extends Directive {
       // If the name isn't in styleInfo or it's null/undefined
       if (styleInfo[name] == null) {
         this._previousStyleProperties!.delete(name);
-        if (name.includes('-')) {
-          style.removeProperty(name);
+        if (name.includes('-') || name.includes('\\')) {
+          style.removeProperty(unescapeProperty(name));
         } else {
           // eslint-disable-next-line @typescript-eslint/no-explicit-any
           (style as any)[name] = null;
@@ -99,9 +120,9 @@ class StyleMapDirective extends Directive {
         this._previousStyleProperties.add(name);
         const isImportant =
           typeof value === 'string' && value.endsWith(importantFlag);
-        if (name.includes('-') || isImportant) {
+        if (name.includes('-') || name.includes('\\') || isImportant) {
           style.setProperty(
-            name,
+            unescapeProperty(name),
             isImportant
               ? (value as string).slice(0, flagTrim)
               : (value as string),
@@ -125,11 +146,12 @@ class StyleMapDirective extends Directive {
  * {@link StyleInfo styleInfo} object and adds the properties to the inline
  * style of the element.
  *
- * Property names with dashes (`-`) are assumed to be valid CSS
- * property names and set on the element's style object using `setProperty()`.
- * Names without dashes are assumed to be camelCased JavaScript property names
- * and set on the element's style object using property assignment, allowing the
- * style object to translate JavaScript-style names to CSS property names.
+ * Property names with dashes (`-`) or escapes are assumed to be valid CSS
+ * property names and set on the element's style object using `setProperty()`,
+ * with escapes decoded. Other names are assumed to be camelCased JavaScript
+ * property names and set on the element's style object using property
+ * assignment, allowing the style object to translate JavaScript-style names to
+ * CSS property names.
  *
  * For example `styleMap({backgroundColor: 'red', 'border-top': '5px', '--size':
  * '0'})` sets the `background-color`, `border-top` and `--size` properties.
