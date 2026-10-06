@@ -6,7 +6,7 @@
  */
 
 import {ElementRenderer} from './element-renderer.js';
-import {LitElement, CSSResult, ReactiveElement} from 'lit';
+import {LitElement, CSSResult, CSSResultOrNative, ReactiveElement} from 'lit';
 import {_$LE} from 'lit-element/private-ssr-support.js';
 import {
   ariaMixinAttributes,
@@ -19,6 +19,27 @@ import type {ThunkedRenderResult} from './render-result.js';
 export type Constructor<T> = {new (): T};
 
 const {attributeToProperty, changedProperties} = _$LE;
+
+/**
+ * Extracts CSS text from a style entry. `CSSStyleSheet`s are not always
+ * converted to `CSSResult`s by ReactiveElement's `getCompatibleStyle()`
+ * (e.g. when the sheet comes from a VM context whose global has no
+ * `CSSStyleSheet`, or a different realm), so read `cssRules` directly,
+ * mirroring `cssResultFromStyleSheet` in reactive-element.
+ */
+const cssTextFromStyle = (style: CSSResultOrNative): string => {
+  if ('cssText' in style) {
+    return (style as CSSResult).cssText;
+  }
+  let cssText = '';
+  // Note: `cssRules` is indexed rather than iterated because the DOM
+  // `CSSRuleList` type is not iterable without the `DOM.Iterable` lib.
+  const {cssRules} = style as CSSStyleSheet;
+  for (let i = 0; i < cssRules.length; i++) {
+    cssText += cssRules[i].cssText;
+  }
+  return cssText;
+};
 
 // We want consumers to be able to implement their own createRenderRoot
 // and to detect whether it breaks during SSR. Due to this, we
@@ -203,7 +224,7 @@ export class LitElementRenderer extends ElementRenderer {
     if (styles !== undefined && styles.length > 0) {
       result.push('<style>');
       for (const style of styles) {
-        result.push((style as CSSResult).cssText);
+        result.push(cssTextFromStyle(style));
       }
       result.push('</style>');
     }
