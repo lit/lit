@@ -1,4 +1,5 @@
 import {DirectiveResult} from 'lit-html/directive.js';
+import {asyncAppend} from 'lit-html/directives/async-append.js';
 import {guard} from 'lit-html/directives/guard.js';
 import {classMap} from 'lit-html/directives/class-map.js';
 import {keyed} from 'lit-html/directives/keyed.js';
@@ -121,5 +122,17 @@ if (false as boolean) {
     vRendersAs4 satisfies string;
     // @ts-expect-error
     vRendersAs4 satisfies Promise<any>;
+  };
+
+  // Test the asyncAppend directive's mapper type inference
+  () => {
+    const strings = null! as AsyncIterable<string>;
+
+    asyncAppend(strings, (v) => {
+      v satisfies string;
+      // @ts-expect-error
+      v satisfies number;
+      return v;
+    });
   };
 }
