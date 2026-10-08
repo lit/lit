@@ -32,11 +32,8 @@ const cssTextFromStyle = (style: CSSResultOrNative): string => {
     return (style as CSSResult).cssText;
   }
   let cssText = '';
-  // Note: `cssRules` is indexed rather than iterated because the DOM
-  // `CSSRuleList` type is not iterable without the `DOM.Iterable` lib.
-  const {cssRules} = style as CSSStyleSheet;
-  for (let i = 0; i < cssRules.length; i++) {
-    cssText += cssRules[i].cssText;
+  for (const rule of (style as CSSStyleSheet).cssRules) {
+    cssText += rule.cssText;
   }
   return cssText;
 };
