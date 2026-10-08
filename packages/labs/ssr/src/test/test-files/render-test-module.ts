@@ -11,7 +11,11 @@ import {classMap} from 'lit/directives/class-map.js';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
-import {document, type EventTargetShimMeta} from '@lit-labs/ssr-dom-shim';
+import {
+  CSSStyleSheet,
+  document,
+  type EventTargetShimMeta,
+} from '@lit-labs/ssr-dom-shim';
 import {html as serverhtml} from '../../lib/server-template.js';
 import {LitElementRenderer} from '../../lib/lit-element-renderer.js';
 export {digestForTemplateResult} from '@lit-labs/ssr-client';
@@ -227,6 +231,20 @@ export class TestStyles extends LitElement {
     }
   `;
 }
+
+const stylesheet = new CSSStyleSheet();
+stylesheet.replaceSync('.sheet-rule { color: red }');
+
+@customElement('test-stylesheet')
+export class TestStylesheet extends LitElement {
+  // prettier-ignore
+  static override styles = [stylesheet, css`.css-result-rule { color: blue }`];
+  override render() {
+    return html`<main></main>`;
+  }
+}
+// prettier-ignore
+export const templateWithStylesheet = html`<test-stylesheet></test-stylesheet>`;
 
 /* Events */
 
