@@ -19,6 +19,23 @@ import {
 } from './virtualize.js';
 
 export class LitVirtualizer<T = unknown> extends LitElement {
+  /**
+   * The array of items that the virtualizer should render. The items can
+   * be JavaScript values of any type; the `renderItem` function is
+   * responsible for converting each item into a child element.
+   *
+   * Because this is a Lit reactive property, its default `hasChanged`
+   * implementation performs a strict reference equality check and only
+   * triggers a re-render when the new value is a different array
+   * reference than the current one. Mutating an existing array in place
+   * (e.g. with `Array.prototype.reverse()`, `Array.prototype.push()` or
+   * `Array.prototype.sort()`) will NOT cause the virtualizer to
+   * re-render. To trigger a re-render, assign a new array (e.g.
+   * `this.items = [...this.items]` or
+   * `this.items = this.items.toReversed()`).
+   *
+   * @see https://lit.dev/docs/components/properties/#mutating-reactive-properties
+   */
   @property({attribute: false})
   items: T[] = [];
 
