@@ -34,6 +34,14 @@ const gen = (cli: LitCli): ResolvedCommand => {
           'Generate a custom-elements.json manifest for this package.',
       },
       {
+        name: 'inheritProperties',
+        type: Boolean,
+        description:
+          'When generating a manifest, include members inherited from a ' +
+          'custom element superclass or mixin in the same package, marked ' +
+          'with `inheritedFrom`. Requires `--manifest`.',
+      },
+      {
         name: 'out',
         defaultValue: './gen',
         description: 'Folder to output generated packages to.',
@@ -50,12 +58,14 @@ const gen = (cli: LitCli): ResolvedCommand => {
         package: packages,
         framework: frameworks,
         manifest,
+        inheritProperties,
         out: outDir,
         exclude,
       }: {
         package: string[];
         framework: string[];
         manifest: boolean;
+        inheritProperties: boolean;
         out: string;
         exclude: string[];
       },
@@ -63,7 +73,7 @@ const gen = (cli: LitCli): ResolvedCommand => {
     ) {
       const gen = await import('../generate/generate.js');
       await gen.run(
-        {cli, packages, frameworks, manifest, outDir, exclude},
+        {cli, packages, frameworks, manifest, inheritProperties, outDir, exclude},
         console
       );
     },

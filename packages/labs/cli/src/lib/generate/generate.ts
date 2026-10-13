@@ -43,7 +43,10 @@ const manifestCommand: Command = {
 
 // A generate command has a generate method instead of a run method.
 interface GenerateCommand extends Omit<ResolvedCommand, 'run'> {
-  generate(options: {package: Package}, console: Console): Promise<FileTree>;
+  generate(
+    options: {package: Package; inheritProperties?: boolean},
+    console: Console
+  ): Promise<FileTree>;
 }
 
 const frameworkCommands = {
@@ -59,12 +62,14 @@ export const run = async (
     packages,
     frameworks: frameworkNames,
     manifest,
+    inheritProperties,
     exclude,
     outDir,
   }: {
     packages: string[];
     frameworks: string[];
     manifest: boolean;
+    inheritProperties?: boolean;
     outDir: string;
     exclude?: string[];
     cli: LitCli;
@@ -118,6 +123,7 @@ export const run = async (
       }
       const options = {
         package: pkg,
+        inheritProperties: !!inheritProperties,
       };
       const results = await Promise.allSettled(
         generators.map(async (generator) => {

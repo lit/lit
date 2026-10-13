@@ -1,0 +1,39 @@
+{
+  "private": true,
+  "type": "module",
+  "name": "@lit-internal/test-element-inheritance",
+  "version": "1.0.0",
+  "scripts": {
+    "build": "wireit"
+  },
+  "files": [
+    "/base-element.{js,js.map,d.ts,d.ts.map}",
+    "/derived-element.{js,js.map,d.ts,d.ts.map}",
+    "/independent-element.{js,js.map,d.ts,d.ts.map}"
+  ],
+  "dependencies": {
+    "lit": "file:../../../lit"
+  },
+  "devDependencies": {
+    "typescript": "~5.9.0"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "../../../lit:build"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "command": "tsc --build --pretty",
+      "output": [
+        "base-element.{js,js.map,d.ts,d.ts.map}",
+        "derived-element.{js,js.map,d.ts,d.ts.map}",
+        "independent-element.{js,js.map,d.ts,d.ts.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    }
+  }
+}

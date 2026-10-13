@@ -19,6 +19,7 @@ import {assertGoldensMatch} from '@lit-internal/tests/utils/assert-goldens.js';
 
 const testProjects = '../test-projects';
 const outputFolder = 'gen-output';
+const inheritOutputFolder = 'gen-output-inherit';
 
 test('basic manifest generation', async () => {
   const project = 'test-element-a';
@@ -35,6 +36,28 @@ test('basic manifest generation', async () => {
   await assertGoldensMatch(outputFolder, path.join('goldens', project), {
     formatGlob: '**/*.json',
   });
+});
+
+test('manifest generation with inherited members', async () => {
+  const project = 'test-element-inheritance';
+  const inputPackage = path.resolve(testProjects, project);
+
+  if (fs.existsSync(inheritOutputFolder)) {
+    fs.rmSync(inheritOutputFolder, {recursive: true});
+  }
+
+  const analyzer = createPackageAnalyzer(inputPackage as AbsolutePath);
+  const pkg = analyzer.getPackage();
+  await writeFileTree(
+    inheritOutputFolder,
+    await generateManifest(pkg, {inheritProperties: true})
+  );
+
+  await assertGoldensMatch(
+    inheritOutputFolder,
+    path.join('goldens', `${project}-inherit`),
+    {formatGlob: '**/*.json'}
+  );
 });
 
 test.run();
