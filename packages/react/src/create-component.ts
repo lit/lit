@@ -303,6 +303,26 @@ export const createComponent = <
       React.useLayoutEffect(() => {
         elementRef.current?.removeAttribute('defer-hydration');
       }, []);
+
+      // Remove the event listeners added by this wrapper when it unmounts, so
+      // callbacks don't keep running on an element that outlives it.
+      React.useLayoutEffect(() => {
+        const node = elementRef.current;
+        return () => {
+          const nodeEvents = node && listenedEvents.get(node);
+          if (node && nodeEvents) {
+            for (const [event, handler] of nodeEvents) {
+              node.removeEventListener(event, handler);
+            }
+            listenedEvents.delete(node);
+          }
+          // Forget the event props, so the listeners are added again if the
+          // effects are run again for the same element (StrictMode).
+          for (const key of eventProps) {
+            prevElemPropsRef.current.delete(key);
+          }
+        };
+      }, []);
     }
 
     if (NODE_MODE) {
