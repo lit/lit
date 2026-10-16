@@ -692,6 +692,16 @@ export const renderServerOnlyStyleDeep = serverhtml`
     </div>
   </style>`;
 
+export const renderServerOnlyScriptMixedCaseType = serverhtml`
+  <script type="Text/JavaScript">
+    console.log("${'This is dangerous!'}");
+  </script>`;
+
+export const renderServerOnlyScriptPaddedModuleType = serverhtml`
+  <script type=" module ">
+    console.log("${'This is dangerous!'}");
+  </script>`;
+
 export const renderServerScriptNotJavaScript = serverhtml`
   <script type="json">
     {"ok": ${true}}

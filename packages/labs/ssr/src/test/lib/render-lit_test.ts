@@ -1350,6 +1350,22 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('server-only template into a <script> with non-canonical type', async () => {
+    const {
+      render,
+      renderServerOnlyScriptMixedCaseType,
+      renderServerOnlyScriptPaddedModuleType,
+    } = await setup();
+    assert.throws(
+      () => render(renderServerOnlyScriptMixedCaseType),
+      /Found binding inside an executable <script> tag in a server-only template\./
+    );
+    assert.throws(
+      () => render(renderServerOnlyScriptPaddedModuleType),
+      /Found binding inside an executable <script> tag in a server-only template\./
+    );
+  });
+
   test('server-only template into a <style>', async () => {
     const {render, renderServerOnlyStyle, renderServerOnlyStyleDeep} =
       await setup();
