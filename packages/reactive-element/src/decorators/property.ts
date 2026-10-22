@@ -154,8 +154,11 @@ export const standardProperty = <C extends Interface<ReactiveElement>, V>(
         this.requestUpdate(name, oldValue, options, true, v);
       },
       init(this: ReactiveElement, v: V): V {
-        if (v !== undefined) {
-          this._$changeProperty(name, undefined, options, v);
+        // Note, an initial value of `undefined` is still recorded when
+        // `useDefault` is used so that it can be restored when an attribute
+        // is removed.
+        if (v !== undefined || options.useDefault === true) {
+          this._$changeProperty(name, undefined, options, true, v);
         }
         return v;
       },
