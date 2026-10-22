@@ -389,6 +389,19 @@
       },
       "development": "./development/is-server.js",
       "default": "./is-server.js"
+    },
+    "./lru-cache.js": {
+      "types": "./development/lru-cache.d.ts",
+      "browser": {
+        "development": "./development/lru-cache.js",
+        "default": "./lru-cache.js"
+      },
+      "node": {
+        "development": "./node/development/lru-cache.js",
+        "default": "./node/lru-cache.js"
+      },
+      "development": "./development/lru-cache.js",
+      "default": "./lru-cache.js"
     }
   },
   "scripts": {
