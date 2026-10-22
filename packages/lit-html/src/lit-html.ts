@@ -2135,13 +2135,15 @@ class ElementPart implements Disconnectable {
   /** @internal */
   _$disconnectableChildren?: Set<Disconnectable> = undefined;
 
+  element: Element;
   options: RenderOptions | undefined;
 
   constructor(
-    public element: Element,
+    element: Element,
     parent: Disconnectable,
     options: RenderOptions | undefined
   ) {
+    this.element = element;
     this._$parent = parent;
     this.options = options;
   }
