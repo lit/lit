@@ -13,6 +13,7 @@ import {StateVisitor} from './internal/decorators/state.js';
 import {QueryVisitor} from './internal/decorators/query.js';
 import {QueryAllVisitor} from './internal/decorators/query-all.js';
 import {QueryAsyncVisitor} from './internal/decorators/query-async.js';
+import {QueryAsyncAllVisitor} from './internal/decorators/query-async-all.js';
 import {QueryAssignedElementsVisitor} from './internal/decorators/query-assigned-elements.js';
 import {QueryAssignedNodesVisitor} from './internal/decorators/query-assigned-nodes.js';
 import {EventOptionsVisitor} from './internal/decorators/event-options.js';
@@ -67,6 +68,7 @@ export function idiomaticDecoratorsTransformer(
       new QueryVisitor(context),
       new QueryAllVisitor(context),
       new QueryAsyncVisitor(context),
+      new QueryAsyncAllVisitor(context),
       new QueryAssignedElementsVisitor(context),
       new QueryAssignedNodesVisitor(context),
       new EventOptionsVisitor(context, program),

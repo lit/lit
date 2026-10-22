@@ -160,6 +160,19 @@
       "development": "./development/decorators/query-async.js",
       "default": "./decorators/query-async.js"
     },
+    "./decorators/query-async-all.js": {
+      "types": "./development/decorators/query-async-all.d.ts",
+      "browser": {
+        "development": "./development/decorators/query-async-all.js",
+        "default": "./decorators/query-async-all.js"
+      },
+      "node": {
+        "development": "./node/development/decorators/query-async-all.js",
+        "default": "./node/decorators/query-async-all.js"
+      },
+      "development": "./development/decorators/query-async-all.js",
+      "default": "./decorators/query-async-all.js"
+    },
     "./decorators/query.js": {
       "types": "./development/decorators/query.d.ts",
       "browser": {
