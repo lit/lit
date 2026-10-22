@@ -24,5 +24,6 @@
     "types": ["mocha"]
   },
   "include": ["src/**/*.ts"],
-  "exclude": []
+  "exclude": [],
+  "files": ["../../tests/mocha-extensions.d.ts"]
 }
