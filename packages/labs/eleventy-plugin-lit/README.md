@@ -373,18 +373,16 @@ The file `_includes/default.html` would then contain the following:
       (async () => {
         // Start fetching the Lit hydration support module (note the absence
         // of "await" -- we don't want to block yet).
-        const litHydrateSupportInstalled = import(
-          '/node_modules/@lit-labs/ssr-client/lit-element-hydrate-support.js'
-        );
+        const litHydrateSupportInstalled =
+          import('/node_modules/@lit-labs/ssr-client/lit-element-hydrate-support.js');
 
         // Check if we require the declarative shadow DOM polyfill. As of
         // February 2022, Chrome and Edge have native support, but Firefox
         // and Safari don't yet.
         if (!HTMLTemplateElement.prototype.hasOwnProperty('shadowRoot')) {
           // Fetch the declarative shadow DOM polyfill.
-          const {hydrateShadowRoots} = await import(
-            '/node_modules/@webcomponents/template-shadowroot/template-shadowroot.js'
-          );
+          const {hydrateShadowRoots} =
+            await import('/node_modules/@webcomponents/template-shadowroot/template-shadowroot.js');
 
           // Apply the polyfill. This is a one-shot operation, so it is important
           // it happens after all HTML has been parsed.

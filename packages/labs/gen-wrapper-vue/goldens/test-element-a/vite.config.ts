@@ -11,8 +11,11 @@ export default {
       external: (id: string) => !id.match(/^((\w:)|(\.?[\\/]))/),
       input: [
         './src/ElementA.vue',
+        './src/ElementCollidingPropAndSlot.vue',
+        './src/ElementEnum.vue',
         './src/ElementEvents.vue',
         './src/ElementMixins.vue',
+        './src/ElementNativeEvents.vue',
         './src/ElementProps.vue',
         './src/ElementSlots.vue',
         './src/ElementWithoutProps.vue',

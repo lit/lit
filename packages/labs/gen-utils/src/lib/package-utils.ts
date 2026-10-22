@@ -9,7 +9,7 @@ import {promisify} from 'util';
 import {exec as execCb} from 'child_process';
 import * as fs from 'fs/promises';
 import * as path from 'path';
-import {PackageJson} from '@lit-labs/analyzer/lib/model.js';
+import {PackageJson} from '@oicl-lit/analyzer/lib/model.js';
 
 const exec = promisify(execCb);
 

@@ -72,7 +72,11 @@
           ],
           "slots": [
             {"name": "default", "description": "The default slot"},
-            {"name": "stuff", "description": "A slot for stuff"}
+            {"name": "stuff", "description": "A slot for stuff"},
+            {
+              "name": "tab-title-0",
+              "description": "A slot with a hyphenated name"
+            }
           ],
           "cssParts": [
             {"name": "header", "description": "The header"},
@@ -203,6 +207,157 @@
           "kind": "custom-element-definition",
           "name": "element-a",
           "declaration": {"name": "ElementA"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "element-colliding-prop-and-slot.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementCollidingPropAndSlot",
+          "description": "Element with a slot/property name collision for wrapper generator tests.",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "members": [
+            {
+              "kind": "field",
+              "name": "content",
+              "privacy": "public",
+              "type": {"text": "string"},
+              "default": "'default-content'",
+              "attribute": "content"
+            },
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "tagName": "element-colliding-prop-and-slot",
+          "customElement": true,
+          "attributes": [
+            {
+              "name": "content",
+              "type": {"text": "string"},
+              "fieldName": "content"
+            }
+          ],
+          "slots": [
+            {
+              "name": "content",
+              "description": "Named slot that collides with `content` property after Svelte name mapping."
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ElementCollidingPropAndSlot",
+          "declaration": {"name": "ElementCollidingPropAndSlot"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-colliding-prop-and-slot",
+          "declaration": {"name": "ElementCollidingPropAndSlot"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
+      "path": "element-enum.js",
+      "declarations": [
+        {
+          "kind": "variable",
+          "name": "Size",
+          "type": {
+            "text": "Size",
+            "references": [
+              {
+                "name": "Size",
+                "package": "@lit-internal/test-element-a",
+                "module": "element-enum.js",
+                "start": 0,
+                "end": 4
+              }
+            ]
+          }
+        },
+        {
+          "kind": "class",
+          "name": "ElementEnum",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "members": [
+            {
+              "kind": "field",
+              "name": "size",
+              "privacy": "public",
+              "type": {
+                "text": "Size",
+                "references": [
+                  {
+                    "name": "Size",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-enum.js",
+                    "start": 0,
+                    "end": 4
+                  }
+                ]
+              },
+              "default": "Size.small",
+              "attribute": "size"
+            },
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            }
+          ],
+          "tagName": "element-enum",
+          "customElement": true,
+          "attributes": [
+            {"name": "size", "type": {"text": "string"}, "fieldName": "size"}
+          ]
+        }
+      ],
+      "exports": [
+        {"kind": "js", "name": "Size", "declaration": {"name": "Size"}},
+        {
+          "kind": "js",
+          "name": "ElementEnum",
+          "declaration": {"name": "ElementEnum"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-enum",
+          "declaration": {"name": "ElementEnum"}
         }
       ]
     },
@@ -363,6 +518,37 @@
             },
             {
               "kind": "method",
+              "name": "fireTypeSubCustomEvent",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "detail",
+                  "type": {
+                    "text": "TypeSub",
+                    "references": [
+                      {
+                        "name": "TypeSub",
+                        "package": "@lit-internal/test-element-a",
+                        "module": "sub/type-sub.js",
+                        "start": 0,
+                        "end": 7
+                      }
+                    ]
+                  },
+                  "default": "{name: 'John', age: 30} as TypeSub",
+                  "optional": true
+                },
+                {
+                  "name": "fromNode",
+                  "type": {"text": "this"},
+                  "default": "this",
+                  "optional": true
+                }
+              ],
+              "return": {"type": {"text": "void"}}
+            },
+            {
+              "kind": "method",
               "name": "fireEventSubclass",
               "privacy": "public",
               "parameters": [
@@ -468,6 +654,28 @@
               "description": "The subclass event with a string and number payload"
             },
             {
+              "name": "type-sub-custom-event",
+              "type": {
+                "text": "CustomEvent<TypeSub>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  },
+                  {
+                    "name": "TypeSub",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "sub/type-sub.js",
+                    "start": 12,
+                    "end": 19
+                  }
+                ]
+              },
+              "description": "A custom event with a TypeSub payload."
+            },
+            {
               "name": "special-event",
               "type": {
                 "text": "SpecialEvent",
@@ -515,6 +723,15 @@
             "name": "SpecialEvent",
             "package": "@lit-internal/test-element-a",
             "module": "special-event.js"
+          }
+        },
+        {
+          "kind": "js",
+          "name": "TypeSub",
+          "declaration": {
+            "name": "TypeSub",
+            "package": "@lit-internal/test-element-a",
+            "module": "sub/type-sub.js"
           }
         },
         {
@@ -635,6 +852,159 @@
     },
     {
       "kind": "javascript-module",
+      "path": "element-native-events.js",
+      "declarations": [
+        {
+          "kind": "class",
+          "name": "ElementNativeEvents",
+          "description": "An element that reuses a native event name.\n\n`input` is one of the event names Svelte delegates when a handler is bound as\nan `on<name>={...}` attribute, and these events are dispatched with the\ndefault options (`bubbles: false, composed: false`), so a delegated handler\nlistening at the app root never sees them. `value-changed` is the control: it\nis not a native name, so it is never delegated.",
+          "superclass": {"name": "LitElement", "package": "lit"},
+          "members": [
+            {
+              "kind": "field",
+              "name": "value",
+              "privacy": "public",
+              "type": {"text": "number"},
+              "default": "0",
+              "attribute": "value"
+            },
+            {
+              "kind": "method",
+              "name": "render",
+              "privacy": "public",
+              "return": {
+                "type": {
+                  "text": "TemplateResult<1>",
+                  "references": [
+                    {
+                      "name": "TemplateResult",
+                      "package": "lit-html",
+                      "start": 0,
+                      "end": 14
+                    }
+                  ]
+                }
+              }
+            },
+            {
+              "kind": "method",
+              "name": "fireInput",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "detail",
+                  "type": {
+                    "text": "NativeDetail",
+                    "references": [
+                      {
+                        "name": "NativeDetail",
+                        "package": "@lit-internal/test-element-a",
+                        "module": "element-native-events.js",
+                        "start": 0,
+                        "end": 12
+                      }
+                    ]
+                  },
+                  "default": "{value: 1}",
+                  "optional": true
+                }
+              ],
+              "return": {"type": {"text": "void"}}
+            },
+            {
+              "kind": "method",
+              "name": "fireValueChanged",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "detail",
+                  "type": {
+                    "text": "NativeDetail",
+                    "references": [
+                      {
+                        "name": "NativeDetail",
+                        "package": "@lit-internal/test-element-a",
+                        "module": "element-native-events.js",
+                        "start": 0,
+                        "end": 12
+                      }
+                    ]
+                  },
+                  "default": "{value: 2}",
+                  "optional": true
+                }
+              ],
+              "return": {"type": {"text": "void"}}
+            }
+          ],
+          "tagName": "element-native-events",
+          "customElement": true,
+          "attributes": [
+            {"name": "value", "type": {"text": "number"}, "fieldName": "value"}
+          ],
+          "events": [
+            {
+              "name": "input",
+              "type": {
+                "text": "CustomEvent<NativeDetail>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  },
+                  {
+                    "name": "NativeDetail",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-native-events.js",
+                    "start": 12,
+                    "end": 24
+                  }
+                ]
+              },
+              "description": "A non-bubbling event reusing a native event name"
+            },
+            {
+              "name": "value-changed",
+              "type": {
+                "text": "CustomEvent<NativeDetail>",
+                "references": [
+                  {
+                    "name": "CustomEvent",
+                    "package": "global:",
+                    "start": 0,
+                    "end": 11
+                  },
+                  {
+                    "name": "NativeDetail",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-native-events.js",
+                    "start": 12,
+                    "end": 24
+                  }
+                ]
+              },
+              "description": "A non-bubbling event with a kebab-case name"
+            }
+          ]
+        }
+      ],
+      "exports": [
+        {
+          "kind": "js",
+          "name": "ElementNativeEvents",
+          "declaration": {"name": "ElementNativeEvents"}
+        },
+        {
+          "kind": "custom-element-definition",
+          "name": "element-native-events",
+          "declaration": {"name": "ElementNativeEvents"}
+        }
+      ]
+    },
+    {
+      "kind": "javascript-module",
       "path": "element-props.js",
       "declarations": [
         {
@@ -697,6 +1067,25 @@
             },
             {
               "kind": "field",
+              "name": "variant",
+              "privacy": "public",
+              "type": {
+                "text": "AttributeVariant",
+                "references": [
+                  {
+                    "name": "AttributeVariant",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-props.js",
+                    "start": 0,
+                    "end": 16
+                  }
+                ]
+              },
+              "default": "'normal'",
+              "attribute": "variant"
+            },
+            {
+              "kind": "field",
               "name": "aState",
               "privacy": "public",
               "type": {"text": "string"},
@@ -740,6 +1129,11 @@
               "name": "amytype",
               "type": {"text": "object"},
               "fieldName": "aMyType"
+            },
+            {
+              "name": "variant",
+              "type": {"text": "string"},
+              "fieldName": "variant"
             }
           ],
           "events": [
@@ -771,7 +1165,7 @@
         {
           "kind": "class",
           "name": "ElementSlots",
-          "description": "My awesome element",
+          "description": "My awesome element\n\n`tab-icon-slots-change` pins that a collection prop (`tabs`) takes\nprecedence over a computed slot list for `tab-<id>-icon`.",
           "superclass": {"name": "LitElement", "package": "lit"},
           "members": [
             {
@@ -781,6 +1175,50 @@
               "type": {"text": "string"},
               "default": "'mainDefault'",
               "attribute": "maindefault"
+            },
+            {
+              "kind": "field",
+              "name": "tabs",
+              "privacy": "public",
+              "type": {"text": "{ id: string; title: string; }[]"},
+              "default": "[]",
+              "attribute": "tabs"
+            },
+            {
+              "kind": "field",
+              "name": "cellSlots",
+              "privacy": "public",
+              "type": {
+                "text": "{ name: string; tabId: string; column: string; }[]"
+              }
+            },
+            {
+              "kind": "field",
+              "name": "cellIconSlots",
+              "privacy": "public",
+              "type": {"text": "{ name: string; tabId: string; }[]"}
+            },
+            {
+              "kind": "method",
+              "name": "updated",
+              "privacy": "public",
+              "parameters": [
+                {
+                  "name": "changed",
+                  "type": {
+                    "text": "PropertyValues<this>",
+                    "references": [
+                      {
+                        "name": "PropertyValues",
+                        "package": "lit",
+                        "start": 0,
+                        "end": 14
+                      }
+                    ]
+                  }
+                }
+              ],
+              "return": {"type": {"text": "void"}}
             },
             {
               "kind": "method",
@@ -808,6 +1246,60 @@
               "name": "maindefault",
               "type": {"text": "string"},
               "fieldName": "mainDefault"
+            },
+            {"name": "tabs", "type": {"text": "array"}, "fieldName": "tabs"}
+          ],
+          "events": [
+            {
+              "name": "cell-slots-change",
+              "type": {
+                "text": "CellSlotsChangeEvent",
+                "references": [
+                  {
+                    "name": "CellSlotsChangeEvent",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-slots.js",
+                    "start": 0,
+                    "end": 20
+                  }
+                ]
+              },
+              "description": "Fired when `cellSlots` changes"
+            },
+            {
+              "name": "cell-icon-slots-change",
+              "type": {
+                "text": "CellIconSlotsChangeEvent",
+                "references": [
+                  {
+                    "name": "CellIconSlotsChangeEvent",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "element-slots.js",
+                    "start": 0,
+                    "end": 24
+                  }
+                ]
+              },
+              "description": "Fired when `cellIconSlots` changes"
+            },
+            {
+              "name": "tab-icon-slots-change",
+              "type": {"text": "Event"},
+              "description": "Never fired"
+            }
+          ],
+          "slots": [
+            {
+              "name": "tab-<id>-icon",
+              "description": "A dynamic slot for icons"
+            },
+            {
+              "name": "cell-<column>-<tabId>",
+              "description": "A dynamic slot whose names the element computes"
+            },
+            {
+              "name": "cell-<column>-<tabId>-icon",
+              "description": "A second computed slot with the same prefix"
             }
           ]
         }
@@ -1005,6 +1497,22 @@
       "path": "sub/element-sub.js",
       "declarations": [
         {
+          "kind": "variable",
+          "name": "ElementSubEnum",
+          "type": {
+            "text": "ElementSubEnum",
+            "references": [
+              {
+                "name": "ElementSubEnum",
+                "package": "@lit-internal/test-element-a",
+                "module": "sub/element-sub.js",
+                "start": 0,
+                "end": 14
+              }
+            ]
+          }
+        },
+        {
           "kind": "class",
           "name": "ElementSub",
           "description": "This is a description of my element. It's pretty great. The description has\ntext that spans multiple lines.",
@@ -1017,6 +1525,24 @@
               "privacy": "public",
               "type": {"text": "string | undefined"},
               "attribute": "foo"
+            },
+            {
+              "kind": "field",
+              "name": "enum",
+              "privacy": "public",
+              "type": {
+                "text": "ElementSubEnum | undefined",
+                "references": [
+                  {
+                    "name": "ElementSubEnum",
+                    "package": "@lit-internal/test-element-a",
+                    "module": "sub/element-sub.js",
+                    "start": 0,
+                    "end": 14
+                  }
+                ]
+              },
+              "attribute": "enum"
             },
             {
               "kind": "field",
@@ -1059,7 +1585,8 @@
           "tagName": "element-sub",
           "customElement": true,
           "attributes": [
-            {"name": "foo", "type": {"text": "string"}, "fieldName": "foo"}
+            {"name": "foo", "type": {"text": "string"}, "fieldName": "foo"},
+            {"name": "enum", "type": {"text": "string"}, "fieldName": "enum"}
           ],
           "events": [
             {
@@ -1155,6 +1682,11 @@
       "exports": [
         {
           "kind": "js",
+          "name": "ElementSubEnum",
+          "declaration": {"name": "ElementSubEnum"}
+        },
+        {
+          "kind": "js",
           "name": "ElementSub",
           "declaration": {"name": "ElementSub"}
         },
@@ -1207,6 +1739,7 @@
           "declaration": {"name": "ElementSub"}
         }
       ]
-    }
+    },
+    {"kind": "javascript-module", "path": "sub/type-sub.js"}
   ]
 }

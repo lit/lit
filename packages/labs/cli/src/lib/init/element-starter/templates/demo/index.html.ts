@@ -5,8 +5,8 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
-import {html} from '@lit-labs/gen-utils/lib/str-utils.js';
+import {FileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
+import {html} from '@oicl-lit/gen-utils/lib/str-utils.js';
 
 export const generateIndex = (elementName: string): FileTree => {
   return {

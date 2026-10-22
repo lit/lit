@@ -15,9 +15,9 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v7
         with:
           node-version: 24.5
           cache: 'npm'
@@ -39,9 +39,9 @@ jobs:
       WIREIT_PARALLEL: 1
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v7
         with:
           node-version: 24.5
           cache: 'npm'
@@ -74,9 +74,9 @@ jobs:
       WIREIT_PARALLEL: 1
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v7
         with:
           node-version: 24.5
           cache: 'npm'

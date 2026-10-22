@@ -5,11 +5,11 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {FileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {FileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
 import {
   javascript,
   kabobToPascalCase,
-} from '@lit-labs/gen-utils/lib/str-utils.js';
+} from '@oicl-lit/gen-utils/lib/str-utils.js';
 import {Language} from '../../../../commands/init.js';
 
 export const generateElement = (

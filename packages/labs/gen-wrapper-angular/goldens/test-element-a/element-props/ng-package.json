@@ -1,0 +1,6 @@
+{
+  "$schema": "https://json.schemastore.org/ng-package",
+  "lib": {
+    "entryFile": "src/public-api.ts"
+  }
+}

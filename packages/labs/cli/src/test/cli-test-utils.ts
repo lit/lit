@@ -84,11 +84,11 @@ export const symlinkAllCommands = async (rig: FilesystemTestRig) => {
   const symLinks: Array<{packageName: string[]; relPath: string[]}> = [
     {
       relPath: ['..', '..', '..', 'gen-wrapper-react'],
-      packageName: ['@lit-labs', 'gen-wrapper-react'],
+      packageName: ['@oicl-lit', 'gen-wrapper-react'],
     },
     {
       relPath: ['..', '..', '..', 'gen-wrapper-vue'],
-      packageName: ['@lit-labs', 'gen-wrapper-vue'],
+      packageName: ['@oicl-lit', 'gen-wrapper-vue'],
     },
     {
       relPath: ['..', '..', '..', 'cli-localize'],

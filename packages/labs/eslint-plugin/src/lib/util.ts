@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {AbsolutePath, Analyzer} from '@lit-labs/analyzer';
+import {AbsolutePath, Analyzer} from '@oicl-lit/analyzer';
 import {
   ESLintUtils,
   ParserServicesWithTypeInformation,

@@ -11,9 +11,9 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v7
         with:
           node-version: 24.5
           cache: 'npm'
@@ -36,7 +36,7 @@ jobs:
 
       - name: Upload artifacts
         if: ${{ success() || failure() }}
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: sizecheck
           path: |

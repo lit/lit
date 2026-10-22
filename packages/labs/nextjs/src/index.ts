@@ -49,9 +49,8 @@ export = (
 
     // Resolved path to our custom loader. It is shipped as part of this
     // package (compiled by tsc into `./lib/`).
-    const preserveDirectiveLoader = require.resolve(
-      './lib/preserve-directive-imports-loader.js'
-    );
+    const preserveDirectiveLoader =
+      require.resolve('./lib/preserve-directive-imports-loader.js');
 
     // Only emit the `turbopack` config when the user is actually running
     // Turbopack AND the installed Next.js supports the advanced

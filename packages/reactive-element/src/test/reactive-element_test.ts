@@ -647,9 +647,7 @@ suite('ReactiveElement', () => {
   });
 
   test('property option `converter` can use a class instance', async () => {
-    class IntegerAttributeConverter
-      implements ComplexAttributeConverter<Number>
-    {
+    class IntegerAttributeConverter implements ComplexAttributeConverter<Number> {
       private _defaultValue: Number;
 
       constructor(defaultValue: Number) {
@@ -2560,8 +2558,9 @@ suite('ReactiveElement', () => {
       readonly [key: string]: MyPropertyDeclaration;
     }
 
-    interface MyPropertyDeclaration<TypeHint = unknown>
-      extends PropertyDeclaration {
+    interface MyPropertyDeclaration<
+      TypeHint = unknown,
+    > extends PropertyDeclaration {
       validator?: (value: any) => TypeHint;
       observer?: (oldValue: TypeHint) => void;
     }
