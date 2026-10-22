@@ -22,10 +22,13 @@ export interface DOMTokenMap {
 /**
  * The attributes supported by {@link DOMTokenMapDirective} subclasses.
  */
-export enum DOMTokenAttribute {
-  CLASS = 'class',
-  PART = 'part',
-}
+export const DOMTokenAttribute = {
+  CLASS: 'class',
+  PART: 'part',
+} as const;
+
+export type DOMTokenAttribute =
+  (typeof DOMTokenAttribute)[keyof typeof DOMTokenAttribute];
 
 // `class` doesn't expose its DOMTokenList via a same-named property.
 const tokenLists: Record<

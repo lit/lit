@@ -16,7 +16,7 @@ import type {DOMTokenMap} from './private-dom-token-map.js';
 /**
  * A key-value set of class names to truthy values.
  */
-export type ClassInfo = DOMTokenMap;
+export interface ClassInfo extends DOMTokenMap {}
 
 class ClassMapDirective extends DOMTokenMapDirective {
   constructor(partInfo: PartInfo) {
