@@ -19,7 +19,14 @@
     "test:integration:shimmed:prod": "wireit",
     "test:integration:unshimmed:prod": "wireit",
     "test:unit": "wireit",
-    "test:types": "wireit"
+    "test:types": "wireit",
+    "benchmark": "wireit",
+    "benchmark:shallow-wide": "wireit",
+    "benchmark:deep-narrow": "wireit",
+    "benchmark:balanced": "wireit",
+    "benchmark:stress-test": "wireit",
+    "benchmark:comparison": "wireit",
+    "benchmark:all": "wireit"
   },
   "wireit": {
     "build": {
@@ -190,6 +197,63 @@
         "tsconfig.json"
       ],
       "output": []
+    },
+    "benchmark": {
+      "command": "node benchmarks/cli.js",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "benchmark:shallow-wide": {
+      "command": "node benchmarks/cli.js shallow_wide",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "benchmark:deep-narrow": {
+      "command": "node benchmarks/cli.js deep_narrow",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "benchmark:balanced": {
+      "command": "node benchmarks/cli.js balanced",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "benchmark:stress-test": {
+      "command": "node benchmarks/cli.js stress_test",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "benchmark:comparison": {
+      "command": "node benchmarks/cli.js reddit_frontpage",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "benchmark:all": {
+      "dependencies": [
+        "benchmark:shallow-wide",
+        "benchmark:deep-narrow",
+        "benchmark:balanced",
+        "benchmark:stress-test",
+        "benchmark:comparison"
+      ]
     }
   },
   "files": [
