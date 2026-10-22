@@ -92,7 +92,9 @@ describe('invalidateAndRemeasure', () => {
     // their cached 50px sizes are stale after this.
     container.classList.add('tall');
 
-    // Stale 50px entries drag the averaged scroll size below the real
+    controller.invalidateAndRemeasure();
+
+    // With the stale cache cleared, the scroll size reflects the real
     // 200 * 150 total.
     await pass(() => expect(virtualizer.style.minHeight).to.equal('30000px'));
   });

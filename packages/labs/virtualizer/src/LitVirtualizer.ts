@@ -58,6 +58,14 @@ export class LitVirtualizer<T = unknown> extends LitElement {
   }
 
   /**
+   * Clears the layout's cached child metrics and requests a full re-flow.
+   * @see Virtualizer.invalidateAndRemeasure
+   */
+  invalidateAndRemeasure() {
+    (this as VirtualizerHostElement)[virtualizerRef]?.invalidateAndRemeasure();
+  }
+
+  /**
    * This scrollToIndex() shim is here to provide backwards compatibility with other 0.x versions of
    * lit-virtualizer. It is deprecated and will likely be removed in the 1.0.0 release.
    */
