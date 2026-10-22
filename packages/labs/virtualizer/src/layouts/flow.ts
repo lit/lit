@@ -24,20 +24,28 @@ type ItemBounds = {
   size: number;
 };
 
+export interface FlowLayoutConfig extends BaseLayoutConfig {
+  /**
+   * Initial estimated height of each item, used until items are measured.
+   * Defaults to 100px.
+   */
+  estimatedItemHeight?: number;
+}
+
 type FlowLayoutConstructor = {
   prototype: FlowLayout;
-  new (hostSink: LayoutHostSink, config?: BaseLayoutConfig): FlowLayout;
+  new (hostSink: LayoutHostSink, config?: FlowLayoutConfig): FlowLayout;
 };
 
-type FlowLayoutSpecifier = BaseLayoutConfig & {
+type FlowLayoutSpecifier = FlowLayoutConfig & {
   type: FlowLayoutConstructor;
 };
 
 type FlowLayoutSpecifierFactory = (
-  config?: BaseLayoutConfig
+  config?: FlowLayoutConfig
 ) => FlowLayoutSpecifier;
 
-export const flow: FlowLayoutSpecifierFactory = (config?: BaseLayoutConfig) =>
+export const flow: FlowLayoutSpecifierFactory = (config?: FlowLayoutConfig) =>
   Object.assign(
     {
       type: FlowLayout,
@@ -118,7 +126,7 @@ class MetricsCache {
   }
 }
 
-export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
+export class FlowLayout extends BaseLayout<FlowLayoutConfig> {
   /**
    * Initial estimate of item size
    */
@@ -172,6 +180,22 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
   get measureChildren() {
     return this._measureChildren;
+  }
+
+  /**
+   * Override the default 100px item height estimate. Without a good estimate,
+   * the layout assumes far less total height than the items actually occupy
+   * (e.g. tall, auto-height children), causing too many children to be
+   * rendered at once.
+   */
+  set estimatedItemHeight(h: number) {
+    if (h > 0) {
+      this._itemSize.height = h;
+    }
+  }
+
+  get estimatedItemHeight(): number {
+    return this._itemSize.height;
   }
 
   /**
