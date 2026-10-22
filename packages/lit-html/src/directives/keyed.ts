@@ -13,7 +13,7 @@ import {
   DirectiveParameters,
   DirectiveResult,
 } from '../directive.js';
-import {setCommittedValue} from '../directive-helpers.js';
+import {clearPart, setCommittedValue} from '../directive-helpers.js';
 
 class Keyed<T> extends Directive {
   key: unknown = nothing;
@@ -25,9 +25,21 @@ class Keyed<T> extends Directive {
 
   override update(part: ChildPart, [k, v]: DirectiveParameters<this>) {
     if (k !== this.key) {
-      // Clear the part before returning a value. The one-arg form of
-      // setCommittedValue sets the value to a sentinel which forces a
-      // commit the next render.
+      if (this.key !== nothing) {
+        // Clear the part while its committed value is still the previous
+        // value, so that the previous value is disconnected: async directives
+        // inside it (such as ref()) get their disconnected() callback, and it
+        // is removed from the part's disconnectable children. Resetting the
+        // committed value first would make the part clear the sentinel
+        // instead, which left every previous value connected for the
+        // lifetime of the part.
+        //
+        // There is nothing to disconnect on the first update, and the part
+        // may then be hydrating server-rendered DOM that must be kept.
+        clearPart(part);
+      }
+      // The one-arg form of setCommittedValue sets the value to a sentinel
+      // which forces a commit the next render.
       setCommittedValue(part);
       this.key = k;
     }
