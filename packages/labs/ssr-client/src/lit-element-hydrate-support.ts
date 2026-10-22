@@ -102,7 +102,11 @@ globalThis.litElementHydrateSupport = ({
       for (const attrName of this.getAttributeNames()) {
         if (attrName.startsWith(HYDRATE_INTERNALS_ATTR_PREFIX)) {
           const ariaAttr = attrName.slice(HYDRATE_INTERNALS_ATTR_PREFIX.length);
-          this.removeAttribute(ariaAttr);
+          const internalsValue = this.getAttribute(attrName);
+          const liveValue = this.getAttribute(ariaAttr);
+          if (liveValue === internalsValue) {
+            this.removeAttribute(ariaAttr);
+          }
           this.removeAttribute(attrName);
         }
       }
