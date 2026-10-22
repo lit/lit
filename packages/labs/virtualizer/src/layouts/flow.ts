@@ -187,6 +187,14 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
   }
 
   /**
+   * Clears all cached child size metrics, including margins. Child sizes are
+   * re-measured the next time children are rendered.
+   */
+  invalidate() {
+    this._metricsCache.clear();
+  }
+
+  /**
    * Set the average item size based on the total length and number of children
    * in range.
    */

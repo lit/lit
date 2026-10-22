@@ -582,6 +582,18 @@ export class Virtualizer {
     }
   }
 
+  /**
+   * Clears the layout's cached child metrics and requests a full re-flow.
+   * Use when children may have changed size outside of the virtualizer's
+   * own measurements, for example when their size depends on a container
+   * or viewport dimension that has changed since they were measured.
+   */
+  invalidateAndRemeasure() {
+    this._layout?.invalidate?.();
+    this._itemsChanged = true;
+    this._schedule(this._updateLayout);
+  }
+
   private _handleScrollEvent() {
     if (this._benchmarkStart && 'mark' in window.performance) {
       try {
