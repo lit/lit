@@ -1,0 +1,9 @@
+[local]
+.gitignore
+
+[relative]
+packages/{*,labs/*,labs/test-projects/*}/{.gitignore,.eslintignore}
+
+[inline]
+packages/localize/testdata/
+packages/localize/examples/

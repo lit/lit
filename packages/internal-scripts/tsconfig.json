@@ -1,0 +1,25 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "target": "es2021",
+    "module": "es2020",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "inlineSources": true,
+    "outDir": "./lib/",
+    "rootDir": "./src/",
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitAny": true,
+    "noImplicitThis": true,
+    "allowSyntheticDefaultImports": true,
+    "tsBuildInfoFile": "./lib/.tsbuildinfo",
+    "noImplicitOverride": true,
+    "types": [],
+    "skipLibCheck": true
+  },
+  "include": ["src/**/*.ts"]
+}

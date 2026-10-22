@@ -1,0 +1,13 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 Documentation
+    url: https://github.com/lit/lit.dev/issues/
+    about: For issues relating to documentation on lit.dev, refer to the lit.dev repo.
+
+  - name: ❓ Questions, Help, and Advice
+    url: https://github.com/lit/lit/discussions
+    about: For general support, please refer to the Lit discussion board.
+
+  - name: 💬 Chat
+    url: https://lit.dev/discord/
+    about: Alternatively, you can join the Lit Discord to talk to the Lit community and team.

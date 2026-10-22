@@ -1,0 +1,158 @@
+<!doctype html>
+<!--
+  @license
+  Copyright The Lit Project
+  Copyright 2021 Google LLC
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Scaling Animation</title>
+  </head>
+  <body>
+    <style>
+      html,
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        height: 100vh;
+      }
+    </style>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {classMap} from 'lit/directives/class-map.js';
+      import {animate, defaultCssProperties} from '../development/animate.js';
+      import {AnimateController} from '../development/animate-controller.js';
+
+      class MyElement extends LitElement {
+        static properties = {shifted: {}, embiggen: {}};
+        static styles = css`
+          :host {
+            --dark: #b0bec5;
+            --light: #263238;
+            --box-size: 116px;
+            --scale: 3;
+            --scaled-size: calc(var(--scale) * var(--box-size));
+            display: flex;
+            padding: 20px;
+            font-weight: 800;
+            justify-content: center;
+            min-height: 500px;
+            overflow: hidden;
+            user-select: none;
+          }
+
+          .container {
+            background: #263238;
+          }
+
+          .circle {
+            position: relative;
+            will-change: transform;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: black;
+            background: var(--dark);
+            width: var(--box-size);
+            height: var(--box-size);
+          }
+
+          .shifted {
+            top: 100px;
+            width: var(--scaled-size);
+            height: var(--scaled-size);
+            background: var(--dark);
+          }
+
+          .shifted > .circle {
+            background: var(--light);
+            color: white;
+          }
+
+          .shifted > .circle.embiggen {
+            font-size: calc(var(--scale) * 1em);
+            width: var(--scaled-size);
+            height: var(--scaled-size);
+          }
+
+          label {
+            position: absolute;
+            left: 0;
+          }
+        `;
+
+        constructor() {
+          super();
+          this.controller = new AnimateController(this, {
+            defaultOptions: {
+              keyframeOptions: {
+                duration: 1200,
+                easing: 'ease-in-out',
+                fill: 'both',
+              },
+            },
+            onComplete: () => this.changeLayout(),
+          });
+          this.addEventListener('click', () => this._clickHandler());
+          this.embiggen = true;
+        }
+
+        firstUpdated() {
+          this.changeLayout();
+        }
+
+        render() {
+          return html`
+            <label @click=${(e) => e.stopPropagation()}>
+              <input
+                @change=${this._embiggenChange}
+                .checked=${this.embiggen}
+                type="checkbox"
+              />
+              Embiggen!
+            </label>
+            <div
+              class="container circle ${classMap({shifted: this.shifted})}"
+              ${animate()}
+            >
+              <span
+                class="circle  ${classMap({embiggen: this.embiggen})}"
+                ${animate()}
+              >
+                Embiggen${this.embiggen ? '!' : ' 🤷‍♂️'}
+              </span>
+            </div>
+          `;
+        }
+
+        async _embiggenChange() {
+          await this.controller.finished();
+          this.embiggen = !this.embiggen;
+        }
+
+        _clickHandler() {
+          if (this.controller.isAnimating) {
+            this.controller.togglePlay();
+          } else {
+            this.changeLayout();
+          }
+        }
+
+        changeLayout() {
+          this.shifted = !this.shifted;
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>

@@ -1,0 +1,9 @@
+{
+  "sourceMaps": true,
+  "plugins":[
+    ["@babel/plugin-transform-typescript", {"allowDeclareFields": true}],
+    "@babel/plugin-transform-class-static-block",
+    ["@babel/plugin-proposal-decorators", {"version": "2023-11", "decoratorsBeforeExport": true}],
+    ["@babel/plugin-proposal-class-properties"]
+  ]
+}

@@ -1,0 +1,6 @@
+/development/
+/test/
+/node_modules/
+/deep-equals.*
+/index.*
+/task.*

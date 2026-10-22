@@ -1,0 +1,16 @@
+{
+  "$schema": "../../../config.schema.json",
+  "sourceLocale": "en",
+  "targetLocales": ["es-419", "zh_CN"],
+  "inputFiles": ["**/*.js"],
+  "output": {
+    "mode": "runtime",
+    "outputDir": "generated/locales",
+    "localeCodesModule": "generated/locale-codes.js"
+  },
+  "interchange": {
+    "format": "xliff",
+    "xliffDir": "xliff/",
+    "placeholderStyle": "ph"
+  }
+}

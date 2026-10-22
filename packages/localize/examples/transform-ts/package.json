@@ -1,0 +1,68 @@
+{
+  "name": "@lit-internal/localize-examples-transform-ts",
+  "description": "Example of using lit-localize in transform mode with TypeScript",
+  "version": "1.0.3",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "wireit",
+    "build:localize": "wireit",
+    "build:rollup": "wireit",
+    "serve": "web-dev-server"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:localize",
+        "build:rollup"
+      ]
+    },
+    "build:localize": {
+      "command": "lit-localize build",
+      "dependencies": [
+        "../../../localize:build",
+        "../../../localize-tools:build"
+      ],
+      "files": [
+        "lit-localize.json",
+        "tsconfig.json",
+        "src/**",
+        "xliff/**",
+        "!src/generated/**"
+      ],
+      "output": [
+        "src/generated/**",
+        "lib/**"
+      ]
+    },
+    "build:rollup": {
+      "command": "rollup -c",
+      "dependencies": [
+        "build:localize",
+        "../../../lit:build",
+        "../../../localize:build"
+      ],
+      "files": [
+        "rollup.config.mjs",
+        "tsconfig.json",
+        "src/**"
+      ],
+      "output": [
+        "bundled/**"
+      ]
+    }
+  },
+  "dependencies": {
+    "@lit/localize": "^0.12.0",
+    "lit": "^3.2.0"
+  },
+  "devDependencies": {
+    "@lit/localize-tools": "^0.8.0",
+    "@rollup/plugin-node-resolve": "^15.2.3",
+    "@rollup/plugin-typescript": "^11.1.6",
+    "@web/dev-server": "^0.1.22",
+    "rollup": "^4.18.0",
+    "rollup-plugin-summary": "^2.0.1",
+    "typescript": "~5.9.0"
+  }
+}

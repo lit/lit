@@ -1,0 +1,23 @@
+{
+  "folders": [
+    {
+      "name": "lit",
+      "path": "./"
+    }
+  ],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    // Regardless of the user's usual formatter, files
+    // in the Lit repo must be formatted using prettier.
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "files.exclude": {
+      "**/.wireit": true,
+      "**/*.tsbuildinfo": true
+    },
+    "javascript.preferences.importModuleSpecifierEnding": "js",
+    "eslint.workingDirectories": [{"mode": "auto"}]
+  },
+  "extensions": {
+    "recommendations": ["dbaeumer.vscode-eslint", "esbenp.prettier-vscode"]
+  }
+}

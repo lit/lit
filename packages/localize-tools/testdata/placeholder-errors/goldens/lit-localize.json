@@ -1,0 +1,14 @@
+{
+  "$schema": "../../../config.schema.json",
+  "sourceLocale": "en",
+  "targetLocales": ["es-419"],
+  "tsConfig": "tsconfig.json",
+  "output": {
+    "mode": "transform"
+  },
+  "interchange": {
+    "format": "xliff",
+    "xliffDir": "xliff/",
+    "placeholderStyle": "ph"
+  }
+}

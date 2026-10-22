@@ -1,0 +1,8 @@
+{
+  "name": "@lit-internal/test-basic-templates",
+  "dependencies": {
+    "lit": "^3.0.0",
+    "lit-html": "^3.0.0",
+    "lit-element": "^4.0.0"
+  }
+}

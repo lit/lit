@@ -1,0 +1,14 @@
+# Copyright The Lit Project
+# Copyright 2014 Google LLC
+# SPDX-License-Identifier: BSD-3-Clause
+
+root = true
+
+[*]
+charset = utf-8
+indent_size = 2
+indent_style = space
+trim_trailing_whitespace = true
+
+[*.md]
+trim_trailing_whitespace = false

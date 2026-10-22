@@ -1,0 +1,208 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "additionalProperties": false,
+    "definitions": {
+        "Patch": {
+            "additionalProperties": false,
+            "description": "Replace one string with another.",
+            "properties": {
+                "after": {
+                    "description": "The string to replace matches with.",
+                    "type": "string"
+                },
+                "before": {
+                    "description": "The string to search for.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "after",
+                "before"
+            ],
+            "type": "object"
+        },
+        "RuntimeOutputConfig": {
+            "additionalProperties": false,
+            "description": "Configuration specific to the `runtime` output mode.",
+            "properties": {
+                "language": {
+                    "description": "Language for emitting generated modules. Defaults to \"js\" unless a\n`tsConfig` was specified, in which case it defaults to \"ts\".\n\n- \"js\": Emit JavaScript modules with \".js\" file extension.\n- \"ts\": Emit TypeScript modules with \".ts\" file extension.",
+                    "enum": [
+                        "js",
+                        "ts"
+                    ],
+                    "type": "string"
+                },
+                "localeCodesModule": {
+                    "description": "Optional filepath for a generated module that exports `sourceLocale`,\n`targetLocales`, and `allLocales` using the locale codes from your config\nfile. Use to keep your config file and client config in sync. For example:\n\n  export const sourceLocale = 'en';\n  export const targetLocales = ['es-419', 'zh_CN'];\n  export const allLocales = ['es-419', 'zh_CN', 'en'];\n\nThis path should end with either \".js\" or \".ts\". If it ends with \".js\" it\nwill be emitted as a JavaScript module. If it ends with \".ts\" it will be\nemitted as a TypeScript module.",
+                    "type": "string"
+                },
+                "mode": {
+                    "enum": [
+                        "runtime"
+                    ],
+                    "type": "string"
+                },
+                "outputDir": {
+                    "description": "Output directory for generated modules. Into this directory will be\ngenerated a <locale>.ts for each `targetLocale`, each a module that exports\nthe translations in that locale keyed by message ID.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "mode",
+                "outputDir"
+            ],
+            "type": "object"
+        },
+        "TransformOutputConfig": {
+            "additionalProperties": false,
+            "description": "Configuration specific to the `transform` output mode.",
+            "properties": {
+                "localeCodesModule": {
+                    "description": "Optional filepath for a generated module that exports\n`sourceLocale`, `targetLocales`, and `allLocales` using the locale codes\nfrom your config file. Use to keep your config file and client config in\nsync. For example:\n\n  export const sourceLocale = 'en';\n  export const targetLocales = ['es-419', 'zh_CN'];\n  export const allLocales = ['es-419', 'zh_CN', 'en'];\n\nThis path should end with either \".js\" or \".ts\". If it ends with \".js\" it\nwill be emitted as a JavaScript module. If it ends with \".ts\" it will be\nemitted as a TypeScript module.",
+                    "type": "string"
+                },
+                "mode": {
+                    "enum": [
+                        "transform"
+                    ],
+                    "type": "string"
+                },
+                "outputDir": {
+                    "description": "Output directory for transformed projects. A subdirectory will be created\nfor each locale within this directory, each containing a full build of the\nproject for that locale.\n\nRequired unless `tsConfig` is specified, in which case it defaults to that\nconfig's `outDir`. If both are specified, this field takes precedence.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "mode"
+            ],
+            "type": "object"
+        },
+        "XlbConfig": {
+            "additionalProperties": false,
+            "description": "Parse an XLB XML file. These files contain translations organized using the\nsame message names that we originally requested.\nConfiguration for XLB interchange format.",
+            "properties": {
+                "format": {
+                    "enum": [
+                        "xlb"
+                    ],
+                    "type": "string"
+                },
+                "outputFile": {
+                    "description": "Output path on disk to the XLB XML file that will be created containing all\nmessages extracted from the source. E.g. \"data/localization/en.xlb\".",
+                    "type": "string"
+                },
+                "translationsGlob": {
+                    "description": "Glob pattern of XLB XML files to read from disk containing translated\nmessages. E.g. \"data/localization/*.xlb\".\n\nSee https://github.com/isaacs/node-glob#README for valid glob syntax.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "format",
+                "outputFile",
+                "translationsGlob"
+            ],
+            "type": "object"
+        },
+        "XliffConfig": {
+            "additionalProperties": false,
+            "description": "Configuration for XLIFF interchange format.",
+            "properties": {
+                "format": {
+                    "enum": [
+                        "xliff"
+                    ],
+                    "type": "string"
+                },
+                "placeholderStyle": {
+                    "description": "How to represent placeholders containing HTML markup and dynamic\nexpressions. Different localization tools and services have varying support\nfor placeholder syntax.\n\nDefaults to \"x\". Options:\n\n- \"x\": Emit placeholders using <x> tags. See\n  http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#x\n\n- \"ph\": Emit placeholders using <ph> tags. See\n  http://docs.oasis-open.org/xliff/v1.2/os/xliff-core.html#ph",
+                    "enum": [
+                        "ph",
+                        "x"
+                    ],
+                    "type": "string"
+                },
+                "xliffDir": {
+                    "description": "Directory on disk to read/write .xlf XML files. For each target locale,\nthe file path \"<xliffDir>/<locale>.xlf\" will be used.",
+                    "type": "string"
+                }
+            },
+            "required": [
+                "format",
+                "xliffDir"
+            ],
+            "type": "object"
+        }
+    },
+    "properties": {
+        "$schema": {
+            "description": "See https://json-schema.org/understanding-json-schema/reference/schema.html",
+            "type": "string"
+        },
+        "inputFiles": {
+            "description": "Array of filenames or glob patterns to extract messages from.\n\nRequired unless `tsConfig` is specified. If `tsConfig` is also specified,\nthen this field takes precedence.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "interchange": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/XlbConfig"
+                },
+                {
+                    "$ref": "#/definitions/XliffConfig"
+                }
+            ],
+            "description": "Localization interchange format and configuration specific to that format."
+        },
+        "output": {
+            "anyOf": [
+                {
+                    "$ref": "#/definitions/RuntimeOutputConfig"
+                },
+                {
+                    "$ref": "#/definitions/TransformOutputConfig"
+                }
+            ],
+            "description": "Set and configure the output mode."
+        },
+        "patches": {
+            "additionalProperties": {
+                "additionalProperties": {
+                    "items": {
+                        "$ref": "#/definitions/Patch"
+                    },
+                    "type": "array"
+                },
+                "type": "object"
+            },
+            "description": "Optional string substitutions to apply to specific locale messages. Useful\nfor making minor corrections without modifying source files or repeating a\nfull localization cycle.\n\nExample:\n\n\"patches\": {\n  \"es-419\": {\n    \"greeting\": [\n      {\n        \"before\": \"Buenos dias\",\n        \"after\": \"Buenos días\"\n      }\n    ]\n  }\n}",
+            "type": "object"
+        },
+        "sourceLocale": {
+            "description": "Required locale code that messages in the source code are written in.",
+            "type": "string"
+        },
+        "targetLocales": {
+            "description": "Required locale codes that messages will be localized to.",
+            "items": {
+                "type": "string"
+            },
+            "type": "array"
+        },
+        "tsConfig": {
+            "description": "Path to a tsconfig.json file that determines the source files from which\nmessages will be extracted, and also the compiler options that will be used\nwhen building for transform mode.\n\nRequired unless `inputFiles` is specified. If `inputFiles` is also\nspecified, then the files specified by this config will be ignored in favor\nof `inputFiles`.",
+            "type": "string"
+        }
+    },
+    "required": [
+        "interchange",
+        "output",
+        "sourceLocale",
+        "targetLocales"
+    ],
+    "type": "object"
+}
+

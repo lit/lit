@@ -1,0 +1,16 @@
+/decorators/
+/development/
+/node_modules/
+/test/
+
+/demo/**/*.d.ts
+/demo/**/*.d.ts.map
+/demo/**/*.js
+/demo/**/*.js.map
+
+/decorators.*
+/index.*
+/lit-element.*
+/lit.min.*
+/polyfill-support.*
+/private-ssr-support.*

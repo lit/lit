@@ -1,0 +1,7 @@
+/node/
+/lib/
+/test/
+/index.*
+/jsx-runtime.*
+/jsx-dev-runtime.*
+/enable-lit-ssr.*

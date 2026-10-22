@@ -1,0 +1,7 @@
+{
+  "name": "@lit-internal/test-basic-elements",
+  "type": "module",
+  "dependencies": {
+    "lit": "^3.0.0"
+  }
+}

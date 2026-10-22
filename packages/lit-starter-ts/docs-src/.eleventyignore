@@ -1,0 +1,2 @@
+# Ignore files with a leading underscore; useful for e.g. readmes in source documentation
+_*.md

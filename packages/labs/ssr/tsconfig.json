@@ -1,0 +1,30 @@
+{
+  "compilerOptions": {
+    "composite": true,
+    "tsBuildInfoFile": "./tsconfig.tsbuildinfo",
+    "target": "es2021",
+    "module": "esnext",
+    "lib": ["es2021"],
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "inlineSources": true,
+    "outDir": ".",
+    "rootDir": "./src",
+    // For module loader tests:
+    "allowJs": true,
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "moduleResolution": "node",
+    "allowSyntheticDefaultImports": true,
+    "experimentalDecorators": true,
+    "skipLibCheck": true,
+    "noImplicitOverride": true,
+    "types": ["mocha"]
+  },
+  "include": ["src/**/*.ts", "src/test/**/*.js", "custom_typings/*.d.ts"],
+  "exclude": []
+}

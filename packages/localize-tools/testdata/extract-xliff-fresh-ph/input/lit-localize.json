@@ -1,0 +1,15 @@
+{
+  "$schema": "../../../config.schema.json",
+  "sourceLocale": "en",
+  "targetLocales": ["es-419", "zh_CN"],
+  "tsConfig": "tsconfig.json",
+  "output": {
+    "mode": "runtime",
+    "outputDir": "tsout/locales"
+  },
+  "interchange": {
+    "format": "xliff",
+    "xliffDir": "data/xliff/",
+    "placeholderStyle": "ph"
+  }
+}

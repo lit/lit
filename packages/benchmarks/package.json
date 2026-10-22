@@ -1,0 +1,75 @@
+{
+  "name": "@lit-internal/benchmarks",
+  "version": "1.0.6",
+  "private": true,
+  "description": "Benchmarks for lit",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/benchmarks"
+  },
+  "author": "Google LLC",
+  "scripts": {
+    "benchmark:lit-element:list": "tach --config lit-element/list/tachometer.json",
+    "benchmark:lit-element:list-render": "tach --config lit-element/list/tachometer-render.json",
+    "benchmark:lit-element:list-update": "tach --config lit-element/list/tachometer-update.json",
+    "benchmark:lit-element:list-update-reflect": "tach --config lit-element/list/tachometer-update-reflect.json",
+    "benchmark:lit-html:kitchen-sink": "tach --config lit-html/kitchen-sink/tachometer.json",
+    "benchmark:lit-html:kitchen-sink-nop-update": "tach --config lit-html/kitchen-sink/tachometer-nop-update.json",
+    "benchmark:lit-html:kitchen-sink-render": "tach --config lit-html/kitchen-sink/tachometer-render.json",
+    "benchmark:lit-html:kitchen-sink-update": "tach --config lit-html/kitchen-sink/tachometer-update.json",
+    "benchmark:lit-html:repeat": "tach --config lit-html/repeat/tachometer.json",
+    "benchmark:lit-html:repeat-full": "tach --config lit-html/repeat/tachometer-full.json",
+    "benchmark:lit-html:repeat-vs-map": "tach --config lit-html/repeat/tachometer-vs-map.json",
+    "benchmark:lit-html:repeat-vs-map-delay-full": "tach --config lit-html/repeat/tachometer-vs-map-delay-full.json",
+    "benchmark:lit-html:repeat-vs-map-full": "tach --config lit-html/repeat/tachometer-vs-map-full.json",
+    "benchmark:lit-html:template-heavy": "tach --config lit-html/template-heavy/tachometer.json",
+    "benchmark:localize:fnv1a64": "tach --config localize/fnv1a64/tachometer.json",
+    "benchmark:reactive-element:list": "tach --config reactive-element/list/tachometer.json",
+    "benchmark:reactive-element:list-render": "tach --config reactive-element/list/tachometer-render.json",
+    "benchmark:reactive-element:list-update": "tach --config reactive-element/list/tachometer-update.json",
+    "benchmark:reactive-element:list-update-reflect": "tach --config reactive-element/list/tachometer-update-reflect.json",
+    "benchmarks": "tach --config lit-html/kitchen-sink/tachometer.json && tach --config lit-html/template-heavy/tachometer.json && tach --config lit-html/repeat/tachometer.json && tach --config lit-element/list/tachometer.json && tach --config reactive-element/list/tachometer.json",
+    "build": "wireit",
+    "generator": "([ ! -d \"generator/build\" ] && cd generator && npm i && npm run build); node generator/build/index.js",
+    "regen-template-benchmarks": "./generator/scripts/generate.sh"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        "tsconfig.json",
+        "lit-element/**/*.ts",
+        "reactive-element/**/*.ts",
+        "lit-html/**/*.ts",
+        "utils/**/*.ts",
+        "!**/*.d.ts"
+      ],
+      "output": [
+        "tsconfig.tsbuildinfo",
+        "lit-element/**/*.{js,js.map,d.ts,d.ts.map}",
+        "reactive-element/**/*.{js,js.map,d.ts,d.ts.map}",
+        "lit-html/**/*.{js,js.map,d.ts,d.ts.map}",
+        "utils/**/*.{js,js.map,d.ts,d.ts.map}",
+        "!lit-html/template-heavy/template-heavy.js"
+      ],
+      "dependencies": [
+        "../lit-element:build",
+        "../lit-html:build",
+        "../reactive-element:build"
+      ]
+    }
+  },
+  "dependencies": {
+    "@lit/reactive-element": "^2.0.0",
+    "lit-element": "^4.0.0",
+    "lit-html": "^3.0.0",
+    "tachometer": "^0.7.0"
+  },
+  "#comment": "Unusually, we don't want to track a specific version of chromedriver, because we end up using the version of chrome that we get in the benchmark runner, which is usually just the latest version. Specifying it as * means that updating the package-lock.json file will always get the latest version.",
+  "devDependencies": {
+    "chromedriver": "*"
+  }
+}

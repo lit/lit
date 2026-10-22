@@ -1,0 +1,21 @@
+{
+  "$schema": "../../../config.schema.json",
+  "sourceLocale": "en",
+  "targetLocales": ["es-419", "zh_CN"],
+  "tsConfig": "tsconfig.json",
+  "output": {
+    "mode": "runtime",
+    "outputDir": "tsout",
+    "localeCodesModule": "locale-codes.ts"
+  },
+  "interchange": {
+    "format": "xliff",
+    "xliffDir": "xliff/",
+    "placeholderStyle": "ph"
+  },
+  "patches": {
+    "es-419": {
+      "lit": [{"before": "Mundo", "after": "Galaxia"}]
+    }
+  }
+}

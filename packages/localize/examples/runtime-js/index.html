@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<head>
+  <title>lit-localize runtime example</title>
+  <script type="module" src="/src/index.js"></script>
+  <style>
+    [hidden] {
+      visibility: hidden;
+    }
+    #spinner {
+      position: absolute;
+    }
+  </style>
+</head>
+<body>
+  <locale-picker></locale-picker>
+  <mwc-circular-progress
+    id="spinner"
+    indeterminate
+    hidden
+  ></mwc-circular-progress>
+  <main></main>
+</body>

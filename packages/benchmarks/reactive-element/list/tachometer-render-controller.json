@@ -1,0 +1,30 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
+  "sampleSize": 100,
+  "timeout": 0,
+  "benchmarks": [
+    {
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        }
+      ],
+      "expand": [
+        {
+          "name": "baseline",
+          "url": "index.html?benchmark=render"
+        },
+        {
+          "name": "controller",
+          "url": "index.html?benchmark=render&controller"
+        }
+      ]
+    }
+  ]
+}

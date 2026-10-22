@@ -1,0 +1,19 @@
+{
+  "sourceLocale": "en",
+  "targetLocales": ["es-419"],
+  "tsConfig": "tsconfig.json",
+  "output": {
+    "mode": "runtime",
+    "outputDir": "tsout"
+  },
+  "interchange": {
+    "format": "xlb",
+    "outputFile": "xlb/en.xlb",
+    "translationsGlob": "xlb/*.xlb"
+  },
+  "patches": {
+    "es-419": {
+      "lit": [{"before": "Mundo", "after": "Galaxia"}]
+    }
+  }
+}

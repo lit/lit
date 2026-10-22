@@ -1,0 +1,155 @@
+{
+  "name": "@lit/localize-tools",
+  "version": "0.8.2",
+  "publishConfig": {
+    "access": "public"
+  },
+  "description": "Localization tooling for lit-html",
+  "license": "BSD-3-Clause",
+  "author": "Google LLC",
+  "homepage": "https://github.com/lit/lit/tree/main/packages/localize-tools",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/localize-tools"
+  },
+  "bin": {
+    "lit-localize": "bin/lit-localize.js"
+  },
+  "main": "lit-localize.js",
+  "type": "module",
+  "scripts": {
+    "build": "wireit",
+    "build:ts": "wireit",
+    "generate-json-schema": "wireit",
+    "test": "wireit",
+    "test:unit": "wireit",
+    "test:unit:ssr": "wireit",
+    "test:update-goldens": "wireit",
+    "test:check-tsc": "wireit"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "generate-json-schema",
+        "../lit:build",
+        "../labs/ssr:build"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "#comment": [
+        "TODO(aomarks) We depend on a test utility from ts-transformers.",
+        "It should be moved into the tests/ package and the dep removed."
+      ],
+      "dependencies": [
+        "../localize:build:ts",
+        "../lit:build:ts:types",
+        "../labs/ssr:build:ts",
+        "../ts-transformers:build:ts",
+        "../tests:build"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "lib"
+      ]
+    },
+    "generate-json-schema": {
+      "command": "typescript-json-schema tsconfig.schema.json ConfigFile --include=lib/types/config.d.ts --required --noExtraProps > config.schema.json",
+      "dependencies": [
+        "build:ts"
+      ],
+      "files": [
+        "tsconfig.schema.json"
+      ],
+      "output": [
+        "config.schema.json"
+      ]
+    },
+    "test": {
+      "dependencies": [
+        "test:unit",
+        "test:unit:ssr",
+        "test:check-tsc"
+      ]
+    },
+    "test:unit": {
+      "command": "node --enable-source-maps --test-reporter=spec --test lib/tests/[!s]*.test.js lib/tests/e2e/*.test.js",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "testdata/*/input",
+        "testdata/*/goldens"
+      ],
+      "output": [
+        "testdata/*/output"
+      ]
+    },
+    "test:unit:ssr": {
+      "command": "node --enable-source-maps --test-reporter=spec --test lib/tests/ssr.unit.test.js",
+      "dependencies": [
+        "build"
+      ],
+      "files": [],
+      "output": []
+    },
+    "test:update-goldens": {
+      "command": "UPDATE_TEST_GOLDENS=true node --enable-source-maps --test-reporter=spec --test lib/tests/[!s]*.test.js lib/tests/e2e/*.test.js",
+      "dependencies": [
+        "build"
+      ],
+      "files": [
+        "testdata/*/input"
+      ],
+      "output": [
+        "testdata/*/goldens"
+      ]
+    },
+    "test:check-tsc": {
+      "command": "ls testdata/*/output/tsconfig.json | xargs -n 1 tsc --noEmit --project",
+      "#comment": "Depends on test:unit because it inspects that script's output",
+      "dependencies": [
+        "test:unit"
+      ],
+      "files": [],
+      "output": []
+    }
+  },
+  "files": [
+    "/src/",
+    "!/src/tests/",
+    "/lib/",
+    "!/lib/tests/",
+    "!/lib/.tsbuildinfo",
+    "/config.schema.json"
+  ],
+  "dependencies": {
+    "@lit/localize": "^0.12.0",
+    "@parse5/tools": "^0.3.0",
+    "@xmldom/xmldom": "^0.8.2",
+    "fast-glob": "^3.2.7",
+    "fs-extra": "^10.0.0",
+    "jsonschema": "^1.4.0",
+    "lit": "^3.2.0",
+    "minimist": "^1.2.5",
+    "parse5": "^7.1.1",
+    "source-map-support": "^0.5.19",
+    "typescript": "~5.9.0"
+  },
+  "devDependencies": {
+    "@lit-internal/tests": "0.0.1",
+    "@lit-labs/ssr": "^4.1.0",
+    "@lit/ts-transformers": "^2.0.1",
+    "@types/fs-extra": "^9.0.1",
+    "@types/minimist": "^1.2.0",
+    "@types/prettier": "^2.0.1",
+    "rimraf": "^3.0.2",
+    "typescript-json-schema": "^0.54.0"
+  }
+}

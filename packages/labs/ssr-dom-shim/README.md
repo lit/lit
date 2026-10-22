@@ -1,0 +1,116 @@
+# @lit-labs/ssr-dom-shim
+
+## Overview
+
+This package provides minimal implementations of `Element`, `HTMLElement`,
+`EventTarget`, `Event`, `CustomEvent`, `MutationObserver`, `ResizeObserver`,
+`IntersectionObserver`, `CustomElementRegistry`, and `customElements`,
+designed to be used when Server Side Rendering (SSR) web
+components from Node, including Lit components.
+
+## Usage
+
+### Usage from Lit
+
+Lit itself automatically imports these shims when running in Node, so Lit users
+should typically not need to directly depend on or import from this package.
+
+See the [lit.dev SSR docs](https://lit.dev/docs/ssr/overview/) for general
+information about server-side rendering with Lit.
+
+### Usage in other contexts
+
+Other libraries or frameworks who wish to support SSR are welcome to also depend
+on these shims. (This package is planned to eventually move to
+`@webcomponents/ssr-dom-shim` to better reflect this use case). There are two
+main patterns for providing access to these shims to users:
+
+1. Assigning shims to `globalThis`, ensuring that assignment occurs before
+   user-code runs.
+
+2. Importing shims directly from the module that provides your base class, using
+   the `node` [export
+   condition](https://nodejs.org/api/packages.html#conditional-exports) to
+   ensure this only happens when running in Node, and not in the browser.
+
+Lit takes approach #2 for all of the shims except for `customElements`, `Event`
+and `CustomEvent`, so that users who have imported `lit` are able to call
+`customElements.define` or `new Event(...)`/`new CustomEvent(...)` in their
+components from Node.
+
+### Exports
+
+The main module exports the following values. Note that no globals are set by
+this module.
+
+- [`EventTarget`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget)
+  - [`addEventListener`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener)
+  - [`dispatchEvent`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/dispatchEvent)
+  - [`removeEventListener`](https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/removeEventListener)
+- [`Node`](https://developer.mozilla.org/en-US/docs/Web/API/Node)
+  - (Inherits from EventTarget)
+  - [`getRootNode`](https://developer.mozilla.org/en-US/docs/Web/API/Node/getRootNode)
+- [`Element`](https://developer.mozilla.org/en-US/docs/Web/API/Element)
+  - (Inherits from Node)
+  - [`attachShadow`](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachShadow)
+  - [`shadowRoot`](https://developer.mozilla.org/en-US/docs/Web/API/Element/shadowRoot)
+  - [`attributes`](https://developer.mozilla.org/en-US/docs/Web/API/Element/attributes)
+  - [`hasAttribute`](https://developer.mozilla.org/en-US/docs/Web/API/Element/hasAttribute)
+  - [`getAttribute`](https://developer.mozilla.org/en-US/docs/Web/API/Element/getAttribute)
+  - [`setAttribute`](https://developer.mozilla.org/en-US/docs/Web/API/Element/setAttribute)
+  - [`removeAttribute`](https://developer.mozilla.org/en-US/docs/Web/API/Element/removeAttribute)
+- [`HTMLElement`](https://developer.mozilla.org/en-US/docs/Web/API/HTMLElement)
+  - (Inherits from Element)
+- [`CustomElementRegistry`](https://developer.mozilla.org/en-US/docs/Web/API/CustomElementRegistry)
+- [`customElements`](https://developer.mozilla.org/en-US/docs/Web/API/Window/customElements)
+- [`Event`](https://developer.mozilla.org/en-US/docs/Web/API/Event)
+- [`CustomEvent`](https://developer.mozilla.org/en-US/docs/Web/API/CustomEvent)
+- [`MutationObserver`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/observe)
+  - [`takeRecords`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/takeRecords)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver/disconnect)
+- [`ResizeObserver`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/observe)
+  - [`unobserve`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/unobserve)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/ResizeObserver/disconnect)
+- [`IntersectionObserver`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver)
+  - [`root`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/root)
+  - [`rootMargin`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/rootMargin)
+  - [`thresholds`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/thresholds)
+  - [`observe`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/observe)
+  - [`takeRecords`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/takeRecords)
+  - [`unobserve`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/unobserve)
+  - [`disconnect`](https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver/disconnect)
+- [`MediaList`](https://developer.mozilla.org/en-US/docs/Web/API/MediaList)
+- [`StyleSheet`](https://developer.mozilla.org/en-US/docs/Web/API/StyleSheet)
+- [`CSSRule`](https://developer.mozilla.org/en-US/docs/Web/API/CSSRule)
+- [`CSSRuleList`](https://developer.mozilla.org/en-US/docs/Web/API/CSSRuleList)
+- [`CSSStyleSheet`](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet)
+  - (Inherits from StyleSheet)
+  - [`replace`](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/replace)
+  - [`replaceSync`](https://developer.mozilla.org/en-US/docs/Web/API/CSSStyleSheet/replaceSync)
+
+### CSS Node.js customization hook
+
+`@lit-labs/ssr-dom-shim/register-css-hook.js` implements/registers a
+[Node.js customization hook](https://nodejs.org/api/module.html#customization-hooks)
+(Node.js >= 18.6.0) to import CSS files/modules as instances of `CSSStyleSheet`.
+
+```ts
+import styles from 'my-styles.css' with {type: 'css'};
+// styles is now an instance of CSSStyleSheet
+```
+
+This can either be used as a parameter with the Node.js CLI
+(e.g. `node --import @lit-labs/ssr-dom-shim/register-css-hook.js my-script.js` or via
+environment variable `NODE_OPTIONS="--import @lit-labs/ssr-dom-shim/register-css-hook.js"`)
+or imported inline, and it will apply to any module dynamically imported afterwards
+(e.g. `import '@lit-labs/ssr-dom-shim/register-css-hook.js'` and
+subsequently `await import('./my-component.js')`).
+
+- [Node.js Customization Hooks](https://nodejs.org/api/module.html#customization-hooks)
+- [Import Attributes](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import/with)
+
+## Contributing
+
+Please see [CONTRIBUTING.md](../../../CONTRIBUTING.md).

@@ -1,0 +1,4 @@
+{
+  "compilerOptions": {"skipLibCheck": true, "types": []},
+  "include": ["**.ts"]
+}

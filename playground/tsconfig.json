@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "target": "ES2021",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext"
+  }
+}

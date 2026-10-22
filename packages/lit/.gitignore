@@ -1,0 +1,17 @@
+/decorators/
+/development/
+/directives/
+/node_modules/
+/test/
+
+/async-directive.*
+/decorators.*
+/directive-helpers.*
+/directive.*
+/html.*
+/index.*
+/static-html.*
+
+/lit-all.min.*
+/lit-core.min.*
+/polyfill-support.*

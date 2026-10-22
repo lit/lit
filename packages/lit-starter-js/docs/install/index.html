@@ -1,0 +1,53 @@
+
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><my-element> ⌲ Install</title>
+    <link rel="stylesheet" href="../docs.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600|Roboto+Mono">
+    <link href="../prism-okaidia.css" rel="stylesheet" />
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="/node_modules/lit/polyfill-support.js"></script>
+    <script type="module" src="../my-element.bundled.js"></script>
+  </head>
+  <body>
+    
+<header>
+  <h1>&lt;my-element></h1>
+  <h2>A web component just for me.</h2>
+</header>
+    
+<nav>
+  <a href="../">Home</a>
+  <a href="../examples/">Examples</a>
+  <a href="../api/">API</a>
+  <a href="">Install</a>
+</nav>
+    <div id="main-wrapper">
+      <main>
+        <h1>Install</h1>
+<p><code>&lt;my-element&gt;</code> is distributed on npm, so you can install it locally or use it via npm CDNs like unpkg.com.</p>
+<h2>Local Installation</h2>
+<pre class="language-bash"><code class="language-bash"><span class="token function">npm</span> i my-element</code></pre>
+<h2>CDN</h2>
+<p>npm CDNs like <a href="">unpkg.com</a> can directly serve files that have been published to npm. This works great for standard JavaScript modules that the browser can load natively.</p>
+<p>For this element to work from unpkg.com specifically, you need to include the <code>?module</code> query parameter, which tells unpkg.com to rewrite &quot;bare&quot; module specificers to full URLs.</p>
+<h3>HTML</h3>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>script</span> <span class="token attr-name">type</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>module<span class="token punctuation">"</span></span> <span class="token attr-name">src</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>https://unpkg.com/my-element?module<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token script"></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>script</span><span class="token punctuation">></span></span></code></pre>
+<h3>JavaScript</h3>
+<pre class="language-html"><code class="language-html">import {MyElement} from 'https://unpkg.com/my-element?module';</code></pre>
+
+      </main>
+    </div>
+    
+<footer>
+  <p>
+    Made with
+    <a href="https://github.com/lit/lit-element-starter-js">lit-starter-js</a>
+  </p>
+</footer>
+  </body>
+</html>

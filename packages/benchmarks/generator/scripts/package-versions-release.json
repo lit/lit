@@ -1,0 +1,7 @@
+{
+  "label": "previous-release",
+  "dependencies": {
+    "lit-html": "^1.0.0",
+    "lit-element": "^2.0.0"
+  }
+}

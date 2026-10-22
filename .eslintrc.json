@@ -1,0 +1,99 @@
+{
+  "extends": [
+    "eslint:recommended",
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "eslint-plugin-import",
+    "eslint-plugin-no-only-tests",
+    "@typescript-eslint"
+  ],
+  "env": {
+    "browser": true
+  },
+  "rules": {
+    "import/extensions": ["error", "always"],
+    "no-prototype-builtins": "off",
+    "no-only-tests/no-only-tests": "error",
+    "@typescript-eslint/ban-types": "off",
+    "@typescript-eslint/explicit-module-boundary-types": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-explicit-any": "error",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unused-vars": [
+      "warn",
+      {
+        "argsIgnorePattern": "^_"
+      }
+    ],
+    // Enforces that when a module is imported, that module is listed in the
+    // package's immediate "dependencies". Note internal-only files are excluded
+    // in an "overrides" configuration below.
+    "import/no-extraneous-dependencies": ["error"],
+    "@typescript-eslint/consistent-generic-constructors": "error"
+  },
+  "overrides": [
+    {
+      "files": [
+        "check-version-tracker.js",
+        "playground/scripts/*.js",
+        "rollup-common.js",
+        "rollup.config.js",
+        "web-test-runner.config.js"
+      ],
+      "env": {
+        "node": true
+      }
+    },
+    {
+      "files": ["packages/lit-html/src/test/version-stability_test.js"],
+      "env": {
+        "mocha": true
+      }
+    },
+    {
+      "files": [
+        "*_test.ts",
+        "packages/labs/ssr/custom_typings/node.d.ts",
+        "packages/labs/ssr/src/test/integration/tests/**",
+        "packages/labs/ssr/src/lib/util/parse5-utils.ts"
+      ],
+      "rules": {
+        "@typescript-eslint/no-explicit-any": "off"
+      }
+    },
+    {
+      // Files listed here don't need to declare their imports in their
+      // immediate package.json "dependencies". This should include all
+      // internal-only files, like tests, which are allowed to import from
+      // "devDependencies", and also from packages declared only in the root
+      // monorepo "package.json".
+      "files": [
+        "**/goldens/**",
+        "**/rollup.config.js",
+        "**/rollup.config.*.js",
+        "**/src/test-gen/**",
+        "**/src/test/**",
+        "**/src/tests/**",
+        "**/test-output/**",
+        "**/web-test-runner.config.js",
+        "packages/benchmarks/**",
+        "packages/labs/compiler/rollup.source_map_tests.js",
+        "packages/labs/ssr/src/demo/**",
+        "packages/labs/eleventy-plugin-lit/demo/**",
+        "packages/tests/**",
+        "playground/**",
+        "rollup-common.js"
+      ],
+      "rules": {
+        "import/no-extraneous-dependencies": "off"
+      }
+    }
+  ]
+}

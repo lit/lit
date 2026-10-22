@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xliff version="1.2" xmlns="urn:oasis:names:tc:xliff:document:1.2">
+<file target-language="es-419" source-language="en" original="lit-localize-inputs" datatype="plaintext">
+<body>
+<trans-unit id="h02c268d9b1fcb031">
+  <source>&lt;Hello<x id="0" equiv-text="&lt;b&gt;"/>&lt;World &amp; Friends&gt;<x id="1" equiv-text="&lt;/b&gt;"/>!&gt;</source>
+</trans-unit>
+<trans-unit id="h82ccc38d4d46eaa9">
+  <source>Hello <x id="0" equiv-text="&lt;b&gt;${html `&lt;i&gt;World&lt;/i&gt;`}&lt;/b&gt;"/>!</source>
+</trans-unit>
+<trans-unit id="he7b474847636149b">
+  <source>Hello <x id="0" equiv-text="&lt;b&gt;${name}"/>!<x id="1" equiv-text="&lt;/b&gt;"/></source>
+  <note from="lit-localize">Description of Hello $(name)</note>
+</trans-unit>
+<trans-unit id="s8c0ec8d1fb9e6e32">
+  <source>Hello World!</source>
+  <note from="lit-localize">Description of Hello World</note>
+</trans-unit>
+</body>
+</file>
+</xliff>

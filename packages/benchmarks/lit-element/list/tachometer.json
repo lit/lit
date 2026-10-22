@@ -1,0 +1,34 @@
+{
+  "$schema": "https://raw.githubusercontent.com/Polymer/tachometer/master/config.schema.json",
+  "root": "../../../../",
+  "sampleSize": 50,
+  "timeout": 0,
+  "benchmarks": [
+    {
+      "url": "index.html",
+      "browser": {
+        "name": "chrome",
+        "headless": true
+      },
+      "measurement": [
+        {
+          "mode": "performance",
+          "entryName": "render"
+        },
+        {
+          "mode": "performance",
+          "entryName": "update"
+        },
+        {
+          "mode": "performance",
+          "entryName": "update-reflect"
+        }
+      ],
+      "expand": [
+        {
+          "name": "this-change"
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,89 @@
+{
+  "name": "@lit-internal/tests",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "wireit",
+    "test": "wireit",
+    "test:common": "wireit",
+    "test:common:prod": "wireit"
+  },
+  "devDependencies": {
+    "@types/diff": "^5.0.0",
+    "@types/fs-extra": "^9.0.1",
+    "@types/prettier": "^2.0.1",
+    "@webcomponents/webcomponentsjs": "^2.8.0",
+    "diff": "^5.0.0",
+    "dir-compare": "^4.0.0",
+    "prettier": "^2.3.2"
+  },
+  "wireit": {
+    "build": {
+      "command": "tsc --build --pretty",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        "utils",
+        "run-web-tests.{js,js.map}",
+        "web-test-runner.config.{js,js.map}",
+        "tsconfig.tsbuildinfo"
+      ],
+      "clean": "if-file-deleted"
+    },
+    "test": {
+      "dependencies": [
+        "test:common",
+        "test:common:prod"
+      ]
+    },
+    "test:common": {
+      "command": "node ./run-web-tests.js",
+      "dependencies": [
+        "build:deps"
+      ],
+      "files": [],
+      "output": [],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
+      "MODE": "dev"
+    },
+    "test:common:prod": {
+      "command": "node ./run-web-tests.js",
+      "dependencies": [
+        "build:deps"
+      ],
+      "files": [],
+      "output": [],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        },
+        "MODE": "prod"
+      }
+    },
+    "build:deps": {
+      "dependencies": [
+        "build",
+        "../labs/context:build",
+        "../labs/motion:build",
+        "../labs/observers:build",
+        "../labs/router:build",
+        "../labs/scoped-registry-mixin:build",
+        "../labs/task:build",
+        "../lit-element:build",
+        "../lit-html:build",
+        "../lit-html:build:compiled:ts:tests",
+        "../lit:build",
+        "../context:build",
+        "../task:build",
+        "../reactive-element:build"
+      ]
+    }
+  }
+}

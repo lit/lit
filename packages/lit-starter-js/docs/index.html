@@ -1,0 +1,75 @@
+
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><my-element> ⌲ Home</title>
+    <link rel="stylesheet" href="docs.css">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,600|Roboto+Mono">
+    <link href="prism-okaidia.css" rel="stylesheet" />
+    <script src="/node_modules/@webcomponents/webcomponentsjs/webcomponents-loader.js"></script>
+    <script src="/node_modules/lit/polyfill-support.js"></script>
+    <script type="module" src="my-element.bundled.js"></script>
+  </head>
+  <body>
+    
+<header>
+  <h1>&lt;my-element></h1>
+  <h2>A web component just for me.</h2>
+</header>
+    
+<nav>
+  <a href="">Home</a>
+  <a href="examples/">Examples</a>
+  <a href="api/">API</a>
+  <a href="install/">Install</a>
+</nav>
+    <div id="main-wrapper">
+      <main>
+        <h1>&lt;my-element&gt;</h1>
+<p><code>&lt;my-element&gt;</code> is an awesome element. It's a great introduction to building web components with LitElement, with nice documentation site as well.</p>
+<h2>As easy as HTML</h2>
+<section class="columns">
+  <div>
+<p><code>&lt;my-element&gt;</code> is just an HTML element. You can it anywhere you can use HTML!</p>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>my-element</span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>my-element</span><span class="token punctuation">></span></span></code></pre>
+  </div>
+  <div>
+<p><my-element></my-element></p>
+  </div>
+</section>
+<h2>Configure with attributes</h2>
+<section class="columns">
+  <div>
+<p><code>&lt;my-element&gt;</code> can be configured with attributed in plain HTML.</p>
+<pre class="language-html"><code class="language-html"><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;</span>my-element</span> <span class="token attr-name">name</span><span class="token attr-value"><span class="token punctuation attr-equals">=</span><span class="token punctuation">"</span>HTML<span class="token punctuation">"</span></span><span class="token punctuation">></span></span><span class="token tag"><span class="token tag"><span class="token punctuation">&lt;/</span>my-element</span><span class="token punctuation">></span></span></code></pre>
+  </div>
+  <div>
+<p><my-element name="HTML"></my-element></p>
+  </div>
+</section>
+<h2>Declarative rendering</h2>
+<section class="columns">
+  <div>
+<p><code>&lt;my-element&gt;</code> can be used with declarative rendering libraries like Angular, React, Vue, and lit-html</p>
+<pre class="language-js"><code class="language-js"><span class="token keyword">import</span> <span class="token punctuation">{</span>html<span class="token punctuation">,</span> render<span class="token punctuation">}</span> <span class="token keyword">from</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span><br><br><span class="token keyword">const</span> name <span class="token operator">=</span> <span class="token string">'lit-html'</span><span class="token punctuation">;</span><br><br><span class="token function">render</span><span class="token punctuation">(</span><br>  html<span class="token template-string"><span class="token template-punctuation string">`</span><span class="token string"><br>    &lt;h2>This is a &amp;lt;my-element&amp;gt;&lt;/h2><br>    &lt;my-element .name=</span><span class="token interpolation"><span class="token interpolation-punctuation punctuation">${</span>name<span class="token interpolation-punctuation punctuation">}</span></span><span class="token string">>&lt;/my-element><br>  </span><span class="token template-punctuation string">`</span></span><span class="token punctuation">,</span><br>  document<span class="token punctuation">.</span>body<br><span class="token punctuation">)</span><span class="token punctuation">;</span></code></pre>
+  </div>
+  <div>
+<h2>This is a &lt;my-element&gt;</h2>
+<my-element name="lit-html"></my-element>
+  </div>
+</section>
+
+      </main>
+    </div>
+    
+<footer>
+  <p>
+    Made with
+    <a href="https://github.com/lit/lit-element-starter-js">lit-starter-js</a>
+  </p>
+</footer>
+  </body>
+</html>

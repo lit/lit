@@ -1,0 +1,140 @@
+<!doctype html>
+<!--
+  @license
+  Copyright The Lit Project
+  Copyright 2021 Google LLC
+  SPDX-License-Identifier: BSD-3-Clause
+-->
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, minimum-scale=1.0, initial-scale=1.0, user-scalable=yes"
+    />
+    <title>Lit Animation</title>
+  </head>
+  <body>
+    <style>
+      html,
+      body {
+        margin: 0;
+        font-family: sans-serif;
+        height: 100vh;
+        width: 100vw;
+      }
+
+      my-element {
+        flex: 1;
+      }
+    </style>
+    <my-element></my-element>
+    <script type="module">
+      import {LitElement, html, css} from 'lit';
+      import {
+        animate,
+        flyAbove,
+        flyBelow,
+        fade,
+      } from '../development/animate.js';
+      import {AnimateController} from '../development/animate-controller.js';
+
+      const lit = ['L', 'I', 'T'];
+
+      const duration = 1000;
+
+      class MyElement extends LitElement {
+        static properties = {
+          lit: {},
+        };
+
+        constructor() {
+          super();
+          this.lit = lit;
+          this.controller = new AnimateController(this, {
+            defaultOptions: {
+              keyframeOptions: {
+                duration,
+                easing: 'ease-in-out',
+                fill: 'backwards',
+              },
+            },
+            // startPaused: true,
+            onComplete: () => setTimeout(() => this.changeLayout(), 0),
+          });
+          this.addEventListener('click', () => this.clickHandler());
+        }
+
+        static styles = [
+          css`
+            :host {
+              display: flex;
+              height: 100%;
+              width: 100%;
+              align-items: center;
+              position: relative;
+              overflow: hidden;
+              color: #040424;
+              cursor: pointer;
+            }
+
+            .l {
+              flex: 1;
+              font-size: 30rem;
+              text-align: center;
+              will-change: transform;
+              background: linear-gradient(
+                0deg,
+                rgba(2, 0, 36, 1) 0%,
+                rgba(9, 33, 121, 1) 35%,
+                rgba(0, 212, 255, 1) 100%
+              );
+              -webkit-background-clip: text;
+              -webkit-text-fill-color: transparent;
+            }
+
+            .info {
+              position: absolute;
+              right: 2px;
+              bottom: 2px;
+            }
+          `,
+        ];
+
+        render() {
+          const delayTime = duration / (this.lit.length * 2.5);
+          return html`
+            ${this.lit?.map(
+              (l, i) =>
+                html`<span
+                  class="l"
+                  ${animate({
+                    keyframeOptions: {
+                      delay: i * delayTime,
+                    },
+                    in: fade,
+                    out: flyBelow,
+                  })}
+                  >${l}</span
+                >`
+            )}
+          `;
+        }
+
+        clickHandler() {
+          if (this.controller.isAnimating) {
+            this.controller.togglePlay();
+          } else {
+            this.changeLayout();
+          }
+        }
+
+        changeLayout() {
+          this.lit = this.lit.length ? [] : lit;
+        }
+      }
+
+      customElements.define('my-element', MyElement);
+    </script>
+  </body>
+</html>

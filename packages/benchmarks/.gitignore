@@ -1,0 +1,10 @@
+/generated/
+/generator/build/
+/generator/generated/
+!/generator/types/deoptigate.d.ts
+!/lit-html/template-heavy/template-heavy.js
+/node_modules/
+**/*.d.ts
+**/*.d.ts.map
+**/*.js
+**/*.js.map

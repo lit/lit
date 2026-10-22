@@ -1,0 +1,7 @@
+/development/
+/node/
+/test/
+/node_modules/
+/index.*
+/create-component.*
+/use-controller.*

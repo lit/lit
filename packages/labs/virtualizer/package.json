@@ -1,0 +1,172 @@
+{
+  "name": "@lit-labs/virtualizer",
+  "version": "2.1.1",
+  "description": "Viewport-based virtualization (virtual scrolling) for Lit",
+  "author": "Google LLC",
+  "license": "BSD-3-Clause",
+  "homepage": "https://lit.dev/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lit/lit.git",
+    "directory": "packages/labs/virtualizer"
+  },
+  "main": "lit-virtualizer.js",
+  "module": "lit-virtualizer.js",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./lit-virtualizer.d.ts",
+      "default": "./lit-virtualizer.js"
+    },
+    "./events.js": {
+      "types": "./events.d.ts",
+      "default": "./events.js"
+    },
+    "./layouts/flexWrap.js": {
+      "types": "./layouts/flexWrap.d.ts",
+      "default": "./layouts/flexWrap.js"
+    },
+    "./layouts/flow.js": {
+      "types": "./layouts/flow.d.ts",
+      "default": "./layouts/flow.js"
+    },
+    "./layouts/grid.js": {
+      "types": "./layouts/grid.d.ts",
+      "default": "./layouts/grid.js"
+    },
+    "./layouts/masonry.js": {
+      "types": "./layouts/masonry.d.ts",
+      "default": "./layouts/masonry.js"
+    },
+    "./LitVirtualizer.js": {
+      "types": "./LitVirtualizer.d.ts",
+      "default": "./LitVirtualizer.js"
+    },
+    "./polyfillLoaders/ResizeObserver.js": {
+      "types": "./polyfillLoaders/ResizeObserver.d.ts",
+      "default": "./polyfillLoaders/ResizeObserver.js"
+    },
+    "./polyfills/resize-observer-polyfill/ResizeObserver.js": {
+      "types": "./polyfills/resize-observer-polyfill/ResizeObserver.d.ts",
+      "default": "./polyfills/resize-observer-polyfill/ResizeObserver.js"
+    },
+    "./support/method-interception.js": {
+      "types": "./support/method-interception.d.ts",
+      "default": "./support/method-interception.js"
+    },
+    "./support/resize-observer-errors.js": {
+      "types": "./support/resize-observer-errors.d.ts",
+      "default": "./support/resize-observer-errors.js"
+    },
+    "./virtualize.js": {
+      "types": "./virtualize.d.ts",
+      "default": "./virtualize.js"
+    }
+  },
+  "scripts": {
+    "bench": "tach --root=../../.. --browser=chrome-headless test/benchmarks/basic.html --measure=fcp",
+    "bench:debug": "tach --root=../../.. test/benchmarks/basic.html --measure=fcp",
+    "bench:scroll": "tach --force-clean-npm-install --config=test/benchmarks/scrollingBenchmarks.json",
+    "build": "wireit",
+    "build:copy-polyfill": "wireit",
+    "build:ts": "wireit",
+    "checksize": "rollup -c; rm lit-virtualizer.bundled.js lit-virtualizer-with-polyfills.bundled.js",
+    "test": "wireit",
+    "test:es5build": "wireit",
+    "test:screenshot": "cd test/screenshot && rollup -c && mocha screenshot.js",
+    "generate-screenshots": "cd test/screenshot && rollup -c && mocha screenshot.js --generate-screenshots"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:ts",
+        "build:copy-polyfill"
+      ]
+    },
+    "build:copy-polyfill": {
+      "command": "mkdir -p polyfills/resize-observer-polyfill && cp src/polyfills/resize-observer-polyfill/ResizeObserver.js polyfills/resize-observer-polyfill/ResizeObserver.js",
+      "files": [
+        "src/polyfills/resize-observer-polyfill/ResizeObserver.js"
+      ],
+      "output": [
+        "polyfills/resize-observer-polyfill/ResizeObserver.js"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "clean": "if-file-deleted",
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": [
+        ".tsbuildinfo",
+        "layouts/**/*.{js,d.ts,d.ts.map}",
+        "polyfillLoaders/**/*.{js,d.ts,d.ts.map}",
+        "support/**/*.{js,d.ts,d.ts.map}",
+        "test/**/*.{js,d.ts,d.ts.map}",
+        "!test/screenshot/**",
+        "events.{js,d.ts,d.ts.map}",
+        "lit-virtualizer.{js,d.ts,d.ts.map}",
+        "LitVirtualizer.{js,d.ts,d.ts.map}",
+        "ScrollerController.{js,d.ts,d.ts.map}",
+        "virtualize.{js,d.ts,d.ts.map}",
+        "Virtualizer.{js,d.ts,d.ts.map}"
+      ],
+      "dependencies": [
+        "../../internal-scripts:build",
+        "../../lit:build"
+      ]
+    },
+    "test": {
+      "command": "node ../../tests/run-web-tests.js \"test/**/*.test.js\" --config web-test-runner.config.js --esbuild-target auto --node-resolve true",
+      "dependencies": [
+        "build",
+        "test:es5build",
+        "../../tests:build"
+      ],
+      "env": {
+        "BROWSERS": {
+          "external": true
+        }
+      },
+      "files": [
+        "web-test-runner.config.js"
+      ],
+      "output": []
+    },
+    "test:es5build": {
+      "command": "tsc --target ES5 --noEmit --downlevelIteration",
+      "dependencies": [
+        "../../lit:build"
+      ],
+      "files": [
+        "src/**/*.ts",
+        "tsconfig.json"
+      ],
+      "output": []
+    }
+  },
+  "files": [
+    "/layouts/*.{d.ts,d.ts.map,js,js.map}",
+    "/layouts/shared/*.{d.ts,d.ts.map,js,js.map}",
+    "/polyfillLoaders/*.{d.ts,d.ts.map,js,js.map}",
+    "/polyfills/resize-observer-polyfill/ResizeObserver.{d.ts,js}",
+    "/support/*.{d.ts,d.ts.map,js,js.map}",
+    "/events.{js,d.ts,d.ts.map,js.map}",
+    "/lit-virtualizer.{d.ts,d.ts.map,js,js.map}",
+    "/virtualize.{d.ts,d.ts.map,js,js.map}",
+    "/Virtualizer.{d.ts,d.ts.map,js,js.map}",
+    "/LitVirtualizer.{d.ts,d.ts.map,js,js.map}",
+    "/ScrollerController.{d.ts,d.ts.map,js,js.map}"
+  ],
+  "devDependencies": {
+    "@open-wc/testing": "^3.1.6",
+    "@web/dev-server-esbuild": "^0.3.0",
+    "tachometer": "^0.7.0"
+  },
+  "dependencies": {
+    "lit": "^3.2.0",
+    "tslib": "^2.0.3"
+  }
+}

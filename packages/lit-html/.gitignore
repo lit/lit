@@ -1,0 +1,15 @@
+/development/
+/node/
+/version-stability-build/
+/directives/
+/node_modules/
+/test/
+/lit-html.*
+/directive.*
+/directive-helpers.*
+/async-directive.*
+/polyfill-support.*
+/private-ssr-support.*
+/static.*
+/is-server.*
+/compiled/

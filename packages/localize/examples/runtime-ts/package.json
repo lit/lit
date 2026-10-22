@@ -1,0 +1,62 @@
+{
+  "name": "@lit-internal/localize-examples-runtime-ts",
+  "description": "Example of using lit-localize in runtime mode with TypeScript",
+  "version": "1.0.2",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "wireit",
+    "build:localize": "wireit",
+    "build:ts": "wireit",
+    "serve": "web-dev-server --node-resolve"
+  },
+  "wireit": {
+    "build": {
+      "dependencies": [
+        "build:localize",
+        "build:ts"
+      ]
+    },
+    "build:localize": {
+      "command": "lit-localize build",
+      "dependencies": [
+        "../../../localize:build",
+        "../../../localize-tools:build"
+      ],
+      "files": [
+        "lit-localize.json",
+        "tsconfig.json",
+        "src/**",
+        "xliff/**",
+        "!src/generated/**"
+      ],
+      "output": [
+        "src/generated/**"
+      ]
+    },
+    "build:ts": {
+      "command": "tsc --build --pretty",
+      "dependencies": [
+        "build:localize",
+        "../../../localize:build"
+      ],
+      "clean": "if-file-deleted",
+      "files": [
+        "src/**"
+      ],
+      "output": [
+        "lib/**",
+        ".tsbuildinfo"
+      ]
+    }
+  },
+  "dependencies": {
+    "@lit/localize": "^0.12.0",
+    "@material/mwc-circular-progress": "^0.26.1",
+    "lit": "^3.2.0"
+  },
+  "devDependencies": {
+    "@lit/localize-tools": "^0.8.0",
+    "@web/dev-server": "^0.1.22"
+  }
+}

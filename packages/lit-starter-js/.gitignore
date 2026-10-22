@@ -1,0 +1,4 @@
+/node_modules/
+custom-elements.json
+# only generated for size check
+my-element.bundled.js

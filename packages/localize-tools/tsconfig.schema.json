@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "es2021",
+    "lib": ["es2021"],
+    "types": []
+  },
+  "include": ["src/types/**/*"],
+  "exclude": ["node_modules"]
+}

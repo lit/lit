@@ -1,0 +1,116 @@
+{
+  "autorun": false,
+  "terminals": [
+    {
+      "name": "TS: lit-html",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit-html",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: reactive-element",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/reactive-element",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: lit-element",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit-element",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: lit",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: labs/scoped-registry-mixin",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/scoped-registry-mixin",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: labs/react",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/react",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: labs/task",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/task",
+      "command": "npm run build:ts:watch"
+    },
+    {
+      "name": "TS: ssr",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/ssr",
+      "command": "npm run build:ts:watch",
+      "focus": true
+    },
+    {
+      "name": "TS: ssr-client",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/ssr-client",
+      "command": "npm run build:watch",
+      "focus": true
+    },
+    {
+      "name": "TS: eleventy-plugin-lit",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/eleventy-plugin-lit",
+      "command": "npm run build:ts:watch",
+      "focus": true
+    },
+    {
+      "name": "Rollup: lit-html",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit-html",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: reactive-element",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/reactive-element",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: lit-element",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit-element",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: lit",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/lit",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: labs/scoped-registry-mixin",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/scoped-registry-mixin",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: labs/react",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/react",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: labs/task",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/task",
+      "command": "npm run build:watch"
+    },
+    {
+      "name": "Rollup: labs/ssr-client",
+      "icon": "checklist",
+      "cwd": "[workspaceFolder]/packages/labs/ssr-client",
+      "command": "npm run build:watch"
+    }
+  ]
+}

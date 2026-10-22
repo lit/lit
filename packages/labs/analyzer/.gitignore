@@ -1,0 +1,12 @@
+/lib/
+/test/
+
+index.js
+index.js.map
+index.d.ts
+index.d.ts.map
+
+package-analyzer.js
+package-analyzer.js.map
+package-analyzer.d.ts
+package-analyzer.d.ts.map

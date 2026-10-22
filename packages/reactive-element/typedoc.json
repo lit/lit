@@ -1,0 +1,11 @@
+{
+  "tsconfig": "tsconfig_apidoc.json",
+  "mode": "library",
+  "theme": "docs/_api/theme",
+  "excludeNotExported": true,
+  "excludePrivate": true,
+  "ignoreCompilerErrors": true,
+  "exclude": ["**/*test*", "**/node_modules/!(lit-html)/**", "**/test/**"],
+  "out": "./docs/api",
+  "gaID": "UA-39334307-23"
+}
