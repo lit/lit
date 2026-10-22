@@ -154,7 +154,10 @@ html`<main>${this.routes.outlet()}</main>`;
 
 #### enter() callbacks
 
-A route can define an `enter()` callback that lets it do work before rendering and optionally reject that route as a match.
+A route can define an `enter()` callback to do work before the route becomes
+current. Returning `false` cancels the current navigation. It does not try the
+next matching route. Any other return value, including no return value, allows
+the navigation to continue.
 
 `enter()` can be used to load and wait for necessary component definitions:
 
@@ -182,7 +185,7 @@ or dynamically install new routes:
       routes.splice(routes.length - 1, 0, dynamicRoute);
       // Trigger the router again
       await this._router.goto('/' + path);
-      // Reject this route so the dynamic one is matched
+      // The nested goto() selected the dynamic route; cancel this navigation
       return false;
     }
   }
@@ -195,7 +198,9 @@ or dynamically install new routes:
 
 `goto(name: string, params: object)` _(not implemented)_ allows navigation via named routes. The name and params are scoped to the Routes object it's called on, though nested routes can be triggered by a "tail" parameter - the match of a trailing `/*` parameter (See tail groups).
 
-`goto()` returns a Promise that resolves when any triggered async `enter()` callbacks have completed.
+`goto()` returns a Promise that resolves when any triggered async `enter()`
+callbacks have completed. It rejects if an `enter()` callback throws or
+rejects.
 
 #### `link()`
 
