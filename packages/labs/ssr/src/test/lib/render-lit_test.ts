@@ -331,6 +331,17 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     assert.is(customElementsRendered[0], 'test-not-rendered');
   });
 
+  test('element with CSSStyleSheet static styles', async () => {
+    const {render, templateWithStylesheet} = await setup();
+    const result = await render(templateWithStylesheet);
+    assert.ok(
+      result.includes(
+        '<style>.sheet-rule { color: red }.css-result-rule { color: blue }</style>'
+      ),
+      `expected sheet rules in <style>, got: ${result}`
+    );
+  });
+
   test('element with property', async () => {
     const {render, elementWithProperty} = await setup();
     const result = await render(elementWithProperty);
