@@ -91,3 +91,55 @@ suite(`ssr client hydration support`, () => {
     assert.equal(el.getAttribute('hydrate-internals-role'), null);
   });
 });
+
+class MyElement2 extends LitElement {
+  private _internals: ElementInternals;
+
+  constructor() {
+    super();
+    this._internals = this.attachInternals();
+    this._internals.role = 'menu';
+  }
+
+  override render() {
+    return html``;
+  }
+}
+
+customElements.define('my-element-2', MyElement2);
+
+suite('ssr client hydration support: overridden internals attributes', () => {
+  let container: HTMLElement;
+  let el: MyElement2;
+
+  setup(async () => {
+    container = document.createElement('div');
+
+    // Simulate SSR-rendered HTML in which a parent template has overridden
+    // `role` on `<a-internals-element>`
+    container.setHTMLUnsafe(`
+        <a-internals-element defer-hydration
+          role="listbox" hydrate-internals-role="menu">
+          <template shadowroot="open" shadowrootmode="open">
+            <!--lit-part T5fUn6aagr0=--><div>Foo</div><!--/lit-part-->
+          </template>
+        </a-internals-element>
+        `);
+
+    document.body.appendChild(container);
+
+    el = document.querySelector('my-element-2')!;
+  });
+
+  teardown(() => {
+    container?.remove();
+  });
+
+  test('overridden attribute is preserved after hydration', async () => {
+    el.removeAttribute('defer-hydration');
+    await el.updateComplete;
+
+    assert.equal(el.getAttribute('role'), 'listbox');
+    assert.equal(el.getAttribute('hydrate-internals-role'), null);
+  });
+});
