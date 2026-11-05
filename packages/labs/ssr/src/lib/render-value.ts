@@ -1180,7 +1180,11 @@ function isJavaScriptScriptTag(node: Element | Template): boolean {
     if (attr.name !== 'type') {
       continue;
     }
-    switch (attr.value) {
+    // Browsers strip surrounding whitespace from the type and match it
+    // ASCII case-insensitively, so `type=" Module"` or `type="Text/JavaScript"`
+    // still execute.
+    // see: https://html.spec.whatwg.org/multipage/scripting.html#prepare-the-script-element
+    switch (attr.value.trim().toLowerCase()) {
       // see: https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/MIME_types#textjavascript
       case null:
       case undefined:
