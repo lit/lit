@@ -1,5 +1,5 @@
 ---
-"@lit-labs/observers": patch
+'@lit-labs/observers': patch
 ---
 
 Fix missing `lit-html` runtime dependency in `@lit-labs/observers`. Controllers
