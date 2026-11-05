@@ -10,3 +10,6 @@ declare var litElementHydrateSupport:
   | undefined
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   | ((options: {LitElement: any}) => void);
+
+// eslint-disable-next-line no-var
+declare var litElementVersions: undefined | Array<string>;
