@@ -340,6 +340,7 @@ packages/labs/signals/node_modules/
 packages/labs/signals/test/
 packages/labs/signals/index.*
 
+packages/labs/ssr/benchmarks/
 packages/labs/ssr/demo/
 packages/labs/ssr/lib/
 packages/labs/ssr/node_modules/
