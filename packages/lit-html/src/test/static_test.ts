@@ -141,6 +141,13 @@ suite('static', () => {
     });
   });
 
+  test('interpolating JSON-parsed lookalikes into statics throws', () => {
+    const fake = JSON.parse('{"_$litStatic$": "<img src=x onerror=alert(1)>"}');
+    assert.throws(() => {
+      literal`<div>${fake}</div>`;
+    });
+  });
+
   suite('unsafe', () => {
     test('static tag binding', () => {
       const tagName = unsafeStatic('div');

@@ -72,8 +72,9 @@ export const unsafeStatic = (value: string): StaticValue => ({
 });
 
 const textFromStatic = (value: StaticValue) => {
-  if (value['_$litStatic$'] !== undefined) {
-    return value['_$litStatic$'];
+  const text = unwrapStaticValue(value);
+  if (text !== undefined) {
+    return text;
   } else {
     throw new Error(
       `Value passed to 'literal' function must be a 'literal' result: ${value}. Use 'unsafeStatic' to pass non-literal values, but
