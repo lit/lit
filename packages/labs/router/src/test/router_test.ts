@@ -6,7 +6,14 @@
  */
 
 import {assert} from 'chai';
-import type {Test1, Child1, Child2} from './router_test_code.js';
+import type {
+  Test1,
+  Child1,
+  Child2,
+  TailTest,
+  TailChild,
+  TailManyChild,
+} from './router_test_code.js';
 import type {RouteConfig, PathRouteConfig} from '@lit-labs/router/routes.js';
 import {stripExpressionComments} from '@lit-labs/testing';
 
@@ -253,6 +260,58 @@ const canTest =
     assert.equal(
       child1._routes.link('/local_absolute_path'),
       '/local_absolute_path'
+    );
+  });
+
+  test('tail ignores named params containing digits', async () => {
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-tail'
+    ) as TailTest;
+    const {contentWindow, contentDocument} = container;
+
+    contentWindow!.history.pushState({}, '', '/');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+
+    // The parent route `/user/:id1/*` must propagate `rest/path` (group `0`),
+    // not the `id1` named param (`42`), to the child.
+    await el._router.goto('/user/42/rest/path');
+    await el.updateComplete;
+    const child = el.shadowRoot!.querySelector('tail-child') as TailChild;
+    await child.updateComplete;
+
+    assert.deepEqual(child._routes.params, {a: 'rest', b: 'path'});
+    assert.include(
+      stripExpressionComments(child.shadowRoot!.innerHTML),
+      '<h3>Tail: rest/path</h3>'
+    );
+  });
+
+  test('tail selects the highest numeric group', async () => {
+    await loadTestModule('./router_test.html');
+    const el = container.contentDocument!.createElement(
+      'router-test-tail'
+    ) as TailTest;
+    const {contentWindow, contentDocument} = container;
+
+    contentWindow!.history.pushState({}, '', '/');
+    contentDocument!.body.append(el);
+    await el.updateComplete;
+
+    // With 11 wildcard groups (`0`..`10`), the tail must be group `10`
+    // (`k`), not group `9` (`j`, the lexicographic maximum).
+    await el._router.goto('/a/b/c/d/e/f/g/h/i/j/k');
+    await el.updateComplete;
+    const child = el.shadowRoot!.querySelector(
+      'tail-many-child'
+    ) as TailManyChild;
+    await child.updateComplete;
+
+    assert.deepEqual(child._routes.params, {x: 'k'});
+    assert.include(
+      stripExpressionComments(child.shadowRoot!.innerHTML),
+      '<h3>Many: k</h3>'
     );
   });
 });

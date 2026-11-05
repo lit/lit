@@ -93,3 +93,40 @@ export class Child2 extends LitElement {
     return this._routes.outlet();
   }
 }
+
+@customElement('router-test-tail')
+export class TailTest extends LitElement {
+  _router = new Router(this, [
+    {path: '/user/:id1/*', render: () => html`<tail-child></tail-child>`},
+    {
+      path: '/*/*/*/*/*/*/*/*/*/*/*',
+      render: () => html`<tail-many-child></tail-many-child>`,
+    },
+  ]);
+
+  override render() {
+    return html`${this._router.outlet()}`;
+  }
+}
+
+@customElement('tail-child')
+export class TailChild extends LitElement {
+  _routes = new Routes(this, [
+    {path: ':a/:b', render: ({a, b}) => html`<h3>Tail: ${a}/${b}</h3>`},
+  ]);
+
+  override render() {
+    return html`${this._routes.outlet()}`;
+  }
+}
+
+@customElement('tail-many-child')
+export class TailManyChild extends LitElement {
+  _routes = new Routes(this, [
+    {path: ':x', render: ({x}) => html`<h3>Many: ${x}</h3>`},
+  ]);
+
+  override render() {
+    return html`${this._routes.outlet()}`;
+  }
+}
