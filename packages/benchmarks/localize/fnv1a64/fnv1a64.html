@@ -1,0 +1,43 @@
+<!doctype html>
+<!--
+  Tachometer benchmark: fnv1a64 hash function
+-->
+<html>
+  <head></head>
+  <body>
+    <script type="module">
+      import * as bench from '/bench.js';
+      import {fnv1a64} from '../../../localize/internal/fnv1a64.js';
+
+      const strings = [
+        'Hello',
+        'Hello, World!',
+        'The quick brown fox jumps over the lazy dog',
+        'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.',
+        'short',
+        'a',
+        '',
+        '日本語テスト文字列',
+        'Ünïcödé têst strîng with spëcial characters: àáâãäåæçèéêë',
+        'A somewhat longer string that represents a typical localization message that might be found in a real application, including some markup and expressions that are common in lit-html templates.',
+      ];
+
+      const iterations = 10000;
+
+      // Warm up
+      for (let w = 0; w < 1000; w++) {
+        for (const s of strings) {
+          fnv1a64(s);
+        }
+      }
+
+      bench.start();
+      for (let i = 0; i < iterations; i++) {
+        for (const s of strings) {
+          fnv1a64(s);
+        }
+      }
+      bench.stop();
+    </script>
+  </body>
+</html>

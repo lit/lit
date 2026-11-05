@@ -1,5 +1,6 @@
 /**
  * @license
+ * Copyright The Lit Project Contributors.
  * Copyright 2023 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -41,7 +42,7 @@ const effectWatcher = new Signal.subtle.Watcher(() => {
   });
 });
 
-interface SignalWatcherApi {
+export interface SignalWatcherApi {
   updateEffect(fn: () => void, options?: EffectOptions): () => void;
 }
 

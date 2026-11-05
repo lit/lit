@@ -1,11 +1,12 @@
 /**
  * @license
+ * Copyright The Lit Project Contributors.
  * Copyright 2019 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
 import {ElementRenderer} from './element-renderer.js';
-import {LitElement, CSSResult, ReactiveElement} from 'lit';
+import {LitElement, CSSResult, CSSResultOrNative, ReactiveElement} from 'lit';
 import {_$LE} from 'lit-element/private-ssr-support.js';
 import {
   ariaMixinAttributes,
@@ -18,6 +19,24 @@ import type {ThunkedRenderResult} from './render-result.js';
 export type Constructor<T> = {new (): T};
 
 const {attributeToProperty, changedProperties} = _$LE;
+
+/**
+ * Extracts CSS text from a style entry. `CSSStyleSheet`s are not always
+ * converted to `CSSResult`s by ReactiveElement's `getCompatibleStyle()`
+ * (e.g. when the sheet comes from a VM context whose global has no
+ * `CSSStyleSheet`, or a different realm), so read `cssRules` directly,
+ * mirroring `cssResultFromStyleSheet` in reactive-element.
+ */
+const cssTextFromStyle = (style: CSSResultOrNative): string => {
+  if ('cssText' in style) {
+    return (style as CSSResult).cssText;
+  }
+  let cssText = '';
+  for (const rule of (style as CSSStyleSheet).cssRules) {
+    cssText += rule.cssText;
+  }
+  return cssText;
+};
 
 // We want consumers to be able to implement their own createRenderRoot
 // and to detect whether it breaks during SSR. Due to this, we
@@ -36,15 +55,59 @@ LitElement.prototype['createRenderRoot'] = function () {
 };
 
 /**
+ * The render options for a specific element in LitElementRenderer.
+ */
+export interface LitElementRendererRenderOptions {
+  /**
+   * Whether to call connectedCallback during SSR.
+   * @default false
+   */
+  connectedCallback?: boolean;
+  /**
+   * Whether to disable SSR for the element.
+   * @default false
+   */
+  disableSsr?: boolean;
+}
+
+/**
  * ElementRenderer implementation for LitElements
  */
 export class LitElementRenderer extends ElementRenderer {
   override element: LitElement;
 
+  private _disabled = false;
+
   static override matchesClass(ctor: typeof HTMLElement) {
     // This property needs to remain unminified.
     return (ctor as unknown as typeof LitElement)['_$litElement$'];
   }
+
+  /**
+   * Configure options for specific elements.
+   * Callbacks are called in order for each element being rendered and can be
+   * used to configure options such as whether to call connectedCallback for
+   * a given element or to disable SSR.
+   *
+   * @example
+   *
+   * ```ts
+   * import {LitElementRenderer} from '@lit-labs/ssr';
+   *
+   * // Disable SSR for `my-element`.
+   * LitElementRenderer.renderOptions.push(
+   *   (element) => element.localName === 'my-element' ? {disableSsr: true} : undefined
+   * );
+   *
+   * // Call connectedCallback for `my-element` by returning an options object with `connectedCallback` set to true.
+   * LitElementRenderer.renderOptions.push(
+   *   (element) => element.localName === 'my-element' ? {connectedCallback: true} : undefined
+   * );
+   * ```
+   */
+  static readonly renderOptions: ((
+    element: LitElement
+  ) => LitElementRendererRenderOptions | undefined)[] = [];
 
   constructor(tagName: string) {
     super(tagName);
@@ -82,9 +145,31 @@ export class LitElementRenderer extends ElementRenderer {
   }
 
   override connectedCallback() {
-    // Optionally call connectedCallback via setting: `litSsrCallConnectedCallback`
-    // Enable this flag to process events dispatched handled via connectedCallback.
     if (globalThis.litSsrCallConnectedCallback) {
+      console.warn(
+        'litSsrCallConnectedCallback is deprecated. ' +
+          'Please use LitElementRenderer.renderOptions instead.'
+      );
+    }
+
+    let renderOptions: LitElementRendererRenderOptions | undefined;
+    for (const optionsCallback of LitElementRenderer.renderOptions) {
+      const options = optionsCallback(this.element);
+      if (options) {
+        renderOptions = options;
+        break;
+      }
+    }
+
+    if (renderOptions?.disableSsr) {
+      this._disabled = true;
+      return;
+    }
+
+    if (
+      globalThis.litSsrCallConnectedCallback ||
+      renderOptions?.connectedCallback
+    ) {
       // Prevent enabling asynchronous updating by overriding enableUpdating
       // with a no-op.
       this.element['enableUpdating'] = function () {};
@@ -95,9 +180,10 @@ export class LitElementRenderer extends ElementRenderer {
         const className = this.element.constructor.name;
         console.warn(
           `Calling ${className}.connectedCallback() resulted in a thrown ` +
-            'error. Consider removing `litSsrCallConnectedCallback` to ' +
-            'prevent calling connectedCallback or add isServer checks to ' +
-            'your code to prevent calling browser API during SSR.'
+            'error. Consider configuring `LitElementRenderer.renderOptions` ' +
+            'to prevent calling connectedCallback for unsupported elements ' +
+            'or add isServer checks to your code to prevent calling browser ' +
+            'API during SSR.'
         );
         throw e;
       }
@@ -121,7 +207,13 @@ export class LitElementRenderer extends ElementRenderer {
     attributeToProperty(this.element as LitElement, name, value);
   }
 
-  override renderShadow(renderInfo: RenderInfo): ThunkedRenderResult {
+  override renderShadow(
+    renderInfo: RenderInfo
+  ): ThunkedRenderResult | undefined {
+    if (this._disabled) {
+      return undefined;
+    }
+
     const result: ThunkedRenderResult = [];
     // Render styles.
     const styles = (this.element.constructor as typeof LitElement)
@@ -129,7 +221,7 @@ export class LitElementRenderer extends ElementRenderer {
     if (styles !== undefined && styles.length > 0) {
       result.push('<style>');
       for (const style of styles) {
-        result.push((style as CSSResult).cssText);
+        result.push(cssTextFromStyle(style));
       }
       result.push('</style>');
     }

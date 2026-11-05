@@ -1,5 +1,6 @@
 /**
  * @license
+ * Copyright The Lit Project Contributors.
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -34,6 +35,7 @@ import {ContextProvider} from '../controllers/context-provider.js';
  * }
  * ```
  * @category Decorator
+ * @ExportDecoratedItems
  */
 export function provide<ValueType>({
   context: context,

@@ -1,5 +1,6 @@
 /**
  * @license
+ * Portions Copyright The Lit Project
  * Portions Copyright 2023 Google LLC
  * Portions Copyright 2017 Evgeny Poberezkin
  * SPDX-License-Identifier: MIT

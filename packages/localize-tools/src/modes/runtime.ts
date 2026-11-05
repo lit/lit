@@ -1,5 +1,6 @@
 /**
  * @license
+ * Copyright The Lit Project Contributors.
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
@@ -121,7 +122,7 @@ async function runtimeOutput(
  *
  * TODO(aomarks) Refactor this into the build() method above.
  */
-function generateLocaleModule(
+export function generateLocaleModule(
   locale: Locale,
   translations: Message[],
   canonMsgs: ProgramMessage[],
@@ -200,7 +201,7 @@ function copyMessagesSortedByName(messages: Message[]): Message[] {
  * Convert the contents of a message to a TypeScript string, possibly using lit
  * if there is embedded HTML.
  */
-function makeMessageString(
+export function makeMessageString(
   contents: Array<string | Placeholder>,
   canon: ProgramMessage
 ): string {

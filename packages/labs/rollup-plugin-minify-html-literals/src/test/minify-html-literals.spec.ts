@@ -1,10 +1,10 @@
-import * as assert from 'node:assert/strict';
-import {test, describe as suite, afterEach, beforeEach} from 'node:test';
+import {MinifierOptions} from 'html-minifier-next';
 import MagicString, {SourceMapOptions} from 'magic-string';
-import {MinifierOptions as HTMLOptions} from 'html-minifier-next';
-import {ParseLiteralsOptions, parseLiterals} from '../lib/parse-literals.js';
-import {Template, TemplatePart} from '../lib/models.js';
+import * as assert from 'node:assert/strict';
+import {afterEach, beforeEach, describe as suite, test} from 'node:test';
 import Sinon from 'sinon';
+import {Template, TemplatePart} from '../lib/models.js';
+import {ParseLiteralsOptions, parseLiterals} from '../lib/parse-literals.js';
 
 import {
   SourceMap,
@@ -133,7 +133,7 @@ suite('minify-html-literals', () => {
 
     function cssProperty(property) {
       const width = '20px';
-      return css\`.foo{font-size:1rem;width:\${width};color:\${property}}\`;
+      return css\`.foo{width:\${width};color:\${property};font-size:1rem}\`;
     }
   `;
 
@@ -238,7 +238,189 @@ suite('minify-html-literals', () => {
       return LitHtml.html\`<div id="container"><span>Some content here</span></div>\`;
     }
   `;
+  const CONTAINER_QUERY_SOURCE = `
+    function someFunction() {
+      return css\`
+        :host {
+          container-type: inline-size;
+        }
 
+        .some-class {
+          padding: 16px;
+        }
+      
+        @container (min-width: 768px) {
+          .some-class {
+            display: flex;
+          }
+
+          .another-class {
+            font-size: 20px;
+          }
+        }
+      \`;
+    }
+  `;
+
+  const CONTAINER_QUERY_SOURCE_MIN = `
+    function someFunction() {
+      return css\`:host{container-type:inline-size}.some-class{padding:16px}@container (width>=768px){.some-class{display:flex}.another-class{font-size:20px}}\`;
+    }
+  `;
+
+  const CSS_TEMPLATE_EXPRESSION_SOURCE = `
+    function getSomeCss(){
+      const width = '20px';
+      const heightNumber = 20;
+      return css\`
+        .foo {
+          width: \${width};
+          height: \${heightNumber}px;
+        }
+      \`;
+    }
+  `;
+
+  const CSS_TEMPLATE_EXPRESSION_SOURCE_MIN = `
+    function getSomeCss(){
+      const width = '20px';
+      const heightNumber = 20;
+      return css\`.foo{width:\${width};height:\${heightNumber}px}\`;
+    }
+  `;
+
+  const CSS_IN_STYLE_TAG_SOURCE = `
+    function renderWithStyle() {
+      return html\`
+        <style>
+          .container {
+            display: flex;
+            padding: 16px;
+          }
+          
+          .item {
+            color: blue;
+            font-size: 14px;
+          }
+        </style>
+      \`;
+    }
+  `;
+
+  const CSS_IN_STYLE_TAG_SOURCE_MIN = `
+    function renderWithStyle() {
+      return html\`<style>.container{display:flex;padding:16px}.item{color:#00f;font-size:14px}</style>\`;
+    }
+  `;
+
+  const CSS_TEMPLATE_LITERAL_SOURCE = `
+    function renderCSSLiteral() {
+      return css\`
+        .container {
+          display: flex;
+          padding: 16px;
+        }
+        
+        .item {
+          color: blue;
+          font-size: 14px;
+        }
+      \`;
+    }
+  `;
+
+  const CSS_TEMPLATE_LITERAL_SOURCE_MIN = `
+    function renderCSSLiteral() {
+      return css\`.container{padding:16px;display:flex}.item{color:#00f;font-size:14px}\`;
+    }
+  `;
+
+  const CSS_IN_STYLE_TAG_WITH_EXPRESSIONS_SOURCE = `
+    function renderWithStyleAndExpressions(color, size) {
+      return html\`
+        <style>
+          .container {
+            display: flex;
+            padding: 16px;
+            background-color: \${color};
+          }
+          
+          .item {
+            color: blue;
+            font-size: \${size}px;
+          }
+        </style>
+      \`;
+    }
+  `;
+
+  const CSS_IN_STYLE_TAG_WITH_EXPRESSIONS_SOURCE_MIN = `
+    function renderWithStyleAndExpressions(color, size) {
+      return html\`<style>.container{display:flex;padding:16px;background-color:\${color}}.item{color:#00f;font-size:\${size}px}</style>\`;
+    }
+  `;
+  const CSS_NESTING_SOURCE = `
+    function cssNesting() {
+      const spacing = '16px';
+      const breakpoint = 768;
+      return css\`
+        main {
+          display: flex;
+          padding: \${spacing};
+          container-type: inline-size;
+          
+          section {
+            color: blue;
+            font-size: 14px;
+            margin-bottom: \${spacing};
+            
+            h1 {
+              font-weight: bold;
+              line-height: 1.5;
+              padding: 8px \${spacing};
+            }
+            
+            .highlight {
+              background-color: yellow;
+            }
+          }
+          
+          article {
+            background-color: white;
+            
+            @container (min-width: 768px) {
+              display: grid;
+              grid-template-columns: repeat(3, 1fr);
+              gap: 24px;
+              
+              & .card {
+                padding: 12px;
+                border-radius: 4px;
+                margin-top: \${breakpoint}px;
+              }
+            }
+          }
+      
+          &:hover {
+            background-color: lightgray;
+          }
+        }
+        my-custom-element {
+          &:state(custom-state){
+              color: green;
+          }
+        }
+      \`;
+    }
+  `;
+
+  const CSS_NESTING_SOURCE_MIN = `
+    function cssNesting() {
+      const spacing = '16px';
+      const breakpoint = 768;
+      return css\`main{padding:\${spacing};display:flex;container-type:inline-size;& section{color:#00f;margin-bottom:\${spacing};font-size:14px;& h1{padding:8px \${spacing}font-weight:700;line-height:1.5}& .highlight{background-color:#ff0}}& article{background-color:#fff;@container (width>=768px){grid-template-columns:repeat(3,1fr);gap:24px;display:grid;& .card{margin-top:\${breakpoint}px;border-radius:4px;padding:12px}}}&:hover{background-color:#d3d3d3}}my-custom-element{&:state(custom-state){color:green}}\`;
+    }
+  `;
   test('should minify "html" and "css" tagged templates', async () => {
     const result = await minifyHTMLLiterals(SOURCE, {fileName: 'test.js'});
     assert.equal(typeof result, 'object');
@@ -265,6 +447,80 @@ suite('minify-html-literals', () => {
     });
     assert.equal(typeof result, 'object');
     assert.equal(result!.code, MEMBER_EXPRESSION_LITERAL_SOURCE_MIN);
+  });
+
+  test('should preserve template expressions, semicolons, and strings after template expressions', async () => {
+    const result = await minifyHTMLLiterals(CSS_TEMPLATE_EXPRESSION_SOURCE, {
+      fileName: 'test.js',
+    });
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, CSS_TEMPLATE_EXPRESSION_SOURCE_MIN);
+  });
+
+  test('should minify @container queries and modernize to range syntax', async () => {
+    const result = await minifyHTMLLiterals(CONTAINER_QUERY_SOURCE, {
+      fileName: 'test.js',
+    });
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, CONTAINER_QUERY_SOURCE_MIN);
+  });
+
+  test('should minify CSS in style tags the same as CSS template literals', async () => {
+    const styleTagResult = await minifyHTMLLiterals(CSS_IN_STYLE_TAG_SOURCE, {
+      fileName: 'test.js',
+    });
+    const cssLiteralResult = await minifyHTMLLiterals(
+      CSS_TEMPLATE_LITERAL_SOURCE,
+      {
+        fileName: 'test.js',
+      }
+    );
+
+    assert.equal(typeof styleTagResult, 'object');
+    assert.equal(styleTagResult!.code, CSS_IN_STYLE_TAG_SOURCE_MIN);
+
+    assert.equal(typeof cssLiteralResult, 'object');
+    assert.equal(cssLiteralResult!.code, CSS_TEMPLATE_LITERAL_SOURCE_MIN);
+
+    // Both should produce same minification results
+    assert.ok(CSS_IN_STYLE_TAG_SOURCE_MIN.includes('color:#00f'));
+    assert.ok(CSS_TEMPLATE_LITERAL_SOURCE_MIN.includes('color:#00f'));
+  });
+
+  test('should preserve template expressions in CSS within style tags', async () => {
+    const result = await minifyHTMLLiterals(
+      CSS_IN_STYLE_TAG_WITH_EXPRESSIONS_SOURCE,
+      {
+        fileName: 'test.js',
+      }
+    );
+
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, CSS_IN_STYLE_TAG_WITH_EXPRESSIONS_SOURCE_MIN);
+
+    // Should preserve template expressions in style tags
+    assert.ok(result!.code.includes('background-color:${color}'));
+    assert.ok(result!.code.includes('font-size:${size}'));
+  });
+
+  test('should minify CSS with native nesting, template expressions, and container queries', async () => {
+    const result = await minifyHTMLLiterals(CSS_NESTING_SOURCE, {
+      fileName: 'test.js',
+    });
+    assert.equal(typeof result, 'object');
+    assert.equal(result!.code, CSS_NESTING_SOURCE_MIN);
+
+    // Should preserve nesting with semantic HTML elements
+    assert.ok(result!.code.includes('& section{'));
+    assert.ok(result!.code.includes('& h1{'));
+    assert.ok(result!.code.includes('& article{'));
+
+    // Should preserve template expressions in nested context
+    assert.ok(result!.code.includes('8px ${spacing}font-weight'));
+    assert.ok(result!.code.includes('margin-top:${breakpoint}px'));
+
+    // Should modernize container query to range syntax in nested context
+    assert.ok(result!.code.includes('@container (width>=768px)'));
   });
 
   test('should minify multiline svg elements', async () => {
@@ -315,36 +571,27 @@ suite('minify-html-literals', () => {
     });
 
     test('should use defaultMinifyOptions', async () => {
-      const result = await minifyHTMLLiterals(SOURCE, {fileName: 'test.js'});
-      // Verify that minification actually happened
-      assert.notEqual(result, null);
-      assert.ok(minifyHTMLSpy.called);
+      await minifyHTMLLiterals(SOURCE, {fileName: 'test.js'});
       const parts = parseLiterals(SOURCE)[1].parts;
       const html = defaultStrategy.combineHTMLStrings(
         parts,
         defaultStrategy.getPlaceholder(parts)
       );
-      // Check that the spy was called with the expected arguments
-      assert.ok(minifyHTMLSpy.calledWith(html, defaultMinifyOptions));
+      assert.ok(
+        minifyHTMLSpy.lastCall.calledWithExactly(html, defaultMinifyOptions)
+      );
     });
 
     test('should allow custom partial minifyOptions', async () => {
       const minifyOptions = {caseSensitive: false};
-      const result = await minifyHTMLLiterals(SOURCE, {
-        fileName: 'test.js',
-        minifyOptions,
-      });
-      // Verify that minification actually happened
-      assert.notEqual(result, null);
-      assert.ok(minifyHTMLSpy.called);
+      await minifyHTMLLiterals(SOURCE, {fileName: 'test.js', minifyOptions});
       const parts = parseLiterals(SOURCE)[1].parts;
       const html = defaultStrategy.combineHTMLStrings(
         parts,
         defaultStrategy.getPlaceholder(parts)
       );
-      // Check that the spy was called with the expected arguments
       assert.ok(
-        minifyHTMLSpy.calledWith(html, {
+        minifyHTMLSpy.lastCall.calledWithExactly(html, {
           ...defaultMinifyOptions,
           ...minifyOptions,
         })
@@ -378,26 +625,26 @@ suite('minify-html-literals', () => {
       assert.ok(msUsed instanceof MagicStringLike);
     });
 
-    test('should allow custom parseLiterals()', () => {
+    test('should allow custom parseLiterals()', async () => {
       const customParseLiterals = Sinon.spy(
         (source: string, options?: ParseLiteralsOptions) => {
           return parseLiterals(source, options);
         }
       );
 
-      minifyHTMLLiterals(SOURCE, {
+      await minifyHTMLLiterals(SOURCE, {
         fileName: 'test.js',
         parseLiterals: customParseLiterals,
       });
       assert.ok(customParseLiterals.called);
     });
 
-    test('should allow custom shouldMinify()', () => {
+    test('should allow custom shouldMinify()', async () => {
       const customShouldMinify = Sinon.spy((template: Template) => {
         return defaultShouldMinify(template);
       });
 
-      minifyHTMLLiterals(SOURCE, {
+      await minifyHTMLLiterals(SOURCE, {
         fileName: 'test.js',
         shouldMinify: customShouldMinify,
       });
@@ -414,8 +661,8 @@ suite('minify-html-literals', () => {
             return defaultStrategy.combineHTMLStrings(parts, placeholder);
           }
         ),
-        minifyHTML: Sinon.spy(async (html: string, options?: HTMLOptions) => {
-          return await defaultStrategy.minifyHTML(html, options);
+        minifyHTML: Sinon.spy((html: string, options?: MinifierOptions) => {
+          return defaultStrategy.minifyHTML(html, options);
         }),
         splitHTMLByPlaceholder: Sinon.spy(
           (html: string, placeholder: string) => {
@@ -464,9 +711,9 @@ suite('minify-html-literals', () => {
       });
     });
 
-    test('should allow disabling validation', () => {
-      assert.doesNotThrow(() => {
-        minifyHTMLLiterals(SOURCE, {
+    test('should allow disabling validation', async () => {
+      await assert.doesNotReject(async () => {
+        await minifyHTMLLiterals(SOURCE, {
           fileName: 'test.js',
           strategy: {
             getPlaceholder: () => {
