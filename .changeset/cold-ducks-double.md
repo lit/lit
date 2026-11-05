@@ -2,4 +2,5 @@
 'lit-html': minor
 ---
 
-Updated support for scoped custom elements (see #5245)
+Updated scoped custom elements integration to support the new standard
+`customElementRegistry` API and deprecate the pre-standard `importNode` API.
