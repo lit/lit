@@ -208,6 +208,19 @@
       "development": "./development/directives/map.js",
       "default": "./directives/map.js"
     },
+    "./directives/part-map.js": {
+      "types": "./development/directives/part-map.d.ts",
+      "browser": {
+        "development": "./development/directives/part-map.js",
+        "default": "./directives/part-map.js"
+      },
+      "node": {
+        "development": "./node/development/directives/part-map.js",
+        "default": "./node/directives/part-map.js"
+      },
+      "development": "./development/directives/part-map.js",
+      "default": "./directives/part-map.js"
+    },
     "./directives/range.js": {
       "types": "./development/directives/range.d.ts",
       "browser": {

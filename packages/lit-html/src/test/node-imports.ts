@@ -20,6 +20,7 @@ import 'lit-html/directives/join.js';
 import 'lit-html/directives/keyed.js';
 import 'lit-html/directives/live.js';
 import 'lit-html/directives/map.js';
+import 'lit-html/directives/part-map.js';
 import 'lit-html/directives/range.js';
 import 'lit-html/directives/ref.js';
 import 'lit-html/directives/repeat.js';
