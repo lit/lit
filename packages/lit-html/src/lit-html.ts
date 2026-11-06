@@ -1629,6 +1629,42 @@ class ChildPart implements Disconnectable {
             )),
           type);
 
+    if (DEV_MODE && (type === HTML_RESULT || type === SVG_RESULT)) {
+      const parent = this.parentNode as Element;
+      const svgNamespace = 'http://www.w3.org/2000/svg';
+      const htmlNamespace = 'http://www.w3.org/1999/xhtml';
+      const namespace =
+        parent.namespaceURI === svgNamespace &&
+        (parent.localName === 'foreignObject' ||
+          parent.localName === 'desc' ||
+          parent.localName === 'title')
+          ? htmlNamespace
+          : (parent.namespaceURI ??
+            ('host' in parent ? htmlNamespace : undefined));
+      const expectedNamespace =
+        type === SVG_RESULT ? svgNamespace : htmlNamespace;
+      if (
+        (namespace === htmlNamespace || namespace === svgNamespace) &&
+        namespace !== expectedNamespace &&
+        // Explicit <svg> roots and templates without elements can cross namespaces.
+        Array.from(template.el!.content.children).some(
+          (element) =>
+            element.namespaceURI !== namespace &&
+            !(
+              element.namespaceURI === svgNamespace &&
+              element.localName === 'svg'
+            )
+        )
+      ) {
+        issueWarning(
+          '',
+          `A template of type ${type === SVG_RESULT ? 'SVG' : 'HTML'} was rendered ` +
+            `into the ${namespace === svgNamespace ? 'SVG' : 'HTML'} namespace. ` +
+            `Check the template tag and the parent element.`
+        );
+      }
+    }
+
     if ((this._$committedValue as TemplateInstance)?._$template === template) {
       debugLogEvent &&
         debugLogEvent({
