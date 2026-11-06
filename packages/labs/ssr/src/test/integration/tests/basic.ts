@@ -21,6 +21,7 @@ import {repeat} from 'lit/directives/repeat.js';
 import {map} from 'lit/directives/map.js';
 import {guard} from 'lit/directives/guard.js';
 import {cache} from 'lit/directives/cache.js';
+import {keyed} from 'lit/directives/keyed.js';
 import {classMap} from 'lit/directives/class-map.js';
 import {styleMap} from 'lit/directives/style-map.js';
 import {until} from 'lit/directives/until.js';
@@ -766,6 +767,23 @@ export const tests: {[name: string]: SSRTest} = {
       ],
       stableSelectors: ['div'],
     };
+  },
+
+  'ChildPart accepts directive: keyed': {
+    render(x: unknown) {
+      return html` <div>${keyed(x, html` <span>${x}</span> `)}</div> `;
+    },
+    expectations: [
+      {
+        args: ['foo'],
+        html: '<div><span>foo</span></div>',
+      },
+      {
+        args: ['bar'],
+        html: '<div><span>bar</span></div>',
+      },
+    ],
+    stableSelectors: ['div'],
   },
 
   'ChildPart accepts directive: until (primitive)': {
