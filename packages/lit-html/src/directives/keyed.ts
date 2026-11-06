@@ -5,15 +5,15 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {nothing} from '../lit-html.js';
+import {nothing, Part} from '../lit-html.js';
 import {
   directive,
   Directive,
-  ChildPart,
   DirectiveParameters,
   DirectiveResult,
+  PartType,
 } from '../directive.js';
-import {clearPart, setCommittedValue} from '../directive-helpers.js';
+import {setChildPartValue, setCommittedValue} from '../directive-helpers.js';
 
 class Keyed<T> extends Directive {
   key: unknown = nothing;
@@ -23,24 +23,20 @@ class Keyed<T> extends Directive {
     return v;
   }
 
-  override update(part: ChildPart, [k, v]: DirectiveParameters<this>) {
+  override update(part: Part, [k, v]: DirectiveParameters<this>) {
     if (k !== this.key) {
-      if (this.key !== nothing) {
-        // Clear the part while its committed value is still the previous
-        // value, so that the previous value is disconnected: async directives
-        // inside it (such as ref()) get their disconnected() callback, and it
-        // is removed from the part's disconnectable children. Resetting the
-        // committed value first would make the part clear the sentinel
-        // instead, which left every previous value connected for the
-        // lifetime of the part.
-        //
-        // There is nothing to disconnect on the first update, and the part
-        // may then be hydrating server-rendered DOM that must be kept.
-        clearPart(part);
+      if (part.type === PartType.CHILD) {
+        // Commit `nothing` while the previous value is still committed: the
+        // part disconnects that value and removes its DOM, a directive nested
+        // in this one is dropped so the new value renders from scratch, and
+        // the new value is forced to commit. A fresh or hydrating part has
+        // `nothing` committed, so the first update removes no DOM.
+        setChildPartValue(part, nothing, this);
+      } else {
+        // Other part types hold no DOM; the sentinel committed value is
+        // enough to force a commit the next render.
+        setCommittedValue(part);
       }
-      // The one-arg form of setCommittedValue sets the value to a sentinel
-      // which forces a commit the next render.
-      setCommittedValue(part);
       this.key = k;
     }
     return v;
