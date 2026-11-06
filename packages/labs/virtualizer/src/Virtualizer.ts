@@ -649,13 +649,24 @@ export class Virtualizer {
 
       top = 0;
       left = 0;
-      bottom = window.innerHeight;
-      right = window.innerWidth;
+      bottom = document.documentElement.clientHeight;
+      right = document.documentElement.clientWidth;
 
-      const ancestorBounds = this._clippingAncestors.map((ancestor) =>
-        ancestor.getBoundingClientRect()
+      // Border boxes include space that items cannot occupy, including classic
+      // scrollbars. clientLeft also accounts for scrollbars on the left in RTL.
+      const ancestorBounds = [hostElement, ...this._clippingAncestors].map(
+        (ancestor) => {
+          const bounds = ancestor.getBoundingClientRect();
+          const top = bounds.top + ancestor.clientTop;
+          const left = bounds.left + ancestor.clientLeft;
+          return {
+            top,
+            left,
+            bottom: top + ancestor.clientHeight,
+            right: left + ancestor.clientWidth,
+          };
+        }
       );
-      ancestorBounds.unshift(hostElementBounds);
 
       for (const bounds of ancestorBounds) {
         top = Math.max(top, bounds.top);
@@ -676,8 +687,16 @@ export class Virtualizer {
         height: scrollingElement.scrollHeight,
       };
 
-      const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
-      const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
+      const scrollTop =
+        top -
+        hostElementBounds.top -
+        hostElement.clientTop +
+        hostElement.scrollTop;
+      const scrollLeft =
+        left -
+        hostElementBounds.left -
+        hostElement.clientLeft +
+        hostElement.scrollLeft;
 
       const height = Math.max(0, bottom - top);
       const width = Math.max(0, right - left);
