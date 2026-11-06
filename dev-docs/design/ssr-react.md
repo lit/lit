@@ -47,7 +47,7 @@ The wrapper made with `createComponent` from the Node build of this package will
 
 On the client, the wrapper on mount will set properties on the element and remove the `defer-hydration` attribute to start Lit element hydration. It will also add `suppressHydrationWarning` to the prop of the host element to suppress React's warning for having extra attributes on the server rendered HTML like `defer-hydration`.
 
-There was consideration of baking in the whole SSR template shadowroot generation into the Node build of `@lit/react` package itself which would remove the need for monkey patching `createElement`, but users would then have to make sure to manually load the `lit-element-hydrate-support` early anyway. It's not out of the realms of possiblity.
+There was consideration of baking in the whole SSR template shadowroot generation into the Node build of `@lit/react` package itself which would remove the need for monkey patching `createElement`, but users would then have to make sure to manually load the `lit-element-hydrate-support` early anyway. It's not out of the realms of possibility.
 
 ### `@lit-labs/nextjs` package
 

@@ -27,7 +27,7 @@ npm i -D @lit-labs/cli
 
 - [`help`](#help)
 - [`localize`](#localize)
-- [`labs gen`](#gen)
+- [`labs gen`](#labs-gen)
 
 ### `help`
 
