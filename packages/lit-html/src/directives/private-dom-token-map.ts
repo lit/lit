@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Google LLC
+ * Copyright The Lit Project Contributors.
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
@@ -51,12 +51,11 @@ export abstract class DOMTokenMapDirective extends Directive {
    */
   private _previousTokens?: Set<string>;
   private _staticTokens?: Set<string>;
+  private readonly attributeName: DOMTokenAttribute;
 
-  constructor(
-    partInfo: PartInfo,
-    private readonly attributeName: DOMTokenAttribute
-  ) {
+  constructor(partInfo: PartInfo, attributeName: DOMTokenAttribute) {
     super(partInfo);
+    this.attributeName = attributeName;
     if (
       partInfo.type !== PartType.ATTRIBUTE ||
       partInfo.name !== attributeName ||

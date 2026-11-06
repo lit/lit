@@ -1,6 +1,6 @@
 /**
  * @license
- * Copyright 2026 Google LLC
+ * Copyright The Lit Project Contributors.
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
