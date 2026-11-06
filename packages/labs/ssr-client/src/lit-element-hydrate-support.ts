@@ -13,7 +13,10 @@
 
 import type {PropertyValues} from '@lit/reactive-element';
 import {render, RenderOptions} from 'lit-html';
+import {isServer} from 'lit-html/is-server.js';
 import {hydrate} from './lib/hydrate-lit-html.js';
+
+const DEV_MODE = true;
 
 // Keep consistent with `@lit-labs/ssr-dom-shim`
 const HYDRATE_INTERNALS_ATTR_PREFIX = 'hydrate-internals-';
@@ -27,6 +30,17 @@ interface PatchableLitElement extends HTMLElement {
   render(): unknown;
   renderOptions: RenderOptions;
   _$needsHydration: boolean;
+}
+
+// LitElement only picks up hydration support if this module has already been
+// evaluated when lit-element.js loads, so warn if LitElement got there first.
+if (DEV_MODE && !isServer && globalThis.litElementVersions !== undefined) {
+  console.warn(
+    `LitElement was loaded before ` +
+      `@lit-labs/ssr-client/lit-element-hydrate-support.js, so hydration ` +
+      `support will not be installed. Make sure the hydrate support module ` +
+      `is imported before any module that imports lit or lit-element.`
+  );
 }
 
 globalThis.litElementHydrateSupport = ({
