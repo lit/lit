@@ -134,6 +134,13 @@ export interface Layout {
 
   updateItemSizes?: (sizes: ChildMeasurements) => void;
 
+  /**
+   * Clears any cached child size metrics (sizes and margins), e.g. when they
+   * may have become stale. Layouts that don't cache metrics may omit this
+   * method.
+   */
+  invalidate?: () => void;
+
   pin: PinOptions | null;
 
   unpin: Function;
