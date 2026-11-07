@@ -446,6 +446,26 @@ An array of items (JavaScript values, typically objects) representing the child 
 
 The types of values you use to represent your items are entirely up to you, as long as your `renderItem` function can transform each value into a child element.
 
+#### A note on updating the `items` property
+
+Because `<lit-virtualizer>`'s `items` is a [Lit reactive property](https://lit.dev/docs/components/properties/), it uses Lit's default change detection, which performs a strict reference equality check (`!==`) on the value. This means that the virtualizer will only re-render when you assign a *new* array to the `items` property — mutating the existing array in place (for example, with `Array.prototype.reverse()`, `Array.prototype.push()`, `Array.prototype.sort()`, or by writing to an index) will be silently ignored, since the new and old values refer to the same array.
+
+This is the same behavior you get with any Lit reactive property whose value is an object or array, but it is especially easy to run into with a virtualizer because mutating an array of items in place is a very natural thing to do. If you find that the virtualizer is not re-rendering when you update your data, the fix is to assign a new array to the property.
+
+```js
+// ❌ Won't trigger a re-render: mutates the existing array in place
+this.items.reverse();
+this.items.push(newItem);
+this.items.sort((a, b) => a.name.localeCompare(b.name));
+
+// ✅ Assigns a new array and triggers a re-render
+this.items = [...this.items].reverse();
+this.items = [...this.items, newItem];
+this.items = [...this.items].sort((a, b) => a.name.localeCompare(b.name));
+```
+
+The same rule applies when updating `items` via the `virtualize` directive, and when updating arrays that the virtualizer reads indirectly (e.g. an array held in a `@state()` field on a parent element). For more on this pattern, see [Mutating reactive properties](https://lit.dev/docs/components/properties/#mutating-reactive-properties) in the Lit docs.
+
 ### `renderItem` property
 
 Type: `(item: T, index?: number) => TemplateResult`
