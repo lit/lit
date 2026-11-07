@@ -705,7 +705,12 @@ export class Virtualizer {
       this._getSizer().style.transform = `translate(${h}px, ${v}px)`;
     } else {
       const style = this._hostElement!.style;
-      (style.minWidth as string | null) = h ? `${h}px` : '100%';
+      // Allow the host to override the computed min-width, e.g. for children
+      // sized to be wider than the viewport, which would otherwise be clamped
+      // to 100% width.
+      const minWidthOverride = this._hostElement!.dataset.minWidth;
+      (style.minWidth as string | null) =
+        minWidthOverride ?? (h ? `${h}px` : '100%');
       (style.minHeight as string | null) = v ? `${v}px` : '100%';
     }
   }

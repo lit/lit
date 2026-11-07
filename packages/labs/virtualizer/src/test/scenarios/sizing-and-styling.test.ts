@@ -11,6 +11,7 @@ import {customElement, property} from 'lit/decorators.js';
 import {LitVirtualizer} from '../../lit-virtualizer.js';
 import {expect, html, fixture} from '@open-wc/testing';
 import {grid} from '../../layouts/grid.js';
+import {until} from '../helpers.js';
 
 describe('Properly sizing virtualizer within host element', () => {
   ignoreBenignErrors(beforeEach, afterEach);
@@ -169,5 +170,64 @@ describe('Properly sizing virtualizer within host element', () => {
       expect(litVirtualizer.textContent).not.to.contain('[4]');
       expect(window.getComputedStyle(litVirtualizer).height).to.equal('25px');
     });
+  });
+});
+
+describe('Host min-width override', () => {
+  ignoreBenignErrors(beforeEach, afterEach);
+
+  async function createVirtualizer() {
+    const container = await fixture(
+      html` <div>
+        <style>
+          .viewport {
+            height: 200px;
+            width: 200px;
+            margin: 0;
+            padding: 0;
+            overflow: auto;
+          }
+          lit-virtualizer {
+            display: block;
+            position: relative;
+          }
+          .item {
+            width: 200px;
+            height: 50px;
+            margin: 0;
+            padding: 0;
+          }
+        </style>
+        <div class="viewport">
+          <lit-virtualizer
+            .items=${array(100)}
+            .renderItem=${(item: number) =>
+              html`<div class="item">${item}</div>`}
+          ></lit-virtualizer>
+        </div>
+      </div>`
+    );
+    return (await until(() =>
+      container.querySelector('lit-virtualizer')
+    )) as LitVirtualizer;
+  }
+
+  it('sizes the host to the viewport width without the override', async () => {
+    const virtualizer = await createVirtualizer();
+    await pass(() => expect(virtualizer.style.minWidth).to.equal('100%'));
+  });
+
+  it('honors data-min-width from the host element', async () => {
+    const virtualizer = await createVirtualizer();
+    await pass(() => expect(virtualizer.style.minWidth).to.equal('100%'));
+
+    virtualizer.setAttribute('data-min-width', '500px');
+    // The override applies on the next size pass.
+    virtualizer.items = [...virtualizer.items];
+    await pass(() => expect(virtualizer.style.minWidth).to.equal('500px'));
+
+    virtualizer.removeAttribute('data-min-width');
+    virtualizer.items = [...virtualizer.items];
+    await pass(() => expect(virtualizer.style.minWidth).to.equal('100%'));
   });
 });
