@@ -67,6 +67,7 @@ export function SignalWatcher<T extends ReactiveElementConstructor>(
     }
 
     override disconnectedCallback(): void {
+      this.performUpdate();
       super.disconnectedCallback();
       this.__dispose?.();
     }
