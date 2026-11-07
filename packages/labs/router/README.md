@@ -154,9 +154,27 @@ html`<main>${this.routes.outlet()}</main>`;
 
 #### enter() callbacks
 
-A route can define an `enter()` callback that lets it do work before rendering and optionally reject that route as a match.
+A route can define an `enter()` callback that runs before the route is rendered. It can be used to load resources asynchronously or to cancel the navigation.
 
-`enter()` can be used to load and wait for necessary component definitions:
+```ts
+enter?: (params: {[key: string]: string | undefined}) => Promise<boolean> | boolean;
+```
+
+`enter()` is awaited during `goto()`, after the route is matched but before the route's state is committed and before the host re-renders. The matched route's `params` object is passed in.
+
+##### Return value
+
+If `enter()` returns (or resolves to) the value `false`, the navigation is cancelled: the current route, parameters, and pathname are left unchanged, and the host is not re-rendered. The strict value `false` is required `undefined`, `null`, or no return value all allow the navigation to proceed.
+
+Cancellation is silent: the `Promise` returned by `goto()` still resolves, no event is fired, and no error is thrown. Returning `false` does not fall through to the next matching route, it stops the current navigation entirely.
+
+##### Errors
+
+If `enter()` throws or returns a rejected `Promise`, the error propagates out of `goto()` and the route's state is not updated. There is no internal error handling. Wrap calls to `goto()` in a `try`/`catch` if you need to recover from `enter()` failures.
+
+##### Examples
+
+Loading a component definition before the route renders:
 
 ```ts
 {
@@ -168,24 +186,25 @@ A route can define an `enter()` callback that lets it do work before rendering a
 }
 ```
 
-or dynamically install new routes:
+Dynamically installing a new route. Because returning `false` cancels the current navigation rather than falling through to the next route, the example explicitly calls `goto()` again with the newly installed route in place before returning `false`:
 
 ```ts
 {
   path: '/*',
-  render: (params) => html`<h1>Not found: params[0]</h1>`,
+  render: (params) => html`<h1>Not found: ${params[0]}</h1>`,
   enter: async (params) => {
     const path = params[0];
     const dynamicRoute = getDynamicRoute(path);
     if (dynamicRoute) {
       const {routes} = this._router;
       routes.splice(routes.length - 1, 0, dynamicRoute);
-      // Trigger the router again
+      // Re-run route matching with the newly installed route in place.
       await this._router.goto('/' + path);
-      // Reject this route so the dynamic one is matched
+      // Cancel this navigation; the state set by the goto() call above
+      // is what the user sees.
       return false;
     }
-  }
+  },
 }
 ```
 
