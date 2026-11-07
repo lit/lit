@@ -293,18 +293,15 @@ parse    load       install lit
 ### Example bootup strategy
 
 > 🚧 Note: The pattern described here will only work in modern browsers such as
-> Firefox, Chrome, Edge, and Safari. IE11 is also supported, but will require a
-> different pattern that is not yet documented here. Documenting this pattern is
-> on the [roadmap](#roadmap). Follow
-> [#2494](https://github.com/lit/lit/issues/2486) for progress and discussion.
+> Firefox, Chrome, Edge, and Safari.
 > 🚧
 
 The following demonstrates an example strategy for booting up a page that
 contains pre-rendered Lit components with Eleventy.
 
 The Lit team is investigating ways to simplify this bootup strategy and help you
-generate it. Follow [#2487](https://github.com/lit/lit/issues/2487) and
-[#2490](https://github.com/lit/lit/issues/2490) for progress.
+generate it. Follow [#2490](https://github.com/lit/lit/issues/2490) for
+progress.
 
 Typically in Eleventy your content is written in Markdown files which delegate
 the outer HTML shell to a `layout`. For example `hello.md` could delegate to the
@@ -430,13 +427,6 @@ have any thoughts or questions.
 - [[#2485](https://github.com/lit/lit/issues/2485)] Provide a mechanism for
   passing [Eleventy data](https://www.11ty.dev/docs/data/) to components as
   _properties_, instead of attributes.
-
-- [[#2486](https://github.com/lit/lit/issues/2486)] Patterns and documentation
-  for supporting IE11.
-
-- [[#2487](https://github.com/lit/lit/issues/2487)] Provide a mechanism for
-  automatically generating and inserting an appropriate [hydration](#hydration)
-  configuration.
 
 - [[#2490](https://github.com/lit/lit/issues/2490)] Simplify and optimize the
   polyfill + hydration bootup strategy.
