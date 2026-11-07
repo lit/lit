@@ -191,19 +191,14 @@ DOM](#declarative-shadow-dom) section below for more details.
 
 ### Component compatibility
 
-> 🚧 Note: Expanding this section with full details on component compatibility
-> is on the [roadmap](#roadmap). Follow
-> [#2494](https://github.com/lit/lit/issues/2494) for progress and discussion.
-> 🚧
-
 There are currently a number of restrictions that determine whether a component
 will be compatible with Lit pre-rendering, because not all of the component
 lifecycle methods are currently invoked, and the DOM APIs that can be used in
 certain lifecycle methods are restricted.
 
-The Lit team is working on finalizing and documenting the SSR lifecycle and
-restrictions, follow [#2494](https://github.com/lit/lit/issues/2494) for more
-details.
+See the
+[`@lit-labs/ssr` library status](https://lit.dev/docs/ssr/overview/#library-status)
+for more details.
 
 ### Passing data to components
 
@@ -418,9 +413,6 @@ The file `_includes/default.html` would then contain the following:
 The following features and fixes are on the roadmap for this plugin. See the
 linked issues for more details, and feel free to comment on the issues if you
 have any thoughts or questions.
-
-- [[#2494](https://github.com/lit/lit/issues/2494)] Document restrictions on SSR
-  compatible components.
 
 - [[#2483](https://github.com/lit/lit/issues/2483)] Allow specifying component
   definition modules in [front
