@@ -1,10 +1,15 @@
+<script lang="ts">
+export type {ElementSubEnum} from '@lit-internal/test-element-a/sub/element-sub.js';
+</script>
 <script setup lang="ts">
 import {h, useSlots, reactive} from 'vue';
 import {assignSlotNodes, Slots} from '@lit-labs/vue-utils/wrapper-utils.js';
 import '@lit-internal/test-element-a/sub/element-sub.js';
+import {ElementSubEnum} from '@lit-internal/test-element-a/sub/element-sub.js';
 
 export interface Props {
   foo?: string | undefined;
+  enum?: ElementSubEnum | undefined;
 }
 
 const vueProps = defineProps<Props>();
