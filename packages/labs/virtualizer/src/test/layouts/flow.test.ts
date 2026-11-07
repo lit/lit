@@ -21,7 +21,7 @@ import {
   LayoutSpecifier,
 } from '../../layouts/shared/Layout.js';
 import {VisibilityChangedEvent} from '../../events.js';
-import {flow} from '../../layouts/flow.js';
+import {flow, FlowLayout, FlowLayoutConfig} from '../../layouts/flow.js';
 import {expect, html, fixture} from '@open-wc/testing';
 
 describe('flow layout', () => {
@@ -309,6 +309,31 @@ describe('flow layout', () => {
       expect(visible.length).to.equal(4);
       expect(first(visible).textContent).to.equal('300');
       expect(last(visible).textContent).to.equal('303');
+    });
+  });
+
+  describe('estimatedItemHeight', () => {
+    // The layout receives its config in a microtask after construction.
+    function makeLayout(config?: FlowLayoutConfig) {
+      const layout = new FlowLayout(() => {}, config);
+      return Promise.resolve().then(() => layout);
+    }
+
+    it('seeds the item height estimate from the layout config', async () => {
+      const layout = await makeLayout({estimatedItemHeight: 1200});
+      expect(layout.estimatedItemHeight).to.equal(1200);
+      expect(layout._getAverageSize()).to.equal(1200);
+    });
+
+    it('falls back to the default 100px estimate', async () => {
+      const layout = await makeLayout();
+      expect(layout.estimatedItemHeight).to.equal(100);
+      expect(layout._getAverageSize()).to.equal(100);
+    });
+
+    it('ignores non-positive estimates', async () => {
+      const layout = await makeLayout({estimatedItemHeight: 0});
+      expect(layout.estimatedItemHeight).to.equal(100);
     });
   });
 });
