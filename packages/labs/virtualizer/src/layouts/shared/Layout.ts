@@ -5,26 +5,67 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-export type dimension = 'height' | 'width';
-export type Size = {
-  [key in dimension]: number;
+export type logicalSizeDimension = 'blockSize' | 'inlineSize';
+export type LogicalSize = {
+  blockSize: number;
+  inlineSize: number;
+};
+
+export type fixedSizeDimension = 'height' | 'width';
+export type FixedSize = {
+  height: number;
+  width: number;
+};
+
+type minOrMax = 'min' | 'max';
+
+/**
+ * A size value for the virtualizer host element. Either a plain pixel value
+ * (used for the block/scroll axis) or a `[minOrMax, pixels]` tuple (used for
+ * the inline/cross axis in non-scroller mode). The tuple tells the Virtualizer
+ * to set the CSS property as `min(100%, Npx)` or `max(100%, Npx)`, allowing
+ * the host to respect its container while also reflecting content size.
+ */
+export type VirtualizerSizeValue = number | [minOrMax, number];
+
+export type VirtualizerSize = {
+  blockSize: VirtualizerSizeValue;
+  inlineSize: VirtualizerSizeValue;
 };
 
 export type margin =
-  | 'marginTop'
-  | 'marginRight'
-  | 'marginBottom'
-  | 'marginLeft';
+  | 'marginBlockStart'
+  | 'marginBlockEnd'
+  | 'marginInlineStart'
+  | 'marginInlineEnd';
+
+export type writingMode = 'horizontal-tb' | 'vertical-lr' | 'vertical-rl';
+
+export type direction = 'ltr' | 'rtl';
+
+export type virtualizerAxis = 'block' | 'inline';
 
 export type Margins = {
   [key in margin]: number;
 };
 
-export type ItemBox = Size | (Size & Margins);
+export type ItemBox = LogicalSize & Margins;
+export type ElementLayoutInfo = ItemBox & LayoutParams;
 
-export type position = 'left' | 'top';
-export type offset = 'top' | 'right' | 'bottom' | 'left';
-export type offsetAxis = 'xOffset' | 'yOffset';
+export interface LayoutParams {
+  direction: direction;
+  writingMode: writingMode;
+}
+
+export type FixedCoordinates = {
+  top: number;
+  left: number;
+};
+
+export type LogicalCoordinates = {
+  block: number;
+  inline: number;
+};
 
 // TODO (graynorton@): This has become a bit of a
 // grab-bag. It might make sense to let each layout define
@@ -32,12 +73,10 @@ export type offsetAxis = 'xOffset' | 'yOffset';
 // `positionChildren()` that knows how to translate the
 // provided fields into the appropriate DOM manipulations.
 export type Positions = {
-  left: number;
-  top: number;
-  width?: number;
-  height?: number;
-  xOffset?: number;
-  yOffset?: number;
+  insetInlineStart: number;
+  insetBlockStart: number;
+  inlineSize?: number;
+  blockSize?: number;
 };
 
 export interface Range {
@@ -51,10 +90,10 @@ export interface InternalRange extends Range {
 
 export interface StateChangedMessage {
   type: 'stateChanged';
-  scrollSize: Size;
+  virtualizerSize: VirtualizerSize;
   range: InternalRange;
   childPositions: ChildPositions;
-  scrollError?: Positions;
+  scrollError?: LogicalCoordinates;
 }
 
 export interface VisibilityChangedMessage {
@@ -76,9 +115,18 @@ export type LayoutHostSink = (message: LayoutHostMessage) => void;
 
 export type ChildPositions = Map<number, Positions>;
 
-export type ChildMeasurements = {[key: number]: ItemBox};
+export type ChildLayoutInfo = Map<number, ElementLayoutInfo>;
 
-export type MeasureChildFunction = <T>(element: Element, item: T) => ItemBox;
+export interface EditElementLayoutInfoFunctionOptions {
+  element: Element;
+  item: unknown;
+  index: number;
+  baselineInfo: ElementLayoutInfo;
+}
+
+export type EditElementLayoutInfoFunction = (
+  options: EditElementLayoutInfoFunctionOptions
+) => ElementLayoutInfo;
 
 export interface PinOptions {
   index: number;
@@ -97,7 +145,11 @@ export interface LayoutSpecifier {
 export type LayoutSpecifierFactory = (config?: object) => LayoutSpecifier;
 
 export interface BaseLayoutConfig {
-  direction?: ScrollDirection;
+  /**
+   * @deprecated Set `pin` on the virtualizer (`<lit-virtualizer>`,
+   * the `virtualize` directive, or the `Virtualizer` class) instead
+   * of in the layout config.
+   */
   pin?: PinOptions;
 }
 
@@ -108,8 +160,6 @@ export interface ScrollToCoordinates {
   left?: number;
 }
 
-export type ScrollDirection = 'vertical' | 'horizontal';
-
 /**
  * Interface for layouts consumed by Virtualizer.
  */
@@ -118,21 +168,23 @@ export interface Layout {
 
   items: unknown[];
 
-  direction: ScrollDirection;
+  writingMode: writingMode;
 
-  viewportSize: Size;
+  direction: direction;
 
-  viewportScroll: Positions;
+  viewportSize: LogicalSize;
 
-  totalScrollSize: Size;
+  viewportScroll: LogicalCoordinates;
 
-  offsetWithinScroller: Positions;
+  scrollSize: LogicalSize;
 
-  readonly measureChildren?: boolean | MeasureChildFunction;
+  offsetWithinScroller: LogicalCoordinates;
+
+  readonly editElementLayoutInfo?: EditElementLayoutInfoFunction;
 
   readonly listenForChildLoadEvents?: boolean;
 
-  updateItemSizes?: (sizes: ChildMeasurements) => void;
+  updateItemSizes?: (sizes: ChildLayoutInfo) => void;
 
   pin: PinOptions | null;
 
@@ -141,48 +193,22 @@ export interface Layout {
   getScrollIntoViewCoordinates: (options: PinOptions) => ScrollToCoordinates;
 
   /**
-   * Called by a Virtualizer when an update that
-   * potentially affects layout has occurred. For example, a viewport size
-   * change.
+   * Called by the Virtualizer when an update that potentially affects
+   * layout has occurred (for example, a viewport size change).
    *
-   * The layout is in turn responsible for dispatching events, as necessary,
-   * to the Virtualizer. Each of the following events
-   * represents an update that should be determined during a reflow. Dispatch
-   * each event at maximum once during a single reflow.
+   * The layout recomputes what it needs to, then pushes any changes
+   * back to the Virtualizer via the `LayoutHostSink` it was constructed
+   * with. Supported messages are defined in `LayoutHostMessage`:
    *
-   * Events that should be dispatched:
-   * - scrollsizechange
-   *     Dispatch when the total length of all items in the scrolling direction,
-   *     including spacing, changes.
-   *     detail: {
-   *       'height' | 'width': number
-   *     }
-   * - rangechange
-   *     Dispatch when the range of children that should be displayed changes.
-   *     detail: {
-   *       first: number,
-   *       last: number,
-   *       num: number,
-   *       stable: boolean,
-   *       remeasure: boolean,
-   *       firstVisible: number,
-   *       lastVisible: number,
-   *     }
-   * - itempositionchange
-   *     Dispatch when the child positions change, for example due to a range
-   *     change.
-   *     detail {
-   *       [number]: {
-   *         left: number,
-   *         top: number
-   *       }
-   *     }
-   * - scrollerrorchange
-   *     Dispatch when the set viewportScroll offset is not what it should be.
-   *     detail {
-   *       height: number,
-   *       width: number,
-   *     }
+   * - `StateChangedMessage` — emitted when the virtualizer size,
+   *   visible range, child positions, or scroll error change. Carries
+   *   logical coordinates (`blockSize`/`inlineSize` and `block`/`inline`).
+   * - `VisibilityChangedMessage` — emitted when the first/last visible
+   *   item indices change.
+   * - `UnpinnedMessage` — emitted when a pin is released.
+   *
+   * If `force` is true, the layout must recompute unconditionally;
+   * otherwise it may skip work when nothing has changed.
    */
   reflowIfNeeded: (force?: boolean) => void;
 }
