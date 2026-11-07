@@ -515,6 +515,68 @@ suite('createComponent', () => {
     assert.equal(fooEvent2, undefined);
   });
 
+  // Regression test for https://github.com/lit/lit/issues/5398
+  test('removes event listeners on unmount', async () => {
+    let fooCalls = 0;
+    let nativeCalls = 0;
+    const onFoo = () => {
+      fooCalls++;
+    };
+    render(<BasicElementComponent onFoo={onFoo} />);
+    const el = container.querySelector(tagName)!;
+    el.addEventListener('foo', () => {
+      nativeCalls++;
+    });
+    el.fire('foo');
+    assert.equal(fooCalls, 1);
+    assert.equal(nativeCalls, 1);
+
+    // Unmount while keeping a reference to the element.
+    render(<></>);
+    assert.isFalse(el.isConnected);
+    el.fire('foo');
+    assert.equal(fooCalls, 1);
+    // Listeners not added by the wrapper are left alone.
+    assert.equal(nativeCalls, 2);
+
+    // The old callback stays detached if the element is reconnected.
+    document.body.appendChild(el);
+    el.fire('foo');
+    assert.equal(fooCalls, 1);
+    el.remove();
+  });
+
+  test('keeps event listeners in StrictMode', async () => {
+    let fooEvent: Event | undefined;
+    render(
+      <React.StrictMode>
+        <BasicElementComponent
+          onFoo={(e: Event) => {
+            fooEvent = e;
+          }}
+        />
+      </React.StrictMode>
+    );
+    const el = container.querySelector(tagName)!;
+    el.fire('foo');
+    assert.equal(fooEvent!.type, 'foo');
+
+    let fooEvent2: Event | undefined;
+    render(
+      <React.StrictMode>
+        <BasicElementComponent
+          onFoo={(e: Event) => {
+            fooEvent2 = e;
+          }}
+        />
+      </React.StrictMode>
+    );
+    fooEvent = undefined;
+    el.fire('foo');
+    assert.equal(fooEvent, undefined);
+    assert.equal(fooEvent2!.type, 'foo');
+  });
+
   // Regression test for https://github.com/lit/lit/issues/4569
   test('event prop should not be set on instance', async () => {
     const handler = () => {};
