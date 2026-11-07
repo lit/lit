@@ -361,8 +361,17 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
 
     // If we are scrolling to a specific index or if we are doing another
     // pass to stabilize a previously started reflow, we will already
-    // have an anchor. If not, establish an anchor now.
-    if (this._anchorIdx === null || this._anchorPos === null) {
+    // have an anchor. If not, establish an anchor now. Also recalculate
+    // if the existing anchor is completely outside the viewport bounds
+    // (e.g. the user scrolled elsewhere while a reflow after a large jump
+    // was still settling); otherwise the stale anchor's error correction
+    // would scroll the viewport back to it.
+    if (
+      this._anchorIdx === null ||
+      this._anchorPos === null ||
+      this._anchorPos > upper ||
+      this._anchorPos < lower
+    ) {
       this._anchorIdx = this._getAnchor(lower, upper);
       this._anchorPos = this._getPosition(this._anchorIdx);
     }
