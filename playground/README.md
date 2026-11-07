@@ -94,8 +94,8 @@ npm run export -- my-example
 ```
 
 - Creates a new Gist from the specified example
-- Requires manual installation of
-  [this gist CLI](https://github.com/defunkt/gist)
+- Requires manual installation of the
+  [GitHub CLI (gh)](https://cli.github.com/)
 
 ## Details
 
@@ -139,6 +139,21 @@ npm run export -- my-example
   `package.json` file and use the `npm` CLI directly in the example
   folder to manage and install dependencies
 
+### External Access and Allowed Hosts
+
+If you need to access the playground dev server from another machine, you may need to expose the server to the network and allow specific hosts.
+
+1.  **Expose to network**: You can pass arguments to Vite by appending them after the example path. For example, to listen on all interfaces:
+    ```bash
+    npm run start -- my-example --host
+    ```
+2.  **Allowed Hosts**: Vite blocks requests from unknown hosts by default. You can configure allowed hosts by creating a file named `allowed-hosts.js` in the `playground` directory. This file is gitignored to avoid committing local environment details.
+    Example `allowed-hosts.js`:
+    ```javascript
+    export const allowedHosts = ['your-proxy-host.com'];
+    ```
+    The config will automatically omit `allowedHosts` if the file is not present.
+
 ### Lit.dev playground compatibility
 
 - Since Gists don't support nested folders, you should use a flat
@@ -163,8 +178,8 @@ npm run export -- my-example
   named `_import.info.json` to the example folder, containing the
   source Gist ID and the contents of the Gist's original
   `package.json` file
-- The `export` script requires manual installation of
-  [this gist CLI](https://github.com/defunkt/gist)
+- The `export` script requires manual installation of the
+  [GitHub CLI (gh)](https://cli.github.com/)
 - The `import` and `export` scripts do minimal error detection;
   they're designed to "just work" for common cases but don't
   enforce compliance with structural requirements and may be
