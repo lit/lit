@@ -5476,8 +5476,8 @@ export const tests: {[name: string]: SSRTest} = {
       // ElementInternals is not implemented in Safari yet
       skip: Boolean(
         globalThis.navigator &&
-          navigator.userAgent.includes('Safari/') &&
-          navigator.userAgent.includes('Version/')
+        navigator.userAgent.includes('Safari/') &&
+        navigator.userAgent.includes('Version/')
       ),
       registerElements() {
         class LEInternals extends LitElement {
@@ -5519,8 +5519,8 @@ export const tests: {[name: string]: SSRTest} = {
       // ElementInternals is not implemented in Safari yet
       skip: Boolean(
         globalThis.navigator &&
-          navigator.userAgent.includes('Safari/') &&
-          navigator.userAgent.includes('Version/')
+        navigator.userAgent.includes('Safari/') &&
+        navigator.userAgent.includes('Version/')
       ),
       registerElements() {
         class LEInternalsHydrate extends LitElement {

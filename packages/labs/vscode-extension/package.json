@@ -136,7 +136,7 @@
     "test:vscode": "wireit"
   },
   "dependencies": {
-    "@lit-labs/analyzer": "^0.14.0",
+    "@oicl-lit/analyzer": "^0.14.0",
     "@lit-labs/tsserver-plugin": "^0.1.0"
   },
   "devDependencies": {

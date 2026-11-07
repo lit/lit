@@ -1,5 +1,11 @@
 # @lit-labs/analyzer
 
+## 0.14.2
+
+### Patch Changes
+
+- [#1](https://github.com/Ocean-Industries-Concept-Lab/lit/pull/1) [`ac2284eec90772c1fb6132c98b7d40fb50e218e0`](https://github.com/Ocean-Industries-Concept-Lab/lit/commit/ac2284eec90772c1fb6132c98b7d40fb50e218e0) Thanks [@tibnor](https://github.com/tibnor)! - Use javascript path instead of windows path on module path
+
 ## 0.14.0
 
 ### Minor Changes

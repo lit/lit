@@ -1,5 +1,35 @@
 # @lit-labs/gen-wrapper-vue
 
+## 0.4.6
+
+### Patch Changes
+
+- [#15](https://github.com/Ocean-Industries-Concept-Lab/lit/pull/15) [`1af8231a7443adeb6b64b0ab04a2960c8b351714`](https://github.com/Ocean-Industries-Concept-Lab/lit/commit/1af8231a7443adeb6b64b0ab04a2960c8b351714) Thanks [@talpitoo](https://github.com/talpitoo)! - Declare boolean props with `default: undefined`, so an omitted boolean prop leaves the element's own default in place instead of Vue's `false`.
+
+## 0.4.5
+
+### Patch Changes
+
+- [`45c50b470a3e46f3cf1c4352faae6062de20659f`](https://github.com/Ocean-Industries-Concept-Lab/lit/commit/45c50b470a3e46f3cf1c4352faae6062de20659f) Thanks [@ulrik-jo](https://github.com/ulrik-jo)! - Put each export on its own line in the file that re-exports several elements from one source module. They were joined with a literal `/n`, producing an invalid module.
+
+## 0.4.4
+
+### Patch Changes
+
+- [`417cf7ff6e236af05c2ebd837d65140722f88393`](https://github.com/Ocean-Industries-Concept-Lab/lit/commit/417cf7ff6e236af05c2ebd837d65140722f88393) Thanks [@ulrik-jo](https://github.com/ulrik-jo)! - Import types referenced by inherited reactive properties in generated Vue wrappers.
+
+  The generated `Props` interface includes reactive properties inherited from
+  superclasses and mixins, but the type imports were still derived from the
+  element's own properties only. Any inherited property with a named type was
+  emitted into `Props` without a matching import, producing a wrapper that fails
+  to compile.
+
+## 0.4.3
+
+### Patch Changes
+
+- [`0ab6453353379273fd7d3e03a68717f284b5803d`](https://github.com/Ocean-Industries-Concept-Lab/lit/commit/0ab6453353379273fd7d3e03a68717f284b5803d) Thanks [@tibnor](https://github.com/tibnor)! - Add properties herited from mixins in vue wrapper
+
 ## 0.4.2
 
 ### Patch Changes

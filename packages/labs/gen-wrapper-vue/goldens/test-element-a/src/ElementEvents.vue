@@ -1,6 +1,7 @@
 <script lang="ts">
 export type {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
 export type {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
+export type {TypeSub} from '@lit-internal/test-element-a/sub/type-sub.js';
 export type {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
 export type {TemplateResult} from 'lit';
 </script>
@@ -10,6 +11,7 @@ import {assignSlotNodes, Slots} from '@lit-labs/vue-utils/wrapper-utils.js';
 import '@lit-internal/test-element-a/element-events.js';
 import {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
 import {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
+import {TypeSub} from '@lit-internal/test-element-a/sub/type-sub.js';
 import {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
 import {TemplateResult} from 'lit';
 
@@ -35,6 +37,7 @@ const emit = defineEmits<{
   (e: 'number-custom-event', payload: CustomEvent<number>): void;
   (e: 'my-detail-custom-event', payload: CustomEvent<MyDetail>): void;
   (e: 'event-subclass', payload: EventSubclass): void;
+  (e: 'type-sub-custom-event', payload: CustomEvent<TypeSub>): void;
   (e: 'special-event', payload: SpecialEvent): void;
   (
     e: 'template-result-custom-event',
@@ -54,6 +57,8 @@ const render = () => {
       emit('my-detail-custom-event', event as CustomEvent<MyDetail>),
     onEventSubclass: (event: EventSubclass) =>
       emit('event-subclass', event as EventSubclass),
+    onTypeSubCustomEvent: (event: CustomEvent<TypeSub>) =>
+      emit('type-sub-custom-event', event as CustomEvent<TypeSub>),
     onSpecialEvent: (event: SpecialEvent) =>
       emit('special-event', event as SpecialEvent),
     onTemplateResultCustomEvent: (event: CustomEvent<TemplateResult>) =>

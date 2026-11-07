@@ -1,4 +1,4 @@
-import {Analyzer} from '@lit-labs/analyzer';
+import {Analyzer} from '@oicl-lit/analyzer';
 import {
   isLitHtmlTaggedTemplateExpression,
   parseLitTemplate,

@@ -68,6 +68,7 @@
         "./packages/labs/gen-utils:build",
         "./packages/labs/gen-wrapper-angular:build",
         "./packages/labs/gen-wrapper-react:build",
+        "./packages/labs/gen-wrapper-svelte:build",
         "./packages/labs/gen-wrapper-vue:build",
         "./packages/labs/motion:build",
         "./packages/labs/nextjs:build",
@@ -175,6 +176,7 @@
         "./packages/labs/gen-utils:test",
         "./packages/labs/gen-wrapper-angular:test",
         "./packages/labs/gen-wrapper-react:test",
+        "./packages/labs/gen-wrapper-svelte:test",
         "./packages/labs/gen-wrapper-vue:test",
         "./packages/labs/nextjs:test",
         "./packages/labs/preact-signals:test",
@@ -223,6 +225,7 @@
         "./packages/labs/gen-utils:test",
         "./packages/labs/gen-wrapper-angular:test",
         "./packages/labs/gen-wrapper-react:test",
+        "./packages/labs/gen-wrapper-svelte:test",
         "./packages/labs/gen-wrapper-vue:test",
         "./packages/labs/testing:test"
       ]

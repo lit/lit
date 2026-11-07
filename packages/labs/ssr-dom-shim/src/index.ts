@@ -661,8 +661,7 @@ interface CustomHTMLElementConstructor {
   observedAttributes?: string[];
 }
 
-interface NamedCustomHTMLElementConstructor
-  extends CustomHTMLElementConstructor {
+interface NamedCustomHTMLElementConstructor extends CustomHTMLElementConstructor {
   __localName: string;
 }
 

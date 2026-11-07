@@ -362,8 +362,9 @@ suite('@property', () => {
   });
 
   test('can customize property options', async () => {
-    interface MyPropertyDeclaration<TypeHint = unknown>
-      extends PropertyDeclaration {
+    interface MyPropertyDeclaration<
+      TypeHint = unknown,
+    > extends PropertyDeclaration {
       validator?: (value: any) => TypeHint;
       observer?: (oldValue: TypeHint) => void;
     }

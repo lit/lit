@@ -4,10 +4,12 @@ import {createComponent, EventName} from '@lit/react';
 import {ElementEvents as ElementEventsElement} from '@lit-internal/test-element-a/element-events.js';
 import {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
 import {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
+import {TypeSub} from '@lit-internal/test-element-a/sub/type-sub.js';
 import {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
 import {TemplateResult} from 'lit';
 export type {MyDetail} from '@lit-internal/test-element-a/detail-type.js';
 export type {EventSubclass} from '@lit-internal/test-element-a/element-events.js';
+export type {TypeSub} from '@lit-internal/test-element-a/sub/type-sub.js';
 export type {SpecialEvent} from '@lit-internal/test-element-a/special-event.js';
 export type {TemplateResult} from 'lit';
 
@@ -26,6 +28,9 @@ export const ElementEvents = createComponent({
       CustomEvent<MyDetail>
     >,
     onEventSubclass: 'event-subclass' as EventName<EventSubclass>,
+    onTypeSubCustomEvent: 'type-sub-custom-event' as EventName<
+      CustomEvent<TypeSub>
+    >,
     onSpecialEvent: 'special-event' as EventName<SpecialEvent>,
     onTemplateResultCustomEvent: 'template-result-custom-event' as EventName<
       CustomEvent<TemplateResult>

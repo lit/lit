@@ -103,8 +103,10 @@ export interface Position2D {
   y: number;
 }
 
-export interface Spring2DConfig
-  extends Omit<SpringConfig, 'fromValue' | 'toValue' | 'initialVelocity'> {
+export interface Spring2DConfig extends Omit<
+  SpringConfig,
+  'fromValue' | 'toValue' | 'initialVelocity'
+> {
   toPosition?: Position2D;
   fromPosition?: Position2D;
   initialVelocity?: Position2D;

@@ -350,17 +350,16 @@ async function myCustomLoader() {
   // Write whatever custom logic you need, using feature detection, etc...
 
   // If you need to load the polyfill, do it like this:
-  const ResizeObserverPolyfill = await import(
-    '@lit-labs/virtualizer/polyfills/resize-observer-polyfill/ResizeObserver.js'
-  ).default;
+  const ResizeObserverPolyfill =
+    await import('@lit-labs/virtualizer/polyfills/resize-observer-polyfill/ResizeObserver.js')
+      .default;
 
   // To install the polyfill globally, do something like this:
   window.ResizeObserver = ResizeObserverPolyfill;
 
   // Or to provide it to Virtualizer, do something like this:
-  const {provideResizeObserver} = await import(
-    '@lit-labs/virtualizer/polyfillLoaders/ResizeObserver.js'
-  );
+  const {provideResizeObserver} =
+    await import('@lit-labs/virtualizer/polyfillLoaders/ResizeObserver.js');
   provideResizeObserver(ResizeObserverPolyfill);
 }
 ```

@@ -5,7 +5,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
-import {FileTree, writeFileTree} from '@lit-labs/gen-utils/lib/file-utils.js';
+import {FileTree, writeFileTree} from '@oicl-lit/gen-utils/lib/file-utils.js';
 import {generateTsconfig} from './templates/tsconfig.json.js';
 import {generatePackageJson} from './templates/package.json.js';
 import {generateIndex} from './templates/demo/index.html.js';

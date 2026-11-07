@@ -15,6 +15,19 @@ import {assert} from 'chai';
 import {LitElement} from 'lit';
 import {customElement} from 'lit/decorators.js';
 
+/**
+ * Waits for animation frames until `hasMoved` returns true, up to 10 frames.
+ *
+ * wobble advances springs by `Date.now()` deltas, so a frame that lands in the
+ * same millisecond as `start()` leaves the spring where it was. Waiting for a
+ * single frame therefore makes "is it moving" checks flaky.
+ */
+const waitUntilMoved = async (hasMoved: () => boolean) => {
+  for (let i = 0; i < 10 && !hasMoved(); i++) {
+    await new Promise((res) => requestAnimationFrame(res));
+  }
+};
+
 suite('Spring', () => {
   let container: HTMLElement;
 
@@ -64,8 +77,7 @@ suite('Spring', () => {
       assert.equal(el.spring.currentVelocity, 0);
       assert.equal(el.spring.toValue, 50);
 
-      // Wait at least a frame
-      await new Promise((res) => requestAnimationFrame(res));
+      await waitUntilMoved(() => el.spring.currentValue !== 100);
 
       // Make sure it's moving
       assert.isFalse(el.spring.isAtRest);
@@ -122,9 +134,12 @@ suite('Spring', () => {
       assert.deepEqual(el.spring.currentVelocity, {x: 0, y: 0});
       assert.deepEqual(el.spring.toPosition, {x: 50, y: 50});
 
-      // Wait at least a frame
-      await new Promise((res) => requestAnimationFrame(res));
-      await new Promise((res) => setTimeout(res, 4));
+      // x and y are separate springs, started a moment apart.
+      await waitUntilMoved(
+        () =>
+          el.spring.currentPosition.x !== 100 &&
+          el.spring.currentPosition.y !== 100
+      );
 
       // Make sure it's moving
       assert.isFalse(el.spring.isAtRest);
