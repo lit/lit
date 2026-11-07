@@ -97,6 +97,8 @@ if (DEV_MODE) {
   ) => {
     const ctor = defineTestElement(getControllerConfig);
     const el = await renderTestElement(ctor);
+    await resizeComplete();
+
     return el;
   };
 
@@ -166,6 +168,8 @@ if (DEV_MODE) {
     // Does not report change after element removed.
     el.remove();
     resizeElement(el);
+    await resizeComplete();
+    assert.isUndefined(el.observerValue);
 
     // Reports change after element re-connected since this changes its size!
     container.appendChild(el);
@@ -242,10 +246,10 @@ if (DEV_MODE) {
     const el = await getTestElement();
     el.resetObserverValue();
     const d1 = document.createElement('div');
+    el.renderRoot.appendChild(d1);
 
     // Reports initial changes when observe called.
     el.observer.observe(d1);
-    el.renderRoot.appendChild(d1);
     await resizeComplete();
     assert.isTrue(el.observerValue);
 
@@ -264,8 +268,8 @@ if (DEV_MODE) {
     // Can observe another target
     el.resetObserverValue();
     const d2 = document.createElement('div');
-    el.observer.observe(d2);
     el.renderRoot.appendChild(d2);
+    el.observer.observe(d2);
     await resizeComplete();
     assert.isTrue(el.observerValue);
 
@@ -356,21 +360,38 @@ if (DEV_MODE) {
     assert.isTrue(el.observerValue);
   });
 
-  test('observed target respects `skipInitial`', async () => {
+  test('observed targets respect `skipInitial`', async () => {
     const el = await getTestElement(() => ({
       target: null,
       skipInitial: true,
     }));
-    const d1 = document.createElement('div');
 
-    // Reports initial changes when observe called.
-    el.observer.observe(d1);
+    const d1 = document.createElement('div');
     el.renderRoot.appendChild(d1);
+
+    // Skips initial callback when observe called.
+    el.observer.observe(d1);
     await resizeComplete();
-    // Note, appending changes size!
-    assert.isTrue(el.observerValue);
+    assert.isUndefined(el.observerValue);
 
     // Reports change to observed target.
+    resizeElement(d1);
+    await resizeComplete();
+    assert.isTrue(el.observerValue);
+
+    // Add another target.
+    el.resetObserverValue();
+    const d2 = document.createElement('div');
+    el.renderRoot.appendChild(d2);
+    el.observer.observe(d2);
+    await resizeComplete();
+    assert.isUndefined(el.observerValue);
+
+    // Add another target, but *also* cause a resize in an existing target.
+    el.resetObserverValue();
+    const d3 = document.createElement('div');
+    el.renderRoot.appendChild(d3);
+    el.observer.observe(d3);
     resizeElement(d1);
     await resizeComplete();
     assert.isTrue(el.observerValue);
@@ -420,6 +441,7 @@ if (DEV_MODE) {
     customElements.define(generateElementName(), TestFirstUpdated);
 
     const el = (await renderTestElement(TestFirstUpdated)) as TestFirstUpdated;
+    await resizeComplete();
 
     // Reports initial change by default
     assert.isTrue(el.observerValue);
@@ -454,8 +476,9 @@ if (DEV_MODE) {
     }
     customElements.define(generateElementName(), A);
     const el = (await renderTestElement(A)) as A;
-
+    await resizeComplete();
     assert.equal(el.observerValue, undefined);
+
     resizeElement(d);
     await resizeComplete();
     assert.isTrue(el.observerValue);
