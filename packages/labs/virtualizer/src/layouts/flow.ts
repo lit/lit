@@ -116,6 +116,21 @@ class MetricsCache {
     this._marginSizeCache.clear();
     this._metricsCache.clear();
   }
+
+  /**
+   * Drops cached metrics for indices at or beyond `length`. Called when the item
+   * list shrinks so measurements for removed items don't linger and skew
+   * averageChildSize / averageMarginSize (which would undersize the scroll extent).
+   */
+  prune(length: number) {
+    for (const key of [...this._metricsCache.keys()]) {
+      if (key >= length) {
+        this._metricsCache.delete(key);
+      }
+    }
+    this._childSizeCache.prune(length);
+    this._marginSizeCache.prune(length);
+  }
 }
 
 export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
@@ -184,6 +199,17 @@ export class FlowLayout extends BaseLayout<BaseLayoutConfig> {
     // this._updateItemSize();
     this._scheduleReflow();
     // }
+  }
+
+  protected override _setItems(items: unknown[]) {
+    // When the list shrinks (e.g. empty collections filtered out), cached
+    // measurements for the removed tail indices would otherwise remain and drag
+    // down averageChildSize/averageMarginSize — undersizing the scroll extent and
+    // clipping the last items. Drop them so the average reflects only live items.
+    if (items !== this.items && items.length < this.items.length) {
+      this._metricsCache.prune(items.length);
+    }
+    super._setItems(items);
   }
 
   /**

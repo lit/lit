@@ -521,7 +521,14 @@ export class Virtualizer {
     // offsetWidth doesn't take transforms in consideration, so we use
     // getBoundingClientRect which does.
     const {width, height} = element.getBoundingClientRect();
-    return Object.assign({width, height}, getMargins(element));
+    const margins = getMargins(element);
+    if (this._isHorizontalRtl()) {
+      [margins.marginLeft, margins.marginRight] = [
+        margins.marginRight,
+        margins.marginLeft,
+      ];
+    }
+    return Object.assign({width, height}, margins);
   }
 
   protected async _schedule(method: Function): Promise<void> {
@@ -637,6 +644,80 @@ export class Virtualizer {
     return arr;
   }
 
+  private _isHorizontalRtl() {
+    return this._layout?.direction === 'horizontal' && this._isRtl();
+  }
+
+  private _isVerticalRtl() {
+    return this._layout?.direction !== 'horizontal' && this._isRtl();
+  }
+
+  private _isRtl() {
+    return (
+      this._hostElement !== undefined &&
+      getComputedStyle(this._hostElement).direction === 'rtl'
+    );
+  }
+
+  private _physicalScrollLeftToLogical(
+    scrollLeft: number,
+    scrollingElement: Element,
+    viewportWidth: number
+  ) {
+    if (!this._isHorizontalRtl()) {
+      return scrollLeft;
+    }
+    const maxScrollLeft = Math.max(
+      0,
+      scrollingElement.scrollWidth - viewportWidth
+    );
+    return physicalRtlScrollLeftToLogical(
+      scrollLeft,
+      maxScrollLeft,
+      getRtlScrollType()
+    );
+  }
+
+  private _logicalScrollLeftToPhysical(
+    scrollLeft: number,
+    scrollingElement: Element,
+    viewportWidth: number
+  ) {
+    if (!this._isHorizontalRtl()) {
+      return scrollLeft;
+    }
+    const maxScrollLeft = Math.max(
+      0,
+      scrollingElement.scrollWidth - viewportWidth
+    );
+    return logicalRtlScrollLeftToPhysical(
+      scrollLeft,
+      maxScrollLeft,
+      getRtlScrollType()
+    );
+  }
+
+  private _logicalToPhysicalCoordinates(
+    coordinates: ScrollToCoordinates
+  ): ScrollToCoordinates {
+    const scrollingElement = this._scrollerController?.element;
+    const viewportWidth = this._scrollerController?.viewportWidth;
+    if (!scrollingElement || viewportWidth === undefined) {
+      return coordinates;
+    }
+    return {
+      top: coordinates.top,
+      left:
+        coordinates.left === undefined
+          ? undefined
+          : this._logicalScrollLeftToPhysical(
+              coordinates.left,
+              scrollingElement,
+              viewportWidth
+            ),
+    };
+  }
+
   private _updateView() {
     const hostElement = this._hostElement;
     const scrollingElement = this._scrollerController?.element;
@@ -677,10 +758,16 @@ export class Virtualizer {
       };
 
       const scrollTop = top - hostElementBounds.top + hostElement.scrollTop;
-      const scrollLeft = left - hostElementBounds.left + hostElement.scrollLeft;
+      const rawScrollLeft =
+        left - hostElementBounds.left + hostElement.scrollLeft;
 
       const height = Math.max(0, bottom - top);
       const width = Math.max(0, right - left);
+      const scrollLeft = this._physicalScrollLeftToLogical(
+        rawScrollLeft,
+        scrollingElement,
+        width
+      );
 
       layout.viewportSize = {width, height};
       layout.viewportScroll = {top: scrollTop, left: scrollLeft};
@@ -702,7 +789,19 @@ export class Virtualizer {
     const v = size && size.height !== null ? Math.min(max, size.height) : 0;
 
     if (this._isScroller) {
-      this._getSizer().style.transform = `translate(${h}px, ${v}px)`;
+      const sizer = this._getSizer();
+      if (this._isHorizontalRtl() || this._isVerticalRtl()) {
+        // In RTL, position: absolute elements start from the right edge.
+        // Anchor explicitly to right: 0 and translate leftward to extend
+        // the scroll area in the inline-start (leftward) direction.
+        sizer.style.right = '0';
+        sizer.style.left = 'auto';
+        sizer.style.transform = `translate(${-h}px, ${v}px)`;
+      } else {
+        sizer.style.left = '0';
+        sizer.style.right = 'auto';
+        sizer.style.transform = `translate(${h}px, ${v}px)`;
+      }
     } else {
       const style = this._hostElement!.style;
       (style.minWidth as string | null) = h ? `${h}px` : '100%';
@@ -719,17 +818,25 @@ export class Virtualizer {
       pos.forEach(({top, left, width, height, xOffset, yOffset}, index) => {
         const child = this._children[index - this._first];
         if (child) {
+          const rtl = this._isHorizontalRtl() || this._isVerticalRtl();
+          const crossAxisOffset = xOffset ?? 0;
+          const translatedLeft = rtl ? -left : left;
           child.style.position = 'absolute';
           child.style.boxSizing = 'border-box';
-          child.style.transform = `translate(${left}px, ${top}px)`;
+          child.style.transform = `translate(${translatedLeft}px, ${top}px)`;
           if (width !== undefined) {
             child.style.width = width + 'px';
           }
           if (height !== undefined) {
             child.style.height = height + 'px';
           }
-          (child.style.left as string | null) =
-            xOffset === undefined ? null : xOffset + 'px';
+          if (rtl) {
+            child.style.right = crossAxisOffset + 'px';
+            child.style.left = 'auto';
+          } else {
+            child.style.left = crossAxisOffset + 'px';
+            child.style.right = 'auto';
+          }
           (child.style.top as string | null) =
             yOffset === undefined ? null : yOffset + 'px';
         }
@@ -753,12 +860,22 @@ export class Virtualizer {
 
   private _correctScrollError() {
     if (this._scrollError) {
-      const {scrollTop, scrollLeft} = this._scrollerController!;
+      const {scrollTop, scrollLeft, element, viewportWidth} =
+        this._scrollerController!;
       const {top, left} = this._scrollError;
       this._scrollError = null;
+      const logicalScrollLeft = this._physicalScrollLeftToLogical(
+        scrollLeft,
+        element,
+        viewportWidth
+      );
       this._scrollerController!.correctScrollError({
         top: scrollTop - top,
-        left: scrollLeft - left,
+        left: this._logicalScrollLeftToPhysical(
+          logicalScrollLeft - left,
+          element,
+          viewportWidth
+        ),
       });
     }
   }
@@ -781,12 +898,17 @@ export class Virtualizer {
     } else {
       options.index = Math.min(options.index, this._items.length - 1);
       if (options.behavior === 'smooth') {
-        const coordinates = this._layout!.getScrollIntoViewCoordinates(options);
+        const coordinates = this._logicalToPhysicalCoordinates(
+          this._layout!.getScrollIntoViewCoordinates(options)
+        );
         const {behavior} = options;
         this._updateScrollIntoViewCoordinates =
           this._scrollerController!.managedScrollTo(
             Object.assign(coordinates, {behavior}),
-            () => this._layout!.getScrollIntoViewCoordinates(options),
+            () =>
+              this._logicalToPhysicalCoordinates(
+                this._layout!.getScrollIntoViewCoordinates(options)
+              ),
             () => (this._scrollIntoViewTarget = null)
           );
         this._scrollIntoViewTarget = options;
@@ -804,7 +926,11 @@ export class Virtualizer {
     const {index} = this._scrollIntoViewTarget || {};
     if (index && pos?.has(index)) {
       this._updateScrollIntoViewCoordinates!(
-        this._layout!.getScrollIntoViewCoordinates(this._scrollIntoViewTarget!)
+        this._logicalToPhysicalCoordinates(
+          this._layout!.getScrollIntoViewCoordinates(
+            this._scrollIntoViewTarget!
+          )
+        )
       );
     }
   }
@@ -925,6 +1051,67 @@ function getMargins(el: Element): Margins {
 function getMarginValue(value: string): number {
   const float = value ? parseFloat(value) : NaN;
   return Number.isNaN(float) ? 0 : float;
+}
+
+type RtlScrollType = 'negative' | 'reverse' | 'default';
+
+let rtlScrollTypeCache: RtlScrollType | null = null;
+
+function getRtlScrollType(): RtlScrollType {
+  if (rtlScrollTypeCache !== null) {
+    return rtlScrollTypeCache;
+  }
+  const outer = document.createElement('div');
+  const inner = document.createElement('div');
+  outer.dir = 'rtl';
+  outer.style.width = '4px';
+  outer.style.height = '1px';
+  outer.style.position = 'absolute';
+  outer.style.top = '-9999px';
+  outer.style.overflow = 'scroll';
+  inner.style.width = '8px';
+  inner.style.height = '1px';
+  outer.appendChild(inner);
+  document.body.appendChild(outer);
+  if (outer.scrollLeft > 0) {
+    rtlScrollTypeCache = 'default';
+  } else {
+    outer.scrollLeft = 1;
+    rtlScrollTypeCache = outer.scrollLeft === 0 ? 'negative' : 'reverse';
+  }
+  document.body.removeChild(outer);
+  return rtlScrollTypeCache;
+}
+
+function logicalRtlScrollLeftToPhysical(
+  scrollLeft: number,
+  maxScrollLeft: number,
+  rtlScrollType: RtlScrollType
+) {
+  const clamped = Math.max(0, Math.min(scrollLeft, maxScrollLeft));
+  switch (rtlScrollType) {
+    case 'negative':
+      return -clamped;
+    case 'reverse':
+      return clamped;
+    case 'default':
+      return maxScrollLeft - clamped;
+  }
+}
+
+function physicalRtlScrollLeftToLogical(
+  scrollLeft: number,
+  maxScrollLeft: number,
+  rtlScrollType: RtlScrollType
+) {
+  switch (rtlScrollType) {
+    case 'negative':
+      return -scrollLeft;
+    case 'reverse':
+      return scrollLeft;
+    case 'default':
+      return maxScrollLeft - scrollLeft;
+  }
 }
 
 // TODO (graynorton): Deal with iframes?
