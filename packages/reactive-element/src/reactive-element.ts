@@ -296,7 +296,8 @@ export interface PropertyDeclaration<Type = unknown, TypeHint = unknown> {
    *
    * When set, properties must be initialized, either with a field initializer, or an
    * assignment in the constructor. Not initializing the property may lead to
-   * improper handling of subsequent property assignments.
+   * improper handling of subsequent property assignments. The initial value may be
+   * `null` or `undefined`; it is restored as such when the attribute is removed.
    *
    * While this behavior is opt-in, most properties that reflect to attributes should
    * use `useDefault: true` so that their initial values do not reflect.
@@ -1248,12 +1249,22 @@ export abstract class ReactiveElement
             : defaultConverter;
       // mark state reflecting
       this.__reflectingProperty = propName;
-      const convertedValue = converter.fromAttribute!(value, options.type);
-      this[propName as keyof this] =
-        convertedValue ??
-        this.__defaultValues?.get(propName) ??
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        (convertedValue as any);
+      let convertedValue = converter.fromAttribute!(value, options.type);
+      // When the attribute is removed (or the converter returns a nullish
+      // value), restore the recorded default value, if there is one. Note,
+      // the default value can itself be `null` or `undefined`, so `has()` is
+      // needed to tell an unrecorded default from a default of `undefined`.
+      // It's only called when `get()` returns `undefined`, which is the
+      // uncommon case.
+      if (convertedValue == null) {
+        const defaultValues = this.__defaultValues;
+        const defaultValue = defaultValues?.get(propName);
+        if (defaultValue !== undefined || defaultValues?.has(propName)) {
+          convertedValue = defaultValue;
+        }
+      }
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      this[propName as keyof this] = convertedValue as any;
       // mark state not reflecting
       this.__reflectingProperty = null;
     }
@@ -1299,18 +1310,26 @@ export abstract class ReactiveElement
         newValue = this[name as keyof this];
       }
       options ??= ctor.getPropertyOptions(name);
+      const defaultValues = this.__defaultValues;
       const changed =
         (options.hasChanged ?? notEqual)(newValue, oldValue) ||
-        // When there is no change, check a corner case that can occur when
-        // 1. there's a initial value which was not reflected
-        // 2. the property is subsequently set to this value.
-        // For example, `prop: {useDefault: true, reflect: true}`
-        // and el.prop = 'foo'. This should be considered a change if the
-        // attribute is not set because we will now reflect the property to the attribute.
-        (options.useDefault &&
-          options.reflect &&
-          newValue === this.__defaultValues?.get(name) &&
-          !this.hasAttribute(ctor.__attributeNameForProperty(name, options)!));
+        // When there is no change, check the corner cases that can occur with
+        // `useDefault`.
+        (options.useDefault === true &&
+          // 1. The default value has not been recorded yet, which happens when
+          // a property is initialized to `undefined`. The default must be
+          // recorded so that it can be restored when an attribute is removed.
+          (defaultValues?.has(name) !== true ||
+            // 2. There's an initial value which was not reflected and the
+            // property is subsequently set to this value. For example,
+            // `prop: {useDefault: true, reflect: true}` and el.prop = 'foo'.
+            // This should be considered a change if the attribute is not set
+            // because we will now reflect the property to the attribute.
+            (options.reflect === true &&
+              newValue === defaultValues.get(name) &&
+              !this.hasAttribute(
+                ctor.__attributeNameForProperty(name, options)!
+              ))));
       if (changed) {
         this._$changeProperty(name, oldValue, options);
       } else {
@@ -1330,18 +1349,29 @@ export abstract class ReactiveElement
     name: PropertyKey,
     oldValue: unknown,
     {useDefault, reflect, wrapped}: PropertyDeclaration,
+    useInitializeValue = false,
     initializeValue?: unknown
   ) {
     // Record default value when useDefault is used. This allows us to
-    // restore this value when the attribute is removed.
+    // restore this value when the attribute is removed. Note, the default
+    // value may be `null` or `undefined`, so `has()` is used to check whether
+    // it has already been recorded.
     if (useDefault && !(this.__defaultValues ??= new Map()).has(name)) {
       this.__defaultValues.set(
         name,
-        initializeValue ?? oldValue ?? this[name as keyof this]
+        useInitializeValue
+          ? initializeValue
+          : // A wrapped accessor is initialized outside of our setter, so the
+            // previous value is the initial value; otherwise our setter has
+            // already stored the value being initialized.
+            wrapped === true
+            ? oldValue
+            : this[name as keyof this]
       );
-      // if this is not wrapping an accessor, it must be an initial setting
-      // and in this case we do not want to record the change or reflect.
-      if (wrapped !== true || initializeValue !== undefined) {
+      // If an initial value was given, or this is not wrapping an accessor
+      // and therefore must be an initial setting, we do not want to record
+      // the change or reflect.
+      if (useInitializeValue || wrapped !== true) {
         return;
       }
     }
@@ -1498,9 +1528,12 @@ export abstract class ReactiveElement
           if (
             wrapped === true &&
             !this._$changedProperties.has(p) &&
-            value !== undefined
+            // Note, an initial value of `undefined` is still recorded when
+            // `useDefault` is used so that it can be restored when an
+            // attribute is removed.
+            (value !== undefined || options.useDefault === true)
           ) {
-            this._$changeProperty(p, undefined, options, value);
+            this._$changeProperty(p, undefined, options, true, value);
           }
         }
       }
