@@ -19,6 +19,14 @@
   "exports": {
     ".": {
       "types": "./development/index.d.ts",
+      "edge-light": {
+        "development": "./node/development/index.js",
+        "default": "./node/index.js"
+      },
+      "workerd": {
+        "development": "./node/development/index.js",
+        "default": "./node/index.js"
+      },
       "browser": {
         "development": "./development/index.js",
         "default": "./index.js"
@@ -32,6 +40,14 @@
     },
     "./lit-element-hydrate-support.js": {
       "types": "./development/lit-element-hydrate-support.d.ts",
+      "edge-light": {
+        "development": "./node/development/lit-element-hydrate-support.js",
+        "default": "./node/lit-element-hydrate-support.js"
+      },
+      "workerd": {
+        "development": "./node/development/lit-element-hydrate-support.js",
+        "default": "./node/lit-element-hydrate-support.js"
+      },
       "browser": {
         "development": "./development/lit-element-hydrate-support.js",
         "default": "./lit-element-hydrate-support.js"
