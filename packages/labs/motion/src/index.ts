@@ -7,3 +7,4 @@
 export * from './animate.js';
 export * from './animate-controller.js';
 export * from './position.js';
+export * from './expand-collapse.js';
