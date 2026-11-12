@@ -169,6 +169,24 @@ suite('styleMap', () => {
     assert.equal(el.style.getPropertyValue('color'), '');
   });
 
+  // setProperty() needs a dash-cased name, so camelCase + !important must be
+  // converted on update the same way render() converts it on first paint (#5427).
+  (isIE ? test.skip : test)(
+    'adds priority for camelCase properties on update',
+    () => {
+      renderStyleMap({backgroundColor: 'red'});
+      const el = container.firstElementChild as HTMLElement;
+      assert.equal(el.style.backgroundColor, 'red');
+      renderStyleMap({backgroundColor: 'blue !important'});
+      assert.equal(el.style.getPropertyValue('background-color'), 'blue');
+      assert.equal(el.style.getPropertyPriority('background-color'), 'important');
+      renderStyleMap({});
+      renderStyleMap({fontWeight: 'bold !important'});
+      assert.equal(el.style.getPropertyValue('font-weight'), 'bold');
+      assert.equal(el.style.getPropertyPriority('font-weight'), 'important');
+    }
+  );
+
   test('works when used with the same object', () => {
     const styleInfo: StyleInfo = {marginTop: '2px', 'padding-bottom': '4px'};
     renderStyleMap(styleInfo);

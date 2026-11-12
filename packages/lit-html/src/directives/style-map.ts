@@ -31,6 +31,16 @@ const importantFlag = ' !' + important;
 // How many characters to remove from a value, as a negative number
 const flagTrim = 0 - importantFlag.length;
 
+/**
+ * Convert a styleMap key to a CSS property name.
+ * camelCase (and vendor-prefixed camelCase) become dash-case. Names that
+ * already contain a dash, including custom properties, are left as-is.
+ */
+const cssPropertyName = (name: string) =>
+  name.includes('-')
+    ? name
+    : name.replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g, '-$&').toLowerCase();
+
 class StyleMapDirective extends Directive {
   private _previousStyleProperties?: Set<string>;
 
@@ -61,12 +71,7 @@ class StyleMapDirective extends Directive {
       // Exception is any property name containing a dash, including
       // custom properties; we assume these are already dash-cased i.e.:
       //  `--my-button-color` --> `--my-button-color`
-      prop = prop.includes('-')
-        ? prop
-        : prop
-            .replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g, '-$&')
-            .toLowerCase();
-      return style + `${prop}:${value};`;
+      return style + `${cssPropertyName(prop)}:${value};`;
     }, '');
   }
 
@@ -100,8 +105,10 @@ class StyleMapDirective extends Directive {
         const isImportant =
           typeof value === 'string' && value.endsWith(importantFlag);
         if (name.includes('-') || isImportant) {
+          // setProperty() requires a dash-cased CSS name, so convert camelCase
+          // keys (e.g. backgroundColor + "blue !important") the same way render() does.
           style.setProperty(
-            name,
+            cssPropertyName(name),
             isImportant
               ? (value as string).slice(0, flagTrim)
               : (value as string),
