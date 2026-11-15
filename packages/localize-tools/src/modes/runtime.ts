@@ -231,11 +231,16 @@ export function makeMessageString(
     placeholderRelativeExpressionIdx: number
   ) => JSON.stringify([placeholder.index, placeholderRelativeExpressionIdx]);
 
+  // Placeholder text is untranslatable, so we always take it from the source
+  // message rather than from the translation, matching transform mode.
+  const canonPlaceholders = new Map<number, Placeholder>();
+
   let absIdx = 0;
   for (const content of canon.contents) {
     if (typeof content === 'string') {
       continue;
     }
+    canonPlaceholders.set(content.index, content);
     const template = parseStringAsTemplateLiteral(content.untranslatable);
     if (ts.isNoSubstitutionTemplateLiteral(template)) {
       continue;
@@ -250,7 +255,15 @@ export function makeMessageString(
     if (typeof content === 'string') {
       fragments.push(escapeTextContentToEmbedInTemplateLiteral(content));
     } else {
-      const template = parseStringAsTemplateLiteral(content.untranslatable);
+      const placeholder = canonPlaceholders.get(content.index);
+      if (placeholder === undefined) {
+        throw new KnownError(
+          `Placeholder from translation does not appear in source.` +
+            `\nMessage: ${canon.name}` +
+            `\nPlaceholder: ${content.untranslatable}`
+        );
+      }
+      const template = parseStringAsTemplateLiteral(placeholder.untranslatable);
       if (ts.isNoSubstitutionTemplateLiteral(template)) {
         fragments.push(template.text);
       } else {
