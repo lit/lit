@@ -80,7 +80,7 @@ async function runtimeOutput(
       writeLocaleCodesModule(
         config.sourceLocale,
         config.targetLocales,
-        runtimeConfig.localeCodesModule
+        config.resolve(runtimeConfig.localeCodesModule)
       )
     );
   }

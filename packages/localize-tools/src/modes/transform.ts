@@ -108,7 +108,7 @@ async function transformOutput(
     await writeLocaleCodesModule(
       config.sourceLocale,
       config.targetLocales,
-      transformConfig.localeCodesModule
+      config.resolve(transformConfig.localeCodesModule)
     );
   }
   // TODO(aomarks) It doesn't seem that it's possible for a TypeScript
