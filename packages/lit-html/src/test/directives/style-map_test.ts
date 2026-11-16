@@ -242,6 +242,21 @@ suite('styleMap', () => {
     );
   });
 
+  // Not CSSStyleProperties attributes; kept for compatibility.
+  // TODO (v4): Remove along with the legacy prefixes in style-map.ts.
+  test('dash-prefixes legacy lowercase vendor prefixes', () => {
+    renderStyleMap({
+      mozAppearance: 'none',
+      msTransform: 'none',
+      oTransform: 'none',
+    });
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(
+      el.getAttribute('style'),
+      '-moz-appearance:none;-ms-transform:none;-o-transform:none;'
+    );
+  });
+
   test('updates properties like CSSStyleProperties attributes', () => {
     const styleInfo: StyleInfo = {
       fontSize: '2px',

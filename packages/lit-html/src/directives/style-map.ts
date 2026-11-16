@@ -41,6 +41,12 @@ const idlAttributeToCssProperty = (attribute: string, dashPrefix: boolean) =>
   (dashPrefix ? '-' : '') +
   attribute.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase());
 
+// Names that need the dash prefix flag. Only webkit-cased attributes are in
+// CSSOM; the lowercase `moz`, `ms` and `o` prefixes aren't CSSStyleProperties
+// attributes (use `MozX` / `'-moz-x'` instead).
+// TODO (v4): Remove `moz`, `ms` and `o`, leaving `/^webkit[A-Z]/`.
+const dashPrefixedAttribute = /^(?:webkit|moz|ms|o)[A-Z]/;
+
 /**
  * Returns the CSS property name for a `styleMap` key, the same way
  * `CSSStyleProperties` maps its attributes to the property names it passes to
@@ -53,13 +59,17 @@ const idlAttributeToCssProperty = (attribute: string, dashPrefix: boolean) =>
  *   `-webkit-transform`
  * - camel-cased attribute: e.g. `fontSize` -> `font-size`,
  *   `WebkitTransform` -> `-webkit-transform`
+ *
+ * For compatibility, lowercase `moz`, `ms` and `o` prefixes are also
+ * dash-prefixed like webkit-cased attributes, e.g. `msTransform` ->
+ * `-ms-transform`, as styleMap has always done.
  */
 const cssPropertyName = (name: string) =>
   name.includes('-')
     ? name
     : name === 'cssFloat'
       ? 'float'
-      : idlAttributeToCssProperty(name, /^webkit[A-Z]/.test(name));
+      : idlAttributeToCssProperty(name, dashPrefixedAttribute.test(name));
 
 class StyleMapDirective extends Directive {
   private _previousStyleProperties?: Set<string>;
