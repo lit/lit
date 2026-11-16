@@ -31,6 +31,22 @@ const importantFlag = ' !' + important;
 // How many characters to remove from a value, as a negative number
 const flagTrim = 0 - importantFlag.length;
 
+/**
+ * Converts a camelCase CSSStyleDeclaration property name to its dash-case CSS
+ * property name, e.g.:
+ *  `backgroundColor` -> `background-color`
+ * Vendor-prefixed names need an extra `-` prepended:
+ *  `webkitAppearance` -> `-webkit-appearance`
+ * `cssFloat` is the one property whose JS name isn't derived from its CSS name.
+ *
+ * Callers must only pass names without a dash; names containing a dash
+ * (including custom properties) are assumed to already be CSS property names.
+ */
+const dashCase = (name: string) =>
+  name === 'cssFloat'
+    ? 'float'
+    : name.replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g, '-$&').toLowerCase();
+
 class StyleMapDirective extends Directive {
   private _previousStyleProperties?: Set<string>;
 
@@ -54,18 +70,10 @@ class StyleMapDirective extends Directive {
       if (value == null) {
         return style;
       }
-      // Convert property names from camel-case to dash-case, i.e.:
-      //  `backgroundColor` -> `background-color`
-      // Vendor-prefixed names need an extra `-` appended to front:
-      //  `webkitAppearance` -> `-webkit-appearance`
-      // Exception is any property name containing a dash, including
-      // custom properties; we assume these are already dash-cased i.e.:
+      // Property names containing a dash, including custom properties, are
+      // assumed to already be dash-cased, i.e.:
       //  `--my-button-color` --> `--my-button-color`
-      prop = prop.includes('-')
-        ? prop
-        : prop
-            .replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g, '-$&')
-            .toLowerCase();
+      prop = prop.includes('-') ? prop : dashCase(prop);
       return style + `${prop}:${value};`;
     }, '');
   }
@@ -99,9 +107,12 @@ class StyleMapDirective extends Directive {
         this._previousStyleProperties.add(name);
         const isImportant =
           typeof value === 'string' && value.endsWith(importantFlag);
-        if (name.includes('-') || isImportant) {
+        const isDashed = name.includes('-');
+        if (isDashed || isImportant) {
+          // setProperty() only accepts CSS property names, so camelCase names
+          // must be dash-cased (e.g. `backgroundColor: 'red !important'`).
           style.setProperty(
-            name,
+            isDashed ? name : dashCase(name),
             isImportant
               ? (value as string).slice(0, flagTrim)
               : (value as string),
@@ -130,6 +141,8 @@ class StyleMapDirective extends Directive {
  * Names without dashes are assumed to be camelCased JavaScript property names
  * and set on the element's style object using property assignment, allowing the
  * style object to translate JavaScript-style names to CSS property names.
+ * Values ending in ` !important` are always set using `setProperty()` with the
+ * `important` priority, converting camelCased names to dash-case first.
  *
  * For example `styleMap({backgroundColor: 'red', 'border-top': '5px', '--size':
  * '0'})` sets the `background-color`, `border-top` and `--size` properties.

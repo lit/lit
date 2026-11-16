@@ -169,6 +169,59 @@ suite('styleMap', () => {
     assert.equal(el.style.getPropertyValue('color'), '');
   });
 
+  (isIE ? test.skip : test)(
+    'adds priority in updated camelCase properties',
+    () => {
+      renderStyleMap({backgroundColor: 'red'});
+      const el = container.firstElementChild as HTMLElement;
+      assert.equal(el.style.getPropertyValue('background-color'), 'red');
+      assert.equal(el.style.getPropertyPriority('background-color'), '');
+      renderStyleMap({backgroundColor: 'blue !important'});
+      assert.equal(el.style.getPropertyValue('background-color'), 'blue');
+      assert.equal(
+        el.style.getPropertyPriority('background-color'),
+        'important'
+      );
+      renderStyleMap({backgroundColor: 'green'});
+      assert.equal(el.style.getPropertyValue('background-color'), 'green');
+      assert.equal(el.style.getPropertyPriority('background-color'), '');
+      renderStyleMap({backgroundColor: 'blue !important'});
+      renderStyleMap({});
+      assert.equal(el.style.getPropertyValue('background-color'), '');
+    }
+  );
+
+  (isIE ? test.skip : test)(
+    'adds camelCase properties with priority on update',
+    () => {
+      renderStyleMap({});
+      const el = container.firstElementChild as HTMLElement;
+      renderStyleMap({fontWeight: 'bold !important'});
+      assert.equal(el.style.getPropertyValue('font-weight'), 'bold');
+      assert.equal(el.style.getPropertyPriority('font-weight'), 'important');
+    }
+  );
+
+  test('maps cssFloat to float', () => {
+    renderStyleMap({cssFloat: 'left'});
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.style.getPropertyValue('float'), 'left');
+    renderStyleMap({cssFloat: 'right'});
+    assert.equal(el.style.getPropertyValue('float'), 'right');
+    renderStyleMap({});
+    assert.equal(el.style.getPropertyValue('float'), '');
+  });
+
+  (isIE ? test.skip : test)('maps cssFloat to float with priority', () => {
+    renderStyleMap({cssFloat: 'left !important'});
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.style.getPropertyValue('float'), 'left');
+    assert.equal(el.style.getPropertyPriority('float'), 'important');
+    renderStyleMap({cssFloat: 'right !important'});
+    assert.equal(el.style.getPropertyValue('float'), 'right');
+    assert.equal(el.style.getPropertyPriority('float'), 'important');
+  });
+
   test('works when used with the same object', () => {
     const styleInfo: StyleInfo = {marginTop: '2px', 'padding-bottom': '4px'};
     renderStyleMap(styleInfo);
