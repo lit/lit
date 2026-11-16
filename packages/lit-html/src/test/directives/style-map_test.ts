@@ -222,6 +222,45 @@ suite('styleMap', () => {
     assert.equal(el.style.getPropertyPriority('float'), 'important');
   });
 
+  // https://drafts.csswg.org/cssom/#cssstyleproperties
+  test('maps names to CSS properties like CSSStyleProperties', () => {
+    renderStyleMap({
+      fontSize: '1px',
+      cssFloat: 'left',
+      webkitTransform: 'none',
+      WebkitTransition: 'none',
+      MozAppearance: 'none',
+      'border-top': '0px',
+      '--fooBar': 'red',
+    });
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(
+      el.getAttribute('style'),
+      'font-size:1px;float:left;-webkit-transform:none;' +
+        '-webkit-transition:none;-moz-appearance:none;border-top:0px;' +
+        '--fooBar:red;'
+    );
+  });
+
+  test('updates properties like CSSStyleProperties attributes', () => {
+    const styleInfo: StyleInfo = {
+      fontSize: '2px',
+      cssFloat: 'right',
+      webkitTransform: 'rotate(1deg)',
+      WebkitTransform: 'rotate(2deg)',
+      borderTopWidth: '3px',
+    };
+    renderStyleMap({});
+    const el = container.firstElementChild as HTMLElement;
+    for (const [name, value] of Object.entries(styleInfo)) {
+      renderStyleMap({[name]: value});
+      const expected = document.createElement('div').style;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (expected as any)[name] = value;
+      assert.equal(el.style.cssText, expected.cssText, name);
+    }
+  });
+
   test('works when used with the same object', () => {
     const styleInfo: StyleInfo = {marginTop: '2px', 'padding-bottom': '4px'};
     renderStyleMap(styleInfo);
