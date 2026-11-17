@@ -996,3 +996,34 @@ test('makeMessageString: escapes special characters', () => {
   const result = makeMessageString(contents, canon);
   assert.strictEqual(result, '`back\\\\tick\\` dollar\\$`');
 });
+
+test('makeMessageString: placeholder text comes from source, not translation', () => {
+  const contents: Array<string | Placeholder> = [
+    {untranslatable: '<img src=x onerror=alert(1)>', index: 0},
+    'Negrita',
+    {untranslatable: '\\x60+alert(1)+\\x60', index: 1},
+  ];
+  const canon = makeProgramMessage(
+    'test',
+    [
+      {untranslatable: '<b>', index: 0},
+      'Bold',
+      {untranslatable: '</b>', index: 1},
+    ],
+    'html'
+  );
+  const result = makeMessageString(contents, canon);
+  assert.strictEqual(result, 'html`<b>Negrita</b>`');
+});
+
+test('makeMessageString: placeholder not in source throws', () => {
+  const contents: Array<string | Placeholder> = [
+    'Hola ',
+    {untranslatable: '<img src=x onerror=alert(1)>', index: 0},
+  ];
+  const canon = makeProgramMessage('test', ['Hello'], 'html');
+  assert.throws(
+    () => makeMessageString(contents, canon),
+    /Placeholder from translation does not appear in source/
+  );
+});
