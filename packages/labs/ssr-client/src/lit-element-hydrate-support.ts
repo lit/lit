@@ -26,8 +26,21 @@ interface PatchableLitElement extends HTMLElement {
   renderRoot: HTMLElement | DocumentFragment;
   render(): unknown;
   renderOptions: RenderOptions;
+  hasUpdated: boolean;
   _$needsHydration: boolean;
 }
+
+// The root ChildPart created by `render()`/`hydrate()` is stored on the
+// render root as `_$litPart$`. Async directives below it track their
+// connection state through it via `setConnected()`. The render root may not
+// exist yet if the element has not been enabled (e.g. while it still has a
+// `defer-hydration` attribute), in which case there is no part to update.
+const getRootPart = (element: PatchableLitElement) =>
+  // This property needs to remain unminified.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (element.renderRoot as any)?.['_$litPart$'] as
+    | {setConnected(isConnected: boolean): void}
+    | undefined;
 
 globalThis.litElementHydrateSupport = ({
   LitElement,
@@ -72,6 +85,23 @@ globalThis.litElementHydrateSupport = ({
     if (!this.hasAttribute('defer-hydration')) {
       connectedCallback.call(this);
     }
+    // LitElement tracks the connection state of async directives through the
+    // root part created in `update()`, but hydration bypasses that path, so
+    // propagate the connection state to the hydrated root part here.
+    getRootPart(this)?.setConnected(true);
+  };
+
+  // Override `disconnectedCallback` to propagate the disconnection to the
+  // hydrated root part, so async directives are disconnected. LitElement's
+  // own `disconnectedCallback` does this via the root part created in
+  // `update()`, but hydration bypasses that path, so without this async
+  // directives never observe the element being disconnected.
+  const disconnectedCallback = LitElement.prototype.disconnectedCallback;
+  LitElement.prototype.disconnectedCallback = function (
+    this: PatchableLitElement
+  ) {
+    disconnectedCallback.call(this);
+    getRootPart(this)?.setConnected(false);
   };
 
   // If we've been server-side rendered, just return `this.shadowRoot`, don't
@@ -93,6 +123,14 @@ globalThis.litElementHydrateSupport = ({
     changedProperties: PropertyValues
   ) {
     const value = this.render();
+    // Mirror LitElement.update(): capture the connection state before the
+    // first render so async directives see `isConnected === false` when the
+    // element is updated while disconnected. Without this, hydration creates
+    // the root part connected by default and directives like `ref()` fire
+    // while the element is detached.
+    if (!this.hasUpdated) {
+      this.renderOptions.isConnected = this.isConnected;
+    }
     // Since this is a patch, we can't call super.update(), so we capture
     // it off the proto chain and call it instead
     update.call(this, changedProperties);
