@@ -117,6 +117,10 @@
       "types": "./development/directives/map.d.ts",
       "default": "./directives/map.js"
     },
+    "./directives/part-map.js": {
+      "types": "./development/directives/part-map.d.ts",
+      "default": "./directives/part-map.js"
+    },
     "./directives/range.js": {
       "types": "./development/directives/range.d.ts",
       "default": "./directives/range.js"
