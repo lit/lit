@@ -7,10 +7,7 @@
 
 import {directive} from '../directive.js';
 import type {PartInfo} from '../directive.js';
-import {
-  DOMTokenAttribute,
-  DOMTokenMapDirective,
-} from './private-dom-token-map.js';
+import {DOMTokenMapDirective} from './private-dom-token-map.js';
 import type {DOMTokenMap} from './private-dom-token-map.js';
 
 /**
@@ -20,7 +17,7 @@ export interface ClassInfo extends DOMTokenMap {}
 
 class ClassMapDirective extends DOMTokenMapDirective {
   constructor(partInfo: PartInfo) {
-    super(partInfo, DOMTokenAttribute.CLASS);
+    super(partInfo, {attributeName: 'class', propertyName: 'classList'});
   }
 }
 

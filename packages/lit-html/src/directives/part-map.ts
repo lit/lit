@@ -6,10 +6,7 @@
 
 import {directive} from '../directive.js';
 import type {PartInfo} from '../directive.js';
-import {
-  DOMTokenAttribute,
-  DOMTokenMapDirective,
-} from './private-dom-token-map.js';
+import {DOMTokenMapDirective} from './private-dom-token-map.js';
 import type {DOMTokenMap} from './private-dom-token-map.js';
 
 /**
@@ -19,7 +16,7 @@ export type PartInfoMap = DOMTokenMap;
 
 class PartMapDirective extends DOMTokenMapDirective {
   constructor(partInfo: PartInfo) {
-    super(partInfo, DOMTokenAttribute.PART);
+    super(partInfo, {attributeName: 'part', propertyName: 'part'});
   }
 }
 

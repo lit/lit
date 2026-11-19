@@ -19,25 +19,14 @@ export interface DOMTokenMap {
   [name: string]: string | boolean | number;
 }
 
-/**
- * The attributes supported by {@link DOMTokenMapDirective} subclasses.
- */
-export const DOMTokenAttribute = {
-  CLASS: 'class',
-  PART: 'part',
-} as const;
+type TokenListProperties<T extends object> = {
+  [K in keyof T]-?: T[K] extends DOMTokenList ? K : never;
+}[keyof T];
 
-export type DOMTokenAttribute =
-  (typeof DOMTokenAttribute)[keyof typeof DOMTokenAttribute];
-
-// `class` doesn't expose its DOMTokenList via a same-named property.
-const tokenLists: Record<
-  DOMTokenAttribute,
-  (element: Element) => DOMTokenList
-> = {
-  [DOMTokenAttribute.CLASS]: (element) => (element as HTMLElement).classList,
-  [DOMTokenAttribute.PART]: (element) => element.part,
-};
+export interface DOMTokenMapDirectiveOptions {
+  attributeName: string;
+  propertyName: TokenListProperties<HTMLElement>;
+}
 
 /**
  * Base class for directives, like `classMap` and `partMap`, that
@@ -51,18 +40,20 @@ export abstract class DOMTokenMapDirective extends Directive {
    */
   private _previousTokens?: Set<string>;
   private _staticTokens?: Set<string>;
-  private readonly attributeName: DOMTokenAttribute;
+  private readonly _attributeName: string;
+  private readonly _propertyName: TokenListProperties<HTMLElement>;
 
-  constructor(partInfo: PartInfo, attributeName: DOMTokenAttribute) {
+  constructor(partInfo: PartInfo, options: DOMTokenMapDirectiveOptions) {
     super(partInfo);
-    this.attributeName = attributeName;
+    this._attributeName = options.attributeName;
+    this._propertyName = options.propertyName;
     if (
       partInfo.type !== PartType.ATTRIBUTE ||
-      partInfo.name !== attributeName ||
+      partInfo.name !== this._attributeName ||
       (partInfo.strings?.length as number) > 2
     ) {
       throw new Error(
-        `\`${attributeName}Map()\` can only be used in the \`${attributeName}\` attribute ` +
+        `\`${this._attributeName}Map()\` can only be used in the \`${this._attributeName}\` attribute ` +
           'and must be the only part in the attribute.'
       );
     }
@@ -99,7 +90,7 @@ export abstract class DOMTokenMapDirective extends Directive {
       return this.render(tokenInfo);
     }
 
-    const tokenList = tokenLists[this.attributeName](part.element);
+    const tokenList = part.element[this._propertyName];
 
     // Remove old tokens that no longer apply
     for (const name of this._previousTokens) {
