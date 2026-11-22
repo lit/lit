@@ -13,11 +13,9 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v7
         with:
-          node-version: 24.5
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          node-version-file: package.json
 
       - uses: google/wireit@setup-github-actions-caching/v2
 

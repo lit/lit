@@ -3,8 +3,18 @@
   "private": true,
   "type": "module",
   "engines": {
-    "node": ">=22.0.0",
-    "npm": ">=10.0.0"
+    "node": ">=18.15.0",
+    "npm": ">=7.0.0"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "^24"
+    },
+    "packageManager": {
+      "name": "npm",
+      "version": "^12"
+    }
   },
   "workspaces": [
     "packages/*",
