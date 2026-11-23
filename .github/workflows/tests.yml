@@ -20,6 +20,10 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: package.json
+          package-manager-cache: false
+
+      - name: Install npm 12
+        run: npm install --global npm@^12
 
       - name: NPM install
         run: npm ci
@@ -42,6 +46,10 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: package.json
+          package-manager-cache: false
+
+      - name: Install npm 12
+        run: npm install --global npm@^12
 
       # - uses: google/wireit@setup-github-actions-caching/v2
 
@@ -75,6 +83,10 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version-file: package.json
+          package-manager-cache: false
+
+      - name: Install npm 12
+        run: npm install --global npm@^12
 
       # - uses: google/wireit@setup-github-actions-caching/v2
 
