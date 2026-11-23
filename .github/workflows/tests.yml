@@ -17,11 +17,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v7
         with:
-          node-version: 24.5
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          node-version-file: package.json
+          package-manager-cache: false
+
+      - name: Install npm 12
+        run: npm install --global npm@^12
 
       - name: NPM install
         run: npm ci
@@ -41,17 +43,19 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v7
         with:
-          node-version: 24.5
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          node-version-file: package.json
+          package-manager-cache: false
+
+      - name: Install npm 12
+        run: npm install --global npm@^12
 
       # - uses: google/wireit@setup-github-actions-caching/v2
 
       - name: Log Node and NPM versions
         run: node --version && npm --version
-        
+
       - name: NPM install
         run: npm ci
 
@@ -76,11 +80,13 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - uses: actions/setup-node@v3
+      - uses: actions/setup-node@v7
         with:
-          node-version: 24.5
-          cache: 'npm'
-          cache-dependency-path: package-lock.json
+          node-version-file: package.json
+          package-manager-cache: false
+
+      - name: Install npm 12
+        run: npm install --global npm@^12
 
       # - uses: google/wireit@setup-github-actions-caching/v2
 

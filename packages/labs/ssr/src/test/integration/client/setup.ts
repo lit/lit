@@ -269,7 +269,14 @@ export const setupTest = async (
       testFn(testName, async () => {
         // Get the SSR result from the server.
         const response = await fetch(`/render/${mode}/${testFile}/${testName}`);
-        container.innerHTML = await response.text();
+        const html = await response.text();
+        // Parse declarative shadow roots natively when supported (unlike innerHTML, which
+        // leaves <template shadowrootmode> as a plain <template> element).
+        if (typeof container.setHTMLUnsafe === 'function') {
+          container.setHTMLUnsafe(html);
+        } else {
+          container.innerHTML = html;
+        }
 
         // For element tests, hydrate shadowRoots
         if (typeof registerElements === 'function') {
