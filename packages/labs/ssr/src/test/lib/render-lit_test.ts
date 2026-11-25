@@ -1102,6 +1102,15 @@ for (const global of [emptyVmGlobal, shimmedVmGlobal]) {
     );
   });
 
+  test('style-map directive escapes property names', async () => {
+    const {render, styleMapDirective} = await setup();
+    const result = await render(styleMapDirective);
+    assert.is(
+      result,
+      '<!--lit-part GQbhcvzAvA0=--><!--lit-node 0--><div style="background-color:red;--\\$size:1px;--a\\ b:2px;"></div><!--/lit-part-->'
+    );
+  });
+
   test.skip('class-map directive with other bindings', async () => {
     const {render, classMapDirectiveMultiBinding} = await setup();
     const result = await render(classMapDirectiveMultiBinding);

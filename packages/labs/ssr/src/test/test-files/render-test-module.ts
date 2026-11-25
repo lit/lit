@@ -8,6 +8,7 @@
 import {html, mathml, svg, nothing} from 'lit';
 import {repeat} from 'lit/directives/repeat.js';
 import {classMap} from 'lit/directives/class-map.js';
+import {styleMap} from 'lit/directives/style-map.js';
 import {ref, createRef} from 'lit/directives/ref.js';
 import {LitElement, css, PropertyValues} from 'lit';
 import {property, customElement} from 'lit/decorators.js';
@@ -517,6 +518,11 @@ export const classMapDirective = html`<div class="${classMap({a: true, b: false,
 
 // prettier-ignore
 export const classMapDirectiveMultiBinding = html`<div class="z ${'hi'} ${classMap({a: true, b: false, c: true})}"></div>`;
+
+/* Style map directive */
+
+// prettier-ignore
+export const styleMapDirective = html`<div style="${styleMap({backgroundColor: 'red', '--$size': '1px', '--a b': '2px'})}"></div>`;
 
 // Tests to do:
 //  - simple template, no expressions

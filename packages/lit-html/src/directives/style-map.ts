@@ -94,7 +94,11 @@ class StyleMapDirective extends Directive {
       if (value == null) {
         return style;
       }
-      return style + `${cssPropertyName(prop)}:${value};`;
+      // Escape the name, since this is CSS text the browser parses, while
+      // update() passes names to setProperty() as they are, e.g. `--$size` is
+      // written as `--\$size`. On the server, `CSS.escape()` comes from
+      // `@lit-labs/ssr-dom-shim`.
+      return style + `${CSS.escape(cssPropertyName(prop))}:${value};`;
     }, '');
   }
 

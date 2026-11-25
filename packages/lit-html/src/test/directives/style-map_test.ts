@@ -152,6 +152,36 @@ suite('styleMap', () => {
     assert.equal(el.style.getPropertyValue('--size'), '');
   });
 
+  testIfSupportsCSSVariables(test)(
+    'sets the same CSS variable on first render and updates when the name needs escaping',
+    () => {
+      const names = [
+        '--$bar-fill-ratio',
+        '--a b',
+        '--a.b:c',
+        '--a\\b',
+        '--a\x01b',
+        '--ünï',
+      ];
+      for (const static_ of [false, true]) {
+        const doRender = static_ ? renderStyleMapStatic : renderStyleMap;
+        for (const name of names) {
+          const message = `${name}${static_ ? ' (with statics)' : ''}`;
+          container = document.createElement('div');
+          doRender({[name]: '1'});
+          const el = container.firstElementChild as HTMLElement;
+          assert.equal(el.style.getPropertyValue(name), '1', message);
+          assert.equal(el.style.length, static_ ? 3 : 1, message);
+          doRender({[name]: '2'});
+          assert.equal(el.style.getPropertyValue(name), '2', message);
+          assert.equal(el.style.length, static_ ? 3 : 1, message);
+          doRender({});
+          assert.equal(el.style.getPropertyValue(name), '', message);
+        }
+      }
+    }
+  );
+
   // IE does not seeem to properly handle priority argument to
   // CSSStyleDeclaration.setProperty()
   (isIE ? test.skip : test)('adds priority in updated properties', () => {

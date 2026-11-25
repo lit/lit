@@ -6,6 +6,7 @@
  */
 import {ElementInternalsShim} from './lib/element-internals.js';
 import {EventShim, CustomEventShim} from './lib/events.js';
+import {CSSShim} from './lib/css-namespace.js';
 
 export {
   ariaMixinAttributes,
@@ -19,6 +20,7 @@ export {
   MediaList,
   StyleSheet,
 } from './lib/css.js';
+export {CSS} from './lib/css-namespace.js';
 export {CustomEvent, Event} from './lib/events.js';
 export {
   IntersectionObserver,
@@ -31,6 +33,10 @@ export {
 // for vm modules (--experimental-vm-modules).
 globalThis.Event ??= EventShim;
 globalThis.CustomEvent ??= CustomEventShim;
+
+// Node.js has no `CSS` namespace, which lit-html's `styleMap` uses to escape
+// property names.
+globalThis.CSS ??= CSSShim;
 
 const constructionToken = Symbol();
 
