@@ -26,8 +26,17 @@ interface PatchableLitElement extends HTMLElement {
   renderRoot: HTMLElement | DocumentFragment;
   render(): unknown;
   renderOptions: RenderOptions;
+  hasUpdated: boolean;
   _$needsHydration: boolean;
 }
+
+// Both `render()` and `hydrate()` store the root part on the container under
+// this reserved property.
+const getRootPart = (el: PatchableLitElement) =>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  (el.renderRoot as any)?.['_$litPart$'] as
+    | {setConnected(isConnected: boolean): void}
+    | undefined;
 
 globalThis.litElementHydrateSupport = ({
   LitElement,
@@ -71,7 +80,20 @@ globalThis.litElementHydrateSupport = ({
     // 'defer-hydration' attribute has been removed to enable
     if (!this.hasAttribute('defer-hydration')) {
       connectedCallback.call(this);
+      // The patched `update()` below doesn't keep the root part that
+      // `LitElement` tracks, so propagate the connection state to it here.
+      getRootPart(this)?.setConnected(true);
     }
+  };
+
+  // `LitElement`'s own `disconnectedCallback` updates the root part it saved
+  // during `update()`. The patched `update()` doesn't save it, so do it here.
+  const disconnectedCallback = LitElement.prototype.disconnectedCallback;
+  LitElement.prototype.disconnectedCallback = function (
+    this: PatchableLitElement
+  ) {
+    disconnectedCallback.call(this);
+    getRootPart(this)?.setConnected(false);
   };
 
   // If we've been server-side rendered, just return `this.shadowRoot`, don't
@@ -93,6 +115,11 @@ globalThis.litElementHydrateSupport = ({
     changedProperties: PropertyValues
   ) {
     const value = this.render();
+    // Match `LitElement.update()`: async directives in the first render must
+    // see the host's current connection state.
+    if (!this.hasUpdated) {
+      this.renderOptions.isConnected = this.isConnected;
+    }
     // Since this is a patch, we can't call super.update(), so we capture
     // it off the proto chain and call it instead
     update.call(this, changedProperties);
