@@ -31,6 +31,46 @@ const importantFlag = ' !' + important;
 // How many characters to remove from a value, as a negative number
 const flagTrim = 0 - importantFlag.length;
 
+/**
+ * The "IDL attribute to CSS property" algorithm from CSSOM, used by
+ * `CSSStyleProperties` to map its camel-cased and webkit-cased attributes to
+ * CSS property names.
+ * https://drafts.csswg.org/cssom/#idl-attribute-to-css-property
+ */
+const idlAttributeToCssProperty = (attribute: string, dashPrefix: boolean) =>
+  (dashPrefix ? '-' : '') +
+  attribute.replace(/[A-Z]/g, (c) => '-' + c.toLowerCase());
+
+// Names that need the dash prefix flag. Only webkit-cased attributes are in
+// CSSOM; the lowercase `moz`, `ms` and `o` prefixes aren't CSSStyleProperties
+// attributes (use `MozX` / `'-moz-x'` instead).
+// TODO (v4): Remove `moz`, `ms` and `o`, leaving `/^webkit[A-Z]/`.
+const dashPrefixedAttribute = /^(?:webkit|moz|ms|o)[A-Z]/;
+
+/**
+ * Returns the CSS property name for a `styleMap` key, the same way
+ * `CSSStyleProperties` maps its attributes to the property names it passes to
+ * `setProperty()`. https://drafts.csswg.org/cssom/#cssstyleproperties
+ *
+ * - dashed attribute (any name containing a dash, including custom
+ *   properties): used as-is, e.g. `font-size`, `--my-color`
+ * - `cssFloat`: `float`
+ * - webkit-cased attribute: dash-prefixed, e.g. `webkitTransform` ->
+ *   `-webkit-transform`
+ * - camel-cased attribute: e.g. `fontSize` -> `font-size`,
+ *   `WebkitTransform` -> `-webkit-transform`
+ *
+ * For compatibility, lowercase `moz`, `ms` and `o` prefixes are also
+ * dash-prefixed like webkit-cased attributes, e.g. `msTransform` ->
+ * `-ms-transform`, as styleMap has always done.
+ */
+const cssPropertyName = (name: string) =>
+  name.includes('-')
+    ? name
+    : name === 'cssFloat'
+      ? 'float'
+      : idlAttributeToCssProperty(name, dashPrefixedAttribute.test(name));
+
 class StyleMapDirective extends Directive {
   private _previousStyleProperties?: Set<string>;
 
@@ -54,19 +94,11 @@ class StyleMapDirective extends Directive {
       if (value == null) {
         return style;
       }
-      // Convert property names from camel-case to dash-case, i.e.:
-      //  `backgroundColor` -> `background-color`
-      // Vendor-prefixed names need an extra `-` appended to front:
-      //  `webkitAppearance` -> `-webkit-appearance`
-      // Exception is any property name containing a dash, including
-      // custom properties; we assume these are already dash-cased i.e.:
-      //  `--my-button-color` --> `--my-button-color`
-      prop = prop.includes('-')
-        ? prop
-        : prop
-            .replace(/(?:^(webkit|moz|ms|o)|)(?=[A-Z])/g, '-$&')
-            .toLowerCase();
-      return style + `${prop}:${value};`;
+      // Escape the name, since this is CSS text the browser parses, while
+      // update() passes names to setProperty() as they are, e.g. `--$size` is
+      // written as `--\$size`. On the server, `CSS.escape()` comes from
+      // `@lit-labs/ssr-dom-shim`.
+      return style + `${CSS.escape(cssPropertyName(prop))}:${value};`;
     }, '');
   }
 
@@ -83,34 +115,25 @@ class StyleMapDirective extends Directive {
       // If the name isn't in styleInfo or it's null/undefined
       if (styleInfo[name] == null) {
         this._previousStyleProperties!.delete(name);
-        if (name.includes('-')) {
-          style.removeProperty(name);
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (style as any)[name] = null;
-        }
+        style.removeProperty(cssPropertyName(name));
       }
     }
 
-    // Add or update properties
+    // Add or update properties. Assigning a camel-cased attribute on the style
+    // object is defined as calling setProperty() with the same property name
+    // and no priority, so setProperty() is used for every name. This also lets
+    // ` !important` values keep their priority.
     for (const name in styleInfo) {
       const value = styleInfo[name];
       if (value != null) {
         this._previousStyleProperties.add(name);
         const isImportant =
           typeof value === 'string' && value.endsWith(importantFlag);
-        if (name.includes('-') || isImportant) {
-          style.setProperty(
-            name,
-            isImportant
-              ? (value as string).slice(0, flagTrim)
-              : (value as string),
-            isImportant ? important : ''
-          );
-        } else {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          (style as any)[name] = value;
-        }
+        style.setProperty(
+          cssPropertyName(name),
+          isImportant ? (value as string).slice(0, flagTrim) : String(value),
+          isImportant ? important : ''
+        );
       }
     }
     return noChange;
@@ -125,11 +148,12 @@ class StyleMapDirective extends Directive {
  * {@link StyleInfo styleInfo} object and adds the properties to the inline
  * style of the element.
  *
- * Property names with dashes (`-`) are assumed to be valid CSS
- * property names and set on the element's style object using `setProperty()`.
- * Names without dashes are assumed to be camelCased JavaScript property names
- * and set on the element's style object using property assignment, allowing the
- * style object to translate JavaScript-style names to CSS property names.
+ * Property names with dashes (`-`) are assumed to be valid CSS property
+ * names. Names without dashes are assumed to be camelCased JavaScript property
+ * names, as found on the element's style object, and are converted to CSS
+ * property names the same way the style object does (including `cssFloat` ->
+ * `float` and `webkitTransform` -> `-webkit-transform`). Values ending in
+ * ` !important` are set with the `important` priority.
  *
  * For example `styleMap({backgroundColor: 'red', 'border-top': '5px', '--size':
  * '0'})` sets the `background-color`, `border-top` and `--size` properties.

@@ -152,6 +152,36 @@ suite('styleMap', () => {
     assert.equal(el.style.getPropertyValue('--size'), '');
   });
 
+  testIfSupportsCSSVariables(test)(
+    'sets the same CSS variable on first render and updates when the name needs escaping',
+    () => {
+      const names = [
+        '--$bar-fill-ratio',
+        '--a b',
+        '--a.b:c',
+        '--a\\b',
+        '--a\x01b',
+        '--ünï',
+      ];
+      for (const static_ of [false, true]) {
+        const doRender = static_ ? renderStyleMapStatic : renderStyleMap;
+        for (const name of names) {
+          const message = `${name}${static_ ? ' (with statics)' : ''}`;
+          container = document.createElement('div');
+          doRender({[name]: '1'});
+          const el = container.firstElementChild as HTMLElement;
+          assert.equal(el.style.getPropertyValue(name), '1', message);
+          assert.equal(el.style.length, static_ ? 3 : 1, message);
+          doRender({[name]: '2'});
+          assert.equal(el.style.getPropertyValue(name), '2', message);
+          assert.equal(el.style.length, static_ ? 3 : 1, message);
+          doRender({});
+          assert.equal(el.style.getPropertyValue(name), '', message);
+        }
+      }
+    }
+  );
+
   // IE does not seeem to properly handle priority argument to
   // CSSStyleDeclaration.setProperty()
   (isIE ? test.skip : test)('adds priority in updated properties', () => {
@@ -167,6 +197,113 @@ suite('styleMap', () => {
     assert.equal(el.style.getPropertyPriority('color'), '');
     renderStyleMap({});
     assert.equal(el.style.getPropertyValue('color'), '');
+  });
+
+  (isIE ? test.skip : test)(
+    'adds priority in updated camelCase properties',
+    () => {
+      renderStyleMap({backgroundColor: 'red'});
+      const el = container.firstElementChild as HTMLElement;
+      assert.equal(el.style.getPropertyValue('background-color'), 'red');
+      assert.equal(el.style.getPropertyPriority('background-color'), '');
+      renderStyleMap({backgroundColor: 'blue !important'});
+      assert.equal(el.style.getPropertyValue('background-color'), 'blue');
+      assert.equal(
+        el.style.getPropertyPriority('background-color'),
+        'important'
+      );
+      renderStyleMap({backgroundColor: 'green'});
+      assert.equal(el.style.getPropertyValue('background-color'), 'green');
+      assert.equal(el.style.getPropertyPriority('background-color'), '');
+      renderStyleMap({backgroundColor: 'blue !important'});
+      renderStyleMap({});
+      assert.equal(el.style.getPropertyValue('background-color'), '');
+    }
+  );
+
+  (isIE ? test.skip : test)(
+    'adds camelCase properties with priority on update',
+    () => {
+      renderStyleMap({});
+      const el = container.firstElementChild as HTMLElement;
+      renderStyleMap({fontWeight: 'bold !important'});
+      assert.equal(el.style.getPropertyValue('font-weight'), 'bold');
+      assert.equal(el.style.getPropertyPriority('font-weight'), 'important');
+    }
+  );
+
+  test('maps cssFloat to float', () => {
+    renderStyleMap({cssFloat: 'left'});
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.style.getPropertyValue('float'), 'left');
+    renderStyleMap({cssFloat: 'right'});
+    assert.equal(el.style.getPropertyValue('float'), 'right');
+    renderStyleMap({});
+    assert.equal(el.style.getPropertyValue('float'), '');
+  });
+
+  (isIE ? test.skip : test)('maps cssFloat to float with priority', () => {
+    renderStyleMap({cssFloat: 'left !important'});
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(el.style.getPropertyValue('float'), 'left');
+    assert.equal(el.style.getPropertyPriority('float'), 'important');
+    renderStyleMap({cssFloat: 'right !important'});
+    assert.equal(el.style.getPropertyValue('float'), 'right');
+    assert.equal(el.style.getPropertyPriority('float'), 'important');
+  });
+
+  // https://drafts.csswg.org/cssom/#cssstyleproperties
+  test('maps names to CSS properties like CSSStyleProperties', () => {
+    renderStyleMap({
+      fontSize: '1px',
+      cssFloat: 'left',
+      webkitTransform: 'none',
+      WebkitTransition: 'none',
+      MozAppearance: 'none',
+      'border-top': '0px',
+      '--fooBar': 'red',
+    });
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(
+      el.getAttribute('style'),
+      'font-size:1px;float:left;-webkit-transform:none;' +
+        '-webkit-transition:none;-moz-appearance:none;border-top:0px;' +
+        '--fooBar:red;'
+    );
+  });
+
+  // Not CSSStyleProperties attributes; kept for compatibility.
+  // TODO (v4): Remove along with the legacy prefixes in style-map.ts.
+  test('dash-prefixes legacy lowercase vendor prefixes', () => {
+    renderStyleMap({
+      mozAppearance: 'none',
+      msTransform: 'none',
+      oTransform: 'none',
+    });
+    const el = container.firstElementChild as HTMLElement;
+    assert.equal(
+      el.getAttribute('style'),
+      '-moz-appearance:none;-ms-transform:none;-o-transform:none;'
+    );
+  });
+
+  test('updates properties like CSSStyleProperties attributes', () => {
+    const styleInfo: StyleInfo = {
+      fontSize: '2px',
+      cssFloat: 'right',
+      webkitTransform: 'rotate(1deg)',
+      WebkitTransform: 'rotate(2deg)',
+      borderTopWidth: '3px',
+    };
+    renderStyleMap({});
+    const el = container.firstElementChild as HTMLElement;
+    for (const [name, value] of Object.entries(styleInfo)) {
+      renderStyleMap({[name]: value});
+      const expected = document.createElement('div').style;
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (expected as any)[name] = value;
+      assert.equal(el.style.cssText, expected.cssText, name);
+    }
   });
 
   test('works when used with the same object', () => {
