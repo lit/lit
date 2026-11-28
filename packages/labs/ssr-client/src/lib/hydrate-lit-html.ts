@@ -10,6 +10,7 @@ import {
   RenderOptions,
   TemplateResult,
   noChange,
+  nothing,
 } from 'lit-html';
 import {_$LH} from 'lit-html/private-ssr-support.js';
 import {
@@ -263,7 +264,10 @@ const openChildPart = (
     stack.push({part, type: 'leaf'});
   } else if (isPrimitive(value)) {
     stack.push({part, type: 'leaf'});
-    part._$committedValue = value;
+    // Empty child values render no text node. Record the same sentinel as
+    // ChildPart so a later text update creates a node instead of modifying
+    // the closing marker comment.
+    part._$committedValue = value == null || value === '' ? nothing : value;
     // TODO(kschaaf): We can detect when a primitive is being hydrated on the
     // client where a TemplateResult was rendered on the server, but we need to
     // decide on a strategy for what to do next.

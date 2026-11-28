@@ -7,7 +7,7 @@
 
 import '@lit-labs/ssr-client/lit-element-hydrate-support.js';
 
-import {html, mathml, svg, noChange, nothing, Part} from 'lit';
+import {html, mathml, svg, noChange, nothing, Part, render} from 'lit';
 import {html as staticHtml, literal} from 'lit/static-html.js';
 import {
   directive,
@@ -69,12 +69,48 @@ const throwIfRunOnServer = () => {
 const filterNodes = (nodes: ArrayLike<Node>, nodeType: number) =>
   Array.from(nodes).filter((n) => n.nodeType === nodeType);
 
+const hydratedTextView = (value: unknown) => html`<p>Hello ${value}</p>`;
+
 export const tests: {[name: string]: SSRTest} = {
   // TODO: add suites (for now, delineating with comments)
 
   /******************************************************
    * ChildPart tests
    ******************************************************/
+
+  ...Object.fromEntries(
+    (
+      [
+        ['undefined', undefined],
+        ['null', null],
+        ['empty string', ''],
+        ['zero', 0],
+      ] as Array<[string, unknown]>
+    ).map(([name, initialValue]) => [
+      `ChildPart updates immediately after hydrating ${name}`,
+      {
+        render: hydratedTextView,
+        expectMutationsOnFirstRender: true,
+        expectations: [
+          {
+            args: [initialValue],
+            html: `<p>Hello ${initialValue === 0 ? '0' : ''}</p>`,
+            setup(assert: Chai.Assert, dom: HTMLElement) {
+              // Update before rendering the original value again: a same-value
+              // render can otherwise hide an incorrectly hydrated ChildPart.
+              render(hydratedTextView('Ada'), dom);
+              assert.strictEqual(
+                dom.querySelector('p')!.textContent,
+                'Hello Ada'
+              );
+            },
+          },
+          {args: ['again'], html: '<p>Hello again</p>'},
+        ],
+        stableSelectors: ['p'],
+      },
+    ])
+  ),
 
   'ChildPart accepts a string': {
     render(x: unknown) {
